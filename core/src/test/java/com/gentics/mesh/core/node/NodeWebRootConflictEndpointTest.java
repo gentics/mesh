@@ -77,10 +77,10 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testCreateDuplicateWebrootPath() {
 		String conflictingName = "filename.html";
-		Node parent = db().tx(() -> folder("2015"));
-		SchemaContainer contentSchema = db().tx(() -> schemaContainer("content"));
+		Node parent = tx(() -> folder("2015"));
+		SchemaContainer contentSchema = tx(() -> schemaContainer("content"));
 
-		db().tx(() -> {
+		tx(() -> {
 			// create the initial content
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(parent.getUuid());
@@ -110,10 +110,10 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	public void testUpdateDuplicateWebrootPath() {
 		String conflictingName = "filename.html";
 		String nonConflictingName = "otherfilename.html";
-		Node parent = db().tx(() -> folder("2015"));
-		SchemaContainer contentSchema = db().tx(() -> schemaContainer("content"));
+		Node parent = tx(() -> folder("2015"));
+		SchemaContainer contentSchema = tx(() -> schemaContainer("content"));
 
-		db().tx(() -> {
+		tx(() -> {
 			// create the initial content
 			final NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(parent.getUuid());
@@ -150,10 +150,10 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testTranslateDuplicateWebrootPath() {
 		String conflictingName = "filename.html";
-		Node parent = db().tx(() -> folder("2015"));
-		SchemaContainer contentSchema = db().tx(() -> schemaContainer("content"));
+		Node parent = tx(() -> folder("2015"));
+		SchemaContainer contentSchema = tx(() -> schemaContainer("content"));
 
-		db().tx(() -> {
+		tx(() -> {
 			// create the initial content
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(parent.getUuid());
@@ -181,39 +181,35 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testMoveDuplicateWebrootPath() {
 		String conflictingName = "filename.html";
+		String parentUuid = tx(() -> folder("2015").getUuid());
+		String otherParentUuid = tx(() -> folder("news").getUuid());
 
-		Node parent = db().tx(() -> folder("2015"));
-		Node otherParent = db().tx(() -> folder("news"));
-		SchemaContainer contentSchema = db().tx(() -> schemaContainer("content"));
-		db().tx(() -> {
-			// create the initial content
-			NodeCreateRequest create = new NodeCreateRequest();
-			create.setParentNodeUuid(parent.getUuid());
-			create.setLanguage("en");
-			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
-			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
-			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
-			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, create));
-			String uuid = response.getUuid();
+		// create the initial content
+		NodeCreateRequest create = new NodeCreateRequest();
+		create.setParentNodeUuid(parentUuid);
+		create.setLanguage("en");
+		create.setSchemaName("content");
+		create.getFields().put("title", FieldUtil.createStringField("some title"));
+		create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
+		create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+		String uuid = call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
 
-			// create a "conflicting" content in another folder
-			NodeCreateRequest create2 = new NodeCreateRequest();
-			create2.setParentNodeUuid(otherParent.getUuid());
-			create2.setLanguage("en");
-			create2.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
-			create2.getFields().put("title", FieldUtil.createStringField("some other title"));
-			create2.getFields().put("teaser", FieldUtil.createStringField("some other teaser"));
-			create2.getFields().put("slug", FieldUtil.createStringField(conflictingName));
-			create2.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			call(() -> client().createNode(PROJECT_NAME, create2));
+		// create a "conflicting" content in another folder
+		NodeCreateRequest create2 = new NodeCreateRequest();
+		create2.setParentNodeUuid(otherParentUuid);
+		create2.setLanguage("en");
+		create2.setSchemaName("content");
+		create2.getFields().put("title", FieldUtil.createStringField("some other title"));
+		create2.getFields().put("teaser", FieldUtil.createStringField("some other teaser"));
+		create2.getFields().put("slug", FieldUtil.createStringField(conflictingName));
+		create2.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		call(() -> client().createNode(PROJECT_NAME, create2));
 
-			// try to move the original node
-			call(() -> client().moveNode(PROJECT_NAME, uuid, otherParent.getUuid()), CONFLICT, "node_conflicting_segmentfield_move", "slug",
-				conflictingName);
-			return null;
-		});
+		// try to move the original node
+		call(() -> client().moveNode(PROJECT_NAME, uuid, otherParentUuid), CONFLICT, "node_conflicting_segmentfield_move", "slug",
+			conflictingName);
+
 	}
 
 	@Test
@@ -221,232 +217,195 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 
 		String conflictingName = "filename.html";
 		String newBranchName = "newbranch";
-		SchemaContainer contentSchema = db().tx(() -> {
-			return schemaContainer("content");
-		});
+		Branch initialBranch = tx(() -> initialBranch());
+		String folderUuid = folderUuid();
+
 		// 1. Create new branch and migrate nodes
-		Branch newBranch = db().tx(() -> project().getBranchRoot().create(newBranchName, user()));
+		Branch newBranch = tx(() -> createBranch(newBranchName));
 		BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 		context.setNewBranch(newBranch);
+		context.setOldBranch(initialBranch);
 		meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
 
 		// 2. Create content in new branch
-		db().tx(() -> {
-			NodeCreateRequest create = new NodeCreateRequest();
-			create.setParentNodeUuid(folder("2015").getUuid());
-			create.setLanguage("en");
-			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
-			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
-			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
-			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			call(() -> client().createNode(PROJECT_NAME, create));
-
-			return null;
-		});
+		NodeCreateRequest create = new NodeCreateRequest();
+		create.setParentNodeUuid(folderUuid);
+		create.setLanguage("en");
+		create.setSchemaName("content");
+		create.getFields().put("title", FieldUtil.createStringField("some title"));
+		create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
+		create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+		call(() -> client().createNode(PROJECT_NAME, create));
 
 		// 3. Create "conflicting" content in initial branch
-		db().tx(() -> {
-			NodeCreateRequest create = new NodeCreateRequest();
-			create.setParentNodeUuid(folder("2015").getUuid());
-			create.setLanguage("en");
-			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
-			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
-			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
-			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			call(() -> client().createNode(PROJECT_NAME, create, new VersioningParametersImpl().setBranch(project().getInitialBranch().getUuid())));
-
-			return null;
-		});
+		NodeCreateRequest create2 = new NodeCreateRequest();
+		create2.setParentNodeUuid(folderUuid);
+		create2.setLanguage("en");
+		create2.setSchemaName("content");
+		create2.getFields().put("title", FieldUtil.createStringField("some title"));
+		create2.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		create2.getFields().put("slug", FieldUtil.createStringField(conflictingName));
+		create2.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+		call(() -> client().createNode(PROJECT_NAME, create2, new VersioningParametersImpl().setBranch(initialBranchUuid())));
 	}
 
 	@Test
 	public void testDuplicateCrossBranchesSameNode() {
 		String conflictingName = "filename.html";
 		String newBranchName = "newbranch";
-		SchemaContainer contentSchema = db().tx(() -> {
-			return schemaContainer("content");
-		});
+		Branch initialBranch = tx(() -> initialBranch());
+		String initialBranchUuid = initialBranchUuid();
+		String folderUuid = tx(() -> folder("2015").getUuid());
+
 		// 1. Create new branch and migrate nodes
-		Branch newBranch = db().tx(() -> project().getBranchRoot().create(newBranchName, user()));
+		Branch newBranch = tx(() -> createBranch(newBranchName));
 		BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 		context.setNewBranch(newBranch);
+		context.setOldBranch(initialBranch);
 		meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
 
 		// 2. Create content in new branch
-		NodeResponse response = db().tx(() -> {
-			NodeCreateRequest create = new NodeCreateRequest();
-			create.setParentNodeUuid(folder("2015").getUuid());
-			create.setLanguage("en");
-			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
-			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
-			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
-			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			return call(() -> client().createNode(PROJECT_NAME, create));
-		});
+		NodeCreateRequest create = new NodeCreateRequest();
+		create.setParentNodeUuid(folderUuid);
+		create.setLanguage("en");
+		create.setSchemaName("content");
+		create.getFields().put("title", FieldUtil.createStringField("some title"));
+		create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
+		create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+		NodeResponse response = call(() -> client().createNode(PROJECT_NAME, create));
 
 		// 3. Create "conflicting" content in initial branch
-		db().tx(() -> {
-			NodeCreateRequest create = new NodeCreateRequest();
-			create.setParentNodeUuid(folder("2015").getUuid());
-			create.setLanguage("en");
-			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
-			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
-			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
-			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			call(() -> client().createNode(response.getUuid(), PROJECT_NAME, create,
-				new VersioningParametersImpl().setBranch(project().getInitialBranch().getUuid())));
-
-			return null;
-		});
+		NodeCreateRequest create2 = new NodeCreateRequest();
+		create2.setParentNodeUuid(folderUuid);
+		create2.setLanguage("en");
+		create2.setSchemaName("content");
+		create2.getFields().put("title", FieldUtil.createStringField("some title"));
+		create2.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		create2.getFields().put("slug", FieldUtil.createStringField(conflictingName));
+		create2.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+		call(() -> client().createNode(response.getUuid(), PROJECT_NAME, create2,
+			new VersioningParametersImpl().setBranch(initialBranchUuid)));
 	}
 
 	@Test
 	public void testDuplicateCrossBranchesSameNode1() {
 		String conflictingName = "filename.html";
 		String newBranchName = "newbranch";
-		SchemaContainer contentSchema = db().tx(() -> {
-			return schemaContainer("content");
-		});
+		String folderUuid = tx(() -> folder("2015").getUuid());
+		Branch initialBranch = tx(() -> initialBranch());
+
 		// 1. Create new branch and migrate nodes
-		Branch newBranch = db().tx(() -> project().getBranchRoot().create(newBranchName, user()));
+		Branch newBranch = tx(() -> createBranch(newBranchName));
 		BranchMigrationContextImpl context = new BranchMigrationContextImpl();
+		context.setOldBranch(initialBranch);
 		context.setNewBranch(newBranch);
 		meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
 
 		// 2. Create "conflicting" content in initial branch
-		NodeResponse response = db().tx(() -> {
-			NodeCreateRequest create = new NodeCreateRequest();
-			create.setParentNodeUuid(folder("2015").getUuid());
-			create.setLanguage("en");
-			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
-			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
-			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
-			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+		NodeCreateRequest create = new NodeCreateRequest();
+		create.setParentNodeUuid(folderUuid);
+		create.setLanguage("en");
+		create.setSchemaName("content");
+		create.getFields().put("title", FieldUtil.createStringField("some title"));
+		create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
+		create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
 
-			return call(
-				() -> client().createNode(PROJECT_NAME, create, new VersioningParametersImpl().setBranch(project().getInitialBranch().getUuid())));
-		});
+		NodeResponse response = call(
+			() -> client().createNode(PROJECT_NAME, create, new VersioningParametersImpl().setBranch(initialBranchUuid())));
 
 		// 3. Create content in new branch
-		db().tx(() -> {
-			NodeCreateRequest create = new NodeCreateRequest();
-			create.setParentNodeUuid(folder("2015").getUuid());
-			create.setLanguage("en");
-			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
-			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
-			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
-			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			return call(() -> client().createNode(response.getUuid(), PROJECT_NAME, create));
-		});
+		NodeCreateRequest create2 = new NodeCreateRequest();
+		create2.setParentNodeUuid(folder("2015").getUuid());
+		create2.setLanguage("en");
+		create2.setSchemaName("content");
+		create2.getFields().put("title", FieldUtil.createStringField("some title"));
+		create2.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		create2.getFields().put("slug", FieldUtil.createStringField(conflictingName));
+		create2.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+		call(() -> client().createNode(response.getUuid(), PROJECT_NAME, create2));
 	}
 
 	@Test
 	public void testDuplicateWithOldVersion() {
 		String conflictingName = "filename.html";
 		String newName = "changed.html";
-
-		SchemaContainer contentSchema = db().tx(() -> {
-			return schemaContainer("content");
-		});
+		String folderUuid = tx(() -> folder("2015").getUuid());
 
 		// 1. Create initial content
-		String nodeUuid = db().tx(() -> {
-			NodeCreateRequest create = new NodeCreateRequest();
-			create.setParentNodeUuid(folder("2015").getUuid());
-			create.setLanguage("en");
-			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
-			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
-			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
-			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			return call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
-		});
+		NodeCreateRequest create = new NodeCreateRequest();
+		create.setParentNodeUuid(folderUuid);
+		create.setLanguage("en");
+		create.setSchemaName("content");
+		create.getFields().put("title", FieldUtil.createStringField("some title"));
+		create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
+		create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+		String nodeUuid = call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
 
 		// 2. Modify initial content
-		db().tx(() -> {
-			NodeUpdateRequest update = new NodeUpdateRequest();
-			update.setLanguage("en");
-			update.setVersion("0.1");
-			update.getFields().put("slug", FieldUtil.createStringField(newName));
-			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
-			return null;
-		});
+		NodeUpdateRequest update = new NodeUpdateRequest();
+		update.setLanguage("en");
+		update.setVersion("0.1");
+		update.getFields().put("slug", FieldUtil.createStringField(newName));
+		call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 
 		// 3. Create "conflicting" content
-		db().tx(() -> {
-			NodeCreateRequest create = new NodeCreateRequest();
-			create.setParentNodeUuid(folder("2015").getUuid());
-			create.setLanguage("en");
-			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
-			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
-			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
-			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			return call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
-		});
+		NodeCreateRequest create2 = new NodeCreateRequest();
+		create2.setParentNodeUuid(folderUuid);
+		create2.setLanguage("en");
+		create2.setSchemaName("content");
+		create2.getFields().put("title", FieldUtil.createStringField("some title"));
+		create2.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		create2.getFields().put("slug", FieldUtil.createStringField(conflictingName));
+		create2.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+		call(() -> client().createNode(PROJECT_NAME, create2)).getUuid();
 	}
 
 	@Test
 	public void testDuplicateWithDrafts() {
 		String initialName = "filename.html";
 		String conflictingName = "changed.html";
-		SchemaContainer contentSchema = db().tx(() -> {
-			return schemaContainer("content");
-		});
+		String folderUuid = tx(() -> folder("2015").getUuid());
 
 		// 1. Create and publish initial content
-		String nodeUuid = db().tx(() -> {
-			NodeCreateRequest create = new NodeCreateRequest();
-			create.setParentNodeUuid(folder("2015").getUuid());
-			create.setLanguage("en");
-			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
-			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
-			create.getFields().put("slug", FieldUtil.createStringField(initialName));
-			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			String createdUuid = call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
-			return createdUuid;
-		});
+		NodeCreateRequest create = new NodeCreateRequest();
+		create.setParentNodeUuid(folderUuid);
+		create.setLanguage("en");
+		create.setSchemaName("content");
+		create.getFields().put("title", FieldUtil.createStringField("some title"));
+		create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		create.getFields().put("slug", FieldUtil.createStringField(initialName));
+		create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+		String nodeUuid = call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
 
 		// 2. Modify initial content
-		db().tx(() -> {
-			NodeUpdateRequest update = new NodeUpdateRequest();
-			update.setLanguage("en");
-			update.setVersion("0.1");
-			update.getFields().put("slug", FieldUtil.createStringField(conflictingName));
-			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
-			return null;
-		});
+		NodeUpdateRequest update = new NodeUpdateRequest();
+		update.setLanguage("en");
+		update.setVersion("0.1");
+		update.getFields().put("slug", FieldUtil.createStringField(conflictingName));
+		call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 
 		// 3. Create content. The filename should not cause a conflict since the other node was just updated.
-		String otherNodeUuid = db().tx(() -> {
-			NodeCreateRequest create = new NodeCreateRequest();
-			create.setParentNodeUuid(folder("2015").getUuid());
-			create.setLanguage("en");
-			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
-			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
-			create.getFields().put("slug", FieldUtil.createStringField(initialName));
-			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			return call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
-		});
+		NodeCreateRequest create2 = new NodeCreateRequest();
+		create2.setParentNodeUuid(folderUuid);
+		create2.setLanguage("en");
+		create2.setSchemaName("content");
+		create2.getFields().put("title", FieldUtil.createStringField("some title"));
+		create2.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		create2.getFields().put("slug", FieldUtil.createStringField(initialName));
+		create2.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+		String otherNodeUuid = call(() -> client().createNode(PROJECT_NAME, create2)).getUuid();
 
 		// 4. Modify the second node in order to cause a conflict
-		db().tx(() -> {
-			NodeUpdateRequest update = new NodeUpdateRequest();
-			update.setLanguage("en");
-			update.setVersion("0.1");
-			update.getFields().put("slug", FieldUtil.createStringField(conflictingName));
-			call(() -> client().updateNode(PROJECT_NAME, otherNodeUuid, update), CONFLICT, "node_conflicting_segmentfield_update", "slug",
-				conflictingName);
-			return null;
-		});
+		NodeUpdateRequest update2 = new NodeUpdateRequest();
+		update2.setLanguage("en");
+		update2.setVersion("0.1");
+		update2.getFields().put("slug", FieldUtil.createStringField(conflictingName));
+		call(() -> client().updateNode(PROJECT_NAME, otherNodeUuid, update2), CONFLICT, "node_conflicting_segmentfield_update", "slug",
+			conflictingName);
 
 	}
 
@@ -454,57 +413,41 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	public void testDuplicateWithPublished() {
 		String conflictingName = "filename.html";
 		String newName = "changed.html";
-
-		SchemaContainer contentSchema = db().tx(() -> {
-			return schemaContainer("content");
-		});
+		String folderUuid = tx(() -> folder("2015").getUuid());
 
 		// 1. Create and publish initial content
-		String nodeUuid = db().tx(() -> {
-			NodeCreateRequest create = new NodeCreateRequest();
-			create.setParentNodeUuid(folder("2015").getUuid());
-			create.setLanguage("en");
-			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
-			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
-			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
-			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			String createdUuid = call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
+		NodeCreateRequest create = new NodeCreateRequest();
+		create.setParentNodeUuid(folderUuid);
+		create.setLanguage("en");
+		create.setSchemaName("content");
+		create.getFields().put("title", FieldUtil.createStringField("some title"));
+		create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
+		create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+		String createdUuid = call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
 
-			call(() -> client().publishNode(PROJECT_NAME, createdUuid));
-
-			return createdUuid;
-		});
+		call(() -> client().publishNode(PROJECT_NAME, createdUuid));
 
 		// 2. Modify initial content
-		db().tx(() -> {
-			NodeUpdateRequest update = new NodeUpdateRequest();
-			update.setLanguage("en");
-			update.setVersion("0.1");
-			update.getFields().put("slug", FieldUtil.createStringField(newName));
-			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
-			return null;
-		});
+		NodeUpdateRequest update = new NodeUpdateRequest();
+		update.setLanguage("en");
+		update.setVersion("0.1");
+		update.getFields().put("slug", FieldUtil.createStringField(newName));
+		call(() -> client().updateNode(PROJECT_NAME, createdUuid, update));
 
 		// 3. Create conflicting content
-		String otherNodeUuid = db().tx(() -> {
-			NodeCreateRequest create = new NodeCreateRequest();
-			create.setParentNodeUuid(folder("2015").getUuid());
-			create.setLanguage("en");
-			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
-			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
-			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
-			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			return call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
-		});
+		NodeCreateRequest create2 = new NodeCreateRequest();
+		create2.setParentNodeUuid(folderUuid);
+		create2.setLanguage("en");
+		create2.setSchemaName("content");
+		create2.getFields().put("title", FieldUtil.createStringField("some title"));
+		create2.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		create2.getFields().put("slug", FieldUtil.createStringField(conflictingName));
+		create2.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+		String otherNodeUuid = call(() -> client().createNode(PROJECT_NAME, create2)).getUuid();
 
 		// 4. Publish conflicting content
-		db().tx(() -> {
-			call(() -> client().publishNode(PROJECT_NAME, otherNodeUuid), CONFLICT, "node_conflicting_segmentfield_publish", "slug",
-				conflictingName);
-
-			return null;
-		});
+		call(() -> client().publishNode(PROJECT_NAME, otherNodeUuid), CONFLICT, "node_conflicting_segmentfield_publish", "slug",
+			conflictingName);
 	}
 }

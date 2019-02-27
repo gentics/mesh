@@ -415,7 +415,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testDeleteWithChildrenInBranch() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
 			Project project = project();
-			Branch initialBranch = project.getInitialBranch();
+			Branch initialBranch = initialBranch();
 			SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder with subfolder and subsubfolder
@@ -429,7 +429,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String subSubFolderUuid = subSubFolder.getUuid();
 
 			// 2. create a new branch
-			Branch newBranch = project.getBranchRoot().create("newbranch", user());
+			Branch newBranch = createBranch("newbranch");
 
 			// 3. migrate nodes
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
@@ -564,7 +564,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			});
 
 			// 2. create new branch and migrate nodes
-			Branch newBranch = tx(() -> project.getBranchRoot().create("newbranch", user()));
+			Branch newBranch = tx(() -> createBranch("newbranch"));
 
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 			context.setNewBranch(newBranch);

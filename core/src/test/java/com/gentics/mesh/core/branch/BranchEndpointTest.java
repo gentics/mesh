@@ -65,6 +65,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.client.GenericParametersImpl;
@@ -485,19 +486,20 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testReadByUUID() throws Exception {
 
 		List<Pair<String, String>> branchInfo = new ArrayList<>();
+		EventQueueBatch batch = EventQueueBatch.create();
 
 		try (Tx tx = tx()) {
 			Project project = project();
 			Branch initialBranch = project.getInitialBranch();
 			branchInfo.add(Pair.of(initialBranch.getUuid(), initialBranch.getName()));
 
-			Branch firstBranch = project.getBranchRoot().create("One", user());
+			Branch firstBranch = project.getBranchRoot().create("One", user(), batch);
 			branchInfo.add(Pair.of(firstBranch.getUuid(), firstBranch.getName()));
 
-			Branch secondBranch = project.getBranchRoot().create("Two", user());
+			Branch secondBranch = project.getBranchRoot().create("Two", user(), batch);
 			branchInfo.add(Pair.of(secondBranch.getUuid(), secondBranch.getName()));
 
-			Branch thirdBranch = project.getBranchRoot().create("Three", user());
+			Branch thirdBranch = project.getBranchRoot().create("Three", user(), batch);
 			branchInfo.add(Pair.of(thirdBranch.getUuid(), thirdBranch.getName()));
 
 			tx.success();
@@ -538,6 +540,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
+		EventQueueBatch batch = EventQueueBatch.create();
 		Branch initialBranch;
 		Branch firstBranch;
 		Branch thirdBranch;
@@ -546,9 +549,9 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		try (Tx tx = tx()) {
 			Project project = project();
 			initialBranch = project.getInitialBranch();
-			firstBranch = project.getBranchRoot().create("One", user());
-			secondBranch = project.getBranchRoot().create("Two", user());
-			thirdBranch = project.getBranchRoot().create("Three", user());
+			firstBranch = project.getBranchRoot().create("One", user(), batch);
+			secondBranch = project.getBranchRoot().create("Two", user(), batch);
+			thirdBranch = project.getBranchRoot().create("Three", user(), batch);
 			tx.success();
 		}
 
@@ -564,17 +567,18 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testReadMultipleWithRestrictedPermissions() throws Exception {
-		Project project = project();
+		EventQueueBatch batch = EventQueueBatch.create();
 		Branch initialBranch = tx(() -> initialBranch());
+		Project project = project();
 
 		Branch firstBranch;
 		Branch secondBranch;
 		Branch thirdBranch;
 
 		try (Tx tx = tx()) {
-			firstBranch = project.getBranchRoot().create("One", user());
-			secondBranch = project.getBranchRoot().create("Two", user());
-			thirdBranch = project.getBranchRoot().create("Three", user());
+			firstBranch = project.getBranchRoot().create("One", user(), batch);
+			secondBranch = project.getBranchRoot().create("Two", user(), batch);
+			thirdBranch = project.getBranchRoot().create("Three", user(), batch);
 			tx.success();
 		}
 		try (Tx tx = tx()) {
@@ -628,9 +632,10 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testUpdateWithNameConflict() throws Exception {
+		EventQueueBatch batch = EventQueueBatch.create();
 		String newName = "New Branch Name";
 		try (Tx tx = tx()) {
-			project().getBranchRoot().create(newName, user());
+			project().getBranchRoot().create(newName, user(), batch);
 			tx.success();
 		}
 		BranchUpdateRequest request = new BranchUpdateRequest();

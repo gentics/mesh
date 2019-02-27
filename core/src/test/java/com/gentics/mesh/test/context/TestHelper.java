@@ -93,7 +93,7 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.test.core.TestUtils;
 
-public interface TestHelperMethods {
+public interface TestHelper {
 
 	MeshTestContext getTestContext();
 
@@ -306,24 +306,6 @@ public interface TestHelperMethods {
 	 */
 	default Node content() {
 		return data().getContent("news overview");
-	}
-
-	/**
-	 * Return the latest branch of the dummy project.
-	 * 
-	 * @return
-	 */
-	default Branch latestBranch() {
-		return project().getLatestBranch();
-	}
-
-	/**
-	 * Returns the initial branch of the dummy project.
-	 * 
-	 * @return
-	 */
-	default Branch initialBranch() {
-		return project().getInitialBranch();
 	}
 
 	default UserResponse readUser(String uuid) {

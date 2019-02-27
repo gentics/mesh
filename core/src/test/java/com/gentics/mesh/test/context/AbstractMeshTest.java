@@ -81,7 +81,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMethods {
+public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelper {
 
 	static {
 		// Use slf4j instead of JUL

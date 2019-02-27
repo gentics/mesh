@@ -53,11 +53,11 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	}
 
 	@Override
-	public Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch) {
-		return create(name, creator, uuid, setLatest, baseBranch, true);
+	public Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch, EventQueueBatch batch) {
+		return create(name, creator, uuid, setLatest, baseBranch, true, batch);
 	}
 
-	private Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch, boolean assignSchemas) {
+	private Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch, boolean assignSchemas, EventQueueBatch batch) {
 		Branch branch = getGraph().addFramedVertex(BranchImpl.class);
 		if (uuid != null) {
 			branch.setUuid(uuid);
@@ -85,7 +85,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		creator.addCRUDPermissionOnRole(getProject(), UPDATE_PERM, branch);
 
 		if (assignSchemas) {
-			assignSchemas(creator, baseBranch, branch, false);
+			assignSchemas(creator, baseBranch, branch, false, batch);
 		}
 
 		return branch;
@@ -142,7 +142,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 			baseBranch = getLatestBranch();
 		}
 
-		Branch branch = create(request.getName(), requestUser, uuid, request.isLatest(), baseBranch, false);
+		Branch branch = create(request.getName(), requestUser, uuid, request.isLatest(), baseBranch, false, batch);
 		if (!isEmpty(request.getHostname())) {
 			branch.setHostname(request.getHostname());
 		}
@@ -154,7 +154,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		}
 		User creator = branch.getCreator();
 		MeshInternal.get().boot().jobRoot().enqueueBranchMigration(creator, branch);
-		assignSchemas(creator, baseBranch, branch, true);
+		assignSchemas(creator, baseBranch, branch, true, batch);
 
 		batch.add(branch.onCreated());
 
@@ -168,18 +168,19 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	 * @param creator The creator of the branch
 	 * @param baseBranch The branch which the new branch is based on
 	 * @param newBranch The newly created branch
+	 * @param batch
 	 */
-	private void assignSchemas(User creator, Branch baseBranch, Branch newBranch, boolean migrate) {
+	private void assignSchemas(User creator, Branch baseBranch, Branch newBranch, boolean migrate, EventQueueBatch batch) {
 		// Assign the same schema versions as the base branch, so that a migration can be started
 		if (baseBranch != null && migrate) {
 			for (SchemaContainerVersion schemaContainerVersion : baseBranch.findActiveSchemaVersions()) {
-				newBranch.assignSchemaVersion(creator, schemaContainerVersion);
+				newBranch.assignSchemaVersion(creator, schemaContainerVersion, batch);
 			}
 		}
 
 		// assign the newest schema versions of all project schemas to the branch
 		for (SchemaContainer schemaContainer : getProject().getSchemaContainerRoot().findAll()) {
-			newBranch.assignSchemaVersion(newBranch.getCreator(), schemaContainer.getLatestVersion());
+			newBranch.assignSchemaVersion(newBranch.getCreator(), schemaContainer.getLatestVersion(), batch);
 		}
 
 		// ... same for microschemas

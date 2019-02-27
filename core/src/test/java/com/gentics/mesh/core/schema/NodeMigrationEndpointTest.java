@@ -66,6 +66,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -299,8 +300,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			versionA = versionB.getPreviousVersion();
 
 			User user = user();
+			EventQueueBatch batch = EventQueueBatch.create();
 			assertNull("No job should be scheduled since this is the first time we assigned the schema to the branch. No need for a migration",
-				project().getLatestBranch().assignSchemaVersion(user, versionA));
+				project().getLatestBranch().assignSchemaVersion(user, versionA, batch));
 
 			// create a node based on the old schema
 			String english = english();
@@ -315,7 +317,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				user);
 			secondEnglishContainer.createString(fieldName).setString("second content");
 
-			jobUuid = project().getLatestBranch().assignSchemaVersion(user, versionB).getUuid();
+			jobUuid = project().getLatestBranch().assignSchemaVersion(user, versionB, batch).getUuid();
 			tx.success();
 		}
 
@@ -407,8 +409,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			versionA = versionB.getPreviousVersion();
 
 			User user = user();
+			EventQueueBatch batch = EventQueueBatch.create();
 			assertNull("No job should be scheduled since this is the first time we assigned the schema to the branch. No need for a migration",
-				project().getLatestBranch().assignSchemaVersion(user, versionA));
+				project().getLatestBranch().assignSchemaVersion(user, versionA, batch));
 
 			// create a node based on the old schema
 			String english = english();
@@ -419,7 +422,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			firstEnglishContainer.createString(fieldName).setString("first content");
 
 			// do the schema migration twice
-			jobAUuid = project().getLatestBranch().assignSchemaVersion(user, versionB).getUuid();
+			jobAUuid = project().getLatestBranch().assignSchemaVersion(user, versionB, batch).getUuid();
 			tx.success();
 		}
 		Thread.sleep(1000);
@@ -453,7 +456,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
 
-			project().getLatestBranch().assignSchemaVersion(user(), versionA);
+			EventQueueBatch batch = EventQueueBatch.create();
+			project().getLatestBranch().assignSchemaVersion(user(), versionA, batch);
 
 			// create a node and publish
 			node = folder("2015").create(user(), versionA, project());
@@ -463,7 +467,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(mockRoutingContext());
 			node.publish(ac, createBulkContext(), "en");
 
-			project().getLatestBranch().assignSchemaVersion(user(), versionB);
+			project().getLatestBranch().assignSchemaVersion(user(), versionB, batch);
 			tx.success();
 		}
 
@@ -1097,7 +1101,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		SchemaContainer container = Tx.getActive().getGraph().addFramedVertex(SchemaContainerImpl.class);
 		container.setName(UUID.randomUUID().toString());
 		container.setCreated(user());
-		boot().schemaContainerRoot().addSchemaContainer(user(), container);
+		EventQueueBatch batch = EventQueueBatch.create();
+		boot().schemaContainerRoot().addSchemaContainer(user(), container, batch);
 
 		// create version 1 of the schema
 		SchemaContainerVersion versionA = Tx.getActive().getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
@@ -1144,7 +1149,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// Link everything together
 		container.setLatestVersion(versionB);
 		versionA.setNextVersion(versionB);
-		boot().schemaContainerRoot().addSchemaContainer(user(), container);
+		boot().schemaContainerRoot().addSchemaContainer(user(), container, batch);
 		return container;
 
 	}

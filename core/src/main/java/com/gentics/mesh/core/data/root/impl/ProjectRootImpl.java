@@ -71,7 +71,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 	@Override
 	public Project create(String name, String hostname, Boolean ssl, String pathPrefix, User creator, SchemaContainerVersion schemaContainerVersion,
-		String uuid) {
+		String uuid, EventQueueBatch batch) {
 		Project project = getGraph().addFramedVertex(ProjectImpl.class);
 		if (uuid != null) {
 			project.setUuid(uuid);
@@ -81,7 +81,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 		// Create the initial branch for the project and add the used schema
 		// version to it
-		Branch branch = project.getBranchRoot().create(name, creator);
+		Branch branch = project.getBranchRoot().create(name, creator, batch);
 		branch.setMigrated(true);
 		if (hostname != null) {
 			branch.setHostname(hostname);
@@ -94,7 +94,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		} else {
 			branch.setPathPrefix("");
 		}
-		branch.assignSchemaVersion(creator, schemaContainerVersion);
+		branch.assignSchemaVersion(creator, schemaContainerVersion, batch);
 
 		// Assign the provided schema container to the project
 		project.getSchemaContainerRoot().addItem(schemaContainerVersion.getSchemaContainer());
@@ -195,7 +195,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		String hostname = requestModel.getHostname();
 		Boolean ssl = requestModel.getSsl();
 		String pathPrefix = requestModel.getPathPrefix();
-		Project project = create(projectName, hostname, ssl, pathPrefix, creator, schemaContainerVersion, uuid);
+		Project project = create(projectName, hostname, ssl, pathPrefix, creator, schemaContainerVersion, uuid, batch);
 		Branch initialBranch = project.getInitialBranch();
 		String branchUuid = initialBranch.getUuid();
 

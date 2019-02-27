@@ -35,7 +35,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 	public void testReadNodesForTag() {
 		try (Tx tx = tx()) {
 			NodeListResponse nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
-					new VersioningParametersImpl().draft()));
+				new VersioningParametersImpl().draft()));
 			NodeResponse concorde = new NodeResponse();
 			concorde.setUuid(content("concorde").getUuid());
 			assertThat(nodeList.getData()).as("Tagged nodes").isNotNull().usingElementComparatorOnFields("uuid").containsOnly(concorde);
@@ -48,7 +48,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 			NodeListResponse nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
-					new VersioningParametersImpl().published()));
+				new VersioningParametersImpl().published()));
 			assertThat(nodeList.getData()).as("Published tagged nodes").isNotNull().isEmpty();
 
 			// publish the node and its parent
@@ -66,31 +66,27 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodesForTagInBranch() {
-		Branch newBranch;
 		NodeResponse concorde = new NodeResponse();
 		concorde.setUuid(db().tx(() -> content("concorde").getUuid()));
 
 		// Create new branch
-		try (Tx tx = tx()) {
-			newBranch = project().getBranchRoot().create("newbranch", user());
-			tx.success();
-		}
+		Branch newBranch = tx(() -> createBranch("newbranch"));
 
 		try (Tx tx = tx()) {
 			Branch initialBranch = initialBranch();
 			// Get for latest branch (must be empty)
 			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
-					new VersioningParametersImpl().draft())).getData()).as("Nodes tagged in latest branch").isNotNull().isEmpty();
+				new VersioningParametersImpl().draft())).getData()).as("Nodes tagged in latest branch").isNotNull().isEmpty();
 
 			// Get for new branch (must be empty)
 			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
-					new VersioningParametersImpl().draft().setBranch(newBranch.getUuid()))).getData()).as("Nodes tagged in new branch").isNotNull()
-							.isEmpty();
+				new VersioningParametersImpl().draft().setBranch(newBranch.getUuid()))).getData()).as("Nodes tagged in new branch").isNotNull()
+					.isEmpty();
 
 			// Get for initial branch
 			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
-					new VersioningParametersImpl().draft().setBranch(initialBranch.getUuid()))).getData()).as("Nodes tagged in initial branch")
-							.isNotNull().usingElementComparatorOnFields("uuid").containsOnly(concorde);
+				new VersioningParametersImpl().draft().setBranch(initialBranch.getUuid()))).getData()).as("Nodes tagged in initial branch")
+					.isNotNull().usingElementComparatorOnFields("uuid").containsOnly(concorde);
 		}
 	}
 

@@ -143,7 +143,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 						}
 
 						// Assign the new version to the branch
-						branch.assignSchemaVersion(user, createdVersion);
+						branch.assignSchemaVersion(user, createdVersion, batch);
 					}
 				}
 				return createdVersion.getVersion();
@@ -212,7 +212,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 			// Assign the schema to the project
 			utils.eventAction(batch -> {
-				root.addSchemaContainer(ac.getUser(), schema);
+				root.addSchemaContainer(ac.getUser(), schema, batch);
 				batch.add(schema.onUpdated());
 			});
 			return schema.transformToRestSync(ac, 0);
@@ -245,7 +245,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			}
 
 			utils.eventAction(batch -> {
-				project.getSchemaContainerRoot().removeSchemaContainer(schema);
+				project.getSchemaContainerRoot().removeSchemaContainer(schema, batch);
 				batch.add(schema.onUpdated());
 			});
 

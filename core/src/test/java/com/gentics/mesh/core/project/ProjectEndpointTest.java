@@ -70,7 +70,6 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -332,12 +331,11 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}
 		try (Tx tx = tx()) {
 			for (int i = 0; i < nProjects; i++) {
-				Project extraProject = meshRoot().getProjectRoot().create("extra_project_" + i, null, null, null, user(), schemaContainer("folder")
-					.getLatestVersion());
+				Project extraProject = createProject("extra_project_" + i, "folder");
 				extraProject.setBaseNode(project().getBaseNode());
 				role().grantPermissions(extraProject, READ_PERM);
 			}
-			meshRoot().getProjectRoot().create(noPermProjectName, null, null, null, user(), schemaContainer("folder").getLatestVersion());
+			createProject(noPermProjectName, "folder");
 
 			// Don't grant permissions to no perm project
 			tx.success();
@@ -477,11 +475,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testUpdateWithBogusNames() {
 		String uuid = projectUuid();
 
-		try (Tx tx = tx()) {
-			MeshInternal.get().boot().meshRoot().getProjectRoot().create("Test234", null, null, null, user(),
-				schemaContainer("folder").getLatestVersion());
-			tx.success();
-		}
+		tx(() -> createProject("Test234", "folder"));
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("Test234");
 		call(() -> client().updateProject(uuid, request), CONFLICT, "project_conflicting_name");

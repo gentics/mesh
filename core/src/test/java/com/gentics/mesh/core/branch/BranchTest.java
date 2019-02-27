@@ -65,12 +65,13 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testFindAllVisible() throws Exception {
 		try (Tx tx = tx()) {
+			EventQueueBatch batch = EventQueueBatch.create();
 			Project project = project();
 			BranchRoot branchRoot = project.getBranchRoot();
 			Branch initialBranch = branchRoot.getInitialBranch();
-			Branch branchOne = branchRoot.create("One", user());
-			Branch branchTwo = branchRoot.create("Two", user());
-			Branch branchThree = branchRoot.create("Three", user());
+			Branch branchOne = branchRoot.create("One", user(), batch);
+			Branch branchTwo = branchRoot.create("Two", user(), batch);
+			Branch branchThree = branchRoot.create("Three", user(), batch);
 
 			Page<? extends Branch> page = branchRoot.findAll(mockActionContext(), new PagingParametersImpl(1, 25L));
 			assertThat(page).isNotNull();
@@ -85,14 +86,14 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testFindAll() throws Exception {
 		try (Tx tx = tx()) {
 			Project project = project();
-			BranchRoot branchRoot = project.getBranchRoot();
-			Branch initialBranch = branchRoot.getInitialBranch();
-			Branch branchOne = branchRoot.create("One", user());
-			Branch branchTwo = branchRoot.create("Two", user());
-			Branch branchThree = branchRoot.create("Three", user());
+			Branch initialBranch = initialBranch();
+			Branch branchOne = createBranch("One");
+			Branch branchTwo = createBranch("Two");
+			Branch branchThree = createBranch("Three");
 
+			BranchRoot branchRoot = project.getBranchRoot();
 			assertThat(new ArrayList<Branch>(branchRoot.findAll().list())).usingElementComparatorOnFields("uuid").containsExactly(initialBranch,
-					branchOne, branchTwo, branchThree);
+				branchOne, branchTwo, branchThree);
 		}
 	}
 
@@ -105,7 +106,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			assertThat(branchRoot).as("Branch Root of Project").isNotNull();
 			Branch initialBranch = project.getInitialBranch();
 			assertThat(initialBranch).as("Initial Branch of Project").isNotNull().isActive().isNamed(project.getName()).hasUuid().hasNext(null)
-					.hasPrevious(null);
+				.hasPrevious(null);
 			Branch latestBranch = project.getLatestBranch();
 			assertThat(latestBranch).as("Latest Branch of Project").matches(initialBranch);
 		}
@@ -144,21 +145,21 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testCreate() throws Exception {
 		try (Tx tx = tx()) {
-			Project project = project();
-			BranchRoot branchRoot = project.getBranchRoot();
-			Branch initialBranch = branchRoot.getInitialBranch();
-			Branch firstNewBranch = branchRoot.create("First new Branch", user());
-			Branch secondNewBranch = branchRoot.create("Second new Branch", user());
-			Branch thirdNewBranch = branchRoot.create("Third new Branch", user());
+			Branch initialBranch = initialBranch();
+			Branch firstNewBranch = createBranch("First new Branch");
+			Branch secondNewBranch = createBranch("Second new Branch");
+			Branch thirdNewBranch = createBranch("Third new Branch");
 
+			Project project = project();
 			assertThat(project.getInitialBranch()).as("Initial Branch").matches(initialBranch).hasNext(firstNewBranch).hasPrevious(null);
 			assertThat(firstNewBranch).as("First new Branch").isNamed("First new Branch").hasNext(secondNewBranch).hasPrevious(initialBranch);
 			assertThat(secondNewBranch).as("Second new Branch").isNamed("Second new Branch").hasNext(thirdNewBranch).hasPrevious(firstNewBranch);
 			assertThat(project.getLatestBranch()).as("Latest Branch").isNamed("Third new Branch").matches(thirdNewBranch).hasNext(null)
-					.hasPrevious(secondNewBranch);
+				.hasPrevious(secondNewBranch);
 
+			BranchRoot branchRoot = project.getBranchRoot();
 			assertThat(new ArrayList<Branch>(branchRoot.findAll().list())).usingElementComparatorOnFields("uuid").containsExactly(initialBranch,
-					firstNewBranch, secondNewBranch, thirdNewBranch);
+				firstNewBranch, secondNewBranch, thirdNewBranch);
 
 			for (SchemaContainer schema : project.getSchemaContainerRoot().findAll()) {
 				for (Branch branch : Arrays.asList(initialBranch, firstNewBranch, secondNewBranch, thirdNewBranch)) {
@@ -190,7 +191,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testReadPermission() throws Exception {
 		try (Tx tx = tx()) {
-			Branch newBranch = project().getBranchRoot().create("New Branch", user());
+			Branch newBranch = createBranch("New Branch");
 			testPermission(GraphPermission.READ_PERM, newBranch);
 		}
 	}
@@ -199,7 +200,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testDeletePermission() throws Exception {
 		try (Tx tx = tx()) {
-			Branch newBranch = project().getBranchRoot().create("New Branch", user());
+			Branch newBranch = createBranch("New Branch");
 			testPermission(GraphPermission.DELETE_PERM, newBranch);
 		}
 	}
@@ -208,7 +209,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testUpdatePermission() throws Exception {
 		try (Tx tx = tx()) {
-			Branch newBranch = project().getBranchRoot().create("New Branch", user());
+			Branch newBranch = createBranch("New Branch");
 			testPermission(GraphPermission.UPDATE_PERM, newBranch);
 		}
 	}
@@ -217,7 +218,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testCreatePermission() throws Exception {
 		try (Tx tx = tx()) {
-			Branch newBranch = project().getBranchRoot().create("New Branch", user());
+			Branch newBranch = createBranch("New Branch");
 			testPermission(GraphPermission.CREATE_PERM, newBranch);
 		}
 	}
@@ -252,7 +253,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			Project project = project();
 			Branch branch = latestBranch();
 			List<SchemaContainerVersion> versions = project.getSchemaContainerRoot().findAll().stream().filter(v -> !v.getName().equals("content"))
-					.map(SchemaContainer::getLatestVersion).collect(Collectors.toList());
+				.map(SchemaContainer::getLatestVersion).collect(Collectors.toList());
 
 			SchemaContainerVersionImpl newVersion = tx.getGraph().addFramedVertexExplicit(SchemaContainerVersionImpl.class);
 			newVersion.setVersion("4.0");
@@ -266,7 +267,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 				found.add(versionedge.getSchemaContainerVersion());
 			}
 			assertThat(found).as("List of schema versions").usingElementComparatorOnFields("uuid", "name", "version")
-					.containsOnlyElementsOf(versions);
+				.containsOnlyElementsOf(versions);
 		}
 	}
 
@@ -288,19 +289,20 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 
 			Project project = project();
 			Branch initialBranch = project.getInitialBranch();
-			Branch newBranch = project.getBranchRoot().create("New Branch", user());
+			Branch newBranch = createBranch("New Branch");
 
 			for (Branch branch : Arrays.asList(initialBranch, newBranch)) {
 				assertThat(branch).as(branch.getName()).hasNotSchema(schemaContainer).hasNotSchemaVersion(latestVersion)
-						.hasNotSchemaVersion(previousVersion);
+					.hasNotSchemaVersion(previousVersion);
 			}
 
 			// assign the schema to the project
-			project.getSchemaContainerRoot().addSchemaContainer(user(), schemaContainer);
+			EventQueueBatch batch = EventQueueBatch.create();
+			project.getSchemaContainerRoot().addSchemaContainer(user(), schemaContainer, batch);
 
 			for (Branch branch : Arrays.asList(initialBranch, newBranch)) {
 				assertThat(branch).as(branch.getName()).hasSchema(schemaContainer).hasSchemaVersion(latestVersion)
-						.hasNotSchemaVersion(previousVersion);
+					.hasNotSchemaVersion(previousVersion);
 			}
 		}
 	}
@@ -317,10 +319,11 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			List<? extends SchemaContainer> schemas = project.getSchemaContainerRoot().findAll().list();
 			SchemaContainer schemaContainer = schemas.get(0);
 
-			Branch initialBranch = project.getInitialBranch();
-			Branch newBranch = project.getBranchRoot().create("New Branch", user());
+			Branch initialBranch = initialBranch();
+			Branch newBranch = createBranch("New Branch");
 
-			project.getSchemaContainerRoot().removeSchemaContainer(schemaContainer);
+			EventQueueBatch batch = EventQueueBatch.create();
+			project.getSchemaContainerRoot().removeSchemaContainer(schemaContainer, batch);
 			for (Branch branch : Arrays.asList(initialBranch, newBranch)) {
 				assertThat(branch).as(branch.getName()).hasNotSchema(schemaContainer).hasNotSchemaVersion(schemaContainer.getLatestVersion());
 			}
@@ -334,7 +337,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			Project project = project();
 			Branch branch = latestBranch();
 			List<SchemaContainerVersion> versions = project.getSchemaContainerRoot().findAll().stream().map(SchemaContainer::getLatestVersion)
-					.collect(Collectors.toList());
+				.collect(Collectors.toList());
 
 			List<SchemaContainerVersion> activeVersions = TestUtils.toList(branch.findActiveSchemaVersions());
 			assertThat(activeVersions).as("List of schema versions").usingElementComparatorOnFields("uuid", "name", "version").containsAll(versions);
@@ -350,19 +353,20 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			SchemaContainerVersion firstVersion = schemaContainer.getLatestVersion();
 
 			// assign the schema to the project
-			project.getSchemaContainerRoot().addSchemaContainer(user(), schemaContainer);
+			EventQueueBatch batch = EventQueueBatch.create();
+			project.getSchemaContainerRoot().addSchemaContainer(user(), schemaContainer, batch);
 
 			// update schema
 			updateSchema(schemaContainer, "newfield");
 			SchemaContainerVersion secondVersion = schemaContainer.getLatestVersion();
 
-			Branch initialBranch = project.getInitialBranch();
-			Branch newBranch = project.getBranchRoot().create("New Branch", user());
+			Branch initialBranch = initialBranch();
+			Branch newBranch = createBranch("New Branch");
 
 			assertThat(initialBranch).as(initialBranch.getName()).hasSchema(schemaContainer).hasSchemaVersion(firstVersion)
-					.hasNotSchemaVersion(secondVersion);
+				.hasNotSchemaVersion(secondVersion);
 			assertThat(newBranch).as(newBranch.getName()).hasSchema(schemaContainer).hasNotSchemaVersion(firstVersion)
-					.hasSchemaVersion(secondVersion);
+				.hasSchemaVersion(secondVersion);
 		}
 	}
 
@@ -371,7 +375,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 		try (Tx tx = tx()) {
 			Project project = project();
 			List<MicroschemaContainerVersion> versions = project.getMicroschemaContainerRoot().findAll().stream()
-					.map(MicroschemaContainer::getLatestVersion).collect(Collectors.toList());
+				.map(MicroschemaContainer::getLatestVersion).collect(Collectors.toList());
 
 			List<MicroschemaContainerVersion> found = new ArrayList<>();
 			for (MicroschemaContainerVersion version : project.getInitialBranch().findAllMicroschemaVersions()) {
@@ -398,12 +402,12 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			assertThat(previousVersion).as("Previous version").isNotNull();
 
 			Project project = project();
-			Branch initialBranch = project.getInitialBranch();
-			Branch newBranch = project.getBranchRoot().create("New Branch", user());
+			Branch initialBranch = initialBranch();
+			Branch newBranch = createBranch("New Branch");
 
 			for (Branch branch : Arrays.asList(initialBranch, newBranch)) {
 				assertThat(branch).as(branch.getName()).hasNotMicroschema(microschemaContainer).hasNotMicroschemaVersion(latestVersion)
-						.hasNotMicroschemaVersion(previousVersion);
+					.hasNotMicroschemaVersion(previousVersion);
 			}
 
 			// assign the schema to the project
@@ -411,7 +415,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 
 			for (Branch branch : Arrays.asList(initialBranch, newBranch)) {
 				assertThat(branch).as(branch.getName()).hasMicroschema(microschemaContainer).hasMicroschemaVersion(latestVersion)
-						.hasNotMicroschemaVersion(previousVersion);
+					.hasNotMicroschemaVersion(previousVersion);
 			}
 		}
 	}
@@ -428,14 +432,14 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			List<? extends MicroschemaContainer> microschemas = project.getMicroschemaContainerRoot().findAll().list();
 			MicroschemaContainer microschemaContainer = microschemas.get(0);
 
-			Branch initialBranch = project.getInitialBranch();
-			Branch newBranch = project.getBranchRoot().create("New Branch", user());
+			Branch initialBranch = initialBranch();
+			Branch newBranch = createBranch("New Branch");
 
 			project.getMicroschemaContainerRoot().removeMicroschema(microschemaContainer);
 
 			for (Branch branch : Arrays.asList(initialBranch, newBranch)) {
 				assertThat(branch).as(branch.getName()).hasNotMicroschema(microschemaContainer)
-						.hasNotMicroschemaVersion(microschemaContainer.getLatestVersion());
+					.hasNotMicroschemaVersion(microschemaContainer.getLatestVersion());
 			}
 		}
 	}
@@ -455,13 +459,13 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			updateMicroschema(microschemaContainer, "newfield");
 			MicroschemaContainerVersion secondVersion = microschemaContainer.getLatestVersion();
 
-			Branch initialBranch = project.getInitialBranch();
-			Branch newBranch = project.getBranchRoot().create("New Branch", user());
+			Branch initialBranch = initialBranch();
+			Branch newBranch = createBranch("New Branch");
 
 			assertThat(initialBranch).as(initialBranch.getName()).hasMicroschema(microschemaContainer).hasMicroschemaVersion(firstVersion)
-					.hasNotMicroschemaVersion(secondVersion);
+				.hasNotMicroschemaVersion(secondVersion);
 			assertThat(newBranch).as(newBranch.getName()).hasMicroschema(microschemaContainer).hasNotMicroschemaVersion(firstVersion)
-					.hasMicroschemaVersion(secondVersion);
+				.hasMicroschemaVersion(secondVersion);
 		}
 	}
 

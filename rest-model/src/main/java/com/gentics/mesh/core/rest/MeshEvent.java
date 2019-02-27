@@ -41,6 +41,11 @@ public enum MeshEvent {
 	SCHEMA_MIGRATION_FINISHED("mesh.schema.migration.finished", SchemaMigrationMeshEventModel.class),
 
 	/**
+	 * Event which is send once the schema gets assigned to a branch.
+	 */
+	SCHEMA_BRANCH_ASSIGN("mesh.schema-branch.assign", null),
+
+	/**
 	 * Microschema migration start event.
 	 */
 	MICROSCHEMA_MIGRATION_START("mesh.microschema.migration.start", MicroschemaMigrationMeshEventModel.class),

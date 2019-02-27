@@ -62,12 +62,12 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public void addSchemaContainer(User user, SchemaContainer schema) {
+	public void addSchemaContainer(User user, SchemaContainer schema, EventQueueBatch batch) {
 		addItem(schema);
 	}
 
 	@Override
-	public void removeSchemaContainer(SchemaContainer schemaContainer) {
+	public void removeSchemaContainer(SchemaContainer schemaContainer, EventQueueBatch batch) {
 		removeItem(schemaContainer);
 	}
 
@@ -100,7 +100,8 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		container.setCreated(creator);
 		container.setName(schema.getName());
 
-		addSchemaContainer(creator, container);
+		EventQueueBatch batch = EventQueueBatch.create();
+		addSchemaContainer(creator, container, batch);
 		return container;
 	}
 

@@ -50,6 +50,7 @@ import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
@@ -144,7 +145,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		versionA.setNextVersion(versionB);
 
 		// create a node based on the old schema
-		project().getLatestBranch().assignSchemaVersion(user(), versionA);
+		EventQueueBatch batch = EventQueueBatch.create();
+		project().getLatestBranch().assignSchemaVersion(user(), versionA, batch);
 		User user = user();
 		String english = english();
 		Node parentNode = folder("2015");
@@ -154,7 +156,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		dataProvider.set(englishContainer, removedFieldName);
 
 		// migrate the node
-		project().getLatestBranch().assignSchemaVersion(user(), versionB);
+		project().getLatestBranch().assignSchemaVersion(user(), versionB, batch);
 		Tx.getActive().getGraph().commit();
 
 		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
@@ -320,7 +322,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create a node based on the old schema
 		User user = user();
-		project().getLatestBranch().assignSchemaVersion(user, versionA);
+		EventQueueBatch batch = EventQueueBatch.create();
+		project().getLatestBranch().assignSchemaVersion(user, versionA, batch);
 		String english = english();
 		Node parentNode = folder("2015");
 		Node node = parentNode.create(user, versionA, project());
@@ -328,7 +331,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		dataProvider.set(englishContainer, oldFieldName);
 
 		// migrate the node
-		project().getLatestBranch().assignSchemaVersion(user, versionB);
+		project().getLatestBranch().assignSchemaVersion(user, versionB, batch);
 		Tx.getActive().getGraph().commit();
 
 		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
@@ -502,7 +505,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		versionA.setNextVersion(versionB);
 
 		// create a node based on the old schema
-		project().getLatestBranch().assignSchemaVersion(user(), versionA);
+		EventQueueBatch batch = EventQueueBatch.create();
+		project().getLatestBranch().assignSchemaVersion(user(), versionA, batch);
 		User user = user();
 		String english = english();
 		Node parentNode = folder("2015");
@@ -514,7 +518,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		assertThat(oldFieldFetcher.fetch(englishContainer, fieldName)).as(OLDFIELD).isNotNull();
 
 		// migrate the node
-		project().getLatestBranch().assignSchemaVersion(user(), versionB);
+		project().getLatestBranch().assignSchemaVersion(user(), versionB, batch);
 		Tx.getActive().getGraph().commit();
 
 		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
@@ -699,7 +703,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		versionA.setNextVersion(versionB);
 
 		// create a node based on the old schema
-		project().getLatestBranch().assignSchemaVersion(user(), versionA);
+		EventQueueBatch batch = EventQueueBatch.create();
+		project().getLatestBranch().assignSchemaVersion(user(), versionA, batch);
 		User user = user();
 		String english = english();
 		Node parentNode = folder("2015");
@@ -708,7 +713,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		dataProvider.set(englishContainer, fieldName);
 
 		// migrate the node
-		project().getLatestBranch().assignSchemaVersion(user(), versionB);
+		project().getLatestBranch().assignSchemaVersion(user(), versionB, batch);
 		Tx.getActive().getGraph().commit();
 		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 		context.setProject(project());
@@ -871,7 +876,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create a node based on the old schema
 		User user = user();
-		project().getLatestBranch().assignSchemaVersion(user, versionA);
+		EventQueueBatch batch = EventQueueBatch.create();
+		project().getLatestBranch().assignSchemaVersion(user, versionA, batch);
 		String english = english();
 		Node parentNode = folder("2015");
 		Node node = parentNode.create(user, versionA, project());
@@ -879,7 +885,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		dataProvider.set(englishContainer, fieldName);
 
 		// migrate the node
-		project().getLatestBranch().assignSchemaVersion(user, versionB);
+		project().getLatestBranch().assignSchemaVersion(user, versionB, batch);
 		Tx.getActive().getGraph().commit();
 		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 		context.setProject(project());

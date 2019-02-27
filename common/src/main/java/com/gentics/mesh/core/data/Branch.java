@@ -188,9 +188,10 @@ public interface Branch
 	 * 
 	 * @param user
 	 * @param schemaContainerVersion
+	 * @param batch
 	 * @return Job which was created to trigger the migration or null if no job was created because the version has already been assigned before
 	 */
-	Job assignSchemaVersion(User user, SchemaContainerVersion schemaContainerVersion);
+	Job assignSchemaVersion(User user, SchemaContainerVersion schemaContainerVersion, EventQueueBatch batch);
 
 	/**
 	 * Unassign all schema versions of the given schema from this branch.

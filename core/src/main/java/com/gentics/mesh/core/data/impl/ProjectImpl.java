@@ -209,7 +209,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 		// Unassign the schema from the container
 		for (SchemaContainer container : getSchemaContainerRoot().findAll()) {
-			getSchemaContainerRoot().removeSchemaContainer(container);
+			getSchemaContainerRoot().removeSchemaContainer(container, bac.batch());
 		}
 
 		// Remove the project schema root from the index

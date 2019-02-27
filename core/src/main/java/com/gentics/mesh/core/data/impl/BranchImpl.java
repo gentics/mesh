@@ -363,7 +363,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public Job assignSchemaVersion(User user, SchemaContainerVersion schemaContainerVersion) {
+	public Job assignSchemaVersion(User user, SchemaContainerVersion schemaContainerVersion, EventQueueBatch batch) {
 		BranchSchemaEdge edge = findBranchSchemaEdge(schemaContainerVersion);
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {

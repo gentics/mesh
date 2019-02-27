@@ -7,6 +7,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.event.EventQueueBatch;
 
 /**
  * A schema container root is an aggregation vertex which is used to aggregate schema container vertices.
@@ -49,15 +50,17 @@ public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 	 * @param user
 	 *            User for the creator value of the jobs which will be created
 	 * @param schemaContainer
+	 * @param batch
 	 */
-	void addSchemaContainer(User user, SchemaContainer schemaContainer);
+	void addSchemaContainer(User user, SchemaContainer schemaContainer, EventQueueBatch batch);
 
 	/**
 	 * Remove the schema container from the aggregation node.
 	 * 
 	 * @param schemaContainer
+	 * @param batch
 	 */
-	void removeSchemaContainer(SchemaContainer schemaContainer);
+	void removeSchemaContainer(SchemaContainer schemaContainer, EventQueueBatch batch);
 
 	/**
 	 * Check whether the given schema is assigned to this root node.

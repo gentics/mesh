@@ -59,7 +59,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testCreate() {
 		try (Tx tx = tx()) {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
-			Project project = projectRoot.create("test", null, null, null, user(), schemaContainer("folder").getLatestVersion());
+			Project project = createProject("test", "folder");
 			Project project2 = projectRoot.findByName(project.getName());
 			assertNotNull(project2);
 			assertEquals("test", project2.getName());
@@ -114,7 +114,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 		try (Tx tx = tx()) {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			long nProjectsBefore = projectRoot.findAll().count();
-			assertNotNull(projectRoot.create("test1234556", null, null, null, user(), schemaContainer("folder").getLatestVersion()));
+			assertNotNull(createProject("test1234556", "folder"));
 			long nProjectsAfter = projectRoot.findAll().count();
 			assertEquals(nProjectsBefore + 1, nProjectsAfter);
 		}
@@ -151,7 +151,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testFindByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			Project project = meshRoot().getProjectRoot().findByUuid(project().getUuid());
+			Project project = meshRoot().getProjectRoot().findByUuid(projectUuid());
 			assertNotNull(project);
 			project = meshRoot().getProjectRoot().findByUuid("bogus");
 			assertNull(project);
@@ -176,7 +176,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testCreateDelete() throws Exception {
 		try (Tx tx = tx()) {
-			Project project = meshRoot().getProjectRoot().create("newProject", null, null, null, user(), schemaContainer("folder").getLatestVersion());
+			Project project = createProject("newProject", "folder");
 			assertNotNull(project);
 			String uuid = project.getUuid();
 			BulkActionContext bac = createBulkContext();
@@ -198,13 +198,13 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 			// 1. Give the user create on the project root
 			role().grantPermissions(meshRoot().getProjectRoot(), CREATE_PERM);
 			// 2. Create the project
-			Project project = root.getProjectRoot().create("TestProject", null, null, null, user(), schemaContainer("folder").getLatestVersion());
+			Project project = createProject("TestProject", "folder");
 			assertFalse("The user should not have create permissions on the project.", user().hasPermission(project, CREATE_PERM));
 			user().addCRUDPermissionOnRole(root.getProjectRoot(), CREATE_PERM, project);
 			// 3. Assert that the crud permissions (eg. CREATE) was inherited
 			ac.data().clear();
 			assertTrue("The users role should have inherited the initial permission on the project root.",
-					user().hasPermission(project, CREATE_PERM));
+				user().hasPermission(project, CREATE_PERM));
 		}
 	}
 
@@ -237,8 +237,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testReadPermission() {
 		try (Tx tx = tx()) {
-			Project newProject;
-			newProject = meshRoot().getProjectRoot().create("newProject", null, null, null, user(), schemaContainer("folder").getLatestVersion());
+			Project newProject = createProject("newProject", "folder");
 			testPermission(GraphPermission.READ_PERM, newProject);
 		}
 	}
@@ -247,8 +246,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testDeletePermission() {
 		try (Tx tx = tx()) {
-			Project newProject;
-			newProject = meshRoot().getProjectRoot().create("newProject", null, null, null, user(), schemaContainer("folder").getLatestVersion());
+			Project newProject = createProject("newProject", "folder");
 			testPermission(GraphPermission.DELETE_PERM, newProject);
 		}
 	}
@@ -257,7 +255,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testUpdatePermission() {
 		try (Tx tx = tx()) {
-			Project newProject = meshRoot().getProjectRoot().create("newProject", null, null, null, user(), schemaContainer("folder").getLatestVersion());
+			Project newProject = createProject("newProject", "folder");
 			testPermission(GraphPermission.UPDATE_PERM, newProject);
 		}
 	}
@@ -266,7 +264,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testCreatePermission() {
 		try (Tx tx = tx()) {
-			Project newProject = meshRoot().getProjectRoot().create("newProject", null, null, null, user(), schemaContainer("folder").getLatestVersion());
+			Project newProject = createProject("newProject", "folder");
 			testPermission(GraphPermission.CREATE_PERM, newProject);
 		}
 	}

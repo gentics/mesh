@@ -204,8 +204,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 			firstChild = node.getChildren().iterator().next();
 			childrenSize = size(node.getChildren());
 			expectedItemsInPage = childrenSize > 25 ? 25 : childrenSize;
-
-			newBranch = project().getBranchRoot().create("newbranch", user());
+			newBranch = createBranch("newbranch");
 			tx.success();
 		}
 

@@ -123,7 +123,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 						throw error(BAD_REQUEST, "branch_error_downgrade_schema_version", version.getName(), assignedVersion.getVersion(),
 							version.getVersion());
 					}
-					branch.assignSchemaVersion(ac.getUser(), version);
+					branch.assignSchemaVersion(ac.getUser(), version, batch);
 				}
 
 				return Tuple.tuple(getSchemaVersionsInfo(branch), batch);
