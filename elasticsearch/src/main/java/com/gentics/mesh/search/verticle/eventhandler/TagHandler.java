@@ -40,27 +40,29 @@ public class TagHandler implements EventHandler {
 
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
-		MeshEvent event = messageEvent.event;
-		MeshProjectElementEventModel model = requireType(MeshProjectElementEventModel.class, messageEvent.message);
-		String projectUuid = model.getProject().getUuid();
+		return Flowable.defer(() -> {
+			MeshEvent event = messageEvent.event;
+			MeshProjectElementEventModel model = requireType(MeshProjectElementEventModel.class, messageEvent.message);
+			String projectUuid = model.getProject().getUuid();
 
-		if (event == TAG_CREATED || event == TAG_UPDATED) {
-			return helper.getDb().tx(() -> {
-				// We also need to update the tag family
-				Optional<Tag> tag = entities.tag.getElement(model);
-				Optional<TagFamily> tagFamily = tag.map(Tag::getTagFamily);
+			if (event == TAG_CREATED || event == TAG_UPDATED) {
+				return helper.getDb().tx(() -> {
+					// We also need to update the tag family
+					Optional<Tag> tag = entities.tag.getElement(model);
+					Optional<TagFamily> tagFamily = tag.map(Tag::getTagFamily);
 
-				return Stream.concat(
-					toStream(tag).map(t -> entities.createRequest(t, projectUuid)),
-					toStream(tagFamily).map(tf -> entities.createRequest(tf, projectUuid))
-				).collect(Util.toFlowable());
-			});
-		} else if (event == TAG_DELETED) {
-			// TODO Update related elements.
-			// At the moment we cannot look up related elements, because the element was already deleted.
-			return Flowable.just(helper.deleteDocumentRequest(Tag.composeIndexName(projectUuid), model.getUuid()));
-		} else {
-			throw new RuntimeException("Unexpected event " + event.address);
-		}
+					return Stream.concat(
+						toStream(tag).map(t -> entities.createRequest(t, projectUuid)),
+						toStream(tagFamily).map(tf -> entities.createRequest(tf, projectUuid))
+					).collect(Util.toFlowable());
+				});
+			} else if (event == TAG_DELETED) {
+				// TODO Update related elements.
+				// At the moment we cannot look up related elements, because the element was already deleted.
+				return Flowable.just(helper.deleteDocumentRequest(Tag.composeIndexName(projectUuid), model.getUuid()));
+			} else {
+				throw new RuntimeException("Unexpected event " + event.address);
+			}
+		});
 	}
 }

@@ -50,22 +50,23 @@ public class NodeHandler implements EventHandler {
 
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
-		MeshEvent event = messageEvent.event;
-		NodeMeshEventModel message = requireType(NodeMeshEventModel.class, messageEvent.message);
+		return Flowable.defer(() -> {
+			MeshEvent event = messageEvent.event;
+			NodeMeshEventModel message = requireType(NodeMeshEventModel.class, messageEvent.message);
 
-
-		if (event == NODE_CREATED || event == NODE_UPDATED) {
-			EventCauseInfo cause = message.getCause();
-			if (cause != null && cause.getAction() == SCHEMA_MIGRATION) {
-				return migrationUpdate(message);
+			if (event == NODE_CREATED || event == NODE_UPDATED) {
+				EventCauseInfo cause = message.getCause();
+				if (cause != null && cause.getAction() == SCHEMA_MIGRATION) {
+					return migrationUpdate(message);
+				} else {
+					return toFlowable(upsertNodes(message));
+				}
+			} else if (event == NODE_DELETED) {
+				return Flowable.just(deleteNodes(message, getSchemaVersionUuid(message)));
 			} else {
-				return toFlowable(upsertNodes(message));
+				throw new RuntimeException("Unexpected event " + event.address);
 			}
-		} else if (event == NODE_DELETED) {
-			return Flowable.just(deleteNodes(message, getSchemaVersionUuid(message)));
-		} else {
-			throw new RuntimeException("Unexpected event " + event.address);
-		}
+		});
 	}
 
 	private Flowable<SearchRequest> migrationUpdate(NodeMeshEventModel message) {

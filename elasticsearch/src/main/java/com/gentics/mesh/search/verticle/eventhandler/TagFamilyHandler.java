@@ -40,28 +40,30 @@ public class TagFamilyHandler implements EventHandler {
 
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
-		MeshEvent event = messageEvent.event;
-		MeshProjectElementEventModel model = requireType(MeshProjectElementEventModel.class, messageEvent.message);
-		String projectUuid = Util.requireType(ProjectEvent.class, messageEvent.message).getProject().getUuid();
+		return Flowable.defer(() -> {
+			MeshEvent event = messageEvent.event;
+			MeshProjectElementEventModel model = requireType(MeshProjectElementEventModel.class, messageEvent.message);
+			String projectUuid = Util.requireType(ProjectEvent.class, messageEvent.message).getProject().getUuid();
 
-		if (event == TAG_FAMILY_CREATED || event == TAG_FAMILY_UPDATED) {
-			return helper.getDb().tx(() -> {
-				// We also need to update all tags of this family
+			if (event == TAG_FAMILY_CREATED || event == TAG_FAMILY_UPDATED) {
+				return helper.getDb().tx(() -> {
+					// We also need to update all tags of this family
 
-				Optional<TagFamily> tagFamily = entities.tagFamily.getElement(model);
+					Optional<TagFamily> tagFamily = entities.tagFamily.getElement(model);
 
-				return Stream.concat(
-					toStream(tagFamily).map(tf -> entities.createRequest(tf, projectUuid)),
-					toStream(tagFamily).flatMap(tf -> tf.findAll().stream())
-						.map(t -> entities.createRequest(t, projectUuid))
-				).collect(Util.toFlowable());
-			});
-		} else if (event == TAG_FAMILY_DELETED) {
-			// TODO Update related elements.
-			// At the moment we cannot look up related elements, because the element was already deleted.
-			return Flowable.just(helper.deleteDocumentRequest(TagFamily.composeIndexName(projectUuid), model.getUuid()));
-		} else {
-			throw new RuntimeException("Unexpected event " + event.address);
-		}
+					return Stream.concat(
+						toStream(tagFamily).map(tf -> entities.createRequest(tf, projectUuid)),
+						toStream(tagFamily).flatMap(tf -> tf.findAll().stream())
+							.map(t -> entities.createRequest(t, projectUuid))
+					).collect(Util.toFlowable());
+				});
+			} else if (event == TAG_FAMILY_DELETED) {
+				// TODO Update related elements.
+				// At the moment we cannot look up related elements, because the element was already deleted.
+				return Flowable.just(helper.deleteDocumentRequest(TagFamily.composeIndexName(projectUuid), model.getUuid()));
+			} else {
+				throw new RuntimeException("Unexpected event " + event.address);
+			}
+		});
 	}
 }

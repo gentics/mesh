@@ -38,21 +38,23 @@ public class SimpleEventHandler<T extends MeshCoreVertex<? extends RestModel, T>
 
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent eventModel) {
-		MeshEvent event = eventModel.event;
-		MeshElementEventModel model = requireType(MeshElementEventModel.class, eventModel.message);
+		return Flowable.defer(() -> {
+			MeshEvent event = eventModel.event;
+			MeshElementEventModel model = requireType(MeshElementEventModel.class, eventModel.message);
 
-		if (event == entity.getCreateEvent() || event == entity.getUpdateEvent()) {
-			return toFlowable(helper.getDb().tx(() -> entity.getDocument(model))
-				.map(document -> helper.createDocumentRequest(
-					indexName, model.getUuid(),
-					document
-				)));
-		} else if (event == entity.getDeleteEvent()) {
-			return Flowable.just(helper.deleteDocumentRequest(
-				indexName, model.getUuid()
-			));
-		} else {
-			throw new RuntimeException("Unexpected event " + event.address);
-		}
+			if (event == entity.getCreateEvent() || event == entity.getUpdateEvent()) {
+				return toFlowable(helper.getDb().tx(() -> entity.getDocument(model))
+					.map(document -> helper.createDocumentRequest(
+						indexName, model.getUuid(),
+						document
+					)));
+			} else if (event == entity.getDeleteEvent()) {
+				return Flowable.just(helper.deleteDocumentRequest(
+					indexName, model.getUuid()
+				));
+			} else {
+				throw new RuntimeException("Unexpected event " + event.address);
+			}
+		});
 	}
 }

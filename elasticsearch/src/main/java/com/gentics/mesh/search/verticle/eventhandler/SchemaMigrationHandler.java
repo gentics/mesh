@@ -41,14 +41,16 @@ public class SchemaMigrationHandler implements EventHandler {
 
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
-		SchemaMigrationMeshEventModel model = requireType(SchemaMigrationMeshEventModel.class, messageEvent.message);
-		if (messageEvent.event == SCHEMA_MIGRATION_START) {
-			return migrationStart(model);
-		} else if (messageEvent.event == SCHEMA_MIGRATION_FINISHED) {
-			return migrationEnd(model);
-		} else {
-			throw new RuntimeException("Unexpected event " + messageEvent.event.address);
-		}
+		return Flowable.defer(() -> {
+			SchemaMigrationMeshEventModel model = requireType(SchemaMigrationMeshEventModel.class, messageEvent.message);
+			if (messageEvent.event == SCHEMA_MIGRATION_START) {
+				return migrationStart(model);
+			} else if (messageEvent.event == SCHEMA_MIGRATION_FINISHED) {
+				return migrationEnd(model);
+			} else {
+				throw new RuntimeException("Unexpected event " + messageEvent.event.address);
+			}
+		});
 	}
 
 	private Flowable<SearchRequest> migrationEnd(SchemaMigrationMeshEventModel model) {

@@ -37,14 +37,16 @@ public class BranchHandler implements EventHandler {
 
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
-		MeshProjectElementEventModel model = requireType(MeshProjectElementEventModel.class, messageEvent.message);
-		Map<String, IndexInfo> map = helper.getDb().transactional(tx -> {
-			Project project = helper.getBoot().projectRoot().findByUuid(model.getProject().getUuid());
-			Branch branch = project.getBranchRoot().findByUuid(model.getUuid());
-			return nodeIndexHandler.getIndices(project, branch).runInExistingTx(tx);
-		}).runInNewTx();
+		return Flowable.defer(() -> {
+			MeshProjectElementEventModel model = requireType(MeshProjectElementEventModel.class, messageEvent.message);
+			Map<String, IndexInfo> map = helper.getDb().transactional(tx -> {
+				Project project = helper.getBoot().projectRoot().findByUuid(model.getProject().getUuid());
+				Branch branch = project.getBranchRoot().findByUuid(model.getUuid());
+				return nodeIndexHandler.getIndices(project, branch).runInExistingTx(tx);
+			}).runInNewTx();
 
-		return toRequests(map);
+			return toRequests(map);
+		});
 	}
 
 	@Override
