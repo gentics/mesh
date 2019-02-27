@@ -76,23 +76,8 @@
 			<version>2.4</version>
 		</dependency>
 		<dependency>
-			<groupId>com.syncleus.ferma</groupId>
-			<artifactId>ferma-orientdb</artifactId>
-			<version>${ferma.orientdb.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.orientechnologies</groupId>
-					<artifactId>orientdb-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.orientechnologies</groupId>
-					<artifactId>orientdb-server</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.orientechnologies</groupId>
-					<artifactId>orientdb-graphdb</artifactId>
-				</exclusion>
-			</exclusions>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>ferma</artifactId>
 		</dependency>
 
 		<!-- Common Tools -->
