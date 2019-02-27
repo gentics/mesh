@@ -173,7 +173,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		addSchema.path("/:branchUuid/schemas");
 		addSchema.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
 		addSchema.method(POST);
-		addSchema.description("Assign a schema version to the breanch.");
+		addSchema.description("Assign a schema version to the branch.");
 		addSchema.consumes(APPLICATION_JSON);
 		addSchema.produces(APPLICATION_JSON);
 		addSchema.exampleRequest(branchExamples.createSchemaReferenceList());
