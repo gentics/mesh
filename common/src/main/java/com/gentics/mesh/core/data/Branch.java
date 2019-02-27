@@ -232,9 +232,10 @@ public interface Branch
 	 * @param user
 	 * 
 	 * @param microschemaContainerVersion
+	 * @param batch
 	 * @return Job which has been created if the version has not yet been assigned. Otherwise null will be returned.
 	 */
-	Job assignMicroschemaVersion(User user, MicroschemaContainerVersion microschemaContainerVersion);
+	Job assignMicroschemaVersion(User user, MicroschemaContainerVersion microschemaContainerVersion, EventQueueBatch batch);
 
 	/**
 	 * Unassigns all versions of the given microschema from this branch.
@@ -285,8 +286,8 @@ public interface Branch
 	TraversalResult<? extends SchemaContainerVersion> findActiveSchemaVersions();
 
 	/**
-	 * Get an iterable over all active microschema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one which
-	 * is queued and will soon contain containers due to an executed node migration.
+	 * Get an iterable over all active microschema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one
+	 * which is queued and will soon contain containers due to an executed node migration.
 	 *
 	 * @return Iterable
 	 */

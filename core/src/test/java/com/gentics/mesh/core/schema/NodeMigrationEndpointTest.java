@@ -792,7 +792,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			microschemaA.addField(oldField);
 			versionA.setName("migratedSchema");
 			versionA.setSchema(microschemaA);
-			boot().microschemaContainerRoot().addMicroschema(user, container);
+			EventQueueBatch batch = EventQueueBatch.create();
+			boot().microschemaContainerRoot().addMicroschema(user, container, batch);
 
 			// create version 2 of the microschema (with the field renamed)
 			versionB = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
@@ -892,7 +893,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			microschemaA.addField(oldField);
 			versionA.setName("migratedSchema");
 			versionA.setSchema(microschemaA);
-			boot().microschemaContainerRoot().addMicroschema(user(), container);
+			boot().microschemaContainerRoot().addMicroschema(user(), container, EventQueueBatch.create());
 
 			// create version 2 of the microschema (with the field renamed)
 			versionB = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
@@ -1014,7 +1015,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			microschemaA.addField(oldField);
 			versionA.setName("migratedSchema");
 			versionA.setSchema(microschemaA);
-			boot().microschemaContainerRoot().addMicroschema(user(), container);
+			boot().microschemaContainerRoot().addMicroschema(user(), container, EventQueueBatch.create());
 
 			// create version 2 of the microschema (with the field renamed)
 			versionB = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);

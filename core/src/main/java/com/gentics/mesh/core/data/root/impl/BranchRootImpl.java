@@ -186,12 +186,12 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		// ... same for microschemas
 		if (baseBranch != null && migrate) {
 			for (MicroschemaContainerVersion microschemaContainerVersion : baseBranch.findActiveMicroschemaVersions()) {
-				newBranch.assignMicroschemaVersion(creator, microschemaContainerVersion);
+				newBranch.assignMicroschemaVersion(creator, microschemaContainerVersion, batch);
 			}
 		}
 
 		for (MicroschemaContainer microschemaContainer : getProject().getMicroschemaContainerRoot().findAll()) {
-			newBranch.assignMicroschemaVersion(newBranch.getCreator(), microschemaContainer.getLatestVersion());
+			newBranch.assignMicroschemaVersion(newBranch.getCreator(), microschemaContainer.getLatestVersion(), batch);
 		}
 	}
 

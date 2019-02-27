@@ -443,9 +443,9 @@ public class TestDataProvider {
 		postcodeFieldSchema.setLabel("Post Code");
 		vcardMicroschema.addField(postcodeFieldSchema);
 
-		MicroschemaContainer vcardMicroschemaContainer = boot.microschemaContainerRoot().create(vcardMicroschema, userInfo.getUser());
+		MicroschemaContainer vcardMicroschemaContainer = boot.microschemaContainerRoot().create(vcardMicroschema, userInfo.getUser(), EventQueueBatch.create());
 		microschemaContainers.put(vcardMicroschemaContainer.getName(), vcardMicroschemaContainer);
-		project.getMicroschemaContainerRoot().addMicroschema(user(), vcardMicroschemaContainer);
+		project.getMicroschemaContainerRoot().addMicroschema(user(), vcardMicroschemaContainer, EventQueueBatch.create());
 	}
 
 	/**
@@ -471,9 +471,9 @@ public class TestDataProvider {
 		captionFieldSchema.setLabel("Caption");
 		captionedImageMicroschema.addField(captionFieldSchema);
 
-		MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(captionedImageMicroschema, userInfo.getUser());
+		MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(captionedImageMicroschema, userInfo.getUser(), EventQueueBatch.create());
 		microschemaContainers.put(captionedImageMicroschema.getName(), microschemaContainer);
-		project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer);
+		project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, EventQueueBatch.create());
 	}
 
 	public Node addFolder(Node rootNode, String englishName, String germanName) {

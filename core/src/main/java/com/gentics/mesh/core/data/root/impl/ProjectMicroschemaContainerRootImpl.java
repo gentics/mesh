@@ -8,6 +8,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 
 /**
@@ -29,12 +30,12 @@ public class ProjectMicroschemaContainerRootImpl extends MicroschemaContainerRoo
 	}
 
 	@Override
-	public void addMicroschema(User user, MicroschemaContainer microschema) {
-		super.addMicroschema(user, microschema);
+	public void addMicroschema(User user, MicroschemaContainer microschema, EventQueueBatch batch) {
+		super.addMicroschema(user, microschema, batch);
 
 		// assign the latest schema version to all branches of the project
 		for (Branch branch : getProject().getBranchRoot().findAll()) {
-			branch.assignMicroschemaVersion(user, microschema.getLatestVersion());
+			branch.assignMicroschemaVersion(user, microschema.getLatestVersion(), batch);
 		}
 	}
 

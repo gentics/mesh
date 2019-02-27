@@ -1,7 +1,7 @@
 package com.gentics.mesh.search.index;
 
-import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
@@ -9,7 +9,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
 
-import com.gentics.mesh.search.verticle.eventhandler.SyncHandler;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -34,6 +33,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.search.verticle.eventhandler.SyncHandler;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -320,7 +320,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 			for (int i = 0; i < 400; i++) {
 				MicroschemaModel model = new MicroschemaModelImpl();
 				model.setName("microschema_" + i);
-				boot().microschemaContainerRoot().create(model, user());
+				createMicroschema(model);
 			}
 		});
 		waitForEvent(INDEX_SYNC, SyncHandler::invokeSync);

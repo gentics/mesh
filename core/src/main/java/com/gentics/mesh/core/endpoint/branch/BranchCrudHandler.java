@@ -165,15 +165,15 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	 */
 	public void handleAssignMicroschemaVersion(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		
-		utils.rxSyncTx(ac, tx -> {
+
+		utils.syncTx(ac, tx -> {
 			RootVertex<Branch> root = getRootVertex(ac);
 			Branch branch = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			BranchInfoMicroschemaList microschemaReferenceList = ac.fromJson(BranchInfoMicroschemaList.class);
 			MicroschemaContainerRoot microschemaContainerRoot = ac.getProject().getMicroschemaContainerRoot();
 
 			User user = ac.getUser();
-			Single<BranchInfoMicroschemaList> model = db.tx(() -> {
+			utils.eventAction(batch -> {
 				// Transform the list of references into microschema container version vertices
 				for (MicroschemaReference reference : microschemaReferenceList.getMicroschemas()) {
 					MicroschemaContainerVersion version = microschemaContainerRoot.fromReference(reference);
@@ -183,14 +183,12 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 						throw error(BAD_REQUEST, "branch_error_downgrade_microschema_version", version.getName(), assignedVersion.getVersion(),
 							version.getVersion());
 					}
-					branch.assignMicroschemaVersion(user, version);
+					branch.assignMicroschemaVersion(user, version, batch);
 				}
-				return getMicroschemaVersions(branch);
 			});
 
 			MeshEvent.triggerJobWorker();
-			return model;
-
+			return getMicroschemaVersions(branch).blockingGet();
 		}, model -> ac.send(model, OK));
 	}
 

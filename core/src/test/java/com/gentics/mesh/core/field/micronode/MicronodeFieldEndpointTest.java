@@ -40,6 +40,7 @@ import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
@@ -275,7 +276,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			for (int i = 0; i < 10; i++) {
 				nodeMicroschema.addField(new NodeFieldSchemaImpl().setName("nodefield_" + i));
 			}
-			microschemaContainers().put("noderef", project().getMicroschemaContainerRoot().create(nodeMicroschema, getRequestUser()));
+			microschemaContainers().put("noderef", project().getMicroschemaContainerRoot().create(nodeMicroschema, getRequestUser(), EventQueueBatch.create()));
 
 			// 2. Update the folder schema and add a micronode field
 			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
@@ -335,7 +336,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			fullMicroschema.addField(new StringFieldSchemaImpl().setName("stringfield").setLabel("String Field"));
 
 			// 2. Add the microschema to the list of microschemas of the project
-			microschemaContainers().put("full", project().getMicroschemaContainerRoot().create(fullMicroschema, getRequestUser()));
+			microschemaContainers().put("full", project().getMicroschemaContainerRoot().create(fullMicroschema, getRequestUser(), EventQueueBatch.create()));
 
 			// 3. Update the folder schema and inject a micronode field which uses the full schema
 			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();

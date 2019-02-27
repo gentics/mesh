@@ -55,6 +55,7 @@ import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.event.branch.BranchMeshEventModel;
+import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -385,23 +386,15 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 				// No migration needed since there was no previous version assigned.
 				edge.setMigrationStatus(COMPLETED);
 			}
-			batch.add(createSchemaAssignedEvent(schemaContainerVersion, edge.getMigrationStatus()));
+			batch.add(createSchemaAssignEvent(schemaContainerVersion, edge.getMigrationStatus()));
 		}
 		return job;
 	}
 
-	private BranchSchemaAssignEventModel createSchemaAssignedEvent(SchemaContainerVersion schemaContainerVersion, MigrationStatus status) {
-		BranchSchemaAssignEventModel model = new BranchSchemaAssignEventModel();
-		fillEventInfo(model);
-		model.setSchema(schemaContainerVersion.transformToReference());
-		model.setStatus(status);
-		model.setBranch(transformToReference());
-		return model;
-	}
-
 	@Override
-	public Job assignMicroschemaVersion(User user, MicroschemaContainerVersion microschemaContainerVersion) {
+	public Job assignMicroschemaVersion(User user, MicroschemaContainerVersion microschemaContainerVersion, EventQueueBatch batch) {
 		BranchMicroschemaEdge edge = findBranchMicroschemaEdge(microschemaContainerVersion);
+		Job job = null;
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {
 			MicroschemaContainerVersion currentVersion = findLatestMicroschemaVersion(microschemaContainerVersion.getSchemaContainer());
@@ -409,20 +402,39 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 			// Enqueue the job so that the worker can process it later on
 			edge.setActive(true);
 			if (currentVersion != null) {
-				Job job = MeshInternal.get().boot().jobRoot().enqueueMicroschemaMigration(user, this, currentVersion, microschemaContainerVersion);
+				job = MeshInternal.get().boot().jobRoot().enqueueMicroschemaMigration(user, this, currentVersion, microschemaContainerVersion);
 				edge.setMigrationStatus(QUEUED);
 				edge.setJobUuid(job.getUuid());
-				return job;
 			} else {
 				// No migration needed since there was no previous version assigned.
 				edge.setMigrationStatus(COMPLETED);
-				return null;
 			}
-		} else {
-			return null;
+			batch.add(createMicroschemaAssignEvent(microschemaContainerVersion, edge.getMigrationStatus()));
 		}
+		return job;
 	}
 
+	private BranchSchemaAssignEventModel createSchemaAssignEvent(SchemaContainerVersion schemaContainerVersion, MigrationStatus status) {
+		BranchSchemaAssignEventModel model = new BranchSchemaAssignEventModel();
+		fillEventInfo(model);
+		model.setEvent(MeshEvent.SCHEMA_BRANCH_ASSIGN);
+		model.setSchema(schemaContainerVersion.transformToReference());
+		model.setStatus(status);
+		model.setBranch(transformToReference());
+		return model;
+	}
+	
+	private BranchMicroschemaAssignEventModel createMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion, MigrationStatus status) {
+		BranchMicroschemaAssignEventModel model = new BranchMicroschemaAssignEventModel();
+		fillEventInfo(model);
+		model.setEvent(MeshEvent.MICROSCHEMA_BRANCH_ASSIGN);
+		model.setSchema(microschemaContainerVersion.transformToReference());
+		model.setStatus(status);
+		model.setBranch(transformToReference());
+		return model;
+	}
+
+	
 	@Override
 	public Branch unassignMicroschema(MicroschemaContainer microschemaContainer) {
 		unassign(microschemaContainer);

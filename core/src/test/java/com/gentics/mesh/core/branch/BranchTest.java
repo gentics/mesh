@@ -411,7 +411,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			}
 
 			// assign the schema to the project
-			project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer);
+			project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, EventQueueBatch.create());
 
 			for (Branch branch : Arrays.asList(initialBranch, newBranch)) {
 				assertThat(branch).as(branch.getName()).hasMicroschema(microschemaContainer).hasMicroschemaVersion(latestVersion)
@@ -453,7 +453,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			MicroschemaContainerVersion firstVersion = microschemaContainer.getLatestVersion();
 
 			// assign the microschema to the project
-			project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer);
+			project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, EventQueueBatch.create());
 
 			// update microschema
 			updateMicroschema(microschemaContainer, "newfield");
@@ -523,7 +523,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 		MicroschemaModelImpl microschema = new MicroschemaModelImpl();
 		microschema.setName(name);
 		microschema.addField(FieldUtil.createStringFieldSchema("name"));
-		return meshRoot().getMicroschemaContainerRoot().create(microschema, user());
+		return createMicroschema(microschema);
 	}
 
 	/**

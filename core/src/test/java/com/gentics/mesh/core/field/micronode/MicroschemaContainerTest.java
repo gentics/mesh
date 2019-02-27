@@ -147,7 +147,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 		try (Tx tx = tx()) {
 			MicroschemaModel schema = new MicroschemaModelImpl();
 			schema.setName("test");
-			MicroschemaContainer container = MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().create(schema, user());
+			MicroschemaContainer container = createMicroschema(schema);
 			assertNotNull("The container was not created.", container);
 			assertNotNull("The container schema was not set", container.getLatestVersion().getSchema());
 			assertEquals("The creator was not set.", user().getUuid(), container.getCreator().getUuid());
@@ -174,7 +174,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 		try (Tx tx = tx()) {
 			MicroschemaModel schema = new MicroschemaModelImpl();
 			schema.setName("test");
-			MicroschemaContainer container = MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().create(schema, user());
+			MicroschemaContainer container = createMicroschema(schema);
 			assertNotNull(MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().findByName("test"));
 			BulkActionContext bac = createBulkContext();
 			container.delete(bac);
@@ -193,10 +193,10 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Override
 	public void testReadPermission() throws MeshJsonException {
 		try (Tx tx = tx()) {
-			MicroschemaModel microschema = new MicroschemaModelImpl();
-			microschema.setName("someNewMicroschema");
-			MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
-			testPermission(GraphPermission.READ_PERM, microschemaContainer);
+			MicroschemaModel schema = new MicroschemaModelImpl();
+			schema.setName("someNewMicroschema");
+			MicroschemaContainer container = createMicroschema(schema);
+			testPermission(GraphPermission.READ_PERM, container);
 		}
 	}
 
@@ -204,10 +204,10 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Override
 	public void testDeletePermission() throws MeshJsonException {
 		try (Tx tx = tx()) {
-			MicroschemaModel microschema = new MicroschemaModelImpl();
-			microschema.setName("someNewMicroschema");
-			MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
-			testPermission(GraphPermission.DELETE_PERM, microschemaContainer);
+			MicroschemaModel schema = new MicroschemaModelImpl();
+			schema.setName("someNewMicroschema");
+			MicroschemaContainer container = createMicroschema(schema);
+			testPermission(GraphPermission.DELETE_PERM, container);
 		}
 
 	}
@@ -216,10 +216,10 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Override
 	public void testUpdatePermission() throws MeshJsonException {
 		try (Tx tx = tx()) {
-			MicroschemaModel microschema = new MicroschemaModelImpl();
-			microschema.setName("someNewMicroschema");
-			MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
-			testPermission(GraphPermission.UPDATE_PERM, microschemaContainer);
+			MicroschemaModel schema = new MicroschemaModelImpl();
+			schema.setName("someNewMicroschema");
+			MicroschemaContainer container = createMicroschema(schema);
+			testPermission(GraphPermission.UPDATE_PERM, container);
 		}
 	}
 
@@ -227,10 +227,10 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Override
 	public void testCreatePermission() throws MeshJsonException {
 		try (Tx tx = tx()) {
-			MicroschemaModel microschema = new MicroschemaModelImpl();
-			microschema.setName("someNewMicroschema");
-			MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
-			testPermission(GraphPermission.CREATE_PERM, microschemaContainer);
+			MicroschemaModel schema = new MicroschemaModelImpl();
+			schema.setName("someNewMicroschema");
+			MicroschemaContainer container = createMicroschema(schema);
+			testPermission(GraphPermission.CREATE_PERM, container);
 		}
 	}
 
@@ -258,11 +258,9 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Override
 	public void testCRUDPermissions() throws MeshJsonException {
 		try (Tx tx = tx()) {
-			MicroschemaContainerRoot root = meshRoot().getMicroschemaContainerRoot();
-
-			MicroschemaModel microschema = new MicroschemaModelImpl();
-			microschema.setName("someNewMicroschema");
-			MicroschemaContainer container = root.create(microschema, user());
+			MicroschemaModel schema = new MicroschemaModelImpl();
+			schema.setName("someNewMicroschema");
+			MicroschemaContainer container = createMicroschema(schema);
 
 			assertFalse(role().hasPermission(GraphPermission.CREATE_PERM, container));
 			getRequestUser().addCRUDPermissionOnRole(meshRoot().getMicroschemaContainerRoot(), GraphPermission.CREATE_PERM, container);
@@ -309,7 +307,8 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 			containerWithOtherVersion.createMicronode("single", newVCard);
 
 			List<? extends NodeGraphFieldContainer> containers = vcard.getDraftFieldContainers(project().getLatestBranch().getUuid()).list();
-			assertThat(new ArrayList<NodeGraphFieldContainer>(containers)).containsOnly(containerWithBoth, containerWithField, containerWithList).hasSize(3);
+			assertThat(new ArrayList<NodeGraphFieldContainer>(containers)).containsOnly(containerWithBoth, containerWithField, containerWithList)
+				.hasSize(3);
 		}
 	}
 }

@@ -60,6 +60,7 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -99,7 +100,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 		stringFieldSchema.setLabel("String Field");
 		dummyMicroschema.addField(stringFieldSchema);
 
-		return boot().microschemaContainerRoot().create(dummyMicroschema, getRequestUser());
+		return createMicroschema(dummyMicroschema);
 	}
 
 	/**
@@ -142,7 +143,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			fullMicroschema.addField(new NumberFieldSchemaImpl().setName("numberfield").setLabel("Number Field"));
 			fullMicroschema.addField(new StringFieldSchemaImpl().setName("stringfield").setLabel("String Field"));
 
-			MicroschemaContainer microschemaContainer = boot().microschemaContainerRoot().create(fullMicroschema, getRequestUser());
+			MicroschemaContainer microschemaContainer = boot().microschemaContainerRoot().create(fullMicroschema, getRequestUser(), EventQueueBatch.create());
 
 			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new MicronodeFieldSchemaImpl().setName("micronodefield").setLabel("Micronode Field"));

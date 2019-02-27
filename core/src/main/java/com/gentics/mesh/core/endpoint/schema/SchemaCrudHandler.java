@@ -117,7 +117,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 							for (SchemaContainerRoot roots : schemaContainer.getRoots()) {
 								Project project = roots.getProject();
 								if (project != null) {
-									project.getMicroschemaContainerRoot().addMicroschema(user, microschema);
+									project.getMicroschemaContainerRoot().addMicroschema(user, microschema, batch);
 								}
 							}
 						}

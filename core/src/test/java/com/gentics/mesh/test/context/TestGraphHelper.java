@@ -5,6 +5,8 @@ import org.mockito.Mockito;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.BranchRoot;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
@@ -22,6 +24,11 @@ public interface TestGraphHelper extends TestHelper {
 		Project project = project();
 		BranchRoot branchRoot = project.getBranchRoot();
 		return branchRoot.create(name, user(), batch);
+	}
+
+	default MicroschemaContainer createMicroschema(MicroschemaModel schema) {
+		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
+		return meshRoot().getMicroschemaContainerRoot().create(schema, user(), batch);
 	}
 
 	/**

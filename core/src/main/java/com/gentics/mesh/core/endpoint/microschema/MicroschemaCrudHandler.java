@@ -91,7 +91,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 						}
 
 						// Assign the new version to the branch
-						branch.assignMicroschemaVersion(user, createdVersion);
+						branch.assignMicroschemaVersion(user, createdVersion, batch);
 					}
 				}
 				return createdVersion.getVersion();
@@ -177,9 +177,9 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			}
 
 			// Assign the microschema to the project
-			return db.tx(() -> {
+			return utils.eventAction(batch -> {
 				// TODO check whether we should dispatch events
-				root.addMicroschema(ac.getUser(), microschema);
+				root.addMicroschema(ac.getUser(), microschema, batch);
 				return microschema.transformToRestSync(ac, 0);
 			});
 		}, model -> ac.send(model, OK));

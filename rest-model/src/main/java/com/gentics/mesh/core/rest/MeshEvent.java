@@ -47,6 +47,11 @@ public enum MeshEvent {
 	SCHEMA_BRANCH_ASSIGN("mesh.schema-branch.assign", BranchSchemaAssignEventModel.class),
 
 	/**
+	 * Event which is send once the microschema gets assigned to a branch.
+	 */
+	MICROSCHEMA_BRANCH_ASSIGN("mesh.microschema-branch.assign", null),
+
+	/**
 	 * Microschema migration start event.
 	 */
 	MICROSCHEMA_MIGRATION_START("mesh.microschema.migration.start", MicroschemaMigrationMeshEventModel.class),
@@ -263,7 +268,8 @@ public enum MeshEvent {
 	}
 
 	public static Completable waitForEvent(MeshEvent event) {
-		return doAndWaitForEvent(event, () -> {});
+		return doAndWaitForEvent(event, () -> {
+		});
 	}
 
 	@Override

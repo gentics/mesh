@@ -12,8 +12,8 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
@@ -51,7 +51,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public void addMicroschema(User user, MicroschemaContainer container) {
+	public void addMicroschema(User user, MicroschemaContainer container, EventQueueBatch batch) {
 		addItem(container);
 	}
 
@@ -61,7 +61,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public MicroschemaContainer create(MicroschemaModel microschema, User user, String uuid) {
+	public MicroschemaContainer create(MicroschemaModel microschema, User user, String uuid, EventQueueBatch batch) {
 		microschema.validate();
 
 		String name = microschema.getName();
@@ -83,7 +83,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		version.setSchemaContainer(container);
 		container.setCreated(user);
 		container.setName(microschema.getName());
-		addMicroschema(user, container);
+		addMicroschema(user, container, batch);
 
 		return container;
 	}
@@ -101,7 +101,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		if (!requestUser.hasPermission(this, GraphPermission.CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
-		MicroschemaContainer container = create(microschema, requestUser, uuid);
+		MicroschemaContainer container = create(microschema, requestUser, uuid, batch);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
 		batch.add(container.onCreated());
 		return container;
