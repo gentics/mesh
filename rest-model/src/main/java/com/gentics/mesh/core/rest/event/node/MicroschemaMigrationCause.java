@@ -7,11 +7,6 @@ import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventM
 
 public class MicroschemaMigrationCause extends MicroschemaMigrationMeshEventModel implements EventCauseInfo {
 
-	/**
-	 * Uuid of the migration job.
-	 */
-	private String uuid;
-
 	public MicroschemaMigrationCause() {
 	}
 
@@ -21,21 +16,7 @@ public class MicroschemaMigrationCause extends MicroschemaMigrationMeshEventMode
 	}
 
 	@Override
-	public String getUuid() {
-		return uuid;
-	}
-
-	/**
-	 * Set the job uuid.
-	 * 
-	 * @param uuid
-	 */
-	public void setUuid(String uuid) {
-		this.uuid = uuid;
-	}
-
-	@Override
 	public EventCauseAction getAction() {
-		return EventCauseAction.SCHEMA_MIGRATION;
+		return EventCauseAction.MICROSCHEMA_MIGRATION;
 	}
 }

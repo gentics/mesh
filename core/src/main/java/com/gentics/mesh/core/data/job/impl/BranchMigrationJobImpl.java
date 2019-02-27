@@ -50,40 +50,46 @@ public class BranchMigrationJobImpl extends JobImpl {
 	}
 
 	private BranchMigrationContext prepareContext() {
-		return DB.get().tx(() -> {
-			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
-			context.setStatus(new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.branch));
+		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.branch);
+		try {
+			return DB.get().tx(() -> {
+				BranchMigrationContextImpl context = new BranchMigrationContextImpl();
+				context.setStatus(status);
 
-			Branch newBranch = getBranch();
-			if (newBranch == null) {
-				throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} cannot be found.");
-			}
-			if (newBranch.isMigrated()) {
-				throw error(BAD_REQUEST, "Branch {" + newBranch.getName() + "} is already migrated");
-			}
-			context.setNewBranch(newBranch);
+				Branch newBranch = getBranch();
+				if (newBranch == null) {
+					throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} cannot be found.");
+				}
+				if (newBranch.isMigrated()) {
+					throw error(BAD_REQUEST, "Branch {" + newBranch.getName() + "} is already migrated");
+				}
+				context.setNewBranch(newBranch);
 
-			Branch oldBranch = newBranch.getPreviousBranch();
-			if (oldBranch == null) {
-				throw error(BAD_REQUEST, "Branch {" + newBranch.getName() + "} does not have previous branch");
-			}
+				Branch oldBranch = newBranch.getPreviousBranch();
+				if (oldBranch == null) {
+					throw error(BAD_REQUEST, "Branch {" + newBranch.getName() + "} does not have previous branch");
+				}
+				if (!oldBranch.isMigrated()) {
+					throw error(BAD_REQUEST, "Cannot migrate nodes to branch {" + newBranch.getName() + "}, because previous branch {"
+						+ oldBranch.getName() + "} is not fully migrated yet.");
+				}
+				context.setOldBranch(oldBranch);
 
-			if (!oldBranch.isMigrated()) {
-				throw error(BAD_REQUEST, "Cannot migrate nodes to branch {" + newBranch.getName() + "}, because previous branch {"
-					+ oldBranch.getName() + "} is not fully migrated yet.");
-			}
+				BranchMigrationCause cause = new BranchMigrationCause();
+				cause.setProject(newBranch.getProject().transformToReference());
+				cause.setOrigin(Mesh.mesh().getOptions().getNodeName());
+				cause.setUuid(getUuid());
+				context.setCause(cause);
 
-			context.setOldBranch(oldBranch);
-
-			BranchMigrationCause cause = new BranchMigrationCause();
-			cause.setProject(newBranch.getProject().transformToReference());
-			cause.setOrigin(Mesh.mesh().getOptions().getNodeName());
-			cause.setUuid(getUuid());
-			context.setCause(cause);
-
-			context.getStatus().commit();
-			return context;
-		});
+				context.getStatus().commit();
+				return context;
+			});
+		} catch (Exception e) {
+			DB.get().tx(() -> {
+				status.error(e, "Error while preparing branch migration.");
+			});
+			throw e;
+		}
 	}
 
 	@Override

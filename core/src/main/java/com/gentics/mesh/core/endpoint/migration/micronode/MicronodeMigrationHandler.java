@@ -13,8 +13,8 @@ import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.validation.constraints.NotNull;
 
+import com.gentics.mesh.context.MicronodeMigrationContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -52,18 +52,15 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	/**
 	 * Migrate all micronodes referencing the given microschema container to the latest version
 	 * 
-	 * @param branch
-	 *            branch
-	 * @param fromVersion
-	 *            microschema container version to start from
-	 * @param toVersion
-	 *            microschema container version to end with
-	 * @param status
-	 *            Migration status
+	 * @param context
 	 * @return Completable which will be completed once the migration has completed
 	 */
-	public Completable migrateMicronodes(Branch branch, MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion,
-		@NotNull MigrationStatusHandler status) {
+	public Completable migrateMicronodes(MicronodeMigrationContext context) {
+
+		Branch branch = context.getBranch();
+		MicroschemaContainerVersion fromVersion = context.getFromVersion();
+		MicroschemaContainerVersion toVersion = context.getToVersion();
+		MigrationStatusHandler status = context.getStatus();
 
 		// Collect the migration scripts
 		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
@@ -102,9 +99,8 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 		MicroschemaMigrationCause cause = new MicroschemaMigrationCause();
 		cause.setFromVersion(fromVersion.transformToReference());
 		cause.setToVersion(toVersion.transformToReference());
-		List<Exception> errorsDetected = migrateLoop(fieldContainersResult, cause, status, (batch, container, errors) ->
-			migrateMicronodeContainer(ac, batch, branch, fromVersion, toVersion, container, touchedFields, migrationScripts, errors)
-		);
+		List<Exception> errorsDetected = migrateLoop(fieldContainersResult, cause, status, (batch, container, errors) -> migrateMicronodeContainer(ac,
+			batch, branch, fromVersion, toVersion, container, touchedFields, migrationScripts, errors));
 
 		Completable result = Completable.complete();
 		if (!errorsDetected.isEmpty()) {
@@ -179,9 +175,9 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	 * @param errorsDetected
 	 */
 	private void migrateMicronodeContainer(NodeMigrationActionContextImpl ac, EventQueueBatch batch, Branch branch,
-										   MicroschemaContainerVersion fromVersion,
-										   MicroschemaContainerVersion toVersion, NodeGraphFieldContainer container, Set<String> touchedFields,
-										   List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, List<Exception> errorsDetected) {
+		MicroschemaContainerVersion fromVersion,
+		MicroschemaContainerVersion toVersion, NodeGraphFieldContainer container, Set<String> touchedFields,
+		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, List<Exception> errorsDetected) {
 
 		if (log.isDebugEnabled()) {
 			log.debug("Migrating container {" + container.getUuid() + "}");

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.job.impl;
 
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_START;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -13,7 +14,6 @@ import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.endpoint.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -26,10 +26,8 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Completable;
-import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -46,84 +44,87 @@ public class NodeMigrationJobImpl extends JobImpl {
 	 */
 	@Override
 	public void prepare() {
-		EventQueueBatch batch = EventQueueBatch.create();
-		SchemaMigrationMeshEventModel event = new SchemaMigrationMeshEventModel();
-		event.setEvent(SCHEMA_MIGRATION_START);
+		EventQueueBatch.create().add(createEvent(SCHEMA_MIGRATION_START)).dispatch();
+	}
+
+	private SchemaMigrationMeshEventModel createEvent(MeshEvent event) {
+		SchemaMigrationMeshEventModel model = new SchemaMigrationMeshEventModel();
+		model.setEvent(event);
 
 		SchemaContainerVersion toVersion = getToSchemaVersion();
-		event.setToVersion(toVersion.transformToReference());
+		model.setToVersion(toVersion.transformToReference());
 
 		SchemaContainerVersion fromVersion = getFromSchemaVersion();
-		event.setFromVersion(fromVersion.transformToReference());
+		model.setFromVersion(fromVersion.transformToReference());
 
 		Branch branch = getBranch();
 		Project project = branch.getProject();
-		event.setProject(project.transformToReference());
-		event.setBranch(branch.transformToReference());
-		batch.add(event).dispatch();
+		model.setProject(project.transformToReference());
+		model.setBranch(branch.transformToReference());
+		return model;
 	}
 
 	private NodeMigrationActionContextImpl prepareContext() {
-		return DB.get().tx(() -> {
-			NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
+		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.schema);
+		try {
+			return DB.get().tx(() -> {
+				NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
+				context.setStatus(status);
 
-			context.setStatus(new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.schema));
+				Branch branch = getBranch();
+				if (branch == null) {
+					throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} not found");
+				}
+				context.setBranch(branch);
 
-			Branch branch = getBranch();
-			if (branch == null) {
-				throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} not found");
-			}
-			context.setBranch(branch);
+				SchemaContainerVersion fromContainerVersion = getFromSchemaVersion();
+				if (fromContainerVersion == null) {
+					throw error(BAD_REQUEST, "Source schema version for job {" + getUuid() + "} could not be found.");
+				}
+				context.setFromVersion(fromContainerVersion);
 
-			SchemaContainerVersion fromContainerVersion = getFromSchemaVersion();
-			if (fromContainerVersion == null) {
-				throw error(BAD_REQUEST, "Source schema version for job {" + getUuid() + "} could not be found.");
-			}
-			context.setFromVersion(fromContainerVersion);
+				SchemaContainerVersion toContainerVersion = getToSchemaVersion();
+				if (toContainerVersion == null) {
+					throw error(BAD_REQUEST, "Target schema version for job {" + getUuid() + "} could not be found.");
+				}
+				context.setToVersion(toContainerVersion);
 
-			SchemaContainerVersion toContainerVersion = getToSchemaVersion();
-			if (toContainerVersion == null) {
-				throw error(BAD_REQUEST, "Target schema version for job {" + getUuid() + "} could not be found.");
-			}
-			context.setToVersion(toContainerVersion);
+				SchemaContainer schemaContainer = toContainerVersion.getSchemaContainer();
+				if (schemaContainer == null) {
+					throw error(BAD_REQUEST, "Schema container for job {" + getUuid() + "} can't be found.");
+				}
 
-			SchemaContainer schemaContainer = toContainerVersion.getSchemaContainer();
-			if (schemaContainer == null) {
-				throw error(BAD_REQUEST, "Schema container for job {" + getUuid() + "} can't be found.");
-			}
+				Project project = branch.getProject();
+				if (project == null) {
+					throw error(BAD_REQUEST, "Project for job {" + getUuid() + "} not found");
+				}
+				context.setProject(project);
 
-			Project project = branch.getProject();
-			if (project == null) {
-				throw error(BAD_REQUEST, "Project for job {" + getUuid() + "} not found");
-			}
-			context.setProject(project);
+				BranchSchemaEdge branchVersionEdge = branch.findBranchSchemaEdge(toContainerVersion);
+				context.getStatus().setVersionEdge(branchVersionEdge);
 
-			BranchSchemaEdge branchVersionEdge = branch.findBranchSchemaEdge(toContainerVersion);
-			context.getStatus().setVersionEdge(branchVersionEdge);
+				log.info("Handling node migration request for schema {" + schemaContainer.getUuid() + "} from version {"
+					+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} for release {" + branch.getUuid()
+					+ "} in project {" + project.getUuid() + "}");
 
-			log.info("Handling node migration request for schema {" + schemaContainer.getUuid() + "} from version {"
-				+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} for release {" + branch.getUuid()
-				+ "} in project {" + project.getUuid() + "}");
+				SchemaMigrationCause cause = new SchemaMigrationCause();
+				cause.setFromVersion(fromContainerVersion.transformToReference());
+				cause.setToVersion(toContainerVersion.transformToReference());
+				cause.setProject(project.transformToReference());
+				cause.setBranch(branch.transformToReference());
+				cause.setOrigin(Mesh.mesh().getOptions().getNodeName());
+				cause.setUuid(getUuid());
+				context.setCause(cause);
 
-			SchemaMigrationCause cause = new SchemaMigrationCause();
-			cause.setFromVersion(fromContainerVersion.transformToReference());
-			cause.setToVersion(toContainerVersion.transformToReference());
-			cause.setProject(project.transformToReference());
-			cause.setBranch(branch.transformToReference());
-			cause.setOrigin(Mesh.mesh().getOptions().getNodeName());
-			cause.setUuid(getUuid());
-			context.setCause(cause);
-
-			context.getStatus().commit();
-			return context;
-		});
-
-		// catch (Exception e) {
-		// DB.get().tx(() -> {
-		// ac.getStatus().error(e, "Error while preparing node migration.");
-		// });
-		// throw e;
-		// }
+				context.getStatus().commit();
+				return context;
+			});
+		} catch (Exception e) {
+			DB.get().tx(() -> {
+				status.error(e, "Error while preparing node migration.");
+			});
+			throw e;
+		}
 	}
 
 	protected Completable processTask() {
@@ -157,17 +158,17 @@ public class NodeMigrationJobImpl extends JobImpl {
 
 	private void finalizeMigration(NodeMigrationActionContext context) {
 		// Deactivate edge
-		try (Tx tx = DB.get().tx()) {
+		DB.get().tx(() -> {
 			Branch branch = context.getBranch();
 			SchemaContainerVersion fromContainerVersion = context.getFromVersion();
 			BranchSchemaEdge edge = branch.findBranchSchemaEdge(fromContainerVersion);
 			if (edge != null) {
 				edge.setActive(false);
 			}
-			tx.success();
-		}
-		EventBus eb = Mesh.vertx().eventBus();
-		eb.publish(MeshEvent.SCHEMA_MIGRATION_FINISHED.address, null);
+		});
+		DB.get().tx(() -> {
+			EventQueueBatch.create().add(createEvent(SCHEMA_MIGRATION_FINISHED)).dispatch();
+		});
 	}
 
 }

@@ -17,6 +17,6 @@ public class BranchMigrationCause extends BranchMigrationMeshEventModel implemen
 
 	@Override
 	public EventCauseAction getAction() {
-		return EventCauseAction.SCHEMA_MIGRATION;
+		return EventCauseAction.BRANCH_MIGRATION;
 	}
 }
