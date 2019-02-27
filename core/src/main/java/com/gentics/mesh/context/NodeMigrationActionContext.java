@@ -49,4 +49,9 @@ public interface NodeMigrationActionContext {
 	 * @return
 	 */
 	MigrationStatusHandler getStatus();
+
+	/**
+	 * Validate that all needed information is present in the context.
+	 */
+	void validate();
 }

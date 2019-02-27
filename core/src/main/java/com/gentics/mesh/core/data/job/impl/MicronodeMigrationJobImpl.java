@@ -64,6 +64,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 		model.setProject(project.transformToReference());
 		model.setBranch(branch.transformToReference());
 
+		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
 		model.setStatus(status);
 		return model;
 	}
@@ -125,19 +126,20 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 		return Completable.defer(() -> {
 			MicronodeMigrationContext context = prepareContext();
 			MicronodeMigrationHandler handler = MeshInternal.get().micronodeMigrationHandler();
-			return handler.migrateMicronodes(context).doOnComplete(() -> {
-				DB.get().tx(() -> {
-					JobWarningList warnings = new JobWarningList();
-					setWarnings(warnings);
-					finializeMigration(context);
-					context.getStatus().done();
+			return handler.migrateMicronodes(context)
+				.doOnComplete(() -> {
+					DB.get().tx(() -> {
+						JobWarningList warnings = new JobWarningList();
+						setWarnings(warnings);
+						finializeMigration(context);
+						context.getStatus().done();
+					});
+				}).doOnError(err -> {
+					DB.get().tx(() -> {
+						context.getStatus().error(err, "Error in micronode migration.");
+						EventQueueBatch.create().add(createEvent(BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
+					});
 				});
-			}).doOnError(err -> {
-				DB.get().tx(() -> {
-					context.getStatus().error(err, "Error in micronode migration.");
-					EventQueueBatch.create().add(createEvent(BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
-				});
-			});
 		});
 	}
 

@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -32,7 +31,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.common.collect.Lists;
-import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
@@ -55,66 +53,71 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	/**
 	 * Migrate all nodes of a branch referencing the given schema container to the latest version of the schema.
 	 *
-	 * @param ac
+	 * @param context
 	 *            Migration context
 	 * @return Completable which is completed once the migration finishes
 	 */
-	public Completable migrateNodes(NodeMigrationActionContextImpl ac) {
-		SchemaContainerVersion fromVersion = ac.getFromVersion();
-		SchemaContainerVersion toVersion = ac.getToVersion();
-		SchemaMigrationCause cause = ac.getCause();
-		Branch branch = ac.getBranch();
-		MigrationStatusHandler status = ac.getStatus();
+	public Completable migrateNodes(NodeMigrationActionContextImpl context) {
+		context.validate();
+		return Completable.defer(() -> {
+			SchemaContainerVersion fromVersion = context.getFromVersion();
+			SchemaContainerVersion toVersion = context.getToVersion();
+			SchemaMigrationCause cause = context.getCause();
+			Branch branch = context.getBranch();
+			MigrationStatusHandler status = context.getStatus();
 
-		// Prepare the migration - Collect the migration scripts
-		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
-		Set<String> touchedFields = new HashSet<>();
-		SchemaModel newSchema = db.tx(() -> toVersion.getSchema());
+			// Prepare the migration - Collect the migration scripts
+			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
+			Set<String> touchedFields = new HashSet<>();
+			SchemaModel newSchema = db.tx(() -> toVersion.getSchema());
 
-		try (Tx tx = db.tx()) {
-			prepareMigration(fromVersion, migrationScripts, touchedFields);
-			if (status != null) {
-				status.setStatus(RUNNING);
-				status.commit();
-			}
-			tx.success();
-		} catch (IOException e) {
-			log.error("Error while preparing migration");
-			return Completable.error(e);
-		}
-
-		// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
-		// versions. We'll work on drafts. The migration code will later on also handle publish versions.
-		List<? extends NodeGraphFieldContainer> containers = db.tx(() -> {
-			Iterator<? extends NodeGraphFieldContainer> it = fromVersion.getDraftFieldContainers(branch.getUuid());
-			return Lists.newArrayList(it);
-		});
-
-		// No field containers, migration is done
-		if (containers.isEmpty()) {
-			if (status != null) {
+			try {
 				db.tx(() -> {
-					status.setStatus(COMPLETED);
-					status.commit();
+					prepareMigration(fromVersion, migrationScripts, touchedFields);
+					if (status != null) {
+						status.setStatus(RUNNING);
+						status.commit();
+					}
 				});
+			} catch (Exception e) {
+				log.error("Error while preparing migration");
+				return Completable.error(e);
 			}
-			return Completable.complete();
-		}
 
-		List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, container, errors) -> migrateContainer(ac, batch, container,
-			migrationScripts, newSchema, errors, touchedFields));
+			// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
+			// versions. We'll work on drafts. The migration code will later on also handle publish versions.
+			List<? extends NodeGraphFieldContainer> containers = db.tx(() -> {
+				Iterator<? extends NodeGraphFieldContainer> it = fromVersion.getDraftFieldContainers(branch.getUuid());
+				return Lists.newArrayList(it);
+			});
 
-		// TODO prepare errors. They should be easy to understand and to grasp
-		Completable result = Completable.complete();
-		if (!errorsDetected.isEmpty()) {
-			if (log.isDebugEnabled()) {
-				for (Exception error : errorsDetected) {
-					log.error("Encountered migration error.", error);
+			// No field containers, migration is done
+			if (containers.isEmpty()) {
+				if (status != null) {
+					db.tx(() -> {
+						status.setStatus(COMPLETED);
+						status.commit();
+					});
 				}
+				return Completable.complete();
 			}
-			result = Completable.error(new CompositeException(errorsDetected));
-		}
-		return result;
+
+			List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, container, errors) -> {
+				migrateContainer(context, batch, container, migrationScripts, newSchema, errors, touchedFields);
+			});
+
+			// TODO prepare errors. They should be easy to understand and to grasp
+			Completable result = Completable.complete();
+			if (!errorsDetected.isEmpty()) {
+				if (log.isDebugEnabled()) {
+					for (Exception error : errorsDetected) {
+						log.error("Encountered migration error.", error);
+					}
+				}
+				result = Completable.error(new CompositeException(errorsDetected));
+			}
+			return result;
+		});
 
 	}
 

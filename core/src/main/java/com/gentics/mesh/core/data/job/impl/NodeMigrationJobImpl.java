@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.job.impl;
 
-import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_MIGRATION_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_START;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
@@ -67,6 +66,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 		model.setProject(project.transformToReference());
 		model.setBranch(branch.transformToReference());
 
+		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
 		model.setStatus(status);
 		return model;
 	}
@@ -140,26 +140,26 @@ public class NodeMigrationJobImpl extends JobImpl {
 		return Completable.defer(() -> {
 			NodeMigrationActionContextImpl context = prepareContext();
 
-			Completable migration = handler.migrateNodes(context);
-			return migration.doOnComplete(() -> {
-				DB.get().tx(() -> {
-					JobWarningList warnings = new JobWarningList();
-					if (!context.getConflicts().isEmpty()) {
-						for (ConflictWarning conflict : context.getConflicts()) {
-							log.info("Encountered conflict for node {" + conflict.getNodeUuid() + "} which was automatically resolved.");
-							warnings.add(conflict);
+			return handler.migrateNodes(context)
+				.doOnComplete(() -> {
+					DB.get().tx(() -> {
+						JobWarningList warnings = new JobWarningList();
+						if (!context.getConflicts().isEmpty()) {
+							for (ConflictWarning conflict : context.getConflicts()) {
+								log.info("Encountered conflict for node {" + conflict.getNodeUuid() + "} which was automatically resolved.");
+								warnings.add(conflict);
+							}
 						}
-					}
-					setWarnings(warnings);
-					finalizeMigration(context);
-					context.getStatus().done();
+						setWarnings(warnings);
+						finalizeMigration(context);
+						context.getStatus().done();
+					});
+				}).doOnError(err -> {
+					DB.get().tx(() -> {
+						context.getStatus().error(err, "Error in node migration.");
+						EventQueueBatch.create().add(createEvent(SCHEMA_MIGRATION_FINISHED, FAILED)).dispatch();
+					});
 				});
-			}).doOnError(err -> {
-				DB.get().tx(() -> {
-					context.getStatus().error(err, "Error in node migration.");
-					EventQueueBatch.create().add(createEvent(SCHEMA_MIGRATION_FINISHED, FAILED)).dispatch();
-				});
-			});
 
 		});
 	}

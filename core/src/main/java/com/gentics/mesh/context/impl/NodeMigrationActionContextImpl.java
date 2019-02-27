@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import com.gentics.mesh.context.AbstractInternalActionContext;
@@ -996,6 +997,12 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	@Override
 	public MigrationStatusHandler getStatus() {
 		return status;
+	}
+
+	@Override
+	public void validate() {
+		Objects.requireNonNull(fromContainerVersion, "The source schema reference is missing in the context.");
+		Objects.requireNonNull(toContainerVersion, "The target schema reference is missing in the context.");
 	}
 
 }

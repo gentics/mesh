@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -32,7 +31,6 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
-import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
@@ -56,62 +54,65 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	 * @return Completable which will be completed once the migration has completed
 	 */
 	public Completable migrateMicronodes(MicronodeMigrationContext context) {
+		context.validate();
+		return Completable.defer(() -> {
+			Branch branch = context.getBranch();
+			MicroschemaContainerVersion fromVersion = context.getFromVersion();
+			MicroschemaContainerVersion toVersion = context.getToVersion();
+			MigrationStatusHandler status = context.getStatus();
+			MicroschemaMigrationCause cause = context.getCause();
 
-		Branch branch = context.getBranch();
-		MicroschemaContainerVersion fromVersion = context.getFromVersion();
-		MicroschemaContainerVersion toVersion = context.getToVersion();
-		MigrationStatusHandler status = context.getStatus();
-
-		// Collect the migration scripts
-		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
-		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
-		Set<String> touchedFields = new HashSet<>();
-		try (Tx tx = db.tx()) {
-			prepareMigration(fromVersion, migrationScripts, touchedFields);
-
-			ac.setProject(branch.getProject());
-			ac.setBranch(branch);
-
-			if (status != null) {
-				status.setStatus(RUNNING);
-				status.commit();
-			}
-			tx.success();
-		} catch (IOException e) {
-			return Completable.error(e);
-		}
-
-		// Get the containers, that need to be transformed
-		List<? extends NodeGraphFieldContainer> fieldContainersResult = db.tx(() -> {
-			return fromVersion.getDraftFieldContainers(branch.getUuid()).list();
-		});
-
-		// No field containers, migration is done
-		if (fieldContainersResult.isEmpty()) {
-			if (status != null) {
+			// Collect the migration scripts
+			NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
+			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
+			Set<String> touchedFields = new HashSet<>();
+			try {
 				db.tx(() -> {
-					status.setStatus(COMPLETED);
-					status.commit();
-				});
-			}
-			return Completable.complete();
-		}
-		MicroschemaMigrationCause cause = new MicroschemaMigrationCause();
-		cause.setFromVersion(fromVersion.transformToReference());
-		cause.setToVersion(toVersion.transformToReference());
-		List<Exception> errorsDetected = migrateLoop(fieldContainersResult, cause, status, (batch, container, errors) -> migrateMicronodeContainer(ac,
-			batch, branch, fromVersion, toVersion, container, touchedFields, migrationScripts, errors));
+					prepareMigration(fromVersion, migrationScripts, touchedFields);
 
-		Completable result = Completable.complete();
-		if (!errorsDetected.isEmpty()) {
-			if (log.isDebugEnabled()) {
-				for (Exception error : errorsDetected) {
-					log.error("Encountered migration error.", error);
-				}
+					ac.setProject(branch.getProject());
+					ac.setBranch(branch);
+
+					if (status != null) {
+						status.setStatus(RUNNING);
+						status.commit();
+					}
+				});
+			} catch (Exception e) {
+				return Completable.error(e);
 			}
-			result = Completable.error(new CompositeException(errorsDetected));
-		}
-		return result;
+
+			// Get the containers, that need to be transformed
+			List<? extends NodeGraphFieldContainer> fieldContainersResult = db.tx(() -> {
+				return fromVersion.getDraftFieldContainers(branch.getUuid()).list();
+			});
+
+			// No field containers, migration is done
+			if (fieldContainersResult.isEmpty()) {
+				if (status != null) {
+					db.tx(() -> {
+						status.setStatus(COMPLETED);
+						status.commit();
+					});
+				}
+				return Completable.complete();
+			}
+
+			List<Exception> errorsDetected = migrateLoop(fieldContainersResult, cause, status,
+				(batch, container, errors) -> migrateMicronodeContainer(ac,
+					batch, branch, fromVersion, toVersion, container, touchedFields, migrationScripts, errors));
+
+			Completable result = Completable.complete();
+			if (!errorsDetected.isEmpty()) {
+				if (log.isDebugEnabled()) {
+					for (Exception error : errorsDetected) {
+						log.error("Encountered migration error.", error);
+					}
+				}
+				result = Completable.error(new CompositeException(errorsDetected));
+			}
+			return result;
+		});
 	}
 
 	/**

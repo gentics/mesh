@@ -41,7 +41,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 
 	@Override
 	public void prepare() {
-		//TODO check whether this is in fact start
+		// TODO check whether this is in fact start
 		EventQueueBatch.create().add(createEvent(BRANCH_MIGRATION_START, STARTING)).dispatch();
 	}
 
@@ -56,6 +56,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 		model.setProject(project.transformToReference());
 
 		model.setStatus(status);
+		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
 		return model;
 	}
 
@@ -109,24 +110,8 @@ public class BranchMigrationJobImpl extends JobImpl {
 		return Completable.defer(() -> {
 			BranchMigrationContext context = prepareContext();
 
-			try (Tx tx = DB.get().tx()) {
-				if (log.isDebugEnabled()) {
-					log.debug("Branch migration for job {" + getUuid() + "} was requested");
-				}
-
-				try {
-
-					context.getStatus().commit();
-					tx.success();
-				} catch (Exception e) {
-					DB.get().tx(() -> {
-						context.getStatus().error(e, "Error while preparing branch migration.");
-					});
-					throw e;
-				}
-
-				Completable migration = handler.migrateBranch(context);
-				return migration.doOnComplete(() -> {
+			return handler.migrateBranch(context)
+				.doOnComplete(() -> {
 					DB.get().tx(() -> {
 						finalizeMigration(context);
 						context.getStatus().done();
@@ -137,18 +122,17 @@ public class BranchMigrationJobImpl extends JobImpl {
 						EventQueueBatch.create().add(createEvent(BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
 					});
 				});
-			}
+
 		});
 
 	}
 
 	private void finalizeMigration(BranchMigrationContext context) {
 		// Mark branch as active
-		try (Tx tx = DB.get().tx()) {
+		DB.get().tx(() -> {
 			Branch branch = context.getNewBranch();
 			branch.setActive(true);
-			tx.success();
-		}
+		});
 		DB.get().tx(() -> {
 			EventQueueBatch.create().add(createEvent(BRANCH_MIGRATION_FINISHED, COMPLETED)).dispatch();
 		});

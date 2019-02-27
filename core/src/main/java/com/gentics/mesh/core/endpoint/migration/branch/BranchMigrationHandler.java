@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.endpoint.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -47,52 +48,35 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 	 */
 	public Completable migrateBranch(BranchMigrationContext context) {
 		context.validate();
-		Branch oldBranch = context.getOldBranch();
-		Branch newBranch = context.getNewBranch();
-		MigrationStatusHandler status = context.getStatus();
+		return Completable.defer(() -> {
+			Branch oldBranch = context.getOldBranch();
+			Branch newBranch = context.getNewBranch();
+			BranchMigrationCause cause = context.getCause();
+			MigrationStatusHandler status = context.getStatus();
 
-		return db.tx(() -> {
-			if (status != null) {
-				status.setStatus(RUNNING);
-				status.commit();
-			}
+			db.tx(() -> {
+				if (status != null) {
+					status.setStatus(RUNNING);
+					status.commit();
+				}
+			});
 
 			long count = 0;
-			// Iterate over all nodes of the project and migrate them to the new branch
-			Project project = oldBranch.getProject();
+			List<? extends Node> nodes = db.tx(() -> {
+				Project project = oldBranch.getProject();
+				return project.getNodeRoot().findAll().list();
+			});
+
 			List<Exception> errorsDetected = new ArrayList<>();
-			EventQueueBatch sqb = null;
-			for (Node node : project.getNodeRoot().findAll()) {
-				// Create a new SQB to handle the ES update
-				if (sqb == null) {
-					sqb = EventQueueBatch.create();
-				}
-				migrateNode(node, sqb, oldBranch, newBranch, errorsDetected);
-				if (status != null) {
-					status.incCompleted();
-				}
-				if (count % 50 == 0) {
-					log.info("Migrated nodes: " + count);
-					if (status != null) {
-						status.commit();
-					}
-				}
-				count++;
-				if (count % 500 == 0) {
-					// Process the batch and reset it
-					log.info("Syncing batch with size: " + sqb.size());
-					sqb.dispatch();
-					sqb = null;
-				}
-			}
-			if (sqb != null) {
-				log.info("Syncing last batch with size: " + sqb.size());
-				sqb.dispatch();
-				sqb = null;
-			}
+			// Iterate over all nodes of the project and migrate them to the new branch
+			migrateLoop(nodes, cause, status, (batch, node, errors) -> {
+				migrateNode(node, batch, oldBranch, newBranch, errorsDetected);
+			});
 
 			log.info("Migration of " + count + " node done..");
 			log.info("Encountered {" + errorsDetected.size() + "} errors during micronode migration.");
+
+			// TODO prepare errors. They should be easy to understand and to grasp
 			Completable result = Completable.complete();
 			if (!errorsDetected.isEmpty()) {
 				if (log.isDebugEnabled()) {
