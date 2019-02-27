@@ -1,7 +1,11 @@
 package com.gentics.mesh.core.data.job.impl;
 
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_MIGRATION_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_START;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.STARTING;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -17,6 +21,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.endpoint.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
@@ -44,10 +49,10 @@ public class NodeMigrationJobImpl extends JobImpl {
 	 */
 	@Override
 	public void prepare() {
-		EventQueueBatch.create().add(createEvent(SCHEMA_MIGRATION_START)).dispatch();
+		EventQueueBatch.create().add(createEvent(SCHEMA_MIGRATION_START, STARTING)).dispatch();
 	}
 
-	private SchemaMigrationMeshEventModel createEvent(MeshEvent event) {
+	private SchemaMigrationMeshEventModel createEvent(MeshEvent event, MigrationStatus status) {
 		SchemaMigrationMeshEventModel model = new SchemaMigrationMeshEventModel();
 		model.setEvent(event);
 
@@ -61,6 +66,8 @@ public class NodeMigrationJobImpl extends JobImpl {
 		Project project = branch.getProject();
 		model.setProject(project.transformToReference());
 		model.setBranch(branch.transformToReference());
+
+		model.setStatus(status);
 		return model;
 	}
 
@@ -131,25 +138,26 @@ public class NodeMigrationJobImpl extends JobImpl {
 		NodeMigrationHandler handler = MeshInternal.get().nodeMigrationHandler();
 
 		return Completable.defer(() -> {
-			NodeMigrationActionContextImpl ac = prepareContext();
+			NodeMigrationActionContextImpl context = prepareContext();
 
-			Completable migration = handler.migrateNodes(ac);
+			Completable migration = handler.migrateNodes(context);
 			return migration.doOnComplete(() -> {
 				DB.get().tx(() -> {
 					JobWarningList warnings = new JobWarningList();
-					if (!ac.getConflicts().isEmpty()) {
-						for (ConflictWarning conflict : ac.getConflicts()) {
+					if (!context.getConflicts().isEmpty()) {
+						for (ConflictWarning conflict : context.getConflicts()) {
 							log.info("Encountered conflict for node {" + conflict.getNodeUuid() + "} which was automatically resolved.");
 							warnings.add(conflict);
 						}
 					}
 					setWarnings(warnings);
-					finalizeMigration(ac);
-					ac.getStatus().done();
+					finalizeMigration(context);
+					context.getStatus().done();
 				});
 			}).doOnError(err -> {
 				DB.get().tx(() -> {
-					ac.getStatus().error(err, "Error in node migration.");
+					context.getStatus().error(err, "Error in node migration.");
+					EventQueueBatch.create().add(createEvent(SCHEMA_MIGRATION_FINISHED, FAILED)).dispatch();
 				});
 			});
 
@@ -167,7 +175,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 			}
 		});
 		DB.get().tx(() -> {
-			EventQueueBatch.create().add(createEvent(SCHEMA_MIGRATION_FINISHED)).dispatch();
+			EventQueueBatch.create().add(createEvent(SCHEMA_MIGRATION_FINISHED, COMPLETED)).dispatch();
 		});
 	}
 

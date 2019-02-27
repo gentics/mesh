@@ -1,6 +1,10 @@
 package com.gentics.mesh.core.data.job.impl;
 
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_MIGRATION_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_MIGRATION_START;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.STARTING;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -13,6 +17,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
@@ -23,7 +28,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Completable;
-import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -37,16 +41,22 @@ public class BranchMigrationJobImpl extends JobImpl {
 
 	@Override
 	public void prepare() {
-		EventQueueBatch batch = EventQueueBatch.create();
-		BranchMigrationMeshEventModel event = new BranchMigrationMeshEventModel();
-		event.setEvent(BRANCH_MIGRATION_START);
+		//TODO check whether this is in fact start
+		EventQueueBatch.create().add(createEvent(BRANCH_MIGRATION_START, STARTING)).dispatch();
+	}
+
+	public BranchMigrationMeshEventModel createEvent(MeshEvent event, MigrationStatus status) {
+		BranchMigrationMeshEventModel model = new BranchMigrationMeshEventModel();
+		model.setEvent(event);
 
 		Branch newBranch = getBranch();
-		event.setBranch(newBranch.transformToReference());
+		model.setBranch(newBranch.transformToReference());
 
 		Project project = newBranch.getProject();
-		event.setProject(project.transformToReference());
-		batch.add(event).dispatch();
+		model.setProject(project.transformToReference());
+
+		model.setStatus(status);
+		return model;
 	}
 
 	private BranchMigrationContext prepareContext() {
@@ -124,6 +134,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 				}).doOnError(err -> {
 					DB.get().tx(() -> {
 						context.getStatus().error(err, "Error in branch migration.");
+						EventQueueBatch.create().add(createEvent(BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
 					});
 				});
 			}
@@ -138,8 +149,9 @@ public class BranchMigrationJobImpl extends JobImpl {
 			branch.setActive(true);
 			tx.success();
 		}
-		EventBus eb = Mesh.vertx().eventBus();
-		eb.publish(MeshEvent.BRANCH_MIGRATION_FINISHED.address, null);
+		DB.get().tx(() -> {
+			EventQueueBatch.create().add(createEvent(BRANCH_MIGRATION_FINISHED, COMPLETED)).dispatch();
+		});
 	}
 
 }

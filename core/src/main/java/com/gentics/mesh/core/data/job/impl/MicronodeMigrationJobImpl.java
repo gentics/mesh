@@ -1,6 +1,11 @@
 package com.gentics.mesh.core.data.job.impl;
 
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_MIGRATION_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_MIGRATION_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_MIGRATION_START;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.STARTING;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -16,6 +21,8 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.endpoint.migration.micronode.MicronodeMigrationHandler;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
@@ -39,21 +46,26 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 
 	@Override
 	public void prepare() {
-		EventQueueBatch batch = EventQueueBatch.create();
-		MicroschemaMigrationMeshEventModel event = new MicroschemaMigrationMeshEventModel();
-		event.setEvent(MICROSCHEMA_MIGRATION_START);
+		EventQueueBatch.create().add(createEvent(MICROSCHEMA_MIGRATION_START, STARTING)).dispatch();
+	}
+
+	public MicroschemaMigrationMeshEventModel createEvent(MeshEvent event, MigrationStatus status) {
+		MicroschemaMigrationMeshEventModel model = new MicroschemaMigrationMeshEventModel();
+		model.setEvent(event);
 
 		MicroschemaContainerVersion toVersion = getToMicroschemaVersion();
-		event.setToVersion(toVersion.transformToReference());
+		model.setToVersion(toVersion.transformToReference());
 
 		MicroschemaContainerVersion fromVersion = getFromMicroschemaVersion();
-		event.setFromVersion(fromVersion.transformToReference());
+		model.setFromVersion(fromVersion.transformToReference());
 
 		Branch branch = getBranch();
 		Project project = branch.getProject();
-		event.setProject(project.transformToReference());
-		event.setBranch(branch.transformToReference());
-		batch.add(event).dispatch();
+		model.setProject(project.transformToReference());
+		model.setBranch(branch.transformToReference());
+
+		model.setStatus(status);
+		return model;
 	}
 
 	private MicronodeMigrationContext prepareContext() {
@@ -117,13 +129,21 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 				DB.get().tx(() -> {
 					JobWarningList warnings = new JobWarningList();
 					setWarnings(warnings);
+					finializeMigration(context);
 					context.getStatus().done();
 				});
 			}).doOnError(err -> {
 				DB.get().tx(() -> {
 					context.getStatus().error(err, "Error in micronode migration.");
+					EventQueueBatch.create().add(createEvent(BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
 				});
 			});
+		});
+	}
+
+	private void finializeMigration(MicronodeMigrationContext context) {
+		DB.get().tx(() -> {
+			EventQueueBatch.create().add(createEvent(MICROSCHEMA_MIGRATION_FINISHED, COMPLETED)).dispatch();
 		});
 	}
 

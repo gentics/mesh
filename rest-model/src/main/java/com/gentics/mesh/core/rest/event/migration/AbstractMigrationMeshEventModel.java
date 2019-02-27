@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.event.migration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.event.AbstractMeshEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
@@ -20,8 +21,13 @@ public abstract class AbstractMigrationMeshEventModel extends AbstractMeshEventM
 	@JsonPropertyDescription("Uuid of the corresponding job.")
 	private String uuid;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Status of the migration at the time when the event was send.")
+	private MigrationStatus status;
+
 	/**
 	 * Return the referenced branch.
+	 * 
 	 * @return
 	 */
 	public BranchReference getBranch() {
@@ -30,6 +36,7 @@ public abstract class AbstractMigrationMeshEventModel extends AbstractMeshEventM
 
 	/**
 	 * Set the referenced branch.
+	 * 
 	 * @param branch
 	 */
 	public void setBranch(BranchReference branch) {
@@ -70,6 +77,24 @@ public abstract class AbstractMigrationMeshEventModel extends AbstractMeshEventM
 	 */
 	public void setUuid(String jobUuid) {
 		this.uuid = jobUuid;
+	}
+
+	/**
+	 * Return the current migration status.
+	 * 
+	 * @return
+	 */
+	public MigrationStatus getStatus() {
+		return status;
+	}
+
+	/**
+	 * Set the migration status.
+	 * 
+	 * @param status
+	 */
+	public void setStatus(MigrationStatus status) {
+		this.status = status;
 	}
 
 }
