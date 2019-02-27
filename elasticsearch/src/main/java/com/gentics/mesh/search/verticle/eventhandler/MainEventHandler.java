@@ -80,7 +80,7 @@ public class MainEventHandler implements EventHandler {
 	}
 
 	private static Flowable<SearchRequest> flushRequest(MessageEvent event) {
-		return Flowable.just(provider -> Completable.complete());
+		return Flowable.just(SearchRequest.create(provider -> Completable.complete()));
 	}
 
 	@Override

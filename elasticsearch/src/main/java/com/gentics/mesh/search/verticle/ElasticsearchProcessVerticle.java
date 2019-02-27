@@ -35,6 +35,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	private Subject<MessageEvent> requests = PublishSubject.create();
 	private Subject<Object> idling = PublishSubject.create();
 	private static final Object dummyObject = new Object();
+	// TODO put the counters in a dedicated class and use it here
 	private AtomicInteger pendingRequests = new AtomicInteger();
 	private AtomicInteger pendingTransformations = new AtomicInteger();
 	private List<MessageConsumer<JsonObject>> vertxHandlers;
@@ -117,7 +118,6 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			})
 			.toObservable()
 			.lift(bulker)
-			.doOnNext(ignore -> pendingRequests.incrementAndGet())
 			.concatMap(request ->
 				request.execute(searchProvider).andThen(Observable.just(request))
 					.doOnSubscribe(ignore -> log.trace("Sending request to Elasticsearch:\n" + request)),
@@ -125,24 +125,30 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			)
 			.subscribe(request -> {
 				log.trace("Request completed:\n" + request);
-				pendingRequests.decrementAndGet();
-				if (isIdle()) {
-					log.trace("All requests completed. Sending idle event");
-					vertx.eventBus().send(MeshEvent.SEARCH_IDLE.address, null);
-					idling.onNext(dummyObject);
-				}
+				pendingRequests.addAndGet(-request.requestCount());
+				idleCheck();
 			});
+	}
+
+	private void idleCheck() {
+		if (isIdle()) {
+			log.trace("All requests completed. Sending idle event");
+			vertx.eventBus().send(MeshEvent.SEARCH_IDLE.address, null);
+			idling.onNext(dummyObject);
+		} else {
+			log.trace("Remaining: {} requests, {} transformations, bulking: {}",
+				pendingRequests.get(), pendingTransformations.get(), bulker.bulking());
+		}
 	}
 
 	private Flowable<SearchRequest> generateRequests(MessageEvent messageEvent) {
 		try {
 			return this.mainEventhandler.handle(messageEvent)
+				.doOnNext(req -> pendingRequests.addAndGet(req.requestCount()))
 				.doOnComplete(() -> {
-					if (log.isTraceEnabled()) {
-						String body = messageEvent.message == null ? null : messageEvent.message.toJson();
-						log.trace("Done transforming event {} with body {}", messageEvent.event, body);
-					}
 					pendingTransformations.decrementAndGet();
+					log.trace("Done transforming event {}. Transformations pending: {}", messageEvent.event, pendingTransformations);
+					idleCheck();
 				});
 		} catch (Exception e) {
 			// TODO Error handling
@@ -150,4 +156,6 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			return Flowable.empty();
 		}
 	}
+
+
 }

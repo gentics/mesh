@@ -21,6 +21,11 @@ public class CreateDocumentRequest implements Bulkable {
 	}
 
 	@Override
+	public int requestCount() {
+		return 1;
+	}
+
+	@Override
 	public Completable execute(SearchProvider searchProvider) {
 		return searchProvider.storeDocument(index, id, doc);
 	}

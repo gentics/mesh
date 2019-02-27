@@ -256,6 +256,10 @@ public enum MeshEvent {
 		});
 	}
 
+	public static Completable waitForEvent(MeshEvent event) {
+		return doAndWaitForEvent(event, () -> {});
+	}
+
 	@Override
 	public String toString() {
 		return address;

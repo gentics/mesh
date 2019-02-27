@@ -509,18 +509,25 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 * @param code
 	 * @throws TimeoutException
 	 */
-	protected void waitForEvent(String address, Action code) throws Exception {
+	protected void waitForEvent(String address, Action code) {
 		CountDownLatch latch = new CountDownLatch(1);
 		MessageConsumer<Object> consumer = vertx().eventBus().consumer(address);
 		consumer.handler(msg -> latch.countDown());
 		consumer.completionHandler(res -> {
+			if (res.failed()) {
+				throw new RuntimeException("Could not listen to event", res.cause());
+			}
 			try {
 				code.run();
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
 		});
-		latch.await(2000, TimeUnit.SECONDS);
+		try {
+			latch.await(2000, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
 		consumer.unregister();
 	}
 
@@ -531,8 +538,18 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 * @param code
 	 * @throws TimeoutException
 	 */
-	protected void waitForEvent(MeshEvent event, Action code) throws Exception {
+	protected void waitForEvent(MeshEvent event, Action code) {
 		waitForEvent(event.address, code);
+	}
+
+	/**
+	 * Wait until the given event has been received.
+	 *
+	 * @param event
+	 * @throws TimeoutException
+	 */
+	protected void waitForEvent(MeshEvent event) {
+		waitForEvent(event.address, () -> {});
 	}
 
 	public ElasticSearchProvider getProvider() {
@@ -705,9 +722,16 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		testContext.waitForSearchIdleEvent();
 	}
 
+	protected void waitForSearchIdleEvent(Completable completable) {
+		waitForSearchIdleEvent(completable::blockingAwait);
+	}
+
 	protected void waitForSearchIdleEvent(Action action) {
 		try {
-			waitForEvent(MeshEvent.SEARCH_IDLE, action);
+			waitForEvent(MeshEvent.SEARCH_IDLE, () -> {
+				action.run();
+				vertx().eventBus().publish(MeshEvent.SEARCH_FLUSH_REQUEST.address, null);
+			});
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

@@ -27,10 +27,10 @@ public class ClearHandler implements EventHandler {
 
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
-		return Flowable.just(provider -> provider.clear()
+		return Flowable.just(SearchRequest.create(provider -> provider.clear()
 			.andThen(Completable.fromAction(() -> vertx.eventBus().send(MeshEvent.INDEX_CLEAR_COMPLETED.address, null)))
 			.doOnSubscribe(ignore -> log.info("Clearing indices"))
-			.doOnComplete(() -> log.info("Clearing indices complete"))
+			.doOnComplete(() -> log.info("Clearing indices complete")))
 		);
 	}
 

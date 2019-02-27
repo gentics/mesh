@@ -21,6 +21,11 @@ public class UpdateDocumentRequest implements Bulkable {
 	}
 
 	@Override
+	public int requestCount() {
+		return 1;
+	}
+
+	@Override
 	public Completable execute(SearchProvider searchProvider) {
 		return searchProvider.updateDocument(index, id, doc, true);
 	}

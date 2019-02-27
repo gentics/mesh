@@ -83,11 +83,11 @@ public class SyncHandler implements EventHandler {
 	 * TODO Find a better way to do this, this will not work on an error
 	 */
 	private Flowable<SearchRequest> publishSyncEndEvent() {
-		return Flowable.just(provider -> {
+		return Flowable.just(SearchRequest.create(provider -> {
 			log.debug("Sending sync complete event");
 			vertx.eventBus().send(INDEX_SYNC.address, null);
 			return Completable.complete();
-		});
+		}));
 	}
 
 	@Override
@@ -114,8 +114,8 @@ public class SyncHandler implements EventHandler {
 		return allIndices.flatMapPublisher(indices -> obs.flatMap(handler -> {
 			Set<String> unknownIndices = handler.filterUnknownIndices(indices);
 			return Flowable.fromIterable(unknownIndices)
-				.map(index -> client -> provider.deleteIndex(index)
-				.doOnSubscribe(ignore -> log.info("Deleting unknown index {" + index + "}")));
+				.map(index -> SearchRequest.create(client -> provider.deleteIndex(index)
+				.doOnSubscribe(ignore -> log.info("Deleting unknown index {" + index + "}"))));
 		}));
 	}
 }

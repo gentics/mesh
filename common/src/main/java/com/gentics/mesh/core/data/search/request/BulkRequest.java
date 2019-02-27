@@ -24,6 +24,13 @@ public class BulkRequest implements Bulkable {
 	}
 
 	@Override
+	public int requestCount() {
+		return requests.stream()
+			.mapToInt(SearchRequest::requestCount)
+			.sum();
+	}
+
+	@Override
 	public Completable execute(SearchProvider searchProvider) {
 		return searchProvider.processBulk(requests);
 	}

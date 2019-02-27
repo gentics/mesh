@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.migration;
 
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
@@ -20,19 +21,16 @@ import static com.gentics.mesh.test.TestSize.FULL;
 public class NodeMigrationSearchTrackingTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testMigrationRequests() {
-		String schema = "folder";
-		long nodeCount = findNodesBySchema(schema).count().blockingGet();
-
-		invokeSchemaMigration(schema).blockingAwait();
-		waitForSearchIdleEvent();
+		waitForSearchIdleEvent(migrateSchema("folder"));
 
 		// It should delete and create documents during the migration.
 		assertThat(trackingSearchProvider()).hasSymmetricNodeRequests();
 	}
 
-	private Completable invokeSchemaMigration(String schemaName) {
+	private Completable migrateSchema(String schemaName) {
 		return findSchemaByName(schemaName)
-			.flatMapCompletable(schema -> client().updateSchema(schema.getUuid(), addRandomField(schema)).toCompletable());
+			.flatMapCompletable(schema -> client().updateSchema(schema.getUuid(), addRandomField(schema)).toCompletable())
+			.andThen(MeshEvent.waitForEvent(MeshEvent.SCHEMA_MIGRATION_FINISHED));
 	}
 
 	private SchemaUpdateRequest addRandomField(SchemaResponse schemaResponse) {

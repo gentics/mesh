@@ -463,7 +463,7 @@ public class MeshTestContext extends TestWatcher {
 		Objects.requireNonNull(idleConsumer, "Call #listenToSearchIdleEvent first");
 		ElasticsearchProcessVerticle verticle = ((BootstrapInitializerImpl) meshDagger.boot()).loader.get().elasticsearchProcessVerticle.get();
 		try {
-			verticle.flush();
+			verticle.flush().blockingAwait();
 			idleLatch = new CountDownLatch(1);
 			boolean success = idleLatch.await(30, TimeUnit.SECONDS);
 			if (!success) {

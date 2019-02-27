@@ -19,6 +19,11 @@ public class DeleteDocumentRequest implements Bulkable {
 	}
 
 	@Override
+	public int requestCount() {
+		return 1;
+	}
+
+	@Override
 	public Completable execute(SearchProvider searchProvider) {
 		return searchProvider.deleteDocument(index, id);
 	}
