@@ -61,7 +61,6 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 				}
 			});
 
-			long count = 0;
 			List<? extends Node> nodes = db.tx(() -> {
 				Project project = oldBranch.getProject();
 				return project.getNodeRoot().findAll().list();
@@ -73,8 +72,9 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 				migrateNode(node, batch, oldBranch, newBranch, errorsDetected);
 			});
 
-			log.info("Migration of " + count + " node done..");
-			log.info("Encountered {" + errorsDetected.size() + "} errors during micronode migration.");
+			if (!errorsDetected.isEmpty()) {
+				log.info("Encountered {" + errorsDetected.size() + "} errors during micronode migration.");
+			}
 
 			// TODO prepare errors. They should be easy to understand and to grasp
 			Completable result = Completable.complete();

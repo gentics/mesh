@@ -25,7 +25,6 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
@@ -128,10 +127,11 @@ public class BranchMigrationJobImpl extends JobImpl {
 	}
 
 	private void finalizeMigration(BranchMigrationContext context) {
-		// Mark branch as active
+		// Mark branch as active & migrated
 		DB.get().tx(() -> {
 			Branch branch = context.getNewBranch();
 			branch.setActive(true);
+			branch.setMigrated(true);
 		});
 		DB.get().tx(() -> {
 			EventQueueBatch.create().add(createEvent(BRANCH_MIGRATION_FINISHED, COMPLETED)).dispatch();
