@@ -1,5 +1,25 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH_TAG;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_BRANCH;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_BRANCH;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
+import static com.gentics.mesh.util.URIUtils.encodeSegment;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -29,11 +49,13 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.event.branch.BranchMeshEventModel;
+import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.dagger.DB;
@@ -47,28 +69,9 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.VersionUtil;
 import com.syncleus.ferma.traversals.VertexTraversal;
+
 import io.reactivex.Observable;
 import io.reactivex.Single;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH_TAG;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_BRANCH;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_BRANCH;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
-import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
-import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 /**
  * @see Branch
@@ -324,12 +327,14 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public TraversalResult<? extends SchemaContainerVersion> findActiveSchemaVersions() {
-		return new TraversalResult<>(outE(HAS_SCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV().frameExplicit(SchemaContainerVersionImpl.class));
+		return new TraversalResult<>(
+			outE(HAS_SCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV().frameExplicit(SchemaContainerVersionImpl.class));
 	}
 
 	@Override
 	public Iterable<? extends MicroschemaContainerVersion> findActiveMicroschemaVersions() {
-		return outE(HAS_MICROSCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV().frameExplicit(MicroschemaContainerVersionImpl.class);
+		return outE(HAS_MICROSCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV()
+			.frameExplicit(MicroschemaContainerVersionImpl.class);
 	}
 
 	@Override
@@ -365,6 +370,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public Job assignSchemaVersion(User user, SchemaContainerVersion schemaContainerVersion, EventQueueBatch batch) {
 		BranchSchemaEdge edge = findBranchSchemaEdge(schemaContainerVersion);
+		Job job = null;
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {
 			SchemaContainerVersion currentVersion = findLatestSchemaVersion(schemaContainerVersion.getSchemaContainer());
@@ -372,18 +378,25 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 			// Enqueue the schema migration for each found schema version
 			edge.setActive(true);
 			if (currentVersion != null) {
-				Job job = MeshInternal.get().boot().jobRoot().enqueueSchemaMigration(user, this, currentVersion, schemaContainerVersion);
+				job = MeshInternal.get().boot().jobRoot().enqueueSchemaMigration(user, this, currentVersion, schemaContainerVersion);
 				edge.setMigrationStatus(QUEUED);
 				edge.setJobUuid(job.getUuid());
-				return job;
 			} else {
 				// No migration needed since there was no previous version assigned.
 				edge.setMigrationStatus(COMPLETED);
-				return null;
 			}
-		} else {
-			return null;
+			batch.add(createSchemaAssignedEvent(schemaContainerVersion, edge.getMigrationStatus()));
 		}
+		return job;
+	}
+
+	private BranchSchemaAssignEventModel createSchemaAssignedEvent(SchemaContainerVersion schemaContainerVersion, MigrationStatus status) {
+		BranchSchemaAssignEventModel model = new BranchSchemaAssignEventModel();
+		fillEventInfo(model);
+		model.setSchema(schemaContainerVersion.transformToReference());
+		model.setStatus(status);
+		model.setBranch(transformToReference());
+		return model;
 	}
 
 	@Override

@@ -213,7 +213,6 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			// Assign the schema to the project
 			utils.eventAction(batch -> {
 				root.addSchemaContainer(ac.getUser(), schema, batch);
-				batch.add(schema.onUpdated());
 			});
 			return schema.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
