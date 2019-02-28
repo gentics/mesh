@@ -85,36 +85,30 @@ public class HandlerUtilities {
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxAction1<RootVertex<T>> handler,
 		String uuid) {
 
-		lockClusterWrites();
-
 		asyncTx(ac, (tx) -> {
-			try {
-				RootVertex<T> root = handler.handle();
-				T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
+			RootVertex<T> root = handler.handle();
+			T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
 
-				// Load the name and uuid of the element. We need this info after deletion.
-				String elementUuid = element.getUuid();
-				String name = null;
-				if (element instanceof NamedElement) {
-					name = ((NamedElement) element).getName();
-				}
-
-				database.tx(() -> {
-					BulkActionContext bac = searchQueue.createBulkContext();
-					// Check whether the element is indexable. Indexable elements must also be purged from the search index.
-					if (element instanceof IndexableElement) {
-						element.delete(bac);
-						return bac.batch();
-					} else {
-						throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
-					}
-				}).processSync();
-				element.onDeleted(uuid, name);
-				log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
-				return (RM) null;
-			} finally {
-				unlockClusterWrites();
+			// Load the name and uuid of the element. We need this info after deletion.
+			String elementUuid = element.getUuid();
+			String name = null;
+			if (element instanceof NamedElement) {
+				name = ((NamedElement) element).getName();
 			}
+
+			database.tx(() -> {
+				BulkActionContext bac = searchQueue.createBulkContext();
+				// Check whether the element is indexable. Indexable elements must also be purged from the search index.
+				if (element instanceof IndexableElement) {
+					element.delete(bac);
+					return bac.batch();
+				} else {
+					throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
+				}
+			}).processSync();
+			element.onDeleted(uuid, name);
+			log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
+			return (RM) null;
 		}, model -> ac.send(NO_CONTENT));
 	}
 
@@ -133,30 +127,6 @@ public class HandlerUtilities {
 		createOrUpdateElement(ac, uuid, handler);
 	}
 
-	private static Semaphore writeLock = new Semaphore(1);
-
-	/**
-	 * Locks writes if in clustered mode. Use this to prevent concurrent write transactions.
-	 */
-	public void lockClusterWrites() {
-		if (clustered) {
-			try {
-				writeLock.acquire();
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
-		}
-	}
-
-	/**
-	 * Releases the lock that was acquired in {@link #lockClusterWrites()}.
-	 */
-	public void unlockClusterWrites() {
-		if (clustered) {
-			writeLock.release();
-		}
-	}
-
 	/**
 	 * Either create or update an element with the given uuid.
 	 * 
@@ -169,66 +139,60 @@ public class HandlerUtilities {
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
 		TxAction1<RootVertex<T>> handler) {
 
-		lockClusterWrites();
-
 		AtomicBoolean created = new AtomicBoolean(false);
 		asyncTx(ac, (tx) -> {
-			try {
-				RootVertex<T> root = handler.handle();
+			RootVertex<T> root = handler.handle();
 
-				// 1. Load the element from the root element using the given uuid (if not null)
-				T element = null;
-				if (uuid != null) {
-					if (!UUIDUtil.isUUID(uuid)) {
-						throw error(BAD_REQUEST, "error_illegal_uuid", uuid);
-					}
-					element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM, false);
+			// 1. Load the element from the root element using the given uuid (if not null)
+			T element = null;
+			if (uuid != null) {
+				if (!UUIDUtil.isUUID(uuid)) {
+					throw error(BAD_REQUEST, "error_illegal_uuid", uuid);
 				}
-
-				ResultInfo info = null;
-
-				// Check whether we need to update a found element or whether we need to create a new one.
-				if (element != null) {
-					final T updateElement = element;
-					Tuple<Boolean, SearchQueueBatch> tuple = database.tx(() -> {
-						SearchQueueBatch batch = searchQueue.create();
-						boolean updated = updateElement.update(ac, batch);
-						return Tuple.tuple(updated, batch);
-					});
-
-					SearchQueueBatch b = tuple.v2();
-					Boolean isUpdated = tuple.v1();
-					RM model = updateElement.transformToRestSync(ac, 0);
-					info = new ResultInfo(model, b);
-					if (isUpdated) {
-						updateElement.onUpdated();
-					}
-				} else {
-					Tuple<T, SearchQueueBatch> tuple = database.tx(() -> {
-						SearchQueueBatch batch = searchQueue.create();
-						created.set(true);
-						return Tuple.tuple(root.create(ac, batch, uuid), batch);
-					});
-
-					SearchQueueBatch b = tuple.v2();
-					T createdElement = tuple.v1();
-					RM model = createdElement.transformToRestSync(ac, 0);
-					String path = createdElement.getAPIPath(ac);
-					info = new ResultInfo(model, b);
-					info.setProperty("path", path);
-					createdElement.onCreated();
-					ac.setLocation(path);
-				}
-
-				// 3. The updating transaction has succeeded. Now lets store it in the index
-				final ResultInfo info2 = info;
-				return database.tx(() -> {
-					info2.getBatch().processSync();
-					return info2.getModel();
-				});
-			} finally {
-				unlockClusterWrites();
+				element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM, false);
 			}
+
+			ResultInfo info = null;
+
+			// Check whether we need to update a found element or whether we need to create a new one.
+			if (element != null) {
+				final T updateElement = element;
+				Tuple<Boolean, SearchQueueBatch> tuple = database.tx(() -> {
+					SearchQueueBatch batch = searchQueue.create();
+					boolean updated = updateElement.update(ac, batch);
+					return Tuple.tuple(updated, batch);
+				});
+
+				SearchQueueBatch b = tuple.v2();
+				Boolean isUpdated = tuple.v1();
+				RM model = updateElement.transformToRestSync(ac, 0);
+				info = new ResultInfo(model, b);
+				if (isUpdated) {
+					updateElement.onUpdated();
+				}
+			} else {
+				Tuple<T, SearchQueueBatch> tuple = database.tx(() -> {
+					SearchQueueBatch batch = searchQueue.create();
+					created.set(true);
+					return Tuple.tuple(root.create(ac, batch, uuid), batch);
+				});
+
+				SearchQueueBatch b = tuple.v2();
+				T createdElement = tuple.v1();
+				RM model = createdElement.transformToRestSync(ac, 0);
+				String path = createdElement.getAPIPath(ac);
+				info = new ResultInfo(model, b);
+				info.setProperty("path", path);
+				createdElement.onCreated();
+				ac.setLocation(path);
+			}
+
+			// 3. The updating transaction has succeeded. Now lets store it in the index
+			final ResultInfo info2 = info;
+			return database.tx(() -> {
+				info2.getBatch().processSync();
+				return info2.getModel();
+			});
 		}, model -> {
 			ac.send(model, created.get() ? CREATED : OK);
 		});

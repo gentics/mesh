@@ -76,30 +76,25 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.lockClusterWrites();
-
 		utils.asyncTx(ac, () -> {
-			try {
-				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM);
-				if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
-					throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
-				}
-				String name = node.getDisplayName(ac);
-				SchemaContainer schema = node.getSchemaContainer();
-
-				// Create the batch first since we can't delete the container and access it later in batch creation
-				db.tx(() -> {
-					BulkActionContext bac = searchQueue.createBulkContext();
-					node.deleteFromBranch(ac, ac.getBranch(), bac, false);
-					return bac.batch();
-				}).processSync();
-				node.onDeleted(uuid, name, schema, null);
-
-				return null;
-			} finally {
-				utils.unlockClusterWrites();
+			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM);
+			if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
+				throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 			}
+			String name = node.getDisplayName(ac);
+			SchemaContainer schema = node.getSchemaContainer();
+
+			// Create the batch first since we can't delete the container and access it later in batch creation
+			db.tx(() -> {
+				BulkActionContext bac = searchQueue.createBulkContext();
+				node.deleteFromBranch(ac, ac.getBranch(), bac, false);
+				return bac.batch();
+			}).processSync();
+			node.onDeleted(uuid, name, schema, null);
+
+			return null;
 		}, m -> ac.send(NO_CONTENT));
+
 	}
 
 	/**
