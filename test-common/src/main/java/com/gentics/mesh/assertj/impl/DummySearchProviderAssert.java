@@ -211,14 +211,22 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	public DummySearchProviderAssert hasSymmetricNodeRequests() {
 		List<Tuple<CreateDocumentRequest, DeleteDocumentRequest>> requests = actual.getBulkRequests()
 			.stream()
-			.filter(this::isDocumentRequest)
+			.filter(this::isNodeRequest)
 			.collect(toPairs(CreateDocumentRequest.class, DeleteDocumentRequest.class));
 		requests.forEach(this::assertMatching);
 		return this;
 	}
 
-	private boolean isDocumentRequest(Bulkable request) {
-		return request instanceof CreateDocumentRequest || request instanceof DeleteDocumentRequest;
+	private boolean isNodeRequest(Bulkable request) {
+		if (request instanceof CreateDocumentRequest) {
+			CreateDocumentRequest req = (CreateDocumentRequest) request;
+			return req.getIndex().startsWith("node");
+		} else if (request instanceof DeleteDocumentRequest) {
+			DeleteDocumentRequest req = (DeleteDocumentRequest) request;
+			return req.getIndex().startsWith("node");
+		} else {
+			return false;
+		}
 	}
 
 	private void assertMatching(Tuple<CreateDocumentRequest, DeleteDocumentRequest> requests) {
