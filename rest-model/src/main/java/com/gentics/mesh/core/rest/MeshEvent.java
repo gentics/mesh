@@ -286,7 +286,7 @@ public enum MeshEvent {
 		Mesh mesh = Mesh.mesh();
 		EventBus eb = mesh.getVertx().eventBus();
 		String name = mesh.getOptions().getNodeName();
-		eb.send(JOB_WORKER_ADDRESS + name, null);
+		eb.publish(JOB_WORKER_ADDRESS + name, null);
 	}
 
 	/**

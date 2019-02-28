@@ -78,7 +78,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	 * Flushes the buffer of Elasticsearch requests and dispatches all pending requests.
 	 */
 	public Completable flush() {
-		return Completable.fromRunnable(() -> vertx.eventBus().send(MeshEvent.SEARCH_FLUSH_REQUEST.address, null));
+		return Completable.fromRunnable(() -> vertx.eventBus().publish(MeshEvent.SEARCH_FLUSH_REQUEST.address, null));
 //		return Completable.defer(() -> {
 //			if (bulker != null) {
 //				bulker.flush();
@@ -133,7 +133,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	private void idleCheck() {
 		if (isIdle()) {
 			log.trace("All requests completed. Sending idle event");
-			vertx.eventBus().send(MeshEvent.SEARCH_IDLE.address, null);
+			vertx.eventBus().publish(MeshEvent.SEARCH_IDLE.address, null);
 			idling.onNext(dummyObject);
 		} else {
 			log.trace("Remaining: {} requests, {} transformations, bulking: {}",

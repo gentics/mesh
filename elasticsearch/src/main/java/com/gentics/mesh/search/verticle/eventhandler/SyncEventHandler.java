@@ -44,7 +44,7 @@ public class SyncEventHandler implements EventHandler {
 	 * Send the index sync event which will trigger the index sync job.
 	 */
 	public static void invokeSync() {
-		Mesh.mesh().getVertx().eventBus().send(INDEX_SYNC_WORKER_ADDRESS.address, null);
+		Mesh.mesh().getVertx().eventBus().publish(INDEX_SYNC_WORKER_ADDRESS.address, null);
 	}
 
 	public static Completable invokeSyncCompletable() {
@@ -52,7 +52,7 @@ public class SyncEventHandler implements EventHandler {
 	}
 
 	public static void invokeClear() {
-		Mesh.mesh().getVertx().eventBus().send(INDEX_CLEAR_REQUEST.address, null);
+		Mesh.mesh().getVertx().eventBus().publish(INDEX_CLEAR_REQUEST.address, null);
 	}
 
 	public static Completable invokeClearCompletable() {
@@ -85,7 +85,7 @@ public class SyncEventHandler implements EventHandler {
 	private Flowable<SearchRequest> publishSyncEndEvent() {
 		return Flowable.just(SearchRequest.create(provider -> {
 			log.debug("Sending sync complete event");
-			vertx.eventBus().send(INDEX_SYNC.address, null);
+			vertx.eventBus().publish(INDEX_SYNC.address, null);
 			return Completable.complete();
 		}));
 	}

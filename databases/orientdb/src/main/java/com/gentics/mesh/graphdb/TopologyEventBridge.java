@@ -1,21 +1,20 @@
 package com.gentics.mesh.graphdb;
 
-import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
-import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
-import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINING;
-import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_LEFT;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import com.gentics.mesh.Mesh;
 import com.orientechnologies.orient.server.distributed.ODistributedLifecycleListener;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
-
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINING;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_LEFT;
 
 /**
  * Listener for OrientDB cluster specific events. The listener relays the events via messages to the eventbus.
@@ -42,7 +41,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 			log.debug("Node {" + nodeName + "} is joining the cluster.");
 		}
 		if (Mesh.isVertxReady()) {
-			getEventBus().send(CLUSTER_NODE_JOINING.address, nodeName);
+			getEventBus().publish(CLUSTER_NODE_JOINING.address, nodeName);
 		}
 		String currentVersion = Mesh.getPlainVersion();
 		if (!nodeName.contains("@")) {
@@ -62,7 +61,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 			log.debug("Node {" + iNode + "} joined the cluster.");
 		}
 		if (Mesh.isVertxReady()) {
-			getEventBus().send(CLUSTER_NODE_JOINED.address, iNode);
+			getEventBus().publish(CLUSTER_NODE_JOINED.address, iNode);
 		}
 	}
 
@@ -73,7 +72,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 		}
 //		db.removeNode(iNode);
 		if (Mesh.isVertxReady()) {
-			getEventBus().send(CLUSTER_NODE_LEFT.address, iNode);
+			getEventBus().publish(CLUSTER_NODE_LEFT.address, iNode);
 		}
 	}
 
@@ -85,7 +84,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 			statusInfo.put("node", iNode);
 			statusInfo.put("database", iDatabaseName);
 			statusInfo.put("status", iNewStatus.name());
-			getEventBus().send(CLUSTER_DATABASE_CHANGE_STATUS.address, statusInfo);
+			getEventBus().publish(CLUSTER_DATABASE_CHANGE_STATUS.address, statusInfo);
 		}
 		if ("storage".equals(iDatabaseName) && iNewStatus == DB_STATUS.ONLINE && iNode.equals(db.getNodeName())) {
 			nodeJoinLatch.countDown();

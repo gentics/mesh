@@ -70,12 +70,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
@@ -729,15 +731,24 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	}
 
 	protected void waitForSearchIdleEvent(Completable completable) {
-		waitForSearchIdleEvent(completable::blockingAwait);
+		waitForSearchIdleEvent((Action) completable::blockingAwait);
 	}
 
 	protected void waitForSearchIdleEvent(Action action) {
+		waitForSearchIdleEvent(() -> {
+			action.run();
+			return null;
+		});
+	}
+
+	protected <T> T waitForSearchIdleEvent(Callable<T> action) {
 		try {
+			AtomicReference<T> ref = new AtomicReference<>();
 			waitForEvent(MeshEvent.SEARCH_IDLE, () -> {
-				action.run();
+				ref.set(action.call());
 				vertx().eventBus().publish(MeshEvent.SEARCH_FLUSH_REQUEST.address, null);
 			});
+			return ref.get();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -769,5 +780,23 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	private <T> Observable<T> fetchList(MeshRequest<? extends ListResponse<T>> request) {
 		return request.toObservable().flatMap(response -> Observable.fromIterable(response.getData()));
+	}
+
+	/**
+	 * Call the given handler, latch for the future and assert success.
+	 * Waits for search to be idle, then returns the result.
+	 *
+	 * @param handler
+	 *            handler
+	 * @param <T>
+	 *            type of the returned object
+	 * @return result of the future
+	 */
+	public <T> T callAndWait(ClientHandler<T> handler) {
+		try {
+			return waitForSearchIdleEvent(() -> handler.handle().blockingGet());
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

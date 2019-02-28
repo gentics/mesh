@@ -1,14 +1,22 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.i18n.I18NUtil;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
+import com.gentics.mesh.core.rest.validation.ValidationStatus;
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.IndexOptionHelper;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -22,25 +30,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
-
-import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.i18n.I18NUtil;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
-import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
-import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
-import com.gentics.mesh.core.rest.validation.ValidationStatus;
-import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.IndexOptionHelper;
-
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
 public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
@@ -199,6 +197,9 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 			nodeCreateRequest.getFields().put("content", FieldUtil.createStringField(content));
 			call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 		}
+
+		waitForSearchIdleEvent();
+
 		// 3. Invoke search
 		String searchQuery = getText("/elasticsearch/custom/customSearchQuery.es");
 		JsonObject searchResult = new JsonObject(call(() -> client().searchNodesRaw(PROJECT_NAME, searchQuery)).toString());
