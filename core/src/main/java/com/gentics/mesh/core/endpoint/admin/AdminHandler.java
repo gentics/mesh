@@ -29,6 +29,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorage;
 import com.syncleus.ferma.tx.Tx;
 
+import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -85,35 +86,48 @@ public class AdminHandler extends AbstractHandler {
 	 */
 	public void handleRestore(InternalActionContext ac) {
 		MeshOptions config = Mesh.mesh().getOptions();
+		String dir = config.getStorageOptions().getDirectory();
+		File backupDir = new File(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory());
+		boolean inMemory = dir == null;
+
 		if (config.getClusterOptions() != null && config.getClusterOptions().isEnabled()) {
-			ac.fail(error(SERVICE_UNAVAILABLE, "restore_error_in_cluster_mode"));
-			return;
+			error(SERVICE_UNAVAILABLE, "restore_error_in_cluster_mode");
 		}
-		db.asyncTx(() -> {
+		if (config.getClusterOptions().isEnabled()) {
+			throw error(SERVICE_UNAVAILABLE, "restore_error_in_cluster_mode");
+		}
+		if (config.getStorageOptions().getStartServer()) {
+			throw error(SERVICE_UNAVAILABLE, "restore_error_in_server_mode");
+		}
+		if (inMemory) {
+			throw error(SERVICE_UNAVAILABLE, "restore_error_not_supported_in_memory_mode");
+		}
+
+		db.tx((tx) -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			File backupDir = new File(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory());
+		});
 
-			// Find the file which was last modified
-			File latestFile = Arrays.asList(backupDir.listFiles()).stream().filter(file -> file.getName().endsWith(".zip"))
-				.sorted(comparing(File::lastModified)).reduce((first, second) -> second).orElseGet(() -> null);
-
-			if (latestFile == null) {
-				throw error(INTERNAL_SERVER_ERROR, "error_backup", backupDir.getAbsolutePath());
-			}
+		// Find the file which was last modified
+		File latestFile = Arrays.asList(backupDir.listFiles()).stream().filter(file -> file.getName().endsWith(".zip"))
+			.sorted(comparing(File::lastModified)).reduce((first, second) -> second).orElseGet(() -> null);
+		if (latestFile == null) {
+			throw error(INTERNAL_SERVER_ERROR, "error_backup", backupDir.getAbsolutePath());
+		}
+		Completable.fromAction(() -> {
+			// TODO put mesh in backup mode
+			db.stop();
 			db.restoreGraph(latestFile.getAbsolutePath());
-
-			// FIXME: Fix for PrjHub #10569 - ClassCastException
-			db.reindex();
-			// Now clear the cached references and cached permissions
+			db.setupConnectionPool();
+			routerStorage.root().apiRouter().projectsRouter().getProjectRouters().clear();
 			MeshRootImpl.clearReferences();
 			PermissionStore.invalidate(false);
-			routerStorage.root().apiRouter().projectsRouter().getProjectRouters().clear();
+		}).andThen(db.asyncTx(() -> {
+			// Update the routes by loading the projects
 			boot.initProjects();
-
 			return Single.just(message(ac, "restore_finished"));
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		})).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**

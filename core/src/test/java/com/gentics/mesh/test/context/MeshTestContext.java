@@ -228,9 +228,12 @@ public class MeshTestContext extends TestWatcher {
 		long start = System.currentTimeMillis();
 		if (settings.inMemoryDB()) {
 			MeshInternal.get().database().clear();
+		} else if (settings.clusterMode()) {
+			MeshInternal.get().database().clear();
 		} else {
 			MeshInternal.get().database().stop();
-			File dbDir = new File(Mesh.mesh().getOptions().getStorageOptions().getDirectory());
+			String dir = Mesh.mesh().getOptions().getStorageOptions().getDirectory();
+			File dbDir = new File(dir);
 			FileUtils.deleteDirectory(dbDir);
 			MeshInternal.get().database().setupConnectionPool();
 		}

@@ -5,32 +5,25 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
 import java.io.IOException;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true, inMemoryDB = false)
-public class AdminEndpointBackupTest extends AbstractMeshTest {
+public class AdminEndpointBackupLocalTest extends AbstractMeshTest {
 
 	@Test
 	public void testBackupRestore() throws IOException {
 		final String NEW_PROJECT_NAME = "enemenemuh";
-
-		try (Tx tx = tx()) {
-			group().addRole(roles().get("admin"));
-			tx.success();
-		}
+		grantAdminRole();
 		GenericMessageResponse message = call(() -> client().invokeBackup());
 		assertThat(message).matches("backup_finished");
 
@@ -50,18 +43,9 @@ public class AdminEndpointBackupTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testRestoreInClusterMode() {
-		Mesh.mesh().getOptions().getClusterOptions().setEnabled(true);
-		call(() -> client().invokeRestore(), SERVICE_UNAVAILABLE, "restore_error_in_cluster_mode");
-	}
-
-	@Test
 	@Ignore("Endpoint disabled")
 	public void testExportImport() {
-		try (Tx tx = tx()) {
-			group().addRole(roles().get("admin"));
-			tx.success();
-		}
+		grantAdminRole();
 		GenericMessageResponse message = call(() -> client().invokeExport());
 		assertThat(message).matches("export_finished");
 
