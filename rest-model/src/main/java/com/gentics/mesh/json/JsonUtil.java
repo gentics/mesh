@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
@@ -29,8 +30,12 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.json.deserializer.EventCauseInfoDeserializer;
 import com.gentics.mesh.json.deserializer.FieldDeserializer;
@@ -112,11 +117,25 @@ public final class JsonUtil {
 
 			@Override
 			public void setupModule(SetupContext context) {
-				context.addAbstractTypeResolver(new SimpleAbstractTypeResolver().addMapping(Schema.class, SchemaModelImpl.class));
-				context.addAbstractTypeResolver(new SimpleAbstractTypeResolver().addMapping(Microschema.class, MicroschemaModelImpl.class));
+				addAbstractMapping(context, Schema.class, SchemaModelImpl.class);
+				addAbstractMapping(context, Microschema.class, MicroschemaModelImpl.class);
+				addAbstractMapping(context, SchemaReference.class, SchemaReferenceImpl.class);
+				addAbstractMapping(context, MicroschemaReference.class, MicroschemaReferenceImpl.class);
 			}
 		});
 
+	}
+
+	/**
+	 * Adds a simple mapping from an abstract type (interface or abstract class) to a single concrete type.
+	 *
+	 * @param context
+	 * @param abstractType
+	 * @param concreteType
+	 * @param <T>
+	 */
+	private static <T> void addAbstractMapping(Module.SetupContext context, Class<T> abstractType, Class<? extends T> concreteType) {
+		context.addAbstractTypeResolver(new SimpleAbstractTypeResolver().addMapping(abstractType, concreteType));
 	}
 
 	/**
