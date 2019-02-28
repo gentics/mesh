@@ -22,12 +22,12 @@ import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toStream;
 
 @Singleton
-public class GroupHandler implements EventHandler {
+public class GroupEventHandler implements EventHandler {
 	private final MeshHelper helper;
 	private final MeshEntities entities;
 
 	@Inject
-	public GroupHandler(MeshHelper helper, MeshEntities entities) {
+	public GroupEventHandler(MeshHelper helper, MeshEntities entities) {
 		this.helper = helper;
 		this.entities = entities;
 	}

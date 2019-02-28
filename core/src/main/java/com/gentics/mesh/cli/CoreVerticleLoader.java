@@ -5,7 +5,7 @@ import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
-import com.gentics.mesh.search.verticle.eventhandler.SyncHandler;
+import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -42,7 +42,7 @@ public class CoreVerticleLoader {
 	public JobWorkerVerticle jobWorkerVerticle;
 
 	@Inject
-	public Provider<SyncHandler> indexSyncVerticle;
+	public Provider<SyncEventHandler> indexSyncVerticle;
 
 	@Inject
 	public Lazy<ElasticsearchProcessVerticle> elasticsearchProcessVerticle;

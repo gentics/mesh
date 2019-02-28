@@ -30,9 +30,9 @@ import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_WORKER_ADDRESS;
 /**
  * Verticle which will execute the elasticsearch sync.
  */
-public class SyncHandler implements EventHandler {
+public class SyncEventHandler implements EventHandler {
 
-	private static final Logger log = LoggerFactory.getLogger(SyncHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(SyncEventHandler.class);
 
 	private final Lazy<IndexHandlerRegistry> registry;
 
@@ -48,7 +48,7 @@ public class SyncHandler implements EventHandler {
 	}
 
 	public static Completable invokeSyncCompletable() {
-		return MeshEvent.doAndWaitForEvent(INDEX_SYNC, SyncHandler::invokeSync);
+		return MeshEvent.doAndWaitForEvent(INDEX_SYNC, SyncEventHandler::invokeSync);
 	}
 
 	public static void invokeClear() {
@@ -56,11 +56,11 @@ public class SyncHandler implements EventHandler {
 	}
 
 	public static Completable invokeClearCompletable() {
-		return MeshEvent.doAndWaitForEvent(INDEX_CLEAR_COMPLETED, SyncHandler::invokeClear);
+		return MeshEvent.doAndWaitForEvent(INDEX_CLEAR_COMPLETED, SyncEventHandler::invokeClear);
 	}
 
 	@Inject
-	public SyncHandler(Lazy<IndexHandlerRegistry> registry, SearchProvider provider, Vertx vertx) {
+	public SyncEventHandler(Lazy<IndexHandlerRegistry> registry, SearchProvider provider, Vertx vertx) {
 		this.registry = registry;
 		this.provider = provider;
 		this.vertx = vertx;

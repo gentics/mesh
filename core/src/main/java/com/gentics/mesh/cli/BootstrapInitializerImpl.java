@@ -1,35 +1,5 @@
 package com.gentics.mesh.cli;
 
-import static com.gentics.mesh.core.rest.MeshEvent.STARTUP;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static java.util.concurrent.TimeUnit.SECONDS;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.naming.InvalidNameException;
-
-import com.gentics.mesh.search.verticle.eventhandler.SyncHandler;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -89,12 +59,12 @@ import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
+import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.util.MavenVersionNumber;
 import com.hazelcast.core.HazelcastInstance;
 import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
-
 import dagger.Lazy;
 import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
@@ -104,6 +74,33 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.dropwizard.DropwizardMetricsOptions;
 import io.vertx.ext.dropwizard.MetricsService;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.naming.InvalidNameException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.STARTUP;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * @see BootstrapInitializer
@@ -165,7 +162,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 		// Ensure indices are setup and sync the documents
 		log.info("Invoking index sync. This may take some time..");
-		SyncHandler.invokeSyncCompletable().blockingAwait();
+		SyncEventHandler.invokeSyncCompletable().blockingAwait();
 		log.info("Index sync completed.");
 	});
 

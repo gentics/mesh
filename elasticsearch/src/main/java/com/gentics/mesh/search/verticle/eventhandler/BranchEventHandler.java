@@ -23,14 +23,14 @@ import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toRequests;
 
 @Singleton
-public class BranchHandler implements EventHandler {
+public class BranchEventHandler implements EventHandler {
 
 	private final NodeIndexHandler nodeIndexHandler;
 
 	private final MeshHelper helper;
 
 	@Inject
-	public BranchHandler(NodeIndexHandler nodeIndexHandler, MeshHelper helper) {
+	public BranchEventHandler(NodeIndexHandler nodeIndexHandler, MeshHelper helper) {
 		this.nodeIndexHandler = nodeIndexHandler;
 		this.helper = helper;
 	}

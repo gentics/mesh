@@ -8,7 +8,7 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.verticle.eventhandler.SyncHandler;
+import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
@@ -34,14 +34,14 @@ public class AdminIndexHandler {
 
 	private SearchProvider searchProvider;
 
-	private SyncHandler syncVerticle;
+	private SyncEventHandler syncVerticle;
 
 	private IndexHandlerRegistry registry;
 
 	private HandlerUtilities utils;
 
 	@Inject
-	public AdminIndexHandler(Database db, SearchProvider searchProvider, SyncHandler syncVerticle, IndexHandlerRegistry registry, HandlerUtilities utils) {
+	public AdminIndexHandler(Database db, SearchProvider searchProvider, SyncEventHandler syncVerticle, IndexHandlerRegistry registry, HandlerUtilities utils) {
 		this.db = db;
 		this.searchProvider = searchProvider;
 		this.syncVerticle = syncVerticle;
@@ -71,7 +71,7 @@ public class AdminIndexHandler {
 		db.asyncTx(() -> Single.just(ac.getUser().hasAdminRole()))
 			.subscribe(hasAdminRole -> {
 				if (hasAdminRole) {
-					SyncHandler.invokeSync();
+					SyncEventHandler.invokeSync();
 					ac.send(message(ac, "search_admin_index_sync_invoked"), OK);
 				} else {
 					ac.fail(error(FORBIDDEN, "error_admin_permission_required"));

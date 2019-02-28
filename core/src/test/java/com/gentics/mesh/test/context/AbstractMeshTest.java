@@ -30,7 +30,7 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.router.ProjectsRouter;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
-import com.gentics.mesh.search.verticle.eventhandler.SyncHandler;
+import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.VersionNumber;
@@ -162,8 +162,8 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	 */
 	protected void recreateIndices() throws Exception {
 		// We potentially modified existing data thus we need to drop all indices and create them and reindex all data
-		SyncHandler.invokeClearCompletable().blockingAwait();
-		SyncHandler.invokeSyncCompletable().blockingAwait();
+		SyncEventHandler.invokeClearCompletable().blockingAwait();
+		SyncEventHandler.invokeSyncCompletable().blockingAwait();
 		((BootstrapInitializerImpl) boot()).loader.get().elasticsearchProcessVerticle.get().refresh().blockingAwait();
 	}
 

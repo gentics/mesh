@@ -15,13 +15,13 @@ import java.util.Collection;
 import java.util.Collections;
 
 @Singleton
-public class ClearHandler implements EventHandler {
-	private static final Logger log = LoggerFactory.getLogger(ClearHandler.class);
+public class ClearEventHandler implements EventHandler {
+	private static final Logger log = LoggerFactory.getLogger(ClearEventHandler.class);
 
 	private final Vertx vertx;
 
 	@Inject
-	public ClearHandler(Vertx vertx) {
+	public ClearEventHandler(Vertx vertx) {
 		this.vertx = vertx;
 	}
 

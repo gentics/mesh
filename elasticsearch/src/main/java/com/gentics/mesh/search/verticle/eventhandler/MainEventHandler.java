@@ -34,48 +34,48 @@ public class MainEventHandler implements EventHandler {
 
 	private final EventHandlerFactory eventHandlerFactory;
 
-	private final GroupHandler groupHandler;
-	private final TagHandler tagHandler;
-	private final TagFamilyHandler tagFamilyHandler;
-	private final NodeHandler nodeHandler;
+	private final GroupEventHandler groupEventHandler;
+	private final TagEventHandler tagEventHandler;
+	private final TagFamilyEventHandler tagFamilyEventHandler;
+	private final NodeEventHandler nodeEventHandler;
 
 	private final Map<MeshEvent, EventHandler> handlers;
-	private final ClearHandler clearHandler;
-	private final SyncHandler syncHandler;
-	private final BranchHandler branchHandler;
-	private final SchemaMigrationHandler schemaMigrationHandler;
+	private final ClearEventHandler clearEventHandler;
+	private final SyncEventHandler syncEventHandler;
+	private final BranchEventHandler branchEventHandler;
+	private final SchemaMigrationEventHandler schemaMigrationEventHandler;
 
 	@Inject
-	public MainEventHandler(SyncHandler syncHandler, EventHandlerFactory eventHandlerFactory, GroupHandler groupHandler, TagHandler tagHandler, TagFamilyHandler tagFamilyHandler, NodeHandler nodeHandler, ClearHandler clearHandler, BranchHandler branchHandler, SchemaMigrationHandler schemaMigrationHandler) {
-		this.syncHandler = syncHandler;
+	public MainEventHandler(SyncEventHandler syncEventHandler, EventHandlerFactory eventHandlerFactory, GroupEventHandler groupEventHandler, TagEventHandler tagEventHandler, TagFamilyEventHandler tagFamilyEventHandler, NodeEventHandler nodeEventHandler, ClearEventHandler clearEventHandler, BranchEventHandler branchEventHandler, SchemaMigrationEventHandler schemaMigrationEventHandler) {
+		this.syncEventHandler = syncEventHandler;
 		this.eventHandlerFactory = eventHandlerFactory;
-		this.groupHandler = groupHandler;
-		this.tagHandler = tagHandler;
-		this.tagFamilyHandler = tagFamilyHandler;
-		this.nodeHandler = nodeHandler;
-		this.clearHandler = clearHandler;
-		this.branchHandler = branchHandler;
-		this.schemaMigrationHandler = schemaMigrationHandler;
+		this.groupEventHandler = groupEventHandler;
+		this.tagEventHandler = tagEventHandler;
+		this.tagFamilyEventHandler = tagFamilyEventHandler;
+		this.nodeEventHandler = nodeEventHandler;
+		this.clearEventHandler = clearEventHandler;
+		this.branchEventHandler = branchEventHandler;
+		this.schemaMigrationEventHandler = schemaMigrationEventHandler;
 
 		handlers = createHandlers();
 	}
 
 	private Map<MeshEvent, EventHandler> createHandlers() {
 		return Stream.of(
-			syncHandler,
-			clearHandler,
+			syncEventHandler,
+			clearEventHandler,
 			forEvent(MeshEvent.SEARCH_FLUSH_REQUEST, MainEventHandler::flushRequest),
 			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getSchema, SchemaContainer.composeIndexName()),
 			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getMicroschema, MicroschemaContainer.composeIndexName()),
 			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getUser, User.composeIndexName()),
 			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getRole, Role.composeIndexName()),
 			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getProject, Project.composeIndexName()),
-			groupHandler,
-			tagHandler,
-			tagFamilyHandler,
-			nodeHandler,
-			branchHandler,
-			schemaMigrationHandler
+			groupEventHandler,
+			tagEventHandler,
+			tagFamilyEventHandler,
+			nodeEventHandler,
+			branchEventHandler,
+			schemaMigrationEventHandler
 		).collect(toListWithMultipleKeys(EventHandler::handledEvents));
 	}
 

@@ -28,14 +28,14 @@ import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toRequests;
 
 @Singleton
-public class SchemaMigrationHandler implements EventHandler {
-	private static final Logger log = LoggerFactory.getLogger(SchemaMigrationHandler.class);
+public class SchemaMigrationEventHandler implements EventHandler {
+	private static final Logger log = LoggerFactory.getLogger(SchemaMigrationEventHandler.class);
 
 	private final NodeIndexHandler nodeIndexHandler;
 	private final MeshHelper helper;
 
 	@Inject
-	public SchemaMigrationHandler(NodeIndexHandler nodeIndexHandler, MeshHelper helper) {
+	public SchemaMigrationEventHandler(NodeIndexHandler nodeIndexHandler, MeshHelper helper) {
 		this.nodeIndexHandler = nodeIndexHandler;
 		this.helper = helper;
 	}

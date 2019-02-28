@@ -31,13 +31,13 @@ import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toFlowable;
 
 @Singleton
-public class NodeHandler implements EventHandler {
+public class NodeEventHandler implements EventHandler {
 	private final MeshHelper helper;
 	private final MeshEntities entities;
 	private final BootstrapInitializer boot;
 
 	@Inject
-	public NodeHandler(MeshHelper helper, MeshEntities entities, BootstrapInitializer boot) {
+	public NodeEventHandler(MeshHelper helper, MeshEntities entities, BootstrapInitializer boot) {
 		this.helper = helper;
 		this.entities = entities;
 		this.boot = boot;
