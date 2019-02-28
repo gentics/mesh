@@ -10,7 +10,6 @@
 		<version>0.30.2-SNAPSHOT</version>
 	</parent>
 
-	<groupId>com.gentics.mesh</groupId>
 	<artifactId>ferma</artifactId>
 	<packaging>jar</packaging>
 	<version>2.4.0-MIG</version>
