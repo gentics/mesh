@@ -17,7 +17,6 @@ package com.syncleus.ferma.framefactories.annotation;
 
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.syncleus.ferma.*;
-import com.syncleus.ferma.annotations.Adjacency;
 import com.syncleus.ferma.annotations.Incidence;
 import com.tinkerpop.blueprints.Direction;
 
@@ -30,8 +29,6 @@ import net.bytebuddy.implementation.bind.annotation.This;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.Set;
-
 import net.bytebuddy.matcher.ElementMatchers;
 
 /**

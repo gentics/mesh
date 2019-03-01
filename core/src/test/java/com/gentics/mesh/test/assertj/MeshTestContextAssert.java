@@ -1,8 +1,6 @@
 package com.gentics.mesh.test.assertj;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,8 +11,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.assertj.core.api.AbstractAssert;
-import org.junit.Assert;
-
 import com.gentics.mesh.test.context.MeshTestContext;
 
 public class MeshTestContextAssert extends AbstractAssert<MeshTestContextAssert, MeshTestContext> {

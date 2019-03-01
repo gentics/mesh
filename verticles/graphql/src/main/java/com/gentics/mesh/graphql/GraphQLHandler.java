@@ -13,7 +13,6 @@ import javax.inject.Singleton;
 
 import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.rest.error.AbstractUnavailableException;
-import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.QueryTypeProvider;

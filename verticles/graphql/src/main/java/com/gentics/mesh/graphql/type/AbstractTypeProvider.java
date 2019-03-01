@@ -39,7 +39,6 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.search.SearchHandler;
 
-import graphql.ExceptionWhileDataFetching;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;

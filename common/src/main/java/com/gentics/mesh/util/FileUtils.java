@@ -3,10 +3,6 @@ package com.gentics.mesh.util;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.DigestInputStream;
 import java.security.MessageDigest;
 
 import io.reactivex.Flowable;
