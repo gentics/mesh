@@ -266,7 +266,7 @@ public enum MeshEvent {
 
 	GRAPH_BACKUP_START("mesh.graph.backup.start", null),
 
-	GRAPH_BACKUP_FINISHED("mesh.graph.backup.start", null),
+	GRAPH_BACKUP_FINISHED("mesh.graph.backup.finished", null),
 
 	GRAPH_RESTORE_START("mesh.graph.restore.start", null),
 
