@@ -9,6 +9,7 @@ import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
 import io.reactivex.Completable;
@@ -134,6 +135,8 @@ public enum MeshEvent {
 	ROLE_UPDATED("mesh.role.updated", MeshElementEventModelImpl.class),
 
 	ROLE_DELETED("mesh.role.deleted", MeshElementEventModelImpl.class),
+
+	ROLE_PERMISSIONS_CHANGED("mesh.role.permissions.changed", PermissionChangedEventModel.class),
 
 	/* Tag */
 

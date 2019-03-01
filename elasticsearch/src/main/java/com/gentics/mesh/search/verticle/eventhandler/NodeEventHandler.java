@@ -80,7 +80,7 @@ public class NodeEventHandler implements EventHandler {
 	}
 
 	private Optional<CreateDocumentRequest> upsertNodes(NodeMeshEventModel message) {
-		return helper.getDb().tx(() -> entities.node.getDocument(message))
+		return helper.getDb().tx(() -> entities.nodeContent.getDocument(message))
 			.map(doc -> helper.createDocumentRequest(
 				getIndexName(message, getSchemaVersionUuid(message)),
 				NodeGraphFieldContainer.composeDocumentId(message.getUuid(), message.getLanguageTag()),

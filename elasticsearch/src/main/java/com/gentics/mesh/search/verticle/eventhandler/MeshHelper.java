@@ -3,6 +3,7 @@ package com.gentics.mesh.search.verticle.eventhandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
+import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import io.vertx.core.json.JsonObject;
@@ -34,6 +35,10 @@ public class MeshHelper {
 
 	public CreateDocumentRequest createDocumentRequest(String index, String id, JsonObject doc) {
 		return new CreateDocumentRequest(index, prefixIndexName(index), id, doc);
+	}
+
+	public UpdateDocumentRequest updateDocumentRequest(String index, String id, JsonObject doc) {
+		return new UpdateDocumentRequest(index, prefixIndexName(index), id, doc);
 	}
 
 	public DeleteDocumentRequest deleteDocumentRequest(String index, String id) {

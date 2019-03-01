@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.verticle.entity;
 
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Group;
@@ -10,6 +11,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -18,6 +20,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.ProjectEvent;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.search.index.Transformer;
 import com.gentics.mesh.search.index.group.GroupTransformer;
 import com.gentics.mesh.search.index.microschema.MicroschemaTransformer;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
@@ -35,35 +38,12 @@ import io.vertx.core.logging.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static com.gentics.mesh.core.rest.MeshEvent.GROUP_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.GROUP_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.GROUP_UPDATED;
-import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_UPDATED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
-import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
-import static com.gentics.mesh.core.rest.MeshEvent.ROLE_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.ROLE_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.ROLE_UPDATED;
-import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_UPDATED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_UPDATED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
-import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.warningOptional;
 
 @Singleton
@@ -81,21 +61,35 @@ public class MeshEntities {
 	public final MeshEntity<TagFamily> tagFamily;
 	public final MeshEntity<SchemaContainer> schema;
 	public final MeshEntity<MicroschemaContainer> microschema;
-	public final MeshEntity<NodeGraphFieldContainer> node;
+	public final MeshEntity<Node> node;
+	public final MeshEntity<NodeGraphFieldContainer> nodeContent;
+	private final Map<ElementType, MeshEntity<?>> entities;
 
 	@Inject
 	public MeshEntities(MeshHelper helper, BootstrapInitializer boot, UserTransformer userTransformer, RoleTransformer roleTransformer, TagTransformer tagTransformer, ProjectTransformer projectTransformer, GroupTransformer groupTransformer, TagFamilyTransformer tagFamilyTransformer, SchemaTransformer schemaTransformer, MicroschemaTransformer microschemaTransformer, NodeContainerTransformer nodeTransformer) {
 		this.helper = helper;
 		this.boot = boot;
-		schema = new SimpleMeshEntity<>(schemaTransformer, SCHEMA_CREATED, SCHEMA_UPDATED, SCHEMA_DELETED, byUuid(boot.schemaContainerRoot()));
-		microschema = new SimpleMeshEntity<>(microschemaTransformer, MICROSCHEMA_CREATED, MICROSCHEMA_UPDATED, MICROSCHEMA_DELETED, byUuid(boot.microschemaContainerRoot()));
-		user = new SimpleMeshEntity<>(userTransformer, USER_CREATED, USER_UPDATED, USER_DELETED, byUuid(boot.userRoot()));
-		group = new SimpleMeshEntity<>(groupTransformer, GROUP_CREATED, GROUP_UPDATED, GROUP_DELETED, byUuid(boot.groupRoot()));
-		role = new SimpleMeshEntity<>(roleTransformer, ROLE_CREATED, ROLE_UPDATED, ROLE_DELETED, byUuid(boot.roleRoot()));
-		project = new SimpleMeshEntity<>(projectTransformer, PROJECT_CREATED, PROJECT_UPDATED, PROJECT_DELETED, byUuid(boot.projectRoot()));
-		tagFamily = new SimpleMeshEntity<>(tagFamilyTransformer, TAG_FAMILY_CREATED, TAG_FAMILY_UPDATED, TAG_FAMILY_DELETED, this::toTagFamily);
-		tag = new SimpleMeshEntity<>(tagTransformer, TAG_CREATED, TAG_UPDATED, TAG_DELETED, this::toTag);
-		node = new NodeMeshEntity(nodeTransformer, NODE_CREATED, NODE_UPDATED, NODE_DELETED, this::toNode);
+
+		schema = new SimpleMeshEntity<>(schemaTransformer, SchemaContainer.TYPE_INFO, byUuid(boot.schemaContainerRoot()));
+		microschema = new SimpleMeshEntity<>(microschemaTransformer, MicroschemaContainer.TYPE_INFO, byUuid(boot.microschemaContainerRoot()));
+		user = new SimpleMeshEntity<>(userTransformer, User.TYPE_INFO, byUuid(boot.userRoot()));
+		group = new SimpleMeshEntity<>(groupTransformer, Group.TYPE_INFO, byUuid(boot.groupRoot()));
+		role = new SimpleMeshEntity<>(roleTransformer, Role.TYPE_INFO, byUuid(boot.roleRoot()));
+		project = new SimpleMeshEntity<>(projectTransformer, Project.TYPE_INFO, byUuid(boot.projectRoot()));
+		tagFamily = new SimpleMeshEntity<>(tagFamilyTransformer, TagFamily.TYPE_INFO, this::toTagFamily);
+		tag = new SimpleMeshEntity<>(tagTransformer, Tag.TYPE_INFO, this::toTag);
+		node = new SimpleMeshEntity<>((Transformer) nodeTransformer, Node.TYPE_INFO, this::toNode);
+		nodeContent = new NodeMeshEntity(nodeTransformer, this::toNodeContent);
+
+		entities = Stream.of(schema, microschema, user, group, role, project, tagFamily, tag, node)
+			.collect(Collectors.toMap(
+				entity -> entity.getTypeInfo().getType(),
+				Function.identity()
+			));
+	}
+
+	public Optional<MeshEntity<?>> of(ElementType type) {
+		return Optional.ofNullable(entities.get(type));
 	}
 
 	public MeshEntity<User> getUser() {
@@ -130,8 +124,8 @@ public class MeshEntities {
 		return microschema;
 	}
 
-	public MeshEntity<NodeGraphFieldContainer> getNode() {
-		return node;
+	public MeshEntity<NodeGraphFieldContainer> getNodeContent() {
+		return nodeContent;
 	}
 
 	private Optional<TagFamily> toTagFamily(MeshElementEventModel eventModel) {
@@ -145,7 +139,11 @@ public class MeshEntities {
 			.flatMap(family -> findElementByUuid(family, eventModel.getUuid()));
 	}
 
-	private Optional<NodeGraphFieldContainer> toNode(MeshElementEventModel eventModel) {
+	private Optional<Node> toNode(MeshElementEventModel meshElementEventModel) {
+		return null;
+	}
+
+	private Optional<NodeGraphFieldContainer> toNodeContent(MeshElementEventModel eventModel) {
 		NodeMeshEventModel event = Util.requireType(NodeMeshEventModel.class, eventModel);
 		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
 			.flatMap(project -> findElementByUuid(project.getNodeRoot(), eventModel.getUuid()))

@@ -44,9 +44,19 @@ public class MainEventHandler implements EventHandler {
 	private final SyncEventHandler syncEventHandler;
 	private final BranchEventHandler branchEventHandler;
 	private final SchemaMigrationEventHandler schemaMigrationEventHandler;
+	private final PermissionChangedEventHandler permissionChangedEventHandler;
 
 	@Inject
-	public MainEventHandler(SyncEventHandler syncEventHandler, EventHandlerFactory eventHandlerFactory, GroupEventHandler groupEventHandler, TagEventHandler tagEventHandler, TagFamilyEventHandler tagFamilyEventHandler, NodeEventHandler nodeEventHandler, ClearEventHandler clearEventHandler, BranchEventHandler branchEventHandler, SchemaMigrationEventHandler schemaMigrationEventHandler) {
+	public MainEventHandler(SyncEventHandler syncEventHandler,
+							EventHandlerFactory eventHandlerFactory,
+							GroupEventHandler groupEventHandler,
+							TagEventHandler tagEventHandler,
+							TagFamilyEventHandler tagFamilyEventHandler,
+							NodeEventHandler nodeEventHandler,
+							ClearEventHandler clearEventHandler,
+							BranchEventHandler branchEventHandler,
+							SchemaMigrationEventHandler schemaMigrationEventHandler,
+							PermissionChangedEventHandler permissionChangedEventHandler) {
 		this.syncEventHandler = syncEventHandler;
 		this.eventHandlerFactory = eventHandlerFactory;
 		this.groupEventHandler = groupEventHandler;
@@ -56,6 +66,7 @@ public class MainEventHandler implements EventHandler {
 		this.clearEventHandler = clearEventHandler;
 		this.branchEventHandler = branchEventHandler;
 		this.schemaMigrationEventHandler = schemaMigrationEventHandler;
+		this.permissionChangedEventHandler = permissionChangedEventHandler;
 
 		handlers = createHandlers();
 	}
@@ -75,7 +86,8 @@ public class MainEventHandler implements EventHandler {
 			tagFamilyEventHandler,
 			nodeEventHandler,
 			branchEventHandler,
-			schemaMigrationEventHandler
+			schemaMigrationEventHandler,
+			permissionChangedEventHandler
 		).collect(toListWithMultipleKeys(EventHandler::handledEvents));
 	}
 
@@ -84,7 +96,7 @@ public class MainEventHandler implements EventHandler {
 	}
 
 	@Override
-	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
+	public Flowable<? extends SearchRequest> handle(MessageEvent messageEvent) {
 		return handlers.get(messageEvent.event).handle(messageEvent)
 			.onErrorResumeNext(err -> {
 				String body = messageEvent.message == null ? null : messageEvent.message.toJson();

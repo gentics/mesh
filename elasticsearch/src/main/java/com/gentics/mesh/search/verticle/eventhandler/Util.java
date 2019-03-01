@@ -69,10 +69,8 @@ public final class Util {
 		return Collectors.collectingAndThen(Collectors.toList(), Flowable::fromIterable);
 	}
 
-	public static <T> Flowable<T> toFlowable(Optional<? extends T> opt) {
-		return opt.isPresent()
-			? Flowable.just(opt.get())
-			: Flowable.empty();
+	public static <T> Flowable<T> toFlowable(Optional<T> opt) {
+		return opt.map(Flowable::just).orElse(Flowable.empty());
 	}
 
 	public static Flowable<SearchRequest> toRequests(Map<String, IndexInfo> map) {

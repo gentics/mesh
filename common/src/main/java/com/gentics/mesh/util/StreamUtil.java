@@ -1,5 +1,7 @@
 package com.gentics.mesh.util;
 
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -10,5 +12,10 @@ public final class StreamUtil {
 
 	public static <T> Stream<T> toStream(Iterable<T> iterable) {
 		return StreamSupport.stream(iterable.spliterator(), false);
+	}
+
+	public static <T> Stream<T> ofNullable(T... elements) {
+		return Arrays.stream(elements)
+			.filter(Objects::nonNull);
 	}
 }

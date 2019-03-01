@@ -141,7 +141,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		}
 	}
 
-	private Flowable<SearchRequest> generateRequests(MessageEvent messageEvent) {
+	private Flowable<? extends SearchRequest> generateRequests(MessageEvent messageEvent) {
 		try {
 			return this.mainEventhandler.handle(messageEvent)
 				.doOnNext(req -> pendingRequests.addAndGet(req.requestCount()))
