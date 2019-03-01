@@ -1,8 +1,17 @@
 package com.gentics.mesh.core.rest;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchMeshEventModel;
+import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
@@ -12,18 +21,11 @@ import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
+
 import io.reactivex.Completable;
 import io.reactivex.functions.Action;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.MessageConsumer;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Central list of used eventbus addresses.
@@ -50,7 +52,7 @@ public enum MeshEvent {
 	/**
 	 * Event which is send once the microschema gets assigned to a branch.
 	 */
-	MICROSCHEMA_BRANCH_ASSIGN("mesh.microschema-branch.assign", null),
+	MICROSCHEMA_BRANCH_ASSIGN("mesh.microschema-branch.assign", BranchMicroschemaAssignModel.class),
 
 	/**
 	 * Microschema migration start event.
@@ -128,6 +130,14 @@ public enum MeshEvent {
 
 	GROUP_DELETED("mesh.group.deleted", MeshElementEventModelImpl.class),
 
+	GROUP_USER_ASSIGNED("mesh.group-user.assigned", null),
+
+	GROUP_USER_UNASSIGNED("mesh.group-user.unassigned", null),
+
+	GROUP_ROLE_ASSIGNED("mesh.group-role.assigned", null),
+
+	GROUP_ROLE_UNASSIGNED("mesh.group-role.unassigned", null),
+
 	/* Role */
 
 	ROLE_CREATED("mesh.role.created", MeshElementEventModelImpl.class),
@@ -162,6 +172,16 @@ public enum MeshEvent {
 
 	PROJECT_DELETED("mesh.project.deleted", MeshElementEventModelImpl.class),
 
+	PROJECT_SCHEMA_ASSIGNED("mesh.project-schema.assigned", null),
+
+	PROJECT_SCHEMA_UNASSIGNED("mesh.project-schema.unassigned", null),
+
+	PROJECT_MICROSCHEMA_ASSIGNED("mesh.project-microschema.assigned", null),
+
+	PROJECT_MICROSCHEMA_UNASSIGNED("mesh.project-microschema.unassigned", null),
+
+	PROJECT_LATEST_BRANCH_UPDATED("mesh.project-latest-branch.updated", null),
+
 	/* Node */
 
 	NODE_CREATED("mesh.node.created", NodeMeshEventModel.class),
@@ -169,6 +189,20 @@ public enum MeshEvent {
 	NODE_UPDATED("mesh.node.updated", NodeMeshEventModel.class),
 
 	NODE_DELETED("mesh.node.deleted", NodeMeshEventModel.class),
+
+	NODE_TAGGED("mesh.node.tagged", NodeMeshEventModel.class),
+
+	NODE_UNTAGGED("mesh.node.untagged", NodeMeshEventModel.class),
+
+	NODE_PUBLISHED("mesh.node.published", NodeMeshEventModel.class),
+
+	NODE_UNPUBLISHED("mesh.node.unpublished", NodeMeshEventModel.class),
+
+	NODE_MOVED("mesh.node.moved", MeshElementEventModelImpl.class),
+
+	NODE_CONTENT_UPDATED("mesh.node-content.updated", MeshElementEventModelImpl.class),
+
+	NODE_CONTENT_DELETED("mesh.node-content.deleted", MeshElementEventModelImpl.class),
 
 	/* Schema */
 
@@ -193,6 +227,8 @@ public enum MeshEvent {
 	BRANCH_UPDATED("mesh.branch.updated", BranchMeshEventModel.class),
 
 	BRANCH_DELETED("mesh.branch.deleted", BranchMeshEventModel.class),
+
+	BRANCH_TAGGED("mesh.branch.tagged", null),
 
 	/* Search index related */
 
@@ -224,7 +260,39 @@ public enum MeshEvent {
 	/**
 	 * Event that will cause all pending Elasticsearch requests to be sent.
 	 */
-	SEARCH_FLUSH_REQUEST("mesh.search.flush.request", null);
+	SEARCH_FLUSH_REQUEST("mesh.search.flush.request", null),
+
+	// Backup & Restore Events
+
+	GRAPH_BACKUP_START("mesh.graph.backup.start", null),
+
+	GRAPH_BACKUP_FINISHED("mesh.graph.backup.start", null),
+
+	GRAPH_RESTORE_START("mesh.graph.restore.start", null),
+
+	GRAPH_RESTORE_FINISHED("mesh.graph.restore.finished", null),
+
+	GRAPH_EXPORT_START("mesh.graph.export.start", null),
+
+	GRAPH_EXPORT_FINISHED("mesh.graph.export.finished", null),
+
+	GRAPH_IMPORT_START("mesh.graph.import.start", null),
+
+	GRAPH_IMPORT_FINISHED("mesh.graph.import.finished", null),
+
+	REPAIR_START("mesh.graph.repair.start", null),
+
+	REPAIR_FINISHED("mesh.graph.repair.finished", null),
+
+	// Plugin Events
+
+	PLUGIN_DEPLOYING("mesh.plugin.deploying", null),
+
+	PLUGIN_DEPLOYED("mesh.plugin.deployed", null),
+
+	PLUGIN_UNDEPLOYING("mesh.plugin.undeploying", null),
+
+	PLUGIN_UNDEPLOYED("mesh.plugin.undeployed", null);
 
 	public final String address;
 	public final Class<? extends MeshEventModel> bodyModel;
