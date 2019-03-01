@@ -42,17 +42,20 @@ public class AdminHandler extends AbstractHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminHandler.class);
 
-	private Database db;
+	private final Database db;
 
-	private RouterStorage routerStorage;
+	private final RouterStorage routerStorage;
 
-	private BootstrapInitializer boot;
+	private final BootstrapInitializer boot;
+
+	private final MeshOptions options;
 
 	@Inject
-	public AdminHandler(Database db, RouterStorage routerStorage, BootstrapInitializer boot) {
+	public AdminHandler(Database db, RouterStorage routerStorage, BootstrapInitializer boot, MeshOptions options) {
 		this.db = db;
 		this.routerStorage = routerStorage;
 		this.boot = boot;
+		this.options = options;
 	}
 
 	public void handleMeshStatus(InternalActionContext ac) {
@@ -73,7 +76,7 @@ public class AdminHandler extends AbstractHandler {
 			}
 			MeshStatus oldStatus = Mesh.mesh().getStatus();
 			Mesh.mesh().setStatus(MeshStatus.BACKUP);
-			db.backupGraph(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory());
+			db.backupGraph(options.getStorageOptions().getBackupDirectory());
 			Mesh.mesh().setStatus(oldStatus);
 			return Single.just(message(ac, "backup_finished"));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
@@ -85,9 +88,9 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleRestore(InternalActionContext ac) {
-		MeshOptions config = Mesh.mesh().getOptions();
+		MeshOptions config = options;
 		String dir = config.getStorageOptions().getDirectory();
-		File backupDir = new File(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory());
+		File backupDir = new File(options.getStorageOptions().getBackupDirectory());
 		boolean inMemory = dir == null;
 
 		if (config.getClusterOptions() != null && config.getClusterOptions().isEnabled()) {
@@ -115,8 +118,9 @@ public class AdminHandler extends AbstractHandler {
 		if (latestFile == null) {
 			throw error(INTERNAL_SERVER_ERROR, "error_backup", backupDir.getAbsolutePath());
 		}
+		MeshStatus oldStatus = Mesh.mesh().getStatus();
 		Completable.fromAction(() -> {
-			// TODO put mesh in backup mode
+			Mesh.mesh().setStatus(MeshStatus.RESTORE);
 			db.stop();
 			db.restoreGraph(latestFile.getAbsolutePath());
 			db.setupConnectionPool();
@@ -126,6 +130,7 @@ public class AdminHandler extends AbstractHandler {
 		}).andThen(db.asyncTx(() -> {
 			// Update the routes by loading the projects
 			boot.initProjects();
+			Mesh.mesh().setStatus(oldStatus);
 			return Single.just(message(ac, "restore_finished"));
 		})).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
@@ -140,7 +145,7 @@ public class AdminHandler extends AbstractHandler {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			String exportDir = Mesh.mesh().getOptions().getStorageOptions().getExportDirectory();
+			String exportDir = options.getStorageOptions().getExportDirectory();
 			log.debug("Exporting graph to {" + exportDir + "}");
 			db.exportGraph(exportDir);
 			return Single.just(message(ac, "export_finished"));
@@ -158,7 +163,7 @@ public class AdminHandler extends AbstractHandler {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 		}
-		File importsDir = new File(Mesh.mesh().getOptions().getStorageOptions().getExportDirectory());
+		File importsDir = new File(options.getStorageOptions().getExportDirectory());
 
 		// Find the file which was last modified
 		File latestFile = Arrays.asList(importsDir.listFiles()).stream().filter(file -> file.getName().endsWith(".gz"))
@@ -177,7 +182,6 @@ public class AdminHandler extends AbstractHandler {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 
-			MeshOptions options = Mesh.mesh().getOptions();
 			if (options.getClusterOptions() != null && options.getClusterOptions().isEnabled()) {
 				return Single.just(db.getClusterStatus());
 			} else {

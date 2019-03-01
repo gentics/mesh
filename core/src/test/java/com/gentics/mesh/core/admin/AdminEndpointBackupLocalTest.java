@@ -23,9 +23,13 @@ public class AdminEndpointBackupLocalTest extends AbstractMeshTest {
 	@Test
 	public void testBackupRestore() throws IOException {
 		final String NEW_PROJECT_NAME = "enemenemuh";
+		final String backupDir = testContext.getOptions().getStorageOptions().getBackupDirectory();
+
+		assertFilesInDir(backupDir, 0);
 		grantAdminRole();
 		GenericMessageResponse message = call(() -> client().invokeBackup());
 		assertThat(message).matches("backup_finished");
+		assertFilesInDir(backupDir, 1);
 
 		// Now create a project which is not in the backup. The routes and data must vanish when inserting the backup
 		ProjectCreateRequest request = new ProjectCreateRequest();
