@@ -11,7 +11,6 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -20,7 +19,6 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.ProjectEvent;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
-import com.gentics.mesh.search.index.Transformer;
 import com.gentics.mesh.search.index.group.GroupTransformer;
 import com.gentics.mesh.search.index.microschema.MicroschemaTransformer;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
@@ -61,7 +59,6 @@ public class MeshEntities {
 	public final MeshEntity<TagFamily> tagFamily;
 	public final MeshEntity<SchemaContainer> schema;
 	public final MeshEntity<MicroschemaContainer> microschema;
-	public final MeshEntity<Node> node;
 	public final MeshEntity<NodeGraphFieldContainer> nodeContent;
 	private final Map<ElementType, MeshEntity<?>> entities;
 
@@ -78,10 +75,9 @@ public class MeshEntities {
 		project = new SimpleMeshEntity<>(projectTransformer, Project.TYPE_INFO, byUuid(boot.projectRoot()));
 		tagFamily = new SimpleMeshEntity<>(tagFamilyTransformer, TagFamily.TYPE_INFO, this::toTagFamily);
 		tag = new SimpleMeshEntity<>(tagTransformer, Tag.TYPE_INFO, this::toTag);
-		node = new SimpleMeshEntity<>((Transformer) nodeTransformer, Node.TYPE_INFO, this::toNode);
 		nodeContent = new NodeMeshEntity(nodeTransformer, this::toNodeContent);
 
-		entities = Stream.of(schema, microschema, user, group, role, project, tagFamily, tag, node)
+		entities = Stream.of(schema, microschema, user, group, role, project, tagFamily, tag, nodeContent)
 			.collect(Collectors.toMap(
 				entity -> entity.getTypeInfo().getType(),
 				Function.identity()
@@ -124,10 +120,6 @@ public class MeshEntities {
 		return microschema;
 	}
 
-	public MeshEntity<NodeGraphFieldContainer> getNodeContent() {
-		return nodeContent;
-	}
-
 	private Optional<TagFamily> toTagFamily(MeshElementEventModel eventModel) {
 		ProjectEvent event = Util.requireType(ProjectEvent.class, eventModel);
 		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
@@ -137,10 +129,6 @@ public class MeshEntities {
 	private Optional<Tag> toTag(MeshElementEventModel eventModel) {
 		return toTagFamily(eventModel)
 			.flatMap(family -> findElementByUuid(family, eventModel.getUuid()));
-	}
-
-	private Optional<Node> toNode(MeshElementEventModel meshElementEventModel) {
-		return null;
 	}
 
 	private Optional<NodeGraphFieldContainer> toNodeContent(MeshElementEventModel eventModel) {
