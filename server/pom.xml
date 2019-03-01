@@ -36,11 +36,6 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>${mesh.database.provider}</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-transport-native-epoll</artifactId>
 			<version>4.1.15.Final</version>

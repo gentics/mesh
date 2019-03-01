@@ -26,7 +26,7 @@ import org.junit.runners.Parameterized.Parameters;
 import com.gentics.mesh.changelog.Change;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.DatabaseService;
+import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.maven.MavenMetadata;
 import com.gentics.mesh.maven.MavenUtilities;
@@ -117,12 +117,7 @@ public class ChangelogSystemTest {
 	 * @return
 	 */
 	public static Database getDatabase(MeshOptions options) {
-		DatabaseService databaseService = DatabaseService.getInstance();
-		Database database = databaseService.getDatabase();
-		if (database == null) {
-			String message = "No database provider could be found.";
-			throw new RuntimeException(message);
-		}
+		Database database = new OrientDBDatabase(null);
 		try {
 			database.init(options, null);
 			return database;

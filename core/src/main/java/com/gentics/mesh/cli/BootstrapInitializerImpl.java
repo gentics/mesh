@@ -101,7 +101,6 @@ import io.vertx.core.VertxOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.dropwizard.DropwizardMetricsOptions;
-import io.vertx.ext.dropwizard.MetricsService;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 /**
@@ -365,7 +364,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		mesh.setVertx(vertx);
-		mesh.setMetricsService(MetricsService.create(vertx));
 	}
 
 	/**

@@ -24,6 +24,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -44,6 +47,7 @@ import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.graphdb.tx.impl.OrientLocalStorageImpl;
 import com.gentics.mesh.graphdb.tx.impl.OrientServerStorageImpl;
+import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.PropertyUtil;
@@ -100,6 +104,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * OrientDB specific mesh graph database implementation.
  */
+@Singleton
 public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final String ORIENTDB_SERVER_CONFIG = "orientdb-server-config.xml";
@@ -129,6 +134,17 @@ public class OrientDBDatabase extends AbstractDatabase {
 	private int maxRetry = 10;
 
 	private OrientStorage txProvider;
+
+	private final MetricsService metrics;
+
+	@Inject
+	public OrientDBDatabase(MetricsService metrics) {
+		this.metrics = metrics;
+	}
+
+	public OrientDBDatabase() {
+		this(null);
+	}
 
 	@Override
 	public void stop() {
@@ -926,6 +942,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public Tx tx() {
+		metrics.getMetricRegistry().meter("tx").mark();
 		return new OrientDBTx(txProvider, resolver);
 	}
 

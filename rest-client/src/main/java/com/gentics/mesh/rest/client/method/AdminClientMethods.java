@@ -71,4 +71,11 @@ public interface AdminClientMethods {
 	 */
 	MeshRequest<ConsistencyCheckResponse> repairConsistency();
 
+	/**
+	 * Load the current metrics.
+	 * 
+	 * @return
+	 */
+	MeshRequest<String> metrics();
+
 }
