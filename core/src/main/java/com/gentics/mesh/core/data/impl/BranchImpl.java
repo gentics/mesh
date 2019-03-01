@@ -424,8 +424,8 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 		return model;
 	}
 	
-	private BranchMicroschemaAssignEventModel createMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion, MigrationStatus status) {
-		BranchMicroschemaAssignEventModel model = new BranchMicroschemaAssignEventModel();
+	private BranchMicroschemaAssignModel createMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion, MigrationStatus status) {
+		BranchMicroschemaAssignModel model = new BranchMicroschemaAssignModel();
 		fillEventInfo(model);
 		model.setEvent(MeshEvent.MICROSCHEMA_BRANCH_ASSIGN);
 		model.setSchema(microschemaContainerVersion.transformToReference());
