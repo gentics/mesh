@@ -3,6 +3,7 @@ package com.gentics.mesh.cli;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
@@ -48,7 +49,7 @@ public class CoreVerticleLoader {
 	public Lazy<ElasticsearchProcessVerticle> elasticsearchProcessVerticle;
 
 	@Inject
-	public MeshOptions configuration;
+	public MeshOptions meshOptions;
 
 	@Inject
 	public CoreVerticleLoader() {
@@ -62,8 +63,8 @@ public class CoreVerticleLoader {
 	 */
 	public void loadVerticles() {
 		JsonObject defaultConfig = new JsonObject();
-		defaultConfig.put("port", configuration.getHttpServerOptions().getPort());
-		defaultConfig.put("host", configuration.getHttpServerOptions().getHost());
+		defaultConfig.put("port", meshOptions.getHttpServerOptions().getPort());
+		defaultConfig.put("host", meshOptions.getHttpServerOptions().getHost());
 		for (Provider<? extends AbstractVerticle> verticle : getMandatoryVerticleClasses()) {
 			try {
 				for (int i = 0; i < DEFAULT_VERTICLE_DEPLOYMENTS; i++) {
@@ -115,8 +116,11 @@ public class CoreVerticleLoader {
 	private List<AbstractVerticle> getMandatoryWorkerVerticleClasses() {
 		List<AbstractVerticle> verticles = new ArrayList<>();
 		verticles.add(jobWorkerVerticle);
-		// TODO Only add verticle if necessary
-		verticles.add(elasticsearchProcessVerticle.get());
+		// Only deploy search sync verticle if we actually have a configured ES
+		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
+		if (searchOptions != null && searchOptions.getUrl() != null) {
+			verticles.add(elasticsearchProcessVerticle.get());
+		}
 		return verticles;
 	}
 

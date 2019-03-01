@@ -34,6 +34,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.root.UserRoot;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -104,6 +106,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public static final String DISPLAY_FIELD_PROPERTY_KEY = "displayFieldValue";
 
 	public static final String VERSION_PROPERTY_KEY = "version";
+
+	public static final String EDITOR_UUID_PROPERTY_KEY = "editor";
 
 	public static void init(Database database) {
 		database.addVertexType(NodeGraphFieldContainerImpl.class, MeshVertexImpl.class);
@@ -642,7 +646,21 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public User getEditor() {
-		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+		String uuid = property(EDITOR_UUID_PROPERTY_KEY);
+		if (uuid == null) {
+			return null;
+		} else {
+			UserRoot userRoot = MeshInternal.get().boot().userRoot();
+			return userRoot.findByUuid(uuid);
+		}
+	}
+
+	@Override
+	public void setEditor(User user) {
+		String uuid = user == null
+			? null
+			: user.getUuid();
+		property(EDITOR_UUID_PROPERTY_KEY, uuid);
 	}
 
 	@Override

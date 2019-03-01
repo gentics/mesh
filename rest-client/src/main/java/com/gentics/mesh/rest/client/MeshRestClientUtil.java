@@ -1,13 +1,17 @@
 package com.gentics.mesh.rest.client;
 
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.gentics.mesh.core.rest.MeshEvent;
+
 import io.reactivex.Single;
 import io.reactivex.SingleTransformer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
-
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
 
 public final class MeshRestClientUtil {
 	private MeshRestClientUtil() {
@@ -15,8 +19,7 @@ public final class MeshRestClientUtil {
 
 
 	/**
-	 * Returns a predicate that tests if the value is one of the given.
-	 * Useful when filtering for certain events.
+	 * Returns a predicate that tests if the event is one of the given.
 	 *
 	 * <p>Example:</p>
 	 * <pre>
@@ -25,16 +28,14 @@ public final class MeshRestClientUtil {
 	 *     	.subscribe(...)
 	 * </pre>
 	 *
-	 * @param values
-	 * @param <T>
+	 * @param events
 	 * @return
 	 */
-	public static <T> Predicate<T> isOneOf(T... values) {
-		Set<T> set = new HashSet<>(values.length);
-		for (T value : values) {
-			set.add(value);
-		}
-		return value -> set.contains(value);
+	public static Predicate<EventbusEvent> isOneOf(MeshEvent... events) {
+		Set<String> set = Stream.of(events)
+			.map(MeshEvent::getAddress)
+			.collect(Collectors.toSet());
+		return value -> set.contains(value.getAddress());
 	}
 
 	/**

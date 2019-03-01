@@ -1,3 +1,5 @@
+# NOTE that the assertions in this file will not be evaluated, because custom assertions are used for this
+# test case. The assertions have been left to give a hint what this test is about.
 {
 	# Load the news folder in german. This will be our starting point
 	node(uuid: "4b1346a2163a4ff89346a2163a9ff883", lang: ["de", "en"]) {

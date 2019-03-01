@@ -1,18 +1,14 @@
 package com.gentics.mesh.graphdb.tx.impl;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Date;
 
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.tx.AbstractOrientStorage;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
+import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
 import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
@@ -75,52 +71,6 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 	}
 
 	@Override
-	public void backup(String backupDirectory) throws FileNotFoundException, IOException {
-		if (log.isDebugEnabled()) {
-			log.debug("Running backup to backup directory {" + backupDirectory + "}.");
-		}
-		ODatabaseDocumentTx db = factory.getDatabase();
-		try {
-			OCommandOutputListener listener = new OCommandOutputListener() {
-				@Override
-				public void onMessage(String iText) {
-					System.out.println(iText);
-				}
-			};
-			String dateString = formatter.format(new Date());
-			String backupFile = "backup_" + dateString + ".zip";
-			new File(backupDirectory).mkdirs();
-			try (OutputStream out = new FileOutputStream(new File(backupDirectory, backupFile).getAbsolutePath())) {
-				db.backup(out, null, null, listener, 9, 2048);
-			}
-		} finally {
-			db.close();
-		}
-	}
-
-	@Override
-	public void restore(String backupFile) throws IOException {
-		if (log.isDebugEnabled()) {
-			log.debug("Running restore using {" + backupFile + "} backup file.");
-		}
-		ODatabaseDocumentTx db = factory.getDatabase();
-		try {
-			OCommandOutputListener listener = new OCommandOutputListener() {
-				@Override
-				public void onMessage(String iText) {
-					System.out.println(iText);
-				}
-			};
-			try (InputStream in = new FileInputStream(backupFile)) {
-				db.restore(in, null, null, listener);
-			}
-		} finally {
-			db.close();
-		}
-
-	}
-
-	@Override
 	public void exportGraph(String outputDirectory) throws IOException {
 		if (log.isDebugEnabled()) {
 			log.debug("Running export to {" + outputDirectory + "} directory.");
@@ -163,5 +113,10 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 			db.close();
 		}
 
+	}
+
+	@Override
+	public ODatabaseSession createSession() {
+		return factory.getDatabase();
 	}
 }

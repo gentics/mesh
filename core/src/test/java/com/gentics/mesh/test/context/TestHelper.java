@@ -4,11 +4,14 @@ import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
@@ -629,6 +632,15 @@ public interface TestHelper {
 
 	default void revokeAdminRole() {
 		tx(() -> group().removeRole(roles().get("admin")));
+	}
+
+	default void assertFilesInDir(String path, long expectedCount) {
+		try {
+			long count = Files.walk(Paths.get(path)).filter(Files::isRegularFile).count();
+			assertEquals("The path {" + path + "} did not contain the expected amount of files.", expectedCount, count);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 }

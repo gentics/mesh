@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.junit.Ignore;
@@ -94,6 +95,24 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName), BAD_REQUEST, "node_error_invalid_mimetype", contentType,
 			whitelistRegex);
 
+	}
+
+	@Test
+	public void testUploadBogusName() throws IOException {
+		String contentType = "application/octet-stream";
+
+		int binaryLen = 10000;
+		Node node = folder("news");
+
+		try (Tx tx = tx()) {
+			prepareSchema(node, "", "binary");
+			tx.success();
+		}
+
+		call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, "somefile.DAT"));
+		call(() -> uploadRandomData(node, "en", "binary", binaryLen, "application/pdf", "somefile.PDF"));
+		call(() -> uploadRandomData(node, "en", "binary", binaryLen, "application/pdf", "somefile."));
+		call(() -> uploadRandomData(node, "en", "binary", binaryLen, "application/pdf", "somefile"));
 	}
 
 	@Test
@@ -553,7 +572,6 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			buffer.length(), fileName, contentType));
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuidB, "en", versionB, "binary", new ByteArrayInputStream(buffer.getBytes()),
 			buffer.length(), fileName, contentType));
-
 		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
 
 		File binaryFileA;

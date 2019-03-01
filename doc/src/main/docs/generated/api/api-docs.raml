@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "0.29.5"
+version: "0.30.2"
 baseUri: "http://localhost:8080/api/v1"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -5512,7 +5512,7 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "0.29.5",
+                                  "meshVersion" : "0.30.2",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
@@ -10378,7 +10378,7 @@ mediaType: application/json
                                   } ]
                                 }
         post: 
-            description: Assign a schema version to the breanch.
+            description: Assign a schema version to the branch.
             body: 
                 application/json: 
                     schema: |

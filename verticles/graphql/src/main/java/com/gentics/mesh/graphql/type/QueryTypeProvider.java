@@ -33,10 +33,14 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Branch;
@@ -46,7 +50,12 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
+import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.service.WebRootService;
+import com.gentics.mesh.core.rest.error.PermissionException;
+import com.gentics.mesh.core.rest.error.UuidNotFoundException;
+import com.gentics.mesh.core.rest.graphql.GraphQLError;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.GroupFilter;
 import com.gentics.mesh.graphql.filter.NodeFilter;
@@ -64,6 +73,10 @@ import com.gentics.mesh.search.index.tag.TagSearchHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
 import com.gentics.mesh.search.index.user.UserSearchHandler;
 
+import graphql.ExceptionWhileDataFetching;
+import graphql.execution.DataFetcherExceptionHandlerParameters;
+import graphql.execution.ExecutionContext;
+import graphql.execution.ExecutionPath;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
@@ -165,6 +178,65 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	}
 
 	/**
+	 * Fetch multiple nodes via UUID.
+	 *
+	 * <p>
+	 * When there is no node for a given UUID or the user does not have the necessary permissions,
+	 * the respective errors will be added to the execution context.
+	 * </p>
+	 *
+	 * <p>
+	 * The resulting items will be filtered by
+	 * {@link AbstractTypeProvider#applyNodeFilter(DataFetchingEnvironment, Stream) applyNodeFilter()}.
+	 * </p>
+	 *
+	 * @param env
+	 * @return A page containing all found nodes matching the given UUIDs
+	 */
+	private Page<NodeContent> fetchNodesByUuid(DataFetchingEnvironment env) {
+		List<String> uuids = env.getArgument("uuids");
+
+		if (uuids == null || uuids.isEmpty()) {
+			return new DynamicStreamPageImpl<>(Stream.empty(), getPagingInfo(env));
+		}
+
+		NodeRoot root = boot.nodeRoot();
+		GraphQLContext gc = env.getContext();
+		ExecutionContext ec = env.getExecutionContext();
+		List<String> languageTags = getLanguageArgument(env);
+
+		Stream<NodeContent> contents = uuids.stream()
+			// When a node cannot be found, we still need the UUID for the error message.
+			.map(uuid -> Pair.of(uuid, root.findByUuid(uuid)))
+			.map(node -> {
+				Throwable error = null;
+
+				if (node.getRight() == null) {
+					error = new UuidNotFoundException("node", node.getLeft());
+				} else {
+					// The node was found, check the permissions.
+					try {
+						return (Node) gc.requiresPerm(node.getRight(), READ_PERM, READ_PUBLISHED_PERM);
+					} catch (PermissionException e) {
+						error = e;
+					}
+				}
+
+				ec.addError(new ExceptionWhileDataFetching(env.getFieldTypeInfo().getPath(), error, env.getField().getSourceLocation()));
+
+				return null;
+			})
+			.filter(Objects::nonNull)
+			.map(node -> {
+				NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
+
+				return new NodeContent(node, container, languageTags);
+			});
+
+		return applyNodeFilter(env, contents);
+	}
+
+	/**
 	 * Data fetcher for nodes.
 	 * 
 	 * @param env
@@ -188,9 +260,11 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		if (path != null) {
 			GraphQLContext gc = env.getContext();
 			Path pathResult = webrootService.findByProjectPath(gc, path);
-			if (pathResult.getLast() == null) {
+
+			if (pathResult.getLast() == null || !pathResult.isFullyResolved()) {
 				return null;
 			}
+
 			NodeGraphFieldContainer container = pathResult.getLast().getContainer();
 			Node nodeOfContainer = container.getParentNode();
 			nodeOfContainer = gc.requiresPerm(nodeOfContainer, READ_PERM, READ_PUBLISHED_PERM);
@@ -292,22 +366,28 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		// .nodes
 		root.field(newFieldDefinition().name("nodes")
 			.description("Load a page of nodes via the regular nodes list or via a search.")
-			.argument(createPagingArgs()).argument(createQueryArg()).argument(createLanguageTagArg(true))
+			.argument(createPagingArgs())
+			.argument(createQueryArg())
+			.argument(createUuidsArg("Node uuids"))
+			.argument(createLanguageTagArg(true))
 			.argument(NodeFilter.filter(context).createFilterArgument())
-			.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME)).dataFetcher((env) -> {
-				GraphQLContext gc = env.getContext();
-				PagingParameters pagingInfo = getPagingInfo(env);
+			.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME))
+			.dataFetcher((env) -> {
 				String query = env.getArgument("query");
 
-				List<String> languageTags = getLanguageArgument(env);
 				// Check whether we need to load the nodes via a query or regular project-wide paging
 				if (query != null) {
+					GraphQLContext gc = env.getContext();
 					// TODO add filtering for query nodes
-					gc.getNodeParameters().setLanguages(languageTags.stream().toArray(String[]::new));
-					return nodeTypeProvider.handleContentSearch(gc, query, pagingInfo);
-				} else {
-					return fetchFilteredNodes(env);
+					gc.getNodeParameters().setLanguages(getLanguageArgument(env).stream().toArray(String[]::new));
+					return nodeTypeProvider.handleContentSearch(gc, query, getPagingInfo(env));
 				}
+
+				if (env.containsArgument("uuids")) {
+					return fetchNodesByUuid(env);
+				}
+
+				return fetchFilteredNodes(env);
 			}));
 
 		// .baseNode

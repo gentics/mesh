@@ -35,7 +35,8 @@ public final class ChangesList {
 			new BinaryStorageMigration(),
 			new ChangeNumberStringsToNumber(),
 			new RenameReleasesToBranches(),
-			new NodeContentLanguageMigration()
+			new NodeContentLanguageMigration(),
+			new NodeContentEditorMigration()
 			// ADD NEW CHANGES HERE!
 		);
 	}

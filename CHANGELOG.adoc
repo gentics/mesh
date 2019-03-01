@@ -21,7 +21,26 @@ title: Changelog
 
 * The `html` field type will be **removed** in the future. Instead the `string` should be used in combination with an additional configuration property for this field in the schema.
 
-* The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
+* The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
+"elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
+
+[[v0.30.2]]
+== 0.30.2 (28.02.2019)
+
+icon:plus[] OrientDB: The included OrientDB version has been updated to version 3.0.16 - This update addresses various locking and synchronization issues when clustering was enabled.
+
+icon:check[] Restore: The restore process has been reworked to avoid issues with graph database indices. Additional error handling has been added.
+
+icon:check[] Backup: Backup support for clustered mode has been added. The backup endpoint previously did not work as expected in clustered mode.
+
+[[v0.30.1]]
+== 0.30.1 (15.02.2019)
+
+icon:plus[] GraphQL: nodes can now be loaded via a list of UUIDs.
+
+icon:check[] Java Rest Client: Fixed a bug that occurred when calling `getResponse()` with `getBody()` on a binary response.
+
+icon:check[] Java Rest Client: Fixed a bug in the MeshRestClient#isOneOf helper function.
 
 [[v0.31.0]]
 == 0.31.0 (TBD)
@@ -29,11 +48,42 @@ title: Changelog
 icon:check[] The `.vertx` cache folder was moved to the configurable `data/tmp` folder.
 
 [[v0.30.0]]
-== 0.30.0 (TBD)
+== 0.30.0 (12.02.2019)
 
-icon:check[] Java Rest Client: The OkHttp implementation has replaced the Vert.x implementation. Some changes to the client interface were necessary to make the client independent of Vert.x. See link:https://getmesh.io/docs/platforms/#_java[this example] and the Javadoc for more information.
+CAUTION: Java Rest Client: The Gentics Mesh Java REST client which was based on Vert.x was replaced with a OkHttpClient implementation. Some changes to the client interface were necessary to make the client independent of Vert.x. See link:https://getmesh.io/docs/platforms/#_java[this example] and the Javadoc for more information.
+
+icon:check[] Clustering: The mesh version will no longer be appended  to the node name used for OrientDB clustering. It is recommended to sanitize the `data/graphdb/storage/distributed-db-config.json` file and remove/rename entries which reference older mesh nodes. Only the active nodes should be listed in the file.
 
 icon:check[] Core: Fixed a bug that caused too long responses on binary range requests.
+
+icon:check[] GraphQL: Fixed a bug when loading a node via path. When the node itself did not exist, the query would return its parent node.
+
+[[v0.29.10]]
+== 0.29.10 (08.02.2019)
+
+icon:check[] Clustering: Cluster stability has been increased by reducing concurrent transaction locks during delete requests.
+
+[[v0.29.9]]
+== 0.29.9 (07.02.2019)
+
+icon:check[] Clustering: Cluster stability has been increased by reducing concurrent transaction locks during create/update requests.
+
+[[v0.29.8]]
+== 0.29.8 (05.02.2019)
+
+icon:check[] Clustering: The mesh version will no longer be appended  to the node name used for OrientDB clustering. It is recommended to sanitize the `data/graphdb/storage/distributed-db-config.json` file and remove/rename entries which reference older mesh nodes. Only the active nodes should be listed in the file.
+
+[[v0.29.7]]
+== 0.29.7 (05.02.2019)
+
+icon:check[] Clustering: The default write `writeQuorum` has been set to `majority` to increase cluster stability. A `writeQuorum` of `1` can cause synchronization issues.
+
+icon:check[] Elasticsearch: The Elasticsearch synchronization verticle will no longer be deployed when no Elasticsearch has been configured.
+
+[[v0.29.6]]
+== 0.29.6 (01.02.2019)
+
+icon:plus[] Core: The way editor references are stored has been refactored to increase performance and reduce contention during database operations. A changelog entry will be invoked which migrates the data.
 
 [[v0.29.5]]
 == 0.29.5 (31.01.2019)

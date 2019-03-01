@@ -75,7 +75,7 @@ import com.syncleus.ferma.ElementFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
-import com.syncleus.ferma.ext.orientdb.OrientDBTx;
+import com.syncleus.ferma.ext.orientdb3.OrientDBTx;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.tx.TxAction;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
@@ -116,7 +116,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final Logger log = LoggerFactory.getLogger(OrientDBDatabase.class);
 
-	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.0.13.zip";
+	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.0.16.zip";
 
 	private TopologyEventBridge topologyEventBridge;
 
@@ -380,18 +380,12 @@ public class OrientDBDatabase extends AbstractDatabase {
 		StringBuilder nameBuilder = new StringBuilder();
 		String nodeName = options.getNodeName();
 		nameBuilder.append(nodeName);
-		nameBuilder.append("@");
-		nameBuilder.append(meshVersion);
 
 		// Sanitize the name
 		String name = nameBuilder.toString();
 		name = name.replaceAll(" ", "_");
 		name = name.replaceAll("\\.", "-");
 		return name;
-	}
-
-	public String getClusterName() {
-		return options.getClusterOptions().getClusterName();
 	}
 
 	private void writeOrientBackupConfig(File configFile) throws IOException {

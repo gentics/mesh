@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -19,6 +20,7 @@ import org.junit.rules.RuleChain;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
@@ -28,6 +30,7 @@ import com.gentics.mesh.distributed.containers.MeshDockerServer;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -54,11 +57,30 @@ public class ClusterConcurrencyTest extends AbstractClusterTest {
 		.withDataPathPostfix(randomToken())
 		.withClearFolders();
 
+	public static MeshDockerServer serverC = new MeshDockerServer(vertx)
+		.withClusterName("dockerCluster" + clusterPostFix)
+		.withNodeName("nodeC")
+		.withDataPathPostfix(randomToken())
+		.withClearFolders();
+	
+//	public static MeshDockerServer serverD = new MeshDockerServer(vertx)
+//		.withClusterName("dockerCluster" + clusterPostFix)
+//		.withNodeName("nodeD")
+//		.withDataPathPostfix(randomToken())
+//		.withClearFolders();
+	
+//	public static MeshDockerServer serverE = new MeshDockerServer(vertx)
+//		.withClusterName("dockerCluster" + clusterPostFix)
+//		.withNodeName("nodeE")
+//		.withDataPathPostfix(randomToken())
+//		.withClearFolders();
+
+
 	public static MeshRestClient clientA;
 	public static MeshRestClient clientB;
 
 	@ClassRule
-	public static RuleChain chain = RuleChain.outerRule(serverB).around(serverA);
+	public static RuleChain chain = RuleChain.outerRule(serverC).around(serverB).around(serverA);
 
 	@BeforeClass
 	public static void waitForNodes() throws InterruptedException {
@@ -77,7 +99,7 @@ public class ClusterConcurrencyTest extends AbstractClusterTest {
 	}
 
 	@Test
-	public void testConcurrency() throws InterruptedException {
+	public void testConcurrencyWithSchemaMigration() throws InterruptedException {
 		SchemaListResponse schemas = call(() -> clientA.findSchemas());
 		SchemaResponse contentSchema = schemas.getData().stream().filter(s -> s.getName().equals("content")).findFirst().get();
 		String schemaUuid = contentSchema.getUuid();
@@ -118,6 +140,50 @@ public class ClusterConcurrencyTest extends AbstractClusterTest {
 		// Finally assert that both nodes can still access the graph
 		call(() -> clientA.findSchemaByUuid(contentSchema.getUuid()));
 		call(() -> clientB.findSchemaByUuid(contentSchema.getUuid()));
+	}
+
+	@Test
+	public void testConcurrencyViaUpdateOnNodeA() throws InterruptedException {
+		SchemaListResponse schemas = call(() -> clientA.findSchemas());
+		SchemaResponse contentSchema = schemas.getData().stream().filter(s -> s.getName().equals("content")).findFirst().get();
+		String schemaUuid = contentSchema.getUuid();
+
+		String projectName = randomName();
+		// Node A: Create Project
+		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setName(projectName);
+		request.setSchemaRef("folder");
+		ProjectResponse project = call(() -> clientA.createProject(request));
+
+		call(() -> clientA.assignSchemaToProject(projectName, schemaUuid));
+
+		// Create test data
+		List<String> uuids = new ArrayList<>();
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.getFields().put("teaser", FieldUtil.createStringField("some rorschach teaser"));
+		nodeCreateRequest.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		nodeCreateRequest.setSchemaName("content");
+		nodeCreateRequest.setParentNodeUuid(project.getRootNode().getUuid());
+		for (int i = 0; i < TEST_DATA_SIZE; i++) {
+			nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField("new-page" + i + ".html"));
+			if (i % 10 == 0) {
+				log.info("Creating node {" + i + "/" + TEST_DATA_SIZE + "}");
+			}
+			uuids.add(call(() -> clientA.createNode(projectName, nodeCreateRequest)).getUuid());
+		}
+
+		AtomicLong longValue = new AtomicLong(0);
+		Observable.fromIterable(uuids).flatMapCompletable(uuid -> {
+			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
+			updateRequest.setLanguage("en");
+			updateRequest.getFields().put("teaser", FieldUtil.createStringField("some rorschach teaser " + uuid + longValue.incrementAndGet()));
+			updateRequest.setVersion("draft");
+			return clientA.updateNode(projectName, uuid, updateRequest).toCompletable().repeat(20);
+		}).blockingAwait();
+		
+		Thread.sleep(12000);
+
 	}
 
 	// -------

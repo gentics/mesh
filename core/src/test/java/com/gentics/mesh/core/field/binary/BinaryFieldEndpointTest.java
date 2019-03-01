@@ -11,6 +11,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -182,6 +184,26 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		// 2. Delete the node
 		call(() -> client().deleteNode(PROJECT_NAME, response.getUuid()));
+
+	}
+
+	@Test
+	public void testDownloadBogusNames() {
+
+		List<String> names = Arrays.asList("file", "file.", ".", "jpeg", "jpg", "JPG", "file.JPG", "file.PDF");
+		String uuid = tx(() -> folder("2015").getUuid());
+		Buffer buffer = TestUtils.randomBuffer(1000);
+
+		for (String name : names) {
+			// 1. Upload a binary field
+			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", "draft", FIELD_NAME,
+				new ByteArrayInputStream(buffer.getBytes()), buffer.length(), name,
+				"application/pdf2"));
+
+			MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", FIELD_NAME));
+			assertEquals("application/pdf2", response.getContentType());
+			assertEquals(name, response.getFilename());
+		}
 
 	}
 

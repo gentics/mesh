@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>0.30.0-SNAPSHOT</version>
+	<version>0.30.3-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Mesh</name>
@@ -17,10 +18,9 @@
 
 		<asm.version>3.3.1</asm.version>
 		<spring.security.version>4.2.3.RELEASE</spring.security.version>
-		<ferma.version>2.4.0</ferma.version>
-		<ferma.orientdb.version>2.3.1</ferma.orientdb.version>
+		<ferma.version>2.4.0-MIG</ferma.version>
 		<elasticsearch.client.version>0.5.0</elasticsearch.client.version>
-		<orientdb.version>3.0.14</orientdb.version>
+		<orientdb.version>3.0.16</orientdb.version>
 		<dagger.version>2.11</dagger.version>
 		<hazelcast.version>3.8.4</hazelcast.version>
 		<jackson.version>2.9.8</jackson.version>
@@ -83,6 +83,7 @@
 	<inceptionYear>2014</inceptionYear>
 
 	<modules>
+		<module>ferma</module>
 		<module>rest-model</module>
 		<module>api</module>
 		<module>plugin-api</module>
@@ -130,7 +131,7 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>com.syncleus.ferma</groupId>
+				<groupId>com.gentics.mesh</groupId>
 				<artifactId>ferma</artifactId>
 				<version>${ferma.version}</version>
 			</dependency>
@@ -252,35 +253,6 @@
 
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>3.0.0-M1</version>
-				<executions>
-					<execution>
-						<id>enforce-maven</id>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-						<configuration>
-							<rules>
-								<requireJavaVersion>
-									<version>1.8.0</version>
-								</requireJavaVersion>
-								<requireReleaseDeps>
-									<onlyWhenRelease>true</onlyWhenRelease>
-									<message>No Snapshots Allowed!</message>
-									<excludes>
-										<exclude>org.apache.maven:maven-core</exclude>
-										<exclude>org.apache.maven.plugins:*</exclude>
-									</excludes>
-								</requireReleaseDeps>
-							</rules>
-							<fail>true</fail>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
 				<version>2.1</version>
@@ -292,7 +264,8 @@
 					<tag>${project.artifactId}-${project.version}</tag>
 				</configuration>
 			</plugin>
-			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-gpg-plugin</artifactId> <executions> <execution> <id>sign-artifacts</id> <phase>verify</phase> <goals> 
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-gpg-plugin</artifactId> 
+				<executions> <execution> <id>sign-artifacts</id> <phase>verify</phase> <goals> 
 				<goal>sign</goal> </goals> </execution> </executions> </plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
