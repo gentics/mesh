@@ -11,7 +11,7 @@
 = Gentics Mesh Changelog
 
 [[v0.22.11]]
-== 0.22.11 (TBD)
+== 0.22.11 (05.03.2019)
 
 icon:plus[] GraphQL: The underlying graphql-java library was updated to version 10.0.
 
