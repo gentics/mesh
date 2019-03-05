@@ -305,7 +305,10 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	public void handleSetLatest(InternalActionContext ac, String branchUuid) {
 		utils.syncTx(ac, (tx) -> {
 			Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, branchUuid, UPDATE_PERM);
-			branch.setLatest();
+			utils.eventAction(event -> { 
+				branch.setLatest();
+				event.add(branch.onSetLatest());
+			});
 			return branch.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
 	}

@@ -1,5 +1,12 @@
 package com.gentics.mesh.core.data;
 
+import static com.gentics.mesh.ElementType.BRANCH;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
+
+import java.util.List;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
@@ -13,16 +20,10 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.event.branch.ProjectBranchEventModel;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
-
-import java.util.List;
-
-import static com.gentics.mesh.ElementType.BRANCH;
-import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
 
 /**
  * The Branch domain model interface.
@@ -404,5 +405,12 @@ public interface Branch
 	 * @return Page which includes the new set of tags
 	 */
 	TransformablePage<? extends Tag> updateTags(InternalActionContext ac, EventQueueBatch batch);
+
+	/**
+	 * Generate event which is send when the branch is set to be the latest of the project.
+	 * 
+	 * @return
+	 */
+	ProjectBranchEventModel onSetLatest();
 
 }

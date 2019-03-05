@@ -13,6 +13,7 @@ import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchMeshEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
+import com.gentics.mesh.core.rest.event.branch.ProjectBranchEventModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
@@ -180,7 +181,7 @@ public enum MeshEvent {
 
 	PROJECT_MICROSCHEMA_UNASSIGNED("mesh.project-microschema.unassigned", null),
 
-	PROJECT_LATEST_BRANCH_UPDATED("mesh.project-latest-branch.updated", null),
+	PROJECT_LATEST_BRANCH_UPDATED("mesh.project-latest-branch.updated", ProjectBranchEventModel.class),
 
 	/* Node */
 

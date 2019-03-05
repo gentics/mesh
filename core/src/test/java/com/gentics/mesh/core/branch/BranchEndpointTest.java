@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_LATEST_BRANCH_UPDATED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
@@ -52,6 +53,7 @@ import com.gentics.mesh.core.rest.branch.info.BranchMicroschemaInfo;
 import com.gentics.mesh.core.rest.branch.info.BranchSchemaInfo;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.branch.ProjectBranchEventModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
@@ -59,6 +61,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
@@ -748,6 +751,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 				assertThat(response).as("Created branch").hasName(branchName).isNotLatest();
 				branchMap.put(branchName, response.getUuid());
 			}, COMPLETED, 1);
+
 		}
 
 		for (int i = 0; i < 2; i++) {
@@ -755,8 +759,18 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 				String branchName = entry.getKey();
 				String branchUuid = entry.getValue();
 
+				expectEvents(PROJECT_LATEST_BRANCH_UPDATED, 1, ProjectBranchEventModel.class, event -> {
+					ProjectReference project = event.getProject();
+					assertEquals("Project name not correct in event.", PROJECT_NAME, project.getName());
+					assertEquals("Project uuid not correct in event.", projectUuid(), project.getUuid());
+					assertEquals("Branch name not correct in event.", branchName, event.getName());
+					assertEquals("Branch uuid not correct in event.", branchUuid, event.getUuid());
+					return true;
+				});
+
 				BranchResponse response = call(() -> client().setLatestBranch(PROJECT_NAME, branchUuid));
 				assertThat(response).as("Latest branch").hasUuid(branchUuid).hasName(branchName).isLatest();
+				waitForEvents();
 
 				BranchListResponse updatedProjectBranches = call(() -> client().findBranches(PROJECT_NAME));
 				assertThat(updatedProjectBranches.getData().stream().filter(BranchResponse::getLatest).collect(Collectors.toList()))

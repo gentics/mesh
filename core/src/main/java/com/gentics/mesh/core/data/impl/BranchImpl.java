@@ -11,6 +11,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MIC
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_LATEST_BRANCH_UPDATED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
@@ -57,6 +58,7 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.event.branch.BranchMeshEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
+import com.gentics.mesh.core.rest.event.branch.ProjectBranchEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.dagger.DB;
@@ -424,8 +426,9 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 		model.setProject(getProject().transformToReference());
 		return model;
 	}
-	
-	private BranchMicroschemaAssignModel createMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion, MigrationStatus status) {
+
+	private BranchMicroschemaAssignModel createMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion,
+		MigrationStatus status) {
 		BranchMicroschemaAssignModel model = new BranchMicroschemaAssignModel();
 		fillEventInfo(model);
 		model.setEvent(MeshEvent.MICROSCHEMA_BRANCH_ASSIGN);
@@ -436,7 +439,6 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 		return model;
 	}
 
-	
 	@Override
 	public Branch unassignMicroschema(MicroschemaContainer microschemaContainer) {
 		unassign(microschemaContainer);
@@ -558,17 +560,32 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 		return createEvent(getTypeInfo().getOnDeleted());
 	}
 
-	private BranchMeshEventModel createEvent(MeshEvent type) {
-		BranchMeshEventModel event = new BranchMeshEventModel();
-		event.setEvent(type);
-		fillEventInfo(event);
+	private BranchMeshEventModel createEvent(MeshEvent event) {
+		BranchMeshEventModel model = new BranchMeshEventModel();
+		model.setEvent(event);
+		fillEventInfo(model);
 
 		// .project
 		Project project = getProject();
 		ProjectReference reference = project.transformToReference();
-		event.setProject(reference);
+		model.setProject(reference);
 
-		return event;
+		return model;
+	}
+
+	@Override
+	public ProjectBranchEventModel onSetLatest() {
+		ProjectBranchEventModel model = new ProjectBranchEventModel();
+		model.setEvent(PROJECT_LATEST_BRANCH_UPDATED);
+
+		// .project
+		Project project = getProject();
+		ProjectReference reference = project.transformToReference();
+		model.setProject(reference);
+
+		fillEventInfo(model);
+		return model;
+
 	}
 
 	@Override

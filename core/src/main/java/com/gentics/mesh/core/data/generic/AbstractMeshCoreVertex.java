@@ -148,12 +148,12 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		return event;
 	}
 
-	protected void fillEventInfo(MeshElementEventModel event) {
+	protected void fillEventInfo(MeshElementEventModel model) {
 		if (this instanceof NamedElement) {
-			event.setName(((NamedElement) this).getName());
+			model.setName(((NamedElement) this).getName());
 		}
-		event.setOrigin(Mesh.mesh().getOptions().getNodeName());
-		event.setUuid(getUuid());
+		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
+		model.setUuid(getUuid());
 	}
 
 	@Override
