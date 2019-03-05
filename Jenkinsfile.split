@@ -165,11 +165,11 @@ node("docker") {
 						if (Boolean.valueOf(params.runDocker)) {
 							// demo
 							sh "rm demo/target/*sources.jar"
-							sh "cd demo ; docker build -t gentics/mesh-demo:latest -t gentics/mesh-demo:" + version + " . "
+							sh "cd demo ; docker build --network=host -t gentics/mesh-demo:latest -t gentics/mesh-demo:" + version + " . "
 
 							// server
 							sh "rm server/target/*sources.jar"
-							sh "cd server ; docker build -t gentics/mesh:latest -t gentics/mesh:" + version + " . "
+							sh "cd server ; docker build --network=host -t gentics/mesh:latest -t gentics/mesh:" + version + " . "
 						} else {
 							echo "Docker build skipped.."
 						}
