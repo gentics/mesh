@@ -727,6 +727,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 				throw new RuntimeException("Did not receive event for {" + event.getAddress() + "}", e);
 			}
 		}
+		futures.clear();
 	}
 
 	protected void waitForSearchIdleEvent() {

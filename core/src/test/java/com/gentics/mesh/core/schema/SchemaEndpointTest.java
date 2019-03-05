@@ -5,8 +5,15 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_BRANCH_ASSIGN;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_ASSIGN;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_START;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_UPDATED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
@@ -45,14 +52,24 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.EventCauseInfo;
+import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
+import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
+import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
+import com.gentics.mesh.core.rest.project.ProjectReference;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -301,19 +318,16 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		SchemaContainer schema = schemaContainer("content");
-		try (Tx tx = tx()) {
+		String uuid = tx(() -> schemaContainer("content").getUuid());
+		tx(() -> {
+			SchemaContainer schema = schemaContainer("content");
 			role().grantPermissions(schema, DELETE_PERM);
 			role().grantPermissions(schema, UPDATE_PERM);
 			role().grantPermissions(schema, CREATE_PERM);
 			role().revokePermissions(schema, READ_PERM);
-			tx.success();
-		}
+		});
 
-		try (Tx tx = tx()) {
-			call(() -> client().findSchemaByUuid(schema.getUuid()), FORBIDDEN, "error_missing_perm", schema.getUuid(),
-				READ_PERM.getRestPerm().getName());
-		}
+		call(() -> client().findSchemaByUuid(uuid), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -347,7 +361,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		SchemaUpdateRequest request = JsonUtil.readValue(json, SchemaUpdateRequest.class);
 		request.setUrlFields("slug");
 
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdminRole();
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(uuid, request));
 		}, COMPLETED, 1);
@@ -358,17 +372,28 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	 */
 	@Test
 	public void testUpdateWithReferencedMicroschema() {
+		final String MICROSCHEMA_NAME = "TestMicroschema";
 
-		SchemaUpdateRequest schemaUpdate = db().tx(() -> JsonUtil.readValue(schemaContainer("content").getLatestVersion().getJson(),
+		SchemaUpdateRequest schemaUpdate = tx(() -> JsonUtil.readValue(schemaContainer("content").getLatestVersion().getJson(),
 			SchemaUpdateRequest.class));
-		String schemaUuid = db().tx(() -> schemaContainer("content").getUuid());
+		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+		String schemaVersion = tx(() -> schemaContainer("content").getLatestVersion().getVersion());
 
 		// 1. Create the microschema
 		MicroschemaCreateRequest microschemaRequest = new MicroschemaCreateRequest();
-		microschemaRequest.setName("TestMicroschema");
+		microschemaRequest.setName(MICROSCHEMA_NAME);
 		microschemaRequest.addField(FieldUtil.createStringFieldSchema("text"));
 		microschemaRequest.addField(FieldUtil.createNodeFieldSchema("nodeRef").setAllowedSchemas("content"));
+
+		expectEvents(MICROSCHEMA_CREATED, 1, MeshElementEventModelImpl.class, event -> {
+			assertEquals("The microschema name did not match.", MICROSCHEMA_NAME, event.getName());
+			assertNotNull("The schema uuid was not set", event.getUuid());
+			assertNotNull("The origin has not been set", event.getOrigin());
+			return true;
+		});
 		MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(microschemaRequest));
+		waitForEvents();
+
 		String microschemaUuid = microschemaResponse.getUuid();
 
 		List<MicroschemaResponse> filteredList = call(() -> client().findMicroschemas(PROJECT_NAME)).getData().stream().filter(
@@ -379,16 +404,99 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		// 2. Add micronode field to content schema
 		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("micro").setAllowedMicroSchemas("TestMicroschema"));
 
-		tx(() -> group().addRole(roles().get("admin")));
+		expectEvents(SCHEMA_UPDATED, 1, MeshElementEventModelImpl.class, event -> {
+			assertEquals("content", event.getName());
+			assertEquals(schemaUuid, event.getUuid());
+			return true;
+		});
+
+		// References microschemas will also be assigned to the project/branch during the schema update process.
+		expectEvents(MICROSCHEMA_BRANCH_ASSIGN, 1, BranchMicroschemaAssignModel.class, event -> {
+			BranchReference branch = event.getBranch();
+			assertNotNull("Branch reference was not set", branch);
+			assertNotNull(branch.getName());
+			assertEquals(initialBranchUuid(), branch.getUuid());
+
+			MicroschemaReference schema = event.getSchema();
+			assertNotNull("The microschema reference has not been set", schema);
+			assertEquals("Missing microschema name", MICROSCHEMA_NAME, schema.getName());
+			assertNotNull("Microschema uuid not set in event.", schema.getUuid());
+
+			ProjectReference project = event.getProject();
+			assertNotNull("The project reference was not set", project);
+			assertNotNull(project.getName());
+			assertNotNull(project.getUuid());
+			return true;
+
+		});
+
+		expectEvents(SCHEMA_BRANCH_ASSIGN, 1, BranchSchemaAssignEventModel.class, event -> {
+			BranchReference branch = event.getBranch();
+			assertNotNull("Branch reference was not set", branch);
+			assertNotNull(branch.getName());
+			assertEquals(initialBranchUuid(), branch.getUuid());
+
+			SchemaReference schema = event.getSchema();
+			assertNotNull("The schema reference has not been set", schema);
+			assertEquals("Missing Schema name", "content", schema.getName());
+			assertEquals("Schema uuid did not match.", schemaUuid, schema.getUuid());
+
+			ProjectReference project = event.getProject();
+			assertNotNull("The project reference was not set", project);
+			assertNotNull(project.getName());
+			assertNotNull(project.getUuid());
+			return true;
+		});
+		expectEvents(SCHEMA_MIGRATION_START, 1, SchemaMigrationMeshEventModel.class, event -> {
+			assertMigrationEvent(event, schemaVersion, schemaUuid);
+			return true;
+		});
+		expectEvents(NODE_UPDATED, 36, NodeMeshEventModel.class, event -> {
+			EventCauseInfo cause = event.getCause();
+			assertTrue("The cause of the node update event did not have the correct type.",cause instanceof SchemaMigrationCause);
+			SchemaMigrationCause migrationCause = (SchemaMigrationCause)cause;
+			assertMigrationEvent(migrationCause, schemaVersion, schemaUuid);
+			return true;
+		});
+		expectEvents(SCHEMA_MIGRATION_FINISHED, 1, SchemaMigrationMeshEventModel.class, event -> {
+			assertMigrationEvent(event, schemaVersion, schemaUuid);
+			return true;
+		});
+
+		grantAdminRole();
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
 		}, MigrationStatus.COMPLETED, 1);
-		tx(() -> group().removeRole(roles().get("admin")));
+		revokeAdminRole();
+
+		waitForEvents();
 
 		filteredList = call(() -> client().findMicroschemas(PROJECT_NAME)).getData().stream().filter(microschema -> microschema.getUuid().equals(
 			microschemaUuid)).collect(Collectors.toList());
 		assertThat(filteredList).hasSize(1);
 
+	}
+
+	private void assertMigrationEvent(SchemaMigrationMeshEventModel event, String schemaVersion, String schemaUuid) {
+		SchemaReference from = event.getFromVersion();
+		assertNotNull(from);
+		assertEquals("The from schema uuid did not match.", schemaUuid, from.getUuid());
+		assertEquals("The from version did not match", schemaVersion, from.getVersion());
+
+		SchemaReference to = event.getToVersion();
+		assertNotNull(to);
+		assertEquals("The to schema uuid did not match.", schemaUuid, to.getUuid());
+		System.out.println(event.toJson());
+
+		BranchReference branch = event.getBranch();
+		assertNotNull(branch);
+		assertEquals("Branch name did not match.", PROJECT_NAME, branch.getName());
+		assertEquals("Branch uuid did not match", initialBranchUuid(), branch.getUuid());
+
+		ProjectReference project = event.getProject();
+		assertNotNull(project);
+		assertEquals("The project name did not match up.", PROJECT_NAME, project.getName());
+		assertEquals("The project uuid did notmatch up.", projectUuid(), project.getUuid());
 	}
 
 	@Test
