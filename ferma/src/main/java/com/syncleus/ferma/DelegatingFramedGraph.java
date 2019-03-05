@@ -23,23 +23,26 @@
  */
 package com.syncleus.ferma;
 
+import java.util.Collection;
+import java.util.Iterator;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
+import com.syncleus.ferma.framefactories.DefaultFrameFactory;
+import com.syncleus.ferma.framefactories.FrameFactory;
+import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.GlobalVertexTraversal;
 import com.syncleus.ferma.traversals.SimpleTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
-import com.syncleus.ferma.traversals.EdgeTraversal;
-import com.syncleus.ferma.framefactories.FrameFactory;
-import com.syncleus.ferma.framefactories.DefaultFrameFactory;
-import com.syncleus.ferma.typeresolvers.UntypedTypeResolver;
-import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
-import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
-import com.syncleus.ferma.framefactories.annotation.AnnotationFrameFactory;
-import com.tinkerpop.blueprints.*;
+import com.syncleus.ferma.typeresolvers.TypeResolver;
+import com.syncleus.ferma.typeresolvers.UntypedTypeResolver;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Features;
+import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedGraph;
-
-import java.util.Collection;
-import java.util.Iterator;
 
 public class DelegatingFramedGraph<G extends Graph> extends WrappedGraph<G> implements WrapperFramedGraph<G> {
 
@@ -118,10 +121,7 @@ public class DelegatingFramedGraph<G extends Graph> extends WrappedGraph<G> impl
             this.defaultResolver = new UntypedTypeResolver();
             this.untypedResolver = this.defaultResolver;
         }
-        if (annotationsSupported)
-            this.builder = new AnnotationFrameFactory(reflections);
-        else
-            this.builder = new DefaultFrameFactory();
+        this.builder = new DefaultFrameFactory();
     }
 
     /**
@@ -150,10 +150,7 @@ public class DelegatingFramedGraph<G extends Graph> extends WrappedGraph<G> impl
             this.defaultResolver = new UntypedTypeResolver();
             this.untypedResolver = this.defaultResolver;
         }
-        if (annotationsSupported)
-            this.builder = new AnnotationFrameFactory(reflections);
-        else
-            this.builder = new DefaultFrameFactory();
+        this.builder = new DefaultFrameFactory();
     }
 
     /**
@@ -173,7 +170,7 @@ public class DelegatingFramedGraph<G extends Graph> extends WrappedGraph<G> impl
         final ReflectionCache reflections = new ReflectionCache(types);
         this.defaultResolver = new PolymorphicTypeResolver(reflections);
         this.untypedResolver = new UntypedTypeResolver();
-        this.builder = new AnnotationFrameFactory(reflections);
+        this.builder = new DefaultFrameFactory();
     }
 
     /**
@@ -202,7 +199,7 @@ public class DelegatingFramedGraph<G extends Graph> extends WrappedGraph<G> impl
             this.defaultResolver = new UntypedTypeResolver();
             this.untypedResolver = this.defaultResolver;
         }
-        this.builder = new AnnotationFrameFactory(reflections);
+        this.builder = new DefaultFrameFactory();
     }
 
     /**

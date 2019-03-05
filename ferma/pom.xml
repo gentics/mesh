@@ -30,94 +30,6 @@
 		<projectRoot>${project.basedir}/..</projectRoot>
 	</properties>
 
-	<organization>
-		<name>Syncleus</name>
-		<url>http://www.syncleus.com</url>
-	</organization>
-
-	<developers>
-		<developer>
-			<id>JeffreyPhillipsFreeman</id>
-			<name>Jeffrey Phillips Freeman</name>
-			<email>Jeffrey.Freeman@Syncleus.com</email>
-			<url>http://JeffreyFreeman.me</url>
-			<organization>Syncleus</organization>
-			<organizationUrl>http://www.syncleus.com</organizationUrl>
-			<roles>
-				<role>Chief Technology Officer</role>
-				<role>Project Owner</role>
-				<role>Developer</role>
-			</roles>
-			<timezone>-5</timezone>
-		</developer>
-	</developers>
-	<contributors>
-		<contributor>
-			<name>Seth Horne</name>
-			<email>seh999@gmail.com</email>
-			<roles>
-				<role>Developer</role>
-				<role>Tester</role>
-			</roles>
-			<timezone>-5</timezone>
-		</contributor>
-		<contributor>
-			<name>Mohamed T. AlRefaie</name>
-			<email>m.taher@msn.com</email>
-			<roles>
-				<role>Developer</role>
-			</roles>
-		</contributor>
-		<contributor>
-			<name>Bryn Cooke</name>
-			<email>BrynCooke@gmail.com</email>
-			<roles>
-				<role>Developer</role>
-			</roles>
-		</contributor>
-		<contributor>
-			<name>Daniel Thommes</name>
-			<email>dandroid42@googlemail.com</email>
-			<roles>
-				<role>Developer</role>
-			</roles>
-		</contributor>
-		<contributor>
-			<name>Tjad Clark</name>
-			<email>tjataz@gmail.com</email>
-			<roles>
-				<role>Developer</role>
-			</roles>
-		</contributor>
-		<contributor>
-			<name>Willem Salembier</name>
-			<email>willem.salembier@gmail.com</email>
-			<roles>
-				<role>Developer</role>
-			</roles>
-		</contributor>
-		<contributor>
-			<name>Johannes Schüth</name>
-			<email>j.schueth@jotschi.de</email>
-			<roles>
-				<role>Developer</role>
-			</roles>
-		</contributor>
-	</contributors>
-
-	<repositories>
-		<repository>
-			<id>ossrh.snapshots</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-
 	<dependencies>
 		<dependency>
 			<groupId>com.orientechnologies</groupId>
@@ -146,18 +58,11 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>23.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
-			<version>1.10.19</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>net.bytebuddy</groupId>
-			<artifactId>byte-buddy</artifactId>
-			<version>1.7.5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.reflections</groupId>
@@ -183,23 +88,11 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>com.mycila.maven-license-plugin</groupId>
-				<artifactId>maven-license-plugin</artifactId>
-				<version>1.10.b1</version>
-				<configuration>
-					<skipExistingHeaders>false</skipExistingHeaders>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
