@@ -171,6 +171,16 @@ public abstract class AbstractTypeProvider {
 	}
 
 	/**
+	 * Return a new argument for a list of uuids.
+	 *
+	 * @param description The new arguments description
+	 * @return A new argument for a list of uuids
+	 */
+	public GraphQLArgument createUuidsArg(String description) {
+		return newArgument().name("uuids").type(GraphQLList.list(GraphQLString)).description(description).build();
+	}
+
+	/**
 	 * Return a new webroot path argument.
 	 * 
 	 * @return
@@ -294,7 +304,7 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	protected GraphQLFieldDefinition newPagingSearchField(String name, String description, Function<GraphQLContext, RootVertex<?>> rootProvider,
-		String pageTypeName, SearchHandler searchHandler, Filterable filterProvider) {
+		String pageTypeName, SearchHandler<?, ?> searchHandler, Filterable filterProvider) {
 		Builder fieldDefBuilder = newFieldDefinition()
 			.name(name)
 			.description(description)
