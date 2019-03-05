@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_BRANCH_ASSIGN;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_LATEST_BRANCH_UPDATED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
@@ -23,6 +24,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,6 +55,7 @@ import com.gentics.mesh.core.rest.branch.info.BranchMicroschemaInfo;
 import com.gentics.mesh.core.rest.branch.info.BranchSchemaInfo;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
 import com.gentics.mesh.core.rest.event.branch.ProjectBranchEventModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.job.JobListResponse;
@@ -62,6 +65,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectReference;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
@@ -1065,10 +1069,25 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			BranchInfoMicroschemaList info = new BranchInfoMicroschemaList();
 			info.add(new MicroschemaReferenceImpl().setUuid(microschema.getUuid()).setVersion("2.0"));
 
+			expectEvents(MICROSCHEMA_BRANCH_ASSIGN, 1, BranchMicroschemaAssignModel.class, event -> {
+				BranchReference branch = event.getBranch();
+				assertNotNull("The branch reference was missing in the assignment event.", branch);
+				assertEquals("Branch name did not match.", PROJECT_NAME, branch.getName());
+				assertEquals("Branch uuid did not match.", initialBranchUuid(), branch.getUuid());
+
+				MicroschemaReference schemaRef = event.getSchema();
+				assertEquals("Version did not match.", "2.0", schemaRef.getVersion());
+				assertEquals("Microschema name did not match.", "newmicroschemaname", schemaRef.getName());
+				assertEquals("Microschema uuid did not match.", microschema.getUuid(), schemaRef.getUuid());
+				return true;
+			});
+
 			// assign version 2 to the branch
 			waitForJobs(() -> {
 				call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(), info));
 			}, COMPLETED, 1);
+
+			waitForEvents();
 
 			// assert
 			list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));

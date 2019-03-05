@@ -21,6 +21,7 @@ import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -418,7 +419,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	private BranchSchemaAssignEventModel createSchemaAssignEvent(SchemaContainerVersion schemaContainerVersion, MigrationStatus status) {
 		BranchSchemaAssignEventModel model = new BranchSchemaAssignEventModel();
-		fillEventInfo(model);
+		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
 		model.setEvent(MeshEvent.SCHEMA_BRANCH_ASSIGN);
 		model.setSchema(schemaContainerVersion.transformToReference());
 		model.setStatus(status);
@@ -430,7 +431,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	private BranchMicroschemaAssignModel createMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion,
 		MigrationStatus status) {
 		BranchMicroschemaAssignModel model = new BranchMicroschemaAssignModel();
-		fillEventInfo(model);
+		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
 		model.setEvent(MeshEvent.MICROSCHEMA_BRANCH_ASSIGN);
 		model.setSchema(microschemaContainerVersion.transformToReference());
 		model.setStatus(status);

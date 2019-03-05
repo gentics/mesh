@@ -5,9 +5,14 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
-import com.gentics.mesh.core.rest.event.AbstractProjectEventModel;
+import com.gentics.mesh.core.rest.event.AbstractMeshEventModel;
+import com.gentics.mesh.core.rest.project.ProjectReference;
 
-public abstract class AbstractBranchAssignEventModel<T extends NameUuidReference<T>> extends AbstractProjectEventModel {
+public abstract class AbstractBranchAssignEventModel<T extends NameUuidReference<T>> extends AbstractMeshEventModel {
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Reference to the project to which the element belonged.")
+	private ProjectReference project;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Reference to the branch.")
@@ -20,7 +25,6 @@ public abstract class AbstractBranchAssignEventModel<T extends NameUuidReference
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Status of the migration job that has been created when assigning the schema.")
 	private MigrationStatus status;
-
 
 	public BranchReference getBranch() {
 		return branch;
@@ -44,6 +48,14 @@ public abstract class AbstractBranchAssignEventModel<T extends NameUuidReference
 
 	public MigrationStatus getStatus() {
 		return status;
+	}
+
+	public ProjectReference getProject() {
+		return project;
+	}
+
+	public void setProject(ProjectReference project) {
+		this.project = project;
 	}
 
 }
