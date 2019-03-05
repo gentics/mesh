@@ -126,7 +126,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 				throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 			}
 
-			return db.tx(() -> {
+			return utils.eventAction(event -> {
 				RolePermissionRequest requestModel = ac.fromJson(RolePermissionRequest.class);
 
 				// Prepare the sets for revoke and grant actions
@@ -150,7 +150,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 							log.debug("Revoking permission: " + p);
 						}
 					}
-
+					event.add(role.onPermissionChanged());
 					// 3. Apply the permission actions
 					element.applyPermissions(batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
 					return role.getName();
@@ -159,4 +159,5 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			});
 		}, model -> ac.send(model, OK));
 	}
+
 }

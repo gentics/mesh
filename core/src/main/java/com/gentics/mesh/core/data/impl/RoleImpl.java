@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLI
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_PERMISSIONS_CHANGED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 
 import java.util.Arrays;
@@ -25,6 +26,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
@@ -166,7 +168,6 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	@Override
 	public void delete(BulkActionContext bac) {
 		// TODO don't allow deletion of admin role
-		bac.add(onDeleted());
 		// Update all document in the index which reference the uuid of the role
 		for (GraphPermission perm : Arrays.asList(READ_PERM, READ_PUBLISHED_PERM)) {
 			for (MeshVertex element : getElementsWithPermission(perm)) {
@@ -176,6 +177,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 				}
 			}
 		}
+		bac.add(onDeleted());
 		getVertex().remove();
 		bac.process();
 		PermissionStore.invalidate();
@@ -227,6 +229,14 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 		return DB.get().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
+	}
+
+	@Override
+	public PermissionChangedEventModel onPermissionChanged() {
+		PermissionChangedEventModel model = new PermissionChangedEventModel();
+		model.setEvent(ROLE_PERMISSIONS_CHANGED);
+		fillEventInfo(model);
+		return model;
 	}
 
 }

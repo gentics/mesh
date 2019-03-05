@@ -3,6 +3,7 @@ package com.gentics.mesh.core.role;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_PERMISSIONS_CHANGED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
@@ -12,6 +13,7 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -26,6 +28,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -154,6 +157,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 	@Test
 	public void testAddPermissionsOnGroup() {
 		String pathToElement = "groups";
+		String roleName = tx(() -> role().getName());
 
 		RolePermissionRequest request = new RolePermissionRequest();
 		request.setRecursive(true);
@@ -163,9 +167,20 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			assertTrue("The role should have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
+		}
 
-			GenericMessageResponse message = call(() -> client().updateRolePermissions(roleUuid(), pathToElement, request));
-			assertThat(message).matches("role_updated_permission", role().getName());
+		expectEvents(ROLE_PERMISSIONS_CHANGED, 1, PermissionChangedEventModel.class, event -> {
+			assertEquals("The role name in the event did not match.", roleName, event.getName());
+			assertEquals("The role uuid in the event did not match.", roleUuid(), event.getUuid());
+			return true;
+		});
+
+		GenericMessageResponse message = call(() -> client().updateRolePermissions(roleUuid(), pathToElement, request));
+		assertThat(message).matches("role_updated_permission", roleName);
+
+		waitForEvents();
+
+		try (Tx tx = tx()) {
 			assertFalse("The role should no longer have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
 		}
 

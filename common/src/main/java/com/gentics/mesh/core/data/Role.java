@@ -1,20 +1,21 @@
 package com.gentics.mesh.core.data;
 
-import com.gentics.mesh.ElementType;
-import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.rest.role.RoleReference;
-import com.gentics.mesh.core.rest.role.RoleResponse;
-import com.gentics.mesh.madlmigration.TraversalResult;
-import com.gentics.mesh.parameter.PagingParameters;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_UPDATED;
 
 import java.util.Objects;
 import java.util.Set;
 
-import static com.gentics.mesh.core.rest.MeshEvent.ROLE_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.ROLE_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.ROLE_UPDATED;
+import com.gentics.mesh.ElementType;
+import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
+import com.gentics.mesh.core.rest.role.RoleReference;
+import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.madlmigration.TraversalResult;
+import com.gentics.mesh.parameter.PagingParameters;
 
 /**
  * Graph domain model interface for a role.
@@ -96,5 +97,12 @@ public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableE
 	 * @return
 	 */
 	boolean hasPermission(GraphPermission permission, MeshVertex element);
+
+	/**
+	 * Generate a permission changed event.
+	 * 
+	 * @return
+	 */
+	PermissionChangedEventModel onPermissionChanged();
 
 }

@@ -13,6 +13,7 @@ import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import java.io.IOException;
 
 public class EventCauseInfoDeserializer extends JsonDeserializer<EventCauseInfo> {
+
 	@Override
 	public EventCauseInfo deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 		ObjectCodec oc = jsonParser.getCodec();
@@ -20,7 +21,13 @@ public class EventCauseInfoDeserializer extends JsonDeserializer<EventCauseInfo>
 		ObjectMapper mapper = (ObjectMapper) jsonParser.getCodec();
 		if (node.get("action") != null) {
 			String type = node.get("action").textValue();
-			return mapper.convertValue(node, EventCauseAction.valueOf(type).getModelClass());
+			EventCauseAction action = EventCauseAction.valueOf(type);
+			Class<EventCauseInfo> modelClass = action.getModelClass();
+			// No class defined. Cause can't be deserialized for the given action
+			if (modelClass == null) {
+				return null;
+			}
+			return mapper.convertValue(node, modelClass);
 		}
 		return null;
 	}
