@@ -345,6 +345,13 @@ icon:check[] Core: Increased performance for webroot endpoint.
 
 icon:plus[] REST: Re-enabled SSL options. It is now possible to configure SSL via `MESH_HTTP_SSL_KEY_PATH`, `MESH_HTTP_SSL_CERT_PATH`, `MESH_HTTP_SSL_ENABLE` environment options.
 
+[[v0.22.11]]
+== 0.22.11 (05.03.2019)
+
+icon:plus[] GraphQL: The underlying graphql-java library was updated to version 10.0.
+
+icon:plus[] GraphQL: nodes can now be loaded via a list of UUIDs.
+
 [[v0.22.10]]
 == 0.22.10 (18.01.2019)
 

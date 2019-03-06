@@ -64,7 +64,6 @@ import com.gentics.mesh.graphql.filter.UserFilter;
 import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
 import com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider;
 import com.gentics.mesh.graphql.type.field.NodeFieldTypeProvider;
-import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.search.index.group.GroupSearchHandler;
 import com.gentics.mesh.search.index.project.ProjectSearchHandler;

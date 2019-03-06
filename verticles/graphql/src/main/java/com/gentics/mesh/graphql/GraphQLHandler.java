@@ -17,6 +17,8 @@ import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.QueryTypeProvider;
+import com.syncleus.ferma.tx.Tx;
+
 import graphql.ExceptionWhileDataFetching;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
