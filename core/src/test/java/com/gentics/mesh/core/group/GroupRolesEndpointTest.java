@@ -3,6 +3,8 @@ package com.gentics.mesh.core.group;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_ROLE_ASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_ROLE_UNASSIGNED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -15,14 +17,16 @@ import static org.junit.Assert.assertTrue;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.gentics.mesh.core.rest.role.RoleReference;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.root.RoleRoot;
+import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
+import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
+import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -61,18 +65,33 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddRoleToGroup() throws Exception {
-		String roleUuid;
-		try (Tx tx = tx()) {
+		String roleName = "extraRole";
+		String groupName = tx(() -> group().getName());
+		String groupUuid = groupUuid();
+		String roleUuid = tx(() -> {
 			RoleRoot root = meshRoot().getRoleRoot();
-			Role extraRole = root.create("extraRole", user());
-			roleUuid = extraRole.getUuid();
+			Role extraRole = root.create(roleName, user());
 			role().grantPermissions(extraRole, READ_PERM);
 			assertEquals(1, group().getRoles().count());
-			tx.success();
-		}
+			return extraRole.getUuid();
+		});
 
 		searchProvider().clear().blockingAwait();
+		expectEvents(GROUP_ROLE_ASSIGNED, 1, GroupRoleAssignModel.class, event -> {
+			GroupReference group = event.getGroup();
+			assertNotNull(group);
+			assertEquals("The group name was not set.", groupName, group.getName());
+			assertEquals("The group uuid was not set.", groupUuid, group.getUuid());
+
+			RoleReference role = event.getRole();
+			assertNotNull(role);
+			assertEquals("The role name was not set.", roleName, role.getName());
+			assertEquals("The role uuid was not set.", roleUuid, role.getUuid());
+			return true;
+		});
 		GroupResponse restGroup = call(() -> client().addRoleToGroup(groupUuid(), roleUuid));
+		waitForEvents();
+
 		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), groupUuid());
 		// The role is not updated since it is not changing
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
@@ -129,19 +148,34 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveRoleFromGroup() throws Exception {
-		String roleUuid;
-		try (Tx tx = tx()) {
+		String groupName = tx(() -> group().getName());
+		String groupUuid = groupUuid();
+		String roleName = "extraRole";
+		String roleUuid = tx(() -> {
 			RoleRoot root = meshRoot().getRoleRoot();
-			Role extraRole = root.create("extraRole", user());
-			roleUuid = extraRole.getUuid();
+			Role extraRole = root.create(roleName, user());
 			group().addRole(extraRole);
 			role().grantPermissions(extraRole, READ_PERM);
-			tx.success();
 			assertEquals(2, group().getRoles().count());
 			searchProvider().clear().blockingAwait();
-		}
+			return extraRole.getUuid();
+		});
+
+		expectEvents(GROUP_ROLE_UNASSIGNED, 1, GroupRoleAssignModel.class, event -> {
+			GroupReference group = event.getGroup();
+			assertNotNull(group);
+			assertEquals("The group name was not set.", groupName, group.getName());
+			assertEquals("The group uuid was not set.", groupUuid, group.getUuid());
+
+			RoleReference role = event.getRole();
+			assertNotNull(role);
+			assertEquals("The role name was not set.", roleName, role.getName());
+			assertEquals("The role uuid was not set.", roleUuid, role.getUuid());
+			return true;
+		});
 
 		call(() -> client().removeRoleFromGroup(groupUuid(), roleUuid));
+		waitForEvents();
 		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), groupUuid());
 		// The role is not updated since it is not changing
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);

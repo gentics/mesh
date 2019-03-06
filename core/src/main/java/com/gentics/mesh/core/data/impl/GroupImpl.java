@@ -6,6 +6,10 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CRE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_ROLE_ASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_ROLE_UNASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_ASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_UNASSIGNED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -27,11 +31,15 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
+import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
@@ -251,6 +259,38 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		return DB.get().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
+	}
+
+	@Override
+	public GroupRoleAssignModel createRoleAssignmentEvent(Role role, Assignment assignment) {
+		GroupRoleAssignModel model = new GroupRoleAssignModel();
+		model.setGroup(transformToReference());
+		model.setRole(role.transformToReference());
+		switch (assignment) {
+		case ASSIGNED:
+			model.setEvent(GROUP_ROLE_ASSIGNED);
+			break;
+		case UNASSIGNED:
+			model.setEvent(GROUP_ROLE_UNASSIGNED);
+			break;
+		}
+		return model;
+	}
+
+	@Override
+	public GroupUserAssignModel createUserAssignmentEvent(User user, Assignment assignment) {
+		GroupUserAssignModel model = new GroupUserAssignModel();
+		model.setGroup(transformToReference());
+		model.setUser(user.transformToReference());
+		switch (assignment) {
+		case ASSIGNED:
+			model.setEvent(GROUP_USER_ASSIGNED);
+			break;
+		case UNASSIGNED:
+			model.setEvent(GROUP_USER_UNASSIGNED);
+			break;
+		}
+		return model;
 	}
 
 }

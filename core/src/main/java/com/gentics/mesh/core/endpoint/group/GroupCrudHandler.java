@@ -2,6 +2,8 @@ package com.gentics.mesh.core.endpoint.group;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.event.Assignment.ASSIGNED;
+import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -85,8 +87,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 					group.addRole(role);
 					group.setEditor(ac.getUser());
 					group.setLastEditedTimestamp();
-					// No need to update users as well. Those documents are not affected by this modification
-					batch.add(group.onUpdated());
+					batch.add(group.createRoleAssignmentEvent(role, ASSIGNED));
 				});
 			}
 			return group.transformToRestSync(ac, 0);
@@ -120,8 +121,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				group.removeRole(role);
 				group.setEditor(ac.getUser());
 				group.setLastEditedTimestamp();
-				batch.add(group.onUpdated());
-				batch.add(role.onUpdated());
+				batch.add(group.createRoleAssignmentEvent(role, UNASSIGNED));
 				return batch;
 			});
 
@@ -163,12 +163,11 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		utils.syncTx(ac, tx -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
-			return utils.eventAction(batch -> {
+			utils.eventAction(batch -> {
 				group.addUser(user);
-				batch.add(group.onUpdated());
-				batch.add(user.onUpdated());
-				return group.transformToRestSync(ac, 0);
+				batch.add(group.createUserAssignmentEvent(user, ASSIGNED));
 			});
+			return group.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
 
 	}
@@ -190,9 +189,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 			utils.eventAction(batch -> {
-				batch.add(group.onUpdated());
-				batch.add(user.onUpdated());
 				group.removeUser(user);
+				batch.add(group.createUserAssignmentEvent(user, UNASSIGNED));
 			});
 		}, () -> ac.send(NO_CONTENT));
 	}

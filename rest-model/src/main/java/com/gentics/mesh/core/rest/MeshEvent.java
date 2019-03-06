@@ -14,6 +14,8 @@ import com.gentics.mesh.core.rest.event.branch.BranchMeshEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.event.branch.ProjectBranchEventModel;
+import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
+import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
@@ -131,13 +133,13 @@ public enum MeshEvent {
 
 	GROUP_DELETED("mesh.group.deleted", MeshElementEventModelImpl.class),
 
-	GROUP_USER_ASSIGNED("mesh.group-user.assigned", null),
+	GROUP_USER_ASSIGNED("mesh.group-user.assigned", GroupUserAssignModel.class),
 
-	GROUP_USER_UNASSIGNED("mesh.group-user.unassigned", null),
+	GROUP_USER_UNASSIGNED("mesh.group-user.unassigned", GroupUserAssignModel.class),
 
-	GROUP_ROLE_ASSIGNED("mesh.group-role.assigned", null),
+	GROUP_ROLE_ASSIGNED("mesh.group-role.assigned", GroupRoleAssignModel.class),
 
-	GROUP_ROLE_UNASSIGNED("mesh.group-role.unassigned", null),
+	GROUP_ROLE_UNASSIGNED("mesh.group-role.unassigned", GroupRoleAssignModel.class	),
 
 	/* Role */
 
