@@ -14,7 +14,6 @@ import com.gentics.mesh.core.rest.event.branch.BranchMeshEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchTaggedEventModel;
-import com.gentics.mesh.core.rest.event.branch.ProjectBranchEventModel;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
@@ -23,6 +22,9 @@ import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventM
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
+import com.gentics.mesh.core.rest.event.project.ProjectBranchEventModel;
+import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
+import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
@@ -177,13 +179,13 @@ public enum MeshEvent {
 
 	PROJECT_DELETED("mesh.project.deleted", MeshElementEventModelImpl.class),
 
-	PROJECT_SCHEMA_ASSIGNED("mesh.project-schema.assigned", null),
+	PROJECT_SCHEMA_ASSIGNED("mesh.project-schema.assigned", ProjectSchemaEventModel.class),
 
-	PROJECT_SCHEMA_UNASSIGNED("mesh.project-schema.unassigned", null),
+	PROJECT_SCHEMA_UNASSIGNED("mesh.project-schema.unassigned", ProjectSchemaEventModel.class),
 
-	PROJECT_MICROSCHEMA_ASSIGNED("mesh.project-microschema.assigned", null),
+	PROJECT_MICROSCHEMA_ASSIGNED("mesh.project-microschema.assigned", ProjectMicroschemaEventModel.class),
 
-	PROJECT_MICROSCHEMA_UNASSIGNED("mesh.project-microschema.unassigned", null),
+	PROJECT_MICROSCHEMA_UNASSIGNED("mesh.project-microschema.unassigned", ProjectMicroschemaEventModel.class),
 
 	PROJECT_LATEST_BRANCH_UPDATED("mesh.project-latest-branch.updated", ProjectBranchEventModel.class),
 

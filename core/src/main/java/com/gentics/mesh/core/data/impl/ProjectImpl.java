@@ -9,6 +9,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NOD
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_ASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_UNASSIGNED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -43,11 +45,13 @@ import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
+import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
@@ -218,7 +222,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		// Remove the branch root and all branches
 		getBranchRoot().delete(bac);
 
-
 		// Remove the project from the index
 		bac.add(onDeleted());
 
@@ -322,6 +325,22 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			throw error(BAD_REQUEST, "project_error_name_already_reserved", getName());
 		}
 		return event;
+	}
+
+	@Override
+	public ProjectSchemaEventModel onSchemaAssignEvent(SchemaContainer schema, Assignment assigned) {
+		ProjectSchemaEventModel model = new ProjectSchemaEventModel();
+		switch (assigned) {
+		case ASSIGNED:
+			model.setEvent(PROJECT_SCHEMA_ASSIGNED);
+			break;
+		case UNASSIGNED:
+			model.setEvent(PROJECT_SCHEMA_UNASSIGNED);
+			break;
+		}
+		model.setProject(transformToReference());
+		model.setSchema(schema.transformToReference());
+		return model;
 	}
 
 }
