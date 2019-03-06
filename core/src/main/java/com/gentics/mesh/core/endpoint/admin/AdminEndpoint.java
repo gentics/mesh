@@ -1,5 +1,15 @@
 package com.gentics.mesh.core.endpoint.admin;
 
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_START;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_START;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_START;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_START;
+import static com.gentics.mesh.core.rest.MeshEvent.REPAIR_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.REPAIR_START;
 import static com.gentics.mesh.example.ExampleUuids.JOB_UUID;
 import static com.gentics.mesh.example.ExampleUuids.PLUGIN_1_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
@@ -148,6 +158,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		repairEndpoint.description("Invokes a consistency check and repair of the graph database and returns a list of found issues and their state.");
 		repairEndpoint.produces(APPLICATION_JSON);
 		repairEndpoint.exampleResponse(OK, adminExamples.createConsistencyCheckResponse(true), "Consistency check and repair report");
+		repairEndpoint.events(REPAIR_START, REPAIR_FINISHED);
 		repairEndpoint.handler(rc -> {
 			consistencyHandler.invokeRepair(wrap(rc));
 		});
@@ -160,6 +171,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.description("Invoke a orientdb graph database export.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Export process was invoked.");
+		endpoint.events(GRAPH_EXPORT_START, GRAPH_EXPORT_FINISHED);
 		endpoint.handler(rc -> {
 			adminHandler.handleExport(wrap(rc));
 		});
@@ -173,6 +185,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 			"Invoke a orientdb graph database import. The latest import file from the import directory will be used for this operation.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Database import command was invoked.");
+		endpoint.events(GRAPH_IMPORT_START, GRAPH_IMPORT_FINISHED);
 		endpoint.handler(rc -> {
 			adminHandler.handleImport(wrap(rc));
 		});
@@ -186,6 +199,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Database restore command was invoked.");
 		endpoint.method(POST);
+		endpoint.events(GRAPH_RESTORE_START, GRAPH_RESTORE_FINISHED);
 		endpoint.handler(rc -> {
 			adminHandler.handleRestore(wrap(rc));
 		});
@@ -199,6 +213,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 			"Invoke a graph database backup and dump the data to the configured backup location. Note that this operation will block all current operation.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Incremental backup was invoked.");
+		endpoint.events(GRAPH_BACKUP_START, GRAPH_BACKUP_FINISHED);
 		endpoint.handler(rc -> {
 			adminHandler.handleBackup(wrap(rc));
 		});

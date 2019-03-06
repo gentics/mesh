@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.endpoint.role;
 
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_PERMISSIONS_CHANGED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_UPDATED;
 import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
 import static com.gentics.mesh.example.ExampleUuids.PROJECT_DEMO_UUID;
 import static com.gentics.mesh.example.ExampleUuids.ROLE_CLIENT_UUID;
@@ -63,6 +67,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		permissionSetEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Permissions were set.");
 		permissionSetEndpoint.exampleRequest(roleExamples.getRolePermissionRequest());
 		permissionSetEndpoint.consumes(APPLICATION_JSON);
+		permissionSetEndpoint.events(ROLE_PERMISSIONS_CHANGED);
 		permissionSetEndpoint.produces(APPLICATION_JSON).blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String roleUuid = ac.getParameter("param0");
@@ -95,6 +100,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		endpoint.method(DELETE);
 		endpoint.description("Delete the role with the given uuid");
 		endpoint.exampleResponse(NO_CONTENT, "Role was deleted.");
+		endpoint.events(ROLE_DELETED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("roleUuid");
@@ -111,6 +117,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.exampleRequest(roleExamples.getRoleUpdateRequest("New role name"));
 		endpoint.exampleResponse(OK, roleExamples.getRoleResponse1("New role name"), "Updated role.");
+		endpoint.events(ROLE_UPDATED, ROLE_CREATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("roleUuid");
@@ -159,6 +166,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(roleExamples.getRoleCreateRequest("New role"));
 		endpoint.exampleResponse(CREATED, roleExamples.getRoleResponse1("New role"), "Created role.");
+		endpoint.events(ROLE_CREATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleCreate(ac);

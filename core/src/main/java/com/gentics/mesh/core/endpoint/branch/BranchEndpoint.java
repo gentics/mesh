@@ -1,5 +1,12 @@
 package com.gentics.mesh.core.endpoint.branch;
 
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_TAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UNTAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_BRANCH_ASSIGN;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_LATEST_BRANCH_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_ASSIGN;
 import static com.gentics.mesh.example.ExampleUuids.BRANCH_UUID;
 import static com.gentics.mesh.example.ExampleUuids.TAG_BLUE_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
@@ -129,6 +136,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(versioningExamples.createBranchCreateRequest("Winter 2016"));
 		endpoint.exampleResponse(CREATED, versioningExamples.createBranchResponse("Winter 2016", false), "Created branch.");
+		endpoint.events(BRANCH_CREATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleCreate(ac);
@@ -178,6 +186,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		addSchema.produces(APPLICATION_JSON);
 		addSchema.exampleRequest(branchExamples.createSchemaReferenceList());
 		addSchema.exampleResponse(OK, branchExamples.createSchemaReferenceList(), "Updated schema list.");
+		addSchema.events(SCHEMA_BRANCH_ASSIGN);
 		addSchema.blockingHandler(rc -> {
 			String uuid = rc.request().params().get("branchUuid");
 			InternalActionContext ac = wrap(rc);
@@ -193,6 +202,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		addMicroschema.produces(APPLICATION_JSON);
 		addMicroschema.exampleRequest(microschemaExamples.createMicroschemaReferenceList());
 		addMicroschema.exampleResponse(OK, microschemaExamples.createMicroschemaReferenceList(), "Updated microschema list.");
+		addMicroschema.events(MICROSCHEMA_BRANCH_ASSIGN);
 		addMicroschema.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().params().get("branchUuid");
@@ -206,6 +216,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		setLatest.method(POST);
 		setLatest.produces(APPLICATION_JSON);
 		setLatest.exampleResponse(OK, versioningExamples.createBranchResponse("Winter Collection Branch", true), "Latest branch");
+		setLatest.events(PROJECT_LATEST_BRANCH_UPDATED);
 		setLatest.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().params().get("branchUuid");
@@ -222,6 +233,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		updateBranch.produces(APPLICATION_JSON);
 		updateBranch.exampleRequest(versioningExamples.createBranchUpdateRequest("Winter Collection Branch"));
 		updateBranch.exampleResponse(OK, versioningExamples.createBranchResponse("Winter Collection Branch", false), "Updated branch");
+		updateBranch.events(BRANCH_UPDATED);
 		updateBranch.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().params().get("branchUuid");
@@ -251,6 +263,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		bulkUpdate.description("Update the list of assigned tags");
 		bulkUpdate.exampleRequest(tagExamples.getTagListUpdateRequest());
 		bulkUpdate.exampleResponse(OK, tagExamples.createTagListResponse(), "Updated tag list.");
+		bulkUpdate.events(BRANCH_TAGGED, BRANCH_UNTAGGED);
 		bulkUpdate.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String branchUuid = ac.getParameter("branchUuid");
@@ -265,6 +278,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		addTag.produces(APPLICATION_JSON);
 		addTag.exampleResponse(OK, versioningExamples.createBranchResponse("Summer Collection Branch", false), "Updated branch.");
 		addTag.description("Assign the given tag to the branch.");
+		addTag.events(BRANCH_TAGGED);
 		addTag.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String branchUuid = ac.getParameter("branchUuid");
@@ -280,6 +294,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		removeTag.produces(APPLICATION_JSON);
 		removeTag.description("Remove the given tag from the branch.");
 		removeTag.exampleResponse(NO_CONTENT, "Removal was successful.");
+		removeTag.events(BRANCH_UNTAGGED);
 		removeTag.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String branchUuid = ac.getParameter("branchUuid");

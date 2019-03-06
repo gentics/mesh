@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.endpoint.schema;
 
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_UPDATED;
 import static com.gentics.mesh.example.ExampleUuids.SCHEMA_VEHICLE_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
@@ -91,6 +94,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(schemaExamples.getSchemaCreateRequest());
 		endpoint.exampleResponse(CREATED, schemaExamples.getSchemaResponse(), "Created schema.");
+		endpoint.events(SCHEMA_CREATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleCreate(ac);
@@ -128,7 +132,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 		endpoint.addQueryParameters(SchemaUpdateParametersImpl.class);
 		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
 		endpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Updated schema.");
-
+		endpoint.events(SCHEMA_UPDATED);
 		endpoint.blockingHandler(rc -> {
 			// Update operations should always be executed sequentially - never in parallel
 			synchronized (mutex) {
@@ -147,6 +151,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 		endpoint.description("Delete the schema with the given uuid.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "Schema was successfully deleted.");
+		endpoint.events(SCHEMA_DELETED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("schemaUuid");

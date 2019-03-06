@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.endpoint.project;
 
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
 import static com.gentics.mesh.example.ExampleUuids.PROJECT_DEMO_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
@@ -60,6 +63,7 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 		updateEndpoint.produces(APPLICATION_JSON);
 		updateEndpoint.exampleRequest(projectExamples.getProjectUpdateRequest("New project name"));
 		updateEndpoint.exampleResponse(OK, projectExamples.getProjectResponse("New project name"), "Updated project.");
+		updateEndpoint.events(PROJECT_UPDATED);
 		updateEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("projectUuid");
@@ -78,6 +82,7 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(projectExamples.getProjectCreateRequest("New project"));
 		endpoint.exampleResponse(CREATED, projectExamples.getProjectResponse("New Project"), "Created project.");
+		endpoint.events(PROJECT_CREATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleCreate(ac);
@@ -125,6 +130,7 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 		endpoint.description("Delete the project and all attached nodes, tagfamiles and branches.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "Project was deleted.");
+		endpoint.events(PROJECT_DELETED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("projectUuid");

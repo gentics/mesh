@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.endpoint.microschema;
 
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_UPDATED;
 import static com.gentics.mesh.example.ExampleUuids.MICROSCHEMA_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
@@ -139,6 +142,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "Microschema was deleted.");
 		endpoint.description("Delete the microschema with the given uuid.");
+		endpoint.events(MICROSCHEMA_DELETED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("microschemaUuid");
@@ -157,6 +161,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 		// endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Updated microschema.");
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Migration message.");
 		endpoint.description("Update the microschema with the given uuid.");
+		endpoint.events(MICROSCHEMA_UPDATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("microschemaUuid");
@@ -172,10 +177,10 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaCreateRequest());
 		endpoint.exampleResponse(CREATED, microschemaExamples.getGeolocationMicroschemaResponse(), "Created microschema.");
+		endpoint.events(MICROSCHEMA_CREATED);
 		endpoint.blockingHandler(rc -> {
 			crudHandler.handleCreate(wrap(rc));
 		});
-
 	}
 
 }

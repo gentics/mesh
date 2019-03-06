@@ -1,5 +1,11 @@
 package com.gentics.mesh.core.endpoint.tagfamily;
 
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
 import static com.gentics.mesh.example.ExampleUuids.TAGFAMILY_COLORS_UUID;
 import static com.gentics.mesh.example.ExampleUuids.TAG_BLUE_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
@@ -88,6 +94,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Update the specified tag");
 		endpoint.exampleRequest(tagExamples.createTagUpdateRequest("Red"));
 		endpoint.exampleResponse(OK, tagExamples.createTagResponse1("Red"), "Updated tag.");
+		endpoint.events(TAG_UPDATED, TAG_CREATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
@@ -107,6 +114,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		createTag.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
 		createTag.exampleRequest(tagExamples.createTagCreateRequest("red"));
 		createTag.exampleResponse(OK, tagExamples.createTagResponse1("red"), "Created tag");
+		createTag.events(TAG_CREATED);
 		createTag.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
@@ -159,6 +167,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Remove the tag from the tag family.");
 		endpoint.exampleResponse(NO_CONTENT, "Tag was removed from the tag family");
+		endpoint.events(TAG_DELETED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
@@ -193,6 +202,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Delete the tag family.");
 		endpoint.exampleResponse(NO_CONTENT, "Tag family was deleted.");
+		endpoint.events(TAG_FAMILY_DELETED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("tagFamilyUuid");
@@ -236,6 +246,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(tagFamilyExamples.getTagFamilyCreateRequest("Colors"));
 		endpoint.exampleResponse(CREATED, tagFamilyExamples.getTagFamilyResponse("Colors"), "Created tag family.");
+		endpoint.events(TAG_FAMILY_CREATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			tagFamilyCrudHandler.handleCreate(ac);
@@ -252,6 +263,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(tagFamilyExamples.getTagFamilyUpdateRequest("Nicer colors"));
 		endpoint.exampleResponse(OK, tagFamilyExamples.getTagFamilyResponse("Nicer colors"), "Updated tag family.");
+		endpoint.events(TAG_FAMILY_UPDATED, TAG_FAMILY_CREATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("tagFamilyUuid");

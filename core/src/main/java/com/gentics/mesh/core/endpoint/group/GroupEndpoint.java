@@ -1,5 +1,12 @@
 package com.gentics.mesh.core.endpoint.group;
 
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_ROLE_ASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_ROLE_UNASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_ASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_UNASSIGNED;
 import static com.gentics.mesh.example.ExampleUuids.GROUP_CLIENT_UUID;
 import static com.gentics.mesh.example.ExampleUuids.GROUP_EDITORS_UUID;
 import static com.gentics.mesh.example.ExampleUuids.ROLE_CLIENT_UUID;
@@ -79,6 +86,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		addRole.description("Add the specified role to the group.");
 		addRole.produces(APPLICATION_JSON);
 		addRole.exampleResponse(OK, groupExamples.getGroupResponse1("Group name"), "Loaded role.");
+		addRole.events(GROUP_ROLE_ASSIGNED);
 		addRole.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String groupUuid = ac.getParameter("groupUuid");
@@ -93,6 +101,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		removeRole.method(DELETE);
 		removeRole.description("Remove the given role from the group.");
 		removeRole.exampleResponse(NO_CONTENT, "Role was removed from the group.");
+		removeRole.events(GROUP_ROLE_UNASSIGNED);
 		removeRole.produces(APPLICATION_JSON).blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String groupUuid = ac.getParameter("groupUuid");
@@ -124,6 +133,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		addUser.description("Add the given user to the group");
 		addUser.produces(APPLICATION_JSON);
 		addUser.exampleResponse(OK, groupExamples.getGroupResponse1("Group name"), "Updated group.");
+		addUser.events(GROUP_USER_ASSIGNED);
 		addUser.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String groupUuid = ac.getParameter("groupUuid");
@@ -137,6 +147,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		removeUser.addUriParameter("userUuid", "Uuid of the user which should be removed from the group.", USER_WEBCLIENT_UUID);
 		removeUser.description("Remove the given user from the group.");
 		removeUser.exampleResponse(NO_CONTENT, "User was removed from the group.");
+		removeUser.events(GROUP_USER_UNASSIGNED);
 		removeUser.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String groupUuid = ac.getParameter("groupUuid");
@@ -153,6 +164,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		deleteGroup.method(DELETE);
 		deleteGroup.exampleResponse(NO_CONTENT, "Group was deleted.");
 		deleteGroup.produces(APPLICATION_JSON);
+		deleteGroup.events(GROUP_DELETED);
 		deleteGroup.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("groupUuid");
@@ -172,6 +184,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(groupExamples.getGroupUpdateRequest("New group name"));
 		endpoint.exampleResponse(OK, groupExamples.getGroupResponse1("New group name"), "Updated group.");
+		endpoint.events(GROUP_UPDATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("groupUuid");
@@ -221,6 +234,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		endpoint.description("Create a new group.");
 		endpoint.exampleRequest(groupExamples.getGroupCreateRequest("New group"));
 		endpoint.exampleResponse(CREATED, groupExamples.getGroupResponse1("New group"), "Created group.");
+		endpoint.events(GROUP_CREATED);
 		endpoint.blockingHandler(rc -> {
 			crudHandler.handleCreate(wrap(rc));
 		});
