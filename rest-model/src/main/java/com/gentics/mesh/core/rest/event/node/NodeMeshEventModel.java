@@ -10,11 +10,11 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 public class NodeMeshEventModel extends AbstractProjectEventModel {
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Return the type of the node (e.g. draft/published)")
+	@JsonPropertyDescription("Type of the content (e.g. draft/published)")
 	private String type;
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Return the branch to which the node belongs.")
+	@JsonPropertyDescription("Branch uuid to which the node belongs.")
 	private String branchUuid;
 
 	@JsonProperty(required = false)

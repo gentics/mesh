@@ -18,6 +18,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.graphdb.spi.FieldType.LINK;
 import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
@@ -80,12 +82,12 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMovedEventModel;
+import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
@@ -104,6 +106,7 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.webroot.PathPrefixUtil;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldMap;
@@ -1071,6 +1074,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			nodeReference.setPath(url);
 		}
 		return nodeReference;
+	}
+
+	@Override
+	public NodeReference transformToMinimalReference() {
+		NodeReference ref = new NodeReference();
+		ref.setUuid(getUuid());
+		ref.setSchema(getSchemaContainer().transformToReference());
+		return ref;
 	}
 
 	@Override
@@ -2074,18 +2085,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public NodeMovedEventModel onNodeMoved(Node target) {
 		NodeMovedEventModel model = new NodeMovedEventModel();
 		model.setEvent(NODE_MOVED);
-
-		NodeReference sourceRef = new NodeReference();
-		sourceRef.setUuid(getUuid());
-		sourceRef.setSchema(getSchemaContainer().transformToReference());
-		model.setSource(sourceRef);
-
-		NodeReference targetRef = new NodeReference();
-		targetRef.setUuid(target.getUuid());
-		targetRef.setSchema(target.getSchemaContainer().transformToReference());
-		model.setTarget(targetRef);
+		model.setSource(transformToMinimalReference());
+		model.setTarget(target.transformToMinimalReference());
 		return model;
 	}
+
+	
 
 	@Override
 	public NodeMeshEventModel onDeleted(String uuid, String name, SchemaContainer schema, String branchUuid, String type, String languageTag) {
@@ -2099,6 +2104,28 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			event.setSchema(schema.transformToReference());
 		}
 		return event;
+	}
+
+	@Override
+	public NodeTaggedEventModel onTagged(Tag tag, Branch branch, Assignment assignment) {
+		NodeTaggedEventModel model = new NodeTaggedEventModel();
+		model.setTag(tag.transformToReference());
+
+		model.setBranch(branch.transformToReference());
+		model.setProject(getProject().transformToReference());
+		model.setNode(transformToMinimalReference());
+
+		switch (assignment) {
+		case ASSIGNED:
+			model.setEvent(NODE_TAGGED);
+			break;
+
+		case UNASSIGNED:
+			model.setEvent(NODE_UNTAGGED);
+			break;
+		}
+
+		return model;
 	}
 
 	@Override

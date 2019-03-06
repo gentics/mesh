@@ -3,7 +3,8 @@ package com.gentics.mesh.core.node;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -24,14 +25,18 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
+import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
-import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.project.ProjectReference;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagReference;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -67,14 +72,37 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		}
 
-		expectEvents(NODE_UPDATED, 2, NodeMeshEventModel.class, event -> {
-			assertThat(event).uuidNotNull().hasBranchUuid(initialBranchUuid()).hasSchema("folder", schemaUuid).hasLanguage("en");
+		expectEvents(NODE_TAGGED, 1, NodeTaggedEventModel.class, event -> {
+			BranchReference branchRef = event.getBranch();
+			assertNotNull(branchRef);
+			assertEquals(initialBranchUuid(), branchRef.getUuid());
+			assertEquals(PROJECT_NAME, branchRef.getName());
+
+			ProjectReference projectRef = event.getProject();
+			assertNotNull(projectRef);
+			assertEquals(PROJECT_NAME, projectRef.getName());
+			assertEquals(projectUuid(), projectRef.getUuid());
+
+			NodeReference nodeRef = event.getNode();
+			assertNotNull(nodeRef);
+			assertEquals(nodeUuid, nodeRef.getUuid());
+
+			SchemaReference schemaRef = nodeRef.getSchema();
+			assertNotNull(schemaRef);
+			assertEquals("folder", schemaRef.getName());
+			assertEquals(schemaUuid, schemaRef.getUuid());
+
+			TagReference tagRef = event.getTag();
+			assertNotNull(tagRef);
+			assertEquals("red", tagRef.getName());
+			assertEquals(tagUuid, tagRef.getUuid());
 			return true;
 		});
 
 		call(() -> client().addTagToNode(PROJECT_NAME, nodeUuid, tagUuid));
-		NodeResponse restNode = call(() -> client().addTagToNode(PROJECT_NAME, nodeUuid, tagUuid));
 
+		// Test idempotency
+		NodeResponse restNode = call(() -> client().addTagToNode(PROJECT_NAME, nodeUuid, tagUuid));
 		waitForEvents();
 
 		try (Tx tx = tx()) {
@@ -131,13 +159,46 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 	public void testRemoveTagFromNode() throws Exception {
 		Node node = folder("2015");
 		Tag tag = tag("bike");
+		String schemaUuid = tx(() -> node.getSchemaContainer().getUuid());
 		String nodeUuid = tx(() -> node.getUuid());
 		String tagUuid = tx(() -> tag.getUuid());
 		try (Tx tx = tx()) {
 			assertTrue(node.getTags(project().getLatestBranch()).list().contains(tag));
 		}
 
+		expectEvents(NODE_UNTAGGED, 1, NodeTaggedEventModel.class, event -> {
+			BranchReference branchRef = event.getBranch();
+			assertNotNull(branchRef);
+			assertEquals(initialBranchUuid(), branchRef.getUuid());
+			assertEquals(PROJECT_NAME, branchRef.getName());
+
+			ProjectReference projectRef = event.getProject();
+			assertNotNull(projectRef);
+			assertEquals(PROJECT_NAME, projectRef.getName());
+			assertEquals(projectUuid(), projectRef.getUuid());
+
+			NodeReference nodeRef = event.getNode();
+			assertNotNull(nodeRef);
+			assertEquals(nodeUuid, nodeRef.getUuid());
+
+			SchemaReference schemaRef = nodeRef.getSchema();
+			assertNotNull(schemaRef);
+			assertEquals("folder", schemaRef.getName());
+			assertEquals(schemaUuid, schemaRef.getUuid());
+
+			TagReference tagRef = event.getTag();
+			assertNotNull(tagRef);
+			assertEquals("Bike", tagRef.getName());
+			assertEquals(tagUuid, tagRef.getUuid());
+			return true;
+		});
+
 		call(() -> client().removeTagFromNode(PROJECT_NAME, nodeUuid, tagUuid));
+
+		// Test for idempotency
+		call(() -> client().removeTagFromNode(PROJECT_NAME, nodeUuid, tagUuid));
+
+		waitForEvents();
 		NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid));
 
 		try (Tx tx = tx()) {

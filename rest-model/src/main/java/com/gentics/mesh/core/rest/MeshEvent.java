@@ -13,6 +13,7 @@ import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchMeshEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
+import com.gentics.mesh.core.rest.event.branch.BranchTaggedEventModel;
 import com.gentics.mesh.core.rest.event.branch.ProjectBranchEventModel;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
@@ -21,6 +22,7 @@ import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
@@ -193,9 +195,9 @@ public enum MeshEvent {
 
 	NODE_DELETED("mesh.node.deleted", NodeMeshEventModel.class),
 
-	NODE_TAGGED("mesh.node.tagged", NodeMeshEventModel.class),
+	NODE_TAGGED("mesh.node.tagged", NodeTaggedEventModel.class),
 
-	NODE_UNTAGGED("mesh.node.untagged", NodeMeshEventModel.class),
+	NODE_UNTAGGED("mesh.node.untagged", NodeTaggedEventModel.class),
 
 	NODE_PUBLISHED("mesh.node.published", NodeMeshEventModel.class),
 
@@ -231,7 +233,9 @@ public enum MeshEvent {
 
 	BRANCH_DELETED("mesh.branch.deleted", BranchMeshEventModel.class),
 
-	BRANCH_TAGGED("mesh.branch.tagged", null),
+	BRANCH_TAGGED("mesh.branch.tagged", BranchTaggedEventModel.class),
+
+	BRANCH_UNTAGGED("mesh.branch.untagged", BranchTaggedEventModel.class),
 
 	/* Search index related */
 

@@ -1,13 +1,13 @@
 package com.gentics.mesh.core.endpoint.node;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.event.Assignment.ASSIGNED;
+import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -245,18 +245,20 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			// TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
-			Node updatedNode = utils.eventAction(batch -> {
+			utils.eventAction(batch -> {
 				node.addTag(tag, branch);
+				/*
 				node.getGraphFieldContainers(branch, DRAFT).forEach(c -> {
 					batch.add(c.onUpdated(branch.getUuid(), DRAFT));
 				});
 				node.getGraphFieldContainers(branch, PUBLISHED).forEach(c -> {
 					batch.add(c.onUpdated(branch.getUuid(), PUBLISHED));
 				});
-				return node;
+				*/
+				batch.add(node.onTagged(tag, branch, ASSIGNED));
 			});
 
-			return updatedNode.transformToRest(ac, 0);
+			return node.transformToRest(ac, 0);
 		}, model -> ac.send(model, OK));
 
 	}
@@ -282,8 +284,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			utils.eventAction(batch -> {
-				batch.add(node.onUpdated());
 				node.removeTag(tag, branch);
+				batch.add(node.onTagged(tag, branch, UNASSIGNED));
 			});
 		}, () -> ac.send(NO_CONTENT));
 	}

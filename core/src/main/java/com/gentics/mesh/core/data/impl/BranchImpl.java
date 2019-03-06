@@ -11,10 +11,13 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MIC
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_TAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UNTAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_LATEST_BRANCH_UPDATED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
@@ -59,11 +62,13 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.event.branch.BranchMeshEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
+import com.gentics.mesh.core.rest.event.branch.BranchTaggedEventModel;
 import com.gentics.mesh.core.rest.event.branch.ProjectBranchEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madlmigration.TraversalResult;
@@ -590,6 +595,24 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
+	public BranchTaggedEventModel onTagged(Tag tag, Assignment assignment) {
+		BranchTaggedEventModel model = new BranchTaggedEventModel();
+		model.setTag(tag.transformToReference());
+		model.setBranch(transformToReference());
+		model.setProject(getProject().transformToReference());
+		switch (assignment) {
+		case ASSIGNED:
+			model.setEvent(BRANCH_TAGGED);
+			break;
+		case UNASSIGNED:
+			model.setEvent(BRANCH_UNTAGGED);
+			break;
+		}
+
+		return model;
+	}
+
+	@Override
 	public void addTag(Tag tag) {
 		removeTag(tag);
 		addFramedEdge(HAS_BRANCH_TAG, tag);
@@ -619,8 +642,12 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public TransformablePage<? extends Tag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
 		List<Tag> tags = getTagsToSet(ac, batch);
+		//TODO Rework this code. We should only add the needed tags and don't dispatch all events.
 		removeAllTags();
-		tags.forEach(tag -> addTag(tag));
+		tags.forEach(tag -> {
+			batch.add(onTagged(tag, ASSIGNED));
+			addTag(tag);
+		});
 		return getTags(ac.getUser(), ac.getPagingParameters());
 	}
 

@@ -3,6 +3,8 @@ package com.gentics.mesh.core.endpoint.branch;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.event.Assignment.ASSIGNED;
+import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
@@ -305,7 +307,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	public void handleSetLatest(InternalActionContext ac, String branchUuid) {
 		utils.syncTx(ac, (tx) -> {
 			Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, branchUuid, UPDATE_PERM);
-			utils.eventAction(event -> { 
+			utils.eventAction(event -> {
 				branch.setLatest();
 				event.add(branch.onSetLatest());
 			});
@@ -348,7 +350,13 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 		utils.syncTx(ac, (tx) -> {
 			Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
-			branch.addTag(tag);
+
+			// TODO check if the branch is already tagged
+
+			utils.eventAction(batch -> {
+				branch.addTag(tag);
+				batch.add(branch.onTagged(tag, ASSIGNED));
+			});
 
 			return branch.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
@@ -372,7 +380,13 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
-			branch.removeTag(tag);
+			// TODO check if the tag has already been removed
+
+			utils.eventAction(batch -> {
+				batch.add(branch.onTagged(tag, UNASSIGNED));
+				branch.removeTag(tag);
+			});
+
 		}, () -> ac.send(NO_CONTENT));
 	}
 
@@ -390,14 +404,11 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 		utils.rxSyncTx(ac, tx -> {
 			Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, branchUuid, UPDATE_PERM);
 
-			Tuple<TransformablePage<? extends Tag>, EventQueueBatch> tuple = db.tx(() -> {
-				EventQueueBatch batch = EventQueueBatch.create();
-				TransformablePage<? extends Tag> tags = branch.updateTags(ac, batch);
-				return Tuple.tuple(tags, batch);
+			TransformablePage<? extends Tag> page = utils.eventAction(batch -> {
+				return branch.updateTags(ac, batch);
 			});
 
-			tuple.v2().dispatch();
-			return tuple.v1().transformToRest(ac, 0);
+			return page.transformToRest(ac, 0);
 		}, model -> ac.send(model, OK));
 	}
 }

@@ -1,5 +1,16 @@
 package com.gentics.mesh.core.data.node;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+import java.util.stream.Stream;
+
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -19,6 +30,7 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
@@ -26,6 +38,7 @@ import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.madlmigration.TraversalResult;
@@ -35,18 +48,8 @@ import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.syncleus.ferma.EdgeFrame;
+
 import io.reactivex.Single;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-import java.util.stream.Stream;
-
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 
 /**
  * The Node Domain Model interface.
@@ -749,6 +752,17 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeMeshEventModel onDeleted(String uuid, String name, SchemaContainer schema, String branchUuid, String type, String languageTag);
 
 	/**
+	 * Create a node tagged / untagged event.
+	 * 
+	 * @param tag
+	 * @param branch
+	 * @param assignment
+	 *            Type of the assignment
+	 * @return
+	 */
+	NodeTaggedEventModel onTagged(Tag tag, Branch branch, Assignment assignment);
+
+	/**
 	 * Get an existing edge.
 	 * 
 	 * @param languageTag
@@ -784,5 +798,12 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return true if the node is visible in the branch
 	 */
 	boolean isVisibleInBranch(String branchUuid);
+
+	/**
+	 * Transform the node information to a minimal reference which does not include language or type information.
+	 * 
+	 * @return
+	 */
+	NodeReference transformToMinimalReference();
 
 }
