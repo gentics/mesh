@@ -17,6 +17,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROO
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.graphdb.spi.FieldType.LINK;
 import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
@@ -79,10 +80,12 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.event.node.NodeMovedEventModel;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
@@ -1759,7 +1762,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		getGraphFieldContainers(branchUuid, DRAFT).stream().forEach(container -> {
 			container.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_move");
 		});
-		batch.add(onUpdated());
+		batch.add(onNodeMoved(targetNode));
 		assertPublishConsistency(ac, branch);
 	}
 
@@ -2066,6 +2069,22 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public MeshElementEventModel onDeleted() {
 		throw new NotImplementedException("Use dedicated onDeleted method for nodes instead.");
+	}
+
+	public NodeMovedEventModel onNodeMoved(Node target) {
+		NodeMovedEventModel model = new NodeMovedEventModel();
+		model.setEvent(NODE_MOVED);
+
+		NodeReference sourceRef = new NodeReference();
+		sourceRef.setUuid(getUuid());
+		sourceRef.setSchema(getSchemaContainer().transformToReference());
+		model.setSource(sourceRef);
+
+		NodeReference targetRef = new NodeReference();
+		targetRef.setUuid(target.getUuid());
+		targetRef.setSchema(target.getSchemaContainer().transformToReference());
+		model.setTarget(targetRef);
+		return model;
 	}
 
 	@Override
