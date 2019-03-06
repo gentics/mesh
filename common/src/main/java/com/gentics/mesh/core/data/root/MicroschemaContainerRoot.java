@@ -26,8 +26,9 @@ public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContaine
 	 * Remove the microschema container from the aggregation node.
 	 * 
 	 * @param container
+	 * @param batch
 	 */
-	void removeMicroschema(MicroschemaContainer container);
+	void removeMicroschema(MicroschemaContainer container, EventQueueBatch batch);
 
 	/**
 	 * Create a new microschema container.

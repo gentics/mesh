@@ -15,8 +15,10 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -163,4 +165,13 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * @return
 	 */
 	ProjectSchemaEventModel onSchemaAssignEvent(SchemaContainer schema, Assignment assigned);
+
+	/**
+	 * Create a project microschema assignment event.
+	 * 
+	 * @param microschema
+	 * @param assigned
+	 * @return
+	 */
+	ProjectMicroschemaEventModel onMicroschemaAssignEvent(MicroschemaContainer microschema, Assignment assigned);
 }

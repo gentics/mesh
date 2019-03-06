@@ -171,17 +171,15 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			}
 			MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
 			MicroschemaContainerRoot root = project.getMicroschemaContainerRoot();
-			if (root.contains(microschema)) {
-				// Microschema has already been assigned. No need to do anything
-				return microschema.transformToRestSync(ac, 0);
-			}
 
-			// Assign the microschema to the project
-			return utils.eventAction(batch -> {
-				// TODO check whether we should dispatch events
-				root.addMicroschema(ac.getUser(), microschema, batch);
-				return microschema.transformToRestSync(ac, 0);
-			});
+			// Only assign if the microschema has not already been assigned.
+			if (!root.contains(microschema)) {
+				// Assign the microschema to the project
+				utils.eventAction(batch -> {
+					root.addMicroschema(ac.getUser(), microschema, batch);
+				});
+			}
+			return microschema.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
 	}
 
@@ -194,12 +192,14 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			if (!ac.getUser().hasPermission(project, UPDATE_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}
-			// TODO check whether microschema is assigned to project
 			MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
-			db.tx(() -> {
-				// TODO check whether we should dispatch events
-				project.getMicroschemaContainerRoot().removeMicroschema(microschema);
-			});
+			MicroschemaContainerRoot root = project.getMicroschemaContainerRoot();
+			if (root.contains(microschema)) {
+				// Remove the microschema from the project
+				utils.eventAction(batch -> {
+					root.removeMicroschema(microschema, batch);
+				});
+			}
 		}, () -> ac.send(NO_CONTENT));
 	}
 }

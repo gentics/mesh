@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.endpoint.schema;
 
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_ASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_UNASSIGNED;
 import static com.gentics.mesh.example.ExampleUuids.SCHEMA_VEHICLE_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
@@ -87,6 +89,7 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 			"Assign the schema to the project. This will automatically assign the latest schema version to all branches of the project.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Assigned schema.");
+		endpoint.events(PROJECT_SCHEMA_ASSIGNED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("schemaUuid");
@@ -103,6 +106,7 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 			"Remove the schema with the given uuid from the project. This will automatically remove all schema versions of the given schema from all branches of the project.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "Schema was successfully removed.");
+		endpoint.events(PROJECT_SCHEMA_UNASSIGNED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("schemaUuid");

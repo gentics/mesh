@@ -9,6 +9,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NOD
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_MICROSCHEMA_ASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_MICROSCHEMA_UNASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_ASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_UNASSIGNED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
@@ -42,9 +44,11 @@ import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
+import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -340,6 +344,22 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		}
 		model.setProject(transformToReference());
 		model.setSchema(schema.transformToReference());
+		return model;
+	}
+
+	@Override
+	public ProjectMicroschemaEventModel onMicroschemaAssignEvent(MicroschemaContainer microschema, Assignment assigned) {
+		ProjectMicroschemaEventModel model = new ProjectMicroschemaEventModel();
+		switch (assigned) {
+		case ASSIGNED:
+			model.setEvent(PROJECT_MICROSCHEMA_ASSIGNED);
+			break;
+		case UNASSIGNED:
+			model.setEvent(PROJECT_MICROSCHEMA_UNASSIGNED);
+			break;
+		}
+		model.setProject(transformToReference());
+		model.setMicroschema(microschema.transformToReference());
 		return model;
 	}
 

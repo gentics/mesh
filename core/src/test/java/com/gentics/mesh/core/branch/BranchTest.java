@@ -435,7 +435,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			Branch initialBranch = initialBranch();
 			Branch newBranch = createBranch("New Branch");
 
-			project.getMicroschemaContainerRoot().removeMicroschema(microschemaContainer);
+			project.getMicroschemaContainerRoot().removeMicroschema(microschemaContainer, EventQueueBatch.create());
 
 			for (Branch branch : Arrays.asList(initialBranch, newBranch)) {
 				assertThat(branch).as(branch.getName()).hasNotMicroschema(microschemaContainer)

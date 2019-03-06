@@ -56,7 +56,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public void removeMicroschema(MicroschemaContainer container) {
+	public void removeMicroschema(MicroschemaContainer container, EventQueueBatch batch) {
 		removeItem(container);
 	}
 
