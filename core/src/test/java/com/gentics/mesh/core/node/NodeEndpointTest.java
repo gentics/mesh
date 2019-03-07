@@ -254,13 +254,13 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 
-		events().expect(NODE_CREATED, 1, NodeMeshEventModel.class, event -> {
+		expect(NODE_CREATED).match(1, NodeMeshEventModel.class, event -> {
 			assertThat(event).uuidNotNull().hasBranchUuid(initialBranchUuid()).hasSchemaName("content").hasSchemaUuid(schemaUuid).hasLanguage("en");
 			return true;
 		});
 
 		NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
-		events().await();
+		awaitEvents();
 
 		assertThat(restNode).matches(request);
 		assertThat(trackingSearchProvider()).recordedStoreEvents(1);
@@ -1629,14 +1629,14 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// 3. Invoke update
 		searchProvider().clear().blockingAwait();
 
-		events().expect(NODE_UPDATED, 1, NodeMeshEventModel.class, event -> {
+		expect(NODE_UPDATED).match(1, NodeMeshEventModel.class, event -> {
 			assertThat(event).hasProject(PROJECT_NAME, projectUuid()).hasLanguage("en").hasSchema("content", contentSchemaUuid).hasUuid(uuid)
 				.hasBranchUuid(initialBranchUuid());
 			return true;
 		});
 
 		NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, uuid, request, new NodeParametersImpl().setLanguages("en", "de")));
-		events().await();
+		awaitEvents();
 
 		// Assert updater information
 		assertEquals("Dummy Firstname", restNode.getEditor().getFirstName());
@@ -1701,7 +1701,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		searchProvider().clear().blockingAwait();
 
-		events().expect(NODE_CONTENT_CREATED, 1, NodeMeshEventModel.class, event -> {
+		expect(NODE_CONTENT_CREATED).match(1, NodeMeshEventModel.class, event -> {
 			assertEquals(branchUuid, event.getBranchUuid());
 			assertEquals(uuid, event.getUuid());
 			assertEquals("de", event.getLanguageTag());
@@ -1718,7 +1718,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			return true;
 		});
 		NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, uuid, request, new NodeParametersImpl().setLanguages("de")));
-		events().await();
+		awaitEvents();
 		assertEquals("de", restNode.getLanguage());
 		// Only the new language container is stored in the index. The existing one does not need to be updated since it does not reference other languages
 		assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
@@ -1870,14 +1870,14 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String uuid = tx(() -> content("concorde").getUuid());
 		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
 
-		events().expect(NODE_DELETED, 1, NodeMeshEventModel.class, event -> {
+		expect(NODE_DELETED).match(1, NodeMeshEventModel.class, event -> {
 			assertThat(event).uuidNotNull().hasBranchUuid(initialBranchUuid()).hasLanguage("en").hasSchemaName("content").hasSchemaUuid(schemaUuid);
 			return true;
 		});
 
 		call(() -> client().deleteNode(PROJECT_NAME, uuid));
 
-		events().await();
+		awaitEvents();
 
 		try (Tx tx = tx()) {
 			assertElement(meshRoot().getNodeRoot(), uuid, false);

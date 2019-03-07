@@ -59,7 +59,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 		request.setName(name);
 		ProjectResponse restProject = call(() -> client().createProject(request));
 
-		events().expect(PROJECT_MICROSCHEMA_ASSIGNED, 1, ProjectMicroschemaEventModel.class, event -> {
+		expect(PROJECT_MICROSCHEMA_ASSIGNED).match(1, ProjectMicroschemaEventModel.class, event -> {
 			MicroschemaReference microschemaRef = event.getMicroschema();
 			assertNotNull(microschemaRef);
 			assertEquals("vcard", microschemaRef.getName());
@@ -71,7 +71,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 			return true;
 		});
 		call(() -> client().assignMicroschemaToProject(restProject.getName(), uuid));
-		events().await();
+		awaitEvents();
 	}
 
 	@Test
@@ -145,7 +145,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 			assertTrue("The microschema should be assigned to the project.", project.getMicroschemaContainerRoot().contains(microschema));
 		}
 
-		events().expect(PROJECT_MICROSCHEMA_UNASSIGNED, 1, ProjectMicroschemaEventModel.class, event -> {
+		expect(PROJECT_MICROSCHEMA_UNASSIGNED).match(1, ProjectMicroschemaEventModel.class, event -> {
 			MicroschemaReference microschemaRef = event.getMicroschema();
 			assertNotNull(microschemaRef);
 			assertEquals(microschemaName, microschemaRef.getName());
@@ -157,7 +157,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 			return true;
 		});
 		call(() -> client().unassignMicroschemaFromProject(PROJECT_NAME, microschemaUuid));
-		events().await();
+		awaitEvents();
 
 		MicroschemaListResponse list = call(() -> client().findMicroschemas(PROJECT_NAME));
 

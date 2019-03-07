@@ -83,7 +83,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		assertThat(responseForRelease.getAvailableLanguages()).as("The node should have two container").hasSize(2);
 
 		// Delete first language container: german
-		events().expect(NODE_CONTENT_DELETED, 1, NodeMeshEventModel.class, event -> {
+		expect(NODE_CONTENT_DELETED).match(1, NodeMeshEventModel.class, event -> {
 			assertEquals("de", event.getLanguageTag());
 			assertEquals(branchUuid, event.getBranchUuid());
 			assertEquals(uuid, event.getUuid());
@@ -102,7 +102,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		});
 		// The node should still be loadable and all child elements should still be existing
 		call(() -> client().deleteNode(PROJECT_NAME, uuid, "de"));
-		events().await();
+		awaitEvents();
 		response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
 		assertThat(response.getAvailableLanguages()).as("The node should only have a single container/language").hasSize(1);
 		assertThatSubNodesExist(childrenUuids, initialBranchUuid());
@@ -120,7 +120,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		assertThatSubNodesExist(childrenUuids, initialBranchUuid());
 
 		// Delete the second language container (english) and use the recursive flag. The node and all subnodes should have been removed in the current branch
-		events().expect(NODE_CONTENT_DELETED, 1, NodeMeshEventModel.class, event -> {
+		expect(NODE_CONTENT_DELETED).match(1, NodeMeshEventModel.class, event -> {
 			assertEquals("en", event.getLanguageTag());
 			assertEquals(branchUuid, event.getBranchUuid());
 			assertEquals(uuid, event.getUuid());
@@ -138,7 +138,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 			return true;
 		});
 		call(() -> client().deleteNode(PROJECT_NAME, uuid, "en", new DeleteParametersImpl().setRecursive(true)));
-		events().await();
+		awaitEvents();
 		// Verify that the node is still loadable in the initial branch
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(initialBranchUuid())));
 

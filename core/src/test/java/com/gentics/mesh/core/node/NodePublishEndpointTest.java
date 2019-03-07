@@ -29,7 +29,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -42,7 +41,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.test.assertj.MeshCoreAssertion;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
@@ -165,7 +163,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		PublishStatusResponse status = call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid));
 		assertThat(status).as("Publish status").isNotNull().isNotPublished("en").hasVersion("en", "1.0");
 
-		events().expect(NODE_PUBLISHED, 1, NodeMeshEventModel.class, event -> {
+		expect(NODE_PUBLISHED).match(1, NodeMeshEventModel.class, event -> {
 			assertEquals(initialBranchUuid(), event.getBranchUuid());
 			assertEquals(nodeUuid, event.getUuid());
 
@@ -181,18 +179,17 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 			assertEquals(schemaUuid, schemaRef.getUuid());
 			assertEquals("1.0", schemaRef.getVersion());
 			return true;
-		});
+		}).total(1);
+
 		PublishStatusResponse statusResponse = call(() -> client().publishNode(PROJECT_NAME, nodeUuid));
-		events().await();
+		awaitEvents();
 		assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "2.0");
 
 		try (Tx tx = tx()) {
-
 			assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid(), branchUuid,
 				schemaContainerVersionUuid, PUBLISHED), NodeGraphFieldContainer.composeDocumentId(nodeUuid, "en"));
 			// The draft of the node must still remain in the index
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
-
 		}
 	}
 
@@ -393,12 +390,13 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 			.published()), NOT_FOUND, "node_error_published_not_found_for_uuid_branch_language", nodeUuid, "de", branchUuid);
 
 		// Take english language offline
-		events().expect(NODE_UNPUBLISHED, 1, NodeMeshEventModel.class, event -> {
-			assertThat(event).hasUuid(nodeUuid).hasSchema("folder", schemaUuid).hasBranchUuid(branchUuid).hasLanguage("en").hasProject(PROJECT_NAME, projectUuid());
+		expect(NODE_UNPUBLISHED).match(1, NodeMeshEventModel.class, event -> {
+			assertThat(event).hasUuid(nodeUuid).hasSchema("folder", schemaUuid).hasBranchUuid(branchUuid).hasLanguage("en").hasProject(PROJECT_NAME,
+				projectUuid());
 			return true;
-		});
+		}).total(1);
 		call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"));
-		events().await();
+		awaitEvents();
 
 		// The node should not be loadable since both languages are offline
 		call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParametersImpl().setLanguages("de"), new VersioningParametersImpl()

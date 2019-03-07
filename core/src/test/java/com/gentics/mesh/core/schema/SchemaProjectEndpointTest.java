@@ -85,7 +85,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		events().expect(PROJECT_SCHEMA_ASSIGNED, 1, ProjectSchemaEventModel.class, event -> {
+		expect(PROJECT_SCHEMA_ASSIGNED).match(1, ProjectSchemaEventModel.class, event -> {
 			ProjectReference projectRef = event.getProject();
 			assertNotNull(projectRef);
 			assertEquals(projectName, projectRef.getName());
@@ -99,7 +99,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 		});
 
 		call(() -> client().assignSchemaToProject(projectName, schemaUuid));
-		events().await();
+		awaitEvents();
 
 		try (Tx tx = tx()) {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
@@ -149,7 +149,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 			assertTrue("The schema should be assigned to the project.", project.getSchemaContainerRoot().contains(schema));
 		}
 
-		events().expect(PROJECT_SCHEMA_UNASSIGNED, 1, ProjectSchemaEventModel.class, event -> {
+		expect(PROJECT_SCHEMA_UNASSIGNED).match(1, ProjectSchemaEventModel.class, event -> {
 			ProjectReference projectRef = event.getProject();
 			assertNotNull(projectRef);
 			assertEquals(PROJECT_NAME, projectRef.getName());
@@ -164,7 +164,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().unassignSchemaFromProject(PROJECT_NAME, schemaUuid));
 		// TODO test for idempotency
-		events().await();
+		awaitEvents();
 
 		SchemaListResponse list = call(() -> client().findSchemas(PROJECT_NAME));
 		assertEquals("The removed schema should not be listed in the response", 0,

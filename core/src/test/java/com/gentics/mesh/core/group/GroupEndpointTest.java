@@ -67,7 +67,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName("test12345");
 
-		events().expect(GROUP_CREATED, 1, MeshElementEventModelImpl.class, event -> {
+		expect(GROUP_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName("test12345").uuidNotNull();
 			return true;
 		});
@@ -75,7 +75,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		GroupResponse restGroup = call(() -> client().createGroup(request));
 		assertThat(restGroup).matches(request);
 
-		events().await();
+		awaitEvents();
 
 		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), restGroup.getUuid());
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
@@ -334,14 +334,14 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(name);
 
-		events().expect(GROUP_UPDATED, 1, MeshElementEventModelImpl.class, event -> {
+		expect(GROUP_UPDATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(name).hasUuid(groupUuid);
 			return true;
 		});
 
 		GroupResponse restGroup = call(() -> client().updateGroup(groupUuid, request));
 
-		events().await();
+		awaitEvents();
 
 		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), groupUuid);
 		assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), userUuid());
@@ -457,13 +457,13 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		String name = tx(() -> group().getName());
 		String uuid = groupUuid();
 
-		events().expect(GROUP_DELETED, 1, MeshElementEventModelImpl.class, event -> {
+		expect(GROUP_DELETED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(name).hasUuid(uuid);
 			return true;
 		});
 
 		call(() -> client().deleteGroup(uuid));
-		events().await();
+		awaitEvents();
 
 		assertThat(trackingSearchProvider()).hasDelete(Group.composeIndexName(), uuid);
 		assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), userUuid());

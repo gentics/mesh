@@ -200,7 +200,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		request.setName("newTagFamily");
 
-		events().expect(TAG_FAMILY_CREATED, 1, TagFamilyMeshEventModel.class, event -> {
+		expect(TAG_FAMILY_CREATED).match(1, TagFamilyMeshEventModel.class, event -> {
 			assertThat(event).hasName("newTagFamily").uuidNotNull().hasProject(PROJECT_NAME, projectUuid());
 			return true;
 		});
@@ -208,7 +208,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		TagFamilyResponse response = call(() -> client().createTagFamily(PROJECT_NAME, request));
 		assertEquals(request.getName(), response.getName());
 
-		events().await();
+		awaitEvents();
 	}
 
 	@Test
@@ -295,12 +295,12 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 		String uuid = db().tx(() -> tagFamily("basic").getUuid());
 
-		events().expect(TAG_FAMILY_DELETED, 1, TagFamilyMeshEventModel.class, event -> {
+		expect(TAG_FAMILY_DELETED).match(1, TagFamilyMeshEventModel.class, event -> {
 			assertThat(event).hasName("basic").hasUuid(uuid).hasProject(PROJECT_NAME, projectUuid());
 			return true;
 		});
 
-		events().expect(TAG_DELETED, 1, TagMeshEventModel.class, event -> {
+		expect(TAG_DELETED).match(1, TagMeshEventModel.class, event -> {
 			assertThat(event).hasName("Vehicle").uuidNotNull().hasProject(PROJECT_NAME, projectUuid()).hasTagFamily("basic", tagFamilyUuid);
 			// JetFigther , Twinjet , Plane , Bus , Motorcycle , Bike, Jeep, Car
 			return true;
@@ -310,7 +310,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 		call(() -> client().deleteTagFamily(PROJECT_NAME, uuid));
 
-		events().await();
+		awaitEvents();
 
 		try (Tx tx = tx()) {
 			assertElement(project().getTagFamilyRoot(), uuid, false);
@@ -363,14 +363,14 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 		request.setName("new Name");
 
-		events().expect(TAG_FAMILY_UPDATED, 1, TagFamilyMeshEventModel.class, event -> {
+		expect(TAG_FAMILY_UPDATED).match(1, TagFamilyMeshEventModel.class, event -> {
 			assertThat(event).hasName("new Name").hasUuid(uuid).hasProject(PROJECT_NAME, projectUuid());
 			return true;
 		});
 
 		TagFamilyResponse tagFamily2 = call(() -> client().updateTagFamily(PROJECT_NAME, uuid, request));
 
-		events().await();
+		awaitEvents();
 
 		// 4. read the tag again and verify that it was changed
 		try (Tx tx = tx()) {

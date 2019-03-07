@@ -64,6 +64,7 @@ import com.gentics.mesh.search.impl.ElasticSearchProvider;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.context.event.EventAsserter;
+import com.gentics.mesh.test.context.event.EventAsserterChain;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
@@ -725,9 +726,14 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	/**
 	 * Return the event asserter.
+	 * 
 	 * @return
 	 */
-	public EventAsserter events() {
-		return eventAsserter;
+	public EventAsserterChain expect(MeshEvent event) {
+		return eventAsserter.expect(event);
+	}
+
+	public void awaitEvents() {
+		eventAsserter.await();
 	}
 }

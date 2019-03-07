@@ -67,7 +67,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			call(() -> client().publishNode(PROJECT_NAME, response.getUuid()));
 		}
 
-		events().expect(NODE_DELETED, 2, NodeMeshEventModel.class, event -> {
+		expect(NODE_DELETED).match(2, NodeMeshEventModel.class, event -> {
 			if (baseNodeUuid.equals(event.getUuid())) {
 				assertThat(event)
 					.uuidNotNull()
@@ -81,7 +81,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		});
 
 		call(() -> client().takeNodeOffline(PROJECT_NAME, baseNodeUuid, new PublishParametersImpl().setRecursive(true)));
-		events().await();
+		awaitEvents();
 
 	}
 
@@ -92,7 +92,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
 
-		events().expect(NODE_UNPUBLISHED, 1, NodeMeshEventModel.class, event -> {
+		expect(NODE_UNPUBLISHED).match(1, NodeMeshEventModel.class, event -> {
 			assertThat(event)
 				.hasUuid(baseNodeUuid)
 				.hasSchema("folder", schemaUuid)
@@ -101,11 +101,11 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 				.hasProject(PROJECT_NAME, projectUuid());
 			return true;
 		});
-		events().expect(NODE_UNPUBLISHED, 29);
+		expect(NODE_UNPUBLISHED).total(29);
 		call(() -> client().takeNodeOffline(PROJECT_NAME, baseNodeUuid, new PublishParametersImpl().setRecursive(true)));
-		events().await();
+		awaitEvents();
 
-		events().expect(NODE_PUBLISHED, 1, NodeMeshEventModel.class, event -> {
+		expect(NODE_PUBLISHED).match(1, NodeMeshEventModel.class, event -> {
 			assertThat(event)
 				.hasUuid(nodeUuid)
 				.hasSchema("folder", schemaUuid)
@@ -114,7 +114,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 				.hasProject(PROJECT_NAME, projectUuid());
 			return true;
 		});
-		events().expect(NODE_PUBLISHED, 1, NodeMeshEventModel.class, event -> {
+		expect(NODE_PUBLISHED).match(1, NodeMeshEventModel.class, event -> {
 			assertThat(event)
 				.hasUuid(nodeUuid)
 				.hasSchema("folder", schemaUuid)
@@ -123,9 +123,9 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 				.hasProject(PROJECT_NAME, projectUuid());
 			return true;
 		});
-		events().expect(NODE_PUBLISHED, 2);
+		expect(NODE_PUBLISHED).total(2);
 		assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
-		events().await();
+		awaitEvents();
 
 		// assert that the containers have both webrootpath properties set
 		try (Tx tx1 = tx()) {

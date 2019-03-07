@@ -121,7 +121,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		String vcardUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
 		MicroschemaContainerVersion beforeVersion = tx(() -> microschemaContainers().get("vcard").getLatestVersion());
 
-		events().expect(MICROSCHEMA_UPDATED, 1, MeshElementEventModelImpl.class, event -> {
+		expect(MICROSCHEMA_UPDATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(newName).hasUuid(vcardUuid);
 			return true;
 		});
@@ -130,7 +130,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		call(() -> client().updateMicroschema(vcardUuid, request, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
 		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(vcardUuid));
 
-		events().await();
+		awaitEvents();
 
 		// Invoke migration
 		waitForJobs(() -> {

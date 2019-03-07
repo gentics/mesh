@@ -64,14 +64,14 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
 
-		events().expect(ROLE_CREATED, 1, MeshElementEventModelImpl.class, event -> {
+		expect(ROLE_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName("new_role").uuidNotNull();
 			return true;
 		});
 
 		RoleResponse restRole = call(() -> client().createRole(request));
 
-		events().await();
+		awaitEvents();
 
 		assertThat(trackingSearchProvider()).hasStore(Role.composeIndexName(), restRole.getUuid());
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
@@ -340,7 +340,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			return extraRole.getUuid();
 		});
 
-		events().expect(ROLE_UPDATED, 1, MeshElementEventModelImpl.class, event -> {
+		expect(ROLE_UPDATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName("renamed role").hasUuid(extraRoleUuid);
 			return true;
 		});
@@ -352,7 +352,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertEquals(request.getName(), restRole.getName());
 		assertEquals(extraRoleUuid, restRole.getUuid());
 
-		events().await();
+		awaitEvents();
 
 		try (Tx tx = tx()) {
 			// Check that the extra role was updated as expected
@@ -436,7 +436,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			return extraRole.getUuid();
 		});
 
-		events().expect(ROLE_DELETED, 1, MeshElementEventModelImpl.class, event -> {
+		expect(ROLE_DELETED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName("extra role").hasUuid(extraRoleUuid);
 			return true;
 		});
@@ -444,7 +444,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		trackingSearchProvider().clear().blockingAwait();
 		call(() -> client().deleteRole(extraRoleUuid));
 
-		events().await();
+		awaitEvents();
 
 		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), groupUuid());
 		assertThat(trackingSearchProvider()).hasDelete(Role.composeIndexName(), extraRoleUuid);

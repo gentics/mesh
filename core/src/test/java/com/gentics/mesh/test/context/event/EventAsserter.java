@@ -13,9 +13,7 @@ import java.util.concurrent.TimeoutException;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.event.MeshEventModel;
 
-import io.reactivex.functions.Predicate;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 
@@ -28,33 +26,14 @@ public class EventAsserter {
 	private List<EventExpectation> expectations = new ArrayList<>();
 
 	/**
-	 * Add an expectation for an event body.
+	 * Start an expectation chain.
 	 * 
 	 * @param event
-	 * @param expectedCount
-	 *            How many events should be passed by the asserter
-	 * @param clazzOfEM
-	 * @param asserter
 	 * @return
 	 */
-	public <EM extends MeshEventModel> EventAsserter expect(MeshEvent event, int expectedCount, Class<EM> clazzOfEM,
-		Predicate<EM> asserter) {
-		expectations.add(new EventBodyExpectation(event, expectedCount, clazzOfEM, asserter));
+	public EventAsserterChain expect(MeshEvent event) {
 		registerForEvent(event);
-		return this;
-	}
-
-	/**
-	 * Add an expectation for event total count.
-	 * 
-	 * @param event
-	 * @param expectedCount
-	 * @return
-	 */
-	public EventAsserter expect(MeshEvent event, int expectedCount) {
-		expectations.add(new EventCountExpectation(event, expectedCount));
-		registerForEvent(event);
-		return this;
+		return new EventAsserterChain(this, event);
 	}
 
 	/**
@@ -91,7 +70,7 @@ public class EventAsserter {
 		expectations.clear();
 	}
 
-	private void registerForEvent(MeshEvent event) {
+	public void registerForEvent(MeshEvent event) {
 		// We don't need to listen to events multiple times.
 		boolean isRegistered = events.containsKey(event);
 		if (!isRegistered) {
@@ -105,6 +84,10 @@ public class EventAsserter {
 			futures.put(fut, event);
 		}
 
+	}
+
+	public void addExpectation(EventExpectation expectation) {
+		expectations.add(expectation);
 	}
 
 }

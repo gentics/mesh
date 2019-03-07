@@ -108,7 +108,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 		String oldSourceParentId = tx(() -> sourceNode.getParentNode(branchUuid).getUuid());
 		assertNotEquals(targetNodeUuid, tx(() -> sourceNode.getParentNode(branchUuid).getUuid()));
 
-		events().expect(NODE_MOVED, 1, NodeMovedEventModel.class, event -> {
+		expect(NODE_MOVED).match(1, NodeMovedEventModel.class, event -> {
 			NodeReference source = event.getSource();
 			assertNotNull(source);
 			assertEquals(sourceNodeUuid, source.getUuid());
@@ -118,7 +118,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			return true;
 		});
 		call(() -> client().moveNode(PROJECT_NAME, sourceNodeUuid, targetNodeUuid));
-		events().await();
+		awaitEvents();
 
 		try (Tx tx2 = tx()) {
 			assertNotEquals("The source node parent uuid should have been updated.", oldSourceParentId,

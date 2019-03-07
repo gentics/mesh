@@ -169,7 +169,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			assertTrue("The role should have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
 		}
 
-		events().expect(ROLE_PERMISSIONS_CHANGED, 1, PermissionChangedEventModel.class, event -> {
+		expect(ROLE_PERMISSIONS_CHANGED).match(1, PermissionChangedEventModel.class, event -> {
 			assertEquals("The role name in the event did not match.", roleName, event.getName());
 			assertEquals("The role uuid in the event did not match.", roleUuid(), event.getUuid());
 			return true;
@@ -178,7 +178,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		GenericMessageResponse message = call(() -> client().updateRolePermissions(roleUuid(), pathToElement, request));
 		assertThat(message).matches("role_updated_permission", roleName);
 
-		events().await();
+		awaitEvents();
 
 		try (Tx tx = tx()) {
 			assertFalse("The role should no longer have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));

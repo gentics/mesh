@@ -184,7 +184,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName(branchName);
 
-		events().expect(BRANCH_CREATED, 1, MeshElementEventModelImpl.class, event -> {
+		expect(BRANCH_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(branchName).uuidNotNull();
 			return true;
 		});
@@ -194,7 +194,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertThat(response).as("Branch Response").isNotNull().hasName(branchName).isActive().isNotMigrated();
 		}, COMPLETED, 1);
 
-		events().await();
+		awaitEvents();
 
 		BranchListResponse branches = call(() -> client().findBranches(PROJECT_NAME));
 		branches.getData().forEach(branch -> assertThat(branch).as("Branch " + branch.getName()).isMigrated());
@@ -610,7 +610,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		String newName = "New Branch Name";
 		String anotherNewName = "Another New Branch Name";
 
-		events().expect(BRANCH_UPDATED, 1, MeshElementEventModelImpl.class, event -> {
+		expect(BRANCH_UPDATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(newName).hasUuid(initialBranchUuid());
 			return true;
 		});
@@ -621,7 +621,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		BranchResponse response = call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request1));
 		assertThat(response).as("Updated Branch").isNotNull().hasName(newName).isActive();
 
-		events().await();
+		awaitEvents();
 
 		// change active
 		BranchUpdateRequest request2 = new BranchUpdateRequest();
@@ -763,7 +763,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 				String branchName = entry.getKey();
 				String branchUuid = entry.getValue();
 
-				events().expect(PROJECT_LATEST_BRANCH_UPDATED, 1, ProjectBranchEventModel.class, event -> {
+				expect(PROJECT_LATEST_BRANCH_UPDATED).match(1, ProjectBranchEventModel.class, event -> {
 					ProjectReference project = event.getProject();
 					assertEquals("Project name not correct in event.", PROJECT_NAME, project.getName());
 					assertEquals("Project uuid not correct in event.", projectUuid(), project.getUuid());
@@ -774,7 +774,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 				BranchResponse response = call(() -> client().setLatestBranch(PROJECT_NAME, branchUuid));
 				assertThat(response).as("Latest branch").hasUuid(branchUuid).hasName(branchName).isLatest();
-				events().await();
+				awaitEvents();
 
 				BranchListResponse updatedProjectBranches = call(() -> client().findBranches(PROJECT_NAME));
 				assertThat(updatedProjectBranches.getData().stream().filter(BranchResponse::getLatest).collect(Collectors.toList()))
@@ -1069,7 +1069,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			BranchInfoMicroschemaList info = new BranchInfoMicroschemaList();
 			info.add(new MicroschemaReferenceImpl().setUuid(microschema.getUuid()).setVersion("2.0"));
 
-			events().expect(MICROSCHEMA_BRANCH_ASSIGN, 1, BranchMicroschemaAssignModel.class, event -> {
+			expect(MICROSCHEMA_BRANCH_ASSIGN).match(1, BranchMicroschemaAssignModel.class, event -> {
 				BranchReference branch = event.getBranch();
 				assertNotNull("The branch reference was missing in the assignment event.", branch);
 				assertEquals("Branch name did not match.", PROJECT_NAME, branch.getName());
@@ -1087,7 +1087,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 				call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(), info));
 			}, COMPLETED, 1);
 
-			events().await();
+			awaitEvents();
 
 			// assert
 			list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
