@@ -201,8 +201,10 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		request.setName("newTagFamily");
 
 		expect(TAG_FAMILY_CREATED).match(1, TagFamilyMeshEventModel.class, event -> {
-			assertThat(event).hasName("newTagFamily").uuidNotNull().hasProject(PROJECT_NAME, projectUuid());
-			return true;
+			assertThat(event)
+				.hasName("newTagFamily")
+				.uuidNotNull()
+				.hasProject(PROJECT_NAME, projectUuid());
 		});
 
 		TagFamilyResponse response = call(() -> client().createTagFamily(PROJECT_NAME, request));
@@ -297,13 +299,15 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 		expect(TAG_FAMILY_DELETED).match(1, TagFamilyMeshEventModel.class, event -> {
 			assertThat(event).hasName("basic").hasUuid(uuid).hasProject(PROJECT_NAME, projectUuid());
-			return true;
 		});
 
 		expect(TAG_DELETED).match(1, TagMeshEventModel.class, event -> {
-			assertThat(event).hasName("Vehicle").uuidNotNull().hasProject(PROJECT_NAME, projectUuid()).hasTagFamily("basic", tagFamilyUuid);
+			assertThat(event)
+				.hasName("Vehicle")
+				.uuidNotNull()
+				.hasProject(PROJECT_NAME, projectUuid())
+				.hasTagFamily("basic", tagFamilyUuid);
 			// JetFigther , Twinjet , Plane , Bus , Motorcycle , Bike, Jeep, Car
-			return true;
 		});
 
 		// TODO Assert for tags
@@ -364,8 +368,10 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		request.setName("new Name");
 
 		expect(TAG_FAMILY_UPDATED).match(1, TagFamilyMeshEventModel.class, event -> {
-			assertThat(event).hasName("new Name").hasUuid(uuid).hasProject(PROJECT_NAME, projectUuid());
-			return true;
+			assertThat(event)
+				.hasName("new Name")
+				.hasUuid(uuid)
+				.hasProject(PROJECT_NAME, projectUuid());
 		});
 
 		TagFamilyResponse tagFamily2 = call(() -> client().updateTagFamily(PROJECT_NAME, uuid, request));

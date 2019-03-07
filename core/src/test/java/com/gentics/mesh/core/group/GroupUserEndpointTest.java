@@ -110,7 +110,6 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			assertEquals("The user uuid was not set.", userUuid, user.getUuid());
 			assertEquals("The user firstname was not set.", userFirstname, user.getFirstName());
 			assertEquals("The user lastname was not set.", userLastname, user.getLastName());
-			return true;
 		});
 
 		GroupResponse restGroup = call(() -> client().addUserToGroup(groupUuid(), userUuid));
@@ -201,7 +200,6 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			assertEquals("The user uuid was not set.", userUuid, user.getUuid());
 			assertEquals("The user firstname was not set.", userFirstname, user.getFirstName());
 			assertEquals("The user lastname was not set.", userLastname, user.getLastName());
-			return true;
 		});
 
 		call(() -> client().removeUserFromGroup(groupUuid, userUuid));

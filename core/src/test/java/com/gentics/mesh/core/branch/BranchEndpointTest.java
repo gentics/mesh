@@ -186,7 +186,6 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		expect(BRANCH_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(branchName).uuidNotNull();
-			return true;
 		});
 
 		waitForJobs(() -> {
@@ -612,7 +611,6 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		expect(BRANCH_UPDATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(newName).hasUuid(initialBranchUuid());
-			return true;
 		});
 
 		// change name
@@ -769,7 +767,6 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 					assertEquals("Project uuid not correct in event.", projectUuid(), project.getUuid());
 					assertEquals("Branch name not correct in event.", branchName, event.getName());
 					assertEquals("Branch uuid not correct in event.", branchUuid, event.getUuid());
-					return true;
 				});
 
 				BranchResponse response = call(() -> client().setLatestBranch(PROJECT_NAME, branchUuid));
@@ -1079,7 +1076,6 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 				assertEquals("Version did not match.", "2.0", schemaRef.getVersion());
 				assertEquals("Microschema name did not match.", "newmicroschemaname", schemaRef.getName());
 				assertEquals("Microschema uuid did not match.", microschema.getUuid(), schemaRef.getUuid());
-				return true;
 			});
 
 			// assign version 2 to the branch

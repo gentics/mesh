@@ -224,7 +224,6 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 		expect(TAG_UPDATED).match(1, TagMeshEventModel.class, event -> {
 			assertThat(event).hasName(newName).hasUuid(tagUuid).hasTagFamily("basic", parentTagFamilyUuid);
-			return true;
 		});
 
 		TagResponse tag2 = call(() -> client().updateTag(PROJECT_NAME, parentTagFamilyUuid, tagUuid, tagUpdateRequest));
@@ -330,8 +329,10 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		final String tagUuid = tx(() -> tag.getUuid());
 
 		expect(TAG_DELETED).match(1, TagMeshEventModel.class, event -> {
-			assertThat(event).hasName("Vehicle").hasUuid(tagUuid).hasTagFamily("basic", parentTagFamilyUuid);
-			return true;
+			assertThat(event)
+				.hasName("Vehicle")
+				.hasUuid(tagUuid)
+				.hasTagFamily("basic", parentTagFamilyUuid);
 		}).total(1);
 
 		// TODO assert for node updated events?
@@ -409,9 +410,11 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 		trackingSearchProvider().clear().blockingAwait();
 
-		expect(TAG_CREATED).match(1, TagMeshEventModel.class,event -> {
-			assertThat(event).hasName("SomeName").uuidNotNull().hasTagFamily("colors", parentTagFamilyUuid);
-			return true;
+		expect(TAG_CREATED).match(1, TagMeshEventModel.class, event -> {
+			assertThat(event)
+				.hasName("SomeName")
+				.uuidNotNull()
+				.hasTagFamily("colors", parentTagFamilyUuid);
 		});
 
 		TagResponse response = call(() -> client().createTag(PROJECT_NAME, parentTagFamilyUuid, tagCreateRequest));

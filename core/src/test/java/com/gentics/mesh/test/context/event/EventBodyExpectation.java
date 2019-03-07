@@ -11,7 +11,6 @@ import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Predicate;
 import io.vertx.core.json.JsonObject;
 
 public class EventBodyExpectation implements EventExpectation {
@@ -34,15 +33,13 @@ public class EventBodyExpectation implements EventExpectation {
 	 * @param tester
 	 *            Tester for the event model object
 	 */
-	public <EM extends MeshEventModel> EventBodyExpectation(MeshEvent event, int count, Class<EM> clazzOfEM, Predicate<EM> tester) {
+	public <EM extends MeshEventModel> EventBodyExpectation(MeshEvent event, int count, Class<EM> clazzOfEM, Consumer<EM> tester) {
 		this.event = event;
 		this.count = count;
 		// Add the asserter
 		this.asserter = (JsonObject e) -> {
 			EM model = JsonUtil.readValue(e.toString(), clazzOfEM);
-			if (tester.test(model)) {
-
-			}
+			tester.accept(model);
 		};
 	}
 

@@ -95,7 +95,6 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 			assertNotNull(schemaRef);
 			assertEquals("content", schemaRef.getName());
 			assertEquals(schemaUuid, schemaRef.getUuid());
-			return true;
 		});
 
 		call(() -> client().assignSchemaToProject(projectName, schemaUuid));
@@ -159,7 +158,6 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 			assertNotNull(schemaRef);
 			assertEquals("content", schemaRef.getName());
 			assertEquals(schemaUuid, schemaRef.getUuid());
-			return true;
 		});
 
 		call(() -> client().unassignSchemaFromProject(PROJECT_NAME, schemaUuid));

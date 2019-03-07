@@ -96,7 +96,6 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			assertNotNull(tagRef);
 			assertEquals("red", tagRef.getName());
 			assertEquals(tagUuid, tagRef.getUuid());
-			return true;
 		});
 
 		call(() -> client().addTagToNode(PROJECT_NAME, nodeUuid, tagUuid));
@@ -190,7 +189,6 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			assertNotNull(tagRef);
 			assertEquals("Bike", tagRef.getName());
 			assertEquals(tagUuid, tagRef.getUuid());
-			return true;
 		});
 
 		call(() -> client().removeTagFromNode(PROJECT_NAME, nodeUuid, tagUuid));

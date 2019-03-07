@@ -69,7 +69,6 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		expect(GROUP_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName("test12345").uuidNotNull();
-			return true;
 		});
 
 		GroupResponse restGroup = call(() -> client().createGroup(request));
@@ -336,7 +335,6 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		expect(GROUP_UPDATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(name).hasUuid(groupUuid);
-			return true;
 		});
 
 		GroupResponse restGroup = call(() -> client().updateGroup(groupUuid, request));
@@ -459,7 +457,6 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		expect(GROUP_DELETED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(name).hasUuid(uuid);
-			return true;
 		});
 
 		call(() -> client().deleteGroup(uuid));

@@ -123,7 +123,6 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 		expect(MICROSCHEMA_UPDATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(newName).hasUuid(vcardUuid);
-			return true;
 		});
 		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
 		request.setName(newName);

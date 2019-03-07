@@ -68,7 +68,6 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 			assertNotNull(projectRef);
 			assertEquals(restProject.getName(), projectRef.getName());
 			assertEquals(restProject.getUuid(), projectRef.getUuid());
-			return true;
 		});
 		call(() -> client().assignMicroschemaToProject(restProject.getName(), uuid));
 		awaitEvents();
@@ -154,7 +153,6 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 			assertNotNull(projectRef);
 			assertEquals(PROJECT_NAME, projectRef.getName());
 			assertEquals(projectUuid(), projectRef.getUuid());
-			return true;
 		});
 		call(() -> client().unassignMicroschemaFromProject(PROJECT_NAME, microschemaUuid));
 		awaitEvents();

@@ -68,16 +68,12 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		}
 
 		expect(NODE_DELETED).match(2, NodeMeshEventModel.class, event -> {
-			if (baseNodeUuid.equals(event.getUuid())) {
-				assertThat(event)
-					.uuidNotNull()
-					.hasBranchUuid(initialBranchUuid())
-					.hasSchemaName("folder")
-					.hasSchemaUuid(folderSchemaUuid)
-					.hasLanguage("en");
-				return true;
-			}
-			return false;
+			assertThat(event)
+				.uuidNotNull()
+				.hasBranchUuid(initialBranchUuid())
+				.hasSchemaName("folder")
+				.hasSchemaUuid(folderSchemaUuid)
+				.hasLanguage("en");
 		});
 
 		call(() -> client().takeNodeOffline(PROJECT_NAME, baseNodeUuid, new PublishParametersImpl().setRecursive(true)));
@@ -99,7 +95,6 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 				.hasBranchUuid(initialBranchUuid())
 				.hasLanguage("en")
 				.hasProject(PROJECT_NAME, projectUuid());
-			return true;
 		});
 		expect(NODE_UNPUBLISHED).total(29);
 		call(() -> client().takeNodeOffline(PROJECT_NAME, baseNodeUuid, new PublishParametersImpl().setRecursive(true)));
@@ -112,7 +107,6 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 				.hasBranchUuid(initialBranchUuid())
 				.hasLanguage("de")
 				.hasProject(PROJECT_NAME, projectUuid());
-			return true;
 		});
 		expect(NODE_PUBLISHED).match(1, NodeMeshEventModel.class, event -> {
 			assertThat(event)
@@ -121,7 +115,6 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 				.hasBranchUuid(initialBranchUuid())
 				.hasLanguage("en")
 				.hasProject(PROJECT_NAME, projectUuid());
-			return true;
 		});
 		expect(NODE_PUBLISHED).total(2);
 		assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");

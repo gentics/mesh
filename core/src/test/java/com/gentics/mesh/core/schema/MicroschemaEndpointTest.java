@@ -124,7 +124,6 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 
 		expect(MICROSCHEMA_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName("new_microschema_name").uuidNotNull();
-			return true;
 		});
 
 		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
@@ -320,7 +319,6 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 
 		expect(MICROSCHEMA_DELETED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName("vcard").uuidNotNull();
-			return true;
 		}).total(1);
 
 		call(() -> client().deleteMicroschema(uuid));

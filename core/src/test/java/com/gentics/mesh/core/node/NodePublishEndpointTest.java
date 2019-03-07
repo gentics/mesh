@@ -178,7 +178,6 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 			assertEquals("folder", schemaRef.getName());
 			assertEquals(schemaUuid, schemaRef.getUuid());
 			assertEquals("1.0", schemaRef.getVersion());
-			return true;
 		}).total(1);
 
 		PublishStatusResponse statusResponse = call(() -> client().publishNode(PROJECT_NAME, nodeUuid));
@@ -391,9 +390,12 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 		// Take english language offline
 		expect(NODE_UNPUBLISHED).match(1, NodeMeshEventModel.class, event -> {
-			assertThat(event).hasUuid(nodeUuid).hasSchema("folder", schemaUuid).hasBranchUuid(branchUuid).hasLanguage("en").hasProject(PROJECT_NAME,
-				projectUuid());
-			return true;
+			assertThat(event)
+				.hasUuid(nodeUuid)
+				.hasSchema("folder", schemaUuid)
+				.hasBranchUuid(branchUuid)
+				.hasLanguage("en")
+				.hasProject(PROJECT_NAME, projectUuid());
 		}).total(1);
 		call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"));
 		awaitEvents();

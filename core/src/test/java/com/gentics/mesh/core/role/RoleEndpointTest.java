@@ -66,7 +66,6 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		expect(ROLE_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName("new_role").uuidNotNull();
-			return true;
 		});
 
 		RoleResponse restRole = call(() -> client().createRole(request));
@@ -342,7 +341,6 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		expect(ROLE_UPDATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName("renamed role").hasUuid(extraRoleUuid);
-			return true;
 		});
 
 		RoleUpdateRequest request = new RoleUpdateRequest();
@@ -438,7 +436,6 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		expect(ROLE_DELETED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName("extra role").hasUuid(extraRoleUuid);
-			return true;
 		});
 
 		trackingSearchProvider().clear().blockingAwait();

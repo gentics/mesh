@@ -4,6 +4,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.ROLE_PERMISSIONS_CHANGED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_UPDATED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
@@ -172,8 +173,8 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		expect(ROLE_PERMISSIONS_CHANGED).match(1, PermissionChangedEventModel.class, event -> {
 			assertEquals("The role name in the event did not match.", roleName, event.getName());
 			assertEquals("The role uuid in the event did not match.", roleUuid(), event.getUuid());
-			return true;
-		});
+		}).total(1);
+		expect(ROLE_UPDATED).total(0);
 
 		GenericMessageResponse message = call(() -> client().updateRolePermissions(roleUuid(), pathToElement, request));
 		assertThat(message).matches("role_updated_permission", roleName);

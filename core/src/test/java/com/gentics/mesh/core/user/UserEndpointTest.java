@@ -529,7 +529,6 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		expect(USER_UPDATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(newName).hasUuid(uuid);
-			return true;
 		}).total(1);
 
 		UserResponse restUser = call(() -> client().updateUser(uuid, updateRequest));
@@ -655,7 +654,6 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		expect(USER_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName("new_user").uuidNotNull();
-			return true;
 		});
 
 		UserResponse response = call(() -> client().createUser(newUser));
@@ -1253,7 +1251,6 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			expect(USER_DELETED).match(1, MeshElementEventModelImpl.class, event -> {
 				assertThat(event).hasName("new_user").hasUuid(uuid);
-				return true;
 			});
 
 			call(() -> client().deleteUser(uuid));

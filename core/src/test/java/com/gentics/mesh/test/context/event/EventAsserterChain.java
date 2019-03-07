@@ -3,7 +3,7 @@ package com.gentics.mesh.test.context.event;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 
-import io.reactivex.functions.Predicate;
+import io.reactivex.functions.Consumer;
 
 public class EventAsserterChain {
 
@@ -25,7 +25,7 @@ public class EventAsserterChain {
 	 * @param asserter
 	 * @return
 	 */
-	public <EM extends MeshEventModel> EventAsserterChain match(int expectedCount, Class<EM> clazzOfEM, Predicate<EM> asserter) {
+	public <EM extends MeshEventModel> EventAsserterChain match(int expectedCount, Class<EM> clazzOfEM, Consumer<EM> asserter) {
 		this.asserter.addExpectation(new EventBodyExpectation(event, expectedCount, clazzOfEM, asserter));
 		return this;
 	}

@@ -115,7 +115,6 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			NodeReference target = event.getTarget();
 			assertNotNull(target);
 			assertEquals(targetNodeUuid, target.getUuid());
-			return true;
 		});
 		call(() -> client().moveNode(PROJECT_NAME, sourceNodeUuid, targetNodeUuid));
 		awaitEvents();

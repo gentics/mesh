@@ -63,7 +63,6 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			assertNotNull(projectRef);
 			assertEquals(PROJECT_NAME, projectRef.getName());
 			assertEquals(projectUuid(), projectRef.getUuid());
-			return true;
 		});
 
 		BranchResponse branchResponse = call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, tagUuid));
@@ -160,7 +159,6 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			assertNotNull(projectRef);
 			assertEquals(PROJECT_NAME, projectRef.getName());
 			assertEquals(projectUuid(), projectRef.getUuid());
-			return true;
 		});
 		call(() -> client().removeTagFromBranch(PROJECT_NAME, branchUuid, tagUuid));
 		// Test idempotency

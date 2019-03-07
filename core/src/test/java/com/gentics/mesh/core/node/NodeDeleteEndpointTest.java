@@ -98,7 +98,6 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 			assertNotNull(projectRef);
 			assertEquals(PROJECT_NAME, projectRef.getName());
 			assertEquals(projectUuid(), projectRef.getUuid());
-			return true;
 		});
 		// The node should still be loadable and all child elements should still be existing
 		call(() -> client().deleteNode(PROJECT_NAME, uuid, "de"));
@@ -135,7 +134,6 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 			assertNotNull(projectRef);
 			assertEquals(PROJECT_NAME, projectRef.getName());
 			assertEquals(projectUuid(), projectRef.getUuid());
-			return true;
 		});
 		call(() -> client().deleteNode(PROJECT_NAME, uuid, "en", new DeleteParametersImpl().setRecursive(true)));
 		awaitEvents();

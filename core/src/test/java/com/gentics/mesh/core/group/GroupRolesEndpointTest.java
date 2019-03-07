@@ -87,7 +87,6 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			assertNotNull(role);
 			assertEquals("The role name was not set.", roleName, role.getName());
 			assertEquals("The role uuid was not set.", roleUuid, role.getUuid());
-			return true;
 		});
 		GroupResponse restGroup = call(() -> client().addRoleToGroup(groupUuid(), roleUuid));
 		awaitEvents();
@@ -171,7 +170,6 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			assertNotNull(role);
 			assertEquals("The role name was not set.", roleName, role.getName());
 			assertEquals("The role uuid was not set.", roleUuid, role.getUuid());
-			return true;
 		});
 
 		call(() -> client().removeRoleFromGroup(groupUuid(), roleUuid));

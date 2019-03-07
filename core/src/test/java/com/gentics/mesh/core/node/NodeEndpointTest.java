@@ -255,8 +255,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 
 		expect(NODE_CREATED).match(1, NodeMeshEventModel.class, event -> {
-			assertThat(event).uuidNotNull().hasBranchUuid(initialBranchUuid()).hasSchemaName("content").hasSchemaUuid(schemaUuid).hasLanguage("en");
-			return true;
+			assertThat(event)
+				.uuidNotNull()
+				.hasBranchUuid(initialBranchUuid())
+				.hasSchemaName("content")
+				.hasSchemaUuid(schemaUuid)
+				.hasLanguage("en");
 		});
 
 		NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
@@ -1630,9 +1634,11 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		searchProvider().clear().blockingAwait();
 
 		expect(NODE_UPDATED).match(1, NodeMeshEventModel.class, event -> {
-			assertThat(event).hasProject(PROJECT_NAME, projectUuid()).hasLanguage("en").hasSchema("content", contentSchemaUuid).hasUuid(uuid)
+			assertThat(event)
+				.hasProject(PROJECT_NAME, projectUuid())
+				.hasLanguage("en").hasSchema("content", contentSchemaUuid)
+				.hasUuid(uuid)
 				.hasBranchUuid(initialBranchUuid());
-			return true;
 		});
 
 		NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, uuid, request, new NodeParametersImpl().setLanguages("en", "de")));
@@ -1715,7 +1721,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertNotNull(schemaRef);
 			assertEquals(schemaUuid, schemaRef.getUuid());
 			assertEquals("folder", schemaRef.getName());
-			return true;
 		});
 		NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, uuid, request, new NodeParametersImpl().setLanguages("de")));
 		awaitEvents();
@@ -1872,7 +1877,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		expect(NODE_DELETED).match(1, NodeMeshEventModel.class, event -> {
 			assertThat(event).uuidNotNull().hasBranchUuid(initialBranchUuid()).hasLanguage("en").hasSchemaName("content").hasSchemaUuid(schemaUuid);
-			return true;
 		});
 
 		call(() -> client().deleteNode(PROJECT_NAME, uuid));

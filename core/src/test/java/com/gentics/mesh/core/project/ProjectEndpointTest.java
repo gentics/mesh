@@ -149,14 +149,12 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		expect(PROJECT_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(name).uuidNotNull();
-			return true;
 		});
 
 		// Base node of the project
 		expect(NODE_CREATED).match(1, NodeMeshEventModel.class, event -> {
 			assertThat(event).uuidNotNull();
 			assertNull("No name should be set for the base node.", event.getName());
-			return true;
 		});
 
 		ProjectResponse restProject = call(() -> client().createProject(request));
@@ -534,7 +532,6 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		expect(PROJECT_UPDATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(newName).uuidNotNull();
-			return true;
 		});
 
 		ProjectResponse restProject = call(() -> client().updateProject(uuid, request));
@@ -640,15 +637,10 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		expect(PROJECT_DELETED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(PROJECT_NAME).hasUuid(projectUuid());
-			return true;
 		});
 
 		expect(NODE_DELETED).match(1, NodeMeshEventModel.class, event -> {
-			if (baseNodeUuid.equals(event.getUuid())) {
-				assertThat(event).hasUuid(baseNodeUuid);
-				return true;
-			}
-			return false;
+			assertThat(event).hasUuid(baseNodeUuid);
 		});
 
 		// 2. Delete the project
