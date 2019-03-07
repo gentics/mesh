@@ -72,7 +72,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		}
 
-		expectEvents(NODE_TAGGED, 1, NodeTaggedEventModel.class, event -> {
+		events().expect(NODE_TAGGED, 1, NodeTaggedEventModel.class, event -> {
 			BranchReference branchRef = event.getBranch();
 			assertNotNull(branchRef);
 			assertEquals(initialBranchUuid(), branchRef.getUuid());
@@ -103,7 +103,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 		// Test idempotency
 		NodeResponse restNode = call(() -> client().addTagToNode(PROJECT_NAME, nodeUuid, tagUuid));
-		waitForEvents();
+		events().await();
 
 		try (Tx tx = tx()) {
 			assertThat(restNode).contains(tag);
@@ -166,7 +166,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			assertTrue(node.getTags(project().getLatestBranch()).list().contains(tag));
 		}
 
-		expectEvents(NODE_UNTAGGED, 1, NodeTaggedEventModel.class, event -> {
+		events().expect(NODE_UNTAGGED, 1, NodeTaggedEventModel.class, event -> {
 			BranchReference branchRef = event.getBranch();
 			assertNotNull(branchRef);
 			assertEquals(initialBranchUuid(), branchRef.getUuid());
@@ -198,7 +198,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		// Test for idempotency
 		call(() -> client().removeTagFromNode(PROJECT_NAME, nodeUuid, tagUuid));
 
-		waitForEvents();
+		events().await();
 		NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid));
 
 		try (Tx tx = tx()) {

@@ -17,19 +17,13 @@ import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -55,7 +49,6 @@ import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.ListResponse;
-import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -63,7 +56,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.router.ProjectsRouter;
@@ -71,20 +63,16 @@ import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.test.TestDataProvider;
+import com.gentics.mesh.test.context.event.EventAsserter;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Completable;
-import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Predicate;
-import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
@@ -101,29 +89,11 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	private OkHttpClient httpClient;
 
-	private Map<CompletableFuture<? extends MeshEventModel>, MeshEvent> futures = new HashMap<>();
+	private EventAsserter eventAsserter = new EventAsserter();
 
 	@Rule
 	@ClassRule
 	public static MeshTestContext testContext = new MeshTestContext();
-
-	private static <T> Maybe<T> fromFuture(Consumer<Future<T>> consumer) {
-		return Maybe.create(sub -> {
-			Future<T> future = Future.future();
-			future.setHandler(result -> {
-				if (result.succeeded()) {
-					if (result.result() == null) {
-						sub.onComplete();
-					} else {
-						sub.onSuccess(result.result());
-					}
-				} else {
-					sub.onError(result.cause());
-				}
-			});
-			consumer.accept(future);
-		});
-	}
 
 	@Override
 	public MeshTestContext getTestContext() {
@@ -132,7 +102,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	@After
 	public void clearLatches() {
-		futures.clear();
+		eventAsserter.clear();
 	}
 
 	@After
@@ -560,7 +530,8 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	 * @throws TimeoutException
 	 */
 	protected void waitForEvent(MeshEvent event) {
-		waitForEvent(event.address, () -> {});
+		waitForEvent(event.address, () -> {
+		});
 	}
 
 	public ElasticSearchProvider getProvider() {
@@ -655,7 +626,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	// * @param asserter
 	// * @return
 	// */
-	// public CompletableFuture<JsonObject> expectEvents(MeshEvent event, int expectedCount, Predicate<JsonObject> asserter) {
+	// public CompletableFuture<JsonObject> events().expect(MeshEvent event, int expectedCount, Predicate<JsonObject> asserter) {
 	// CompletableFuture<JsonObject> fut = new CompletableFuture<>();
 	// AtomicInteger counter = new AtomicInteger(0);
 	// vertx().eventBus().consumer(event.getAddress(), (Message<JsonObject> mh) -> {
@@ -678,57 +649,6 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	// // TODO assert event count
 	// return fut;
 	// }
-
-	public <EM extends MeshEventModel> CompletableFuture<EM> expectEvents(MeshEvent event, int expectedCount, Class<EM> clazzOfEM,
-		Predicate<EM> asserter) {
-		CompletableFuture<EM> fut = new CompletableFuture<>();
-		AtomicInteger counter = new AtomicInteger(0);
-		vertx().eventBus().consumer(event.getAddress(), (Message<JsonObject> mh) -> {
-			counter.incrementAndGet();
-			try {
-				JsonObject json = mh.body();
-				EM model = JsonUtil.readValue(json.toString(), clazzOfEM);
-				// Only complete the future if the event is accepted.
-				if (asserter.test(model)) {
-					fut.complete(model);
-				}
-			} catch (Throwable e) {
-				fut.completeExceptionally(e);
-			}
-		});
-		futures.put(fut, event);
-		CompletableFuture<Integer> count = CompletableFuture.supplyAsync(() -> {
-			return counter.get();
-		});
-		// futures.put(count, event);
-		// TODO assert event count
-		return fut;
-	}
-
-	/**
-	 * Await all futures.
-	 * 
-	 * @throws Throwable
-	 * 
-	 * @throws Exception
-	 */
-	public void waitForEvents() {
-		for (Entry<CompletableFuture<? extends MeshEventModel>, MeshEvent> entry : futures.entrySet()) {
-			MeshEvent event = entry.getValue();
-			try {
-				entry.getKey().get(4, TimeUnit.SECONDS);
-			} catch (ExecutionException | TimeoutException | InterruptedException e) {
-				if (e instanceof ExecutionException) {
-					Throwable cause = e.getCause();
-					if (cause instanceof AssertionError) {
-						throw (AssertionError) cause;
-					}
-				}
-				throw new RuntimeException("Did not receive event for {" + event.getAddress() + "}", e);
-			}
-		}
-		futures.clear();
-	}
 
 	protected void waitForSearchIdleEvent() {
 		testContext.waitForSearchIdleEvent();
@@ -787,8 +707,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	}
 
 	/**
-	 * Call the given handler, latch for the future and assert success.
-	 * Waits for search to be idle, then returns the result.
+	 * Call the given handler, latch for the future and assert success. Waits for search to be idle, then returns the result.
 	 *
 	 * @param handler
 	 *            handler
@@ -802,5 +721,13 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	/**
+	 * Return the event asserter.
+	 * @return
+	 */
+	public EventAsserter events() {
+		return eventAsserter;
 	}
 }

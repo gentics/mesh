@@ -77,7 +77,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		});
 
 		searchProvider().clear().blockingAwait();
-		expectEvents(GROUP_ROLE_ASSIGNED, 1, GroupRoleAssignModel.class, event -> {
+		events().expect(GROUP_ROLE_ASSIGNED, 1, GroupRoleAssignModel.class, event -> {
 			GroupReference group = event.getGroup();
 			assertNotNull(group);
 			assertEquals("The group name was not set.", groupName, group.getName());
@@ -90,7 +90,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			return true;
 		});
 		GroupResponse restGroup = call(() -> client().addRoleToGroup(groupUuid(), roleUuid));
-		waitForEvents();
+		events().await();
 
 		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), groupUuid());
 		// The role is not updated since it is not changing
@@ -161,7 +161,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			return extraRole.getUuid();
 		});
 
-		expectEvents(GROUP_ROLE_UNASSIGNED, 1, GroupRoleAssignModel.class, event -> {
+		events().expect(GROUP_ROLE_UNASSIGNED, 1, GroupRoleAssignModel.class, event -> {
 			GroupReference group = event.getGroup();
 			assertNotNull(group);
 			assertEquals("The group name was not set.", groupName, group.getName());
@@ -175,7 +175,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		});
 
 		call(() -> client().removeRoleFromGroup(groupUuid(), roleUuid));
-		waitForEvents();
+		events().await();
 		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), groupUuid());
 		// The role is not updated since it is not changing
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);

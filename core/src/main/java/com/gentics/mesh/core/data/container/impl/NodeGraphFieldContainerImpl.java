@@ -13,9 +13,11 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIS
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNPUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -33,7 +35,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.gentics.mesh.core.data.root.UserRoot;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -63,6 +64,7 @@ import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -718,17 +720,27 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public NodeMeshEventModel onDeleted(String branchUuid, ContainerType type) {
-		return createEvent(NODE_DELETED, branchUuid, type);
+		return createEvent(NODE_CONTENT_DELETED, branchUuid, type);
 	}
 
 	@Override
 	public NodeMeshEventModel onUpdated(String branchUuid, ContainerType type) {
-		return createEvent(NODE_UPDATED, branchUuid, type);
+		return createEvent(NODE_CONTENT_UPDATED, branchUuid, type);
 	}
 
 	@Override
 	public NodeMeshEventModel onCreated(String branchUuid, ContainerType type) {
-		return createEvent(NODE_CREATED, branchUuid, type);
+		return createEvent(NODE_CONTENT_CREATED, branchUuid, type);
+	}
+
+	@Override
+	public NodeMeshEventModel onTakenOffline(String branchUuid) {
+		return createEvent(NODE_UNPUBLISHED, branchUuid, ContainerType.PUBLISHED);
+	}
+
+	@Override
+	public NodeMeshEventModel onPublish(String branchUuid) {
+		return createEvent(NODE_PUBLISHED, branchUuid, ContainerType.PUBLISHED);
 	}
 
 	/**

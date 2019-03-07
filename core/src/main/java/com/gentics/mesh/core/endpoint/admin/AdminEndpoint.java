@@ -8,6 +8,10 @@ import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_START;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_START;
+import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_DEPLOYED;
+import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_DEPLOYING;
+import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_UNDEPLOYED;
+import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_UNDEPLOYING;
 import static com.gentics.mesh.core.rest.MeshEvent.REPAIR_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.REPAIR_START;
 import static com.gentics.mesh.example.ExampleUuids.JOB_UUID;
@@ -25,6 +29,7 @@ import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -87,6 +92,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		deployEndpoint.produces(APPLICATION_JSON);
 		deployEndpoint.exampleRequest(adminExamples.createPluginDeploymentRequest());
 		deployEndpoint.exampleResponse(OK, adminExamples.createHelloWorldPluginResponse(), "Plugin response.");
+		deployEndpoint.events(PLUGIN_DEPLOYED, PLUGIN_DEPLOYING);
 		deployEndpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			pluginHandler.handleDeploy(ac);
@@ -99,6 +105,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		undeployEndpoint.produces(APPLICATION_JSON);
 		undeployEndpoint.addUriParameter("uuid", "Uuid of the plugin.", PLUGIN_1_UUID);
 		undeployEndpoint.exampleResponse(OK, adminExamples.createHelloWorldPluginResponse(), "Plugin response.");
+		undeployEndpoint.events(PLUGIN_UNDEPLOYED, PLUGIN_UNDEPLOYING);
 		undeployEndpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("uuid");

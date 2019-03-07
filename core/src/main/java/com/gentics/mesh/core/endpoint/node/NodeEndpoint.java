@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.endpoint.node;
 
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
@@ -137,6 +139,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Delete the language specific content of the node.");
 		endpoint.exampleResponse(NO_CONTENT, "Language variation of the node has been deleted.");
 		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
+		endpoint.events(NODE_CONTENT_DELETED);
 		endpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -405,7 +408,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
 		endpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
 		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
-		endpoint.events(NODE_UPDATED, NODE_CREATED);
+		endpoint.events(NODE_UPDATED, NODE_CREATED, NODE_CONTENT_CREATED, NODE_CONTENT_UPDATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");

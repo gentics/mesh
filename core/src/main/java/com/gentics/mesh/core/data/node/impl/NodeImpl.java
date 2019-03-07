@@ -1160,7 +1160,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// publish all unpublished containers and handle recursion
 		unpublishedContainers.stream().forEach(c -> {
 			NodeGraphFieldContainer newVersion = publish(c.getLanguageTag(), branch, ac.getUser());
-			bac.add(newVersion.onUpdated(branchUuid, PUBLISHED));
+			bac.add(newVersion.onPublish(branchUuid));
 		});
 		assertPublishConsistency(ac, branch);
 
@@ -1193,7 +1193,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// Remove the published edge for each found container
 		TraversalResult<? extends NodeGraphFieldContainer> publishedContainers = getGraphFieldContainers(branchUuid, PUBLISHED);
 		for (NodeGraphFieldContainer container : publishedContainers) {
-			bac.add(container.onDeleted(branchUuid, PUBLISHED));
+			bac.add(container.onTakenOffline(branchUuid));
 		}
 		getGraphFieldContainerEdges(branchUuid, PUBLISHED).forEach(EdgeFrame::remove);
 
@@ -1255,7 +1255,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// TODO check whether all required fields are filled, if not -> unable to publish
 		NodeGraphFieldContainer publishedContainer = publish(draftVersion.getLanguageTag(), branch, ac.getUser());
 		// Invoke a store of the document since it must now also be added to the published index
-		bac.add(publishedContainer.onUpdated(branchUuid, PUBLISHED));
+		bac.add(publishedContainer.onPublish(branchUuid));
 	}
 
 	@Override
@@ -1267,7 +1267,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (published == null) {
 			throw error(NOT_FOUND, "error_language_not_found", languageTag);
 		}
-		bac.add(published.onDeleted(branchUuid, PUBLISHED));
+		bac.add(published.onTakenOffline(branchUuid));
 
 		// Remove the "published" edge
 		getGraphFieldContainerEdge(languageTag, branchUuid, PUBLISHED).remove();
@@ -1436,10 +1436,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		for (NodeGraphFieldContainer container : getGraphFieldContainers(branch, DRAFT)) {
 			deleteLanguageContainer(ac, branch, container.getLanguageTag(), bac, false);
 		}
-		// bac.add(onDeleted(getUuid(), getDisplayName(ac), getSchemaContainer(), null, null, null));
 
 		// 3. Now check if the node has no more field containers in any branch. We can delete it in those cases
 		if (getGraphFieldContainerCount() == 0) {
+			bac.add(onDeleted(getUuid(), getDisplayName(ac), getSchemaContainer(), null, null, null));
 			delete(bac);
 		} else {
 			// Otherwise we need to remove the "parent" edge for the branch
@@ -1638,7 +1638,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			latestDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
-			batch.add(latestDraftVersion.onUpdated(branch.getUuid(), DRAFT));
+			batch.add(latestDraftVersion.onCreated(branch.getUuid(), DRAFT));
 			return true;
 		} else {
 			String version = requestModel.getVersion();
@@ -1792,6 +1792,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (container == null) {
 			throw error(NOT_FOUND, "node_no_language_found", languageTag);
 		}
+		bac.add(container.onDeleted(branch.getUuid(), null));
 		container.deleteFromBranch(branch, bac);
 		// No need to delete the published variant because if the container was published the take offline call handled it
 
@@ -1831,6 +1832,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (!parameters.isRecursive() && wasLastContainer) {
 				throw error(BAD_REQUEST, "node_error_delete_failed_last_container_for_branch");
 			}
+
 			// Also delete the node and children
 			if (parameters.isRecursive() && wasLastContainer) {
 				deleteFromBranch(ac, branch, bac, false);

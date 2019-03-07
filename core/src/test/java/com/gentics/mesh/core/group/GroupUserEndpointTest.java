@@ -99,7 +99,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 		String userUuid = tx(() -> extraUser.getUuid());
 		String groupName = tx(() -> group().getName());
-		expectEvents(GROUP_USER_ASSIGNED, 1, GroupUserAssignModel.class, event -> {
+		events().expect(GROUP_USER_ASSIGNED, 1, GroupUserAssignModel.class, event -> {
 			GroupReference group = event.getGroup();
 			assertNotNull(group);
 			assertEquals("The group name was not set.", groupName, group.getName());
@@ -114,7 +114,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		});
 
 		GroupResponse restGroup = call(() -> client().addUserToGroup(groupUuid(), userUuid));
-		waitForEvents();
+		events().await();
 
 		try (Tx tx = tx()) {
 			assertThat(restGroup).matches(group());
@@ -190,7 +190,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		String userUuid = userUuid();
 		String userFirstname = tx(() -> user().getFirstname());
 		String userLastname = tx(() -> user().getLastname());
-		expectEvents(GROUP_USER_UNASSIGNED, 1, GroupUserAssignModel.class, event -> {
+		events().expect(GROUP_USER_UNASSIGNED, 1, GroupUserAssignModel.class, event -> {
 			GroupReference group = event.getGroup();
 			assertNotNull(group);
 			assertEquals("The group name was not set.", groupName, group.getName());
@@ -205,7 +205,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		});
 
 		call(() -> client().removeUserFromGroup(groupUuid, userUuid));
-		waitForEvents();
+		events().await();
 		try (Tx tx = tx()) {
 			assertFalse("User should not be member of the group.", group().hasUser(user()));
 		}

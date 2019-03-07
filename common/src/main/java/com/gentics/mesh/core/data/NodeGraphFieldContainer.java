@@ -422,7 +422,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	Iterator<? extends GraphFieldContainerEdge> getContainerEdge(ContainerType type, String branchUuid);
 
 	/**
-	 * Create the specific delete event
+	 * Create the specific delete event.
 	 * 
 	 * @param branchUuid
 	 * @param type
@@ -447,4 +447,21 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @return
 	 */
 	NodeMeshEventModel onUpdated(String branchUuid, ContainerType type);
+
+	/**
+	 * Create the taken offline event.
+	 * 
+	 * @param branchUuid
+	 * @return
+	 */
+	NodeMeshEventModel onTakenOffline(String branchUuid);
+
+	/**
+	 * Create the publish event.
+	 * 
+	 * @param branchUuid
+	 * @return
+	 */
+	NodeMeshEventModel onPublish(String branchUuid);
+
 }

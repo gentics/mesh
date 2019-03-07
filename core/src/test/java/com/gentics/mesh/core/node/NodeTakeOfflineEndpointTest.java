@@ -5,6 +5,8 @@ import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNPUBLISHED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -65,7 +67,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			call(() -> client().publishNode(PROJECT_NAME, response.getUuid()));
 		}
 
-		expectEvents(NODE_DELETED, 2, NodeMeshEventModel.class, event -> {
+		events().expect(NODE_DELETED, 2, NodeMeshEventModel.class, event -> {
 			if (baseNodeUuid.equals(event.getUuid())) {
 				assertThat(event)
 					.uuidNotNull()
@@ -79,23 +81,51 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		});
 
 		call(() -> client().takeNodeOffline(PROJECT_NAME, baseNodeUuid, new PublishParametersImpl().setRecursive(true)));
-
-		waitForEvents();
+		events().await();
 
 	}
 
 	@Test
 	public void testTakeNodeOffline() {
+		Node node = folder("products");
+		String nodeUuid = tx(() -> node.getUuid());
+		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
+		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
 
-		String nodeUuid = db().tx(() -> {
-			Node node = folder("products");
-			String uuid = node.getUuid();
-
-			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
-
-			assertThat(call(() -> client().publishNode(PROJECT_NAME, uuid))).as("Publish Status").isPublished("en").isPublished("de");
-			return uuid;
+		events().expect(NODE_UNPUBLISHED, 1, NodeMeshEventModel.class, event -> {
+			assertThat(event)
+				.hasUuid(baseNodeUuid)
+				.hasSchema("folder", schemaUuid)
+				.hasBranchUuid(initialBranchUuid())
+				.hasLanguage("en")
+				.hasProject(PROJECT_NAME, projectUuid());
+			return true;
 		});
+		events().expect(NODE_UNPUBLISHED, 29);
+		call(() -> client().takeNodeOffline(PROJECT_NAME, baseNodeUuid, new PublishParametersImpl().setRecursive(true)));
+		events().await();
+
+		events().expect(NODE_PUBLISHED, 1, NodeMeshEventModel.class, event -> {
+			assertThat(event)
+				.hasUuid(nodeUuid)
+				.hasSchema("folder", schemaUuid)
+				.hasBranchUuid(initialBranchUuid())
+				.hasLanguage("de")
+				.hasProject(PROJECT_NAME, projectUuid());
+			return true;
+		});
+		events().expect(NODE_PUBLISHED, 1, NodeMeshEventModel.class, event -> {
+			assertThat(event)
+				.hasUuid(nodeUuid)
+				.hasSchema("folder", schemaUuid)
+				.hasBranchUuid(initialBranchUuid())
+				.hasLanguage("en")
+				.hasProject(PROJECT_NAME, projectUuid());
+			return true;
+		});
+		events().expect(NODE_PUBLISHED, 2);
+		assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
+		events().await();
 
 		// assert that the containers have both webrootpath properties set
 		try (Tx tx1 = tx()) {

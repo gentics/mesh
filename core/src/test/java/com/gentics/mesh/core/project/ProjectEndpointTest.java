@@ -147,13 +147,13 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		request.setName(name);
 		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
-		expectEvents(PROJECT_CREATED, 1, MeshElementEventModelImpl.class, event -> {
+		events().expect(PROJECT_CREATED, 1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(name).uuidNotNull();
 			return true;
 		});
 
 		// Base node of the project
-		expectEvents(NODE_CREATED, 1, NodeMeshEventModel.class, event -> {
+		events().expect(NODE_CREATED, 1, NodeMeshEventModel.class, event -> {
 			assertThat(event).uuidNotNull();
 			assertNull("No name should be set for the base node.", event.getName());
 			return true;
@@ -161,7 +161,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		ProjectResponse restProject = call(() -> client().createProject(request));
 
-		waitForEvents();
+		events().await();
 
 		// Verify that the new routes have been created
 		NodeResponse response = call(() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParametersImpl()
@@ -532,14 +532,14 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		request.setName(newName);
 		assertThat(trackingSearchProvider()).hasNoStoreEvents();
 
-		expectEvents(PROJECT_UPDATED, 1, MeshElementEventModelImpl.class, event -> {
+		events().expect(PROJECT_UPDATED, 1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(newName).uuidNotNull();
 			return true;
 		});
 
 		ProjectResponse restProject = call(() -> client().updateProject(uuid, request));
 
-		waitForEvents();
+		events().await();
 
 		// Assert that the routerstorage was updates
 		assertTrue("The new project router should have been added", RouterStorage.hasProject(newName));
@@ -638,12 +638,12 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
 		System.out.println("BASE:" + baseNodeUuid);
 
-		expectEvents(PROJECT_DELETED, 1, MeshElementEventModelImpl.class, event -> {
+		events().expect(PROJECT_DELETED, 1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(PROJECT_NAME).hasUuid(projectUuid());
 			return true;
 		});
 
-		expectEvents(NODE_DELETED, 1, NodeMeshEventModel.class, event -> {
+		events().expect(NODE_DELETED, 1, NodeMeshEventModel.class, event -> {
 			if (baseNodeUuid.equals(event.getUuid())) {
 				assertThat(event).hasUuid(baseNodeUuid);
 				return true;
@@ -654,7 +654,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		// 2. Delete the project
 		call(() -> client().deleteProject(uuid));
 
-		waitForEvents();
+		events().await();
 
 		// 3. Assert that the indices have been dropped and the project has been
 		// deleted from the project index

@@ -122,14 +122,14 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		request.setName("new_microschema_name");
 		request.setDescription("microschema description");
 
-		expectEvents(MICROSCHEMA_CREATED, 1, MeshElementEventModelImpl.class, event -> {
+		events().expect(MICROSCHEMA_CREATED, 1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName("new_microschema_name").uuidNotNull();
 			return true;
 		});
 
 		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(request));
-		waitForEvents();
+		events().await();
 
 		assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 		assertThat(microschemaResponse.getPermissions()).hasPerm(READ, CREATE, DELETE, UPDATE);
@@ -318,14 +318,14 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	public void testDeleteByUUID() throws Exception {
 		String uuid = db().tx(() -> microschemaContainers().get("vcard").getUuid());
 
-		expectEvents(MICROSCHEMA_DELETED, 1, MeshElementEventModelImpl.class, event -> {
+		events().expect(MICROSCHEMA_DELETED, 1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName("vcard").uuidNotNull();
 			return true;
 		});
 
 		call(() -> client().deleteMicroschema(uuid));
 
-		waitForEvents();
+		events().await();
 		// schema_delete_still_in_use
 
 		try (Tx tx = tx()) {

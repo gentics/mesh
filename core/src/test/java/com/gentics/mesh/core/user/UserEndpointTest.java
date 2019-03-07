@@ -527,14 +527,14 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		updateRequest.setLastname("Epic Stark");
 		updateRequest.setUsername(newName);
 
-		expectEvents(USER_UPDATED, 1, MeshElementEventModelImpl.class, event -> {
+		events().expect(USER_UPDATED, 1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(newName).hasUuid(uuid);
 			return true;
 		});
 
 		UserResponse restUser = call(() -> client().updateUser(uuid, updateRequest));
 
-		waitForEvents();
+		events().await();
 
 		assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), uuid);
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
@@ -653,14 +653,14 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		newUser.setGroupUuid(groupUuid());
 		newUser.setPassword("test1234");
 
-		expectEvents(USER_CREATED, 1, MeshElementEventModelImpl.class, event -> {
+		events().expect(USER_CREATED, 1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName("new_user").uuidNotNull();
 			return true;
 		});
 
 		UserResponse response = call(() -> client().createUser(newUser));
 
-		waitForEvents();
+		events().await();
 
 		assertEquals("new_user", response.getUsername());
 		assertNotNull(response.getUuid());
@@ -1251,14 +1251,14 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertTrue(restUser.getEnabled());
 			String uuid = restUser.getUuid();
 
-			expectEvents(USER_DELETED, 1, MeshElementEventModelImpl.class, event -> {
+			events().expect(USER_DELETED, 1, MeshElementEventModelImpl.class, event -> {
 				assertThat(event).hasName("new_user").hasUuid(uuid);
 				return true;
 			});
 
 			call(() -> client().deleteUser(uuid));
 
-			waitForEvents();
+			events().await();
 
 			try (Tx tx2 = tx()) {
 				User loadedUser = boot().userRoot().findByUuid(uuid);

@@ -1156,7 +1156,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	}
 
 	/**
-	 * Start a schema migration, await the result and assert success
+	 * Start a schema migration, await() the result and assert success
 	 * 
 	 * @param versionA
 	 *            version A

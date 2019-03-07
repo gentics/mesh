@@ -48,7 +48,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			assertFalse(branch.getTags().contains(tag));
 		}
 
-		expectEvents(BRANCH_TAGGED, 1, BranchTaggedEventModel.class, event -> {
+		events().expect(BRANCH_TAGGED, 1, BranchTaggedEventModel.class, event -> {
 			BranchReference branchRef = event.getBranch();
 			assertNotNull(branchRef);
 			assertEquals(PROJECT_NAME, branchRef.getName());
@@ -67,7 +67,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		});
 
 		BranchResponse branchResponse = call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, tagUuid));
-		waitForEvents();
+		events().await();
 
 		try (Tx tx = tx()) {
 			assertThat(branchResponse).contains(tag);
@@ -145,7 +145,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			assertTrue(branch.getTags().contains(tag));
 		}
 
-		expectEvents(BRANCH_UNTAGGED, 1, BranchTaggedEventModel.class, event -> {
+		events().expect(BRANCH_UNTAGGED, 1, BranchTaggedEventModel.class, event -> {
 			BranchReference branchRef = event.getBranch();
 			assertNotNull(branchRef);
 			assertEquals(PROJECT_NAME, branchRef.getName());
@@ -165,7 +165,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		call(() -> client().removeTagFromBranch(PROJECT_NAME, branchUuid, tagUuid));
 		// Test idempotency
 		call(() -> client().removeTagFromBranch(PROJECT_NAME, branchUuid, tagUuid));
-		waitForEvents();
+		events().await();
 		try (Tx tx = tx()) {
 			assertFalse(branch.getTags().contains(tag));
 		}

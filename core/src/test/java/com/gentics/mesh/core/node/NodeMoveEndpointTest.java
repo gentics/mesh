@@ -17,7 +17,6 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.node.NodeMovedEventModel;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -109,7 +108,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 		String oldSourceParentId = tx(() -> sourceNode.getParentNode(branchUuid).getUuid());
 		assertNotEquals(targetNodeUuid, tx(() -> sourceNode.getParentNode(branchUuid).getUuid()));
 
-		expectEvents(NODE_MOVED, 1, NodeMovedEventModel.class, event -> {
+		events().expect(NODE_MOVED, 1, NodeMovedEventModel.class, event -> {
 			NodeReference source = event.getSource();
 			assertNotNull(source);
 			assertEquals(sourceNodeUuid, source.getUuid());
@@ -119,7 +118,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			return true;
 		});
 		call(() -> client().moveNode(PROJECT_NAME, sourceNodeUuid, targetNodeUuid));
-		waitForEvents();
+		events().await();
 
 		try (Tx tx2 = tx()) {
 			assertNotEquals("The source node parent uuid should have been updated.", oldSourceParentId,

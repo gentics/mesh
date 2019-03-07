@@ -101,14 +101,14 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
 
-		expectEvents(SCHEMA_CREATED, 1, MeshElementEventModelImpl.class, event -> {
+		events().expect(SCHEMA_CREATED, 1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(createRequest.getName()).uuidNotNull();
 			return true;
 		});
 
 		SchemaResponse restSchema = call(() -> client().createSchema(createRequest));
 
-		waitForEvents();
+		events().await();
 
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
 		assertThat(trackingSearchProvider()).hasStore(SchemaContainer.composeIndexName(), SchemaContainer.composeDocumentId(restSchema.getUuid()));
@@ -385,14 +385,14 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		microschemaRequest.addField(FieldUtil.createStringFieldSchema("text"));
 		microschemaRequest.addField(FieldUtil.createNodeFieldSchema("nodeRef").setAllowedSchemas("content"));
 
-		expectEvents(MICROSCHEMA_CREATED, 1, MeshElementEventModelImpl.class, event -> {
+		events().expect(MICROSCHEMA_CREATED, 1, MeshElementEventModelImpl.class, event -> {
 			assertEquals("The microschema name did not match.", MICROSCHEMA_NAME, event.getName());
 			assertNotNull("The schema uuid was not set", event.getUuid());
 			assertNotNull("The origin has not been set", event.getOrigin());
 			return true;
 		});
 		MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(microschemaRequest));
-		waitForEvents();
+		events().await();
 
 		String microschemaUuid = microschemaResponse.getUuid();
 
@@ -404,14 +404,14 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		// 2. Add micronode field to content schema
 		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("micro").setAllowedMicroSchemas("TestMicroschema"));
 
-		expectEvents(SCHEMA_UPDATED, 1, MeshElementEventModelImpl.class, event -> {
+		events().expect(SCHEMA_UPDATED, 1, MeshElementEventModelImpl.class, event -> {
 			assertEquals("content", event.getName());
 			assertEquals(schemaUuid, event.getUuid());
 			return true;
 		});
 
 		// References microschemas will also be assigned to the project/branch during the schema update process.
-		expectEvents(MICROSCHEMA_BRANCH_ASSIGN, 1, BranchMicroschemaAssignModel.class, event -> {
+		events().expect(MICROSCHEMA_BRANCH_ASSIGN, 1, BranchMicroschemaAssignModel.class, event -> {
 			BranchReference branch = event.getBranch();
 			assertNotNull("Branch reference was not set", branch);
 			assertNotNull(branch.getName());
@@ -430,7 +430,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		});
 
-		expectEvents(SCHEMA_BRANCH_ASSIGN, 1, BranchSchemaAssignEventModel.class, event -> {
+		events().expect(SCHEMA_BRANCH_ASSIGN, 1, BranchSchemaAssignEventModel.class, event -> {
 			BranchReference branch = event.getBranch();
 			assertNotNull("Branch reference was not set", branch);
 			assertNotNull(branch.getName());
@@ -447,18 +447,18 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertNotNull(project.getUuid());
 			return true;
 		});
-		expectEvents(SCHEMA_MIGRATION_START, 1, SchemaMigrationMeshEventModel.class, event -> {
+		events().expect(SCHEMA_MIGRATION_START, 1, SchemaMigrationMeshEventModel.class, event -> {
 			assertMigrationEvent(event, schemaVersion, schemaUuid);
 			return true;
 		});
-		expectEvents(NODE_UPDATED, 36, NodeMeshEventModel.class, event -> {
+		events().expect(NODE_UPDATED, 36, NodeMeshEventModel.class, event -> {
 			EventCauseInfo cause = event.getCause();
 			assertTrue("The cause of the node update event did not have the correct type.",cause instanceof SchemaMigrationCause);
 			SchemaMigrationCause migrationCause = (SchemaMigrationCause)cause;
 			assertMigrationEvent(migrationCause, schemaVersion, schemaUuid);
 			return true;
 		});
-		expectEvents(SCHEMA_MIGRATION_FINISHED, 1, SchemaMigrationMeshEventModel.class, event -> {
+		events().expect(SCHEMA_MIGRATION_FINISHED, 1, SchemaMigrationMeshEventModel.class, event -> {
 			assertMigrationEvent(event, schemaVersion, schemaUuid);
 			return true;
 		});
@@ -469,7 +469,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}, MigrationStatus.COMPLETED, 1);
 		revokeAdminRole();
 
-		waitForEvents();
+		events().await();
 
 		filteredList = call(() -> client().findMicroschemas(PROJECT_NAME)).getData().stream().filter(microschema -> microschema.getUuid().equals(
 			microschemaUuid)).collect(Collectors.toList());
@@ -575,7 +575,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			return tx.getGraph().getVertices("uuid", versionUuid).iterator().hasNext();
 		}));
 
-		expectEvents(SCHEMA_DELETED, 1, MeshElementEventModelImpl.class, event -> {
+		events().expect(SCHEMA_DELETED, 1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName("content").hasUuid(uuid);
 			return true;
 		});
@@ -583,7 +583,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		// We should be able to execute the deletion now that all nodes are gone.
 		call(() -> client().deleteSchema(uuid));
 
-		waitForEvents();
+		events().await();
 
 		try (Tx tx = tx()) {
 			assertFalse("The referenced job should have been deleted", tx.getGraph().getVertices("uuid", jobUuid).iterator().hasNext());

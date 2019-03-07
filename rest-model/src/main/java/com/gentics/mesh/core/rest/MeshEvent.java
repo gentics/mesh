@@ -207,9 +207,11 @@ public enum MeshEvent {
 
 	NODE_MOVED("mesh.node.moved", MeshElementEventModelImpl.class),
 
-	NODE_CONTENT_UPDATED("mesh.node-content.updated", MeshElementEventModelImpl.class),
+	NODE_CONTENT_UPDATED("mesh.node-content.updated", NodeMeshEventModel.class),
 
-	NODE_CONTENT_DELETED("mesh.node-content.deleted", MeshElementEventModelImpl.class),
+	NODE_CONTENT_DELETED("mesh.node-content.deleted", NodeMeshEventModel.class),
+
+	NODE_CONTENT_CREATED("mesh.node-content.created", NodeMeshEventModel.class),
 
 	/* Schema */
 
