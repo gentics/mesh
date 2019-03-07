@@ -42,7 +42,7 @@ public class EventAsserter {
 	public void await() {
 		for (Entry<CompletableFuture<Void>, MeshEvent> entry : futures.entrySet()) {
 			try {
-				entry.getKey().get(1, TimeUnit.SECONDS);
+				entry.getKey().get(500, TimeUnit.MILLISECONDS);
 			} catch (ExecutionException | TimeoutException | InterruptedException e) {
 				// Ignored
 			}
