@@ -9,7 +9,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
-import java.util.Map;
 
 import org.assertj.core.api.AbstractAssert;
 
@@ -70,9 +69,11 @@ public class SchemaChangeModelAssert extends AbstractAssert<SchemaChangeModelAss
 			values += "}";
 			assertArrayEquals("The value for the given property did not match the expected one." + values, (Object[]) value, (Object[]) actualValue);
 		} else if (value instanceof JsonObject) {
-			assertEquals("The value for the given property did not match the expected one.", ((JsonObject)value).encode(), new JsonObject((Map)actual.getProperties().get(key)).encode());
+			Object current = actual.getProperties().get(key);
+			assertEquals("The value for the given property did not match the expected one.", ((JsonObject)value).encode(), ((JsonObject)current).encode());
 		} else {
-			assertEquals("The value for the given property did not match the expected one.", value, actual.getProperties().get(key));
+			Object current = actual.getProperties().get(key);
+			assertEquals("The value for the given property did not match the expected one.", value, current);
 		}
 		return this;
 	}

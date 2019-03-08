@@ -73,10 +73,10 @@ public class NodeMigrationSearchTest extends AbstractNodeSearchEndpointTest {
 		// Before update
 		assertEquals(10, call(() -> client().searchNodes(PROJECT_NAME, queryName("sameValue"))).getMetainfo().getTotalCount());
 
-		// 4. Update schema
+		// 4. Update schema - Add the segment field for name
 		SchemaUpdateRequest schemaUpdateRequest = new SchemaUpdateRequest();
 		schemaUpdateRequest.setName(SCHEMA_NAME);
-		schemaUpdateRequest.getFields().add(FieldUtil.createStringFieldSchema("name"));
+		schemaUpdateRequest.getFields().add(FieldUtil.createStringFieldSchema("name").setElasticsearch(IndexOptionHelper.getRawFieldOption()));
 		schemaUpdateRequest.setSegmentField("name");
 		grantAdminRole();
 
