@@ -24,6 +24,11 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.30.3]]
+== 0.30.3 (TBD)
+
+icon:check[] Schema: A bug was fixed which prevented the update of the schema field `elasticsearch` property to value null.
+
 [[v0.30.2]]
 == 0.30.2 (28.02.2019)
 
