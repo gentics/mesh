@@ -24,6 +24,15 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.30.3]]
+== 0.30.3 (TBD)
+
+icon:plus[] REST: The `/users` endpoint response will now contain all roles assigned to the loaded users.
+
+icon:plus[] GraphQL: The `roles` field is now available for user fields.
+
+icon:check[] Fixed a bug in the consistency checks which claimed missing user role shortcuts.
+
 [[v0.30.2]]
 == 0.30.2 (28.02.2019)
 

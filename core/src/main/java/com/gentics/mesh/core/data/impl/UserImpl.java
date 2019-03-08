@@ -22,6 +22,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -224,6 +225,12 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
+	public Page<? extends Role> getRolesViaShortcut(User user, PagingParameters params) {
+		VertexTraversal<?, ?, ?> traversal = out(ASSIGNED_TO_ROLE);
+		return new DynamicTransformablePageImpl<Role>(user, traversal, params, READ_PERM, RoleImpl.class);
+	}
+
+	@Override
 	public void updateShortcutEdges() {
 		outE(ASSIGNED_TO_ROLE).removeAll();
 		for (Group group : getGroups()) {
@@ -371,6 +378,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		if (fields.has("groups")) {
 			setGroups(ac, restUser);
 		}
+		if (fields.has("roles")) {
+			setRoles(ac, restUser);
+		}
 		fillCommonRestFields(ac, fields, restUser);
 		setRolePermissions(ac, restUser);
 
@@ -379,7 +389,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	/**
 	 * Set the groups to which the user belongs in the rest model.
-	 * 
+	 *
 	 * @param ac
 	 * @param restUser
 	 */
@@ -392,8 +402,18 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	/**
+	 * Set the roles the user has in the rest model.
+	 *
+	 * @param ac
+	 * @param restUser
+	 */
+	private void setRoles(InternalActionContext ac, UserResponse restUser) {
+		restUser.setRoles(getRolesViaShortcut().stream().map(Role::transformToReference).collect(Collectors.toList()));
+	}
+
+	/**
 	 * Add the node reference field to the user response (if required to).
-	 * 
+	 *
 	 * @param ac
 	 * @param restUser
 	 * @param level
@@ -492,7 +512,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	/**
 	 * Encode the given password and set the generated hash.
-	 * 
+	 *
 	 * @param password
 	 *            Plain password to be hashed and set
 	 * @return Fluent API

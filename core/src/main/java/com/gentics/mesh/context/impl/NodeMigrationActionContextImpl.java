@@ -115,7 +115,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	/**
 	 * Set the project
-	 * 
+	 *
 	 * @param project
 	 */
 	public void setProject(Project project) {
@@ -274,6 +274,11 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public Iterable<? extends Role> getRolesViaShortcut() {
 				return Collections.emptyList();
+			}
+
+			@Override
+			public Page<? extends Role> getRolesViaShortcut(User user, PagingParameters params) {
+				return null;
 			}
 
 			@Override
@@ -925,7 +930,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	/**
 	 * Add the encountered conflict info to the context.
-	 * 
+	 *
 	 * @param info
 	 */
 	public void addConflictInfo(ConflictWarning info) {
@@ -934,7 +939,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	/**
 	 * Get the set of encountered conflicts.
-	 * 
+	 *
 	 * @return
 	 */
 	public Set<ConflictWarning> getConflicts() {

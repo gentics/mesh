@@ -376,6 +376,35 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
+	public void testReadUserRoleWithMultipleGroups() {
+		try (Tx tx = tx()) {
+			User user = user();
+
+			assertEquals(1, user.getGroups().count());
+
+			Group extraGroup = meshRoot().getGroupRoot().create("extra_group", user);
+
+			extraGroup.addRole(role());
+			extraGroup.addUser(user);
+
+			 assertEquals(2, user.getGroups().count());
+
+			tx.success();
+		}
+
+		UserResponse response = call(() -> client().findUserByUuid(userUuid()));
+
+		// Both groups have the same roles, so we only want to get one.
+		assertEquals(1, response.getRoles().size());
+
+		// Add another role to one of the groups.
+		grantAdminRole();
+
+		response = call(() -> client().findUserByUuid(userUuid()));
+		assertEquals(2, response.getRoles().size());
+	}
+
+	@Test
 	@Override
 	public void testReadByUuidMultithreaded() throws InterruptedException {
 		try (Tx tx = tx()) {
