@@ -285,6 +285,15 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMigrateByESFieldNull() {
+		assertFieldEsSettingUpdateForValue(null);
+	}
+
+	@Test
+	public void testMigrateByESFieldEmpty() {
+		assertFieldEsSettingUpdateForValue(new JsonObject());
+	}
+
+	private void assertFieldEsSettingUpdateForValue(JsonObject value) {
 		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
 		SchemaResponse beforeSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 		assertEquals("1.0", beforeSchema.getVersion());
@@ -300,13 +309,14 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		});
 		SchemaUpdateRequest request = JsonUtil.readValue(schemaModel.toJson(), SchemaUpdateRequest.class);
 		waitForJobs(() -> {
-			request.getField("slug").setElasticsearch(null);
+			request.getField("slug").setElasticsearch(value);
 			call(() -> client().updateSchema(schemaUuid, request));
 		}, COMPLETED, 1);
 
 		SchemaResponse afterSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 		assertEquals("2.0", afterSchema.getVersion());
-		assertEquals("The ES setting of the slug field should have been set to {}.", new JsonObject(), afterSchema.getField("slug").getElasticsearch());
+		assertEquals("The ES setting of the slug field should have been set to empty json.", new JsonObject(),
+			afterSchema.getField("slug").getElasticsearch());
 
 	}
 

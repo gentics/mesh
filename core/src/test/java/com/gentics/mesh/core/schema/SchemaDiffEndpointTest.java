@@ -111,15 +111,25 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 		SchemaChangesListModel changes = call(() -> client().diffSchema(schemaUuid, request));
 		assertThat(changes.getChanges()).hasSize(1);
 		SchemaChangeModel change = changes.getChanges().get(0);
-		assertThat(change).is(UPDATEFIELD).forField("slug").hasProperty("elasticsearch", setting.toString());
+		System.out.println(change.toJson());
+		assertThat(change).is(UPDATEFIELD).forField("slug").hasProperty("elasticsearch", setting);
 	}
 
 	/**
-	 * Diff the schema field with a schema field which sets the elasticsearch setting to null.
-	 * Internally that should be transformed to set the setting to empty json object.
+	 * Diff the schema field with a schema field which sets the elasticsearch setting to null. Internally that should be transformed to set the setting to empty
+	 * json object.
 	 */
 	@Test
 	public void testESFieldNullDiff() {
+		assertESHandlingForValue(null);
+	}
+
+	@Test
+	public void testESFieldNullDiff2() {
+		assertESHandlingForValue(new JsonObject());
+	}
+
+	private void assertESHandlingForValue(JsonObject newValueForSetting) {
 		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
 
 		// Add elasticsearch setting to content field
@@ -135,12 +145,14 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 		// Diff with es setting in field set to null
 		Schema request = getSchema();
 		FieldSchema field = request.getField("slug");
-		field.setElasticsearch(null);
+		field.setElasticsearch(newValueForSetting);
 		SchemaChangesListModel changes = call(() -> client().diffSchema(schemaUuid, request));
 
 		assertThat(changes.getChanges()).hasSize(1);
 		SchemaChangeModel change = changes.getChanges().get(0);
+		System.out.println(change.toJson());
 		assertThat(change).is(UPDATEFIELD).forField("slug").hasProperty("elasticsearch", new LinkedHashMap<>());
+
 	}
 
 	@Test

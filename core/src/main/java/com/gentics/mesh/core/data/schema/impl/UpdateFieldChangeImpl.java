@@ -57,13 +57,7 @@ public class UpdateFieldChangeImpl extends AbstractSchemaFieldChange implements 
 			key = key.replace(REST_PROPERTY_PREFIX_KEY, "");
 			properties.put(key, value);
 		}
-
-		// .elasticsearch
-		JsonObject options = getIndexOptions();
-		if (options != null) {
-			fieldSchema.setElasticsearch(options);
-		}
-
+	
 		fieldSchema.apply(properties);
 		return container;
 	}

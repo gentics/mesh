@@ -9,12 +9,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.Map;
 
 import org.assertj.core.api.AbstractAssert;
 
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
+
+import io.vertx.core.json.JsonObject;
 
 public class SchemaChangeModelAssert extends AbstractAssert<SchemaChangeModelAssert, SchemaChangeModel> {
 
@@ -66,7 +69,8 @@ public class SchemaChangeModelAssert extends AbstractAssert<SchemaChangeModelAss
 			}
 			values += "}";
 			assertArrayEquals("The value for the given property did not match the expected one." + values, (Object[]) value, (Object[]) actualValue);
-
+		} else if (value instanceof JsonObject) {
+			assertEquals("The value for the given property did not match the expected one.", ((JsonObject)value).encode(), new JsonObject((Map)actual.getProperties().get(key)).encode());
 		} else {
 			assertEquals("The value for the given property did not match the expected one.", value, actual.getProperties().get(key));
 		}
