@@ -7,8 +7,8 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.UserImpl;
@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.root.impl.UserRootImpl;
 import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.google.common.collect.Sets;
 import com.syncleus.ferma.tx.Tx;
 
 /**
@@ -57,29 +58,26 @@ public class UserCheck extends AbstractConsistencyCheck {
 
 	private void assertShortcutRoleEdges(User user, ConsistencyCheckResult result) {
 		String uuid = user.getUuid();
-
+		Set<Role> roles = user.getGroups().stream()
+			.flatMap(g -> g.getRoles().stream())
+			.collect(Collectors.toSet());
 		Set<Role> shortCutRoles = new HashSet<>();
+
 		for (Role role : user.getRolesViaShortcut()) {
 			shortCutRoles.add(role);
 		}
 
-		for (Group group : user.getGroups()) {
-			for (Role role : group.getRoles()) {
-				if (!shortCutRoles.contains(role)) {
-					result.addInconsistency(
-						"The user's shortcut role edges do not match up with the currently configured groups/roles. Missing role {"
-							+ role.getUuid() + "}",
-						uuid, HIGH);
-				} else {
-					shortCutRoles.remove(role);
-				}
-			}
+		String missingShortcutMsg = "The user's shortcut role edges do not match up with the currently configured "
+			+ "groups/roles. Missing shortcut role {%s}";
+		String extraShortcutMsg = "Found shortcut role edge for role {%s} which should not exist for the user.";
+
+		for (Role role : Sets.difference(roles, shortCutRoles)) {
+			result.addInconsistency(String.format(missingShortcutMsg, role.getUuid()), uuid, HIGH);
 		}
 
-		for (Role role : shortCutRoles) {
-			result.addInconsistency("Found shortcut role edge for role {" + role.getUuid() + "} which should not exist for the user.", uuid, HIGH);
+		for (Role role : Sets.difference(shortCutRoles, roles)) {
+			result.addInconsistency(String.format(extraShortcutMsg, role.getUuid()), uuid, HIGH);
 		}
-
 	}
 
 }
