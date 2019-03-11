@@ -3,7 +3,7 @@ package com.gentics.mesh.pub;
 import javax.inject.Inject;
 
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.PublicHttpServerConfig;
+import com.gentics.mesh.etc.config.MetricsConfig;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
@@ -14,22 +14,22 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.impl.RouterImpl;
 
-public class PublicAPIVerticle extends AbstractVerticle {
+public class MetricsServerVerticle extends AbstractVerticle {
 
-	private static final Logger log = LoggerFactory.getLogger(PublicAPIVerticle.class);
+	private static final Logger log = LoggerFactory.getLogger(MetricsServerVerticle.class);
 
 	protected HttpServer server;
 
 	private final MeshOptions options;
 
 	@Inject
-	public PublicAPIVerticle(MeshOptions options) {
+	public MetricsServerVerticle(MeshOptions options) {
 		this.options = options;
 	}
 
 	@Override
 	public void start(Future<Void> startFuture) throws Exception {
-		PublicHttpServerConfig config = options.getPublicHttpServerOptions();
+		MetricsConfig config = options.getMetricsOptions();
 
 		int port = config.getPort();
 		String host = config.getHost();

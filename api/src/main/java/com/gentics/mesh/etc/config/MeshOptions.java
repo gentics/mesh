@@ -52,8 +52,8 @@ public class MeshOptions implements Option {
 	private HttpServerConfig httpServerOptions = new HttpServerConfig();
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Http public server options.")
-	private PublicHttpServerConfig publicHttpServerOptions = new PublicHttpServerConfig();
+	@JsonPropertyDescription("Metrics server options.")
+	private MetricsConfig metricsOptions = new MetricsConfig();
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Vert.x specific options.")
@@ -211,18 +211,18 @@ public class MeshOptions implements Option {
 		this.httpServerOptions = httpServerOptions;
 	}
 
-	@JsonProperty("publicHttpServer")
-	public PublicHttpServerConfig getPublicHttpServerOptions() {
-		return publicHttpServerOptions;
+	@JsonProperty("metrics")
+	public MetricsConfig getMetricsOptions() {
+		return metricsOptions;
 	}
 
 	/**
-	 * Set the public http server options.
+	 * Set the metrics options.
 	 * 
-	 * @param publicHttpServerOptions
+	 * @param metricsOptions
 	 */
-	public void setPublicHttpServerOptions(PublicHttpServerConfig publicHttpServerOptions) {
-		this.publicHttpServerOptions = publicHttpServerOptions;
+	public void setMetricsOptions(MetricsConfig metricsOptions) {
+		this.metricsOptions = metricsOptions;
 	}
 
 	public VertxOptions getVertxOptions() {
