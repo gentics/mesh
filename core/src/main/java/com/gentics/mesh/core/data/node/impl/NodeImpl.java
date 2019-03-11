@@ -129,6 +129,7 @@ import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.syncleus.ferma.tx.Tx;
+import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -1485,9 +1486,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		GraphPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
 		if (languageTags == null) {
-			return new DynamicTransformablePageImpl<>(ac.getUser(), indexName, indexKey, NodeImpl.class, pagingInfo, perm, null, true);
+			return new DynamicTransformablePageImpl<>(ac.getUser(), indexName, indexKey, Direction.OUT, NodeImpl.class, pagingInfo, perm, null, true);
 		} else {
-			return new DynamicTransformablePageImpl<>(ac.getUser(), indexName, indexKey, NodeImpl.class, pagingInfo, perm, (item) -> {
+			return new DynamicTransformablePageImpl<>(ac.getUser(), indexName, indexKey, Direction.OUT, NodeImpl.class, pagingInfo, perm, (item) -> {
 				// Filter out nodes which do not provide one of the specified language tags and type
 				for (String languageTag : languageTags) {
 					if (item.getGraphFieldContainerEdge(languageTag, branchUuid, type) != null) {

@@ -221,13 +221,14 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public TraversalResult<? extends Role> getRolesViaShortcut() {
+		// TODO Use shortcut index.
 		return new TraversalResult<>(out(ASSIGNED_TO_ROLE).frameExplicit(RoleImpl.class));
 	}
 
 	@Override
 	public Page<? extends Role> getRolesViaShortcut(User user, PagingParameters params) {
-		VertexTraversal<?, ?, ?> traversal = out(ASSIGNED_TO_ROLE);
-		return new DynamicTransformablePageImpl<Role>(user, traversal, params, READ_PERM, RoleImpl.class);
+		String indexName = "e." + ASSIGNED_TO_ROLE + "_out";
+		return new DynamicTransformablePageImpl<>(user, indexName.toLowerCase(), id(), Direction.IN, RoleImpl.class, params, READ_PERM, null, true);
 	}
 
 	@Override
