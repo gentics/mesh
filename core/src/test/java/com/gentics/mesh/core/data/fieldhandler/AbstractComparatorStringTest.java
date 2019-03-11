@@ -85,7 +85,7 @@ public abstract class AbstractComparatorStringTest<C extends FieldSchemaContaine
 		changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).hasSize(1);
 		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasProperty(REQUIRED_KEY, true).hasProperty(ELASTICSEARCH_KEY, IndexOptionHelper
-				.getRawFieldOption().encode());
+				.getRawFieldOption());
 		assertThat(changes.get(0).getProperties()).hasSize(3);
 
 		// allow property:

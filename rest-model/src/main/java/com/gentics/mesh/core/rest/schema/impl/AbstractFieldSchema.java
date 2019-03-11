@@ -172,7 +172,7 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 		map.put(LABEL_KEY, getLabel());
 		map.put(REQUIRED_KEY, isRequired());
 		// empty object and null/missing should be treated the same
-		map.put(ELASTICSEARCH_KEY, getElasticsearch() == null || getElasticsearch().size() == 0 ? null : getElasticsearch().encode());
+		map.put(ELASTICSEARCH_KEY, getElasticsearch() == null || getElasticsearch().size() == 0 ? new JsonObject() : getElasticsearch());
 		return map;
 	}
 
