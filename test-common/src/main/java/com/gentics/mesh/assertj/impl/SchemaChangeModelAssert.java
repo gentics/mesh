@@ -8,7 +8,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.assertj.core.api.AbstractAssert;
 
@@ -70,7 +72,11 @@ public class SchemaChangeModelAssert extends AbstractAssert<SchemaChangeModelAss
 			assertArrayEquals("The value for the given property did not match the expected one." + values, (Object[]) value, (Object[]) actualValue);
 		} else if (value instanceof JsonObject) {
 			Object current = actual.getProperties().get(key);
-			assertEquals("The value for the given property did not match the expected one.", ((JsonObject)value).encode(), ((JsonObject)current).encode());
+			if (current instanceof LinkedHashMap) {
+				current = new JsonObject((Map) current);
+			}
+			assertEquals("The value for the given property did not match the expected one.", ((JsonObject) value).encode(),
+				((JsonObject) current).encode());
 		} else {
 			Object current = actual.getProperties().get(key);
 			assertEquals("The value for the given property did not match the expected one.", value, current);
