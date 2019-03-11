@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.role.RoleReference;
 
 /**
  * POJO for user response model.
@@ -43,12 +44,16 @@ public class UserResponse extends AbstractGenericRestResponse {
 	@JsonPropertyDescription("List of group references to which the user belongs.")
 	private List<GroupReference> groups = new ArrayList<>();
 
+	@JsonProperty
+	@JsonPropertyDescription("List of role references to which the user belongs.")
+	private List<RoleReference> roles;
+
 	public UserResponse() {
 	}
 
 	/**
 	 * Return the lastname of the user.
-	 * 
+	 *
 	 * @return Lastname of the user
 	 */
 	public String getLastname() {
@@ -57,7 +62,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Set the lastname of the user.
-	 * 
+	 *
 	 * @param lastname
 	 *            Lastname of the user
 	 * @return Fluent API
@@ -69,7 +74,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Return the firstname.
-	 * 
+	 *
 	 * @return Firstname of the user
 	 */
 	public String getFirstname() {
@@ -78,7 +83,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Set the firstname.
-	 * 
+	 *
 	 * @param firstname
 	 *            Firstname of the user
 	 * @return Fluent API
@@ -90,7 +95,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Returns the email address.
-	 * 
+	 *
 	 * @return Email address of the user
 	 */
 	public String getEmailAddress() {
@@ -99,7 +104,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Set the email address.
-	 * 
+	 *
 	 * @param emailAddress
 	 *            Email address of the user
 	 * @return Fluent API
@@ -111,7 +116,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Return the username.
-	 * 
+	 *
 	 * @return Username of the user
 	 */
 	public String getUsername() {
@@ -120,7 +125,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Set the username.
-	 * 
+	 *
 	 * @param username
 	 *            Username of the user
 	 * @return Fluent API
@@ -132,7 +137,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Returns the group references of the user.
-	 * 
+	 *
 	 * @return List of group references of the user.
 	 */
 	public List<GroupReference> getGroups() {
@@ -140,8 +145,41 @@ public class UserResponse extends AbstractGenericRestResponse {
 	}
 
 	/**
+	 * Set the groups.
+	 *
+	 * @param groups
+	 *            Groups of the user
+	 * @return Fluent API
+	 */
+	public UserResponse setGroups(List<GroupReference> groups) {
+		this.groups = groups;
+		return this;
+	}
+
+	/**
+	 * Returns the role references of the user.
+	 *
+	 * @return List of role references of the user.
+	 */
+	public List<RoleReference> getRoles() {
+		return roles;
+	}
+
+	/**
+	 * Set the roles.
+	 *
+	 * @param roles
+	 *            Roles of the user
+	 * @return Fluent API
+	 */
+	public UserResponse setRoles(List<RoleReference> roles) {
+		this.roles = roles;
+		return this;
+	}
+
+	/**
 	 * Return the node reference that was assigned to the user.
-	 * 
+	 *
 	 * @return Node reference or null if no reference has been set
 	 */
 	public ExpandableNode getNodeReference() {
@@ -170,7 +208,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Set the node reference to the user.
-	 * 
+	 *
 	 * @param nodeReference
 	 * @return Fluent API
 	 */
@@ -181,7 +219,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Set the expanded node response.
-	 * 
+	 *
 	 * @param nodeResponse
 	 * @return Fluent API
 	 */
@@ -192,7 +230,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Return the enabled flag for the user.
-	 * 
+	 *
 	 * @return Enabled flag
 	 */
 	public Boolean getEnabled() {
@@ -201,7 +239,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Set the enabled flag for the user.
-	 * 
+	 *
 	 * @param enabled
 	 *            Enabled flag
 	 * @return Fluent API

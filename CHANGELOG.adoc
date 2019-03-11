@@ -27,6 +27,12 @@ title: Changelog
 [[v0.30.3]]
 == 0.30.3 (TBD)
 
+icon:plus[] REST: The `/users` endpoint response will now contain all roles assigned to the loaded users.
+
+icon:plus[] GraphQL: The `roles` field is now available for user fields.
+
+icon:check[] Fixed a bug in the consistency checks which claimed missing user role shortcuts.
+
 icon:check[] Schema: A bug was fixed which prevented the update of the schema field `elasticsearch` property to value null.
 
 icon:plus[] Docker: Default memory settings for the server and demo docker images were added. Default for server is set to `-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m`. The setting can be changed using the `JAVA_TOOL_OPTIONS` environment variable. See link:https://getmesh.io/docs/administration-guide/#_memory_settings[Memory documentation] for more information.

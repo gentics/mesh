@@ -22,6 +22,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -220,7 +221,14 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public TraversalResult<? extends Role> getRolesViaShortcut() {
+		// TODO Use shortcut index.
 		return new TraversalResult<>(out(ASSIGNED_TO_ROLE).frameExplicit(RoleImpl.class));
+	}
+
+	@Override
+	public Page<? extends Role> getRolesViaShortcut(User user, PagingParameters params) {
+		String indexName = "e." + ASSIGNED_TO_ROLE + "_out";
+		return new DynamicTransformablePageImpl<>(user, indexName.toLowerCase(), id(), Direction.IN, RoleImpl.class, params, READ_PERM, null, true);
 	}
 
 	@Override
@@ -371,6 +379,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		if (fields.has("groups")) {
 			setGroups(ac, restUser);
 		}
+		if (fields.has("roles")) {
+			setRoles(ac, restUser);
+		}
 		fillCommonRestFields(ac, fields, restUser);
 		setRolePermissions(ac, restUser);
 
@@ -379,7 +390,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	/**
 	 * Set the groups to which the user belongs in the rest model.
-	 * 
+	 *
 	 * @param ac
 	 * @param restUser
 	 */
@@ -392,8 +403,18 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	/**
+	 * Set the roles the user has in the rest model.
+	 *
+	 * @param ac
+	 * @param restUser
+	 */
+	private void setRoles(InternalActionContext ac, UserResponse restUser) {
+		restUser.setRoles(getRolesViaShortcut().stream().map(Role::transformToReference).collect(Collectors.toList()));
+	}
+
+	/**
 	 * Add the node reference field to the user response (if required to).
-	 * 
+	 *
 	 * @param ac
 	 * @param restUser
 	 * @param level
@@ -492,7 +513,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	/**
 	 * Encode the given password and set the generated hash.
-	 * 
+	 *
 	 * @param password
 	 *            Plain password to be hashed and set
 	 * @return Fluent API
