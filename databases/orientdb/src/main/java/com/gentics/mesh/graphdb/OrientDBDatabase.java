@@ -936,6 +936,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public void reload(Element element) {
 		if (element instanceof OrientElement) {
+			metrics.getMetricRegistry().meter("reload").mark();
 			((OrientElement) element).reload();
 		}
 	}
