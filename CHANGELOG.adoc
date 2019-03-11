@@ -24,6 +24,10 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.30.3]]
+
+icon:plus[] Docker: Default memory settings for the server and demo docker images were added. Default for server is set to `-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m`. The setting can be changed using the `JAVA_TOOL_OPTIONS` environment variable. See link:https://getmesh.io/docs/administration-guide/#_memory_settings[Memory documentation] for more information.
+
 [[v0.30.2]]
 == 0.30.2 (28.02.2019)
 
