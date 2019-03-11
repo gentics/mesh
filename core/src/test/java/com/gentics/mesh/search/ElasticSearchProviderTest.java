@@ -57,7 +57,7 @@ public class ElasticSearchProviderTest extends AbstractMeshTest {
 	@Test
 	public void testVersion() {
 		ElasticSearchProvider provider = getProvider();
-		assertEquals("6.3.1", provider.getVersion());
+		assertEquals("6.6.1", provider.getVersion());
 	}
 
 	@Test
