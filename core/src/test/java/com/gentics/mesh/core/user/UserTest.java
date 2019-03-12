@@ -14,6 +14,7 @@ import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -527,6 +528,31 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			User user = meshRoot().getUserRoot().create("Anton", user());
 			testPermission(GraphPermission.CREATE_PERM, user);
+		}
+	}
+
+	@Test
+	public void testUserRolesHashes() {
+		try (Tx tz = tx()) {
+			User oldUser = user();
+			User newUser = meshRoot().getUserRoot().create("newuser", oldUser);
+			Group newGroup = meshRoot().getGroupRoot().create("newgroup", oldUser);
+
+			group().getRoles().forEach(newGroup::addRole);
+			newGroup.addUser(newUser);
+
+			// Both groups have the same roles, so the hashes must match.
+			assertEquals(oldUser.getRolesHash(), newUser.getRolesHash());
+
+			String hash = oldUser.getRolesHash();
+
+			// Add another role to the groups only oldUser is in.
+			grantAdminRole();
+
+			// The roles have changed for oldUser ...
+			assertNotEquals(hash, oldUser.getRolesHash());
+			// ... but NOT for newUser.
+			assertEquals(hash, newUser.getRolesHash());
 		}
 	}
 }

@@ -27,9 +27,11 @@ title: Changelog
 [[v0.30.3]]
 == 0.30.3 (TBD)
 
-icon:plus[] REST: The `/users` endpoint response will now contain all roles assigned to the loaded users.
+icon:plus[] REST: The `/users` endpoint response will now contain a hash of a users roles.
 
-icon:plus[] GraphQL: The `roles` field is now available for user fields.
+icon:plus[] GraphQL: The `roles` field is now available for user fields, and contains all roles of the respective user.
+
+icon:plus[] GraphQL: The `rolesHash` field is now available for user fields, and contains a hash of all the roles of the respective user. This field does not need any special permissions.
 
 icon:check[] Fixed a bug in the consistency checks which claimed missing user role shortcuts.
 

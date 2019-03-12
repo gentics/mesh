@@ -266,6 +266,13 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	User addGroup(Group group);
 
 	/**
+	 * A CRC32 hash of the users {@link #getRoles roles}.
+	 *
+	 * @return A hash of the users roles
+	 */
+	String getRolesHash();
+
+	/**
 	 * Return an iterable of roles which belong to this user. Internally this will fetch all groups of the user and collect the assigned roles.
 	 *
 	 * @return

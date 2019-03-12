@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.role.RoleReference;
 
 /**
  * POJO for user response model.
@@ -41,12 +40,12 @@ public class UserResponse extends AbstractGenericRestResponse {
 	private Boolean enabled;
 
 	@JsonProperty(required = true)
+	@JsonPropertyDescription("Hash of roles the user has.")
+	private String rolesHash;
+
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of group references to which the user belongs.")
 	private List<GroupReference> groups = new ArrayList<>();
-
-	@JsonProperty
-	@JsonPropertyDescription("List of role references to which the user belongs.")
-	private List<RoleReference> roles;
 
 	public UserResponse() {
 	}
@@ -133,6 +132,27 @@ public class UserResponse extends AbstractGenericRestResponse {
 	public UserResponse setUsername(String username) {
 		this.username = username;
 		return this;
+
+	}
+	/**
+	 * Returns a hash of the users roles.
+	 *
+	 * @return A hash of the users roles
+	 */
+	public String getRolesHash() {
+		return rolesHash;
+	}
+
+	/**
+	 * Set the hash of the users roles.
+	 *
+	 * @param rolesHash
+	 *            Hash of the users roles
+	 * @return Fluent API
+	 */
+	public UserResponse setRolesHash(String rolesHash) {
+		this.rolesHash = rolesHash;
+		return this;
 	}
 
 	/**
@@ -153,27 +173,6 @@ public class UserResponse extends AbstractGenericRestResponse {
 	 */
 	public UserResponse setGroups(List<GroupReference> groups) {
 		this.groups = groups;
-		return this;
-	}
-
-	/**
-	 * Returns the role references of the user.
-	 *
-	 * @return List of role references of the user.
-	 */
-	public List<RoleReference> getRoles() {
-		return roles;
-	}
-
-	/**
-	 * Set the roles.
-	 *
-	 * @param roles
-	 *            Roles of the user
-	 * @return Fluent API
-	 */
-	public UserResponse setRoles(List<RoleReference> roles) {
-		this.roles = roles;
 		return this;
 	}
 

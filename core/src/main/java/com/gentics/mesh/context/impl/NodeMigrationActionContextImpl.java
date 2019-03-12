@@ -286,6 +286,11 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
+			public String getRolesHash() {
+				return null;
+			}
+
+			@Override
 			public List<? extends Role> getRoles() {
 				return Collections.emptyList();
 			}
