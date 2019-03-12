@@ -40,6 +40,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -1361,6 +1363,6 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testUserRolesHash() {
 		UserResponse response = call(() -> client().findUserByUuid(user().getUuid()));
 
-		assertNotNull("Roles hash should be in response", response.getRolesHash());
+		assertTrue("Roles hash should be in response", !StringUtils.isBlank(response.getRolesHash()));
 	}
 }
