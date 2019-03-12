@@ -157,10 +157,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 		}
 	}
 
-	public OrientDBDatabase() {
-		this(null);
-	}
-
 	@Override
 	public void stop() {
 		// // TODO let other nodes know we are stopping the instance?

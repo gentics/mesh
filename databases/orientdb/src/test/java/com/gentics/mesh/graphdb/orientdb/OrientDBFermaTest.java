@@ -9,7 +9,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.orientdb.graph.Group;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -26,7 +25,7 @@ public class OrientDBFermaTest extends AbstractOrientDBTest {
 
 	private final static int nMembers = 2000;
 
-	private Database db = new OrientDBDatabase();
+	private Database db = mockDatabase();
 
 	@Before
 	public void setup() throws Exception {
