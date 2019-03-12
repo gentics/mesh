@@ -5,24 +5,79 @@ title: Monitoring
 :icons: font
 :source-highlighter: prettify
 
-Gentics Mesh exposed monitoring data via an un-authenticated monitoring server. In addition to the default API server which runs on default port 8080 an additional monitoring server will be started which listens on localhost:8081 by default.
+Gentics Mesh exposed monitoring data via an un-authenticated monitoring server. In addition to the default API server which runs on default port `8080` an additional monitoring server will be started which listens on `localhost:8081` by default.
 
-NOTE: The monitoring server is un-authenticated and thus should not be exposed to the public. By default it will only bind to `localhost:8080`.
+NOTE: The monitoring server is un-authenticated and thus should not be exposed to the public. By default it will only bind to `localhost:8081`.
+
+## Configuration
+
+The network settings for the monitoring server can be configured within the `mesh.yml` or via link:{{< relref "administration-guide.asciidoc" >}}#_environment_variables[environment settings].
+
+The montoring server can also be turned off via the `enabled` flag.
+
+.mesh.yml
+[source,yaml]
+----
+…
+monitoring:
+  enabled: true
+  port: 8081
+  host: "127.0.0.1"
+----
 
 ## Endpoints
 
 
 ### Liveness Probe
 
-The healthcheck liveness probe endpoint `GET /health/live` indicates if server is working as expected.
+The healthcheck liveness probe endpoint `GET /api/v1/health/live` indicates if server is working as expected when status code `200` is returned.
 
-### Readiness probe
+### Readiness Probe
 
-The readines probe endpoint `GET /health/ready` returns 200 if the server is accepting connections. This endpoint can be used to check when the server instance if ready to accept requests once it has been started. This is especially useful if you run rolling cluster upgrades.
+The readines probe endpoint `GET /api/v1/health/ready` returns status code `200` if the server is accepting connections. This endpoint can be used to check when the server instance if ready to accept requests once it has been started. This is especially useful if you run rolling cluster upgrades.
 
-### Prometheus Probe
+### Status
 
-Gentics Mesh server exposes Prometheus compatible data on the `/metrics` endpoint.
+The current Gentics Mesh server status can be checked against the `GET /api/v1/status`.
+
+[options="header",cols="2*"]
+|======
+
+| Status
+| Description
+
+| **STARTING**
+| Status which indicates that the server is starting up.
+
+| **WAITING_FOR_CLUSTER**
+| Status which indicates that the server is waiting/looking for a cluster to join.
+
+|	**READY**
+|	Status which indicates that the server is operating normally.
+
+| **SHUTTING_DOWN**
+| Status which indicates that the instance is shutting down.
+
+|	**BACKUP**
+|	Status which indicates that a blocking backup is currently running.
+
+|	**RESTORE**
+|	Status which indicates that a blocking restore operation is currently running.
+
+|======
+
+
+### Cluster Status
+
+The `GET /api/v1/cluster/status` endpoint returns the status of all cluster nodes to which the queries instance has establishes a connection.
+
+### Version Info
+
+The version information can be retrieved via the `GET /api/v1/versions` endpoint.
+
+### Prometheus Metrics
+
+Gentics Mesh server exposes Prometheus compatible data on the `/api/v1/metrics` endpoint.
 
 You need to configure Prometheus to scrape data from this endpoint.
 
@@ -37,13 +92,15 @@ scrape_configs:
     scrape_interval: 30s
     metrics_path: '/api/v1/metrics'
     static_configs:
-        - targets: ['172.17.0.1:9999']
+        - targets: ['mesh:8081']
 …
 ----
 
 
 ### Metrics
 
+Gentics Mesh exposes the following metrics in addition to the default link:https://vertx.io/docs/vertx-dropwizard-metrics/java/#_the_metrics[Vert.x metrics].
+More metrics will be added over time.
 
 [options="header",cols="2*"]
 |======

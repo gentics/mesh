@@ -12,7 +12,6 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.impl.RouterImpl;
 
 public class MonitoringServerVerticle extends AbstractVerticle {
 
@@ -21,7 +20,7 @@ public class MonitoringServerVerticle extends AbstractVerticle {
 	protected HttpServer server;
 
 	private final MeshOptions options;
-	
+
 	private MonitoringRoutes routes;
 
 	@Inject

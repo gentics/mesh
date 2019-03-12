@@ -28,8 +28,6 @@ public class MonitoringRoutes {
 
 	private static final Logger log = LoggerFactory.getLogger(MonitoringRoutes.class);
 
-	private final Vertx vertx;
-
 	private final RouterImpl router;
 
 	private final RouterImpl apiRouter;
@@ -40,7 +38,6 @@ public class MonitoringRoutes {
 
 	@Inject
 	public MonitoringRoutes(Vertx vertx, MetricsHandler metrics, AdminHandler adminHandler) {
-		this.vertx = vertx;
 		this.router = new RouterImpl(vertx);
 		this.apiRouter = new RouterImpl(vertx);
 		router.mountSubRouter("/api/v1", apiRouter);
