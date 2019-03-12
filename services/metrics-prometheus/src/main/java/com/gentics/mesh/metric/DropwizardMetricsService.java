@@ -29,7 +29,7 @@ public class DropwizardMetricsService implements MetricsService {
 	}
 
 	private MetricRegistry setupRegistry() {
-		MetricRegistry metricRegistry = SharedMetricRegistries.getOrCreate("exported");
+		MetricRegistry metricRegistry = SharedMetricRegistries.getOrCreate("mesh");
 		registry.register(new DropwizardExports(metricRegistry));
 		return metricRegistry;
 	}

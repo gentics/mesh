@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING;
+import static com.gentics.mesh.metric.Metrics.NODE_MIGRATION_PENDING;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,6 +32,8 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.metric.ResettableCounter;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.common.collect.Lists;
@@ -49,9 +52,12 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeMigrationHandler.class);
 
+	private final ResettableCounter migrationCounter;
+
 	@Inject
-	public NodeMigrationHandler(Database db, SearchQueue searchQueue, BinaryFieldHandler nodeFieldAPIHandler) {
-		super(db, searchQueue, nodeFieldAPIHandler);
+	public NodeMigrationHandler(Database db, SearchQueue searchQueue, BinaryFieldHandler nodeFieldAPIHandler, MetricsService metrics) {
+		super(db, searchQueue, nodeFieldAPIHandler, metrics);
+		migrationCounter = metrics.resetableCounter(NODE_MIGRATION_PENDING);
 	}
 
 	/**
@@ -101,6 +107,9 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			return Lists.newArrayList(it);
 		});
 
+		migrationCounter.reset();
+		migrationCounter.inc(containers.size());
+
 		// No field containers, migration is done
 		if (containers.isEmpty()) {
 			if (status != null) {
@@ -112,9 +121,10 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			return Completable.complete();
 		}
 
-		List<Exception> errorsDetected = migrateLoop(containers, status, (batch, container, errors) ->
-			migrateContainer(ac, batch, container, toVersion, migrationScripts, branch, newSchema, errors, touchedFields)
-		);
+		List<Exception> errorsDetected = migrateLoop(containers, status, (batch, container, errors) -> {
+			migrateContainer(ac, batch, container, toVersion, migrationScripts, branch, newSchema, errors, touchedFields);
+			migrationCounter.dec();
+		});
 
 		// TODO prepare errors. They should be easy to understand and to grasp
 		Completable result = Completable.complete();

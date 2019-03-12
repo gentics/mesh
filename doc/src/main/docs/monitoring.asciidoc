@@ -1,0 +1,70 @@
+---
+title: Monitoring
+---
+
+:icons: font
+:source-highlighter: prettify
+
+Gentics Mesh exposed monitoring data via an un-authenticated monitoring server. In addition to the default API server which runs on default port 8080 an additional monitoring server will be started which listens on localhost:8081 by default.
+
+NOTE: The monitoring server is un-authenticated and thus should not be exposed to the public. By default it will only bind to `localhost:8080`.
+
+## Endpoints
+
+
+### Liveness Probe
+
+The healthcheck liveness probe endpoint `GET /health/live` indicates if server is working as expected.
+
+### Readiness probe
+
+The readines probe endpoint `GET /health/ready` returns 200 if the server is accepting connections. This endpoint can be used to check when the server instance if ready to accept requests once it has been started. This is especially useful if you run rolling cluster upgrades.
+
+### Prometheus Probe
+
+Gentics Mesh server exposes Prometheus compatible data on the `/metrics` endpoint.
+
+You need to configure Prometheus to scrape data from this endpoint.
+
+Example Prometheus configuration:
+
+.prometheus.yml
+[source,yaml]
+----
+…
+scrape_configs:
+  - job_name: 'mesh'
+    scrape_interval: 30s
+    metrics_path: '/api/v1/metrics'
+    static_configs:
+        - targets: ['172.17.0.1:9999']
+…
+----
+
+
+### Metrics
+
+
+[options="header",cols="2*"]
+|======
+
+| Key
+| Description
+
+| mesh.tx.created
+| Meter which measures the rate of created transactions over time.
+
+| mesh.notx.created
+| Meter which measures the rate of created noTx transactions over time.
+
+| mesh.tx.time
+| Timer which tracks transaction durations.
+
+| mesh.tx.retry
+| Amount of transaction retries which happen if a conflict has been encountered.
+
+|	mesh.node_migration.pending
+| Pending contents which need to be processed by the node migration.
+
+|======
+

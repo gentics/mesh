@@ -1,0 +1,34 @@
+package com.gentics.mesh.metric;
+
+/**
+ * Metrics which are used across Gentics Mesh. 
+ */
+public enum Metrics {
+
+	TX("tx.created", "Meter which measures the rate of created transactions over time."),
+
+	NO_TX("notx.created", "Meter which measures the rate of created noTx transactions over time."),
+
+	TX_TIME("tx.time", "Timer which tracks transaction durations."),
+
+	TX_RETRY("tx.retry", "Amount of transaction retries which happen if a conflict has been encountered."),
+
+	NODE_MIGRATION_PENDING("node_migration.pending", "Pending contents which need to be processed by the node migration.");
+
+	private String key;
+
+	private String description;
+
+	private Metrics(String key, String description) {
+		this.key = key;
+		this.description = description;
+	}
+
+	public String key() {
+		return "mesh." + key;
+	}
+
+	public String description() {
+		return description;
+	}
+}

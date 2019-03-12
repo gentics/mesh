@@ -32,8 +32,6 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 
 	private PluginHandler pluginHandler;
 
-	private MetricsHandler metricsHandler;
-
 	@Inject
 	public AdminEndpoint(MeshAuthChain chain,
 		AdminHandler adminHandler,
@@ -46,7 +44,6 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		this.jobHandler = jobHandler;
 		this.consistencyHandler = consistencyHandler;
 		this.pluginHandler = pluginHandler;
-		this.metricsHandler = metricsHandler;
 	}
 
 	public AdminEndpoint() {
@@ -75,7 +72,6 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		// addServiceHandler();
 		addJobHandler();
 		addPluginHandler();
-		addMetricsHandler();
 	}
 
 	private void addPluginHandler() {
@@ -128,6 +124,10 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		});
 	}
 
+	/**
+	 * @deprecated Use monitoring server endpoint instead
+	 */
+	@Deprecated 
 	private void addClusterStatusHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/cluster/status");
@@ -217,7 +217,9 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 
 	/**
 	 * Handler that reacts onto status requests.
+	 * @deprecated Use monitoring server status endpoint instead
 	 */
+	@Deprecated
 	private void addMeshStatusHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.description("Return the Gentics Mesh server status.");
@@ -293,15 +295,5 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		});
 	}
 
-	public void addMetricsHandler() {
-		InternalEndpointRoute metrics = createRoute();
-		metrics.path("/metrics");
-		metrics.method(GET);
-		metrics.description("Returns the stored system metrics.");
-		metrics.blockingHandler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			metricsHandler.handleMetrics(ac);
-		});
-	}
 
 }

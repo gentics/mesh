@@ -990,11 +990,6 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<String> metrics() {
-		return prepareRequest(GET, "/admin/metrics", String.class);
-	}
-
-	@Override
 	public MeshRequest<MeshStatusResponse> meshStatus() {
 		return prepareRequest(GET, "/admin/status", MeshStatusResponse.class);
 	}

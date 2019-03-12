@@ -1,6 +1,8 @@
 package com.gentics.mesh.graphdb.tx;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.metric.Metrics.NO_TX;
+import static com.gentics.mesh.metric.Metrics.TX;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
 import java.io.File;
@@ -14,7 +16,9 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.codahale.metrics.Meter;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.metric.MetricsService;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.tinkerpop.blueprints.Vertex;
@@ -29,10 +33,18 @@ public abstract class AbstractOrientStorage implements OrientStorage {
 
 	protected DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SSS");
 
+	protected MetricsService metrics;
+
 	protected MeshOptions options;
 
-	public AbstractOrientStorage(MeshOptions options) {
+	protected final Meter txCouter;
+
+	protected final Meter noTxCouter;
+
+	public AbstractOrientStorage(MeshOptions options, MetricsService metrics) {
 		this.options = options;
+		txCouter = metrics.meter(TX);
+		noTxCouter = metrics.meter(NO_TX);
 	}
 
 	public MeshOptions getOptions() {

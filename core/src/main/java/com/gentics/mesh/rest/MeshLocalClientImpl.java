@@ -1485,11 +1485,6 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<String> metrics() {
-		return null;
-	}
-
-	@Override
 	public MeshRequest<JobListResponse> findJobs(PagingParameters... parameters) {
 		return null;
 	}

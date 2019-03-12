@@ -21,16 +21,20 @@ import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
+import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.search.SearchProvider;
 import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -50,12 +54,15 @@ public class AdminHandler extends AbstractHandler {
 
 	private final MeshOptions options;
 
+	private final SearchProvider searchProvider;
+
 	@Inject
-	public AdminHandler(Database db, RouterStorage routerStorage, BootstrapInitializer boot, MeshOptions options) {
+	public AdminHandler(Database db, RouterStorage routerStorage, BootstrapInitializer boot, MeshOptions options, SearchProvider searchProvider) {
 		this.db = db;
 		this.routerStorage = routerStorage;
 		this.boot = boot;
 		this.options = options;
+		this.searchProvider = searchProvider;
 	}
 
 	public void handleMeshStatus(InternalActionContext ac) {
@@ -178,16 +185,29 @@ public class AdminHandler extends AbstractHandler {
 
 	public void handleClusterStatus(InternalActionContext ac) {
 		db.asyncTx(() -> {
-			if (!ac.getUser().hasAdminRole()) {
+			MeshAuthUser user = ac.getUser();
+			if (user != null && !user.hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-
 			if (options.getClusterOptions() != null && options.getClusterOptions().isEnabled()) {
 				return Single.just(db.getClusterStatus());
 			} else {
 				throw error(BAD_REQUEST, "error_cluster_status_only_aviable_in_cluster_mode");
 			}
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
+	}
+
+	public void handleVersions(InternalActionContext ac) {
+		MeshServerInfoModel info = new MeshServerInfoModel();
+		info.setDatabaseVendor(db.getVendorName());
+		info.setDatabaseVersion(db.getVersion());
+		info.setSearchVendor(searchProvider.getVendorName());
+		info.setSearchVersion(searchProvider.getVersion());
+		info.setMeshVersion(Mesh.getPlainVersion());
+		info.setMeshNodeName(Mesh.mesh().getOptions().getNodeName());
+		info.setVertxVersion(VersionCommand.getVersion());
+		info.setDatabaseRevision(db.getDatabaseRevision());
+		ac.send(info, OK);
 	}
 
 }

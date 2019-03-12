@@ -53,7 +53,7 @@ public class MeshOptions implements Option {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Metrics server options.")
-	private MetricsConfig metricsOptions = new MetricsConfig();
+	private MonitoringConfig monitoringOptions = new MonitoringConfig();
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Vert.x specific options.")
@@ -211,18 +211,18 @@ public class MeshOptions implements Option {
 		this.httpServerOptions = httpServerOptions;
 	}
 
-	@JsonProperty("metrics")
-	public MetricsConfig getMetricsOptions() {
-		return metricsOptions;
+	@JsonProperty("monitoring")
+	public MonitoringConfig getMonitoringOptions() {
+		return monitoringOptions;
 	}
 
 	/**
-	 * Set the metrics options.
+	 * Set the monitoring options.
 	 * 
-	 * @param metricsOptions
+	 * @param monitoringOptions
 	 */
-	public void setMetricsOptions(MetricsConfig metricsOptions) {
-		this.metricsOptions = metricsOptions;
+	public void setMonitoringOptions(MonitoringConfig monitoringOptions) {
+		this.monitoringOptions = monitoringOptions;
 	}
 
 	public VertxOptions getVertxOptions() {

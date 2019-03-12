@@ -4,6 +4,10 @@ import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.graphdb.FieldTypeMapper.toSubType;
 import static com.gentics.mesh.graphdb.FieldTypeMapper.toType;
+import static com.gentics.mesh.metric.Metrics.NO_TX;
+import static com.gentics.mesh.metric.Metrics.TX;
+import static com.gentics.mesh.metric.Metrics.TX_RETRY;
+import static com.gentics.mesh.metric.Metrics.TX_TIME;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -31,6 +35,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.Timer;
 import com.gentics.mesh.changelog.Change;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -137,9 +144,15 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private final MetricsService metrics;
 
+	private final Timer txTimer;
+
+	private final Counter txRetryCounter;
+
 	@Inject
 	public OrientDBDatabase(MetricsService metrics) {
 		this.metrics = metrics;
+		txTimer = metrics.timer(TX_TIME);
+		txRetryCounter = metrics.counter(TX_RETRY);
 	}
 
 	public OrientDBDatabase() {
@@ -251,9 +264,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 */
 	private void initGraphDB() {
 		if (server != null && server.isActive()) {
-			txProvider = new OrientServerStorageImpl(options, server.getContext());
+			txProvider = new OrientServerStorageImpl(options, server.getContext(), metrics);
 		} else {
-			txProvider = new OrientLocalStorageImpl(options);
+			txProvider = new OrientLocalStorageImpl(options, metrics);
 		}
 		// Open the storage
 		txProvider.open();
@@ -943,7 +956,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public Tx tx() {
-		metrics.getMetricRegistry().meter("tx").mark();
 		return new OrientDBTx(txProvider, resolver);
 	}
 
@@ -956,7 +968,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		T handlerResult = null;
 		boolean handlerFinished = false;
 		for (int retry = 0; retry < maxRetry; retry++) {
-
+			final Timer.Context context = txTimer.time();
 			try (Tx tx = tx()) {
 				handlerResult = txHandler.handle(tx);
 				handlerFinished = true;
@@ -996,9 +1008,12 @@ public class OrientDBDatabase extends AbstractDatabase {
 					log.debug("Error handling transaction", e);
 				}
 				throw new RuntimeException("Transaction error", e);
+			} finally {
+				context.stop();
 			}
 			if (!handlerFinished && log.isDebugEnabled()) {
 				log.debug("Retrying .. {" + retry + "}");
+				txRetryCounter.inc();
 			}
 			if (handlerFinished) {
 				return handlerResult;

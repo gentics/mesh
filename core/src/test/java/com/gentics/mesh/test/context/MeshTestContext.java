@@ -21,11 +21,13 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.etc.config.OAuth2Options;
 import com.gentics.mesh.etc.config.OAuth2ServerConfig;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.test.TestDataProvider;
@@ -63,8 +65,11 @@ public class MeshTestContext extends TestWatcher {
 	private Vertx vertx;
 
 	protected int port;
+	protected int monitoringPort;
 
 	private MeshRestClient client;
+
+	private MonitoringRestClient monitoringClient;
 
 	private List<String> deploymentIds = new ArrayList<>();
 
@@ -75,6 +80,7 @@ public class MeshTestContext extends TestWatcher {
 			// Setup the dagger context and orientdb,es once
 			if (description.isSuite()) {
 				port = TestUtils.getRandomPort();
+				monitoringPort = TestUtils.getRandomPort();
 				removeDataDirectory();
 				removeConfigDirectory();
 				MeshOptions options = init(settings);
@@ -171,6 +177,8 @@ public class MeshTestContext extends TestWatcher {
 			client.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
 			client.login().blockingGet();
 		}
+		log.info("Using monitoring port: " + monitoringPort);
+		monitoringClient = MonitoringRestClient.create("localhost", monitoringPort);
 		if (trackingSearchProvider != null) {
 			trackingSearchProvider.clear().blockingAwait();
 		}
@@ -311,6 +319,10 @@ public class MeshTestContext extends TestWatcher {
 			httpOptions.setCertPath("src/test/resources/ssl/cert.pem");
 			httpOptions.setKeyPath("src/test/resources/ssl/key.pem");
 		}
+
+		MonitoringConfig monitoringOptions = meshOptions.getMonitoringOptions();
+		monitoringOptions.setPort(monitoringPort);
+
 		// The database provider will switch to in memory mode when no directory has been specified.
 
 		String graphPath = null;
@@ -403,6 +415,10 @@ public class MeshTestContext extends TestWatcher {
 			e.printStackTrace();
 			throw e;
 		}
+	}
+	
+	public MonitoringRestClient getMonitoringClient() {
+		return monitoringClient;
 	}
 
 	public MeshRestClient getClient() {

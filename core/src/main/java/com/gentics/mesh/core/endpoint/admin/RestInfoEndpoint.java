@@ -11,34 +11,27 @@ import javax.inject.Inject;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.example.RestInfoExamples;
 import com.gentics.mesh.generator.RAMLGenerator;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
-import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.http.HttpHeaders;
-import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.ext.web.Router;
 
 public class RestInfoEndpoint extends AbstractInternalEndpoint {
 
-	private SearchProvider searchProvider;
-
 	private RestInfoExamples examples = new RestInfoExamples();
 
-	private Database db;
+	private AdminHandler adminHandler;
 
 	private RouterStorage routerStorage;
 
 	@Inject
-	public RestInfoEndpoint(MeshAuthChain chain, Database db, SearchProvider searchProvider) {
+	public RestInfoEndpoint(MeshAuthChain chain, AdminHandler adminHandler) {
 		super(null, chain);
-		this.searchProvider = searchProvider;
-		this.db = db;
+		this.adminHandler = adminHandler;
 	}
 
 	public RestInfoEndpoint(String path) {
@@ -82,16 +75,7 @@ public class RestInfoEndpoint extends AbstractInternalEndpoint {
 		infoEndpoint.method(GET);
 		infoEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
-			MeshServerInfoModel info = new MeshServerInfoModel();
-			info.setDatabaseVendor(db.getVendorName());
-			info.setDatabaseVersion(db.getVersion());
-			info.setSearchVendor(searchProvider.getVendorName());
-			info.setSearchVersion(searchProvider.getVersion());
-			info.setMeshVersion(Mesh.getPlainVersion());
-			info.setMeshNodeName(Mesh.mesh().getOptions().getNodeName());
-			info.setVertxVersion(VersionCommand.getVersion());
-			info.setDatabaseRevision(db.getDatabaseRevision());
-			ac.send(info, OK);
+			adminHandler.handleVersions(ac);
 		}, false);
 	}
 
