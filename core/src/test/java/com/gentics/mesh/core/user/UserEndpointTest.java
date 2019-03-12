@@ -1356,4 +1356,11 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertEquals("Location header value did not match", "http://jotschi.de:" + port() + "/api/v1/users/" + user.getUuid(), location);
 		}
 	}
+
+	@Test
+	public void testUserRolesHash() {
+		UserResponse response = call(() -> client().findUserByUuid(user().getUuid()));
+
+		assertNotNull("Roles hash should be in response", response.getRolesHash());
+	}
 }

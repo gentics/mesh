@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Spliterator;
-import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.BooleanUtils;
@@ -220,10 +220,12 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	public String getRolesHash() {
 		String indexName = "e." + ASSIGNED_TO_ROLE + "_out";
 		Spliterator<Edge> itemEdges = getGraph().getEdges(indexName.toLowerCase(), id()).spliterator();
-
-		return StreamSupport.stream(itemEdges, false)
+		String roles = StreamSupport.stream(itemEdges, false)
 			.map(itemEdge -> itemEdge.getVertex(Direction.IN).getId().toString())
-			.collect(Collector.of(StringBuilder::new, (b, v) -> b.append(v), (u, v) -> u.append(v), ETag::hash));
+			.sorted()
+			.collect(Collectors.joining());
+
+		return ETag.hash(roles);
 	}
 
 	@Override
