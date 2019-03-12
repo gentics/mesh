@@ -21,7 +21,8 @@ public class ImageManipulatorOptions implements Option {
 	public static final int DEFAULT_MAX_WIDTH = 2048;
 	public static final int DEFAULT_MAX_HEIGHT = 2048;
 	public static final float DEFAULT_JPEG_QUALITY = 0.95f;
-	public static final ResampleFilter DEFAULT_RESAMPLE_FILTER = ResampleFilter.UNDEFINED;
+	// This is the default filter in ImageMagick
+	public static final ResampleFilter DEFAULT_RESAMPLE_FILTER = ResampleFilter.LANCZOS;
 
 	private String imageCacheDirectory = "data" + File.separator + "binaryImageCache";
 
@@ -44,7 +45,7 @@ public class ImageManipulatorOptions implements Option {
 	private Float jpegQuality = DEFAULT_JPEG_QUALITY;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure the filter that is used when resizing images. Default: UNDEFINED")
+	@JsonPropertyDescription("Configure the filter that is used when resizing images. Default: LANCZOS")
 	@EnvironmentVariable(name = MESH_IMAGE_RESAMPLE_FILTER_ENV, description = "Override the sample filter for image resize operations.")
 	private ResampleFilter resampleFilter = DEFAULT_RESAMPLE_FILTER;
 
