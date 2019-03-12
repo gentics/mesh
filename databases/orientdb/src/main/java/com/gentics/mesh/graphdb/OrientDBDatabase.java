@@ -142,17 +142,19 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private OrientStorage txProvider;
 
-	private final MetricsService metrics;
+	private MetricsService metrics;
 
-	private final Timer txTimer;
+	private Timer txTimer;
 
-	private final Counter txRetryCounter;
+	private Counter txRetryCounter;
 
 	@Inject
 	public OrientDBDatabase(MetricsService metrics) {
-		this.metrics = metrics;
-		txTimer = metrics.timer(TX_TIME);
-		txRetryCounter = metrics.counter(TX_RETRY);
+		if (metrics != null) {
+			this.metrics = metrics;
+			txTimer = metrics.timer(TX_TIME);
+			txRetryCounter = metrics.counter(TX_RETRY);
+		}
 	}
 
 	public OrientDBDatabase() {
