@@ -16,8 +16,13 @@ public class ImageManipulatorOptions implements Option {
 
 	public static final String MESH_IMAGE_MAX_WIDTH_ENV = "MESH_IMAGE_MAX_WIDTH";
 	public static final String MESH_IMAGE_MAX_HEIGHT_ENV = "MESH_IMAGE_MAX_HEIGHT";
+	public static final String MESH_IMAGE_JPEG_QUALITY_ENV = "MESH_IMAGE_JPEG_QUALITY";
+	public static final String MESH_IMAGE_RESAMPLE_FILTER_ENV = "MESH_IMAGE_RESAMPLE_FILTER";
 	public static final int DEFAULT_MAX_WIDTH = 2048;
 	public static final int DEFAULT_MAX_HEIGHT = 2048;
+	public static final float DEFAULT_JPEG_QUALITY = 0.95f;
+	// This is the default filter in ImageMagick
+	public static final ResampleFilter DEFAULT_RESAMPLE_FILTER = ResampleFilter.LANCZOS;
 
 	private String imageCacheDirectory = "data" + File.separator + "binaryImageCache";
 
@@ -32,6 +37,17 @@ public class ImageManipulatorOptions implements Option {
 		+ DEFAULT_MAX_HEIGHT)
 	@EnvironmentVariable(name = MESH_IMAGE_MAX_HEIGHT_ENV, description = "Override the max height for image resize operations.")
 	private Integer maxHeight = DEFAULT_MAX_HEIGHT;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Configure the quality of the output of JPEG images. Must be a value between inclusive 0 and inclusive 1. Default: "
+		+ DEFAULT_JPEG_QUALITY)
+	@EnvironmentVariable(name = MESH_IMAGE_JPEG_QUALITY_ENV, description = "Override the JPEG quality for image resize operations.")
+	private Float jpegQuality = DEFAULT_JPEG_QUALITY;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Configure the filter that is used when resizing images. Default: LANCZOS")
+	@EnvironmentVariable(name = MESH_IMAGE_RESAMPLE_FILTER_ENV, description = "Override the sample filter for image resize operations.")
+	private ResampleFilter resampleFilter = DEFAULT_RESAMPLE_FILTER;
 
 	/**
 	 * Return the binary image cache directory.
@@ -96,5 +112,21 @@ public class ImageManipulatorOptions implements Option {
 	public void validate(MeshOptions meshOptions) {
 		// TODO Auto-generated method stub
 
+	}
+
+	public float getJpegQuality() {
+		return jpegQuality;
+	}
+
+	public void setJpegQuality(float jpegQuality) {
+		this.jpegQuality = jpegQuality;
+	}
+
+	public ResampleFilter getResampleFilter() {
+		return resampleFilter;
+	}
+
+	public void setResampleFilter(ResampleFilter resampleFilter) {
+		this.resampleFilter = resampleFilter;
 	}
 }

@@ -1,19 +1,17 @@
 package com.gentics.mesh.image.focalpoint;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-
-import org.imgscalr.Scalr;
-import org.imgscalr.Scalr.Mode;
-
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.image.Point;
+import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.twelvemonkeys.image.ResampleOp;
+import org.imgscalr.Scalr;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
+
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 /**
  * Implementation of the focal point modifier. This modifier will:
@@ -25,11 +23,15 @@ import com.gentics.mesh.parameter.ImageManipulationParameters;
  */
 public class FocalPointModifier {
 
+	private final ImageManipulatorOptions options;
+	public FocalPointModifier(ImageManipulatorOptions options) {
+		this.options = options;
+	}
+
 	/**
 	 * First resize the image and later crop the image to focus the focal point.
 	 * 
 	 * @param img
-	 * @param parameters
 	 * @return resized and cropped image
 	 */
 	public BufferedImage apply(BufferedImage img, ImageManipulationParameters parameters) {
@@ -167,7 +169,7 @@ public class FocalPointModifier {
 	 */
 	private BufferedImage applyResize(BufferedImage img, Point size) {
 		try {
-			return Scalr.resize(img, Mode.FIT_EXACT, size.getX(), size.getY());
+			return Scalr.apply(img, new ResampleOp(size.getX(), size.getY(), options.getResampleFilter().getFilter()));
 		} catch (IllegalArgumentException e) {
 			throw error(BAD_REQUEST, "image_error_resizing_failed", e);
 		}
