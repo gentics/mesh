@@ -62,6 +62,21 @@
 | string
 | Path to the SSL private key. Default: config/key.pem
 
+| monitoringOptions.enabled
+| false
+| boolean
+| Enable or disable the monitoring system. Default is: true
+
+| monitoringOptions.port
+| false
+| int
+| Configure the Gentics Mesh monitoring HTTP server port. Default is: 8081
+
+| monitoringOptions.host
+| false
+| string
+| Configure the Gentics Mesh monitoring HTTP server host to bind to. Default is: 127.0.0.1
+
 | vertxOptions.workerPoolSize
 | false
 | int
@@ -206,6 +221,16 @@
 | false
 | integer
 | Configure the maximum allowed image resize height. Resizing is a memory intensive operation and thus this limit can help avoid memory issues. Default: 2048
+
+| imageOptions.jpegQuality
+| false
+| float
+| Configure the quality of the output of JPEG images. Must be a value between inclusive 0 and inclusive 1. Default: 0.95
+
+| imageOptions.resampleFilter
+| false
+| resamplefilter
+| Configure the filter that is used when resizing images. Default: LANCZOS
 
 | tempDirectory
 | false

@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "0.30.2"
+version: "0.31.0"
 baseUri: "http://localhost:8080/api/v1"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -66,6 +66,7 @@ mediaType: application/json
                                 | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
+                                | rolesHash | true | string | Hashsum of user roles which can be used for user permission caching. |
                                 | username | true | string | Username of the user. |
                                 | uuid | true | string | Uuid of the element |
                             example: |
@@ -347,6 +348,7 @@ mediaType: application/json
                                 | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
+                                | rolesHash | true | string | Hashsum of user roles which can be used for user permission caching. |
                                 | username | true | string | Username of the user. |
                                 | uuid | true | string | Uuid of the element |
                             example: |
@@ -460,6 +462,7 @@ mediaType: application/json
                                 | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
+                                | rolesHash | true | string | Hashsum of user roles which can be used for user permission caching. |
                                 | username | true | string | Username of the user. |
                                 | uuid | true | string | Uuid of the element |
                             example: |
@@ -5439,6 +5442,7 @@ mediaType: application/json
                                 | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
+                                | rolesHash | true | string | Hashsum of user roles which can be used for user permission caching. |
                                 | username | true | string | Username of the user. |
                                 | uuid | true | string | Uuid of the element |
                             example: |
@@ -5512,7 +5516,7 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "0.30.2",
+                                  "meshVersion" : "0.31.0",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",

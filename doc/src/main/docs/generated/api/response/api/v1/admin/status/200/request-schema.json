@@ -6,7 +6,7 @@
       "type" : "string",
       "required" : true,
       "description" : "The current Gentics Mesh server status.",
-      "enum" : [ "STARTING", "WAITING_FOR_CLUSTER", "READY", "SHUTTING_DOWN", "BACKUP" ]
+      "enum" : [ "STARTING", "WAITING_FOR_CLUSTER", "READY", "SHUTTING_DOWN", "BACKUP", "RESTORE" ]
     }
   }
 }

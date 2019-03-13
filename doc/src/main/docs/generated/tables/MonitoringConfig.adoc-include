@@ -1,0 +1,25 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| enabled
+| false
+| boolean
+| Enable or disable the monitoring system. Default is: true
+
+| host
+| false
+| string
+| Configure the Gentics Mesh monitoring HTTP server host to bind to. Default is: 127.0.0.1
+
+| port
+| false
+| integer
+| Configure the Gentics Mesh monitoring HTTP server port. Default is: 8081
+
+|======

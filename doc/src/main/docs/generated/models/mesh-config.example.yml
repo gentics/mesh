@@ -16,6 +16,10 @@ httpServer:
   ssl: false
   certPath: "config/cert.pem"
   keyPath: "config/key.pem"
+monitoring:
+  enabled: true
+  port: 8081
+  host: "127.0.0.1"
 cluster:
   enabled: false
   vertxPort: 0
@@ -63,3 +67,5 @@ image:
   imageCacheDirectory: "data/binaryImageCache"
   maxWidth: 2048
   maxHeight: 2048
+  jpegQuality: 0.95
+  resampleFilter: "LANCZOS"

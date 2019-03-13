@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "0.30.2"
+version: "0.31.0"
 baseUri: "http://localhost:8080/api/v1"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -156,6 +156,11 @@ mediaType: application/json
                                       "type" : "boolean",
                                       "required" : true,
                                       "description" : "Flag which indicates whether the user is enabled or disabled. Disabled users can no longer log into Gentics Mesh. Deleting a user user will not remove it. Instead the user will just be disabled."
+                                    },
+                                    "rolesHash" : {
+                                      "type" : "string",
+                                      "required" : true,
+                                      "description" : "Hashsum of user roles which can be used for user permission caching."
                                     },
                                     "groups" : {
                                       "type" : "array",
@@ -410,6 +415,11 @@ mediaType: application/json
                                             "type" : "boolean",
                                             "required" : true,
                                             "description" : "Flag which indicates whether the user is enabled or disabled. Disabled users can no longer log into Gentics Mesh. Deleting a user user will not remove it. Instead the user will just be disabled."
+                                          },
+                                          "rolesHash" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Hashsum of user roles which can be used for user permission caching."
                                           },
                                           "groups" : {
                                             "type" : "array",
@@ -765,6 +775,11 @@ mediaType: application/json
                                       "required" : true,
                                       "description" : "Flag which indicates whether the user is enabled or disabled. Disabled users can no longer log into Gentics Mesh. Deleting a user user will not remove it. Instead the user will just be disabled."
                                     },
+                                    "rolesHash" : {
+                                      "type" : "string",
+                                      "required" : true,
+                                      "description" : "Hashsum of user roles which can be used for user permission caching."
+                                    },
                                     "groups" : {
                                       "type" : "array",
                                       "required" : true,
@@ -997,6 +1012,11 @@ mediaType: application/json
                                       "type" : "boolean",
                                       "required" : true,
                                       "description" : "Flag which indicates whether the user is enabled or disabled. Disabled users can no longer log into Gentics Mesh. Deleting a user user will not remove it. Instead the user will just be disabled."
+                                    },
+                                    "rolesHash" : {
+                                      "type" : "string",
+                                      "required" : true,
+                                      "description" : "Hashsum of user roles which can be used for user permission caching."
                                     },
                                     "groups" : {
                                       "type" : "array",
@@ -3512,6 +3532,11 @@ mediaType: application/json
                                             "type" : "boolean",
                                             "required" : true,
                                             "description" : "Flag which indicates whether the user is enabled or disabled. Disabled users can no longer log into Gentics Mesh. Deleting a user user will not remove it. Instead the user will just be disabled."
+                                          },
+                                          "rolesHash" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Hashsum of user roles which can be used for user permission caching."
                                           },
                                           "groups" : {
                                             "type" : "array",
@@ -8771,7 +8796,7 @@ mediaType: application/json
                                       "type" : "string",
                                       "required" : true,
                                       "description" : "The current Gentics Mesh server status.",
-                                      "enum" : [ "STARTING", "WAITING_FOR_CLUSTER", "READY", "SHUTTING_DOWN", "BACKUP" ]
+                                      "enum" : [ "STARTING", "WAITING_FOR_CLUSTER", "READY", "SHUTTING_DOWN", "BACKUP", "RESTORE" ]
                                     }
                                   }
                                 }
@@ -11447,6 +11472,11 @@ mediaType: application/json
                                             "required" : true,
                                             "description" : "Flag which indicates whether the user is enabled or disabled. Disabled users can no longer log into Gentics Mesh. Deleting a user user will not remove it. Instead the user will just be disabled."
                                           },
+                                          "rolesHash" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Hashsum of user roles which can be used for user permission caching."
+                                          },
                                           "groups" : {
                                             "type" : "array",
                                             "required" : true,
@@ -12668,6 +12698,11 @@ mediaType: application/json
                                       "required" : true,
                                       "description" : "Flag which indicates whether the user is enabled or disabled. Disabled users can no longer log into Gentics Mesh. Deleting a user user will not remove it. Instead the user will just be disabled."
                                     },
+                                    "rolesHash" : {
+                                      "type" : "string",
+                                      "required" : true,
+                                      "description" : "Hashsum of user roles which can be used for user permission caching."
+                                    },
                                     "groups" : {
                                       "type" : "array",
                                       "required" : true,
@@ -12831,7 +12866,7 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "0.30.2",
+                                  "meshVersion" : "0.31.0",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",

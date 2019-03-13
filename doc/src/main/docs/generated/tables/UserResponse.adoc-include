@@ -92,6 +92,11 @@
 | object
 | Permission information for provided role. This property will only be populated if a role query parameter has been specified.
 
+| rolesHash
+| true
+| string
+| Hashsum of user roles which can be used for user permission caching.
+
 | username
 | true
 | string
