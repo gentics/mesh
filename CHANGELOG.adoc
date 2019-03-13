@@ -26,7 +26,7 @@ title: Changelog
 
 
 [[v0.31.0]]
-== 0.31.0 (TBD)
+== 0.31.0 (13.03.2019)
 
 icon:bullhorn[] Monitoring
 
