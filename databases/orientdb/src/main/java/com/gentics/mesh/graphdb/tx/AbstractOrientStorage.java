@@ -33,18 +33,19 @@ public abstract class AbstractOrientStorage implements OrientStorage {
 
 	protected DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SSS");
 
-	protected MetricsService metrics;
+	protected final MetricsService metrics;
 
-	protected MeshOptions options;
+	protected final MeshOptions options;
 
-	protected final Meter txCouter;
+	protected final Meter txCounter;
 
-	protected final Meter noTxCouter;
+	protected final Meter noTxCounter;
 
 	public AbstractOrientStorage(MeshOptions options, MetricsService metrics) {
 		this.options = options;
-		txCouter = metrics.meter(TX);
-		noTxCouter = metrics.meter(NO_TX);
+		this.metrics = metrics;
+		txCounter = metrics.meter(TX);
+		noTxCounter = metrics.meter(NO_TX);
 	}
 
 	public MeshOptions getOptions() {
