@@ -110,6 +110,7 @@ services:
       - MESH_ELASTICSEARCH_URL=http://elasticsearch:9200
       - MESH_ELASTICSEARCH_START_EMBEDDED=false
       - MESH_AUTH_KEYSTORE_PASS=changeme
+      - MESH_MONITORING_HTTP_HOST=0.0.0.0
     stop_grace_period: 5m
     ports:
       - '8080:8080'

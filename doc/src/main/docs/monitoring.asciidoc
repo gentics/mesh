@@ -25,6 +25,9 @@ monitoring:
   host: "127.0.0.1"
 ----
 
+TIP: Container deployments which need to access the monitoring API need to change the monitoring server binding in order to expose the port. +
+This can be done via the environment http host setting: `MESH_MONITORING_HTTP_HOST=0.0.0.0`
+
 == Endpoints
 
 === Liveness Probe
