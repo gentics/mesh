@@ -54,7 +54,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 	private static final Logger log = LoggerFactory.getLogger(ImgscalrImageManipulator.class);
 
-	private FocalPointModifier focalPointModifier = new FocalPointModifier();
+	private FocalPointModifier focalPointModifier;
 
 	private WorkerExecutor workerPool;
 
@@ -64,6 +64,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 	ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options) {
 		super(vertx, options);
+		focalPointModifier = new FocalPointModifier(options);
 		// 10 seconds
 		workerPool = vertx.createSharedWorkerExecutor("resizeWorker", 5, Duration.ofSeconds(10).toNanos());
 	}
@@ -312,6 +313,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	}
 
 	private boolean isJpeg(String extension) {
+		extension = extension.toLowerCase();
 		return extension.endsWith("jpg") || extension.endsWith("jpeg");
 	}
 

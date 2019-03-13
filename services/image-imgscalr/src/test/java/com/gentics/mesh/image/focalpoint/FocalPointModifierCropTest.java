@@ -1,23 +1,22 @@
 package com.gentics.mesh.image.focalpoint;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Collection;
-import java.util.Vector;
-
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.image.Point;
+import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
-import com.gentics.mesh.core.rest.node.field.image.Point;
-import com.gentics.mesh.image.focalpoint.FocalPointModifier;
+import java.util.Collection;
+import java.util.Vector;
+
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class FocalPointModifierCropTest {
 
-	private FocalPointModifier cropper = new FocalPointModifier();
+	private FocalPointModifier cropper = new FocalPointModifier(new ImageManipulatorOptions());
 
 	private Parameter param;
 
