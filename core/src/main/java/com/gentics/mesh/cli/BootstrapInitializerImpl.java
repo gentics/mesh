@@ -81,6 +81,7 @@ import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.PluginManager;
 import com.gentics.mesh.router.RouterStorage;
@@ -343,7 +344,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		vertxOptions.setClustered(options.getClusterOptions().isEnabled());
 		vertxOptions.setWorkerPoolSize(options.getVertxOptions().getWorkerPoolSize());
 		vertxOptions.setEventLoopPoolSize(options.getVertxOptions().getEventPoolSize());
-		if (options.getMonitoringOptions().isEnabled()) {
+
+		MonitoringConfig monitorinOptions = options.getMonitoringOptions();
+		if (monitorinOptions != null && monitorinOptions.isEnabled()) {
 			log.info("Enabling Vert.x metrics");
 			DropwizardMetricsOptions metricsOptions = new DropwizardMetricsOptions()
 				.setRegistryName("mesh")

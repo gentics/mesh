@@ -25,7 +25,7 @@ public interface AdminClientMethods {
 	 * Return the Gentics Mesh cluster status.
 	 * 
 	 * @return
-	 * @deprecated @deprecated Use {@link MonitoringRestClient#clusterStatus()} instead.
+	 * @deprecated Use {@link MonitoringRestClient#clusterStatus()} instead.
 	 */
 	@Deprecated
 	MeshRequest<ClusterStatusResponse> clusterStatus();

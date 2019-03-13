@@ -22,7 +22,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.mockito.Mockito;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.Timer;
 import com.gentics.mesh.changelog.Change;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -31,6 +35,8 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.maven.MavenMetadata;
 import com.gentics.mesh.maven.MavenUtilities;
 import com.gentics.mesh.maven.VersionNumber;
+import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.metric.ResettableCounter;
 import com.tinkerpop.blueprints.Vertex;
 
 import net.lingala.zip4j.core.ZipFile;
@@ -62,7 +68,7 @@ public class ChangelogSystemTest {
 		Collection<Object[]> data = new ArrayList<Object[]>();
 		for (String version : metadata.getVersions()) {
 			// Only test mesh release dumps since a specific version
-			if (VersionNumber.parse(version).compareTo(VersionNumber.parse("0.28.0")) >= 0) {
+			if (VersionNumber.parse(version).compareTo(VersionNumber.parse("0.30.0")) >= 0) {
 				data.add(new Object[] { version });
 			}
 		}
@@ -117,7 +123,12 @@ public class ChangelogSystemTest {
 	 * @return
 	 */
 	public static Database getDatabase(MeshOptions options) {
-		Database database = new OrientDBDatabase(null);
+		MetricsService metrics = Mockito.mock(MetricsService.class);
+		Mockito.when(metrics.timer(Mockito.any())).thenReturn(Mockito.mock(Timer.class));
+		Mockito.when(metrics.counter(Mockito.any())).thenReturn(Mockito.mock(Counter.class));
+		Mockito.when(metrics.meter(Mockito.any())).thenReturn(Mockito.mock(Meter.class));
+		Mockito.when(metrics.resetableCounter(Mockito.any())).thenReturn(Mockito.mock(ResettableCounter.class));
+		Database database = new OrientDBDatabase(metrics);
 		try {
 			database.init(options, null);
 			return database;

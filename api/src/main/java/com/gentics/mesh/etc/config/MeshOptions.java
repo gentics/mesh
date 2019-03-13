@@ -52,7 +52,7 @@ public class MeshOptions implements Option {
 	private HttpServerConfig httpServerOptions = new HttpServerConfig();
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Metrics server options.")
+	@JsonPropertyDescription("Monitoring options.")
 	private MonitoringConfig monitoringOptions = new MonitoringConfig();
 
 	@JsonProperty(required = true)

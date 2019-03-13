@@ -107,8 +107,10 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			return Lists.newArrayList(it);
 		});
 
-		migrationCounter.reset();
-		migrationCounter.inc(containers.size());
+		if (metrics.isEnabled()) {
+			migrationCounter.reset();
+			migrationCounter.inc(containers.size());
+		}
 
 		// No field containers, migration is done
 		if (containers.isEmpty()) {
@@ -123,7 +125,9 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 
 		List<Exception> errorsDetected = migrateLoop(containers, status, (batch, container, errors) -> {
 			migrateContainer(ac, batch, container, toVersion, migrationScripts, branch, newSchema, errors, touchedFields);
-			migrationCounter.dec();
+			if (metrics.isEnabled()) {
+				migrationCounter.dec();
+			}
 		});
 
 		// TODO prepare errors. They should be easy to understand and to grasp

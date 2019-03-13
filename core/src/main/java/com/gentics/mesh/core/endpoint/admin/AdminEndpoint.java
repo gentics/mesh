@@ -15,7 +15,6 @@ import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
-import com.gentics.mesh.metric.MetricsHandler;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -33,12 +32,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 	private PluginHandler pluginHandler;
 
 	@Inject
-	public AdminEndpoint(MeshAuthChain chain,
-		AdminHandler adminHandler,
-		JobHandler jobHandler,
-		ConsistencyCheckHandler consistencyHandler,
-		PluginHandler pluginHandler,
-		MetricsHandler metricsHandler) {
+	public AdminEndpoint(MeshAuthChain chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler, PluginHandler pluginHandler) {
 		super("admin", chain);
 		this.adminHandler = adminHandler;
 		this.jobHandler = jobHandler;

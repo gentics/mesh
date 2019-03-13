@@ -9,7 +9,7 @@ Gentics Mesh exposed monitoring data via an un-authenticated monitoring server. 
 
 NOTE: The monitoring server is un-authenticated and thus should not be exposed to the public. By default it will only bind to `localhost:8081`.
 
-## Configuration
+== Configuration
 
 The network settings for the monitoring server can be configured within the `mesh.yml` or via link:{{< relref "administration-guide.asciidoc" >}}#_environment_variables[environment settings].
 
@@ -25,18 +25,17 @@ monitoring:
   host: "127.0.0.1"
 ----
 
-## Endpoints
+== Endpoints
 
-
-### Liveness Probe
+=== Liveness Probe
 
 The healthcheck liveness probe endpoint `GET /api/v1/health/live` indicates if server is working as expected when status code `200` is returned.
 
-### Readiness Probe
+=== Readiness Probe
 
 The readines probe endpoint `GET /api/v1/health/ready` returns status code `200` if the server is accepting connections. This endpoint can be used to check when the server instance if ready to accept requests once it has been started. This is especially useful if you run rolling cluster upgrades.
 
-### Status
+=== Status
 
 The current Gentics Mesh server status can be checked against the `GET /api/v1/status`.
 
@@ -66,20 +65,35 @@ The current Gentics Mesh server status can be checked against the `GET /api/v1/s
 
 |======
 
-
-### Cluster Status
+=== Cluster Status
 
 The `GET /api/v1/cluster/status` endpoint returns the status of all cluster nodes to which the queries instance has establishes a connection.
 
-### Version Info
+=== Version Info
 
 The version information can be retrieved via the `GET /api/v1/versions` endpoint.
 
-### Prometheus Metrics
+[source,json]
+----
+{
+  "meshVersion" : "0.30.2",
+  "meshNodeName" : "Singing Chandelure",
+  "databaseVendor" : "orientdb",
+  "databaseVersion" : "3.0.16 - Veloce (build cc3c25ebc7d48a0db1073a0469cee2dd2947f4df, branch 3.0.x)",
+  "searchVendor" : "elasticsearch",
+  "searchVersion" : "6.1.2",
+  "vertxVersion" : "3.5.4",
+  "databaseRevision" : "0be9a986"
+}
+----
 
-Gentics Mesh server exposes Prometheus compatible data on the `/api/v1/metrics` endpoint.
+=== Prometheus Metrics
 
-You need to configure Prometheus to scrape data from this endpoint.
+Gentics Mesh server exposes link:https://prometheus.io/[Prometheus] compatible data on the `/api/v1/metrics` endpoint.
+
+The link:https://prometheus.io/[Prometheus] server can scrape metric data from this endpoint. Using link:https://grafana.com/[Grafana] in combination with Prometheus is a typical usecase to display metric data.
+
+==== Prometheus
 
 Example Prometheus configuration:
 
@@ -114,6 +128,9 @@ More metrics will be added over time.
 | mesh.notx.created
 | Meter which measures the rate of created noTx transactions over time.
 
+| graph.element.reload
+| Meter which tracks the reload operations on used vertices.
+
 | mesh.tx.time
 | Timer which tracks transaction durations.
 
@@ -125,3 +142,7 @@ More metrics will be added over time.
 
 |======
 
+
+### Clients
+
+The link:{{< relref "platforms.asciidoc" >}}#_clients[Monitoring Java Client] can be used to interact with the endpoints using Java.

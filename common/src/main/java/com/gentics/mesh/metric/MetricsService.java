@@ -22,6 +22,13 @@ public interface MetricsService {
 	Buffer toPrometheusFormat(Set<String> params) throws IOException;
 
 	/**
+	 * Check whether the metrics system is enabled.
+	 * 
+	 * @return
+	 */
+	boolean isEnabled();
+
+	/**
 	 * Return the drop wizard registry.
 	 * 
 	 * @return

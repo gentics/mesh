@@ -52,13 +52,7 @@ public class MonitoringServerVerticle extends AbstractVerticle {
 				if (log.isInfoEnabled()) {
 					log.info("Started monitoring http server.. Port: " + config().getInteger("port"));
 				}
-				try {
-					// registerEndPoints(storage);
-					startFuture.complete();
-				} catch (Exception e) {
-					e.printStackTrace();
-					startFuture.fail(e);
-				}
+				startFuture.complete();
 			}
 		});
 	}

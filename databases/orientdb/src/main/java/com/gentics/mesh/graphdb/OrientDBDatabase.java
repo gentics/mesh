@@ -4,8 +4,6 @@ import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.graphdb.FieldTypeMapper.toSubType;
 import static com.gentics.mesh.graphdb.FieldTypeMapper.toType;
-import static com.gentics.mesh.metric.Metrics.NO_TX;
-import static com.gentics.mesh.metric.Metrics.TX;
 import static com.gentics.mesh.metric.Metrics.TX_RETRY;
 import static com.gentics.mesh.metric.Metrics.TX_TIME;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -36,7 +34,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import com.codahale.metrics.Counter;
-import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
 import com.gentics.mesh.changelog.Change;
 import com.gentics.mesh.changelog.changes.ChangesList;
@@ -54,6 +51,7 @@ import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.graphdb.tx.impl.OrientLocalStorageImpl;
 import com.gentics.mesh.graphdb.tx.impl.OrientServerStorageImpl;
+import com.gentics.mesh.metric.Metrics;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
@@ -150,8 +148,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Inject
 	public OrientDBDatabase(MetricsService metrics) {
+		this.metrics = metrics;
 		if (metrics != null) {
-			this.metrics = metrics;
 			txTimer = metrics.timer(TX_TIME);
 			txRetryCounter = metrics.counter(TX_RETRY);
 		}
@@ -947,7 +945,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public void reload(Element element) {
 		if (element instanceof OrientElement) {
-			metrics.getMetricRegistry().meter("reload").mark();
+			if (metrics.isEnabled()) {
+				metrics.meter(Metrics.GRAPH_ELEMENT_RELOAD).mark();
+			}
 			((OrientElement) element).reload();
 		}
 	}
@@ -1011,7 +1011,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 			}
 			if (!handlerFinished && log.isDebugEnabled()) {
 				log.debug("Retrying .. {" + retry + "}");
-				txRetryCounter.inc();
+				if (metrics.isEnabled()) {
+					txRetryCounter.inc();
+				}
 			}
 			if (handlerFinished) {
 				return handlerResult;

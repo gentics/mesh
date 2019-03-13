@@ -103,7 +103,9 @@ public class MonitoringRoutes {
 				if (status.equals(MeshStatus.READY)) {
 					rc.response().end();
 				} else {
-					log.info("Status is {" + status.name() + "} - Failing readiness probe");
+					if (log.isDebugEnabled()) {
+						log.debug("Status is {" + status.name() + "} - Failing readiness probe");
+					}
 					throw error(SERVICE_UNAVAILABLE, "error_internal");
 				}
 			});

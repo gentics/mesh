@@ -13,6 +13,8 @@ public enum Metrics {
 
 	TX_RETRY("tx.retry", "Amount of transaction retries which happen if a conflict has been encountered."),
 
+	GRAPH_ELEMENT_RELOAD("graph.element.reload", "Meter which tracks the reload operations on used vertices."),
+
 	NODE_MIGRATION_PENDING("node_migration.pending", "Pending contents which need to be processed by the node migration.");
 
 	private String key;

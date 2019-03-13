@@ -9,6 +9,8 @@ import javax.inject.Singleton;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.MonitoringConfig;
 
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.dropwizard.DropwizardExports;
@@ -22,8 +24,11 @@ public class DropwizardMetricsService implements MetricsService {
 
 	private final MetricRegistry metricRegistry;
 
+	private MonitoringConfig options;
+
 	@Inject
-	public DropwizardMetricsService() {
+	public DropwizardMetricsService(MeshOptions options) {
+		this.options = options.getMonitoringOptions();
 		this.registry = CollectorRegistry.defaultRegistry;
 		this.metricRegistry = setupRegistry();
 	}
@@ -50,6 +55,11 @@ public class DropwizardMetricsService implements MetricsService {
 		final BufferWriter writer = new BufferWriter();
 		TextFormat.write004(writer, getRegistry().filteredMetricFamilySamples(params));
 		return writer.getBuffer();
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return options != null && options.isEnabled();
 	}
 
 	/**

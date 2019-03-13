@@ -29,8 +29,18 @@ public interface MonitoringClientMethods {
 	 */
 	MeshRequest<String> metrics();
 
+	/**
+	 * Invoke a readiness probe request.
+	 * 
+	 * @return
+	 */
 	MeshRequest<EmptyResponse> ready();
 
+	/**
+	 * Invoke a live probe request.
+	 * 
+	 * @return
+	 */
 	MeshRequest<EmptyResponse> live();
 
 	/**
