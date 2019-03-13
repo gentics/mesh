@@ -27,7 +27,7 @@ title: Changelog
 [[v0.30.3]]
 == 0.30.3 (TBD)
 
-CAUTION: Because of a change in the image cache, the change below might not apply when an image is already in the cache. To make sure that the changes take effect, the cache in `data/binaryImageCache/` must be cleared.
+CAUTION: Because of a change in the image resizer, the change below might not apply when an image is already in the cache. To make sure that the changes take effect, the cache in `data/binaryImageCache/` must be cleared.
 
 icon:plus[] Image: Quality of manipulated JPEG images can now be configured. The default value has been changed from 0.7 to 0.95.
 
