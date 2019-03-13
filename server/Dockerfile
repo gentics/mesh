@@ -9,6 +9,7 @@ ENV MESH_BINARY_DIR=/uploads
 ENV JAVA_TOOL_OPTIONS="-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m"
 
 EXPOSE 8080
+EXPOSE 8081
 
 RUN adduser -D -u 1000 -h /mesh mesh
 USER mesh
