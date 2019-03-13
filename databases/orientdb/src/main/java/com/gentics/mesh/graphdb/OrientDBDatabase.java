@@ -126,7 +126,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final Logger log = LoggerFactory.getLogger(OrientDBDatabase.class);
 
-	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.0.16.zip";
+	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.0.17.zip";
 
 	private TopologyEventBridge topologyEventBridge;
 

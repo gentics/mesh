@@ -47,6 +47,8 @@ CAUTION: In a future release the following endpoints will be removed from the re
 * `GET /api/v1/admin/status` (Server Status)
 * `GET /api/v1/admin/cluster/status` (Cluster Status)
 
+icon:plus[] OrientDB: The included OrientDB version has been updated to version 3.0.17.
+
 icon:plus[] REST: The `/users` endpoint response will now contain a hash of a users roles.
 
 icon:plus[] GraphQL: The `roles` field is now available for user fields, and contains all roles of the respective user.
