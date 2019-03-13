@@ -14,9 +14,9 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
 @Ignore
-public class NestedTransactionTest {
+public class NestedTransactionTest extends AbstractOrientDBTest {
 
-	private Database db = new OrientDBDatabase();
+	private Database db = mockDatabase();
 
 	static {
 		// Use slf4j instead of jul

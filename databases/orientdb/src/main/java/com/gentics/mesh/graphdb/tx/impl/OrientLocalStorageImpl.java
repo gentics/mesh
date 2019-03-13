@@ -7,6 +7,7 @@ import java.util.Date;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.tx.AbstractOrientStorage;
+import com.gentics.mesh.metric.MetricsService;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
@@ -26,8 +27,8 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 
 	private OrientGraphFactory factory;
 
-	public OrientLocalStorageImpl(MeshOptions options) {
-		super(options);
+	public OrientLocalStorageImpl(MeshOptions options, MetricsService metrics) {
+		super(options, metrics);
 	}
 
 	@Override
@@ -48,11 +49,17 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 
 	@Override
 	public OrientGraph rawTx() {
+		if (metrics.isEnabled()) {
+			txCounter.mark();
+		}
 		return factory.getTx();
 	}
 
 	@Override
 	public OrientGraphNoTx rawNoTx() {
+		if (metrics.isEnabled()) {
+			noTxCounter.mark();
+		}
 		return factory.getNoTx();
 	}
 

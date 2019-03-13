@@ -52,6 +52,10 @@ public class MeshOptions implements Option {
 	private HttpServerConfig httpServerOptions = new HttpServerConfig();
 
 	@JsonProperty(required = true)
+	@JsonPropertyDescription("Monitoring options.")
+	private MonitoringConfig monitoringOptions = new MonitoringConfig();
+
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Vert.x specific options.")
 	private VertxOptions vertxOptions = new VertxOptions();
 
@@ -120,6 +124,7 @@ public class MeshOptions implements Option {
 
 	/**
 	 * Return the (optional) languages file path
+	 * 
 	 * @return path to the optional languages file
 	 */
 	public String getLanguagesFilePath() {
@@ -128,7 +133,9 @@ public class MeshOptions implements Option {
 
 	/**
 	 * Set the languages file path
-	 * @param languagesFilePath path to the optional languages file
+	 * 
+	 * @param languagesFilePath
+	 *            path to the optional languages file
 	 */
 	public void setLanguagesFilePath(String languagesFilePath) {
 		this.languagesFilePath = languagesFilePath;
@@ -194,6 +201,30 @@ public class MeshOptions implements Option {
 		return httpServerOptions;
 	}
 
+	/**
+	 * Set the http server options.
+	 * 
+	 * @param httpServerOptions
+	 *            Http server options
+	 */
+	public void setHttpServerOptions(HttpServerConfig httpServerOptions) {
+		this.httpServerOptions = httpServerOptions;
+	}
+
+	@JsonProperty("monitoring")
+	public MonitoringConfig getMonitoringOptions() {
+		return monitoringOptions;
+	}
+
+	/**
+	 * Set the monitoring options.
+	 * 
+	 * @param monitoringOptions
+	 */
+	public void setMonitoringOptions(MonitoringConfig monitoringOptions) {
+		this.monitoringOptions = monitoringOptions;
+	}
+
 	public VertxOptions getVertxOptions() {
 		return vertxOptions;
 	}
@@ -205,16 +236,6 @@ public class MeshOptions implements Option {
 
 	public void setClusterOptions(ClusterOptions clusterOptions) {
 		this.clusterOptions = clusterOptions;
-	}
-
-	/**
-	 * Set the http server options.
-	 * 
-	 * @param httpServerOptions
-	 *            Http server options
-	 */
-	public void setHttpServerOptions(HttpServerConfig httpServerOptions) {
-		this.httpServerOptions = httpServerOptions;
 	}
 
 	/**

@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.30.3-SNAPSHOT</version>
+		<version>0.31.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -33,11 +33,6 @@
 			<groupId>com.github.akarnokd</groupId>
 			<artifactId>rxjava2-jdk8-interop</artifactId>
 			<version>0.2.11</version>
-		</dependency>
-		<!-- Metrics -->
-		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-dropwizard-metrics</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>commons-cli</groupId>

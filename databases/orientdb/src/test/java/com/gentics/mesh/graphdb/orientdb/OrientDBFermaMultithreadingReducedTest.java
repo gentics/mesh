@@ -19,7 +19,7 @@ public class OrientDBFermaMultithreadingReducedTest extends AbstractOrientDBTest
 
 	@Before
 	public void setup() throws Exception {
-		db = new OrientDBDatabase();
+		db = mockDatabase();
 		MeshOptions options = new MeshOptions();
 		options.getStorageOptions().setDirectory(null);
 		db.init(options, "com.gentics.mesh.graphdb.orientdb.graph");

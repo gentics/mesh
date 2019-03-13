@@ -5,9 +5,12 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
+import java.io.File;
 import java.io.IOException;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -17,6 +20,13 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true, inMemoryDB = false, clusterMode = true)
 public class AdminEndpointBackupClusteredTest extends AbstractMeshTest {
+
+	@Before
+	public void clearBackupDir() throws IOException {
+		File backupDir = new File(testContext.getOptions().getStorageOptions().getBackupDirectory());
+		FileUtils.deleteDirectory(backupDir);
+		backupDir.mkdirs();
+	}
 
 	@Test
 	public void testBackup() throws IOException {

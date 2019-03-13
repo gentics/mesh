@@ -81,6 +81,7 @@ import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.PluginManager;
 import com.gentics.mesh.router.RouterStorage;
@@ -101,7 +102,6 @@ import io.vertx.core.VertxOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.dropwizard.DropwizardMetricsOptions;
-import io.vertx.ext.dropwizard.MetricsService;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 /**
@@ -344,7 +344,16 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		vertxOptions.setClustered(options.getClusterOptions().isEnabled());
 		vertxOptions.setWorkerPoolSize(options.getVertxOptions().getWorkerPoolSize());
 		vertxOptions.setEventLoopPoolSize(options.getVertxOptions().getEventPoolSize());
-		vertxOptions.setMetricsOptions(new DropwizardMetricsOptions().setEnabled(true).setRegistryName("mesh"));
+
+		MonitoringConfig monitorinOptions = options.getMonitoringOptions();
+		if (monitorinOptions != null && monitorinOptions.isEnabled()) {
+			log.info("Enabling Vert.x metrics");
+			DropwizardMetricsOptions metricsOptions = new DropwizardMetricsOptions()
+				.setRegistryName("mesh")
+				.setEnabled(true)
+				.setJmxEnabled(true);
+			vertxOptions.setMetricsOptions(metricsOptions);
+		}
 		vertxOptions.setPreferNativeTransport(true);
 		// TODO We need to find a different way to deal with the FileResolver classpath caching issue since disabling the cache
 		// has negative performance implications.
@@ -365,7 +374,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		mesh.setVertx(vertx);
-		mesh.setMetricsService(MetricsService.create(vertx));
 	}
 
 	/**

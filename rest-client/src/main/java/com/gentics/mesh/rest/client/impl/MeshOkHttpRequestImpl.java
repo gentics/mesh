@@ -1,5 +1,14 @@
 package com.gentics.mesh.rest.client.impl;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+
+import org.apache.commons.lang.StringUtils;
+
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.json.JsonUtil;
@@ -8,6 +17,7 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
+
 import io.reactivex.Single;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -20,13 +30,6 @@ import okhttp3.Response;
 import okio.BufferedSink;
 import okio.Okio;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
-
 public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	private final OkHttpClient client;
 	private final Class<? extends T> resultClass;
@@ -36,7 +39,8 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	private final Map<String, String> headers;
 	private final RequestBody requestBody;
 
-	private MeshOkHttpRequestImpl(OkHttpClient client, Class<? extends T> resultClass, String method, String url, Map<String, String> headers, RequestBody requestBody) {
+	private MeshOkHttpRequestImpl(OkHttpClient client, Class<? extends T> resultClass, String method, String url, Map<String, String> headers,
+		RequestBody requestBody) {
 		this.client = client;
 		this.resultClass = resultClass;
 		this.method = method;
@@ -45,7 +49,8 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 		this.requestBody = requestBody;
 	}
 
-	public static <T> MeshOkHttpRequestImpl<T> BinaryRequest(OkHttpClient client, String method, String url, Map<String, String> headers, Class<? extends T> classOfT, InputStream data, long fileSize, String contentType) {
+	public static <T> MeshOkHttpRequestImpl<T> BinaryRequest(OkHttpClient client, String method, String url, Map<String, String> headers,
+		Class<? extends T> classOfT, InputStream data, long fileSize, String contentType) {
 		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, new RequestBody() {
 			@Override
 			public MediaType contentType() {
@@ -63,15 +68,18 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 		});
 	}
 
-	public static <T> MeshOkHttpRequestImpl<T> JsonRequest(OkHttpClient client, String method, String url, Map<String, String> headers, Class<? extends T> classOfT, String json) {
+	public static <T> MeshOkHttpRequestImpl<T> JsonRequest(OkHttpClient client, String method, String url, Map<String, String> headers,
+		Class<? extends T> classOfT, String json) {
 		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, RequestBody.create(MediaType.get("application/json"), json));
 	}
 
-	public static <T> MeshOkHttpRequestImpl<T> TextRequest(OkHttpClient client, String method, String url, Map<String, String> headers, Class<? extends T> classOfT, String text) {
+	public static <T> MeshOkHttpRequestImpl<T> TextRequest(OkHttpClient client, String method, String url, Map<String, String> headers,
+		Class<? extends T> classOfT, String text) {
 		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, RequestBody.create(MediaType.get("text/plain"), text));
 	}
 
-	public static <T> MeshOkHttpRequestImpl<T> EmptyRequest(OkHttpClient client, String method, String url, Map<String, String> headers, Class<? extends T> classOfT) {
+	public static <T> MeshOkHttpRequestImpl<T> EmptyRequest(OkHttpClient client, String method, String url, Map<String, String> headers,
+		Class<? extends T> classOfT) {
 		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, RequestBody.create(null, ""));
 	}
 
@@ -149,21 +157,23 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 			String body = response.body().string();
 			MeshRestClientMessageException err;
 			try {
+				GenericMessageResponse msg = null;
+				if (!StringUtils.isEmpty(body)) {
+					msg = JsonUtil.readValue(body, GenericMessageResponse.class);
+				}
 				err = new MeshRestClientMessageException(
 					response.code(),
 					response.message(),
-					JsonUtil.readValue(body, GenericMessageResponse.class),
+					msg,
 					HttpMethod.valueOf(method.toUpperCase()),
-					stripOrigin(url)
-				);
+					stripOrigin(url));
 			} catch (GenericRestException e) {
 				err = new MeshRestClientMessageException(
 					response.code(),
 					response.message(),
 					body,
 					HttpMethod.valueOf(method.toUpperCase()),
-					stripOrigin(url)
-				);
+					stripOrigin(url));
 			}
 			response.close();
 			throw err;

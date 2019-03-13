@@ -18,7 +18,7 @@ import com.syncleus.ferma.tx.Tx;
 
 public class OrientDBFermaMultithreadingTest extends AbstractOrientDBTest {
 
-	private Database db = new OrientDBDatabase();
+	private Database db = mockDatabase();
 
 	@Before
 	public void setup() throws Exception {

@@ -152,6 +152,18 @@ ul.doc-toc h2 {
                         </ul>
                     </li>
 
+                    <li class="section">
+                        <h2><a href="support">Support</a></h2>
+                        <ul>
+                            <li>
+                                <a href="support/#_professional_services">Professional Services</a>
+                            </li>
+                            <li>
+                                <a href="support/#_release_cycle">Release Cycle</a>
+                            </li>
+                        </ul>
+                    </li>
+
                 </ul>
             </div>
             <div class="col-md-4">
@@ -348,6 +360,19 @@ ul.doc-toc h2 {
                     </li>
                     
                     <li class="section">
+                        <h2><a href="monitoring">Monitoring</a></h2>
+                        <ul>
+                            <li>
+                                <a href="monitoring#_endpoints">Endpoints</a>
+                            </li>
+                            <li>
+                                <a href="monitoring#_metrics">Metrics</a>
+                            </li>
+                        </ul>
+                    </li>
+
+
+                    <li class="section">
                         <h2><a href="clustering">Clustering</a></h2>
                         <ul>
                             <li>
@@ -410,17 +435,6 @@ ul.doc-toc h2 {
                         </ul>
                     </li>
 
-		           <li class="section">
-                        <h2><a href="support">Support</a></h2>
-                        <ul>
-                            <li>
-                                <a href="support/#_professional_services">Professional Services</a>
-                            </li>
-                            <li>
-                                <a href="support/#_release_cycle">Release Cycle</a>
-                            </li>
-                        </ul>
-                    </li>
                 </ul>
             </div>
         </div>

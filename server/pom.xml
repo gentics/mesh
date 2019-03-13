@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.30.3-SNAPSHOT</version>
+		<version>0.31.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -33,11 +33,6 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-admin-gui</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>${mesh.database.provider}</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

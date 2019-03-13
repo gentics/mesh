@@ -9,10 +9,10 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
+import com.gentics.mesh.monitor.MonitoringServerVerticle;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.search.verticle.ElasticsearchSyncVerticle;
 
@@ -22,6 +22,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.Vertx;
 
 /**
  * Central loader for core verticles. Needed verticles will be listed and deployed here.
@@ -39,6 +40,9 @@ public class CoreVerticleLoader {
 	@Inject
 	public Provider<RestAPIVerticle> restVerticle;
 
+	@Inject 
+	public Provider<MonitoringServerVerticle> publicAPIVerticle;
+
 	@Inject
 	public JobWorkerVerticle jobWorkerVerticle;
 
@@ -48,9 +52,11 @@ public class CoreVerticleLoader {
 	@Inject
 	public MeshOptions meshOptions;
 
-	@Inject
-	public CoreVerticleLoader() {
+	private final Vertx rxVertx;
 
+	@Inject
+	public CoreVerticleLoader(Vertx rxVertx) {
+		this.rxVertx = rxVertx;
 	}
 
 	private final List<String> deploymentIds = new ArrayList<>();
@@ -69,7 +75,7 @@ public class CoreVerticleLoader {
 						log.info("Deploying mandatory verticle {" + verticle.getClass().getName() + "} " + i + " of " + DEFAULT_VERTICLE_DEPLOYMENTS
 							+ " instances");
 					}
-					deploymentIds.add(deployAndWait(Mesh.vertx(), defaultConfig, verticle.get(), false));
+					deploymentIds.add(deployAndWait(rxVertx.getDelegate(), defaultConfig, verticle.get(), false));
 				}
 			} catch (Exception e) {
 				log.error("Could not load mandatory verticle {" + verticle.getClass().getSimpleName() + "}.", e);
@@ -81,7 +87,7 @@ public class CoreVerticleLoader {
 				if (log.isInfoEnabled()) {
 					log.info("Loading mandatory verticle {" + verticle.getClass().getName() + "}.");
 				}
-				deploymentIds.add(deployAndWait(Mesh.vertx(), defaultConfig, verticle, true));
+				deploymentIds.add(deployAndWait(rxVertx.getDelegate(), defaultConfig, verticle, true));
 			} catch (Exception e) {
 				log.error("Could not load mandatory verticle {" + verticle.getClass().getSimpleName() + "}.", e);
 			}
@@ -90,7 +96,7 @@ public class CoreVerticleLoader {
 
 	public Completable unloadVerticles() {
 		return Observable.fromIterable(deploymentIds)
-			.flatMapCompletable(Mesh.rxVertx()::rxUndeploy)
+			.flatMapCompletable(rxVertx::rxUndeploy)
 			.doOnComplete(deploymentIds::clear);
 	}
 
@@ -102,6 +108,7 @@ public class CoreVerticleLoader {
 	private List<Provider<? extends AbstractVerticle>> getMandatoryVerticleClasses() {
 		List<Provider<? extends AbstractVerticle>> verticles = new ArrayList<>();
 		verticles.add(restVerticle);
+		verticles.add(publicAPIVerticle);
 		return verticles;
 	}
 

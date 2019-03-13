@@ -4,6 +4,8 @@ import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.graphdb.FieldTypeMapper.toSubType;
 import static com.gentics.mesh.graphdb.FieldTypeMapper.toType;
+import static com.gentics.mesh.metric.Metrics.TX_RETRY;
+import static com.gentics.mesh.metric.Metrics.TX_TIME;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -24,10 +26,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Timer;
 import com.gentics.mesh.changelog.Change;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -44,6 +51,8 @@ import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.graphdb.tx.impl.OrientLocalStorageImpl;
 import com.gentics.mesh.graphdb.tx.impl.OrientServerStorageImpl;
+import com.gentics.mesh.metric.Metrics;
+import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.PropertyUtil;
@@ -100,6 +109,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * OrientDB specific mesh graph database implementation.
  */
+@Singleton
 public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final String ORIENTDB_SERVER_CONFIG = "orientdb-server-config.xml";
@@ -116,7 +126,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final Logger log = LoggerFactory.getLogger(OrientDBDatabase.class);
 
-	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.0.16.zip";
+	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.0.17.zip";
 
 	private TopologyEventBridge topologyEventBridge;
 
@@ -129,6 +139,21 @@ public class OrientDBDatabase extends AbstractDatabase {
 	private int maxRetry = 10;
 
 	private OrientStorage txProvider;
+
+	private MetricsService metrics;
+
+	private Timer txTimer;
+
+	private Counter txRetryCounter;
+
+	@Inject
+	public OrientDBDatabase(MetricsService metrics) {
+		this.metrics = metrics;
+		if (metrics != null) {
+			txTimer = metrics.timer(TX_TIME);
+			txRetryCounter = metrics.counter(TX_RETRY);
+		}
+	}
 
 	@Override
 	public void stop() {
@@ -235,9 +260,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 */
 	private void initGraphDB() {
 		if (server != null && server.isActive()) {
-			txProvider = new OrientServerStorageImpl(options, server.getContext());
+			txProvider = new OrientServerStorageImpl(options, server.getContext(), metrics);
 		} else {
-			txProvider = new OrientLocalStorageImpl(options);
+			txProvider = new OrientLocalStorageImpl(options, metrics);
 		}
 		// Open the storage
 		txProvider.open();
@@ -920,6 +945,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public void reload(Element element) {
 		if (element instanceof OrientElement) {
+			if (metrics.isEnabled()) {
+				metrics.meter(Metrics.GRAPH_ELEMENT_RELOAD).mark();
+			}
 			((OrientElement) element).reload();
 		}
 	}
@@ -938,7 +966,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		T handlerResult = null;
 		boolean handlerFinished = false;
 		for (int retry = 0; retry < maxRetry; retry++) {
-
+			final Timer.Context context = txTimer.time();
 			try (Tx tx = tx()) {
 				handlerResult = txHandler.handle(tx);
 				handlerFinished = true;
@@ -978,9 +1006,14 @@ public class OrientDBDatabase extends AbstractDatabase {
 					log.debug("Error handling transaction", e);
 				}
 				throw new RuntimeException("Transaction error", e);
+			} finally {
+				context.stop();
 			}
 			if (!handlerFinished && log.isDebugEnabled()) {
 				log.debug("Retrying .. {" + retry + "}");
+				if (metrics.isEnabled()) {
+					txRetryCounter.inc();
+				}
 			}
 			if (handlerFinished) {
 				return handlerResult;

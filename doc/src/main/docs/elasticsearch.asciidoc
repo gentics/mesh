@@ -21,7 +21,7 @@ When enabled it is possible to search for:
 * link:#tags[Tags]
 * link:#tagfamilies[TagFamilies]
 
-Search queries can be executed via the dedicated search link:#endpoints[REST endpoints] or link:#graphql[GraphQL].
+Search queries can be executed via the dedicated search link:#endpoints[REST endpoints] or link:#_graphql[GraphQL].
 
 == TL;DR
 

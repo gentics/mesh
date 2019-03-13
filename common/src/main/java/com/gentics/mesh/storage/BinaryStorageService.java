@@ -4,8 +4,6 @@ import java.util.Iterator;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
-import com.gentics.mesh.graphdb.DatabaseService;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -13,7 +11,7 @@ import io.vertx.core.logging.LoggerFactory;
  * Service provider for binary storages.
  */
 public class BinaryStorageService {
-	private static final Logger log = LoggerFactory.getLogger(DatabaseService.class);
+	private static final Logger log = LoggerFactory.getLogger(BinaryStorageService.class);
 	private static BinaryStorageService service;
 	private ServiceLoader<BinaryStorage> loader;
 

@@ -12,8 +12,6 @@ import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
 import com.gentics.mesh.etc.config.HttpServerConfig;
-import com.gentics.mesh.graphdb.DatabaseService;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
 import com.gentics.mesh.image.ImgscalrImageManipulator;
 import com.gentics.mesh.storage.BinaryStorage;
@@ -23,8 +21,6 @@ import dagger.Module;
 import dagger.Provides;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
 
@@ -33,8 +29,6 @@ import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
  */
 @Module
 public class MeshModule {
-
-	private static final Logger log = LoggerFactory.getLogger(MeshModule.class);
 
 	private static final int PASSWORD_HASH_LOGROUND_COUNT = 10;
 
@@ -52,12 +46,6 @@ public class MeshModule {
 
 	@Provides
 	@Singleton
-	public static DatabaseService databaseService() {
-		return DatabaseService.getInstance();
-	}
-
-	@Provides
-	@Singleton
 	public static BinaryStorageService storageService() {
 		return BinaryStorageService.getInstance();
 	}
@@ -66,18 +54,6 @@ public class MeshModule {
 	@Singleton
 	public static BinaryStorage binaryStorage() {
 		return storageService().getStorage();
-	}
-
-	@Provides
-	@Singleton
-	public static Database database() {
-		Database database = databaseService().getDatabase();
-		if (database == null) {
-			String message = "No database provider could be found.";
-			log.error(message);
-			throw new RuntimeException(message);
-		}
-		return database;
 	}
 
 	@Provides

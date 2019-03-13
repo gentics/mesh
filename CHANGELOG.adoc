@@ -24,8 +24,28 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
-[[v0.30.3]]
-== 0.30.3 (TBD)
+
+[[v0.31.0]]
+== 0.31.0 (TBD)
+
+icon:bullhorn[] Monitoring
+
+[quote]
+____
+This version of Gentics Mesh introduces the __Monitoring feature__.
+
+The Gentics Mesh server will now by default bind to port `8081` in order to provide the new monitoring API. New configuration settings have been added to allow configuration of this server.
+
+NOTE: The monitoring API should not be exposed publically and will by default only bind to `localhost`.
+
+A detailed description of this feature can be found in our link:{{< relref "monitoring.asciidoc" >}}[Monitoring Documentation].
+____
+
+CAUTION: In a future release the following endpoints will be removed from the regular API (Port 8080) since they were moved to the new  monitoring server API (Port 8081).
+
+* `GET /api/v1` (API Info)
+* `GET /api/v1/admin/status` (Server Status)
+* `GET /api/v1/admin/cluster/status` (Cluster Status)
 
 CAUTION: Because of a change in the image resizer, the change below might not apply when an image is already in the cache. To make sure that the changes take effect, the cache in `data/binaryImageCache/` must be cleared.
 
@@ -33,9 +53,13 @@ icon:plus[] Image: Quality of manipulated JPEG images can now be configured. The
 
 icon:plus[] Image: The filter for resizing images can now be configured. The default filter is Lanczos.
 
-icon:plus[] REST: The `/users` endpoint response will now contain all roles assigned to the loaded users.
+icon:plus[] OrientDB: The included OrientDB version has been updated to version 3.0.17.
 
-icon:plus[] GraphQL: The `roles` field is now available for user fields.
+icon:plus[] REST: The `/users` endpoint response will now contain a hash of a users roles.
+
+icon:plus[] GraphQL: The `roles` field is now available for user fields, and contains all roles of the respective user.
+
+icon:plus[] GraphQL: The `rolesHash` field is now available for user fields, and contains a hash of all the roles of the respective user. This field does not need any special permissions.
 
 icon:check[] Fixed a bug in the consistency checks which claimed missing user role shortcuts.
 

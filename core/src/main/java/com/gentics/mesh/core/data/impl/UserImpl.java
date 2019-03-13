@@ -22,7 +22,9 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Spliterator;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -215,6 +217,18 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
+	public String getRolesHash() {
+		String indexName = "e." + ASSIGNED_TO_ROLE + "_out";
+		Spliterator<Edge> itemEdges = getGraph().getEdges(indexName.toLowerCase(), id()).spliterator();
+		String roles = StreamSupport.stream(itemEdges, false)
+			.map(itemEdge -> itemEdge.getVertex(Direction.IN).getId().toString())
+			.sorted()
+			.collect(Collectors.joining());
+
+		return ETag.hash(roles);
+	}
+
+	@Override
 	public TraversalResult<? extends Role> getRoles() {
 		return new TraversalResult<>(out(HAS_USER).in(HAS_ROLE).frameExplicit(RoleImpl.class));
 	}
@@ -379,8 +393,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		if (fields.has("groups")) {
 			setGroups(ac, restUser);
 		}
-		if (fields.has("roles")) {
-			setRoles(ac, restUser);
+		if (fields.has("rolesHash")) {
+			restUser.setRolesHash(getRolesHash());
 		}
 		fillCommonRestFields(ac, fields, restUser);
 		setRolePermissions(ac, restUser);
@@ -400,16 +414,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			GroupReference reference = group.transformToReference();
 			restUser.getGroups().add(reference);
 		}
-	}
-
-	/**
-	 * Set the roles the user has in the rest model.
-	 *
-	 * @param ac
-	 * @param restUser
-	 */
-	private void setRoles(InternalActionContext ac, UserResponse restUser) {
-		restUser.setRoles(getRolesViaShortcut().stream().map(Role::transformToReference).collect(Collectors.toList()));
 	}
 
 	/**

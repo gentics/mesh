@@ -78,6 +78,7 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.test.TestDataProvider;
@@ -188,6 +189,10 @@ public interface TestHelperMethods {
 
 	default String contentUuid() {
 		return data().getContentUuid();
+	}
+
+	default MonitoringRestClient monClient() {
+		return getTestContext().getMonitoringClient();
 	}
 
 	default MeshRestClient client() {

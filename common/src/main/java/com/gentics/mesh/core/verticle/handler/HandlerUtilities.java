@@ -9,7 +9,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -31,6 +30,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
@@ -52,15 +52,15 @@ public class HandlerUtilities {
 
 	private static final Logger log = LoggerFactory.getLogger(HandlerUtilities.class);
 
-	private Database database;
-	private SearchQueue searchQueue;
-	private final boolean clustered;
+	private final Database database;
+	private final SearchQueue searchQueue;
+	private final MetricsService metrics;
 
 	@Inject
-	public HandlerUtilities(Database database, SearchQueue searchQueue, MeshOptions meshOptions) {
+	public HandlerUtilities(Database database, SearchQueue searchQueue, MeshOptions meshOptions, MetricsService metrics) {
 		this.searchQueue = searchQueue;
 		this.database = database;
-		this.clustered = meshOptions.getClusterOptions() != null && meshOptions.getClusterOptions().isEnabled();
+		this.metrics = metrics;
 	}
 
 	/**

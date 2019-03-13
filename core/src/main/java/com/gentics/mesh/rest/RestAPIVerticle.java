@@ -8,7 +8,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-import javax.inject.Singleton;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,15 +140,8 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 	@Override
 	public void start(Future<Void> startFuture) throws Exception {
-		// this.localRouter = setupLocalRouter();
-		// if (localRouter == null) {
-		// throw new MeshConfigurationException("The local router was not setup correctly. Startup failed.");
-		// }
 		int port = config().getInteger("port");
 		String host = config().getString("host");
-		if (log.isInfoEnabled()) {
-			log.info("Starting http server on {" + host + ":" + port + "}..");
-		}
 		HttpServerOptions options = new HttpServerOptions();
 		options.setPort(port);
 		options.setHost(host);

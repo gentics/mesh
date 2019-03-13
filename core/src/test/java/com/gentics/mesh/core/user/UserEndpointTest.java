@@ -27,6 +27,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.vertx.core.http.HttpHeaders.HOST;
 import static io.vertx.core.http.HttpHeaders.LOCATION;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -39,7 +40,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.rest.client.MeshResponse;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -69,6 +71,7 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
@@ -373,35 +376,6 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		UserResponse response = call(() -> client().findUserByUuid(userUuid()));
 		assertEquals(11, response.getGroups().size());
-	}
-
-	@Test
-	public void testReadUserRoleWithMultipleGroups() {
-		try (Tx tx = tx()) {
-			User user = user();
-
-			assertEquals(1, user.getGroups().count());
-
-			Group extraGroup = meshRoot().getGroupRoot().create("extra_group", user);
-
-			extraGroup.addRole(role());
-			extraGroup.addUser(user);
-
-			 assertEquals(2, user.getGroups().count());
-
-			tx.success();
-		}
-
-		UserResponse response = call(() -> client().findUserByUuid(userUuid()));
-
-		// Both groups have the same roles, so we only want to get one.
-		assertEquals(1, response.getRoles().size());
-
-		// Add another role to one of the groups.
-		grantAdminRole();
-
-		response = call(() -> client().findUserByUuid(userUuid()));
-		assertEquals(2, response.getRoles().size());
 	}
 
 	@Test
@@ -1383,5 +1357,12 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			String location = response.getHeader(LOCATION.toString()).orElse(null);
 			assertEquals("Location header value did not match", "http://jotschi.de:" + port() + "/api/v1/users/" + user.getUuid(), location);
 		}
+	}
+
+	@Test
+	public void testUserRolesHash() {
+		UserResponse response = call(() -> client().findUserByUuid(user().getUuid()));
+
+		assertTrue("Roles hash should be in response", !StringUtils.isBlank(response.getRolesHash()));
 	}
 }
