@@ -34,7 +34,7 @@ public class MonitoringConfig implements Option {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure the Gentics Mesh monitoring HTTP server host to bind to. Default is: " + DEFAULT_MONITORING_HTTP_HOST)
-	@EnvironmentVariable(name = MESH_MONITORING_HTTP_PORT_ENV, description = "Override the configured monitoring http server host which is used to bind to.")
+	@EnvironmentVariable(name = MESH_MONITORING_HTTP_HOST_ENV, description = "Override the configured monitoring http server host which is used to bind to.")
 	private String host = DEFAULT_MONITORING_HTTP_HOST;
 
 	public MonitoringConfig() {

@@ -32,7 +32,6 @@ public class MonitoringServerVerticle extends AbstractVerticle {
 	@Override
 	public void start(Future<Void> startFuture) throws Exception {
 		MonitoringConfig config = options.getMonitoringOptions();
-
 		int port = config.getPort();
 		String host = config.getHost();
 		HttpServerOptions options = new HttpServerOptions();
@@ -50,7 +49,7 @@ public class MonitoringServerVerticle extends AbstractVerticle {
 				startFuture.fail(rh.cause());
 			} else {
 				if (log.isInfoEnabled()) {
-					log.info("Started monitoring http server.. Port: " + config().getInteger("port"));
+					log.info("Started monitoring http server.. Port: " + options.getPort());
 				}
 				startFuture.complete();
 			}
