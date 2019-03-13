@@ -40,7 +40,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 	private Boolean enabled;
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Hash of roles the user has.")
+	@JsonPropertyDescription("Hashsum of user roles which can be used for user permission caching.")
 	private String rolesHash;
 
 	@JsonProperty(required = true)
