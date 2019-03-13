@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.reactivex.Observable;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -53,13 +52,10 @@ import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import io.reactivex.Observable;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
 public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
-
-	private static final Logger log = LoggerFactory.getLogger(GroupEndpointTest.class);
 
 	@Test
 	@Override
