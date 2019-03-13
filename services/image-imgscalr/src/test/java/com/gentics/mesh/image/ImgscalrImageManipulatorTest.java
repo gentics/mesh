@@ -256,5 +256,4 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 	}
 
 
-
 }
