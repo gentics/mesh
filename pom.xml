@@ -22,7 +22,7 @@
 		<elasticsearch.client.version>0.5.0</elasticsearch.client.version>
 		<orientdb.version>3.0.17</orientdb.version>
 		<dagger.version>2.11</dagger.version>
-		<hazelcast.version>3.8.4</hazelcast.version>
+		<hazelcast.version>3.10.4</hazelcast.version>
 		<jackson.version>2.9.8</jackson.version>
 
 		<surefire.forkcount>3</surefire.forkcount>
@@ -191,6 +191,13 @@
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-core</artifactId>
 				<version>${jackson.version}</version>
+			</dependency>
+
+			<!-- Hazelcast -->
+			<dependency>
+				<groupId>com.hazelcast</groupId>
+				<artifactId>hazelcast</artifactId>
+				<version>${hazelcast.version}</version>
 			</dependency>
 
 			<!-- Test dependencies -->
