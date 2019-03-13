@@ -76,6 +76,12 @@ public class UserTypeProvider extends AbstractTypeProvider {
 			return user.getRolesViaShortcut(gc.getUser(), getPagingInfo(env));
 		}, ROLE_PAGE_TYPE_NAME));
 
+		// .rolesHash
+		root.field(newFieldDefinition().name("rolesHash").description("Hash of the users roles").type(GraphQLString).dataFetcher((env) -> {
+			User user = env.getSource();
+			return user.getRolesHash();
+		}));
+
 		// .nodeReference
 		root.field(newFieldDefinition().name("nodeReference").description("User node reference").type(new GraphQLTypeReference("Node"))
 			.dataFetcher((env) -> {

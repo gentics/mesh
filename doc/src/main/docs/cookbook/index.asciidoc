@@ -111,3 +111,9 @@ EXPOSE 9300
 === XI - Links
 
 === XII - Sitemap
+
+=== XIII - Caching
+
+==== User permissions
+
+Sometimes it might not be important which roles a user has exactly, but only that they did not change since the last time they were checked. For this purpose the https://getmesh.io/docs/api/#users__get_response[user response] contains the `rolesHash`, which is a CRC32 hash of all the users roles.
