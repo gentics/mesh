@@ -46,14 +46,18 @@ public class OrientServerStorageImpl extends AbstractOrientStorage {
 
 	@Override
 	public OrientGraph rawTx() {
-		txCouter.mark();
+		if (metrics.isEnabled()) {
+			txCouter.mark();
+		}
 		ODatabaseSession db = createSession();
 		return (OrientGraph) OrientGraphFactory.getTxGraphImplFactory().getGraph((ODatabaseDocumentInternal) db);
 	}
 
 	@Override
 	public OrientGraphNoTx rawNoTx() {
-		noTxCouter.mark();
+		if (metrics.isEnabled()) {
+			noTxCouter.mark();
+		}
 		ODatabaseSession db = createSession();
 		return (OrientGraphNoTx) OrientGraphFactory.getNoTxGraphImplFactory().getGraph((ODatabaseDocumentInternal) db);
 	}

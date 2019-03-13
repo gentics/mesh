@@ -122,22 +122,22 @@ More metrics will be added over time.
 | Key
 | Description
 
-| mesh.tx.created
+| mesh_tx_created
 | Meter which measures the rate of created transactions over time.
 
-| mesh.notx.created
+| mesh_notx_created
 | Meter which measures the rate of created noTx transactions over time.
 
-| graph.element.reload
+| mesh_graph_element_reload
 | Meter which tracks the reload operations on used vertices.
 
-| mesh.tx.time
+| mesh_tx_time
 | Timer which tracks transaction durations.
 
-| mesh.tx.retry
+| mesh_tx_retry
 | Amount of transaction retries which happen if a conflict has been encountered.
 
-|	mesh.node_migration.pending
+|	mesh_node_migration_pending
 | Pending contents which need to be processed by the node migration.
 
 |======

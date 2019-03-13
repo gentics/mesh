@@ -49,13 +49,17 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 
 	@Override
 	public OrientGraph rawTx() {
-		txCouter.mark();
+		if (metrics.isEnabled()) {
+			txCouter.mark();
+		}
 		return factory.getTx();
 	}
 
 	@Override
 	public OrientGraphNoTx rawNoTx() {
-		noTxCouter.mark();
+		if (metrics.isEnabled()) {
+			noTxCouter.mark();
+		}
 		return factory.getNoTx();
 	}
 
