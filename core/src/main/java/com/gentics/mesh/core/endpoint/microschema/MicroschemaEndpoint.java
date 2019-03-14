@@ -1,7 +1,10 @@
 package com.gentics.mesh.core.endpoint.microschema;
 
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_BRANCH_ASSIGN;
 import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_MIGRATION_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_MIGRATION_START;
 import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_UPDATED;
 import static com.gentics.mesh.example.ExampleUuids.MICROSCHEMA_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
@@ -97,6 +100,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 			"Apply the provided changes on the latest version of the schema and migrate all nodes which are based on the schema. Please note that this operation is non-blocking and will continue to run in the background.");
 		endpoint.exampleRequest(schemaExamples.getSchemaChangesListModel());
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Microschema migration was invoked.");
+		endpoint.events(MICROSCHEMA_UPDATED, MICROSCHEMA_BRANCH_ASSIGN, MICROSCHEMA_MIGRATION_START, MICROSCHEMA_MIGRATION_FINISHED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String schemaUuid = ac.getParameter("microschemaUuid");
@@ -161,7 +165,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 		// endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Updated microschema.");
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Migration message.");
 		endpoint.description("Update the microschema with the given uuid.");
-		endpoint.events(MICROSCHEMA_UPDATED);
+		endpoint.events(MICROSCHEMA_UPDATED, MICROSCHEMA_MIGRATION_START, MICROSCHEMA_MIGRATION_FINISHED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("microschemaUuid");

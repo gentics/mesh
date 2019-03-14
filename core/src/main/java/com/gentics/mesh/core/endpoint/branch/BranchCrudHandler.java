@@ -48,10 +48,8 @@ import com.gentics.mesh.core.rest.branch.info.BranchSchemaInfo;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.PentaFunction;
-import com.gentics.mesh.util.Tuple;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -114,8 +112,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			Project project = ac.getProject();
 			SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
 
-			Tuple<Single<BranchInfoSchemaList>, EventQueueBatch> tuple = db.tx(() -> {
-				EventQueueBatch batch = EventQueueBatch.create();
+			Single<BranchInfoSchemaList> branchList = utils.eventAction(event -> {
 
 				// Resolve the list of references to graph schema container versions
 				for (SchemaReference reference : schemaReferenceList.getSchemas()) {
@@ -125,19 +122,16 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 						throw error(BAD_REQUEST, "branch_error_downgrade_schema_version", version.getName(), assignedVersion.getVersion(),
 							version.getVersion());
 					}
-					branch.assignSchemaVersion(ac.getUser(), version, batch);
+					branch.assignSchemaVersion(ac.getUser(), version, event);
 				}
 
-				return Tuple.tuple(getSchemaVersionsInfo(branch), batch);
+				return getSchemaVersionsInfo(branch);
 			});
-
-			// 1. Dispatch the event batch which will invoke the ES sync.
-			tuple.v2().dispatch();
 
 			// 2. Invoke migrations which will populate the created index
 			MeshEvent.triggerJobWorker();
 
-			return tuple.v1();
+			return branchList;
 
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 

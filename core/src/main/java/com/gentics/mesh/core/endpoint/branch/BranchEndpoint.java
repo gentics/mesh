@@ -5,8 +5,12 @@ import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_TAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UNTAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_BRANCH_ASSIGN;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_MIGRATION_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_MIGRATION_START;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_LATEST_BRANCH_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_ASSIGN;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_START;
 import static com.gentics.mesh.example.ExampleUuids.BRANCH_UUID;
 import static com.gentics.mesh.example.ExampleUuids.TAG_BLUE_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
@@ -186,7 +190,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		addSchema.produces(APPLICATION_JSON);
 		addSchema.exampleRequest(branchExamples.createSchemaReferenceList());
 		addSchema.exampleResponse(OK, branchExamples.createSchemaReferenceList(), "Updated schema list.");
-		addSchema.events(SCHEMA_BRANCH_ASSIGN);
+		addSchema.events(SCHEMA_BRANCH_ASSIGN, SCHEMA_MIGRATION_START, SCHEMA_MIGRATION_FINISHED);
 		addSchema.blockingHandler(rc -> {
 			String uuid = rc.request().params().get("branchUuid");
 			InternalActionContext ac = wrap(rc);
@@ -202,7 +206,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		addMicroschema.produces(APPLICATION_JSON);
 		addMicroschema.exampleRequest(microschemaExamples.createMicroschemaReferenceList());
 		addMicroschema.exampleResponse(OK, microschemaExamples.createMicroschemaReferenceList(), "Updated microschema list.");
-		addMicroschema.events(MICROSCHEMA_BRANCH_ASSIGN);
+		addMicroschema.events(MICROSCHEMA_BRANCH_ASSIGN, MICROSCHEMA_MIGRATION_START, MICROSCHEMA_MIGRATION_FINISHED);
 		addMicroschema.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().params().get("branchUuid");

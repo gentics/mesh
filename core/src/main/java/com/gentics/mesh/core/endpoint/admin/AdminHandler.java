@@ -1,5 +1,11 @@
 package com.gentics.mesh.core.endpoint.admin;
 
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_START;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_START;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_START;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -24,6 +30,7 @@ import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
@@ -60,7 +67,8 @@ public class AdminHandler extends AbstractHandler {
 	private HandlerUtilities utils;
 
 	@Inject
-	public AdminHandler(Database db, RouterStorage routerStorage, BootstrapInitializer boot, SearchProvider searchProvider, HandlerUtilities utils, MeshOptions options) {
+	public AdminHandler(Database db, RouterStorage routerStorage, BootstrapInitializer boot, SearchProvider searchProvider, HandlerUtilities utils,
+		MeshOptions options) {
 		this.db = db;
 		this.routerStorage = routerStorage;
 		this.boot = boot;
@@ -81,19 +89,22 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleBackup(InternalActionContext ac) {
+		Mesh mesh = Mesh.mesh();
 		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			MeshStatus oldStatus = Mesh.mesh().getStatus();
-			Mesh.mesh().setStatus(MeshStatus.BACKUP);
+			vertx.eventBus().publish(MeshEvent.GRAPH_BACKUP_START.address, null);
+			MeshStatus oldStatus = mesh.getStatus();
+			mesh.setStatus(MeshStatus.BACKUP);
+			vertx.eventBus().publish(MeshEvent.GRAPH_BACKUP_FINISHED.address, null);
 			db.backupGraph(options.getStorageOptions().getBackupDirectory());
-			Mesh.mesh().setStatus(oldStatus);
+			mesh.setStatus(oldStatus);
 			return message(ac, "backup_finished");
 		}, model -> ac.send(model, OK));
 	}
 
-		/**
+	/**
 	 * Handle graph restore action.
 	 * 
 	 * @param ac
@@ -132,6 +143,7 @@ public class AdminHandler extends AbstractHandler {
 		MeshStatus oldStatus = Mesh.mesh().getStatus();
 		Completable.fromAction(() -> {
 			Mesh.mesh().setStatus(MeshStatus.RESTORE);
+			vertx.eventBus().publish(GRAPH_RESTORE_START.address, null);
 			db.stop();
 			db.restoreGraph(latestFile.getAbsolutePath());
 			db.setupConnectionPool();
@@ -143,9 +155,10 @@ public class AdminHandler extends AbstractHandler {
 			boot.initProjects();
 			Mesh.mesh().setStatus(oldStatus);
 			return Single.just(message(ac, "restore_finished"));
-		})).subscribe(model -> ac.send(model, OK), ac::fail);
+		})).doFinally(() -> {
+			vertx.eventBus().publish(GRAPH_RESTORE_FINISHED.address, null);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
-
 
 	/**
 	 * Handle graph export action.
@@ -159,7 +172,9 @@ public class AdminHandler extends AbstractHandler {
 			}
 			String exportDir = options.getStorageOptions().getExportDirectory();
 			log.debug("Exporting graph to {" + exportDir + "}");
+			vertx.eventBus().publish(GRAPH_EXPORT_START.address, null);
 			db.exportGraph(exportDir);
+			vertx.eventBus().publish(GRAPH_EXPORT_FINISHED.address, null);
 			return message(ac, "export_finished");
 		}, model -> ac.send(model, OK));
 	}
@@ -181,7 +196,11 @@ public class AdminHandler extends AbstractHandler {
 		File latestFile = Arrays.asList(importsDir.listFiles()).stream().filter(file -> file.getName().endsWith(".gz"))
 			.sorted(comparing(File::lastModified)).reduce((first, second) -> second).orElseGet(() -> null);
 		try {
+
+			vertx.eventBus().publish(GRAPH_IMPORT_START.address, null);
 			db.importGraph(latestFile.getAbsolutePath());
+			vertx.eventBus().publish(GRAPH_IMPORT_FINISHED.address, null);
+
 			Single.just(message(ac, "import_finished")).subscribe(model -> ac.send(model, OK), ac::fail);
 		} catch (IOException e) {
 			ac.fail(e);

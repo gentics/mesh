@@ -124,7 +124,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 
 		expect(MICROSCHEMA_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName("new_microschema_name").uuidNotNull();
-		});
+		}).one();
 
 		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(request));
@@ -155,7 +155,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		request.setName("new_microschema_name");
 		request.setDescription("microschema description");
 
-		String microschemaRootUuid = db().tx(() -> meshRoot().getMicroschemaContainerRoot().getUuid());
+		String microschemaRootUuid = tx(() -> meshRoot().getMicroschemaContainerRoot().getUuid());
 		try (Tx tx = tx()) {
 			role().revokePermissions(meshRoot().getMicroschemaContainerRoot(), CREATE_PERM);
 			tx.success();
@@ -294,6 +294,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
 		request.setName("new-name");
 		call(() -> client().updateMicroschema(uuid, request), FORBIDDEN, "error_missing_perm", uuid, UPDATE_PERM.getRestPerm().getName());
+
 	}
 
 	@Test
@@ -315,11 +316,11 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		String uuid = db().tx(() -> microschemaContainers().get("vcard").getUuid());
+		String uuid = tx(() -> microschemaContainer("vcard").getUuid());
 
 		expect(MICROSCHEMA_DELETED).match(1, MeshElementEventModelImpl.class, event -> {
-			assertThat(event).hasName("vcard").uuidNotNull();
-		}).total(1);
+			assertThat(event).hasName("vcard").hasUuid(uuid);
+		}).one();
 
 		call(() -> client().deleteMicroschema(uuid));
 

@@ -5,9 +5,15 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_MIGRATION_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_MIGRATION_START;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_BRANCH_ASSIGN;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_LATEST_BRANCH_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_ASSIGN;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_START;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
@@ -43,6 +49,7 @@ import org.junit.Test;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchListResponse;
@@ -56,6 +63,7 @@ import com.gentics.mesh.core.rest.branch.info.BranchSchemaInfo;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
+import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.event.project.ProjectBranchEventModel;
 import com.gentics.mesh.core.rest.job.JobListResponse;
@@ -67,6 +75,7 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -187,6 +196,9 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		expect(BRANCH_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(branchName).uuidNotNull();
 		});
+		expect(BRANCH_MIGRATION_START).one();
+		expect(BRANCH_MIGRATION_FINISHED).one();
+		expect(NODE_CONTENT_UPDATED).total(58);
 
 		waitForJobs(() -> {
 			BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
@@ -898,13 +910,33 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		SchemaResponse schema = createSchema("schemaname");
 
 		// assign schema to project
+		expect(SCHEMA_BRANCH_ASSIGN).one().match(1, BranchSchemaAssignEventModel.class, event -> {
+			BranchReference branchRef = event.getBranch();
+			assertNotNull(branchRef);
+			assertEquals(PROJECT_NAME, branchRef.getName());
+			assertEquals(initialBranchUuid(), branchRef.getUuid());
+
+			SchemaReference schemaRef = event.getSchema();
+			assertEquals(schema.getName(), schemaRef.getName());
+			assertEquals(schema.getUuid(), schemaRef.getUuid());
+			assertEquals("1.0", schema.getVersion());
+
+			ProjectReference projectRef = event.getProject();
+			assertEquals(PROJECT_NAME, projectRef.getName());
+			assertEquals(projectUuid(), projectRef.getUuid());
+		});
 		call(() -> client().assignSchemaToProject(PROJECT_NAME, schema.getUuid()));
+		awaitEvents();
 
 		// generate version 2
+		expect(SCHEMA_BRANCH_ASSIGN).none();
 		updateSchema(schema.getUuid(), "newschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false));
+		awaitEvents();
 
 		// generate version 3
+		expect(SCHEMA_BRANCH_ASSIGN).none();
 		updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false));
+		awaitEvents();
 
 		// check that version 1 is assigned to branch
 		BranchInfoSchemaList list = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
@@ -912,11 +944,29 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			new BranchSchemaInfo().setName("schemaname").setUuid(schema.getUuid()).setVersion("1.0"));
 
 		// assign version 2 to the branch
+		expect(SCHEMA_BRANCH_ASSIGN).one().match(1, BranchSchemaAssignEventModel.class, event -> {
+			BranchReference branchRef = event.getBranch();
+			assertNotNull(branchRef);
+			assertEquals(PROJECT_NAME, branchRef.getName());
+			assertEquals(initialBranchUuid(), branchRef.getUuid());
+
+			SchemaReference schemaRef = event.getSchema();
+			assertEquals("newschemaname", schemaRef.getName());
+			assertEquals(schema.getUuid(), schemaRef.getUuid());
+			assertEquals("2.0", schemaRef.getVersion());
+
+			ProjectReference projectRef = event.getProject();
+			assertEquals(PROJECT_NAME, projectRef.getName());
+			assertEquals(projectUuid(), projectRef.getUuid());
+		});
+		expect(SCHEMA_MIGRATION_FINISHED).one();
+		expect(SCHEMA_MIGRATION_START).one();
 		BranchInfoSchemaList info = new BranchInfoSchemaList();
 		info.getSchemas().add(new BranchSchemaInfo().setUuid(schema.getUuid()).setVersion("2.0"));
 		waitForJobs(() -> {
 			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(), info));
 		}, COMPLETED, 1);
+		awaitEvents();
 
 		JobListResponse jobList = call(() -> client().findJobs());
 		JobResponse job = jobList.getData().stream().filter(j -> j.getProperties().get("schemaUuid").equals(schema.getUuid())).findAny().get();

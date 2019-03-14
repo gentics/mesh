@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.schema;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_MIGRATION_START;
 import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_UPDATED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -123,12 +124,12 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 		expect(MICROSCHEMA_UPDATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(newName).hasUuid(vcardUuid);
-		});
+		}).one();
+		expect(MICROSCHEMA_MIGRATION_START).none();
 		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
 		request.setName(newName);
 		call(() -> client().updateMicroschema(vcardUuid, request, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
 		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(vcardUuid));
-
 		awaitEvents();
 
 		// Invoke migration

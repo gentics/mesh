@@ -55,7 +55,7 @@ public class EventAsserter {
 	}
 
 	/**
-	 * Clear all expectations and registerd events.
+	 * Clear all expectations and registered events.
 	 */
 	public void clear() {
 		futures.clear();

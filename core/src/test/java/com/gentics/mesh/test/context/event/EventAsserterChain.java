@@ -30,13 +30,33 @@ public class EventAsserterChain {
 		return this;
 	}
 
+	/**
+	 * Expect the given number of events.
+	 * 
+	 * @param count
+	 * @return
+	 */
 	public EventAsserterChain total(int count) {
 		this.asserter.addExpectation(new EventCountExpectation(event, count));
 		return this;
 	}
 
+	/**
+	 * Expect one event.
+	 * 
+	 * @return
+	 */
 	public EventAsserterChain one() {
 		return total(1);
+	}
+
+	/**
+	 * Expect no events.
+	 * 
+	 * @return
+	 */
+	public EventAsserterChain none() {
+		return total(0);
 	}
 
 }

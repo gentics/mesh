@@ -64,10 +64,14 @@ public class EventBodyExpectation implements EventExpectation {
 		if (lastError == null) {
 			assertEquals("The body assertion for type {" + event.getAddress() + "} did not match for the expected amount of events.", count, accepts);
 		} else {
-			throw new RuntimeException(
-				"The body assertion for type {" + event.getAddress() + "} did not match for the expected amount of events. Passed: " + accepts
-					+ " of expected: " + count,
-				lastError);
+			if (lastError instanceof AssertionError) {
+				throw (AssertionError) lastError;
+			} else {
+				throw new AssertionError(
+					"The body assertion for type {" + event.getAddress() + "} did not match for the expected amount of events. Passed: " + accepts
+						+ " of expected: " + count,
+					lastError);
+			}
 		}
 	}
 

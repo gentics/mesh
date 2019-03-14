@@ -1,7 +1,10 @@
 package com.gentics.mesh.core.endpoint.schema;
 
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_ASSIGN;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_START;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_UPDATED;
 import static com.gentics.mesh.example.ExampleUuids.SCHEMA_VEHICLE_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
@@ -78,6 +81,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(schemaExamples.getSchemaChangesListModel());
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Schema changes have been applied.");
+		endpoint.events(SCHEMA_UPDATED, SCHEMA_BRANCH_ASSIGN, SCHEMA_MIGRATION_START, SCHEMA_MIGRATION_FINISHED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String schemaUuid = ac.getParameter("schemaUuid");
@@ -132,7 +136,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 		endpoint.addQueryParameters(SchemaUpdateParametersImpl.class);
 		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
 		endpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Updated schema.");
-		endpoint.events(SCHEMA_UPDATED);
+		endpoint.events(SCHEMA_UPDATED, SCHEMA_MIGRATION_START, SCHEMA_MIGRATION_FINISHED);
 		endpoint.blockingHandler(rc -> {
 			// Update operations should always be executed sequentially - never in parallel
 			synchronized (mutex) {
