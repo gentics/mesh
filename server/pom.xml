@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.30.3-SNAPSHOT</version>
+		<version>0.31.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -23,21 +23,10 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-core</artifactId>
 			<version>${project.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.hazelcast</groupId>
-					<artifactId>hazelcast</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-admin-gui</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>${mesh.database.provider}</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

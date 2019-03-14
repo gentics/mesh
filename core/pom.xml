@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.30.3-SNAPSHOT</version>
+		<version>0.31.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -21,6 +21,11 @@
 
 	<dependencies>
 		<!-- Internal dependencies -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>${mesh.database.provider}</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-common</artifactId>
@@ -102,6 +107,13 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-service-keycloak-auth</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- Metrics -->
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-service-metrics-prometheus</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

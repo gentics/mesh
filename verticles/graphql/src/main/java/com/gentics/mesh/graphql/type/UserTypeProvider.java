@@ -13,6 +13,7 @@ import javax.inject.Singleton;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.graphql.type.GroupTypeProvider.GROUP_PAGE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.RoleTypeProvider.ROLE_PAGE_TYPE_NAME;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
@@ -67,6 +68,19 @@ public class UserTypeProvider extends AbstractTypeProvider {
 			GraphQLContext gc = env.getContext();
 			return user.getGroups(gc.getUser(), getPagingInfo(env));
 		}, GROUP_PAGE_TYPE_NAME));
+
+		// .roles
+		root.field(newPagingFieldWithFetcher("roles", "Roles the user has", env -> {
+			User user = env.getSource();
+			GraphQLContext gc = env.getContext();
+			return user.getRolesViaShortcut(gc.getUser(), getPagingInfo(env));
+		}, ROLE_PAGE_TYPE_NAME));
+
+		// .rolesHash
+		root.field(newFieldDefinition().name("rolesHash").description("Hash of the users roles").type(GraphQLString).dataFetcher((env) -> {
+			User user = env.getSource();
+			return user.getRolesHash();
+		}));
 
 		// .nodeReference
 		root.field(newFieldDefinition().name("nodeReference").description("User node reference").type(new GraphQLTypeReference("Node"))

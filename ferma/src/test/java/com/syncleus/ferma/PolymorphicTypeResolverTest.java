@@ -15,14 +15,16 @@
  */
 package com.syncleus.ferma;
 
-import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
-import com.syncleus.ferma.framefactories.annotation.AnnotationFrameFactory;
-import com.tinkerpop.blueprints.impls.tg.TinkerGraph;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.*;
+import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.impls.tg.TinkerGraph;
 
 public class PolymorphicTypeResolverTest {
 
@@ -53,7 +55,7 @@ public class PolymorphicTypeResolverTest {
     public void testCustomTypeKey() {
         final Graph g = new TinkerGraph();
         final ReflectionCache cache = new ReflectionCache(TEST_TYPES);
-        final FramedGraph fg = new DelegatingFramedGraph(g, new AnnotationFrameFactory(cache), new PolymorphicTypeResolver(cache, CUSTOM_TYPE_KEY));
+        final FramedGraph fg = new DelegatingFramedGraph(g, new PolymorphicTypeResolver(cache, CUSTOM_TYPE_KEY));
 
         final Person p1 = fg.addFramedVertex(null, Programmer.DEFAULT_INITIALIZER);
         p1.setName("Bryn");
@@ -77,7 +79,7 @@ public class PolymorphicTypeResolverTest {
     public void testCustomTypeKeyByClass() {
         final Graph g = new TinkerGraph();
         final ReflectionCache cache = new ReflectionCache(TEST_TYPES);
-        final FramedGraph fg = new DelegatingFramedGraph(g, new AnnotationFrameFactory(cache), new PolymorphicTypeResolver(cache, CUSTOM_TYPE_KEY));
+        final FramedGraph fg = new DelegatingFramedGraph(g, new PolymorphicTypeResolver(cache, CUSTOM_TYPE_KEY));
 
         final Person p1 = fg.addFramedVertex(Programmer.class);
         p1.setName("Bryn");
@@ -101,7 +103,7 @@ public class PolymorphicTypeResolverTest {
     public void testCustomTypeKeyExplicit() {
         final Graph g = new TinkerGraph();
         final ReflectionCache cache = new ReflectionCache(TEST_TYPES);
-        final FramedGraph fg = new DelegatingFramedGraph(g, new AnnotationFrameFactory(cache), new PolymorphicTypeResolver(cache, CUSTOM_TYPE_KEY));
+        final FramedGraph fg = new DelegatingFramedGraph(g, new PolymorphicTypeResolver(cache, CUSTOM_TYPE_KEY));
 
         final Person p1 = fg.addFramedVertexExplicit(Programmer.DEFAULT_INITIALIZER);
         p1.setName("Bryn");
@@ -125,7 +127,7 @@ public class PolymorphicTypeResolverTest {
     public void testCustomTypeKeyExplicitByClass() {
         final Graph g = new TinkerGraph();
         final ReflectionCache cache = new ReflectionCache(TEST_TYPES);
-        final FramedGraph fg = new DelegatingFramedGraph(g, new AnnotationFrameFactory(cache), new PolymorphicTypeResolver(cache, CUSTOM_TYPE_KEY));
+        final FramedGraph fg = new DelegatingFramedGraph(g, new PolymorphicTypeResolver(cache, CUSTOM_TYPE_KEY));
 
         final Person p1 = fg.addFramedVertexExplicit(Programmer.class);
         p1.setName("Bryn");

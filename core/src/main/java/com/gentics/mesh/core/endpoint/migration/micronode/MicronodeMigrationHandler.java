@@ -29,6 +29,7 @@ import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
 
@@ -43,8 +44,8 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	private static final Logger log = LoggerFactory.getLogger(MicronodeMigrationHandler.class);
 
 	@Inject
-	public MicronodeMigrationHandler(Database db, BinaryUploadHandler binaryFieldHandler) {
-		super(db, binaryFieldHandler);
+	public MicronodeMigrationHandler(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics) {
+		super(db, binaryFieldHandler, metrics);
 	}
 
 	/**

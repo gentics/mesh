@@ -104,15 +104,17 @@ version: "3"
 services:
 
   mesh:
-    image: gentics/mesh:0.27.0
+    image: gentics/mesh:0.31.0
     container_name: mesh-server
     environment:
       - MESH_ELASTICSEARCH_URL=http://elasticsearch:9200
       - MESH_ELASTICSEARCH_START_EMBEDDED=false
       - MESH_AUTH_KEYSTORE_PASS=changeme
+      - MESH_MONITORING_HTTP_HOST=0.0.0.0
     stop_grace_period: 5m
     ports:
-      - '8081:8080'
+      - '8080:8080'
+      - '127.0.0.1:8081:8081'
     volumes:
       - mesh-data:/graphdb
       - mesh-uploads:/uploads
@@ -123,10 +125,10 @@ services:
         hard: 40000
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.4
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.6.2
     container_name: mesh-elasticsearch
     environment:
-      - cluster.name=docker-cluster
+      - discovery.type=single-node
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     stop_grace_period: 5m

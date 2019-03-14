@@ -22,6 +22,7 @@ import com.gentics.mesh.dagger.module.MeshModule;
 import com.gentics.mesh.dagger.module.SearchProviderModule;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.router.EndpointRegistry;
@@ -116,6 +117,8 @@ public interface MeshComponent {
 	RestAPIVerticle restApiVerticle();
 
 	MeshJWTAuthProvider authProvider();
+
+	MetricsService metrics();
 
 	@Component.Builder
 	interface Builder {

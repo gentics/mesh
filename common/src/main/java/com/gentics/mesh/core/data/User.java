@@ -56,7 +56,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Compose the index name for the user index.
-	 * 
+	 *
 	 * @return
 	 */
 	static String composeIndexName() {
@@ -65,7 +65,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Compose the document id for the user documents.
-	 * 
+	 *
 	 * @param elementUuid
 	 * @return
 	 */
@@ -76,14 +76,14 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Return the username.
-	 * 
+	 *
 	 * @return Username
 	 */
 	String getUsername();
 
 	/**
 	 * Set the username.
-	 * 
+	 *
 	 * @param string
 	 *            Username
 	 * @return Fluent API
@@ -92,14 +92,14 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Return the email address.
-	 * 
+	 *
 	 * @return Email address or null when no email address was set
 	 */
 	String getEmailAddress();
 
 	/**
 	 * Set the email address.
-	 * 
+	 *
 	 * @param email
 	 *            Email address
 	 * @return Fluent API
@@ -108,14 +108,14 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Return the lastname.
-	 * 
+	 *
 	 * @return Lastname
 	 */
 	String getLastname();
 
 	/**
 	 * Set the lastname.
-	 * 
+	 *
 	 * @param lastname
 	 * @return Fluent API
 	 */
@@ -123,14 +123,14 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Return the firstname.
-	 * 
+	 *
 	 * @return Firstname
 	 */
 	String getFirstname();
 
 	/**
 	 * Set the lastname.
-	 * 
+	 *
 	 * @param firstname
 	 * @return Fluent API
 	 */
@@ -138,14 +138,14 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Return the password hash.
-	 * 
+	 *
 	 * @return Password hash
 	 */
 	String getPasswordHash();
 
 	/**
 	 * Set the password hash.
-	 * 
+	 *
 	 * @param hash
 	 *            Password hash
 	 * @return Fluent API
@@ -156,7 +156,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Set the plaintext password. Internally the password string will be hashed and the password hash will be set.
-	 * 
+	 *
 	 * @param password
 	 * @return Fluent API
 	 */
@@ -164,14 +164,14 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Return the referenced node which was assigned to the user.
-	 * 
+	 *
 	 * @return Referenced node or null when no node was assigned to the user.
 	 */
 	Node getReferencedNode();
 
 	/**
 	 * Set the referenced node.
-	 * 
+	 *
 	 * @param node
 	 * @return Fluent API
 	 */
@@ -179,7 +179,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Return the permission info object for the given vertex.
-	 * 
+	 *
 	 * @param vertex
 	 * @return
 	 */
@@ -187,7 +187,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Return a set of permissions which the user got for the given vertex.
-	 * 
+	 *
 	 * @param vertex
 	 * @return
 	 */
@@ -201,7 +201,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * addCRUDPermissionOnRole(projectRoot, Permission.CREATE_PERM, newlyCreatedProject); This method will ensure that all users/roles that would be able to
 	 * create an element will also be able to CRUD it even when the creator of the element was only assigned to one of the enabling roles. Additionally the
 	 * permissions of the source node are inherited by the target node. All permissions between the source node and roles are copied to the target node.
-	 * 
+	 *
 	 * @param sourceNode
 	 *            Node that will be checked against to find all roles that would grant the given permission.
 	 * @param permission
@@ -215,7 +215,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	/**
 	 * This method adds additional permissions to the target node. The roles are selected like in method
 	 * {@link #addCRUDPermissionOnRole(MeshVertex, GraphPermission, MeshVertex)} .
-	 * 
+	 *
 	 * @param sourceNode
 	 *            Node that will be checked
 	 * @param permission
@@ -230,7 +230,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Inherit permissions egdes from the source node and assign those permissions to the target node.
-	 * 
+	 *
 	 * @param sourceNode
 	 * @param targetNode
 	 * @return Fluent API
@@ -239,7 +239,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Return a page of groups which the user was assigned to.
-	 * 
+	 *
 	 * @param user
 	 * @param params
 	 * @return
@@ -248,32 +248,48 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Return a traversal result of groups to which the user was assigned.
-	 * 
+	 *
 	 * @return
 	 */
 	TraversalResult<? extends Group> getGroups();
 
 	/**
 	 * Add the user to the given group.
-	 * 
+	 *
 	 * @param group
 	 * @return Fluent API
 	 */
 	User addGroup(Group group);
 
 	/**
+	 * A CRC32 hash of the users {@link #getRoles roles}.
+	 *
+	 * @return A hash of the users roles
+	 */
+	String getRolesHash();
+
+	/**
 	 * Return an iterable of roles which belong to this user. Internally this will fetch all groups of the user and collect the assigned roles.
-	 * 
+	 *
 	 * @return
 	 */
 	Iterable<? extends Role> getRoles();
 
 	/**
 	 * Return an iterable of roles that belong to the user. Internally this will check the user role shortcut edge.
-	 * 
+	 *
 	 * @return
 	 */
 	Iterable<? extends Role> getRolesViaShortcut();
+
+	/**
+	 * Return a page of roles which the user was assigned to.
+	 *
+	 * @param user
+	 * @param params
+	 * @return
+	 */
+	Page<? extends Role> getRolesViaShortcut(User user, PagingParameters params);
 
 	/**
 	 * Update all shortcut edges.
@@ -287,7 +303,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Check whether the user is enabled.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean isEnabled();
@@ -299,14 +315,14 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Disable the user and remove him from all groups
-	 * 
+	 *
 	 * @return
 	 */
 	User deactivate();
 
 	/**
 	 * Check whether the user has the given permission on the given element.
-	 * 
+	 *
 	 * @param element
 	 * @param permission
 	 * @return
@@ -315,7 +331,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Check whether the user has the given permission on the element with the given id.
-	 * 
+	 *
 	 * @param elementId
 	 * @param permission
 	 * @return
@@ -325,7 +341,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	/**
 	 * Check the read permission on the given container and fail if the needed permission to read the container is not set. This method will not fail if the
 	 * user has READ permission or READ_PUBLISH permission on a published node.
-	 * 
+	 *
 	 * @param container
 	 * @param branchUuid
 	 */
@@ -333,7 +349,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Check whether the admin role was assigned to the user.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean hasAdminRole();
@@ -341,7 +357,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	/**
 	 * Check whether the user is allowed to read the given node. Internally this check the currently configured version scope and check for
 	 * {@link GraphPermission#READ_PERM} or {@link GraphPermission#READ_PUBLISHED_PERM}.
-	 * 
+	 *
 	 * @param ac
 	 * @param node
 	 * @return
@@ -350,7 +366,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Set the reset token for the user.
-	 * 
+	 *
 	 * @param token
 	 * @return Fluent API
 	 */
@@ -358,21 +374,21 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Return the currently stored reset token.
-	 * 
+	 *
 	 * @return Token or null if no token has been set or if the token has been used up
 	 */
 	String getResetToken();
 
 	/**
 	 * Return the timestamp on which the token code was issued.
-	 * 
+	 *
 	 * @return
 	 */
 	Long getResetTokenIssueTimestamp();
 
 	/**
 	 * Set the token code issue timestamp. This is used to influence the token expire moment.
-	 * 
+	 *
 	 * @param timestamp
 	 * @return
 	 */
@@ -380,7 +396,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Invalidate the reset token.
-	 * 
+	 *
 	 * @return Fluent API
 	 */
 	default User invalidateResetToken() {
@@ -391,7 +407,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Check whether the given token code is valid. This method will also clear the token code if the token has expired.
-	 * 
+	 *
 	 * @param token
 	 *            Token Code
 	 * @param maxTokenAgeMins
@@ -416,7 +432,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Return the currently stored API token id.
-	 * 
+	 *
 	 * @return API token id or null if no token has yet been generated.
 	 */
 	default String getAPIKeyTokenCode() {
@@ -425,7 +441,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Set the user API token id.
-	 * 
+	 *
 	 * @param code
 	 * @return Fluent API
 	 */
@@ -436,7 +452,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Return the timestamp when the api key token code was last issued.
-	 * 
+	 *
 	 * @return
 	 */
 	default Long getAPITokenIssueTimestamp() {
@@ -445,7 +461,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Set the API token issue timestamp to the current time.
-	 * 
+	 *
 	 * @return Fluent API
 	 */
 	default User setAPITokenIssueTimestamp() {
@@ -455,7 +471,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Set the API token issue timestamp.
-	 * 
+	 *
 	 * @param timestamp
 	 * @return Fluent API
 	 */
@@ -466,7 +482,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Return the API token issue date.
-	 * 
+	 *
 	 * @return ISO8601 formatted date or null if the date has not yet been set
 	 */
 	default String getAPITokenIssueDate() {

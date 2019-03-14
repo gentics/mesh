@@ -220,8 +220,6 @@ public class HttpServerConfig implements Option {
 	}
 
 	public void validate(MeshOptions meshOptions) {
-		// TODO Auto-generated method stub
-
 	}
 
 }

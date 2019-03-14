@@ -29,7 +29,6 @@ import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -81,7 +80,6 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		// addServiceHandler();
 		addJobHandler();
 		addPluginHandler();
-
 	}
 
 	private void addPluginHandler() {
@@ -136,6 +134,10 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		});
 	}
 
+	/**
+	 * @deprecated Use monitoring server endpoint instead
+	 */
+	@Deprecated 
 	private void addClusterStatusHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/cluster/status");
@@ -152,7 +154,8 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/consistency/check");
 		endpoint.method(GET);
-		endpoint.description("Invokes a consistency check of the graph database without attempting to repairing the found issues. A list of found issues will be returned.");
+		endpoint.description(
+			"Invokes a consistency check of the graph database without attempting to repairing the found issues. A list of found issues will be returned.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, adminExamples.createConsistencyCheckResponse(false), "Consistency check report");
 		endpoint.handler(rc -> {
@@ -162,7 +165,8 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute repairEndpoint = createRoute();
 		repairEndpoint.path("/consistency/repair");
 		repairEndpoint.method(POST);
-		repairEndpoint.description("Invokes a consistency check and repair of the graph database and returns a list of found issues and their state.");
+		repairEndpoint
+			.description("Invokes a consistency check and repair of the graph database and returns a list of found issues and their state.");
 		repairEndpoint.produces(APPLICATION_JSON);
 		repairEndpoint.exampleResponse(OK, adminExamples.createConsistencyCheckResponse(true), "Consistency check and repair report");
 		repairEndpoint.events(REPAIR_START, REPAIR_FINISHED);
@@ -228,7 +232,9 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 
 	/**
 	 * Handler that reacts onto status requests.
+	 * @deprecated Use monitoring server status endpoint instead
 	 */
+	@Deprecated
 	private void addMeshStatusHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.description("Return the Gentics Mesh server status.");
@@ -303,5 +309,6 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 			jobHandler.handleResetJob(ac, uuid);
 		});
 	}
+
 
 }

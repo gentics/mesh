@@ -10,7 +10,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.VertexFrame;
@@ -18,7 +17,7 @@ import com.syncleus.ferma.tx.Tx;
 
 public class OrientDBFermaMultithreadingTest extends AbstractOrientDBTest {
 
-	private Database db = new OrientDBDatabase();
+	private Database db = mockDatabase();
 
 	@Before
 	public void setup() throws Exception {

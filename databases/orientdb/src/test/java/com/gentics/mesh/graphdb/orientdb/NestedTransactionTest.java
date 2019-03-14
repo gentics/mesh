@@ -6,7 +6,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -14,9 +13,9 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
 @Ignore
-public class NestedTransactionTest {
+public class NestedTransactionTest extends AbstractOrientDBTest {
 
-	private Database db = new OrientDBDatabase();
+	private Database db = mockDatabase();
 
 	static {
 		// Use slf4j instead of jul

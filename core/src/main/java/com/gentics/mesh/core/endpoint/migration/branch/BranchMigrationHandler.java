@@ -23,6 +23,7 @@ import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.metric.MetricsService;
 
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
@@ -35,8 +36,8 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 	private static final Logger log = LoggerFactory.getLogger(BranchMigrationHandler.class);
 
 	@Inject
-	public BranchMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler) {
-		super(db, nodeFieldAPIHandler);
+	public BranchMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics) {
+		super(db, nodeFieldAPIHandler, metrics);
 	}
 
 	/**

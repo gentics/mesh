@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ELASTICSEARCH_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.HashMap;
@@ -53,8 +54,21 @@ public class UpdateFieldChangeImpl extends AbstractSchemaFieldChange implements 
 			key = key.replace(REST_PROPERTY_PREFIX_KEY, "");
 			properties.put(key, value);
 		}
+	
 		fieldSchema.apply(properties);
 		return container;
+	}
+	
+	@Override
+	public void updateFromRest(SchemaChangeModel restChange) {
+		/***
+		 * Many graph databases can't handle null values. Tinkerpop blueprint contains constrains which avoid setting null values. We store empty string for the
+		 * segment field name instead. It is possible to set setStandardElementConstraints for each tx to false in order to avoid such checks.
+		 */
+		if (restChange.getProperties().containsKey(ELASTICSEARCH_KEY) && restChange.getProperty(ELASTICSEARCH_KEY) == null) {
+			restChange.setProperty(ELASTICSEARCH_KEY, "{}");
+		}
+		super.updateFromRest(restChange);
 	}
 
 	@Override

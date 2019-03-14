@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -1394,5 +1395,12 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			String location = response.getHeader(LOCATION.toString()).orElse(null);
 			assertEquals("Location header value did not match", "http://jotschi.de:" + port() + "/api/v1/users/" + user.getUuid(), location);
 		}
+	}
+
+	@Test
+	public void testUserRolesHash() {
+		UserResponse response = call(() -> client().findUserByUuid(user().getUuid()));
+
+		assertTrue("Roles hash should be in response", !StringUtils.isBlank(response.getRolesHash()));
 	}
 }

@@ -7,6 +7,11 @@
 | Description
 
 
+| jpegQuality
+| false
+| number
+| Configure the quality of the output of JPEG images. Must be a value between inclusive 0 and inclusive 1. Default: 0.95
+
 | maxHeight
 | false
 | integer
@@ -16,5 +21,10 @@
 | false
 | integer
 | Configure the maximum allowed image resize width. Resizing is a memory intensive operation and thus this limit can help avoid memory issues. Default: 2048
+
+| resampleFilter
+| false
+| string
+| Configure the filter that is used when resizing images. Default: LANCZOS
 
 |======

@@ -23,6 +23,7 @@ import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.logging.Logger;
@@ -44,9 +45,12 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 
 	protected BinaryUploadHandler binaryFieldHandler;
 
-	public AbstractMigrationHandler(Database db, BinaryUploadHandler binaryFieldHandler) {
+	protected MetricsService metrics;
+
+	public AbstractMigrationHandler(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics) {
 		this.db = db;
 		this.binaryFieldHandler = binaryFieldHandler;
+		this.metrics = metrics;
 	}
 
 	/**

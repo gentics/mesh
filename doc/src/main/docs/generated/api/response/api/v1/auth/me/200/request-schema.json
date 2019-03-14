@@ -75,6 +75,11 @@
       "required" : true,
       "description" : "Flag which indicates whether the user is enabled or disabled. Disabled users can no longer log into Gentics Mesh. Deleting a user user will not remove it. Instead the user will just be disabled."
     },
+    "rolesHash" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Hashsum of user roles which can be used for user permission caching."
+    },
     "groups" : {
       "type" : "array",
       "required" : true,

@@ -27,6 +27,7 @@ import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
@@ -47,12 +48,14 @@ public class HandlerUtilities {
 
 	private static final Logger log = LoggerFactory.getLogger(HandlerUtilities.class);
 
-	private Database database;
+	private final Database database;
+	private final MetricsService metrics;
 	private final boolean clustered;
 
 	@Inject
-	public HandlerUtilities(Database database, MeshOptions meshOptions) {
+	public HandlerUtilities(Database database, MeshOptions meshOptions, MetricsService metrics) {
 		this.database = database;
+		this.metrics = metrics;
 		this.clustered = meshOptions.getClusterOptions() != null && meshOptions.getClusterOptions().isEnabled();
 	}
 

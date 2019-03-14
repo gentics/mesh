@@ -29,6 +29,9 @@
 | *MESH_PLUGIN_DIR*
 | Override the configured plugin directory.
 
+| *MESH_MONITORING_HTTP_HOST*
+| Override the configured monitoring http server host which is used to bind to.
+
 | *MESH_VERTX_WORKER_POOL_SIZE*
 | Override the configured Vert.x worker pool size.
 
@@ -77,11 +80,17 @@
 | *MESH_BINARY_UPLOAD_LIMIT*
 | Override the configured binary byte upload limit.
 
+| *MESH_MONITORING_HTTP_PORT*
+| Override the configured monitoring server http port.
+
 | *MESH_HTTP_SSL_KEY_PATH*
 | Override the configured SSL enable flag.
 
 | *MESH_TEMP_DIR*
 | Override the configured temp directory.
+
+| *MESH_MONITORING_ENABLED*
+| Override the configured monitoring enabled flag.
 
 | *MESH_ELASTICSEARCH_URL*
 | Override the configured elasticsearch server url. The value can be set to null in order to disable the Elasticsearch support.
@@ -109,6 +118,9 @@
 
 | *MESH_DEFAULT_LANG*
 | Override the configured default language.
+
+| *MESH_IMAGE_RESAMPLE_FILTER*
+| Override the sample filter for image resize operations.
 
 | *MESH_CLUSTER_NAME*
 | Override the cluster name.
@@ -142,6 +154,9 @@
 
 | *MESH_NODE_NAME*
 | Override the configured node name.
+
+| *MESH_IMAGE_JPEG_QUALITY*
+| Override the JPEG quality for image resize operations.
 
 | *MESH_CLUSTER_ENABLED*
 | Override cluster enabled flag.
