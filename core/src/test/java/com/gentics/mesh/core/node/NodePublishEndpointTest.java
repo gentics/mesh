@@ -178,7 +178,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 			assertEquals("folder", schemaRef.getName());
 			assertEquals(schemaUuid, schemaRef.getUuid());
 			assertEquals("1.0", schemaRef.getVersion());
-		}).total(1);
+		}).one();
 
 		PublishStatusResponse statusResponse = call(() -> client().publishNode(PROJECT_NAME, nodeUuid));
 		awaitEvents();
@@ -189,6 +189,55 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 				schemaContainerVersionUuid, PUBLISHED), NodeGraphFieldContainer.composeDocumentId(nodeUuid, "en"));
 			// The draft of the node must still remain in the index
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+		}
+	}
+
+	@Test
+	public void testPublishNodeMultiLanguages() {
+		Node node = folder("2015");
+		String nodeUuid = tx(() -> node.getUuid());
+		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
+		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
+		String schemaContainerVersionUuid = tx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
+
+		// Add german language
+		NodeUpdateRequest request = new NodeUpdateRequest();
+		request.setLanguage("de");
+		request.setVersion("0.1");
+		request.getFields().put("name", FieldUtil.createStringField("2015-de"));
+		call(() -> client().updateNode(projectName(), nodeUuid, request));
+
+		// Take node fully offline
+		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
+
+		PublishStatusResponse status = call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid));
+		assertThat(status).as("Publish status").isNotNull().isNotPublished("en").hasVersion("en", "1.0");
+
+		expect(NODE_PUBLISHED).match(2, NodeMeshEventModel.class, event -> {
+			assertEquals(initialBranchUuid(), event.getBranchUuid());
+			assertEquals(nodeUuid, event.getUuid());
+
+			ProjectReference projectRef = event.getProject();
+			assertNotNull(projectRef);
+			assertEquals(PROJECT_NAME, projectRef.getName());
+			assertEquals(projectUuid(), projectRef.getUuid());
+
+			SchemaReference schemaRef = event.getSchema();
+			assertNotNull(schemaRef);
+			assertEquals("folder", schemaRef.getName());
+			assertEquals(schemaUuid, schemaRef.getUuid());
+			assertEquals("1.0", schemaRef.getVersion());
+		}).total(2);
+
+		PublishStatusResponse statusResponse = call(() -> client().publishNode(PROJECT_NAME, nodeUuid));
+		awaitEvents();
+		assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "2.0");
+
+		try (Tx tx = tx()) {
+			assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid(), branchUuid,
+				schemaContainerVersionUuid, PUBLISHED), NodeGraphFieldContainer.composeDocumentId(nodeUuid, "en"));
+			// The draft of the node must still remain in the index
+			assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0);
 		}
 	}
 
@@ -396,7 +445,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 				.hasBranchUuid(branchUuid)
 				.hasLanguage("en")
 				.hasProject(PROJECT_NAME, projectUuid());
-		}).total(1);
+		}).one();
 		call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"));
 		awaitEvents();
 
@@ -405,8 +454,17 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 			.published()), NOT_FOUND, "node_error_published_not_found_for_uuid_branch_language", nodeUuid, "de", branchUuid);
 
 		// Publish german version
+		expect(NODE_PUBLISHED).match(1, NodeMeshEventModel.class, event -> {
+			assertThat(event)
+				.hasUuid(nodeUuid)
+				.hasSchema("folder", schemaUuid)
+				.hasBranchUuid(branchUuid)
+				.hasLanguage("de")
+				.hasProject(PROJECT_NAME, projectUuid());
+		}).one();
 		PublishStatusModel publishStatus = call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de"));
 		assertThat(publishStatus).as("Publish status").isPublished().hasVersion("1.0");
+		awaitEvents();
 
 		// Assert that german is published and english is offline
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParametersImpl().setLanguages("de"),
