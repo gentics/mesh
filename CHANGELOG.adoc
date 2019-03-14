@@ -34,7 +34,7 @@ icon:bullhorn[] Monitoring
 ____
 This version of Gentics Mesh introduces the __Monitoring feature__.
 
-The Gentics Mesh server will now by default bind to port `8081` in order to provide the new monitoring API. New configuration settings have been added to allow configuration of this server.
+The Gentics Mesh server will now *additionally* to port `8080` also bind to port `8081` in order to provide the new monitoring API. New configuration settings have been added to allow configuration of this server.
 
 NOTE: The monitoring API should not be exposed publically and will by default only bind to `localhost`.
 
@@ -43,7 +43,6 @@ ____
 
 CAUTION: In a future release the following endpoints will be removed from the regular API (Port 8080) since they were moved to the new  monitoring server API (Port 8081).
 
-* `GET /api/v1` (API Info)
 * `GET /api/v1/admin/status` (Server Status)
 * `GET /api/v1/admin/cluster/status` (Cluster Status)
 
