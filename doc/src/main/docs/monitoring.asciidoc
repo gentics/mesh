@@ -5,7 +5,7 @@ title: Monitoring
 :icons: font
 :source-highlighter: prettify
 
-Gentics Mesh exposed monitoring data via an un-authenticated monitoring server. In addition to the default API server which runs on default port `8080` an additional monitoring server will be started which listens on `localhost:8081` by default.
+Gentics Mesh exposes monitoring data via an un-authenticated monitoring server. In addition to the default API server which runs on default port `8080` an additional monitoring server will be started which listens on `localhost:8081` by default.
 
 NOTE: The monitoring server is un-authenticated and thus should not be exposed to the public. By default it will only bind to `localhost:8081`.
 
