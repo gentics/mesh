@@ -495,6 +495,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		CountDownLatch latch = new CountDownLatch(1);
 		MessageConsumer<Object> consumer = vertx().eventBus().consumer(address);
 		consumer.handler(msg -> latch.countDown());
+		// The completion handler will be invoked once the consumer has been registered
 		consumer.completionHandler(res -> {
 			if (res.failed()) {
 				throw new RuntimeException("Could not listen to event", res.cause());

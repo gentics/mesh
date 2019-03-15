@@ -1,5 +1,21 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_START;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.MeshTestHelper.getRangeQuery;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import org.jsoup.Jsoup;
+import org.junit.Test;
+
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -14,20 +30,6 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
 import com.syncleus.ferma.tx.Tx;
-import org.jsoup.Jsoup;
-import org.junit.Test;
-
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.getRangeQuery;
-import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
-import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
 public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
@@ -118,7 +120,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		// Add the user to the admin group - this way the user is in fact an admin.
 		tx(() -> user().addGroup(groups().get("admin")));
 
-		waitForEvent(INDEX_SYNC, () -> {
+		waitForEvent(INDEX_SYNC_FINISHED, () -> {
 			GenericMessageResponse message = call(() -> client().invokeIndexSync());
 			assertThat(message).matches("search_admin_index_sync_invoked");
 		});

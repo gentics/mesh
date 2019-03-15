@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -143,7 +144,7 @@ public enum MeshEvent {
 
 	GROUP_ROLE_ASSIGNED("mesh.group-role.assigned", GroupRoleAssignModel.class),
 
-	GROUP_ROLE_UNASSIGNED("mesh.group-role.unassigned", GroupRoleAssignModel.class	),
+	GROUP_ROLE_UNASSIGNED("mesh.group-role.unassigned", GroupRoleAssignModel.class),
 
 	/* Role */
 
@@ -241,27 +242,39 @@ public enum MeshEvent {
 
 	BRANCH_UNTAGGED("mesh.branch.untagged", BranchTaggedEventModel.class),
 
-	/* Search index related */
+	/* Search index related (SYNC) */
 
 	/**
 	 * Address for the handler which will process index sync requests.
 	 */
-	INDEX_SYNC_WORKER_ADDRESS("index-sync.worker", null),
+	INDEX_SYNC_REQUEST("mesh.search.index.sync.request", null),
+
+	/**
+	 * Emitted when an index sync process starts.
+	 */
+	INDEX_SYNC_START("mesh.search.index.sync.start", null),
 
 	/**
 	 * Address to which index sync results will be published (failed, succeeded)
 	 */
-	INDEX_SYNC("mesh.search.index.sync", null),
+	INDEX_SYNC_FINISHED("mesh.search.index.sync.finished", null),
+
+	/* Search index related (CLEAR) */
 
 	/**
-	 * Emitted when an index clear is requested.
+	 * Event which will trigger the index clear process.
 	 */
 	INDEX_CLEAR_REQUEST("mesh.search.index.clear.request", null),
 
 	/**
-	 * Emitted when an index clear has completed.
+	 * Emitted when an index clear is starting.
 	 */
-	INDEX_CLEAR_COMPLETED("mesh.search.index.clear.completed", null),
+	INDEX_CLEAR_START("mesh.search.index.clear.start", null),
+
+	/**
+	 * Emitted when an index clear has finished.
+	 */
+	INDEX_CLEAR_FINISHED("mesh.search.index.clear.finished", null),
 
 	/**
 	 * Event that is emitted when the search verticle has been working and is now idle.
@@ -332,12 +345,20 @@ public enum MeshEvent {
 		this.bodyModel = bodyModel;
 	}
 
+	/**
+	 * Invoke the given runnable and wait for the event.
+	 * 
+	 * @param event
+	 * @param runnable 
+	 * @return
+	 */
 	public static Completable doAndWaitForEvent(MeshEvent event, Action runnable) {
 		return Completable.create(sub -> {
 			EventBus eventbus = Mesh.mesh().getVertx().eventBus();
 			MessageConsumer<Object> consumer = eventbus.consumer(event.address)
 				.handler(ev -> sub.onComplete())
 				.exceptionHandler(sub::onError);
+			// The handler will be invoked once the event listener is registered 
 			consumer.completionHandler(ignore -> {
 				try {
 					runnable.run();
@@ -378,115 +399,7 @@ public enum MeshEvent {
 	 */
 	public static List<MeshEvent> publicEvents() {
 		List<MeshEvent> events = new ArrayList<>();
-
-		events.add(MESH_MIGRATION);
-
-		events.add(BRANCH_MIGRATION_START);
-		events.add(BRANCH_MIGRATION_FINISHED);
-
-		events.add(SCHEMA_MIGRATION_START);
-		events.add(SCHEMA_MIGRATION_FINISHED);
-
-		events.add(MICROSCHEMA_MIGRATION_START);
-		events.add(MICROSCHEMA_MIGRATION_FINISHED);
-
-		events.add(STARTUP);
-
-		events.add(CLUSTER_NODE_JOINING);
-
-		events.add(CLUSTER_NODE_JOINED);
-
-		events.add(CLUSTER_NODE_LEFT);
-
-		events.add(CLUSTER_DATABASE_CHANGE_STATUS);
-		events.add(CLEAR_PERMISSION_STORE);
-
-		/* User */
-
-		events.add(USER_CREATED);
-
-		events.add(USER_UPDATED);
-
-		events.add(USER_DELETED);
-
-		/* Group */
-
-		events.add(GROUP_CREATED);
-
-		events.add(GROUP_UPDATED);
-
-		events.add(GROUP_DELETED);
-
-		/* Role */
-
-		events.add(ROLE_CREATED);
-
-		events.add(ROLE_UPDATED);
-
-		events.add(ROLE_DELETED);
-
-		/* Tag */
-
-		events.add(TAG_CREATED);
-
-		events.add(TAG_UPDATED);
-
-		events.add(TAG_DELETED);
-
-		/* Tag */
-
-		events.add(TAG_FAMILY_CREATED);
-
-		events.add(TAG_FAMILY_UPDATED);
-
-		events.add(TAG_FAMILY_DELETED);
-
-		/* Project */
-
-		events.add(PROJECT_CREATED);
-
-		events.add(PROJECT_UPDATED);
-
-		events.add(PROJECT_DELETED);
-
-		/* Node */
-
-		events.add(NODE_CREATED);
-
-		events.add(NODE_UPDATED);
-
-		events.add(NODE_DELETED);
-
-		/* Schema */
-
-		events.add(SCHEMA_CREATED);
-
-		events.add(SCHEMA_UPDATED);
-
-		events.add(SCHEMA_DELETED);
-
-		/* Microschema */
-
-		events.add(MICROSCHEMA_CREATED);
-
-		events.add(MICROSCHEMA_UPDATED);
-
-		events.add(MICROSCHEMA_DELETED);
-
-		/* Branch */
-
-		events.add(BRANCH_CREATED);
-
-		events.add(BRANCH_UPDATED);
-
-		events.add(BRANCH_DELETED);
-
-		/* Search Index */
-
-		events.add(INDEX_SYNC);
-
-		// events.add(INDEX_SYNC_STATUS_EVENT);
-
+		events.addAll(Arrays.asList(MeshEvent.values()));
 		return events;
 	}
 

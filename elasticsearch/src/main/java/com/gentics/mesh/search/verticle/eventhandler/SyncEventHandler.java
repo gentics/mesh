@@ -1,5 +1,18 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_CLEAR_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_CLEAR_REQUEST;
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_REQUEST;
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_START;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+import javax.inject.Inject;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -8,6 +21,7 @@ import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.metric.SyncMetric;
 import com.gentics.mesh.search.verticle.MessageEvent;
+
 import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -15,17 +29,6 @@ import io.reactivex.Single;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import javax.inject.Inject;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
-import static com.gentics.mesh.core.rest.MeshEvent.INDEX_CLEAR_COMPLETED;
-import static com.gentics.mesh.core.rest.MeshEvent.INDEX_CLEAR_REQUEST;
-import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC;
-import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_WORKER_ADDRESS;
 
 /**
  * Verticle which will execute the elasticsearch sync.
@@ -44,11 +47,11 @@ public class SyncEventHandler implements EventHandler {
 	 * Send the index sync event which will trigger the index sync job.
 	 */
 	public static void invokeSync() {
-		Mesh.mesh().getVertx().eventBus().publish(INDEX_SYNC_WORKER_ADDRESS.address, null);
+		Mesh.mesh().getVertx().eventBus().publish(INDEX_SYNC_REQUEST.address, null);
 	}
 
 	public static Completable invokeSyncCompletable() {
-		return MeshEvent.doAndWaitForEvent(INDEX_SYNC, SyncEventHandler::invokeSync);
+		return MeshEvent.doAndWaitForEvent(INDEX_SYNC_FINISHED, SyncEventHandler::invokeSync);
 	}
 
 	public static void invokeClear() {
@@ -56,7 +59,7 @@ public class SyncEventHandler implements EventHandler {
 	}
 
 	public static Completable invokeClearCompletable() {
-		return MeshEvent.doAndWaitForEvent(INDEX_CLEAR_COMPLETED, SyncEventHandler::invokeClear);
+		return MeshEvent.doAndWaitForEvent(INDEX_CLEAR_FINISHED, SyncEventHandler::invokeClear);
 	}
 
 	@Inject
@@ -74,6 +77,7 @@ public class SyncEventHandler implements EventHandler {
 			publishSyncEndEvent()
 		).doOnSubscribe(ignore -> {
 			log.info("Processing index sync job.");
+			vertx.eventBus().publish(INDEX_SYNC_START.address, null);
 			SyncMetric.reset();
 		});
 	}
@@ -85,14 +89,14 @@ public class SyncEventHandler implements EventHandler {
 	private Flowable<SearchRequest> publishSyncEndEvent() {
 		return Flowable.just(SearchRequest.create(provider -> {
 			log.debug("Sending sync complete event");
-			vertx.eventBus().publish(INDEX_SYNC.address, null);
+			vertx.eventBus().publish(INDEX_SYNC_FINISHED.address, null);
 			return Completable.complete();
 		}));
 	}
 
 	@Override
 	public Collection<MeshEvent> handledEvents() {
-		return Collections.singletonList(MeshEvent.INDEX_SYNC_WORKER_ADDRESS);
+		return Collections.singletonList(INDEX_SYNC_REQUEST);
 	}
 
 	private Flowable<SearchRequest> syncIndices() {

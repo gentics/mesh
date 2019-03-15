@@ -1,6 +1,7 @@
 package com.gentics.mesh.search.index;
 
-import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC;
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_START;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -73,7 +74,7 @@ public class IndexSyncCleanupTest extends AbstractMeshTest {
 				.collect(Collectors.toSet()));
 
 		// Invoke the sync
-		waitForEvent(INDEX_SYNC, () -> {
+		waitForEvent(INDEX_SYNC_FINISHED, () -> {
 			call(() -> client().invokeIndexSync());
 		});
 

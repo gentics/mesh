@@ -11,6 +11,10 @@ import io.vertx.core.logging.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_CLEAR_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_CLEAR_REQUEST;
+
 import java.util.Collection;
 import java.util.Collections;
 
@@ -28,7 +32,7 @@ public class ClearEventHandler implements EventHandler {
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
 		return Flowable.just(SearchRequest.create(provider -> provider.clear()
-			.andThen(Completable.fromAction(() -> vertx.eventBus().publish(MeshEvent.INDEX_CLEAR_COMPLETED.address, null)))
+			.andThen(Completable.fromAction(() -> vertx.eventBus().publish(INDEX_CLEAR_FINISHED.address, null)))
 			.doOnSubscribe(ignore -> log.info("Clearing indices"))
 			.doOnComplete(() -> log.info("Clearing indices complete")))
 		);
@@ -36,6 +40,6 @@ public class ClearEventHandler implements EventHandler {
 
 	@Override
 	public Collection<MeshEvent> handledEvents() {
-		return Collections.singletonList(MeshEvent.INDEX_CLEAR_REQUEST);
+		return Collections.singletonList(INDEX_CLEAR_REQUEST);
 	}
 }

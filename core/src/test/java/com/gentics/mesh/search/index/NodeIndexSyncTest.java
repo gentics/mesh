@@ -1,12 +1,12 @@
 package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_FINISHED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.gentics.mesh.core.rest.MeshEvent;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -54,7 +54,7 @@ public class NodeIndexSyncTest extends AbstractMeshTest {
 		// Now clear all data
 		searchProvider().clear().blockingAwait();
 
-		waitForEvent(MeshEvent.INDEX_SYNC, () -> {
+		waitForEvent(INDEX_SYNC_FINISHED, () -> {
 			GenericMessageResponse message = call(() -> client().invokeIndexSync());
 			assertThat(message).matches("search_admin_index_sync_invoked");
 		});
