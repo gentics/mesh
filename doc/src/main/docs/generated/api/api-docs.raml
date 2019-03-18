@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "0.31.0"
+version: "0.31.1"
 baseUri: "http://localhost:8080/api/v1"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -3240,6 +3240,42 @@ mediaType: application/json
                                 {
                                   "message" : "I18n message"
                                 }
+    /graphdb/export: 
+        post: 
+            description: Invoke a orientdb graph database export.
+            responses: 
+                "200": 
+                    description: Export process was invoked.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | internalMessage | true | string | Internal developer friendly message |
+                                | message | true | string | Enduser friendly translated message. Translation depends on the &#x27;Accept-Language&#x27; header value |
+                                | properties | false | object | Map of i18n properties which were used to construct the provided message |
+                            example: |
+                                {
+                                  "message" : "I18n message"
+                                }
+    /graphdb/import: 
+        post: 
+            description: Invoke a orientdb graph database import. The latest import file from the import directory will be used for this operation.
+            responses: 
+                "200": 
+                    description: Database import command was invoked.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | internalMessage | true | string | Internal developer friendly message |
+                                | message | true | string | Enduser friendly translated message. Translation depends on the &#x27;Accept-Language&#x27; header value |
+                                | properties | false | object | Map of i18n properties which were used to construct the provided message |
+                            example: |
+                                {
+                                  "message" : "I18n message"
+                                }
     /graphdb/restore: 
         post: 
             description: Invoke a graph database restore. The latest dump from the backup directory will be inserted. Please note that this operation will block all current operation and effectively destroy all previously stored data.
@@ -5516,7 +5552,7 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "0.31.0",
+                                  "meshVersion" : "0.31.1",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",

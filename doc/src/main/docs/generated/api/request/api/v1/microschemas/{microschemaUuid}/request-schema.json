@@ -40,13 +40,13 @@
           "required" : {
             "type" : "boolean"
           },
-          "elasticsearch" : {
-            "type" : "object",
-            "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-          },
           "label" : {
             "type" : "string",
             "description" : "Label of the field."
+          },
+          "elasticsearch" : {
+            "type" : "object",
+            "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
           },
           "name" : {
             "type" : "string",
