@@ -154,7 +154,9 @@ stage("Setup Build Environment") {
 					if (Boolean.valueOf(params.runMavenBuild)) {
 						sshagent(["git"]) {
 							if (Boolean.valueOf(params.runDeploy)) {
-								sh "mvn -U -B -DskipTests clean deploy"
+								withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+									sh "mvn -U -B -DskipTests clean deploy"
+								}
 							} else {
 								sh "mvn -B -DskipTests clean package"
 							}
@@ -249,8 +251,6 @@ stage("Setup Build Environment") {
 				}
 				throw e
 			} finally {
-				echo "RESULT: ${currentBuild.result}"
-				echo "CRESULT: ${currentBuild.currentResult}"
 				githubBuildEnded()
 				notifyMattermostUsers()
 			}
