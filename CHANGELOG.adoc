@@ -25,6 +25,12 @@ title: Changelog
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 
+[[v0.31.2]]
+== 0.31.2 (TBD)
+
+icon:check[] Permissions: A bug in the GraphQL permission handling has been fixed. Previously nodes which had only read published permission assigned to them were not returned using the `nodes` field.
+
+icon:check[] Permissions: A bug in the permission handling of the nav root endpoint has been fixed. Previously nodes which had only read published permission assigned to them were not included in the navigation response.
 
 [[v0.31.1]]
 == 0.31.1 (18.03.2019)
