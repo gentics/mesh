@@ -1,9 +1,12 @@
 package com.gentics.mesh.core.rest.event.node;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.event.AbstractMeshEventModel;
+import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
@@ -26,8 +29,14 @@ public class NodeTaggedEventModel extends AbstractMeshEventModel {
 	@JsonPropertyDescription("Reference to the project involved.")
 	private ProjectReference project;
 
-	public NodeTaggedEventModel() {
-
+	@JsonCreator
+	public NodeTaggedEventModel(String origin, EventCauseInfo cause, MeshEvent event, TagReference tag, BranchReference branch, NodeReference node,
+		ProjectReference project) {
+		super(origin, cause, event);
+		this.tag = tag;
+		this.branch = branch;
+		this.node = node;
+		this.project = project;
 	}
 
 	public TagReference getTag() {

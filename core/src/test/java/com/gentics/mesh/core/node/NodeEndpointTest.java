@@ -261,7 +261,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				.hasSchemaName("content")
 				.hasSchemaUuid(schemaUuid)
 				.hasLanguage("en");
-		});
+		}).one();
 
 		NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
 		awaitEvents();

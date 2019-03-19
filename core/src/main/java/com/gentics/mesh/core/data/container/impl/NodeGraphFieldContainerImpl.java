@@ -763,6 +763,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		model.setName(getDisplayFieldValue());
 		model.setBranchUuid(branchUuid);
 		model.setLanguageTag(getLanguageTag());
+		model.setVersion(getVersion().getFullVersion());
 		if (type != null) {
 			model.setType(type.getHumanCode());
 		}

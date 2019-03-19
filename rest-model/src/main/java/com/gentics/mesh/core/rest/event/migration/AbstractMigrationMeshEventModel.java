@@ -2,9 +2,11 @@ package com.gentics.mesh.core.rest.event.migration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.event.AbstractMeshEventModel;
+import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 
 public abstract class AbstractMigrationMeshEventModel extends AbstractMeshEventModel {
@@ -24,6 +26,15 @@ public abstract class AbstractMigrationMeshEventModel extends AbstractMeshEventM
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Status of the migration at the time when the event was send.")
 	private MigrationStatus status;
+
+	public AbstractMigrationMeshEventModel(String origin, EventCauseInfo cause, MeshEvent event, BranchReference branch, ProjectReference project,
+		String uuid, MigrationStatus status) {
+		super(origin, cause, event);
+		this.branch = branch;
+		this.project = project;
+		this.uuid = uuid;
+		this.status = status;
+	}
 
 	/**
 	 * Return the referenced branch.

@@ -18,6 +18,12 @@ public abstract class AbstractMeshEventModel implements MeshEventModel {
 	@JsonIgnore
 	private MeshEvent event;
 
+	public AbstractMeshEventModel(String origin, EventCauseInfo cause, MeshEvent event) {
+		this.origin = origin;
+		this.cause = cause;
+		this.event = event;
+	}
+
 	@Override
 	public String getOrigin() {
 		return origin;
