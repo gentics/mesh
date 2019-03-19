@@ -157,11 +157,9 @@ stage("Setup Build Environment") {
 				stage ("SonarQube") {
 					if (Boolean.valueOf(params.runTests) && Boolean.valueOf(params.runSonar)) {
 						for (int i = 0; i < runs; i++) {
-							sh 'find -name "*.exec"'
 							unstash "jacoco" + i
-							sh 'find -name "*.exec"'
 							sh "mvn jacoco:merge@merge-all-jacoco"
-							sh 'find -name "*.exec"'
+							sh 'find -name "jacoco.exec" -exec rm {} \;'
 						}
 						withCredentials([string(credentialsId: 'sonarcube.key', variable: 'TOKEN')]) {
 							sh "mvn sonar:sonar -Dsonar.projectKey=mesh -Dsonar.host.url=https://sonarqube.apa.at -Dsonar.login=$TOKEN"
