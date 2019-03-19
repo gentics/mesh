@@ -12,6 +12,7 @@ final def dockerImageName      = dockerRegistry + "/gentics/jenkinsbuilds/mesh-s
 properties([
 	parameters([
 		booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests"),
+		booleanParam(name: 'runSonar',            defaultValue: true,  description: "Whether to run the sonarqube checks"),
 		booleanParam(name: 'runPerformanceTests', defaultValue: false, description: "Whether to run performance tests."),
 		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
 		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
@@ -132,6 +133,7 @@ stage("Setup Build Environment") {
 									sshagent(["git"]) {
 										try {
 											sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!performance-tests' clean install"
+										    stash name: "jacoco" + i, includes: "**/jacoco.exec"
 										} finally {
 											step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 										}
@@ -147,6 +149,18 @@ stage("Setup Build Environment") {
 						}
 					} else {
 						echo "Tests skipped.."
+					}
+				}
+
+				stage ("SonarQube") {
+					if (Boolean.valueOf(params.runTests) && Boolean.valueOf(params.runSonar)) {
+						for (int i = 0; i < splits; i++) {
+							unstash "jacoco" + i
+							sh "mvn jacoco:merge@merge-all-jacoco"
+						}
+						withCredentials([string(credentialsId: 'sonarcube.key', variable: 'TOKEN')]) {
+							sh "mvn sonar:sonar -Dsonar.projectKey=mesh -Dsonar.host.url=https://sonarqube.apa.at -Dsonar.login=$TOKEN"
+						}
 					}
 				}
 
