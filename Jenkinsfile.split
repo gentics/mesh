@@ -135,7 +135,7 @@ stage("Setup Build Environment") {
 										try {
 											sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!performance-tests' clean install"
 											sh 'find -name "*.exec"'
-										    stash name: "jacoco" + i, includes: "**/jacoco.exec", allowEmpty: true
+										    stash name: "jacoco" + current, includes: "**/jacoco.exec", allowEmpty: true
 										} finally {
 											step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 										}
