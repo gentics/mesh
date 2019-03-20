@@ -159,7 +159,7 @@ stage("Setup Build Environment") {
 						for (int i = 0; i < runs; i++) {
 							unstash "jacoco" + i
 							sh "mvn jacoco:merge@merge-all-jacoco"
-							sh 'find -name "jacoco.exec" -exec rm {} \\;'
+							sh "find -name jacoco.exec -exec rm {} \\;"
 						}
 						withCredentials([string(credentialsId: 'sonarcube.key', variable: 'TOKEN')]) {
 							sh "mvn sonar:sonar -Dsonar.projectKey=mesh -Dsonar.host.url=https://sonarqube.apa.at -Dsonar.login=$TOKEN"
