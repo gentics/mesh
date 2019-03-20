@@ -263,12 +263,12 @@
 					<executions>
 						<execution>
 							<id>merge-all-jacoco</id>
-							<skip>${skip.jacoco.merge}<skip>
 							<goals>
 								<goal>merge</goal>
 							</goals>
 							<phase>install</phase>
 							<configuration>
+								<skip>${skip.jacoco.merge}</skip>
 								<destFile>merged.exec</destFile>
 								<fileSets>
 									<fileSet>
