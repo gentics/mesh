@@ -23,7 +23,7 @@ properties([
 
 final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
 final def splits = 30;
-final def runs = 2;
+final def runs = 30;
 
 stage("Setup Build Environment") {
 	node("docker") {
