@@ -29,6 +29,7 @@
 		<surefire.jvm.postfix></surefire.jvm.postfix>
 		<skip.unit.tests>false</skip.unit.tests>
 		<skip.cluster.tests>false</skip.cluster.tests>
+		<skip.jacoco.merge>true</skip.jacoco.merge>
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
 		<mesh.image.provider>mesh-service-image-imgscalr</mesh.image.provider>
 		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
@@ -262,6 +263,7 @@
 					<executions>
 						<execution>
 							<id>merge-all-jacoco</id>
+							<skip>${skip.jacoco.merge}<skip>
 							<goals>
 								<goal>merge</goal>
 							</goals>

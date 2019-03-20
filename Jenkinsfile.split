@@ -157,8 +157,9 @@ stage("Setup Build Environment") {
 				stage ("SonarQube") {
 					if (Boolean.valueOf(params.runTests) && Boolean.valueOf(params.runSonar)) {
 						for (int i = 0; i < runs; i++) {
+							echo "Invoking merge for " + i
 							unstash "jacoco" + i
-							sh "mvn jacoco:merge@merge-all-jacoco"
+							sh "mvn jacoco:merge@merge-all-jacoco -Dskip.jacoco.merge=false"
 							sh "find -name jacoco.exec -exec rm {} \\;"
 						}
 						withCredentials([string(credentialsId: 'sonarcube.key', variable: 'TOKEN')]) {
