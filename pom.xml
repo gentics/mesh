@@ -269,7 +269,7 @@
 							<phase>install</phase>
 							<configuration>
 								<skip>${skip.jacoco.merge}</skip>
-								<destFile>merged.exec</destFile>
+								<destFile>${project.build.directory}/jacoco-merged.exec</destFile>
 								<fileSets>
 									<fileSet>
 										<directory>${project.build.directory}</directory>
@@ -344,6 +344,9 @@
 						<goals>
 							<goal>prepare-agent</goal>
 						</goals>
+						<configuration>
+							<destFile>${project.build.directory}/jacoco-partial.exec</destFile>
+						</configuration>
 					</execution>
 					<execution>
 						<id>report</id>

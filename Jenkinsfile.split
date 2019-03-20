@@ -135,7 +135,7 @@ stage("Setup Build Environment") {
 										try {
 											sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!performance-tests' clean install"
 											sh 'find -name "*.exec"'
-										    stash name: "jacoco" + current, includes: "**/jacoco.exec", allowEmpty: true
+										    stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
 										} finally {
 											step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 										}
@@ -176,13 +176,13 @@ stage("Setup Build Environment") {
 							echo "Invoking merge for " + i
 							unstash "jacoco" + i
 							sh "mvn jacoco:merge@merge-all-jacoco -Dskip.jacoco.merge=false"
-							sh "find -name jacoco.exec -exec rm {} \\;"
+							sh "find -name jacoco-partial.exec -exec rm {} \\;"
 						}
 
 						// Run the maven build if the build did not run previously
 						if (!Boolean.valueOf(params.runMavenBuild)) {
 							sh "mvn -B -DskipTests package"
-							sh "find -name jacoco.exec"
+							sh "find -name *.exec"
 						}
 						withCredentials([string(credentialsId: 'sonarcube.key', variable: 'TOKEN')]) {
 							sh "mvn sonar:sonar -Dsonar.projectKey=mesh -Dsonar.host.url=https://sonarqube.apa.at -Dsonar.login=$TOKEN"
