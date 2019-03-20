@@ -154,20 +154,6 @@ stage("Setup Build Environment") {
 					}
 				}
 
-				stage ("SonarQube") {
-					if (Boolean.valueOf(params.runTests) && Boolean.valueOf(params.runSonar)) {
-						for (int i = 0; i < runs; i++) {
-							echo "Invoking merge for " + i
-							unstash "jacoco" + i
-							sh "mvn jacoco:merge@merge-all-jacoco -Dskip.jacoco.merge=false"
-							sh "find -name jacoco.exec -exec rm {} \\;"
-						}
-						withCredentials([string(credentialsId: 'sonarcube.key', variable: 'TOKEN')]) {
-							sh "mvn sonar:sonar -Dsonar.projectKey=mesh -Dsonar.host.url=https://sonarqube.apa.at -Dsonar.login=$TOKEN"
-						}
-					}
-				}
-
 				stage("Maven Build") {
 					if (Boolean.valueOf(params.runMavenBuild)) {
 						sshagent(["git"]) {
@@ -181,6 +167,25 @@ stage("Setup Build Environment") {
 						}
 					} else {
 						echo "Maven build skipped.."
+					}
+				}
+
+				stage ("SonarQube") {
+					if (Boolean.valueOf(params.runTests) && Boolean.valueOf(params.runSonar)) {
+						for (int i = 0; i < runs; i++) {
+							echo "Invoking merge for " + i
+							unstash "jacoco" + i
+							sh "mvn jacoco:merge@merge-all-jacoco -Dskip.jacoco.merge=false"
+							sh "find -name jacoco.exec -exec rm {} \\;"
+						}
+
+						// Run the maven build if the build did not run previously
+						if (!Boolean.valueOf(params.runMavenBuild)) {
+							sh "mvn -B -DskipTests clean package"
+						}
+						withCredentials([string(credentialsId: 'sonarcube.key', variable: 'TOKEN')]) {
+							sh "mvn sonar:sonar -Dsonar.projectKey=mesh -Dsonar.host.url=https://sonarqube.apa.at -Dsonar.login=$TOKEN"
+						}
 					}
 				}
 
