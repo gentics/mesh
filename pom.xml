@@ -269,7 +269,7 @@
 							<phase>install</phase>
 							<configuration>
 								<skip>${skip.jacoco.merge}</skip>
-								<destFile>${project.build.directory}/jacoco-merged.exec</destFile>
+								<destFile>${project.build.directory}/jacoco.exec</destFile>
 								<fileSets>
 									<fileSet>
 										<directory>${project.build.directory}</directory>
