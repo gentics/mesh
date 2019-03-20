@@ -181,7 +181,8 @@ stage("Setup Build Environment") {
 
 						// Run the maven build if the build did not run previously
 						if (!Boolean.valueOf(params.runMavenBuild)) {
-							sh "mvn -B -DskipTests clean package"
+							sh "mvn -B -DskipTests package"
+							sh "find -name jacoco.exec"
 						}
 						withCredentials([string(credentialsId: 'sonarcube.key', variable: 'TOKEN')]) {
 							sh "mvn sonar:sonar -Dsonar.projectKey=mesh -Dsonar.host.url=https://sonarqube.apa.at -Dsonar.login=$TOKEN"
