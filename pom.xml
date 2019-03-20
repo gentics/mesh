@@ -9,7 +9,7 @@
 	<version>0.31.2-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
-	<name>Mesh</name>
+	<name>Gentics Mesh</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
