@@ -348,6 +348,7 @@
 							<destFile>${project.build.directory}/jacoco-partial.exec</destFile>
 						</configuration>
 					</execution>
+					<!--
 					<execution>
 						<id>report</id>
 						<phase>package</phase>
@@ -355,6 +356,7 @@
 							<goal>report</goal>
 						</goals>
 					</execution>
+					-->
 				</executions>
 			</plugin>	
 			<plugin>
