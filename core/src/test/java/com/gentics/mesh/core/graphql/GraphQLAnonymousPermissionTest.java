@@ -23,10 +23,6 @@ public class GraphQLAnonymousPermissionTest extends AbstractMeshTest {
 	public void testReadViaAnonymous() throws Throwable {
 		final String QUERY_NAME = "anonymous-perm-query";
 		Node node = folder("2015");
-		tx(() -> {
-			anonymousRole().revokePermissions(node, READ_PERM);
-		});
-
 		String nodeUuid = tx(() -> node.getUuid());
 		String anonRoleUuid = tx(() -> anonymousRole().getUuid());
 
@@ -43,7 +39,6 @@ public class GraphQLAnonymousPermissionTest extends AbstractMeshTest {
 		// Now execute the query and assert it
 		GraphQLResponse response = call(
 			() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(QUERY_NAME)));
-		System.out.println(response.toJson());
 		JsonObject jsonResponse = new JsonObject(response.toJson());
 		assertThat(jsonResponse).compliesToAssertions(QUERY_NAME);
 	}
