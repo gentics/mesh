@@ -348,15 +348,6 @@
 							<destFile>${project.build.directory}/jacoco-partial.exec</destFile>
 						</configuration>
 					</execution>
-					<!--
-					<execution>
-						<id>report</id>
-						<phase>package</phase>
-						<goals>
-							<goal>report</goal>
-						</goals>
-					</execution>
-					-->
 				</executions>
 			</plugin>	
 			<plugin>
@@ -365,7 +356,7 @@
 				<configuration>
 					<skip>${skip.unit.tests}</skip>
 					<jvm>${env.JAVA_1_8_HOME}/bin/java</jvm>
-					<argLine>-Xms64m -Xmx128m -XX:MaxDirectMemorySize=128m ${argLine}</argLine>
+					<argLine>-Xms128m -Xmx256m -XX:MaxDirectMemorySize=128m ${argLine}</argLine>
 					<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
 					<rerunFailingTestsCount>0</rerunFailingTestsCount>
 					<reuseForks>false</reuseForks>
