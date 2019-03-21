@@ -65,7 +65,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private final static int MAX_RETRY_ON_ERROR = 5;
 
-	private Boolean hasAttachmentIngestProcessor = false;
+	private Boolean hasAttachmentIngestProcessor = null;
 
 	private Lazy<Vertx> vertx;
 
@@ -108,45 +108,9 @@ public class ElasticSearchProvider implements SearchProvider {
 				port = 443;
 			}
 			client = new SearchClient(proto, url.getHost(), port);
-
-			hasAttachmentIngestProcessor = this.client.hasIngestProcessor(INGEST_ATTACHMENT_PROCESSOR_NAME).blockingGet();
 		} catch (MalformedURLException e) {
-			throw error(INTERNAL_SERVER_ERROR, "Invalid search provider url");
+			throw error(INTERNAL_SERVER_ERROR, "Invalid search provider url", e);
 		}
-
-	}
-
-	private void waitForCluster(SearchClient client, long timeoutInSec) {
-		long start = System.currentTimeMillis();
-		// Wait until the cluster is ready
-		while (true) {
-			if ((System.currentTimeMillis() - start) / 1000 > timeoutInSec) {
-				log.debug("Timeout of {" + timeoutInSec + "} reached.");
-				break;
-			}
-			try {
-				log.debug("Checking elasticsearch status...");
-				JsonObject response = client.clusterHealth().sync();
-				String status = response.getString("status");
-				log.debug("Elasticsearch status is: " + status);
-				if (!"red".equals(status)) {
-					log.info("Elasticsearch is ready. Releasing lock after " + (System.currentTimeMillis() - start) + " ms");
-					return;
-				}
-			} catch (HttpErrorException e1) {
-				if (log.isDebugEnabled()) {
-					log.debug("Error while checking elasticsearch status.", e1);
-				}
-			}
-			try {
-				log.info("Waiting for elasticsearch status...");
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-
-		}
-		throw new RuntimeException("Elasticsearch was not ready within set timeout of {" + timeoutInSec + "} seconds.");
 
 	}
 
@@ -602,6 +566,14 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public boolean hasIngestPipelinePlugin() {
+		if (hasAttachmentIngestProcessor != null) {
+			return hasAttachmentIngestProcessor;
+		} else {
+			hasAttachmentIngestProcessor = this.client.hasIngestProcessor(INGEST_ATTACHMENT_PROCESSOR_NAME).blockingGet();
+		}
+		if (hasAttachmentIngestProcessor == null) {
+			return false;
+		}
 		return hasAttachmentIngestProcessor;
 	}
 
