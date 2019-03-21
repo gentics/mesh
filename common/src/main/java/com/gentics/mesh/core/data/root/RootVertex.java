@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.root;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -59,8 +60,9 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *
 	 * @param ac
 	 *            The context of the request
+	 * @param permission Needed permission
 	 */
-	default Stream<? extends T> findAllStream(InternalActionContext ac) {
+	default Stream<? extends T> findAllStream(InternalActionContext ac, GraphPermission permission) {
 		MeshAuthUser user = ac.getUser();
 		FramedTransactionalGraph graph = Tx.getActive().getGraph();
 
@@ -68,7 +70,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 		Spliterator<Edge> itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();
 		return StreamSupport.stream(itemEdges, false)
 			.map(edge -> edge.getVertex(Direction.IN))
-			.filter(vertex -> user.hasPermissionForId(vertex.getId(), READ_PERM))
+			.filter(vertex -> user.hasPermissionForId(vertex.getId(), permission))
 			.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 
