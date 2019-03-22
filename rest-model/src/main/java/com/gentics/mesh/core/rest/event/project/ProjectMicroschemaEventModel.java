@@ -1,12 +1,9 @@
 package com.gentics.mesh.core.rest.event.project;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.AbstractMeshEventModel;
-import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
@@ -22,12 +19,8 @@ public class ProjectMicroschemaEventModel extends AbstractMeshEventModel {
 	@JsonDeserialize(as = MicroschemaReferenceImpl.class)
 	private MicroschemaReference microschema;
 
-	@JsonCreator
-	public ProjectMicroschemaEventModel(String origin, EventCauseInfo cause, MeshEvent event, ProjectReference project,
-		MicroschemaReference microschema) {
-		super(origin, cause, event);
-		this.project = project;
-		this.microschema = microschema;
+	public ProjectMicroschemaEventModel() {
+
 	}
 
 	public ProjectReference getProject() {
