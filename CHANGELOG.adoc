@@ -28,6 +28,8 @@ title: Changelog
 [[v0.31.2]]
 == 0.31.2 (TBD)
 
+icon:plus[] OrientDB: The included OrientDB version has been updated to version 3.0.18.
+
 icon:check[] Configuration: The elasticsearch bulk limit can now be configured using the `MESH_ELASTICSEARCH_BULK_LIMIT` environment variable.
 
 icon:check[] Permissions: A bug in the GraphQL permission handling has been fixed. Previously nodes which had only read published permission assigned to them were not returned using the `nodes` field.
@@ -50,7 +52,7 @@ This version of Gentics Mesh introduces the __Monitoring feature__.
 
 The Gentics Mesh server will now *additionally* to port `8080` also bind to port `8081` in order to provide the new monitoring API. New configuration settings have been added to allow configuration of this server.
 
-NOTE: The monitoring API should not be exposed publically and will by default only bind to `localhost`.
+NOTE: The monitoring API should not be exposed publicly and will by default only bind to `localhost`.
 
 A detailed description of this feature can be found in our link:{{< relref "monitoring.asciidoc" >}}[Monitoring Documentation].
 ____
