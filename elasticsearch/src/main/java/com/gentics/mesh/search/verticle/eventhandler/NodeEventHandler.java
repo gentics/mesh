@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.core.rest.event.EventCauseAction.SCHEMA_MIGRATION;
@@ -45,7 +45,7 @@ public class NodeEventHandler implements EventHandler {
 
 	@Override
 	public Collection<MeshEvent> handledEvents() {
-		return Arrays.asList(NODE_CREATED, NODE_UPDATED, NODE_DELETED);
+		return Arrays.asList(NODE_CONTENT_CREATED, NODE_UPDATED, NODE_DELETED);
 	}
 
 	@Override
@@ -54,7 +54,7 @@ public class NodeEventHandler implements EventHandler {
 			MeshEvent event = messageEvent.event;
 			NodeMeshEventModel message = requireType(NodeMeshEventModel.class, messageEvent.message);
 
-			if (event == NODE_CREATED || event == NODE_UPDATED) {
+			if (event == NODE_CONTENT_CREATED || event == NODE_UPDATED) {
 				EventCauseInfo cause = message.getCause();
 				if (cause != null && cause.getAction() == SCHEMA_MIGRATION) {
 					return migrationUpdate(message);
@@ -64,7 +64,7 @@ public class NodeEventHandler implements EventHandler {
 			} else if (event == NODE_DELETED) {
 				return Flowable.just(deleteNodes(message, getSchemaVersionUuid(message)));
 			} else {
-				throw new RuntimeException("Unexpected event " + event.address);
+				throw new RuntimeException("UneNODE_CRENODE_CONTENT_CREATEDNODE_CONTENT_CREATEDATEDxpected event " + event.address);
 			}
 		});
 	}

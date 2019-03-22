@@ -33,9 +33,11 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
+import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMovedEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
@@ -2098,7 +2100,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return model;
 	}
 
-	
+	@Override
+	protected MeshProjectElementEventModel createEvent(MeshEvent event) {
+		NodeMeshEventModel model = new NodeMeshEventModel();
+		model.setEvent(event);
+		model.setProject(getProject().transformToReference());
+		fillEventInfo(model);
+		return model;
+	}
 
 	@Override
 	public NodeMeshEventModel onDeleted(String uuid, String name, SchemaContainer schema, String branchUuid, String type, String languageTag) {

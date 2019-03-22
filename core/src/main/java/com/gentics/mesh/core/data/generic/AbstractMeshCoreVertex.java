@@ -1,10 +1,5 @@
 package com.gentics.mesh.core.data.generic;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-import java.util.Set;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
@@ -16,6 +11,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -24,9 +20,13 @@ import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.value.FieldsSet;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import java.util.Set;
+
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * Abstract class for mesh core vertices that includes methods which are commonly used when transforming the vertices into REST POJO's.
@@ -126,26 +126,24 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 	@Override
 	public MeshElementEventModel onUpdated() {
-		MeshElementEventModel event = new MeshElementEventModelImpl();
-		event.setEvent(getTypeInfo().getOnUpdated());
-		fillEventInfo(event);
-		return event;
+		return createEvent(getTypeInfo().getOnUpdated());
 	}
 
 	@Override
 	public MeshElementEventModel onCreated() {
-		MeshElementEventModel event = new MeshElementEventModelImpl();
-		event.setEvent(getTypeInfo().getOnCreated());
-		fillEventInfo(event);
-		return event;
+		return createEvent(getTypeInfo().getOnCreated());
 	}
 
 	@Override
 	public MeshElementEventModel onDeleted() {
-		MeshElementEventModel event = new MeshElementEventModelImpl();
-		event.setEvent(getTypeInfo().getOnDeleted());
-		fillEventInfo(event);
-		return event;
+		return createEvent(getTypeInfo().getOnDeleted());
+	}
+
+	protected MeshElementEventModel createEvent(MeshEvent event) {
+		MeshElementEventModel model = new MeshElementEventModelImpl();
+		model.setEvent(event);
+		fillEventInfo(model);
+		return model;
 	}
 
 	protected void fillEventInfo(MeshElementEventModel model) {

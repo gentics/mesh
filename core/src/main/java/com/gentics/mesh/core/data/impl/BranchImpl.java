@@ -556,16 +556,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public BranchMeshEventModel onUpdated() {
-		return createEvent(getTypeInfo().getOnUpdated());
-	}
-
-	@Override
-	public BranchMeshEventModel onDeleted() {
-		return createEvent(getTypeInfo().getOnDeleted());
-	}
-
-	private BranchMeshEventModel createEvent(MeshEvent event) {
+	protected BranchMeshEventModel createEvent(MeshEvent event) {
 		BranchMeshEventModel model = new BranchMeshEventModel();
 		model.setEvent(event);
 		fillEventInfo(model);
