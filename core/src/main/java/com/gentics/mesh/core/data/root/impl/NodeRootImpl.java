@@ -204,7 +204,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		// Delete all containers of all nodes
 		for (Node node : findAll()) {
 			// We don't need to handle recursion because we delete the root sequentially
-			node.deleteFully(bac, false);
+			node.delete(bac, true, false);
 			bac.inc();
 		}
 		// All nodes are gone. Lets remove the node root element.
