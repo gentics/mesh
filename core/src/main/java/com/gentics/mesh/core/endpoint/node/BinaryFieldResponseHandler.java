@@ -52,6 +52,7 @@ public class BinaryFieldResponseHandler {
 	 * @param binaryField
 	 */
 	public void handle(RoutingContext rc, BinaryGraphField binaryField) {
+		rc.response().putHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
 		if (!storage.exists(binaryField)) {
 			rc.fail(error(NOT_FOUND, "node_error_binary_data_not_found"));
 			return;

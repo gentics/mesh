@@ -30,6 +30,8 @@ title: Changelog
 
 icon:plus[] OrientDB: The included OrientDB version has been updated to version 3.0.18.
 
+icon:check[] REST: The `GET /api/v1/:projectName/nodes/:nodeUuid/binary/:fieldName` endpoint will now always include the `accept-ranges: bytes` header to indicate to the client that it supports range requests. link:https://github.com/gentics/mesh/issues/643[#643]
+
 icon:check[] Configuration: The elasticsearch bulk limit can now be configured using the `MESH_ELASTICSEARCH_BULK_LIMIT` environment variable.
 
 icon:check[] Permissions: A bug in the GraphQL permission handling has been fixed. Previously nodes which had only read published permission assigned to them were not returned using the `nodes` field.
