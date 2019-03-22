@@ -1,16 +1,5 @@
 package com.gentics.mesh.core.data.node;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-import java.util.stream.Stream;
-
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -48,8 +37,18 @@ import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.syncleus.ferma.EdgeFrame;
-
 import io.reactivex.Single;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+import java.util.stream.Stream;
+
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 
 /**
  * The Node Domain Model interface.
@@ -107,7 +106,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Return a page of all visible tags that are assigned to the node.
-	 * 
+	 *
 	 * @param user
 	 * @param params
 	 * @param branch
@@ -116,8 +115,17 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	TransformablePage<? extends Tag> getTags(User user, PagingParameters params, Branch branch);
 
 	/**
+	 * Tests if the node is tagged with the given tag.
+	 *
+	 * @param tag
+	 * @param branch
+	 * @return
+	 */
+	boolean hasTag(Tag tag, Branch branch);
+
+	/**
 	 * Return the draft field container for the given language in the latest branch.
-	 * 
+	 *
 	 * @param languageTag
 	 * @return
 	 */
@@ -125,7 +133,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Return the field container for the given language, type and branch.
-	 * 
+	 *
 	 * @param languageTag
 	 * @param branch
 	 * @param type
@@ -136,7 +144,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Return the draft field container for the given language in the latest branch.
-	 * 
+	 *
 	 * @param languageTag
 	 * @return
 	 */
@@ -144,7 +152,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Return the field container for the given language, type and branch Uuid.
-	 * 
+	 *
 	 * @param languageTag
 	 * @param branchUuid
 	 * @param type
@@ -156,7 +164,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * Create a new graph field container for the given language and assign the schema version of the branch to the container. The graph field container will be
 	 * the (only) DRAFT version for the language/branch. If this is the first container for the language, it will also be the INITIAL version. Otherwise the
 	 * container will be a clone of the last draft and will have the next version number.
-	 * 
+	 *
 	 * @param languageTag
 	 * @param branch
 	 *            branch
@@ -168,7 +176,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Like {@link #createGraphFieldContainer(Language, Branch, User)}, but let the new graph field container be a clone of the given original (if not null).
-	 * 
+	 *
 	 * @param language
 	 * @param branch
 	 * @param editor
@@ -184,7 +192,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Return the draft field containers of the node in the latest branch.
-	 * 
+	 *
 	 * @return
 	 */
 	default TraversalResult<? extends NodeGraphFieldContainer> getDraftGraphFieldContainers() {

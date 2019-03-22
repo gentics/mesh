@@ -1,27 +1,5 @@
 package com.gentics.mesh.core.endpoint.branch;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.event.Assignment.ASSIGNED;
-import static com.gentics.mesh.event.Assignment.UNASSIGNED;
-import static com.gentics.mesh.rest.Messages.message;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import javax.inject.Inject;
-
-import org.apache.commons.lang.NotImplementedException;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -50,11 +28,30 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.PentaFunction;
-
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang.NotImplementedException;
+
+import javax.inject.Inject;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.event.Assignment.ASSIGNED;
+import static com.gentics.mesh.event.Assignment.UNASSIGNED;
+import static com.gentics.mesh.rest.Messages.message;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 /**
  * CRUD Handler for Branches
@@ -346,11 +343,16 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			// TODO check if the branch is already tagged
-
-			utils.eventAction(batch -> {
-				branch.addTag(tag);
-				batch.add(branch.onTagged(tag, ASSIGNED));
-			});
+			if (branch.hasTag(tag)) {
+				if (log.isDebugEnabled()) {
+					log.debug("Branch {{}} is already tagged with tag {{}}", branch.getUuid(), tag.getUuid());
+				}
+			} else {
+				utils.eventAction(batch -> {
+					branch.addTag(tag);
+						batch.add(branch.onTagged(tag, ASSIGNED));
+				});
+			}
 
 			return branch.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
@@ -376,10 +378,18 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 
 			// TODO check if the tag has already been removed
 
-			utils.eventAction(batch -> {
-				batch.add(branch.onTagged(tag, UNASSIGNED));
-				branch.removeTag(tag);
-			});
+			if (branch.hasTag(tag)) {
+				utils.eventAction(batch -> {
+					batch.add(branch.onTagged(tag, UNASSIGNED));
+					branch.removeTag(tag);
+				});
+			} else {
+				if (log.isDebugEnabled()) {
+					log.debug("Branch {{}} was not tagged with tag {{}}", branch.getUuid(), tag.getUuid());
+				}
+
+			}
+
 
 		}, () -> ac.send(NO_CONTENT));
 	}

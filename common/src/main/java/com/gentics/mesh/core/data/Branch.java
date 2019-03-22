@@ -1,12 +1,5 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.ElementType.BRANCH;
-import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
-
-import java.util.List;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
@@ -26,6 +19,13 @@ import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
+
+import java.util.List;
+
+import static com.gentics.mesh.ElementType.BRANCH;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
 
 /**
  * The Branch domain model interface.
@@ -400,8 +400,16 @@ public interface Branch
 	TransformablePage<? extends Tag> getTags(User user, PagingParameters params);
 
 	/**
+	 * Tests if the branch is tagged with the given tag.
+	 *
+	 * @param tag
+	 * @return
+	 */
+	boolean hasTag(Tag tag);
+
+	/**
 	 * Handle the update tags request.
-	 * 
+	 *
 	 * @param ac
 	 * @param batch
 	 * @return Page which includes the new set of tags
@@ -410,18 +418,17 @@ public interface Branch
 
 	/**
 	 * Generate event which is send when the branch is set to be the latest of the project.
-	 * 
+	 *
 	 * @return
 	 */
 	ProjectBranchEventModel onSetLatest();
 
 	/**
 	 * Generate a tagging event for the branch.
-	 * 
+	 *
 	 * @param tag
 	 * @param assignment
 	 * @return
 	 */
 	BranchTaggedEventModel onTagged(Tag tag, Assignment assignment);
-
 }

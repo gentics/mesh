@@ -1,23 +1,5 @@
 package com.gentics.mesh.core.endpoint.node;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.event.Assignment.ASSIGNED;
-import static com.gentics.mesh.event.Assignment.UNASSIGNED;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-
-import javax.inject.Inject;
-
-import org.apache.commons.lang3.math.NumberUtils;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -41,9 +23,27 @@ import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.syncleus.ferma.tx.TxAction1;
-
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Single;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.math.NumberUtils;
+
+import javax.inject.Inject;
+
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.event.Assignment.ASSIGNED;
+import static com.gentics.mesh.event.Assignment.UNASSIGNED;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 /**
  * Main CRUD handler for the Node Endpoint.
@@ -51,6 +51,9 @@ import io.reactivex.Single;
 public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	private BootstrapInitializer boot;
+
+	private static final Logger log = LoggerFactory.getLogger(NodeCrudHandler.class);
+
 
 	@Inject
 	public NodeCrudHandler(Database db, HandlerUtilities utils, BootstrapInitializer boot) {
@@ -244,19 +247,17 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
-			// TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
-			utils.eventAction(batch -> {
-				node.addTag(tag, branch);
-				/*
-				node.getGraphFieldContainers(branch, DRAFT).forEach(c -> {
-					batch.add(c.onUpdated(branch.getUuid(), DRAFT));
+			if (node.hasTag(tag, branch)) {
+				if (log.isDebugEnabled()) {
+					log.debug("Node {{}} is already tagged with tag {{}}", node.getUuid(), tag.getUuid());
+				}
+			} else {
+				utils.eventAction(batch -> {
+					node.addTag(tag, branch);
+
+					batch.add(node.onTagged(tag, branch, ASSIGNED));
 				});
-				node.getGraphFieldContainers(branch, PUBLISHED).forEach(c -> {
-					batch.add(c.onUpdated(branch.getUuid(), PUBLISHED));
-				});
-				*/
-				batch.add(node.onTagged(tag, branch, ASSIGNED));
-			});
+			}
 
 			return node.transformToRest(ac, 0);
 		}, model -> ac.send(model, OK));
@@ -283,10 +284,17 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
-			utils.eventAction(batch -> {
-				node.removeTag(tag, branch);
-				batch.add(node.onTagged(tag, branch, UNASSIGNED));
-			});
+			if (node.hasTag(tag, branch)) {
+				utils.eventAction(batch -> {
+					node.removeTag(tag, branch);
+					batch.add(node.onTagged(tag, branch, UNASSIGNED));
+				});
+			} else {
+				if (log.isDebugEnabled()) {
+					log.debug("Node {{}} was not tagged with tag {{}}", node.getUuid(), tag.getUuid());
+				}
+			}
+
 		}, () -> ac.send(NO_CONTENT));
 	}
 

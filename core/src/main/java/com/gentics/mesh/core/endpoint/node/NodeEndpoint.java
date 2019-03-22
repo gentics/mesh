@@ -1,8 +1,28 @@
 package com.gentics.mesh.core.endpoint.node;
 
+import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.rest.navigation.NavigationResponse;
+import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
+import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.PublishParametersImpl;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.route.AbstractProjectEndpoint;
+import io.vertx.core.MultiMap;
+import org.apache.commons.lang3.StringUtils;
+import org.raml.model.Resource;
+
+import javax.inject.Inject;
+
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
@@ -23,29 +43,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
-
-import javax.inject.Inject;
-
-import org.apache.commons.lang3.StringUtils;
-import org.raml.model.Resource;
-
-import com.gentics.mesh.auth.MeshAuthChain;
-import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.rest.navigation.NavigationResponse;
-import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
-import com.gentics.mesh.parameter.impl.GenericParametersImpl;
-import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
-import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
-import com.gentics.mesh.parameter.impl.NodeParametersImpl;
-import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.PublishParametersImpl;
-import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.InternalEndpointRoute;
-import com.gentics.mesh.router.route.AbstractProjectEndpoint;
-
-import io.vertx.core.MultiMap;
 
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
@@ -159,7 +156,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldUpdate.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
 		fieldUpdate.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
 		fieldUpdate.description("Update the binaryfield with the given name.");
-		fieldUpdate.events(NODE_CONTENT_UPDATED);
+		fieldUpdate.events(NODE_UPDATED);
 		fieldUpdate.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
@@ -179,7 +176,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		imageTransform.exampleRequest(nodeExamples.getBinaryFieldTransformRequest());
 		imageTransform.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "Transformation was executed and updated node was returned.");
 		imageTransform.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
-		imageTransform.events(NODE_CONTENT_UPDATED);
+		imageTransform.events(NODE_UPDATED);
 		imageTransform.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
@@ -408,7 +405,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
 		endpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
 		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
-		endpoint.events(NODE_UPDATED, NODE_CREATED, NODE_CONTENT_CREATED, NODE_CONTENT_UPDATED);
+		endpoint.events(NODE_UPDATED, NODE_CREATED, NODE_CONTENT_CREATED, NODE_UPDATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");

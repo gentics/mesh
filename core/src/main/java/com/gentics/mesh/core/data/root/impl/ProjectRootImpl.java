@@ -213,7 +213,8 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		batch.add(project.onCreated());
 		batch.add(initialBranch.onCreated());
 
-		// Add event for created basenode
+		// Add events for created basenode
+		batch.add(project.getBaseNode().onCreated());
 		project.getBaseNode().getDraftGraphFieldContainers().forEach(c -> {
 			batch.add(c.onCreated(branchUuid, DRAFT));
 		});
