@@ -26,7 +26,9 @@ title: Changelog
 
 
 [[v0.31.2]]
-== 0.31.2 (TBD)
+== 0.31.2 (22.03.2019)
+
+icon:plus[] Docker: Default memory settings for the server and demo docker images were updated. The `-Dstorage.diskCache.bufferSize=256` setting has been added for the server image. The setting can be changed using the `JAVA_TOOL_OPTIONS` environment variable. See link:https://getmesh.io/docs/administration-guide/#_memory_settings[Memory documentation] for more information and recommendations.
 
 icon:plus[] OrientDB: The included OrientDB version has been updated to version 3.0.18.
 

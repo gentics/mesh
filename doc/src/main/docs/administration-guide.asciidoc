@@ -303,11 +303,11 @@ The following numbers serve the purpose to roughly estimate the memory requireme
 [options="header"]
 |======
 | Node Count           | Memory Setting
-| 0 to 100             | `-Xms128m  -Xmx128m  -XX:MaxDirectMemorySize=128m`
-| 100 to 1_000         | `-Xms512m  -Xmx512m  -XX:MaxDirectMemorySize=256m`
-| 1_000 to 10_000      | `-Xms786m  -Xmx786m  -XX:MaxDirectMemorySize=384m`
-| 10_000 to 100_000    | `-Xms1250m -Xmx1250m -XX:MaxDirectMemorySize=512m`
-| 100_000 to 1_000_000 | `-Xms2500m -Xmx2500m -XX:MaxDirectMemorySize=1024m`
+| 0 to 100             | `-Xms128m  -Xmx128m  -XX:MaxDirectMemorySize=128m  -Dstorage.diskCache.bufferSize=128`
+| 100 to 1_000         | `-Xms512m  -Xmx512m  -XX:MaxDirectMemorySize=256m  -Dstorage.diskCache.bufferSize=256`
+| 1_000 to 10_000      | `-Xms786m  -Xmx786m  -XX:MaxDirectMemorySize=384m  -Dstorage.diskCache.bufferSize=384`
+| 10_000 to 100_000    | `-Xms1250m -Xmx1250m -XX:MaxDirectMemorySize=512m  -Dstorage.diskCache.bufferSize=512`
+| 100_000 to 1_000_000 | `-Xms2500m -Xmx2500m -XX:MaxDirectMemorySize=1024m -Dstorage.diskCache.bufferSize=1024`
 |======
 
 == Backup & Recovery
