@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.root.impl;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
@@ -141,6 +142,10 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		Spliterator<Edge> itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();
 		return StreamSupport.stream(itemEdges, false)
 			.map(edge -> edge.getVertex(Direction.IN))
+			.filter(item -> {
+				// Check whether the node has at least a draft in the selected branch - Otherwise the node should be skipped
+				return matchesBranchAndType(item.getId(), branchUuid, DRAFT.getCode());
+			})
 			.filter(item -> {
 				boolean hasRead = user.hasPermissionForId(item.getId(), READ_PERM);
 				if (hasRead) {

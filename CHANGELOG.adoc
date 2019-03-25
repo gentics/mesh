@@ -25,6 +25,11 @@ title: Changelog
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 
+[[v0.31.3]]
+== 0.31.3 (TBD)
+
+icon:check[] Permissions: A bug in the GraphQL `nodes` field was fixed. Previously branches were not correctly handled and too many nodes would be returned. Additionally the field would not correctly handle the read published permission and also return draft nodes to which no read permission was granted.
+
 [[v0.31.2]]
 == 0.31.2 (22.03.2019)
 
