@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.root.impl;
 
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -14,6 +15,9 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.List;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -48,7 +52,10 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
+import com.syncleus.ferma.tx.Tx;
+import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 
 import io.vertx.core.logging.Logger;
@@ -120,6 +127,34 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
 				database().createComposedIndexKey(nodeId, branchUuid, code));
 		return edges.iterator().hasNext();
+	}
+
+	@Override
+	public Stream<? extends Node> findAllStream(InternalActionContext ac, GraphPermission permission) {
+		MeshAuthUser user = ac.getUser();
+		FramedTransactionalGraph graph = Tx.getActive().getGraph();
+
+		Branch branch = ac.getBranch();
+		String branchUuid = branch.getUuid();
+
+		String idx = "e." + getRootLabel().toLowerCase() + "_out";
+		Spliterator<Edge> itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();
+		return StreamSupport.stream(itemEdges, false)
+			.map(edge -> edge.getVertex(Direction.IN))
+			.filter(item -> {
+				boolean hasRead = user.hasPermissionForId(item.getId(), READ_PERM);
+				if (hasRead) {
+					return true;
+				} else {
+					// Check whether the node is published. In this case we need to check the read publish perm.
+					boolean isPublishedForBranch = matchesBranchAndType(item.getId(), branchUuid, PUBLISHED.getCode());
+					if (isPublishedForBranch) {
+						return user.hasPermissionForId(item.getId(), READ_PUBLISHED_PERM);
+					}
+				}
+				return false;
+			})
+			.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 
 	@Override

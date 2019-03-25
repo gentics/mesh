@@ -11,7 +11,7 @@
     elements {
       uuid
     }
-    # [$.data.nodes.totalCount=16]
+    # [$.data.nodes.totalCount=2]
     totalCount
   }
 }
