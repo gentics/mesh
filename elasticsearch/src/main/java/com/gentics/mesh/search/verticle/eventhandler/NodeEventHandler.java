@@ -64,7 +64,7 @@ public class NodeEventHandler implements EventHandler {
 			} else if (event == NODE_DELETED) {
 				return Flowable.just(deleteNodes(message, getSchemaVersionUuid(message)));
 			} else {
-				throw new RuntimeException("UneNODE_CRENODE_CONTENT_CREATEDNODE_CONTENT_CREATEDATEDxpected event " + event.address);
+				throw new RuntimeException("Unexpected event " + event.address);
 			}
 		});
 	}

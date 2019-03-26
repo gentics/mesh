@@ -1,6 +1,30 @@
 
 package com.gentics.mesh.core.eventbus;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.assertj.MeshAssertions;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.rest.client.MeshRestClientUtil;
+import com.gentics.mesh.rest.client.MeshWebsocket;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.RxUtil;
+import io.reactivex.Completable;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import static com.gentics.mesh.core.rest.MeshEvent.MESH_MIGRATION;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
@@ -12,30 +36,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.Mesh;
-import com.gentics.mesh.assertj.MeshAssertions;
-import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.rest.client.MeshRestClientUtil;
-import com.gentics.mesh.rest.client.MeshWebsocket;
-import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.RxUtil;
-
-import io.reactivex.Completable;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 @RunWith(VertxUnitRunner.class)
 @MeshTestSetting(testSize = FULL, startServer = true)
@@ -186,9 +186,9 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 
 		// Handle msgs
 		ws.events().firstOrError().subscribe(event -> {
-			ObjectNode body = event.getBodyAsJson();
-			assertNotNull(body.get("uuid").textValue());
-			assertEquals("content", body.get("schemaName").textValue());
+			NodeMeshEventModel body = JsonUtil.readValue(event.getBodyAsJson().toString(), NodeMeshEventModel.class);
+			assertNotNull(body.getUuid());
+			assertEquals("content", body.getSchema().getName());
 			async.countDown();
 		});
 

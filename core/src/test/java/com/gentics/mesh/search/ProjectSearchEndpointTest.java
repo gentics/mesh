@@ -10,6 +10,7 @@ import static org.junit.Assert.assertEquals;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -17,7 +18,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 import com.gentics.mesh.test.util.MeshAssert;
-import com.syncleus.ferma.tx.Tx;
+
 @MeshTestSetting(elasticsearch = CONTAINER, startServer = true, testSize = FULL)
 public class ProjectSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
 
@@ -26,6 +27,8 @@ public class ProjectSearchEndpointTest extends AbstractMeshTest implements Basic
 		try (Tx tx = tx()) {
 			recreateIndices();
 		}
+
+		waitForSearchIdleEvent();
 
 		ProjectListResponse response = client().searchProjects(getSimpleQuery("name", "dummy"), new PagingParametersImpl().setPage(1)
 			.setPerPage(2L)).blockingGet();
@@ -47,6 +50,7 @@ public class ProjectSearchEndpointTest extends AbstractMeshTest implements Basic
 		try (Tx tx = tx()) {
 			MeshAssert.assertElement(boot().projectRoot(), project.getUuid(), true);
 		}
+		waitForSearchIdleEvent();
 		ProjectListResponse response = call(() -> client().searchProjects(getSimpleTermQuery("name.raw", newName), new PagingParametersImpl().setPage(
 			1).setPerPage(2L)));
 		assertEquals(1, response.getData().size());
@@ -58,11 +62,13 @@ public class ProjectSearchEndpointTest extends AbstractMeshTest implements Basic
 		final String projectName = "newproject";
 		ProjectResponse project = createProject(projectName);
 
+		waitForSearchIdleEvent();
 		ProjectListResponse response = client().searchProjects(getSimpleTermQuery("name.raw", projectName), new PagingParametersImpl()
 			.setPage(1).setPerPage(2L)).blockingGet();
 		assertEquals(1, response.getData().size());
 
 		deleteProject(project.getUuid());
+		waitForSearchIdleEvent();
 		response = client().searchProjects(getSimpleTermQuery("name.raw", projectName), new PagingParametersImpl().setPage(1).setPerPage(2L)).blockingGet();
 		assertEquals(0, response.getData().size());
 	}
@@ -76,9 +82,12 @@ public class ProjectSearchEndpointTest extends AbstractMeshTest implements Basic
 		String newProjectName = "updatedprojectname";
 		updateProject(project.getUuid(), newProjectName);
 
+		waitForSearchIdleEvent();
 		ProjectListResponse response = client().searchProjects(getSimpleTermQuery("name.raw", projectName), new PagingParametersImpl()
 			.setPage(1).setPerPage(2L)).blockingGet();
 		assertEquals(0, response.getData().size());
+
+		waitForSearchIdleEvent();
 
 		response = client().searchProjects(getSimpleTermQuery("name.raw", newProjectName), new PagingParametersImpl().setPage(1).setPerPage(2L))
 			.blockingGet();

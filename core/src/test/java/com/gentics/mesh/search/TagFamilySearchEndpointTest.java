@@ -1,10 +1,7 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
-import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.junit.Assert.assertEquals;
 
 import org.codehaus.jettison.json.JSONException;
@@ -15,6 +12,10 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
+
 @MeshTestSetting(elasticsearch = CONTAINER, startServer = true, testSize = FULL)
 public class TagFamilySearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
 
@@ -24,6 +25,7 @@ public class TagFamilySearchEndpointTest extends AbstractMeshTest implements Bas
 		String tagFamilyName = "newtagfamily";
 		createTagFamily(PROJECT_NAME, tagFamilyName);
 
+		waitForSearchIdleEvent();
 		TagFamilyListResponse list = call(() -> client().searchTagFamilies(getSimpleTermQuery("name.raw", tagFamilyName)));
 		assertEquals(1, list.getData().size());
 	}
@@ -34,10 +36,12 @@ public class TagFamilySearchEndpointTest extends AbstractMeshTest implements Bas
 		String tagFamilyName = "newtagfamily";
 		TagFamilyResponse tagFamilyResponse = createTagFamily(PROJECT_NAME, tagFamilyName);
 
+		waitForSearchIdleEvent();
 		TagFamilyListResponse list = call(() -> client().searchTagFamilies(getSimpleTermQuery("name.raw", tagFamilyName)));
 		assertEquals(1, list.getData().size());
 
 		deleteTagFamily(PROJECT_NAME, tagFamilyResponse.getUuid());
+		waitForSearchIdleEvent();
 		list = call(() -> client().searchTagFamilies(getSimpleTermQuery("name.raw", tagFamilyName)));
 		assertEquals(0, list.getData().size());
 	}
@@ -51,6 +55,8 @@ public class TagFamilySearchEndpointTest extends AbstractMeshTest implements Bas
 		// Update the name of the tag family we just created
 		String newTagFamilyName = "updatetagfamilyname";
 		updateTagFamily(PROJECT_NAME, tagFamily.getUuid(), newTagFamilyName);
+
+		waitForSearchIdleEvent();
 
 		// Check that the new tag family name is now stored in the search index
 		TagFamilyListResponse list = call(() -> client().searchTagFamilies(getSimpleTermQuery("name.raw", newTagFamilyName)));
