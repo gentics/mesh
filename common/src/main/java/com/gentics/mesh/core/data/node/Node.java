@@ -195,13 +195,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	}
 
 	/**
-	 * Return a traversal of all initial graph field containers for the node (in any branch).
-	 *
-	 * @return
-	 */
-	TraversalResult<? extends NodeGraphFieldContainer> getAllInitialGraphFieldContainers();
-
-	/**
 	 * Return a traversal of graph field containers of given type for the node in the given branch.
 	 *
 	 * @param branch
@@ -697,8 +690,9 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @param bac
 	 * @param ignoreChecks
+	 * @param recusive
 	 */
-	void delete(BulkActionContext bac, boolean ignoreChecks);
+	void delete(BulkActionContext bac, boolean ignoreChecks, boolean recusive);
 
 	/**
 	 * Handle the update tags request.
@@ -761,14 +755,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return existing edge or null
 	 */
 	EdgeFrame getGraphFieldContainerEdgeFrame(String languageTag, String branchUuid, ContainerType type);
-
-	/**
-	 * Fully delete the node. Not that this delete operation will delete all versions of the node and also the node itself (from all branches).
-	 * 
-	 * @param bac
-	 * @param recursive
-	 */
-	void deleteFully(BulkActionContext bac, boolean recursive);
 
 	/**
 	 * Check whether the node is the base node of its project

@@ -223,7 +223,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 		// Remove the nodes in the project hierarchy
 		Node base = getBaseNode();
-		base.deleteFully(bac, true);
+		base.delete(bac, true, true);
 
 		// Remove the tagfamilies from the index
 		getTagFamilyRoot().delete(bac);
