@@ -64,12 +64,12 @@ __Features:__
 == Intro
 
 * You organize your contents and media assets in *projects*. 
-* A *schema* is used to define the structure of a content type (e.g. product, blogpost). It has a set of standard fields (uuid, name, version etc.) and defines the types of an arbitrary number of custom fields for your content type (i.e. string, number, HTML, date, binary, list, node reference, micronode, boolean).
+* A *schema* is used to define the structure of a content type (e.g. product, blog post). It has a set of standard fields (uuid, name, version etc.) and defines the types of an arbitrary number of custom fields for your content type (i.e. string, number, HTML, date, binary, list, node reference, micronode, boolean).
 * The actual content items of your project are called *nodes* and always follow a schema.
-* *Everything is a node*, there is no separate concept for media assets.To get you started, we ship with schemas for _image_, _video_, _document_, and _audio_ that you may customize to your needs and liking!
+* *Everything is a node*, there is no separate concept for media assets. To get you started, we ship with schemas for _image_, _video_, _document_, and _audio_ that you may customize to your needs and liking!
 * Nodes can be tagged. A *tag family* groups *tags* that semantically belong together and is defined for a specific project.
 * Gentics Mesh supports building *content trees*. Nodes can be hierarchically structured if a container-schema is provided. While it’s possible to organize your contents in a simple, flat structure with tagging and referencing, content trees are the basis for leveraging the power of *automatic navigation menus, breadcrumbs, pretty URLs and link resolving*. For your convenience, Gentics Mesh is shipped with a generic _folder_ schema that you may choose for hierarchically organizing your content in a tree and ultimately following the well-known file system paradigm.
-* With *micronodes* it is possible to build complex object data structures as they are basically representing subnodes of nodes. They allow for creating custom content components, e.g. media elements of your blogpost such as YouTube videos, image galleries, Google maps, image with caption, vcards, quotes, or text paragraphs to be mixed and matched.
+* With *micronodes* it is possible to build complex object data structures as they are basically representing subnodes of nodes. They allow for creating custom content components, e.g. media elements of your blog post such as YouTube videos, image galleries, Google maps, image with caption, vcards, quotes, or text paragraphs to be mixed and matched.
 * Supporting *multi-language and localisation*, nodes can hold several language variants of your content.
 * Each user (a physical person or client app) has a *user* object counter part in Gentics Mesh, which can be extended by referencing a custom user node. By defining your custom user schema Gentics Mesh supports extensible user profiles for your apps.
 * *Groups* are used to organize users, e.g., of same access levels.
