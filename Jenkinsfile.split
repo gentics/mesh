@@ -12,6 +12,7 @@ final def dockerImageName      = dockerRegistry + "/gentics/jenkinsbuilds/mesh-s
 properties([
 	parameters([
 		booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests"),
+		booleanParam(name: 'runSonar',            defaultValue: true,  description: "Whether to run the sonarqube checks"),
 		booleanParam(name: 'runPerformanceTests', defaultValue: false, description: "Whether to run performance tests."),
 		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
 		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
@@ -21,6 +22,8 @@ properties([
 ])
 
 final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
+final def splits = 20;
+final def runs = 20;
 
 stage("Setup Build Environment") {
 	node("docker") {
@@ -110,14 +113,13 @@ stage("Setup Build Environment") {
 
 				stage("Test") {
 					if (Boolean.valueOf(params.runTests)) {
-					def splits = 20;
 						sh "ls -la"
 						sh "find -name \"*Test.java\" | grep -v Abstract | shuf | sed  's/.*java\\/\\(.*\\)/\\1/' > alltests"
 						sh "cat alltests | wc -l"
 						sh "split -a 2 -d -n l/${splits} alltests  includes-"
 						stash includes: '**', name: 'project'
 						def branches = [:]
-						for (int i = 0; i < splits; i++) {
+						for (int i = 0; i < runs; i++) {
 							def current = i
 							branches["split${i}"] = {
 								node('mesh') {
@@ -132,6 +134,7 @@ stage("Setup Build Environment") {
 									sshagent(["git"]) {
 										try {
 											sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!performance-tests' clean install"
+										    stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
 										} finally {
 											step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 										}
@@ -154,13 +157,34 @@ stage("Setup Build Environment") {
 					if (Boolean.valueOf(params.runMavenBuild)) {
 						sshagent(["git"]) {
 							if (Boolean.valueOf(params.runDeploy)) {
-								sh "mvn -U -B -DskipTests clean deploy"
+								withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+									sh "mvn -U -B -DskipTests clean deploy"
+								}
 							} else {
 								sh "mvn -B -DskipTests clean package"
 							}
 						}
 					} else {
 						echo "Maven build skipped.."
+					}
+				}
+
+				stage ("SonarQube") {
+					if (Boolean.valueOf(params.runTests) && Boolean.valueOf(params.runSonar)) {
+						for (int i = 0; i < runs; i++) {
+							echo "Invoking merge for " + i
+							unstash "jacoco" + i
+							sh "mvn jacoco:merge@merge-all-jacoco -Dskip.jacoco.merge=false"
+							sh "find -name jacoco-partial.exec -exec rm {} \\;"
+						}
+
+						// Run the maven build if the build did not run previously
+						if (!Boolean.valueOf(params.runMavenBuild)) {
+							sh "mvn -B -DskipTests package"
+						}
+						withCredentials([string(credentialsId: 'sonarcube.key', variable: 'TOKEN')]) {
+							sh "mvn sonar:sonar -Dsonar.projectKey=mesh -Dsonar.host.url=https://sonarqube.apa.at -Dsonar.login=$TOKEN"
+						}
 					}
 				}
 
@@ -249,8 +273,6 @@ stage("Setup Build Environment") {
 				}
 				throw e
 			} finally {
-				echo "RESULT: ${currentBuild.result}"
-				echo "CRESULT: ${currentBuild.currentResult}"
 				githubBuildEnded()
 				notifyMattermostUsers()
 			}

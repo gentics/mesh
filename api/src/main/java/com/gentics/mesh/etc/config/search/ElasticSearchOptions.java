@@ -32,6 +32,7 @@ public class ElasticSearchOptions implements Option {
 	public static final String MESH_ELASTICSEARCH_STARTUP_TIMEOUT_ENV = "MESH_ELASTICSEARCH_STARTUP_TIMEOUT";
 	public static final String MESH_ELASTICSEARCH_START_EMBEDDED_ENV = "MESH_ELASTICSEARCH_START_EMBEDDED";
 	public static final String MESH_ELASTICSEARCH_PREFIX_ENV = "MESH_ELASTICSEARCH_PREFIX";
+	public static final String MESH_ELASTICSEARCH_BULK_LIMIT_ENV = "MESH_ELASTICSEARCH_BULK_LIMIT";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Elasticsearch connection url to be used. Set this setting to null will disable the Elasticsearch support.")
@@ -59,6 +60,7 @@ public class ElasticSearchOptions implements Option {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Upper limit for the size of bulk requests.")
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_BULK_LIMIT_ENV, description = "Override the batch bulk limit. Default: " + DEFAULT_BULK_LIMIT)
 	private int bulkLimit = DEFAULT_BULK_LIMIT;
 
 	@JsonProperty(required = false)

@@ -6,13 +6,11 @@ title: Gentics Mesh Cookbook
 :source-highlighter: prettify
 :toc:
 
-== Chapters
-
-=== I - Introduction
+== Introduction
 
 This document aims to provide you with suggestions and hints on how to deal with typical web development tasks. Each chapter will provide you with examples and show you how Gentics Mesh can help you tackle these tasks.
 
-=== II - Content
+== Content
 
 Handling contents is fairly easy. You can either identify and load content using the UUIDs or a regular web path. 
 
@@ -24,7 +22,7 @@ You can either place the path or uuid to your content in a fragment `/demo#categ
 
 If you choose to use a server side webframework like link:https://laravel.com/[Laravel] or link:https://expressjs.com/de/[Express] you can setup routes to handle the inbound request. The request path can be used to build the webroot path for Gentics Mesh. Using that path you can query Gentics Mesh and check whether content for the given path can be found.
 
-=== III - Images
+== Images
 
 Images can be loaded similar to regular contents. It is possible to load them using the path or the uuid:
 
@@ -37,11 +35,11 @@ TIP: By Uuid: https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922
 
 image::https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=500[Image by Uuid]
 
-==== Placeholders
+== Placeholders
 
 NOTE: You can use the `dominantColor`, `width` and `height` properties of the image fields to generate colored placeholder areas for your images. The `dominantColor` of the image will  automatically be computed for each uploaded image.
 
-===== Responsive Design
+== Responsive Design
 
 You can use the focal point feature to mark the point of interest in your images. That information can be used to generate different size sets of your images. Different image sizes may be required by your responsive design. The focal point will be used by Gentics Mesh to crop the image in the desired way.
 
@@ -52,37 +50,39 @@ image::https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f
 
 image::https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=100&h=300&crop=fp&fpdebug=true[Image with FP]
 
+== Binaries
 
+Binary requests should be directly passed along to the CMS API. This way no additional overhead is involved when dealing with binary data transmission.
 
-=== IV - Binaries
+TIP: Make sure to also support link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests[Range requests]. This way your frontend will be able to support seeking in video players. On some platforms (_Mac OS, iOS_) videos might not even be started when the server does not support range requests. 
 
-=== V - Search
+== Search
 
 Adding a search feature often starts as a simple requirement which specifies that the content should be searchable. There are however various aspects of the search that need to be highlighted in order to implement the search.
 
-==== Autocompletion
+=== Autocompletion
 
 TIP: Do you want to suggest completions while the user enters the query in the search bar?
 
-==== Did You Mean
+=== Did You Mean
 
 TIP: Do you want to auto correct the search query and provide the user with an alternative search query?
 
-==== Autosuggest
+=== Autosuggest
 
 TIP: Do you want to suggest full query phrases to the user?
 
-==== Result Highlighting
+=== Result Highlighting
 
 TIP: Should the result page contain excerpts of the found content?
 
-==== Filtering
+=== Filtering
 
 TIP: Can the user of your site specify additional filters? (e.g.: author, category)
 
-==== Search Index Tuning
+=== Search Index Tuning
 
-==== Search in Uploads
+=== Search in Uploads
 
 TIP: Do you want to be able to search within contents of uploaded documents? (e.g.: PDF, DOC, DOCX)
 
@@ -96,24 +96,38 @@ EXPOSE 9200
 EXPOSE 9300
 ```
 
-=== VI - Like & Comment
+=== Like & Comment
 
+== Storing Data
 
+== Login
 
-=== VII - Storing Data
+=== Authentication Providers
 
-=== VIII - Login
+Central authentication providers like keycloak can be used in combination with Gentics Mesh.
 
-=== IX - User data
+== User data
 
-=== X - Content Staging
+== Content Staging
 
-=== XI - Links
+In some projects it may be desired to use content staging.
 
-=== XII - Sitemap
+The simplest form of content staging can be done by using draft and published versions. The content is first edited as a draft, reviewed and finally published.
 
-=== XIII - Caching
+A more complex form of content staging may be needed when faced with the task of reworking the content for a new frontend. A typical example would be the content staging that is needed to rework the content for a seasonal change (e.g. Spring Design vs. Summer Design).
 
-==== User permissions
+In frontend development a new branch of the needed code is created and the frontend will be reworked. 
+A similar workflow applies to Gentics Mesh. The branch API can be used to create a new branch from the existing content.
+Once the new branch has been created new contents can be added, existing contents can be updated or restructured. The original branch is untouched from this operation and continues to function as before.
+
+TIP: It may be useful for your project to already plan for branches and add a configuration setting which can be used to switch between branches.
+
+== Links
+
+== Sitemap
+
+== Caching
+
+== User permissions
 
 Sometimes it might not be important which roles a user has exactly, but only that they did not change since the last time they were checked. For this purpose the https://getmesh.io/docs/api/#users__get_response[user response] contains the `rolesHash`, which is a CRC32 hash of all the users roles.

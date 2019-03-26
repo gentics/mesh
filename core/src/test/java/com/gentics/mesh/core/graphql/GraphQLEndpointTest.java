@@ -116,7 +116,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	 * </p>
 	 *
 	 * @param queryName The filename of the GraphQL query to use
-	 * @param withMicroschema Wheather to use micro schemas
+	 * @param withMicroschema Whether to use micro schemas
 	 * @param version Whether to use the <code>draft</code> or <code>published</code> version
 	 * @param assertion A custom assertion to be applied on the GraphQL query result
 	 */

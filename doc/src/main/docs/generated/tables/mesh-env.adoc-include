@@ -107,6 +107,9 @@
 | *MESH_AUTH_JWT_ALGO*
 | Override the configured algorithm which is used to sign the JWT.
 
+| *MESH_ELASTICSEARCH_BULK_LIMIT*
+| Override the batch bulk limit. Default: 2000
+
 | *MESH_AUTH_OAUTH2_SERVER_CONF_AUTH_SSL_REQUIRED*
 | Override the configured OAuth2 server SSL-required flag.
 

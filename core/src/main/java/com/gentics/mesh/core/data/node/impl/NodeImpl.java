@@ -319,13 +319,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TraversalResult<? extends NodeGraphFieldContainer> getAllInitialGraphFieldContainers() {
-		return new TraversalResult<>(
-			outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, INITIAL.getCode()).inV().frameExplicit(
-				NodeGraphFieldContainerImpl.class));
-	}
-
-	@Override
 	public TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type) {
 		return new TraversalResult<>(outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid)
 			.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV().frameExplicit(NodeGraphFieldContainerImpl.class));
@@ -1365,7 +1358,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void delete(BulkActionContext bac, boolean ignoreChecks) {
+	public void delete(BulkActionContext bac, boolean ignoreChecks, boolean recursive) {
 		if (!ignoreChecks) {
 			// Prevent deletion of basenode
 			if (getProject().getBaseNode().getUuid().equals(getUuid())) {
@@ -1377,13 +1370,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			log.debug("Deleting node {" + getUuid() + "}");
 		}
 		// TODO Only affect a specific branch?
-		for (Node child : getChildren()) {
-			child.delete(bac);
-			bac.process();
+		if (recursive) {
+			for (Node child : getChildren()) {
+				child.delete(bac);
+				bac.process();
+			}
 		}
 
 		// Delete all initial containers (which will delete all containers)
-		for (NodeGraphFieldContainer container : getAllInitialGraphFieldContainers()) {
+		for (NodeGraphFieldContainer container : getGraphFieldContainersIt(INITIAL)) {
 			container.delete(bac);
 		}
 		if (log.isDebugEnabled()) {
@@ -1397,33 +1392,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		delete(bac, false);
-	}
-
-	@Override
-	public void deleteFully(BulkActionContext bac, boolean recursive) {
-
-		if (recursive) {
-			for (Node child : getChildren()) {
-				child.deleteFully(bac, recursive);
-			}
-		}
-
-		// getGraphFieldContainerEdges(DRAFT).forEach(e -> {
-		// bac.add(e.getNodeContainer().onDeleted(e.getBranchUuid(), DRAFT));
-		// });
-		// getGraphFieldContainerEdges(PUBLISHED).forEach(e -> {
-		// bac.add(e.getNodeContainer().onDeleted(e.getBranchUuid(), PUBLISHED));
-		// });
-
-		for (NodeGraphFieldContainer container : getGraphFieldContainersIt(INITIAL)) {
-			container.delete(bac);
-		}
-
-		// Finally remove the node element itself
-		bac.add(onDeleted(getUuid(), null, getSchemaContainer(), null, null, null));
-		getElement().remove();
-		bac.process();
+		delete(bac, false, true);
 	}
 
 	@Override
@@ -1996,7 +1965,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// branch specific children
 		for (Node child : getChildren(branch.getUuid())) {
-			if (ac.getUser().hasPermission(child, READ_PERM)) {
+			if (ac.getUser().hasPermission(child, READ_PUBLISHED_PERM)) {
 				keyBuilder.append("-");
 				keyBuilder.append(child.getSchemaContainer().getName());
 			}

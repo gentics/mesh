@@ -1,0 +1,18 @@
+{
+  me {
+    # [$.data.me.username=anonymous]
+    username
+  }
+  node(path:"/Neuigkeiten/2015") {
+    # [$.data.node.uuid=<is-uuid>]
+    uuid
+  }
+  nodes {
+    elements {
+      uuid
+    }
+    # [$.data.nodes.totalCount=2]
+    totalCount
+  }
+}
+# [$.errors=<is-undefined>]

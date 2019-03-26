@@ -44,7 +44,7 @@ ENV JAVA_1_8_HOME /usr/lib/jvm/java-8
 RUN echo "jenkins:jenkins" | chpasswd
 RUN mkdir -p /home/jenkins/workspace && mkdir -p /home/jenkins/.ssh
 
-#ADD ./files/settings.xml /home/jenkins/.m2/settings.xml
+ADD ./files/settings.xml /home/jenkins/.m2/settings.xml
 #ADD ./files/gentics /home/jenkins/.gnupg/gentics
 RUN chown jenkins: /home/jenkins -R
 
@@ -89,7 +89,6 @@ ENV LANG en_US.UTF-8
 # Add credentials
 #RUN sudo -u jenkins gpg --import /home/jenkins/credentials/gpg/gentics/gpg-key.asc
 #RUN sudo -u jenkins gpg --import /home/jenkins/credentials/gpg/gentics/gpg-secret-key.asc
-RUN ln -s /home/jenkins/credentials/maven/settings.xml /home/jenkins/.m2/settings.xml
 
 USER jenkins
 

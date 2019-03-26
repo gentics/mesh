@@ -1,6 +1,7 @@
 package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static graphql.Scalars.GraphQLLong;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLArgument.newArgument;
@@ -427,7 +428,7 @@ public abstract class AbstractTypeProvider {
 
 		List<String> languageTags = getLanguageArgument(env);
 
-		Stream<NodeContent> contents = nodeRoot.findAllStream(gc)
+		Stream<NodeContent> contents = nodeRoot.findAllStream(gc, READ_PUBLISHED_PERM)
 			// Now lets try to load the containers for those found nodes - apply the language fallback
 			.map(node -> new NodeContent(node, node.findVersion(gc, languageTags), languageTags))
 			// Filter nodes without a container
