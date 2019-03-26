@@ -1,6 +1,7 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.ClientHelper.call;
+
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getRangeQuery;
@@ -33,8 +34,9 @@ import com.syncleus.ferma.tx.Tx;
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_WITH_INGEST;
 
-@MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true, withIngestPlugin = false)
+@MeshTestSetting(elasticsearch = CONTAINER_WITH_INGEST, testSize = FULL, startServer = true)
 public class NodeBinaryNoIngestSearchTest extends AbstractNodeSearchEndpointTest {
 
 	@Test

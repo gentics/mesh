@@ -21,7 +21,7 @@ import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true, inMemoryDB = true)
+@MeshTestSetting(testSize = FULL, startServer = true, inMemoryDB = true)
 public class ConsistencyCheckTest extends AbstractMeshTest {
 
 	@Test

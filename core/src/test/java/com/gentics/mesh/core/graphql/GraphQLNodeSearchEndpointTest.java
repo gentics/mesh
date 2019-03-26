@@ -1,6 +1,13 @@
 
 package com.gentics.mesh.core.graphql;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+
+import org.junit.Test;
+
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -8,14 +15,9 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+
 import io.vertx.core.json.JsonObject;
-import org.junit.Test;
-
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-
-@MeshTestSetting(useElasticsearch = true, testSize = TestSize.FULL, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.FULL, startServer = true)
 public class GraphQLNodeSearchEndpointTest extends AbstractMeshTest {
 
 	@Test

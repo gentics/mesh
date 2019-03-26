@@ -1,5 +1,20 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleWildCardQuery;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+
+import org.codehaus.jettison.json.JSONException;
+import org.junit.Test;
+
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -11,21 +26,8 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 import com.syncleus.ferma.tx.Tx;
-import org.codehaus.jettison.json.JSONException;
-import org.junit.Test;
 
-import java.io.IOException;
-
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleWildCardQuery;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-@MeshTestSetting(useElasticsearch = true, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
 
 	@Test
@@ -228,10 +230,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		request.setPassword("test1234");
 		UserResponse user = call(() -> client().createUser(request));
 
-
 		// 3. Assign the previously created user to the group
 		call(() -> client().addUserToGroup(group.getUuid(), user.getUuid()));
-
 
 		waitForSearchIdleEvent();
 

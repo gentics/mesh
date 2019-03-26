@@ -32,7 +32,7 @@ import io.vertx.core.json.JsonObject;
 /**
  * Test {@link UpdateSchemaChangeImpl} methods
  */
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class UpdateSchemaChangeTest extends AbstractChangeTest {
 
 	@Test

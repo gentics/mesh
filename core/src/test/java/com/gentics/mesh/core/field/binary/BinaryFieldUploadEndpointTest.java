@@ -56,7 +56,7 @@ import io.reactivex.Observable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.test.core.TestUtils;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 	@Test

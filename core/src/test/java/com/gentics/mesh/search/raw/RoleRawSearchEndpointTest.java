@@ -2,9 +2,9 @@ package com.gentics.mesh.search.raw;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 
-import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -12,7 +12,8 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = true, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+import io.vertx.core.json.JsonObject;
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class RoleRawSearchEndpointTest extends AbstractMeshTest {
 
 	@Test

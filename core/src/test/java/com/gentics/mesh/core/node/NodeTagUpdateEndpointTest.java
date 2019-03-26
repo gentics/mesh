@@ -1,11 +1,13 @@
 package com.gentics.mesh.core.node;
 
+
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -13,14 +15,13 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+import com.syncleus.ferma.tx.Tx;
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 
 	@Test
@@ -100,6 +101,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 
 		TagListResponse response = call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request));
 		assertEquals(4, response.getMetainfo().getTotalCount());
+		waitForSearchIdleEvent();
 		try (Tx tx = tx()) {
 			// 4 Node containers need to be updated and two tag families and 4 new tags
 			assertThat(trackingSearchProvider()).storedAllContainers(content(), project(), latestBranch(), "en", "de").hasEvents(4 + 2 + 4, 0, 0, 0);
@@ -150,6 +152,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		request.getTags().add(new TagReference().setName("blub1").setTagFamily("colors"));
 		// 2. Invoke the tag request
 		call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request), FORBIDDEN, "error_missing_perm", nodeUuid, UPDATE_PERM.getRestPerm().getName());
+		waitForSearchIdleEvent();
 		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
 
 	}

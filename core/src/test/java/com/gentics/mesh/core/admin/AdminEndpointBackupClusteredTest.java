@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.admin;
 
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -18,7 +19,7 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true, inMemoryDB = false, clusterMode = true)
+@MeshTestSetting(elasticsearch = NONE, testSize = FULL, startServer = true, inMemoryDB = false, clusterMode = true)
 public class AdminEndpointBackupClusteredTest extends AbstractMeshTest {
 
 	@Before

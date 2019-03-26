@@ -11,6 +11,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.ROLE_UPDATED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
 import static com.gentics.mesh.test.TestSize.PROJECT;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -54,8 +55,7 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Single;
-
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = PROJECT, startServer = true)
 public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@Test
@@ -72,6 +72,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		RoleResponse restRole = call(() -> client().createRole(request));
 
 		awaitEvents();
+		waitForSearchIdleEvent();
 
 		assertThat(trackingSearchProvider()).hasStore(Role.composeIndexName(), restRole.getUuid());
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
@@ -444,6 +445,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().deleteRole(extraRoleUuid));
 
 		awaitEvents();
+		waitForSearchIdleEvent();
 
 		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), groupUuid());
 		assertThat(trackingSearchProvider()).hasDelete(Role.composeIndexName(), extraRoleUuid);

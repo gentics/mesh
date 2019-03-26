@@ -17,7 +17,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true, clusterMode = false)
+@MeshTestSetting(testSize = FULL, startServer = true, clusterMode = false)
 public class MicronodeMigrationEndpointTest extends AbstractMeshTest {
 
 	/**

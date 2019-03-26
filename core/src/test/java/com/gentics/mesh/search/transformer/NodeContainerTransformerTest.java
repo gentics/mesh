@@ -20,7 +20,7 @@ import com.syncleus.ferma.tx.Tx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class NodeContainerTransformerTest extends AbstractMeshTest {
 
 	@Test

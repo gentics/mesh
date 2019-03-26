@@ -35,7 +35,7 @@ import com.gentics.mesh.util.RxUtil;
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest implements BinaryFieldTestHelper {
 
 	String hash;

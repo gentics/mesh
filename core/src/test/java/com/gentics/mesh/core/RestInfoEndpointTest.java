@@ -17,7 +17,7 @@ import com.orientechnologies.orient.core.OConstants;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class RestInfoEndpointTest extends AbstractMeshTest {
 
 	@Test

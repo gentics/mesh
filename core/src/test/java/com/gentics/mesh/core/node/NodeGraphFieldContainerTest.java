@@ -17,7 +17,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class NodeGraphFieldContainerTest extends AbstractMeshTest {
 
 	@Test(expected = ORecordDuplicatedException.class)

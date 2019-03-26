@@ -1,8 +1,10 @@
 package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_FINISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_START;
 import static com.gentics.mesh.test.ClientHelper.call;
+/**
+ * Test that bogus indices will be detected and removed during index sync operation.
+ */import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -30,11 +32,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
-
-/**
- * Test that bogus indices will be detected and removed during index sync operation.
- */
-@MeshTestSetting(useElasticsearch = true, testSize = TestSize.FULL, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.FULL, startServer = true)
 public class IndexSyncCleanupTest extends AbstractMeshTest {
 
 	@Before

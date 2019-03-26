@@ -34,7 +34,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.google.common.collect.Iterables;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class SchemaContainerTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test

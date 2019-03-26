@@ -85,7 +85,7 @@ import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Observable;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@After

@@ -19,6 +19,9 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
 
 import javax.inject.Inject;
+
+import static com.gentics.mesh.core.rest.MeshEvent.SEARCH_FLUSH_REQUEST;
+
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -78,7 +81,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	 * Flushes the buffer of Elasticsearch requests and dispatches all pending requests.
 	 */
 	public Completable flush() {
-		return Completable.fromRunnable(() -> vertx.eventBus().publish(MeshEvent.SEARCH_FLUSH_REQUEST.address, null));
+		return Completable.fromRunnable(() -> vertx.eventBus().publish(SEARCH_FLUSH_REQUEST.address, null));
 //		return Completable.defer(() -> {
 //			if (bulker != null) {
 //				bulker.flush();

@@ -40,7 +40,7 @@ import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.ext.web.RoutingContext;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test

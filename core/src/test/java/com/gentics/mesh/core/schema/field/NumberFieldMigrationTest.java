@@ -25,7 +25,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.field.number.NumberFieldTestHelper;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class NumberFieldMigrationTest extends AbstractFieldMigrationTest implements NumberFieldTestHelper {
 
 	@Override

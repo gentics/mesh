@@ -18,8 +18,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
 
-@MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = NONE, testSize = FULL, startServer = true)
 public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test

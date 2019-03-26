@@ -33,6 +33,8 @@ public class TrackingSearchProvider implements SearchProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(TrackingSearchProvider.class);
 
+	public static final String TEST_PROPERTY_KEY = "mesh.test";
+
 	private Map<String, JsonObject> updateEvents = new HashMap<>();
 	private List<String> deleteEvents = new ArrayList<>();
 	private Map<String, JsonObject> storeEvents = new HashMap<>();
@@ -111,13 +113,13 @@ public class TrackingSearchProvider implements SearchProvider {
 		for (Bulkable entry : entries) {
 			if (entry instanceof CreateDocumentRequest) {
 				CreateDocumentRequest request = (CreateDocumentRequest) entry;
-				storeEvents.put(request.getTransformedIndex() + "-" + request.getId(), request.getDoc());
+				storeEvents.put(request.getIndex() + "-" + request.getId(), request.getDoc());
 			} else if (entry instanceof DeleteDocumentRequest) {
 				DeleteDocumentRequest request = (DeleteDocumentRequest) entry;
-				deleteEvents.add(request.getTransformedIndex() + "-" + request.getId());
+				deleteEvents.add(request.getIndex() + "-" + request.getId());
 			} else if (entry instanceof UpdateDocumentRequest) {
 				UpdateDocumentRequest request = (UpdateDocumentRequest) entry;
-				updateEvents.put(request.getTransformedIndex() + "-" + request.getId(), request.getDoc());
+				updateEvents.put(request.getIndex() + "-" + request.getId(), request.getDoc());
 			} else if (entry instanceof BulkRequest) {
 				BulkRequest request = (BulkRequest) entry;
 				processBulk(request.getRequests());

@@ -31,7 +31,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
 @RunWith(value = Parameterized.class)
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class BranchLinkRendererTest extends AbstractMeshTest {
 	private WebRootLinkReplacer replacer;
 

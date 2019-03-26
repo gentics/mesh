@@ -1,6 +1,7 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
@@ -21,8 +22,7 @@ import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.DeploymentOptions;
-
-@MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
 public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
 
 	@Before

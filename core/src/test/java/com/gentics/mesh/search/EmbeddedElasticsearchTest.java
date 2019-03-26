@@ -1,6 +1,7 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.EMBEDDED;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -12,8 +13,7 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
-
-@MeshTestSetting(useElasticsearch = true, testSize = TestSize.PROJECT_AND_NODE, startServer = true, useElasticsearchContainer = false)
+@MeshTestSetting(elasticsearch = EMBEDDED, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class EmbeddedElasticsearchTest extends AbstractMeshTest {
 
 	@Test

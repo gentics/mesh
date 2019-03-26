@@ -1,6 +1,10 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.junit.Assert.assertEquals;
 
 import org.codehaus.jettison.json.JSONException;
@@ -11,11 +15,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-
-@MeshTestSetting(useElasticsearch = true, startServer = true, testSize = FULL)
+@MeshTestSetting(elasticsearch = CONTAINER, startServer = true, testSize = FULL)
 public class TagFamilySearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
 
 	@Test

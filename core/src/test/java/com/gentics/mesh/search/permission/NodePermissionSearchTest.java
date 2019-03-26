@@ -2,6 +2,7 @@ package com.gentics.mesh.search.permission;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -17,8 +18,7 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
-
-@MeshTestSetting(useElasticsearch = true, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class NodePermissionSearchTest extends AbstractMeshTest {
 
 	@Test

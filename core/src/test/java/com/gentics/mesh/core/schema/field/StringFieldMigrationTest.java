@@ -26,7 +26,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.field.string.StringFieldTestHelper;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class StringFieldMigrationTest extends AbstractFieldMigrationTest implements StringFieldTestHelper {
 
 	@Test

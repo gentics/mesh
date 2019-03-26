@@ -37,7 +37,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
+@MeshTestSetting(testSize = PROJECT, startServer = true)
 public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test

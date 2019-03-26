@@ -9,7 +9,7 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = false)
+@MeshTestSetting(testSize = PROJECT, startServer = false)
 public class SearchQueueBatchTest extends AbstractMeshTest {
 
 	@Test

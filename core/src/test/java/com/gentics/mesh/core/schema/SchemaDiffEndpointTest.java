@@ -37,7 +37,7 @@ import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class SchemaDiffEndpointTest extends AbstractMeshTest {
 
 	private Schema getSchema() {

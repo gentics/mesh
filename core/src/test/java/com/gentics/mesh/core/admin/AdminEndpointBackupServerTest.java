@@ -15,7 +15,7 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true, startStorageServer = true, clusterMode = false, inMemoryDB = false)
+@MeshTestSetting(testSize = FULL, startServer = true, startStorageServer = true, clusterMode = false, inMemoryDB = false)
 public class AdminEndpointBackupServerTest extends AbstractMeshTest {
 
 	@Test

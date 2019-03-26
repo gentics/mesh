@@ -21,7 +21,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class LinkRenderPathPrefixTest extends AbstractMeshTest {
 
 	private static final String OTHER_PROJECT_NAME = "projectB";

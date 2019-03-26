@@ -45,7 +45,7 @@ import com.tinkerpop.blueprints.Edge;
 
 import io.vertx.ext.web.RoutingContext;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = false)
+@MeshTestSetting(testSize = PROJECT, startServer = false)
 public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test

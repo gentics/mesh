@@ -26,7 +26,7 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.field.string.StringListFieldTestHelper;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class StringListFieldMigrationTest extends AbstractFieldMigrationTest implements StringListFieldTestHelper {
 
 	@Override

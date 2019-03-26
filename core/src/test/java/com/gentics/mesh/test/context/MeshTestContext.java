@@ -1,6 +1,7 @@
- package com.gentics.mesh.test.context;
+package com.gentics.mesh.test.context;
 
- import static org.junit.Assert.assertTrue;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +32,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.etc.config.OAuth2Options;
 import com.gentics.mesh.etc.config.OAuth2ServerConfig;
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -57,7 +59,7 @@ import okhttp3.OkHttpClient;
 public class MeshTestContext extends TestWatcher {
 
 	static {
-		System.setProperty("mesh.test", "true");
+		System.setProperty(TrackingSearchProvider.TEST_PROPERTY_KEY, "true");
 	}
 
 	private static final Logger log = LoggerFactory.getLogger(MeshTestContext.class);
@@ -115,8 +117,13 @@ public class MeshTestContext extends TestWatcher {
 				initFolders(Mesh.mesh().getOptions());
 				setupData();
 				listenToSearchIdleEvent();
-				if (settings.useElasticsearch()) {
+				switch (settings.elasticsearch()) {
+				case CONTAINER:
+				case CONTAINER_WITH_INGEST:
 					setupIndexHandlers();
+					break;
+				default:
+					break;
 				}
 				if (settings.startServer()) {
 					setupRestEndpoints(settings);
@@ -148,10 +155,17 @@ public class MeshTestContext extends TestWatcher {
 					closeClient();
 				}
 				idleConsumer.unregister();
-				if (settings.useElasticsearch()) {
+				switch (settings.elasticsearch()) {
+				case CONTAINER:
+				case EMBEDDED:
+				case CONTAINER_WITH_INGEST:
 					meshDagger.searchProvider().clear().blockingAwait();
-				} else {
+					break;
+				case TRACKING:
 					meshDagger.trackingSearchProvider().clear();
+					break;
+				default:
+					break;
 				}
 				resetDatabase(settings);
 			}
@@ -350,19 +364,33 @@ public class MeshTestContext extends TestWatcher {
 			meshOptions.getStorageOptions().setStartServer(true);
 		}
 		// Increase timeout to high load during testing
-		meshOptions.getSearchOptions().setTimeout(10_000L);
+		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
+		searchOptions.setTimeout(10_000L);
 		meshOptions.getStorageOptions().setDirectory(graphPath);
-		if (settings.useElasticsearchContainer()) {
-			meshOptions.getSearchOptions().setStartEmbedded(false);
-			meshOptions.getSearchOptions().setUrl(null);
-			if (settings.useElasticsearch()) {
-				elasticsearch = new ElasticsearchContainer(settings.withIngestPlugin());
-				if (!elasticsearch.isRunning()) {
-					elasticsearch.start();
-				}
-				elasticsearch.waitingFor(Wait.forHttp("/"));
-				meshOptions.getSearchOptions().setUrl("http://localhost:" + elasticsearch.getMappedPort(9200));
+		switch (settings.elasticsearch()) {
+		case CONTAINER:
+		case CONTAINER_WITH_INGEST:
+			searchOptions.setStartEmbedded(false);
+			elasticsearch = new ElasticsearchContainer(settings.elasticsearch() == ElasticsearchTestMode.CONTAINER_WITH_INGEST);
+			if (!elasticsearch.isRunning()) {
+				elasticsearch.start();
 			}
+			elasticsearch.waitingFor(Wait.forHttp("/"));
+			searchOptions.setUrl("http://localhost:" + elasticsearch.getMappedPort(9200));
+			break;
+		case EMBEDDED:
+			searchOptions.setStartEmbedded(true);
+			break;
+		case NONE:
+			searchOptions.setUrl(null);
+			searchOptions.setStartEmbedded(false);
+			break;
+		case TRACKING:
+			System.setProperty(TrackingSearchProvider.TEST_PROPERTY_KEY, "true");
+			searchOptions.setStartEmbedded(false);
+			break;
+		default:
+			break;
 		}
 
 		if (settings.useKeycloak()) {
@@ -448,7 +476,7 @@ public class MeshTestContext extends TestWatcher {
 			throw e;
 		}
 	}
-	
+
 	public MonitoringRestClient getMonitoringClient() {
 		return monitoringClient;
 	}

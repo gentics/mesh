@@ -11,7 +11,7 @@ import org.junit.Test;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class SearchEndpointTest extends AbstractMeshTest {
 
 	@Test

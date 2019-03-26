@@ -17,6 +17,7 @@ import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
 import static com.gentics.mesh.test.TestSize.PROJECT;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
@@ -58,7 +59,7 @@ import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Observable;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = PROJECT, startServer = true)
 public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@Test
@@ -75,6 +76,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		assertThat(restGroup).matches(request);
 
 		awaitEvents();
+		waitForSearchIdleEvent();
 
 		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), restGroup.getUuid());
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
@@ -109,6 +111,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(name);
 		GroupResponse restGroup = call(() -> client().updateGroup(uuid, request));
+		waitForSearchIdleEvent();
 		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), uuid);
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
 
@@ -457,10 +460,11 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		expect(GROUP_DELETED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(name).hasUuid(uuid);
-		});
+		}).total(1);
 
 		call(() -> client().deleteGroup(uuid));
 		awaitEvents();
+		waitForSearchIdleEvent();
 
 		assertThat(trackingSearchProvider()).hasDelete(Group.composeIndexName(), uuid);
 		assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), userUuid());

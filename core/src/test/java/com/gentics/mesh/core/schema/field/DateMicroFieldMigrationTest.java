@@ -8,7 +8,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import static com.gentics.mesh.test.TestSize.FULL;
 
 @MicroschemaTest
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class DateMicroFieldMigrationTest extends DateFieldMigrationTest {
 
 	@Override

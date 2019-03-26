@@ -43,7 +43,7 @@ import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.DeploymentOptions;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 	@Before

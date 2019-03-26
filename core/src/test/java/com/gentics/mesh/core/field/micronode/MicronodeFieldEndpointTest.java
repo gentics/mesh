@@ -44,7 +44,7 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	protected final static String FIELD_NAME = "micronodeField";

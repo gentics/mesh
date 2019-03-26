@@ -19,7 +19,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.reactivex.Single;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class AuthenticationEndpointTest extends AbstractMeshTest {
 
 	@Test

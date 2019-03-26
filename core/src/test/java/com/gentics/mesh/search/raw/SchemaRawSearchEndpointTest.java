@@ -3,10 +3,10 @@ package com.gentics.mesh.search.raw;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.junit.Assert.assertNotNull;
 
-import io.vertx.core.json.JsonObject;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
@@ -14,7 +14,8 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = true, startServer = true, testSize = FULL)
+import io.vertx.core.json.JsonObject;
+@MeshTestSetting(elasticsearch = CONTAINER, startServer = true, testSize = FULL)
 public class SchemaRawSearchEndpointTest extends AbstractMeshTest {
 
 	@Test

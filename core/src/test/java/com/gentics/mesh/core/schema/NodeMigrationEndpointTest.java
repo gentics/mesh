@@ -9,6 +9,7 @@ import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -79,7 +80,7 @@ import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true, clusterMode = false)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true, clusterMode = false)
 public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	@Before
@@ -228,6 +229,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// Now start the worker again
 		MeshInternal.get().jobWorkerVerticle().start();
 		triggerAndWaitForAllJobs(COMPLETED);
+		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
 			assertNotNull(edge3.getJobUuid());

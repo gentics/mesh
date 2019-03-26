@@ -49,7 +49,7 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.vertx.core.buffer.Buffer;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 
 	@Before

@@ -17,8 +17,8 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
-
-@MeshTestSetting(useElasticsearch = true, testSize = TestSize.FULL, startServer = true)
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.FULL, startServer = true)
 public class NodeIndexSyncTest extends AbstractMeshTest {
 
 	@Test

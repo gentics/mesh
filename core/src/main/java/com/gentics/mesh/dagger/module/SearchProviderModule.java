@@ -26,14 +26,11 @@ public class SearchProviderModule {
 		SearchProvider searchProvider = null;
 		// Automatically select the dummy search provider if no directory or
 		// options have been specified
+		String scope = System.getProperty(TrackingSearchProvider.TEST_PROPERTY_KEY);
 		if (options.getSearchOptions().getUrl() == null) {
-			// searchProvider = new TrackingSearchProvider();
-			String scope = System.getProperty("mesh.test");
-			if (scope != null) {
-				searchProvider = new TrackingSearchProvider();
-			} else {
-				searchProvider = new DevNullSearchProvider();
-			}
+			searchProvider = new DevNullSearchProvider();
+		} else if (scope != null) {
+			searchProvider = new TrackingSearchProvider();
 		} else {
 			searchProvider = elasticsearchProvider;
 		}

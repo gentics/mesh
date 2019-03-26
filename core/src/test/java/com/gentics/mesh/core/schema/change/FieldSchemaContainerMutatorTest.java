@@ -48,7 +48,7 @@ import com.syncleus.ferma.tx.Tx;
 /**
  * Test for common mutator operations on a field containers.
  */
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 
 	private FieldSchemaContainerMutator mutator = new FieldSchemaContainerMutator();
