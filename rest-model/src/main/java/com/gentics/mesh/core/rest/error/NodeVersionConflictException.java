@@ -40,6 +40,12 @@ public class NodeVersionConflictException extends AbstractRestException {
 		getConflicts().add(fieldKey);
 	}
 
+	@Override
+	public String toString() {
+		return super.toString() + " conflicts {" + String.join(",", getConflicts()) + "} old {" + getOldVersion() + "}" + " new {" + getNewVersion()
+			+ "}";
+	}
+
 	/**
 	 * Return the list of fields which contain a conflict.
 	 */
