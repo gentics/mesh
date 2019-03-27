@@ -178,7 +178,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		if (!isEmpty(groupUuid)) {
 			Group parentGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, CREATE_PERM);
 			parentGroup.addUser(user);
-			batch.add(parentGroup.onUpdated());
+			//batch.add(parentGroup.onUpdated());
 			requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
 		}
 

@@ -88,16 +88,19 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			assertNotNull(role);
 			assertEquals("The role name was not set.", roleName, role.getName());
 			assertEquals("The role uuid was not set.", roleUuid, role.getUuid());
-		});
+		}).total(1);
+
 		GroupResponse restGroup = call(() -> client().addRoleToGroup(groupUuid(), roleUuid));
 		awaitEvents();
+		waitForSearchIdleEvent();
 
-		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), groupUuid());
-		// The role is not updated since it is not changing
-		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+		// The role and group is not updated since it is not changing
+		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
+
 		// Check for idempotency
+		expect(GROUP_ROLE_ASSIGNED).none();
 		call(() -> client().addRoleToGroup(groupUuid(), roleUuid));
-		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+		awaitEvents();
 
 		try (Tx tx = tx()) {
 			assertEquals(1, restGroup.getRoles().stream().filter(ref -> ref.getName().equals("extraRole")).count());
@@ -126,7 +129,9 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
+		expect(GROUP_ROLE_ASSIGNED).none();
 		call(() -> client().addRoleToGroup(groupUuid(), roleUuid), FORBIDDEN, "error_missing_perm", roleUuid, READ_PERM.getRestPerm().getName());
+		awaitEvents();
 
 		try (Tx tx = tx()) {
 			assertEquals(1, group().getRoles().count());
@@ -138,7 +143,9 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
+		expect(GROUP_ROLE_ASSIGNED).one();
 		call(() -> client().addRoleToGroup(groupUuid(), roleUuid));
+		awaitEvents();
 
 		try (Tx tx = tx()) {
 			assertEquals(2, group().getRoles().count());
@@ -157,7 +164,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			group().addRole(extraRole);
 			role().grantPermissions(extraRole, READ_PERM);
 			assertEquals(2, group().getRoles().count());
-			searchProvider().clear().blockingAwait();
+			searchProvider().reset();
 			return extraRole.getUuid();
 		});
 
@@ -171,13 +178,12 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			assertNotNull(role);
 			assertEquals("The role name was not set.", roleName, role.getName());
 			assertEquals("The role uuid was not set.", roleUuid, role.getUuid());
-		});
+		}).total(1);
 
 		call(() -> client().removeRoleFromGroup(groupUuid(), roleUuid));
 		awaitEvents();
-		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), groupUuid());
-		// The role is not updated since it is not changing
-		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+		// The role and group is not updated since it is not changing
+		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
 
 		GroupResponse restGroup = call(() -> client().findGroupByUuid(groupUuid()));
 		assertFalse(restGroup.getRoles().stream()
@@ -187,6 +193,12 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			assertEquals(1, group().getRoles().count());
 		}
+
+		// Test for idempotency
+		expect(GROUP_ROLE_UNASSIGNED).none();
+		call(() -> client().removeRoleFromGroup(groupUuid(), roleUuid));
+		awaitEvents();
+
 
 	}
 

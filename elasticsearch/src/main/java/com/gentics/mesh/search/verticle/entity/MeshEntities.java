@@ -1,5 +1,16 @@
 package com.gentics.mesh.search.verticle.entity;
 
+import static com.gentics.mesh.search.verticle.eventhandler.Util.warningOptional;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.ContainerType;
@@ -31,18 +42,9 @@ import com.gentics.mesh.search.index.user.UserTransformer;
 import com.gentics.mesh.search.verticle.eventhandler.EventVertexMapper;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import com.gentics.mesh.search.verticle.eventhandler.Util;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static com.gentics.mesh.search.verticle.eventhandler.Util.warningOptional;
 
 @Singleton
 public class MeshEntities {

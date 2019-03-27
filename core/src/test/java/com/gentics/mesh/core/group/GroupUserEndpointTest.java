@@ -88,6 +88,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		final String userFirstname = "Albert";
 		final String userLastname = "Einstein";
 		final String groupUuid = groupUuid();
+		final String groupName = tx(() -> group().getName());
 		User extraUser = tx(() -> {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User user = userRoot.create("extraUser", user());
@@ -98,37 +99,35 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			return user;
 		});
 
-		String userUuid = tx(() -> extraUser.getUuid());
-		String groupName = tx(() -> group().getName());
+		String extraUserUuid = tx(() -> extraUser.getUuid());
 		expect(GROUP_USER_ASSIGNED).match(1, GroupUserAssignModel.class, event -> {
-			GroupReference group = event.getGroup();
-			assertNotNull(group);
-			assertEquals("The group name was not set.", groupName, group.getName());
-			assertEquals("The group uuid was not set.", groupUuid, group.getUuid());
+			GroupReference groupRef = event.getGroup();
+			assertNotNull(groupRef);
+			assertEquals("The group name was not set.", groupName, groupRef.getName());
+			assertEquals("The group uuid was not set.", groupUuid, groupRef.getUuid());
 
-			UserReference user = event.getUser();
-			assertNotNull(user);
-			assertEquals("The user uuid was not set.", userUuid, user.getUuid());
-			assertEquals("The user firstname was not set.", userFirstname, user.getFirstName());
-			assertEquals("The user lastname was not set.", userLastname, user.getLastName());
-		});
+			UserReference userRef = event.getUser();
+			assertNotNull(userRef);
+			assertEquals("The user uuid was not set.", extraUserUuid, userRef.getUuid());
+			assertEquals("The user firstname was not set.", userFirstname, userRef.getFirstName());
+			assertEquals("The user lastname was not set.", userLastname, userRef.getLastName());
+		}).total(1);
 
-		GroupResponse restGroup = call(() -> client().addUserToGroup(groupUuid(), userUuid));
+		GroupResponse restGroup = call(() -> client().addUserToGroup(groupUuid(), extraUserUuid));
 		awaitEvents();
+		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
 			assertThat(restGroup).matches(group());
-			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), user().getUuid());
-			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), extraUser.getUuid());
-			assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), group().getUuid());
-			assertThat(trackingSearchProvider()).hasEvents(3, 0, 0, 0);
-			trackingSearchProvider().clear().blockingAwait();
+			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), extraUserUuid);
+			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+			trackingSearchProvider().reset();
 			assertTrue("User should be member of the group.", group().hasUser(extraUser));
 		}
 		// Test for idempotency
-		call(() -> client().addUserToGroup(groupUuid(), userUuid));
-		// TODO assert for no extra events
-
+		expect(GROUP_USER_ASSIGNED).none();
+		call(() -> client().addUserToGroup(groupUuid(), extraUserUuid));
+		awaitEvents();
 	}
 
 	@Test
@@ -185,29 +184,50 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveUserFromGroupWithPerm() throws Exception {
-		String groupUuid = groupUuid();
-		String groupName = tx(() -> group().getName());
-		String userUuid = userUuid();
-		String userFirstname = tx(() -> user().getFirstname());
-		String userLastname = tx(() -> user().getLastname());
-		expect(GROUP_USER_UNASSIGNED).match(1, GroupUserAssignModel.class, event -> {
-			GroupReference group = event.getGroup();
-			assertNotNull(group);
-			assertEquals("The group name was not set.", groupName, group.getName());
-			assertEquals("The group uuid was not set.", groupUuid, group.getUuid());
+		final String groupUuid = groupUuid();
+		final String groupName = tx(() -> group().getName());
+		final String userFirstname = "Albert";
+		final String userLastname = "Einstein";
 
-			UserReference user = event.getUser();
-			assertNotNull(user);
-			assertEquals("The user uuid was not set.", userUuid, user.getUuid());
-			assertEquals("The user firstname was not set.", userFirstname, user.getFirstName());
-			assertEquals("The user lastname was not set.", userLastname, user.getLastName());
+		User extraUser = tx(() -> {
+			UserRoot userRoot = meshRoot().getUserRoot();
+			User user = userRoot.create("extraUser", user());
+			user.setFirstname(userFirstname);
+			user.setLastname(userLastname);
+			role().grantPermissions(user, READ_PERM);
+			group().addUser(user);
+			return user;
 		});
+		final String extraUserUuid = tx(() -> extraUser.getUuid());
 
-		call(() -> client().removeUserFromGroup(groupUuid, userUuid));
+		expect(GROUP_USER_UNASSIGNED).match(1, GroupUserAssignModel.class, event -> {
+			GroupReference groupRef = event.getGroup();
+			assertNotNull(groupRef);
+			assertEquals("The group name was not set.", groupName, groupRef.getName());
+			assertEquals("The group uuid was not set.", groupUuid, groupRef.getUuid());
+
+			UserReference userRef = event.getUser();
+			assertNotNull(userRef);
+			assertEquals("The user uuid was not set.", extraUserUuid, userRef.getUuid());
+			assertEquals("The user firstname was not set.", userFirstname, userRef.getFirstName());
+			assertEquals("The user lastname was not set.", userLastname, userRef.getLastName());
+		}).total(1);
+
+		call(() -> client().removeUserFromGroup(groupUuid, extraUserUuid));
 		awaitEvents();
+		waitForSearchIdleEvent();
+
 		try (Tx tx = tx()) {
-			assertFalse("User should not be member of the group.", group().hasUser(user()));
+			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), extraUserUuid);
+			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+			assertFalse("User should not be member of the group.", group().hasUser(extraUser));
 		}
+
+		// Test for idempotency
+		expect(GROUP_USER_UNASSIGNED).none();
+		call(() -> client().removeUserFromGroup(groupUuid, extraUserUuid));
+		awaitEvents();
+
 	}
 
 	@Test

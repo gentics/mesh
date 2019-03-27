@@ -48,7 +48,6 @@ import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
-import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -70,7 +69,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		expect(GROUP_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName("test12345").uuidNotNull();
-		});
+		}).total(1);
 
 		GroupResponse restGroup = call(() -> client().createGroup(request));
 		assertThat(restGroup).matches(request);
@@ -111,7 +110,9 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(name);
 		GroupResponse restGroup = call(() -> client().updateGroup(uuid, request));
+
 		waitForSearchIdleEvent();
+
 		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), uuid);
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
 
@@ -135,6 +136,9 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 	@Test
 	public void testBatchCreation() {
+		waitForSearchIdleEvent();
+		trackingSearchProvider().reset();
+
 		try (Tx tx = tx()) {
 			GroupRoot root = meshRoot().getGroupRoot();
 			role().grantPermissions(root, CREATE_PERM);
@@ -148,6 +152,8 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			GroupResponse restGroup = call(() -> client().createGroup(request));
 			assertThat(restGroup).matches(request);
 		}
+		waitForSearchIdleEvent();
+		assertThat(trackingSearchProvider()).hasEvents(10, 0, 0, 0);
 	}
 
 	@Test
@@ -205,16 +211,15 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 	@Test
 	public void testCreateGroupWithNoPerm() throws Exception {
+		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
-		try (Tx tx = tx()) {
-			final String name = "test12345";
-			request.setName(name);
+		request.setName(name);
+
+		tx(() -> {
 			GroupRoot root = meshRoot().getGroupRoot();
 			role().revokePermissions(root, CREATE_PERM);
-			User user = user();
-			assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(root, CREATE_PERM));
-			tx.success();
-		}
+			assertFalse("The create permission to the groups root node should have been revoked.", user().hasPermission(root, CREATE_PERM));
+		});
 		String rootUuid = db().tx(() -> meshRoot().getGroupRoot().getUuid());
 		call(() -> client().createGroup(request), FORBIDDEN, "error_missing_perm", rootUuid, CREATE_PERM.getRestPerm().getName());
 
@@ -338,11 +343,12 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		expect(GROUP_UPDATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(name).hasUuid(groupUuid);
-		});
+		}).total(1);
 
 		GroupResponse restGroup = call(() -> client().updateGroup(groupUuid, request));
 
 		awaitEvents();
+		waitForSearchIdleEvent();
 
 		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), groupUuid);
 		assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), userUuid());
@@ -391,6 +397,22 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	}
 
 	@Test
+	public void testUpdateGroupWithSameName() throws GenericRestException, Exception {
+		final String name = tx(() -> group().getName());
+		GroupUpdateRequest request = new GroupUpdateRequest();
+		request.setName(name);
+
+		expect(GROUP_UPDATED).none();
+		call(() -> client().updateGroup(groupUuid(), request));
+		awaitEvents();
+
+		try (Tx tx = tx()) {
+			Group reloadedGroup = boot().groupRoot().findByUuid(groupUuid());
+			assertEquals("The group should be the same", name, reloadedGroup.getName());
+		}
+	}
+
+	@Test
 	public void testUpdateGroupWithConflictingName() throws GenericRestException, Exception {
 		final String alreadyUsedName = "extraGroup";
 		GroupUpdateRequest request = new GroupUpdateRequest();
@@ -419,27 +441,23 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	 */
 	@Test
 	public void testReadWithRolePermsSync() throws Exception {
-		try (Tx tx = tx()) {
-			// Create a lot of groups
-			int groupCount = 100;
-			GroupCreateRequest createReq = new GroupCreateRequest();
-			for (int i = 0; i < groupCount; i++) {
-				createReq.setName("testGroup" + i);
-				call(() -> client().createGroup(createReq));
-			}
+		// Create a lot of groups
+		int groupCount = 100;
+		GroupCreateRequest createReq = new GroupCreateRequest();
+		for (int i = 0; i < groupCount; i++) {
+			createReq.setName("testGroup" + i);
+			call(() -> client().createGroup(createReq));
+		}
 
-			ParameterProvider[] params = new ParameterProvider[] { new PagingParametersImpl().setPerPage(10000L),
-				new RolePermissionParametersImpl().setRoleUuid(role().getUuid()) };
-
-			int readCount = 100;
-			for (int i = 0; i < readCount; i++) {
-				GroupListResponse res = call(() -> client().findGroups(params));
-				for (GroupResponse grp : res.getData()) {
-					String msg = String.format("Role perms was null after try %d at %s (%s)", i + 1, grp.getName(), grp.getUuid());
-					assertNotNull(msg, grp.getRolePerms());
-				}
+		int readCount = 100;
+		for (int i = 0; i < readCount; i++) {
+			GroupListResponse res = call(() -> client().findGroups(new RolePermissionParametersImpl().setRoleUuid(roleUuid())));
+			for (GroupResponse grp : res.getData()) {
+				String msg = String.format("Role perms was null after try %d at %s (%s)", i + 1, grp.getName(), grp.getUuid());
+				assertNotNull(msg, grp.getRolePerms());
 			}
 		}
+		waitForSearchIdleEvent();
 	}
 
 	@Test
@@ -545,6 +563,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			request.setName("test12345_" + i);
 			return client().createGroup(request);
 		});
+		waitForSearchIdleEvent();
 	}
 
 	@Test
@@ -552,7 +571,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
 		int nJobs = 200;
 		Observable.range(0, nJobs)
-			.flatMapCompletable(i -> client().findGroupByUuid(group().getUuid()).toCompletable())
+			.flatMapCompletable(i -> client().findGroupByUuid(groupUuid()).toCompletable())
 			.blockingAwait();
 	}
 

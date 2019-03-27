@@ -535,6 +535,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		UserResponse restUser = call(() -> client().updateUser(uuid, updateRequest));
 
 		awaitEvents();
+		waitForSearchIdleEvent();
 
 		assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), uuid);
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
@@ -1233,7 +1234,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			trackingSearchProvider().clear().blockingAwait();
+			waitForSearchIdleEvent();
+			trackingSearchProvider().reset();
 			UserCreateRequest newUser = new UserCreateRequest();
 			newUser.setEmailAddress("n.user@spam.gentics.com");
 			newUser.setFirstname("Joe");
@@ -1243,9 +1245,11 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			newUser.setGroupUuid(group().getUuid());
 
 			UserResponse restUser = call(() -> client().createUser(newUser));
+			waitForSearchIdleEvent();
+
 			assertThat(trackingSearchProvider()).hasStore(composeIndexName(), restUser.getUuid());
-			assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0);
-			trackingSearchProvider().clear();
+			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+			trackingSearchProvider().reset();
 
 			assertTrue(restUser.getEnabled());
 			String uuid = restUser.getUuid();

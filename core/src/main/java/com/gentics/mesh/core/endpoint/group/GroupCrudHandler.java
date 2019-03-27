@@ -163,10 +163,14 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		utils.syncTx(ac, tx -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
-			utils.eventAction(batch -> {
-				group.addUser(user);
-				batch.add(group.createUserAssignmentEvent(user, ASSIGNED));
-			});
+
+			// Only add the user if it is not yet assigned
+			if (!group.hasUser(user)) {
+				utils.eventAction(batch -> {
+					group.addUser(user);
+					batch.add(group.createUserAssignmentEvent(user, ASSIGNED));
+				});
+			}
 			return group.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
 
@@ -188,6 +192,12 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		utils.syncTx(ac, () -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
+
+			// No need to remove the user if it is not assigned
+			if (!group.hasUser(user)) {
+				return;
+			}
+
 			utils.eventAction(batch -> {
 				group.removeUser(user);
 				batch.add(group.createUserAssignmentEvent(user, UNASSIGNED));

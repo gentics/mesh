@@ -1,6 +1,5 @@
 package com.gentics.mesh.test.context;
 
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -43,7 +42,6 @@ import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import com.gentics.mesh.test.TestDataProvider;
-import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.docker.ElasticsearchContainer;
 import com.gentics.mesh.test.docker.KeycloakContainer;
 import com.gentics.mesh.test.util.TestUtils;

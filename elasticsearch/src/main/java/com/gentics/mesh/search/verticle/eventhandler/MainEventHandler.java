@@ -45,6 +45,7 @@ public class MainEventHandler implements EventHandler {
 	private final BranchEventHandler branchEventHandler;
 	private final SchemaMigrationEventHandler schemaMigrationEventHandler;
 	private final PermissionChangedEventHandler permissionChangedEventHandler;
+	private final GroupUserAssignmentHandler userGroupAssignmentHandler;
 
 	@Inject
 	public MainEventHandler(SyncEventHandler syncEventHandler,
@@ -56,7 +57,9 @@ public class MainEventHandler implements EventHandler {
 							ClearEventHandler clearEventHandler,
 							BranchEventHandler branchEventHandler,
 							SchemaMigrationEventHandler schemaMigrationEventHandler,
-							PermissionChangedEventHandler permissionChangedEventHandler) {
+							PermissionChangedEventHandler permissionChangedEventHandler,
+							GroupUserAssignmentHandler userGroupAssignmentHandler
+		) {
 		this.syncEventHandler = syncEventHandler;
 		this.eventHandlerFactory = eventHandlerFactory;
 		this.groupEventHandler = groupEventHandler;
@@ -67,6 +70,7 @@ public class MainEventHandler implements EventHandler {
 		this.branchEventHandler = branchEventHandler;
 		this.schemaMigrationEventHandler = schemaMigrationEventHandler;
 		this.permissionChangedEventHandler = permissionChangedEventHandler;
+		this.userGroupAssignmentHandler = userGroupAssignmentHandler;
 
 		handlers = createHandlers();
 	}
@@ -87,7 +91,8 @@ public class MainEventHandler implements EventHandler {
 			nodeEventHandler,
 			branchEventHandler,
 			schemaMigrationEventHandler,
-			permissionChangedEventHandler
+			permissionChangedEventHandler,
+			userGroupAssignmentHandler
 		).collect(toListWithMultipleKeys(EventHandler::handledEvents));
 	}
 

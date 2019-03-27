@@ -194,6 +194,7 @@ public class TrackingSearchProvider implements SearchProvider {
 		storeEvents.clear();
 		dropIndexEvents.clear();
 		createIndexEvents.clear();
+		bulkRequests.clear();
 		return Completable.complete();
 	}
 
