@@ -44,7 +44,7 @@ public abstract class MeshEntity<T> {
 	}
 
 	public List<MeshEvent> allEvents() {
-		return Arrays.asList(getCreateEvent(), getDeleteEvent(), getDeleteEvent());
+		return Arrays.asList(getCreateEvent(), getUpdateEvent(), getDeleteEvent());
 	}
 
 	public JsonObject transform(T element) {

@@ -1,18 +1,17 @@
 package com.gentics.mesh.dagger.module;
 
-import javax.inject.Singleton;
-
-import com.gentics.mesh.Mesh;
+import com.gentics.mesh.dagger.SearchProviderType;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
-
 import com.gentics.mesh.search.impl.SearchClient;
 import dagger.Module;
 import dagger.Provides;
 
+import javax.annotation.Nullable;
+import javax.inject.Singleton;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -21,20 +20,19 @@ public class SearchProviderModule {
 
 	@Provides
 	@Singleton
-	public static SearchProvider searchProvider(ElasticSearchProvider elasticsearchProvider) {
-		MeshOptions options = Mesh.mesh().getOptions();
-		SearchProvider searchProvider = null;
-		// Automatically select the dummy search provider if no directory or
-		// options have been specified
-		String scope = System.getProperty(TrackingSearchProvider.TEST_PROPERTY_KEY);
-		if (options.getSearchOptions().getUrl() == null) {
-			searchProvider = new DevNullSearchProvider();
-		} else if (scope != null) {
-			searchProvider = new TrackingSearchProvider();
-		} else {
-			searchProvider = elasticsearchProvider;
+	public static SearchProvider searchProvider(@Nullable SearchProviderType type, ElasticSearchProvider elasticsearchProvider) {
+		if (type == null) {
+			return elasticsearchProvider;
 		}
-		return searchProvider;
+		switch (type) {
+			case NULL:
+				return new DevNullSearchProvider();
+			case TRACKING:
+				return new TrackingSearchProvider();
+			case ELASTICSEARCH:
+			default:
+				return elasticsearchProvider;
+		}
 	}
 
 	@Provides

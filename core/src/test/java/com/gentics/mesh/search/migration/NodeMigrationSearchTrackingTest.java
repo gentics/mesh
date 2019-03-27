@@ -6,8 +6,9 @@ import org.junit.Test;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 
-@MeshTestSetting(testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class NodeMigrationSearchTrackingTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testMigrationRequests() {

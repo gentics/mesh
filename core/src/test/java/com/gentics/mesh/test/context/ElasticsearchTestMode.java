@@ -1,5 +1,7 @@
 package com.gentics.mesh.test.context;
 
+import com.gentics.mesh.dagger.SearchProviderType;
+
 public enum ElasticsearchTestMode {
 
 	/**
@@ -21,9 +23,19 @@ public enum ElasticsearchTestMode {
 	 * Run using a ES docker container
 	 */
 	CONTAINER,
-
 	/**
 	 * Run using a ES docker container which includes the ingest plugin
 	 */
 	CONTAINER_WITH_INGEST;
+
+	public SearchProviderType toSearchProviderType() {
+		switch (this) {
+			case NONE:
+				return SearchProviderType.NULL;
+			case TRACKING:
+				return SearchProviderType.TRACKING;
+			default:
+				return SearchProviderType.ELASTICSEARCH;
+		}
+	}
 }

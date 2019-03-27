@@ -108,7 +108,7 @@ public class MeshTestContext extends TestWatcher {
 				removeDataDirectory();
 				removeConfigDirectory();
 				MeshOptions options = init(settings);
-				initDagger(options, settings.testSize());
+				initDagger(options, settings);
 				meshDagger.boot().registerEventHandlers();
 			} else {
 				if (!settings.inMemoryDB()) {
@@ -457,14 +457,18 @@ public class MeshTestContext extends TestWatcher {
 	 * Initialise the mesh dagger context and inject the dependencies within the test.
 	 * 
 	 * @param options
-	 * 
+	 *
+	 * @param settings
 	 * @throws Exception
 	 */
-	public void initDagger(MeshOptions options, TestSize size) throws Exception {
+	public void initDagger(MeshOptions options, MeshTestSetting settings) throws Exception {
 		log.info("Initializing dagger context");
-		meshDagger = DaggerMeshComponent.builder().configuration(options).build();
+		meshDagger = DaggerMeshComponent.builder()
+			.configuration(options)
+			.searchProviderType(settings.elasticsearch().toSearchProviderType())
+			.build();
 		MeshInternal.set(meshDagger);
-		dataProvider = new TestDataProvider(size, meshDagger.boot(), meshDagger.database());
+		dataProvider = new TestDataProvider(settings.testSize(), meshDagger.boot(), meshDagger.database());
 		if (meshDagger.searchProvider() instanceof TrackingSearchProvider) {
 			trackingSearchProvider = meshDagger.trackingSearchProvider();
 		}
