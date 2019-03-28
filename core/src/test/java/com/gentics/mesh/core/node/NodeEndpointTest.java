@@ -10,6 +10,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
@@ -185,6 +186,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
 		assertThat(restNode).matches(request);
+		waitForSearchIdleEvent();
+
 		assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 	}
 
@@ -256,7 +259,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 
-		expect(NODE_CREATED).match(1, NodeMeshEventModel.class, event -> {
+		expect(NODE_CONTENT_CREATED).match(1, NodeMeshEventModel.class, event -> {
 			assertThat(event)
 				.uuidNotNull()
 				.hasBranchUuid(initialBranchUuid())
@@ -267,6 +270,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
 		awaitEvents();
+		waitForSearchIdleEvent();
 
 		assertThat(restNode).matches(request);
 		assertThat(trackingSearchProvider()).recordedStoreEvents(1);
@@ -337,6 +341,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 			NodeResponse restNode = call(() -> client().createNode(nodeUuid, PROJECT_NAME, request));
 			assertThat(restNode).matches(request).hasUuid(nodeUuid);
+			waitForSearchIdleEvent();
 			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 		}
 	}
@@ -524,6 +529,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 			NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request, new NodeParametersImpl().setLanguages("de"),
 				new VersioningParametersImpl().draft()));
+			waitForSearchIdleEvent();
 			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 			assertThat(restNode).matches(request);
 
@@ -1654,6 +1660,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
 
+		waitForSearchIdleEvent();
 		assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
 			ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(uuid, "en"));
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
@@ -1727,6 +1734,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, uuid, request, new NodeParametersImpl().setLanguages("de")));
 		awaitEvents();
 		assertEquals("de", restNode.getLanguage());
+		waitForSearchIdleEvent();
 		// Only the new language container is stored in the index. The existing one does not need to be updated since it does not reference other languages
 		assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
 			ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(uuid, "de"));
@@ -1878,12 +1886,17 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
 
 		expect(NODE_DELETED).match(1, NodeMeshEventModel.class, event -> {
-			assertThat(event).uuidNotNull().hasBranchUuid(initialBranchUuid()).hasLanguage("en").hasSchemaName("content").hasSchemaUuid(schemaUuid);
+			assertThat(event)
+				.uuidNotNull()
+				.hasSchemaName("content")
+				.hasSchemaUuid(schemaUuid);
 		});
 
 		call(() -> client().deleteNode(PROJECT_NAME, uuid));
 
 		awaitEvents();
+
+		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
 			assertElement(meshRoot().getNodeRoot(), uuid, false);

@@ -26,6 +26,8 @@ public class UserRawSearchEndpointTest extends AbstractMeshTest {
 
 		String json = getESText("userWildcard.es");
 
+		waitForSearchIdleEvent();
+
 		JsonObject response = new JsonObject(call(() -> client().searchUsersRaw(json)).toString());
 		assertNotNull(response);
 		assertThat(response).has("responses[0].hits.hits[0]._id", userResponse.getUuid(), "The correct element was not found.");

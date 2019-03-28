@@ -45,6 +45,8 @@ public class ProjectNodeRawSearchEndpointTest extends AbstractMeshTest {
 		request.setParentNodeUuid(projectB.getRootNode().getUuid());
 		call(() -> client().createNode("projectB", request));
 
+		waitForSearchIdleEvent();
+
 		// search in old project
 		JsonObject response = new JsonObject(call(() -> client().searchNodesRaw("projectA", getSimpleQuery("fields.content", contentFieldValue))).toString());
 		assertNotNull(response);

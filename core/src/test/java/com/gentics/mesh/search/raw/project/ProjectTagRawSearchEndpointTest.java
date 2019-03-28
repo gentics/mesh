@@ -36,6 +36,8 @@ public class ProjectTagRawSearchEndpointTest extends AbstractMeshTest {
 
 		String query = getSimpleTermQuery("name.raw", tagName);
 
+		waitForSearchIdleEvent();
+
 		JsonObject response = new JsonObject(call(() -> client().searchTagsRaw("projectA", query)).toString());
 		assertNotNull(response);
 		assertThat(response).has("responses[0].hits.hits[0]._id", tagA.getUuid(), "The correct element was not found.");

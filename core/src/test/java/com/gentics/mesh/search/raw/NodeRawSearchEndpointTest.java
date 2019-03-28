@@ -64,6 +64,8 @@ public class NodeRawSearchEndpointTest extends AbstractMeshTest {
 		// We only want to test with our two projects.
 		call(() -> client().deleteProject(projectUuid()));
 
+		waitForSearchIdleEvent();
+
 		// search in old project
 		JsonObject response = new JsonObject(call(() -> client().searchNodesRaw(getSimpleQuery("fields.content", contentFieldValue))).toString());
 		assertThat(response).has("responses[0].hits.total", "2", "Not exactly two item was found.");
@@ -82,6 +84,7 @@ public class NodeRawSearchEndpointTest extends AbstractMeshTest {
 			SchemaResponse response = call(() -> client().createSchema(request));
 			call(() -> client().assignSchemaToProject(PROJECT_NAME, response.getUuid()));
 		}
+		waitForSearchIdleEvent();
 
 		call(() -> client().searchNodesRaw(PROJECT_NAME, getSimpleQuery("fields.content", "the"), new PagingParametersImpl()
 			.setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));

@@ -29,6 +29,8 @@ public class ProjectTagFamilyRawSearchEndpointTest extends AbstractMeshTest {
 		createTagFamily(project.getName(), tagFamilyName);
 		TagFamilyResponse tagFamily2 = createTagFamily(PROJECT_NAME, tagFamilyName);
 
+		waitForSearchIdleEvent();
+
 		String query = getSimpleTermQuery("name.raw", tagFamilyName);
 		JsonObject response = new JsonObject(call(() -> client().searchTagFamiliesRaw(PROJECT_NAME, query)).toString());
 		assertNotNull(response);
