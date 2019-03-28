@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.core.rest.event.EventCauseAction.SCHEMA_MIGRATION;
@@ -45,7 +46,7 @@ public class NodeEventHandler implements EventHandler {
 
 	@Override
 	public Collection<MeshEvent> handledEvents() {
-		return Arrays.asList(NODE_CONTENT_CREATED, NODE_UPDATED, NODE_DELETED);
+		return Arrays.asList(NODE_CONTENT_CREATED, NODE_UPDATED, NODE_CONTENT_DELETED);
 	}
 
 	@Override
@@ -61,7 +62,7 @@ public class NodeEventHandler implements EventHandler {
 				} else {
 					return toFlowable(upsertNodes(message));
 				}
-			} else if (event == NODE_DELETED) {
+			} else if (event == NODE_CONTENT_DELETED) {
 				return Flowable.just(deleteNodes(message, getSchemaVersionUuid(message)));
 			} else {
 				throw new RuntimeException("Unexpected event " + event.address);

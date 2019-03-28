@@ -31,6 +31,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.ProjectEvent;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.search.index.group.GroupTransformer;
 import com.gentics.mesh.search.index.microschema.MicroschemaTransformer;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
@@ -130,7 +131,9 @@ public class MeshEntities {
 	}
 
 	private Optional<Tag> toTag(MeshElementEventModel eventModel) {
-		return toTagFamily(eventModel)
+		TagMeshEventModel event = Util.requireType(TagMeshEventModel.class, eventModel);
+		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
+			.flatMap(project -> findElementByUuid(project.getTagFamilyRoot(), event.getTagFamily().getUuid()))
 			.flatMap(family -> findElementByUuid(family, eventModel.getUuid()));
 	}
 
