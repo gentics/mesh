@@ -160,7 +160,7 @@ public class MeshTestContext extends TestWatcher {
 					meshDagger.searchProvider().clear().blockingAwait();
 					break;
 				case TRACKING:
-					meshDagger.trackingSearchProvider().clear();
+					meshDagger.trackingSearchProvider().reset();
 					break;
 				default:
 					break;

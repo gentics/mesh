@@ -1895,7 +1895,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().deleteNode(PROJECT_NAME, uuid));
 
 		awaitEvents();
-
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {

@@ -136,9 +136,6 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 	@Test
 	public void testBatchCreation() {
-		waitForSearchIdleEvent();
-		trackingSearchProvider().reset();
-
 		try (Tx tx = tx()) {
 			GroupRoot root = meshRoot().getGroupRoot();
 			role().grantPermissions(root, CREATE_PERM);
@@ -457,7 +454,6 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 				assertNotNull(msg, grp.getRolePerms());
 			}
 		}
-		waitForSearchIdleEvent();
 	}
 
 	@Test
@@ -563,7 +559,6 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			request.setName("test12345_" + i);
 			return client().createGroup(request);
 		});
-		waitForSearchIdleEvent();
 	}
 
 	@Test

@@ -2086,6 +2086,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		event.setLanguageTag(languageTag);
 		event.setType(type);
 		event.setBranchUuid(branchUuid);
+		event.setProject(getProject().transformToReference());
 		if (schema != null) {
 			event.setSchema(schema.transformToReference());
 		}
