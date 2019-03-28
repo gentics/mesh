@@ -177,11 +177,11 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 			Vertex potentialElement = it.next();
 			// FIXME Add check again
 			// 2. Use the edge index to determine whether the element is part of this root vertex
-//			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(potentialElement
-//				.getId(), id()));
-//			if (edges.iterator().hasNext()) {
+			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(potentialElement
+				.getId(), id()));
+			if (edges.iterator().hasNext()) {
 				return graph.frameElementExplicit(potentialElement, getPersistanceClass());
-//			}
+			}
 		}
 		return null;
 	}
