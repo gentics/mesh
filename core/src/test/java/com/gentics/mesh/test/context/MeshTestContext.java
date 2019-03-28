@@ -509,7 +509,7 @@ public class MeshTestContext extends TestWatcher {
 	 */
 	public void waitForSearchIdleEvent() {
 		Objects.requireNonNull(idleConsumer, "Call #listenToSearchIdleEvent first");
-		ElasticsearchProcessVerticle verticle = ((BootstrapInitializerImpl) meshDagger.boot()).loader.get().elasticsearchProcessVerticle.get();
+		ElasticsearchProcessVerticle verticle = getElasticSearchVerticle();
 		try {
 			verticle.flush().blockingAwait();
 			idleLatch = new CountDownLatch(1);
@@ -521,5 +521,9 @@ public class MeshTestContext extends TestWatcher {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public ElasticsearchProcessVerticle getElasticSearchVerticle() {
+		return ((BootstrapInitializerImpl) meshDagger.boot()).loader.get().getSearchVerticle();
 	}
 }

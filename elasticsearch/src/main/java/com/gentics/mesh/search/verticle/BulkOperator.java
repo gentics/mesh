@@ -47,7 +47,9 @@ public class BulkOperator implements ObservableOperator<SearchRequest, SearchReq
 
 	@Override
 	public Observer<? super SearchRequest> apply(Observer<? super SearchRequest> observer) {
-		log.warn("More than one observer for the same operator detected. Flush will only work for the newest observer.");
+		if (subscriber != null) {
+			log.warn("More than one observer for the same operator detected. Flush will only work for the newest observer.");
+		}
 		subscriber = new FlushSubscriber<SearchRequest>() {
 			private Long timer;
 			Disposable sub;

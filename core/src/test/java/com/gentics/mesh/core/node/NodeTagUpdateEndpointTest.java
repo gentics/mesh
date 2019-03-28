@@ -63,6 +63,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		long afterCount = db().tx(() -> tagFamily("colors").findAll().count());
 		assertEquals("The colors tag family should not have any additional tags.", previousCount, afterCount);
 
+		waitForSearchIdleEvent();
 		try (Tx tx = tx()) {
 			assertThat(trackingSearchProvider()).storedAllContainers(content(), project(), latestBranch(), "en", "de").hasEvents(4, 0, 0, 0);
 		}
@@ -81,6 +82,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		long afterCount = db().tx(() -> tagFamily("colors").findAll().count());
 		assertEquals("The colors tag family should now have one additional color tag.", previousCount + 1, afterCount);
 
+		waitForSearchIdleEvent();
 		try (Tx tx = tx()) {
 			assertThat(trackingSearchProvider()).storedAllContainers(content(), project(), latestBranch(), "en", "de");
 			assertThat(trackingSearchProvider()).stored(tagFamily("colors"));
@@ -113,6 +115,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		request.getTags().add(new TagReference().setName("blub3").setTagFamily("colors"));
 		response = call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request));
 		assertEquals(2, response.getMetainfo().getTotalCount());
+		waitForSearchIdleEvent();
 		try (Tx tx = tx()) {
 			// No tag family is modified - no Tag is created
 			assertThat(trackingSearchProvider()).storedAllContainers(content(), project(), latestBranch(), "en", "de").hasEvents(4, 0, 0, 0);

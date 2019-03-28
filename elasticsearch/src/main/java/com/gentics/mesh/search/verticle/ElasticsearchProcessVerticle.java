@@ -24,6 +24,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.SEARCH_FLUSH_REQUEST;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -42,6 +43,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	private AtomicInteger pendingRequests = new AtomicInteger();
 	private AtomicInteger pendingTransformations = new AtomicInteger();
 	private List<MessageConsumer<JsonObject>> vertxHandlers;
+	private final AtomicBoolean stopped = new AtomicBoolean(false);
 
 	@Inject
 	public ElasticsearchProcessVerticle(MainEventHandler mainEventhandler, SearchProvider searchProvider) {
@@ -57,22 +59,28 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		vertxHandlers = mainEventhandler.handledEvents()
 			.stream()
 			.map(event -> vertx.eventBus().<JsonObject>consumer(event.address, message -> {
-				pendingTransformations.incrementAndGet();
-				log.trace(String.format("Received event message on address {%s}:\n%s", message.address(), message.body()));
-				requests.onNext(new MessageEvent(event, MeshEventModel.fromMessage(message)));
+				if (!stopped.get()) {
+					pendingTransformations.incrementAndGet();
+					log.trace(String.format("Received event message on address {%s}:\n%s", message.address(), message.body()));
+					requests.onNext(new MessageEvent(event, MeshEventModel.fromMessage(message)));
+				}
 			}))
 			.map((Function<io.vertx.core.eventbus.MessageConsumer<JsonObject>, MessageConsumer<JsonObject>>) MessageConsumer::new)
 			.collect(Collectors.toList());
+		log.trace("Done Initializing Elasticsearch process verticle");
 	}
 
 	@Override
 	public void stop(Future<Void> stopFuture) {
+		log.trace("Stopping Elasticsearch process verticle");
+		stopped.set(true);
 		Observable.fromIterable(vertxHandlers)
 			.flatMapCompletable(MessageConsumer::rxUnregister)
 			.andThen(flush())
 			.subscribe(() -> {
 				requests.onComplete();
 				idling.onComplete();
+				log.trace("Done stopping Elasticsearch process verticle");
 				stopFuture.complete();
 			});
 	}
@@ -82,12 +90,6 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	 */
 	public Completable flush() {
 		return Completable.fromRunnable(() -> vertx.eventBus().publish(SEARCH_FLUSH_REQUEST.address, null));
-//		return Completable.defer(() -> {
-//			if (bulker != null) {
-//				bulker.flush();
-//			}
-//			return idling.firstOrError().toCompletable();
-//		});
 	}
 
 	/**
@@ -122,7 +124,9 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			.toObservable()
 			.lift(bulker)
 			.concatMap(request ->
-				request.execute(searchProvider).andThen(Observable.just(request))
+				stopped.get()
+				? Observable.empty()
+				: request.execute(searchProvider).andThen(Observable.just(request))
 					.doOnSubscribe(ignore -> log.trace("Sending request to Elasticsearch:\n" + request)),
 				1
 			)
@@ -145,6 +149,9 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	}
 
 	private Flowable<? extends SearchRequest> generateRequests(MessageEvent messageEvent) {
+		if (stopped.get()) {
+			return Flowable.empty();
+		}
 		try {
 			return this.mainEventhandler.handle(messageEvent)
 				.doOnNext(req -> pendingRequests.addAndGet(req.requestCount()))

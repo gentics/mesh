@@ -163,9 +163,11 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setParentNodeUuid(folderUuid);
 
+		waitForSearchIdleEvent();
 		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
 		assertThat(restNode).matches(request);
+		waitForSearchIdleEvent();
 		assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 	}
 

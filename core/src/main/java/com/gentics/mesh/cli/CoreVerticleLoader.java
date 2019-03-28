@@ -4,6 +4,7 @@ import static com.gentics.mesh.util.DeploymentUtil.deployAndWait;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -16,7 +17,6 @@ import com.gentics.mesh.monitor.MonitoringServerVerticle;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
-import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.vertx.core.AbstractVerticle;
@@ -51,7 +51,10 @@ public class CoreVerticleLoader {
 	public Provider<SyncEventHandler> indexSyncVerticle;
 
 	@Inject
-	public Lazy<ElasticsearchProcessVerticle> elasticsearchProcessVerticle;
+	public Provider<ElasticsearchProcessVerticle> elasticsearchProcessVerticleProvider;
+
+	private ElasticsearchProcessVerticle elasticsearchProcessVerticle;
+	private String searchVerticleId;
 
 	@Inject
 	public MeshOptions meshOptions;
@@ -64,12 +67,13 @@ public class CoreVerticleLoader {
 	}
 
 	private final List<String> deploymentIds = new ArrayList<>();
+	private JsonObject defaultConfig;
 
 	/**
 	 * Load verticles that are configured within the mesh configuration.
 	 */
 	public void loadVerticles() {
-		JsonObject defaultConfig = new JsonObject();
+		defaultConfig = new JsonObject();
 		defaultConfig.put("port", meshOptions.getHttpServerOptions().getPort());
 		defaultConfig.put("host", meshOptions.getHttpServerOptions().getHost());
 		for (Provider<? extends AbstractVerticle> verticle : getMandatoryVerticleClasses()) {
@@ -87,21 +91,40 @@ public class CoreVerticleLoader {
 		}
 
 		for (AbstractVerticle verticle : getMandatoryWorkerVerticleClasses()) {
-			try {
-				if (log.isInfoEnabled()) {
-					log.info("Loading mandatory verticle {" + verticle.getClass().getName() + "}.");
-				}
-				deploymentIds.add(deployAndWait(rxVertx.getDelegate(), defaultConfig, verticle, true));
-			} catch (Exception e) {
-				log.error("Could not load mandatory verticle {" + verticle.getClass().getSimpleName() + "}.", e);
+			loadVerticle(verticle)
+				.ifPresent(deploymentIds::add);
+		}
+		loadVerticle(resetSearchVerticle())
+			.ifPresent(id -> searchVerticleId = id);
+	}
+
+	public Optional<String> loadVerticle(AbstractVerticle verticle) {
+		if (verticle == null) {
+			return Optional.empty();
+		}
+		try {
+			if (log.isInfoEnabled()) {
+				log.info("Loading mandatory verticle {" + verticle.getClass().getName() + "}.");
 			}
+			return Optional.of(deployAndWait(rxVertx.getDelegate(), defaultConfig, verticle, true));
+		} catch (Exception e) {
+			log.error("Could not load mandatory verticle {" + verticle.getClass().getSimpleName() + "}.", e);
+			return Optional.empty();
 		}
 	}
 
 	public Completable unloadVerticles() {
-		return Observable.fromIterable(deploymentIds)
-			.flatMapCompletable(rxVertx::rxUndeploy)
-			.doOnComplete(deploymentIds::clear);
+		return Observable.merge(
+			Observable.just(searchVerticleId),
+			Observable.fromIterable(deploymentIds)
+		).flatMapCompletable(rxVertx::rxUndeploy)
+		.doOnComplete(deploymentIds::clear);
+	}
+
+	public void reloadSearchVerticle() {
+		rxVertx.rxUndeploy(searchVerticleId).blockingAwait();
+		loadVerticle(resetSearchVerticle())
+			.ifPresent(id -> searchVerticleId = id);
 	}
 
 	/**
@@ -124,12 +147,20 @@ public class CoreVerticleLoader {
 	private List<AbstractVerticle> getMandatoryWorkerVerticleClasses() {
 		List<AbstractVerticle> verticles = new ArrayList<>();
 		verticles.add(jobWorkerVerticle);
-		// Only deploy search sync verticle if we actually have a configured ES
-		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
-		if (searchOptions != null && searchOptions.getUrl() != null) {
-			verticles.add(elasticsearchProcessVerticle.get());
-		}
 		return verticles;
 	}
 
+	private ElasticsearchProcessVerticle resetSearchVerticle() {
+		// Only deploy search sync verticle if we actually have a configured ES
+		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
+		if (searchOptions != null && searchOptions.getUrl() != null) {
+			elasticsearchProcessVerticle = elasticsearchProcessVerticleProvider.get();
+			return elasticsearchProcessVerticle;
+		}
+		return null;
+	}
+
+	public ElasticsearchProcessVerticle getSearchVerticle() {
+		return elasticsearchProcessVerticle;
+	}
 }

@@ -121,6 +121,11 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		}
 	}
 
+	@After
+	public void resetSearchVerticle() throws Exception {
+		((BootstrapInitializerImpl) boot()).loader.get().reloadSearchVerticle();
+	}
+
 	public OkHttpClient httpClient() {
 		if (this.httpClient == null) {
 			int timeout = 240;
@@ -142,7 +147,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		// We potentially modified existing data thus we need to drop all indices and create them and reindex all data
 		SyncEventHandler.invokeClearCompletable().blockingAwait();
 		SyncEventHandler.invokeSyncCompletable().blockingAwait();
-		((BootstrapInitializerImpl) boot()).loader.get().elasticsearchProcessVerticle.get().refresh().blockingAwait();
+		((BootstrapInitializerImpl) boot()).loader.get().getSearchVerticle().refresh().blockingAwait();
 	}
 
 	public String getJson(Node node) throws Exception {
