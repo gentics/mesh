@@ -26,7 +26,7 @@ title: Changelog
 
 
 [[v0.31.3]]
-== 0.31.3 (TBD)
+== 0.31.3 (28.03.2019)
 
 icon:plus[] Logging: The conflict error logging has been improved. Conflict error information in the log will now be more detailed and also include the conflicting field key and versions.
 
