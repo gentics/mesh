@@ -1,5 +1,19 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.event.EventCauseAction.SCHEMA_MIGRATION;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.toFlowable;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Optional;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -15,21 +29,8 @@ import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
+
 import io.reactivex.Flowable;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Optional;
-
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
-import static com.gentics.mesh.core.rest.event.EventCauseAction.SCHEMA_MIGRATION;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.toFlowable;
 
 @Singleton
 public class NodeEventHandler implements EventHandler {
@@ -63,7 +64,13 @@ public class NodeEventHandler implements EventHandler {
 					return toFlowable(upsertNodes(message));
 				}
 			} else if (event == NODE_CONTENT_DELETED) {
-				return Flowable.just(deleteNodes(message, getSchemaVersionUuid(message)));
+				// Ignore the node content deletion event if the project is being deleted. 
+				// In this case the deletion can be performed by dropping the index
+				if (EventCauseHelper.isProjectDeleteCause(message)) {
+					return Flowable.empty();
+				} else {
+					return Flowable.just(deleteNodes(message, getSchemaVersionUuid(message)));
+				}
 			} else {
 				throw new RuntimeException("Unexpected event " + event.address);
 			}
@@ -85,14 +92,12 @@ public class NodeEventHandler implements EventHandler {
 			.map(doc -> helper.createDocumentRequest(
 				getIndexName(message, getSchemaVersionUuid(message)),
 				NodeGraphFieldContainer.composeDocumentId(message.getUuid(), message.getLanguageTag()),
-				doc
-			));
+				doc));
 	}
 
 	private DeleteDocumentRequest deleteNodes(NodeMeshEventModel message, String schemaVersionUuid) {
 		return helper.deleteDocumentRequest(
-			getIndexName(message, schemaVersionUuid), NodeGraphFieldContainer.composeDocumentId(message.getUuid(), message.getLanguageTag())
-		);
+			getIndexName(message, schemaVersionUuid), NodeGraphFieldContainer.composeDocumentId(message.getUuid(), message.getLanguageTag()));
 	}
 
 	private String getIndexName(NodeMeshEventModel message, String schemaVersionUuid) {
@@ -100,8 +105,7 @@ public class NodeEventHandler implements EventHandler {
 			message.getProject().getUuid(),
 			message.getBranchUuid(),
 			schemaVersionUuid,
-			ContainerType.forVersion(message.getType())
-		);
+			ContainerType.forVersion(message.getType()));
 	}
 
 	private String getSchemaVersionUuid(NodeMeshEventModel message) {

@@ -11,7 +11,7 @@ public enum EventCauseAction {
 
 	BRANCH_MIGRATION(BranchMigrationCause.class),
 
-	DELETE(null);
+	DELETE(EventCauseInfoImpl.class);
 
 	private final Class modelClass;
 

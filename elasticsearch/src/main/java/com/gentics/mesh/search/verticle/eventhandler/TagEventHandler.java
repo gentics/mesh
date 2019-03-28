@@ -53,13 +53,18 @@ public class TagEventHandler implements EventHandler {
 
 					return Stream.concat(
 						toStream(tag).map(t -> entities.createRequest(t, projectUuid)),
-						toStream(tagFamily).map(tf -> entities.createRequest(tf, projectUuid))
-					).collect(Util.toFlowable());
+						toStream(tagFamily).map(tf -> entities.createRequest(tf, projectUuid))).collect(Util.toFlowable());
 				});
 			} else if (event == TAG_DELETED) {
 				// TODO Update related elements.
-				// At the moment we cannot look up related elements, because the element was already deleted.
-				return Flowable.just(helper.deleteDocumentRequest(Tag.composeIndexName(projectUuid), model.getUuid()));
+				// The tag was deleted via a project deletion. The project handler takes care of deleting the tag index.
+				if (EventCauseHelper.isProjectDeleteCause(model)) {
+					return Flowable.empty();
+				} else {
+					// At the moment we cannot look up related elements, because the element was already deleted.
+					return Flowable.just(helper.deleteDocumentRequest(Tag.composeIndexName(projectUuid), model.getUuid()));
+				}
+
 			} else {
 				throw new RuntimeException("Unexpected event " + event.address);
 			}

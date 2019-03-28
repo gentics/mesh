@@ -7,11 +7,14 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_UNASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_DELETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
@@ -20,7 +23,6 @@ import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
@@ -48,14 +50,12 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
@@ -77,16 +77,17 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
-import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 
 import io.reactivex.Observable;
-@MeshTestSetting(elasticsearch = TRACKING, testSize = PROJECT, startServer = true)
+
+@MeshTestSetting(elasticsearch = TRACKING, testSize = TestSize.FULL, startServer = true)
 public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@Test
@@ -603,45 +604,53 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			tx.success();
 		}
 
-		Set<String> indices = new HashSet<>();
-		Set<Tuple<String, String>> documentDeletes = new HashSet<>();
+		Set<String> droppedIndices = new HashSet<>();
+		// Set<Tuple<String, String>> documentDeletes = new HashSet<>();
 		try (Tx tx = tx()) {
 			Project project = project();
-			for (Node node : project.getNodeRoot().findAll()) {
-				for (NodeGraphFieldContainer ngfc : node.getGraphFieldContainersIt(initialBranchUuid(), PUBLISHED)) {
-					String idx = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
-						ngfc.getSchemaContainerVersion().getUuid(), PUBLISHED);
-					String did = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), ngfc.getLanguageTag());
-					documentDeletes.add(Tuple.tuple(idx, did));
-				}
-				for (NodeGraphFieldContainer ngfc : node.getGraphFieldContainersIt(initialBranchUuid(), DRAFT)) {
-					String idx = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
-						ngfc.getSchemaContainerVersion().getUuid(), DRAFT);
-					String did = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), ngfc.getLanguageTag());
-					documentDeletes.add(Tuple.tuple(idx, did));
-				}
-			}
+			// for (Node node : project.getNodeRoot().findAll()) {
+			// for (NodeGraphFieldContainer ngfc : node.getGraphFieldContainersIt(initialBranchUuid(), PUBLISHED)) {
+			// String idx = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
+			// ngfc.getSchemaContainerVersion().getUuid(), PUBLISHED);
+			// String did = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), ngfc.getLanguageTag());
+			// documentDeletes.add(Tuple.tuple(idx, did));
+			// }
+			// for (NodeGraphFieldContainer ngfc : node.getGraphFieldContainersIt(initialBranchUuid(), DRAFT)) {
+			// String idx = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
+			// ngfc.getSchemaContainerVersion().getUuid(), DRAFT);
+			// String did = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), ngfc.getLanguageTag());
+			// documentDeletes.add(Tuple.tuple(idx, did));
+			// }
+			// }
+
+			droppedIndices.add(TagFamily.composeIndexName(projectUuid()));
+			droppedIndices.add(Tag.composeIndexName(projectUuid()));
 
 			// 1. Determine a list all project indices which must be dropped
-			for (Branch branch : project.getBranchRoot().findAll()) {
-				for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
-					String schemaContainerVersionUuid = version.getUuid();
-					indices.add(NodeGraphFieldContainer.composeIndexName(uuid, branch.getUuid(), schemaContainerVersionUuid, PUBLISHED));
-					indices.add(NodeGraphFieldContainer.composeIndexName(uuid, branch.getUuid(), schemaContainerVersionUuid, DRAFT));
-				}
-			}
+			droppedIndices.add(NodeGraphFieldContainer.composeIndexName(uuid, "*", "*", PUBLISHED));
+			droppedIndices.add(NodeGraphFieldContainer.composeIndexName(uuid, "*", "*", DRAFT));
+			// for (Branch branch : project.getBranchRoot().findAll()) {
+			// for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
+			// String schemaContainerVersionUuid = version.getUuid();
+			// }
+			// }
 		}
 
 		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
-		System.out.println("BASE:" + baseNodeUuid);
-
 		expect(PROJECT_DELETED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(PROJECT_NAME).hasUuid(projectUuid());
-		});
+		}).one();
 
 		expect(NODE_DELETED).match(1, NodeMeshEventModel.class, event -> {
 			assertThat(event).hasUuid(baseNodeUuid);
 		});
+
+		// The default branch should be deleted
+		expect(BRANCH_DELETED).one();
+		// The schemas: folder, content should be unassigned from the project
+		expect(PROJECT_SCHEMA_UNASSIGNED).total(3);
+		// Colors and basic should be deleted
+		expect(TAG_FAMILY_DELETED).total(2);
 
 		// 2. Delete the project
 		call(() -> client().deleteProject(uuid));
@@ -651,16 +660,22 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		// 3. Assert that the indices have been dropped and the project has been
 		// deleted from the project index
-		for (Tuple<String, String> entry : documentDeletes) {
-			assertThat(trackingSearchProvider()).hasDelete(entry.v1(), entry.v2());
-		}
+		// for (Tuple<String, String> entry : documentDeletes) {
+		// assertThat(trackingSearchProvider()).hasDelete(entry.v1(), entry.v2());
+		// }
+
+		// TODO Get rid of hack
+		Thread.sleep(5000);
+
 		assertThat(trackingSearchProvider()).hasDelete(Project.composeIndexName(), Project.composeDocumentId(uuid));
 		assertThat(trackingSearchProvider()).hasDrop(TagFamily.composeIndexName(uuid));
 		assertThat(trackingSearchProvider()).hasDrop(Tag.composeIndexName(uuid));
-		for (String index : indices) {
+		for (String index : droppedIndices) {
 			assertThat(trackingSearchProvider()).hasDrop(index);
 		}
-		assertThat(trackingSearchProvider()).hasEvents(0, 1 + 8, 2 + indices.size(), 0);
+		// 1 project
+		long deleted = 1;
+		assertThat(trackingSearchProvider()).hasEvents(0, deleted, droppedIndices.size(), 0);
 
 		try (Tx tx = tx()) {
 			assertElement(meshRoot().getProjectRoot(), uuid, false);

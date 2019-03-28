@@ -546,6 +546,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public void delete(BulkActionContext bac) {
+		bac.add(onDeleted());
 		getVertex().remove();
 	}
 

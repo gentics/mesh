@@ -627,38 +627,6 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		return stopRestVerticle().andThen(startRestVerticle());
 	}
 
-	// /**
-	// * Add an expectation of an event.
-	// *
-	// * @param event
-	// * @param expectedCount
-	// * @param asserter
-	// * @return
-	// */
-	// public CompletableFuture<JsonObject> events().expect(MeshEvent event, int expectedCount, Predicate<JsonObject> asserter) {
-	// CompletableFuture<JsonObject> fut = new CompletableFuture<>();
-	// AtomicInteger counter = new AtomicInteger(0);
-	// vertx().eventBus().consumer(event.getAddress(), (Message<JsonObject> mh) -> {
-	// counter.incrementAndGet();
-	// try {
-	// JsonObject json = mh.body();
-	// // Only complete the future if the event is accepted.
-	// if (asserter.test(json)) {
-	// fut.complete(json);
-	// }
-	// } catch (Throwable e) {
-	// fut.completeExceptionally(e);
-	// }
-	// });
-	// futures.put(fut, event);
-	// CompletableFuture<Integer> count = CompletableFuture.supplyAsync(() -> {
-	// return counter.get();
-	// });
-	// // futures.put(count, event);
-	// // TODO assert event count
-	// return fut;
-	// }
-
 	protected void waitForSearchIdleEvent() {
 		testContext.waitForSearchIdleEvent();
 	}

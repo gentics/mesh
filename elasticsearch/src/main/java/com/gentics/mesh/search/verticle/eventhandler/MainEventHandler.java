@@ -38,6 +38,7 @@ public class MainEventHandler implements EventHandler {
 	private final TagEventHandler tagEventHandler;
 	private final TagFamilyEventHandler tagFamilyEventHandler;
 	private final NodeEventHandler nodeEventHandler;
+	private final ProjectEventHandler projectEventHandler;
 
 	private final Map<MeshEvent, EventHandler> handlers;
 	private final ClearEventHandler clearEventHandler;
@@ -54,6 +55,7 @@ public class MainEventHandler implements EventHandler {
 							TagEventHandler tagEventHandler,
 							TagFamilyEventHandler tagFamilyEventHandler,
 							NodeEventHandler nodeEventHandler,
+							ProjectEventHandler projectEventHandler,
 							ClearEventHandler clearEventHandler,
 							BranchEventHandler branchEventHandler,
 							SchemaMigrationEventHandler schemaMigrationEventHandler,
@@ -66,6 +68,7 @@ public class MainEventHandler implements EventHandler {
 		this.tagEventHandler = tagEventHandler;
 		this.tagFamilyEventHandler = tagFamilyEventHandler;
 		this.nodeEventHandler = nodeEventHandler;
+		this.projectEventHandler = projectEventHandler;
 		this.clearEventHandler = clearEventHandler;
 		this.branchEventHandler = branchEventHandler;
 		this.schemaMigrationEventHandler = schemaMigrationEventHandler;
@@ -89,6 +92,7 @@ public class MainEventHandler implements EventHandler {
 			tagEventHandler,
 			tagFamilyEventHandler,
 			nodeEventHandler,
+			projectEventHandler,
 			branchEventHandler,
 			schemaMigrationEventHandler,
 			permissionChangedEventHandler,

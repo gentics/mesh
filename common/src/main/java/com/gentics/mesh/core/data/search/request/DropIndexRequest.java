@@ -1,19 +1,18 @@
 package com.gentics.mesh.core.data.search.request;
 
-import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.search.SearchProvider;
+
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class CreateIndexRequest implements SearchRequest {
+public class DropIndexRequest implements SearchRequest {
 
 	private static final Logger log = LoggerFactory.getLogger(CreateIndexRequest.class);
+	private String indexName;
 
-	private final IndexInfo indexInfo;
-
-	public CreateIndexRequest(IndexInfo indexInfo) {
-		this.indexInfo = indexInfo;
+	public DropIndexRequest(String indexName) {
+		this.indexName = indexName;
 	}
 
 	@Override
@@ -23,16 +22,17 @@ public class CreateIndexRequest implements SearchRequest {
 
 	@Override
 	public Completable execute(SearchProvider searchProvider) {
-		return searchProvider.createIndex(indexInfo)
+		return searchProvider.deleteIndex(false, indexName)
 			.doOnSubscribe(ignore -> {
 				if (log.isDebugEnabled()) {
-					log.debug("Creating index {" + indexInfo + "}");
+					log.debug("Creating index {" + indexName + "}");
 				}
 			});
 	}
 
 	@Override
 	public String toString() {
-		return indexInfo.toString();
+		return indexName.toString();
 	}
+
 }

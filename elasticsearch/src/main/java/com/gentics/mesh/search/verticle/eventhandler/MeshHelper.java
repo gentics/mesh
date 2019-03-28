@@ -1,16 +1,18 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
+import javax.inject.Inject;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
+import com.gentics.mesh.core.data.search.request.DropIndexRequest;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import javax.inject.Inject;
 
 public class MeshHelper {
 	private static final Logger log = LoggerFactory.getLogger(MeshHelper.class);
@@ -45,6 +47,10 @@ public class MeshHelper {
 		return new DeleteDocumentRequest(index, prefixIndexName(index), id);
 	}
 
+	public DropIndexRequest dropIndexRequest(String indexName) {
+		return new DropIndexRequest(indexName);
+	}
+
 	public Database getDb() {
 		return db;
 	}
@@ -52,4 +58,5 @@ public class MeshHelper {
 	public BootstrapInitializer getBoot() {
 		return boot;
 	}
+
 }

@@ -1,26 +1,30 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_UPDATED;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.toStream;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.search.request.DropIndexRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
 import com.gentics.mesh.core.rest.event.ProjectEvent;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
+
 import io.reactivex.Flowable;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_UPDATED;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.toStream;
 
 @Singleton
 public class TagFamilyEventHandler implements EventHandler {
@@ -54,13 +58,18 @@ public class TagFamilyEventHandler implements EventHandler {
 					return Stream.concat(
 						toStream(tagFamily).map(tf -> entities.createRequest(tf, projectUuid)),
 						toStream(tagFamily).flatMap(tf -> tf.findAll().stream())
-							.map(t -> entities.createRequest(t, projectUuid))
-					).collect(Util.toFlowable());
+							.map(t -> entities.createRequest(t, projectUuid)))
+						.collect(Util.toFlowable());
 				});
 			} else if (event == TAG_FAMILY_DELETED) {
-				// TODO Update related elements.
-				// At the moment we cannot look up related elements, because the element was already deleted.
-				return Flowable.just(helper.deleteDocumentRequest(TagFamily.composeIndexName(projectUuid), model.getUuid()));
+				// We can omit the update of related elements for project deletion causes. The project handler will take care of removing the index
+				if (EventCauseHelper.isProjectDeleteCause(messageEvent.message)) {
+					return Flowable.empty();
+				} else {
+					// TODO Update related elements.
+					// At the moment we cannot look up related elements, because the element was already deleted.
+					return Flowable.just(helper.deleteDocumentRequest(TagFamily.composeIndexName(projectUuid), model.getUuid()));
+				}
 			} else {
 				throw new RuntimeException("Unexpected event " + event.address);
 			}
