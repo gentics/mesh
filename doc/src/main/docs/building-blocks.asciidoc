@@ -298,7 +298,7 @@ The optional ```step``` property allows specifying the size of the permitted inc
 | The ```required``` property indicates if the field is mandatory or not.
 
 | ```micronode```
-| A ```micronode``` field type stores a single micronode. A micronode is similar to a node. Typically they do not exist on their own but are tied to their (parent) node, e.g. an image with caption to be used in a blogpost node. For a detailed description see our definition of <<micronode>>.
+| A ```micronode``` field type stores a single micronode. A micronode is similar to a node. Typically they do not exist on their own but are tied to their (parent) node, e.g. an image with caption to be used in a blog post node. For a detailed description see our definition of <<micronode>>.
 | The ```required``` property indicates if the field is mandatory or not.
 
 A ```micronode``` field type must have an ```allow``` property that acts as a whitelist for allowed microschemas.  If allow is an empty array, any type of micronode may be used.
@@ -314,7 +314,7 @@ A ```node``` field type must have an ```allow``` property, which acts as a white
 
 (1) Within a node you can have simple lists of arbitrary length. The ```listType``` property then has to be of type ```string```, ```number```, ```date```, ```boolean```, or ```HTML```. E.g. handling your recipe nodes of your food blog will be a breeze with string-typed lists for ingredients.
 
-(2) You can unleash the power of micronodes, by specifying a list with the ```listType``` property set to ```micronode```, and the ```allow``` property set to the allowed microschemas. For example, besides having title, teaser, date and author fields, your blogpost schema could define a content field of type list allowing to insert any of your microschemas (e.g. YouTube Video, Image, Text, Galleries, Google Maps, etc.).
+(2) You can unleash the power of micronodes, by specifying a list with the ```listType``` property set to ```micronode```, and the ```allow``` property set to the allowed microschemas. For example, besides having title, teaser, date and author fields, your blog post schema could define a content field of type list allowing to insert any of your microschemas (e.g. YouTube Video, Image, Text, Galleries, Google Maps, etc.).
 
 (3) Furthermore, a ```list``` field type can be used to specify a structural relationship between nodes. In this case, the ```listType``` property has to be of type ```node```. This kind of reference represents a 1:n relationship. E.g., in your movie database app, you might want to list all actors of a movie.
 | The ```required``` property indicates if the field is mandatory or not.
@@ -335,7 +335,7 @@ A *micronode* is similar to a node. It also follows a schema - a *microschema*. 
 
 With micronodes it is possible to build complex object data structures as they are basically representing subnodes of nodes.
 
-Typical use cases for micronodes are content items that do not exist on their own but are tied to their (parent) node, e.g., media elements of your blogpost such as YouTube videos, image galleries, Google maps, image with caption, vcards, quotes, text paragraphs. As another example consider a recipe having a list of ingredients which in turn consist of a name and a quantity.
+Typical use cases for micronodes are content items that do not exist on their own but are tied to their (parent) node, e.g., media elements of your blog post such as YouTube videos, image galleries, Google maps, image with caption, vcards, quotes, text paragraphs. As another example consider a recipe having a list of ingredients which in turn consist of a name and a quantity.
 
 NOTE: Nodes can contain micronodes. Micronodes, however, can not contain further micronodes, thus limiting the nesting level to one.
 

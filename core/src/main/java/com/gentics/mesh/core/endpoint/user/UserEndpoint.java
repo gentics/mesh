@@ -63,7 +63,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		endpoint.setRAMLPath("/{userUuid}/token");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
 		endpoint.description(
-			"Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on.");
+			"Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on. This invalidates all tokens previously issued for this user.");
 		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getAPIKeyResponse(), "The User API token response.");
