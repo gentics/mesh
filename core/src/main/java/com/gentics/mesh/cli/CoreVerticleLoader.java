@@ -122,9 +122,11 @@ public class CoreVerticleLoader {
 	}
 
 	public void reloadSearchVerticle() {
-		rxVertx.rxUndeploy(searchVerticleId).blockingAwait();
-		loadVerticle(resetSearchVerticle())
-			.ifPresent(id -> searchVerticleId = id);
+		if (searchVerticleId != null) {
+			rxVertx.rxUndeploy(searchVerticleId).blockingAwait();
+			loadVerticle(resetSearchVerticle())
+				.ifPresent(id -> searchVerticleId = id);
+		}
 	}
 
 	/**
