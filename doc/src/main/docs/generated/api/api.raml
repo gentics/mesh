@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "0.31.2"
+version: "0.31.3"
 baseUri: "http://localhost:8080/api/v1"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -1245,7 +1245,7 @@ mediaType: application/json
                 repeat: false
                 example: "589319933be24ec79319933be24ec7fe"
         post: 
-            description: Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on.
+            description: Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on. This invalidates all tokens previously issued for this user.
             responses: 
                 "200": 
                     description: The User API token response.
@@ -12938,7 +12938,7 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "0.31.2",
+                                  "meshVersion" : "0.31.3",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
