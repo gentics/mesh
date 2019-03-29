@@ -25,6 +25,11 @@ title: Changelog
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 
+[[v0.31.4]]
+== 0.31.4 (TBD)
+
+icon:check[] Schema: It is now possible to reset the `allow` property of string fields. Setting the `allow` to empty array will now no longer restrict the values. Instead it will revert back to the original behaviour and allow all values.
+
 [[v0.31.3]]
 == 0.31.3 (28.03.2019)
 

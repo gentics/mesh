@@ -187,6 +187,10 @@ public interface TestHelperMethods {
 		return data().projectUuid();
 	}
 
+	default String projectName() {
+		return PROJECT_NAME;
+	}
+
 	default String contentUuid() {
 		return data().getContentUuid();
 	}
