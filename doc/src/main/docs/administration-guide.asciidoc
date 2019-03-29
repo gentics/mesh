@@ -381,6 +381,13 @@ The `repaired` property will be set to true if the inconsistency could be fixed.
 include::content/docs/api/response/api/v1/admin/consistency/repair/200/example.json[]
 ----
 
+== Filesystem support
+
+The filesystem https://en.wikipedia.org/wiki/ZFS[ZFS] (ZFS on Linux) does currently not support Direct IO on Linux. 
+
+When using ZFS it is thus required to turn off direct IO usage of OrientDB. Please use the    `-Dstorage.wal.allowDirectIO=false` setting in this case.
+
+NOTE: The direct IO support will be included in ZFS 0.8
 
 == License
 
