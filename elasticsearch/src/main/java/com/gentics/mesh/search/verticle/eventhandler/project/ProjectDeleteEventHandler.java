@@ -49,7 +49,8 @@ public class ProjectDeleteEventHandler implements EventHandler {
 			return Flowable.fromArray(
 				helper.dropIndexRequest(draftIndex),
 				helper.dropIndexRequest(publishedIndex),
-				helper.deleteDocumentRequest(Project.composeIndexName(), model.getUuid()),
+				// This is handled by the simple event handler
+				// helper.deleteDocumentRequest(Project.composeIndexName(), model.getUuid()),
 				dropTagIndex,
 				dropTagFamilyIndex);
 		});

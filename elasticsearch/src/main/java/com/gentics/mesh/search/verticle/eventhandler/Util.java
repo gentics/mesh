@@ -37,6 +37,28 @@ public final class Util {
 		});
 	}
 
+	/**
+	 * Collects items to a map with multiple values.
+	 * The item will be stored in every key returned by the keyMapper parameter.
+	 * @param keyMapper
+	 * @param <K>
+	 * @param <V>
+	 * @return
+	 */
+	public static <K, V> Collector<V, ?, Map<K, List<V>>> toMultiMap(Function<V, Collection<K>> keyMapper) {
+		return Collector.of(
+			HashMap::new,
+			(map, item) -> keyMapper.apply(item).forEach(key -> {
+				List<V> list = map.computeIfAbsent(key, k -> new ArrayList<>());
+				list.add(item);
+			}),
+			(m1, m2) -> {
+				m1.putAll(m2);
+				return m1;
+			}
+		);
+	}
+
 	public static <T> T requireType(Class<T> clazz, Object obj) {
 		if (clazz.isAssignableFrom(obj.getClass())) {
 			return (T) obj;

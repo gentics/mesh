@@ -19,11 +19,13 @@ import io.vertx.core.logging.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
 import static com.gentics.mesh.search.verticle.eventhandler.EventHandler.forEvent;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toListWithMultipleKeys;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.toMultiMap;
 
 /**
  * Maps events from mesh to elastic search requests.
@@ -42,7 +44,7 @@ public class MainEventHandler implements EventHandler {
 	private final NodeEventHandler nodeEventHandler;
 	private final ProjectDeleteEventHandler projectDeleteEventHandler;
 
-	private final Map<MeshEvent, EventHandler> handlers;
+	private final Map<MeshEvent, List<EventHandler>> handlers;
 	private final ClearEventHandler clearEventHandler;
 	private final SyncEventHandler syncEventHandler;
 	private final BranchEventHandler branchEventHandler;
@@ -82,7 +84,7 @@ public class MainEventHandler implements EventHandler {
 		handlers = createHandlers();
 	}
 
-	private Map<MeshEvent, EventHandler> createHandlers() {
+	private Map<MeshEvent, List<EventHandler>> createHandlers() {
 		return Stream.of(
 			syncEventHandler,
 			clearEventHandler,
@@ -102,7 +104,7 @@ public class MainEventHandler implements EventHandler {
 			schemaMigrationEventHandler,
 			permissionChangedEventHandler,
 			userGroupAssignmentHandler
-		).collect(toListWithMultipleKeys(EventHandler::handledEvents));
+		).collect(toMultiMap(EventHandler::handledEvents));
 	}
 
 	private static Flowable<SearchRequest> flushRequest(MessageEvent event) {
@@ -111,7 +113,8 @@ public class MainEventHandler implements EventHandler {
 
 	@Override
 	public Flowable<? extends SearchRequest> handle(MessageEvent messageEvent) {
-		return handlers.get(messageEvent.event).handle(messageEvent)
+		return Flowable.fromIterable(handlers.get(messageEvent.event))
+			.concatMap(handler -> handler.handle(messageEvent), 1)
 			.onErrorResumeNext(err -> {
 				String body = messageEvent.message == null ? null : messageEvent.message.toJson();
 				log.error("Error while handling event {} with body {}", messageEvent.event, body, err);
