@@ -9,6 +9,8 @@ import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
+import com.gentics.mesh.search.verticle.eventhandler.project.ProjectDeleteEventHandler;
+import com.gentics.mesh.search.verticle.eventhandler.project.ProjectUpdateEventHandler;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
@@ -38,7 +40,7 @@ public class MainEventHandler implements EventHandler {
 	private final TagEventHandler tagEventHandler;
 	private final TagFamilyEventHandler tagFamilyEventHandler;
 	private final NodeEventHandler nodeEventHandler;
-	private final ProjectEventHandler projectEventHandler;
+	private final ProjectDeleteEventHandler projectDeleteEventHandler;
 
 	private final Map<MeshEvent, EventHandler> handlers;
 	private final ClearEventHandler clearEventHandler;
@@ -47,6 +49,7 @@ public class MainEventHandler implements EventHandler {
 	private final SchemaMigrationEventHandler schemaMigrationEventHandler;
 	private final PermissionChangedEventHandler permissionChangedEventHandler;
 	private final GroupUserAssignmentHandler userGroupAssignmentHandler;
+	private final ProjectUpdateEventHandler projectUpdateEventHandler;
 
 	@Inject
 	public MainEventHandler(SyncEventHandler syncEventHandler,
@@ -55,25 +58,26 @@ public class MainEventHandler implements EventHandler {
 							TagEventHandler tagEventHandler,
 							TagFamilyEventHandler tagFamilyEventHandler,
 							NodeEventHandler nodeEventHandler,
-							ProjectEventHandler projectEventHandler,
+							ProjectDeleteEventHandler projectDeleteEventHandler,
 							ClearEventHandler clearEventHandler,
 							BranchEventHandler branchEventHandler,
 							SchemaMigrationEventHandler schemaMigrationEventHandler,
 							PermissionChangedEventHandler permissionChangedEventHandler,
-							GroupUserAssignmentHandler userGroupAssignmentHandler
-		) {
+							GroupUserAssignmentHandler userGroupAssignmentHandler,
+							ProjectUpdateEventHandler projectUpdateEventHandler) {
 		this.syncEventHandler = syncEventHandler;
 		this.eventHandlerFactory = eventHandlerFactory;
 		this.groupEventHandler = groupEventHandler;
 		this.tagEventHandler = tagEventHandler;
 		this.tagFamilyEventHandler = tagFamilyEventHandler;
 		this.nodeEventHandler = nodeEventHandler;
-		this.projectEventHandler = projectEventHandler;
+		this.projectDeleteEventHandler = projectDeleteEventHandler;
 		this.clearEventHandler = clearEventHandler;
 		this.branchEventHandler = branchEventHandler;
 		this.schemaMigrationEventHandler = schemaMigrationEventHandler;
 		this.permissionChangedEventHandler = permissionChangedEventHandler;
 		this.userGroupAssignmentHandler = userGroupAssignmentHandler;
+		this.projectUpdateEventHandler = projectUpdateEventHandler;
 
 		handlers = createHandlers();
 	}
@@ -92,7 +96,8 @@ public class MainEventHandler implements EventHandler {
 			tagEventHandler,
 			tagFamilyEventHandler,
 			nodeEventHandler,
-			projectEventHandler,
+			projectDeleteEventHandler,
+			projectUpdateEventHandler,
 			branchEventHandler,
 			schemaMigrationEventHandler,
 			permissionChangedEventHandler,

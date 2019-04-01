@@ -1,4 +1,4 @@
-package com.gentics.mesh.search.verticle.eventhandler;
+package com.gentics.mesh.search.verticle.eventhandler.project;
 
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
@@ -21,15 +21,17 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.search.verticle.MessageEvent;
 
+import com.gentics.mesh.search.verticle.eventhandler.EventHandler;
+import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import io.reactivex.Flowable;
 
 @Singleton
-public class ProjectEventHandler implements EventHandler {
+public class ProjectDeleteEventHandler implements EventHandler {
 
 	private final MeshHelper helper;
 
 	@Inject
-	public ProjectEventHandler(MeshHelper helper) {
+	public ProjectDeleteEventHandler(MeshHelper helper) {
 		this.helper = helper;
 	}
 

@@ -25,14 +25,14 @@ public class DropIndexRequest implements SearchRequest {
 		return searchProvider.deleteIndex(false, indexName)
 			.doOnSubscribe(ignore -> {
 				if (log.isDebugEnabled()) {
-					log.debug("Creating index {" + indexName + "}");
+					log.debug("Deleting index {" + indexName + "}");
 				}
 			});
 	}
 
 	@Override
 	public String toString() {
-		return indexName.toString();
+		return indexName;
 	}
 
 }
