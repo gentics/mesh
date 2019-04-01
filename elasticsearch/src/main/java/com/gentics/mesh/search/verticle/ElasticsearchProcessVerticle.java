@@ -107,7 +107,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	 * @return
 	 */
 	public boolean isIdle() {
-		return pendingRequests.get() == 0 && pendingTransformations.get() == 0 && !bulker.bulking();
+		return pendingRequests.get() == 0 && !bulker.bulking();
 	}
 
 	private void assemble() {
@@ -158,7 +158,6 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 				.doOnComplete(() -> {
 					pendingTransformations.decrementAndGet();
 					log.trace("Done transforming event {}. Transformations pending: {}", messageEvent.event, pendingTransformations);
-					idleCheck();
 				});
 		} catch (Exception e) {
 			// TODO Error handling

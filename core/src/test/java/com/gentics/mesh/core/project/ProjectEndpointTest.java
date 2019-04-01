@@ -538,6 +538,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		ProjectResponse restProject = call(() -> client().updateProject(uuid, request));
 
 		awaitEvents();
+		waitForSearchIdleEvent();
 
 		// Assert that the routerstorage was updates
 		assertTrue("The new project router should have been added", RouterStorage.hasProject(newName));
@@ -663,9 +664,6 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		// for (Tuple<String, String> entry : documentDeletes) {
 		// assertThat(trackingSearchProvider()).hasDelete(entry.v1(), entry.v2());
 		// }
-
-		// TODO Get rid of hack
-		Thread.sleep(5000);
 
 		assertThat(trackingSearchProvider()).hasDelete(Project.composeIndexName(), Project.composeDocumentId(uuid));
 		assertThat(trackingSearchProvider()).hasDrop(TagFamily.composeIndexName(uuid));
