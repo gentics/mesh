@@ -211,6 +211,8 @@ public enum MeshEvent {
 
 	NODE_CONTENT_CREATED("mesh.node-content.created", NodeMeshEventModel.class),
 
+	NODE_REFERENCE_UPDATED("mesh.node-reference.updated", NodeMeshEventModel.class),
+
 	/* Schema */
 
 	SCHEMA_CREATED("mesh.schema.created", MeshElementEventModelImpl.class),
