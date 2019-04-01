@@ -1426,7 +1426,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// Only handle published or draft contents
 			if (nodeContainer.isDraft() || nodeContainer.isPublished()) {
 				Node node = nodeContainer.getParentNode();
-				bac.add(onReferenceUpdated(node.getUuid(), "", node.getSchemaContainer(), "", "", ""));
+				bac.add(onReferenceUpdated(node.getUuid(), node.getSchemaContainer()));
 			}
 		} else if (container instanceof Micronode) {
 			Micronode micronode = (Micronode) container;
@@ -1435,7 +1435,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// Only handle published or draft contents
 				if (nodeContainer.isDraft() || nodeContainer.isPublished()) {
 					Node node = nodeContainer.getParentNode();
-					bac.add(onReferenceUpdated(node.getUuid(), "", node.getSchemaContainer(), "", "", ""));
+					bac.add(onReferenceUpdated(node.getUuid(), node.getSchemaContainer()));
 				}
 			}
 		}
@@ -2129,14 +2129,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return model;
 	}
 
-	public NodeMeshEventModel onReferenceUpdated(String uuid, String name, SchemaContainer schema, String branchUuid, String type,
-		String languageTag) {
+	public NodeMeshEventModel onReferenceUpdated(String uuid, SchemaContainer schema) {
 		NodeMeshEventModel event = new NodeMeshEventModel();
 		event.setEvent(NODE_REFERENCE_UPDATED);
 		event.setUuid(uuid);
-		event.setLanguageTag(languageTag);
-		event.setType(type);
-		event.setBranchUuid(branchUuid);
 		event.setProject(getProject().transformToReference());
 		if (schema != null) {
 			event.setSchema(schema.transformToReference());
