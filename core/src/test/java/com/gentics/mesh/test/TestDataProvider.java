@@ -92,6 +92,7 @@ public class TestDataProvider {
 	private Map<String, SchemaContainer> schemaContainers = new HashMap<>();
 	private Map<String, MicroschemaContainer> microschemaContainers = new HashMap<>();
 	private Map<String, TagFamily> tagFamilies = new HashMap<>();
+	private long contentCount = 0;
 	private Map<String, Node> folders = new HashMap<>();
 	private Map<String, Node> contents = new HashMap<>();
 	private Map<String, Tag> tags = new HashMap<>();
@@ -364,6 +365,7 @@ public class TestDataProvider {
 		}
 		// Publish the project basenode
 		project.getBaseNode().publish(getEnglish(), getProject().getLatestBranch(), getUserInfo().getUser());
+		contentCount++;
 
 	}
 
@@ -486,6 +488,7 @@ public class TestDataProvider {
 			germanContainer.createString("teaser").setString(germanName);
 			germanContainer.createString("slug").setString(germanName);
 			germanContainer.updateDisplayFieldValue();
+			contentCount++;
 			folderNode.publish(getGerman(), branch, getUserInfo().getUser());
 		}
 		if (englishName != null) {
@@ -494,6 +497,7 @@ public class TestDataProvider {
 			englishContainer.createString("name").setString(englishName);
 			englishContainer.createString("slug").setString(englishName);
 			englishContainer.updateDisplayFieldValue();
+			contentCount++;
 			folderNode.publish(getEnglish(), branch, getUserInfo().getUser());
 		}
 
@@ -532,6 +536,7 @@ public class TestDataProvider {
 			englishContainer.createString("slug").setString(name + ".en.html");
 			englishContainer.createHTML("content").setHtml(englishContent);
 			englishContainer.updateDisplayFieldValue();
+			contentCount++;
 			node.publish(getEnglish(), branch, getUserInfo().getUser());
 		}
 
@@ -543,6 +548,7 @@ public class TestDataProvider {
 			germanContainer.createString("slug").setString(name + ".de.html");
 			germanContainer.createHTML("content").setHtml(germanContent);
 			germanContainer.updateDisplayFieldValue();
+			contentCount++;
 			node.publish(getGerman(), branch, getUserInfo().getUser());
 		}
 
@@ -671,6 +677,10 @@ public class TestDataProvider {
 
 	public String branchUuid() {
 		return branchUuid;
+	}
+
+	public long getContentCount() {
+		return contentCount;
 	}
 
 }

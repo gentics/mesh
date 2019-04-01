@@ -1,10 +1,13 @@
 package com.gentics.mesh.core.tag;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
@@ -44,6 +47,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
@@ -230,10 +234,13 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		TagResponse tag2 = call(() -> client().updateTag(PROJECT_NAME, parentTagFamilyUuid, tagUuid, tagUpdateRequest));
 
 		awaitEvents();
+		waitForSearchIdleEvent();
+
+		assertThat(trackingSearchProvider()).hasStore(Tag.composeIndexName(projectUuid()), Tag.composeDocumentId(tag2.getUuid()));
+		assertThat(trackingSearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid()), TagFamily.composeDocumentId(parentTagFamilyUuid));
 
 		try (Tx tx = tx()) {
 			assertThat(tag2).matches(tag);
-			assertThat(trackingSearchProvider()).hasStore(Tag.composeIndexName(project().getUuid()), Tag.composeDocumentId(tag2.getUuid()));
 			// Assert that all nodes which previously referenced the tag were updated in the index
 			String projectUuid = project().getUuid();
 			String branchUuid = project().getLatestBranch().getUuid();
@@ -336,10 +343,33 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 				.hasTagFamily("basic", parentTagFamilyUuid);
 		}).total(1);
 
-		// TODO assert for node updated events?
+		tx(() -> {
+			tag.getNodes(initialBranch()).forEach(n -> {
+				n.getGraphFieldContainers(initialBranch(), DRAFT).forEach(draft -> {
+					String type = DRAFT.getShortName();
+					String uuid = n.getUuid();
+					String languageTag = draft.getLanguageTag();
+					expect(NODE_UPDATED).match(1, NodeMeshEventModel.class, a -> {
+						System.out.println(n.getUuid());
+						assertEquals(type, a.getType());
+						assertEquals(languageTag, a.getLanguageTag());
+						assertEquals(uuid, a.getUuid());
+					});
+				});
+				n.getGraphFieldContainers(initialBranch(), PUBLISHED).forEach(published -> {
+					String type = DRAFT.getShortName();
+					String uuid = n.getUuid();
+					String languageTag = published.getLanguageTag();
+					expect(NODE_UPDATED).match(1, NodeMeshEventModel.class, a -> {
+						assertEquals(type, a.getType());
+						assertEquals(languageTag, a.getLanguageTag());
+						assertEquals(uuid, a.getUuid());
+					});
+				});
+			});
+		});
 
 		List<? extends Node> nodes = tx(() -> tag.getNodes(project().getLatestBranch()).list());
-
 		call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid));
 
 		awaitEvents();
@@ -410,8 +440,6 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		String parentTagFamilyUuid = db().tx(() -> tagFamily("colors").getUuid());
 		String projectUuid = db().tx(() -> project().getUuid());
 
-		trackingSearchProvider().clear().blockingAwait();
-
 		expect(TAG_CREATED).match(1, TagMeshEventModel.class, event -> {
 			assertThat(event)
 				.hasName("SomeName")
@@ -423,9 +451,11 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		assertEquals("SomeName", response.getName());
 
 		awaitEvents();
+		waitForSearchIdleEvent();
 
 		assertThat(trackingSearchProvider()).hasStore(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(response.getUuid()));
-		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid), TagFamily.composeDocumentId(parentTagFamilyUuid));
+		assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0);
 		try (Tx tx = tx()) {
 			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.", meshRoot().getTagRoot().findByUuid(response.getUuid()));
 		}

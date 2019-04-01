@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.tagfamily;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -30,6 +32,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.Ignore;
@@ -59,7 +62,8 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
-@MeshTestSetting(elasticsearch = TRACKING,	testSize = FULL, startServer = true)
+
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@Test
@@ -295,10 +299,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			assertNotNull(project().getTagFamilyRoot().findByUuid(tagFamilyUuid));
 		}
 
-		String uuid = db().tx(() -> tagFamily("basic").getUuid());
-
 		expect(TAG_FAMILY_DELETED).match(1, TagFamilyMeshEventModel.class, event -> {
-			assertThat(event).hasName("basic").hasUuid(uuid).hasProject(PROJECT_NAME, projectUuid());
+			assertThat(event).hasName("basic").hasUuid(tagFamilyUuid).hasProject(PROJECT_NAME, projectUuid());
 		});
 
 		expect(TAG_DELETED).match(1, TagMeshEventModel.class, event -> {
@@ -311,13 +313,42 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		});
 
 		// TODO Assert for tags
+		List<? extends Tag> tags = tx(() -> basicTagFamily.findAll().list());
+		List<String> tagUuids = tx(() -> tags.stream().map(Tag::getUuid).collect(Collectors.toList()));
 
-		call(() -> client().deleteTagFamily(PROJECT_NAME, uuid));
+		Set<String> taggedDraftContentUuids = new HashSet<>();
+		Set<String> taggedPublishedContentUuids = new HashSet<>();
+		tx(() -> {
+			tags.forEach(t -> {
+				t.getNodes(initialBranch()).forEach(n -> {
+					n.getGraphFieldContainers(initialBranch(), DRAFT).forEach(c -> {
+						taggedDraftContentUuids.add(c.getUuid());
+					});
+					n.getGraphFieldContainers(initialBranch(), PUBLISHED).forEach(c -> {
+						taggedPublishedContentUuids.add(c.getUuid());
+					});
+				});
+			});
+		});
+
+		call(() -> client().deleteTagFamily(PROJECT_NAME, tagFamilyUuid));
 
 		awaitEvents();
+		waitForSearchIdleEvent();
+
+		assertThat(trackingSearchProvider()).hasDelete(TagFamily.composeIndexName(projectUuid()), TagFamily.composeDocumentId(tagFamilyUuid));
+		for (String tagUuid : tagUuids) {
+			assertThat(trackingSearchProvider()).hasDelete(Tag.composeIndexName(projectUuid()), Tag.composeDocumentId(tagUuid));
+		}
+
+		// The TagFamily and the tags must be deleted
+		int deleted = 1 + tagUuids.size();
+		// The nodes need to be updated since the tags were removed
+		int stored = taggedPublishedContentUuids.size() + taggedDraftContentUuids.size();
+		assertThat(trackingSearchProvider()).hasEvents(stored, deleted, 0, 0);
 
 		try (Tx tx = tx()) {
-			assertElement(project().getTagFamilyRoot(), uuid, false);
+			assertElement(project().getTagFamilyRoot(), tagFamilyUuid, false);
 		}
 	}
 

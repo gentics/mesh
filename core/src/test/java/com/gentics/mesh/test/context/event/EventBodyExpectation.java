@@ -12,8 +12,12 @@ import com.gentics.mesh.json.JsonUtil;
 
 import io.reactivex.functions.Consumer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class EventBodyExpectation implements EventExpectation {
+
+	private static final Logger log = LoggerFactory.getLogger(EventBodyExpectation.class);
 
 	private MeshEvent event;
 
@@ -64,6 +68,11 @@ public class EventBodyExpectation implements EventExpectation {
 		if (lastError == null) {
 			assertEquals("The body assertion for type {" + event.getAddress() + "} did not match for the expected amount of events.", count, accepts);
 		} else {
+			log.info("The asserter was unable to match for the received events:");
+			for (JsonObject json : list) {
+				log.info(json.encodePrettily());
+			}
+
 			if (lastError instanceof AssertionError) {
 				throw (AssertionError) lastError;
 			} else {
