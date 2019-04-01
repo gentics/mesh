@@ -13,6 +13,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CRE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
@@ -81,6 +82,7 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
+import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -1402,17 +1404,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	private void addReferenceUpdates(BulkActionContext bac) {
 		// Check whether NodeGraphFields (in either NGFC, or Micronode) reference this node.
-		new TraversalResult<>(inE(HAS_FIELD).has(NodeGraphFieldImpl.class).frameExplicit(NodeGraphFieldImpl.class)).forEach(field -> {
-			GraphFieldContainer container = field.outV().next(GraphFieldContainer.class);
-			followContainer(bac, container);
-		});
+		for (NodeGraphField field : inE(HAS_FIELD).has(NodeGraphFieldImpl.class).frameExplicit(NodeGraphFieldImpl.class)) {
+			for (GraphFieldContainer container : field.outV().frame(GraphFieldContainer.class)) {
+				followContainer(bac, container);
+			}
+		}
 
 		// Check whether Node lists (in either NGFC, or Micronode) reference this node.
-		new TraversalResult<>(inE(HAS_ITEM).has(NodeGraphFieldImpl.class).frameExplicit(NodeGraphFieldImpl.class)).forEach(listItem -> {
+		for (NodeGraphField listItem : inE(HAS_ITEM).has(NodeGraphFieldImpl.class).frameExplicit(NodeGraphFieldImpl.class)) {
 			NodeGraphFieldListImpl list = listItem.outV().nextExplicit(NodeGraphFieldListImpl.class);
-			GraphFieldContainer container = list.in(HAS_FIELD).next(GraphFieldContainer.class);
-			followContainer(bac, container);
-		});
+			for (GraphFieldContainer container : list.in(HAS_LIST).frame(GraphFieldContainer.class)) {
+				followContainer(bac, container);
+			}
+		}
+
 	}
 
 	private void followContainer(BulkActionContext bac, GraphFieldContainer container) {
@@ -1425,11 +1430,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 		} else if (container instanceof Micronode) {
 			Micronode micronode = (Micronode) container;
-			NodeGraphFieldContainer nodeContainer = micronode.getContainer();
-			// Only handle published or draft contents
-			if (nodeContainer.isDraft() || nodeContainer.isPublished()) {
-				Node node = nodeContainer.getParentNode();
-				bac.add(onReferenceUpdated(node.getUuid(), "", node.getSchemaContainer(), "", "", ""));
+			// We need to check all containers that the micronode references. Due to the deduplication process the micronode may be used by multiple containers
+			for (NodeGraphFieldContainer nodeContainer : micronode.getContainers()) {
+				// Only handle published or draft contents
+				if (nodeContainer.isDraft() || nodeContainer.isPublished()) {
+					Node node = nodeContainer.getParentNode();
+					bac.add(onReferenceUpdated(node.getUuid(), "", node.getSchemaContainer(), "", "", ""));
+				}
 			}
 		}
 	}
