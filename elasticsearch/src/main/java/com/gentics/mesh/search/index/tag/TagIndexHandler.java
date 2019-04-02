@@ -100,12 +100,15 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
 			ProjectRoot projectRoot = boot.meshRoot().getProjectRoot();
 			for (Project project : projectRoot.findAll()) {
-				String indexName = Tag.composeIndexName(project.getUuid());
-				IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "tag");
-				indexInfo.put(indexName, info);
+				IndexInfo info = getIndex(project.getUuid());
+				indexInfo.put(info.getIndexName(), info);
 			}
 			return indexInfo;
 		});
+	}
+
+	public IndexInfo getIndex(String projectUuid) {
+		return new IndexInfo(Tag.composeIndexName(projectUuid), null, getMappingProvider().getMapping(), "tag");
 	}
 
 	@Override

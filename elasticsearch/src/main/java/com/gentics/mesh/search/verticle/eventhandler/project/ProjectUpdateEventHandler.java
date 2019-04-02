@@ -128,7 +128,6 @@ public class ProjectUpdateEventHandler implements EventHandler {
 
 	@Override
 	public Collection<MeshEvent> handledEvents() {
-		// Other events are handled by the simple event handler
 		return Arrays.asList(PROJECT_UPDATED);
 	}
 

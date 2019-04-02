@@ -24,9 +24,7 @@ public class NodeIndexSyncTest extends AbstractMeshTest {
 	@Test
 	public void testNodeSync() throws Exception {
 
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		String oldContent = "supersonic";
 		String newContent = "urschnell";
@@ -40,6 +38,8 @@ public class NodeIndexSyncTest extends AbstractMeshTest {
 		// publish the Concorde
 		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
 		call(() -> client().publishNode(PROJECT_NAME, uuid));
+
+		waitForSearchIdleEvent();
 
 		// "supersonic" found in published nodes
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent)));
