@@ -64,7 +64,7 @@ public class MeshTestContext extends TestWatcher {
 
 	private static final String CONF_PATH = "target/config-" + System.currentTimeMillis();
 
-	private static MeshOptions meshOptions = new MeshOptions();
+	private static MeshOptions meshOptions;
 
 	public static ElasticsearchContainer elasticsearch;
 
@@ -138,6 +138,7 @@ public class MeshTestContext extends TestWatcher {
 		try {
 			MeshTestSetting settings = getSettings(description);
 			if (description.isSuite()) {
+				Mesh.mesh().shutdown();
 				removeDataDirectory();
 				removeConfigDirectory();
 				if (elasticsearch != null && elasticsearch.isRunning()) {
@@ -314,6 +315,7 @@ public class MeshTestContext extends TestWatcher {
 	 */
 	public MeshOptions init(MeshTestSetting settings) throws Exception {
 		MeshFactoryImpl.clear();
+		meshOptions = new MeshOptions();
 
 		if (settings == null) {
 			throw new RuntimeException("Settings could not be found. Did you forgot to add the @MeshTestSetting annotation to your test?");
