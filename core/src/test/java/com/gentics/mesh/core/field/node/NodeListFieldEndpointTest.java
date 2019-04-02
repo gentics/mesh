@@ -1,7 +1,11 @@
 package com.gentics.mesh.core.field.node;
 
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -17,6 +21,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
@@ -24,15 +29,17 @@ import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
+import com.gentics.mesh.parameter.client.PublishParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Override
@@ -214,6 +221,39 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		NodeResponse response = createNode(FIELD_NAME, listField);
 		NodeFieldList listFromResponse = response.getFields().getNodeFieldList(FIELD_NAME);
 		assertEquals(1, listFromResponse.getItems().size());
+	}
+
+	/**
+	 * Assert that the source node gets updated if the target is deleted.
+	 */
+	@Test
+	public void testReferenceListUpdateOnDelete() {
+		String sourceUuid = tx(() -> folder("2015").getUuid());
+		String targetUuid = contentUuid();
+
+		NodeFieldListImpl listField = new NodeFieldListImpl();
+		NodeFieldListItemImpl item = new NodeFieldListItemImpl().setUuid(targetUuid);
+		listField.add(item);
+		updateNode(FIELD_NAME, listField);
+
+		// 2. Publish the node so that we have to update documents (draft, published) when deleting the target
+		call(() -> client().publishNode(PROJECT_NAME, sourceUuid, new PublishParametersImpl().setRecursive(true)));
+
+		// 3. Create another draft version to add more complex data for the foreign node traversal
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.setVersion("draft");
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("blub123"));
+		call(() -> client().updateNode(PROJECT_NAME, sourceUuid, nodeUpdateRequest));
+
+		expect(NODE_DELETED).one();
+		expect(NODE_REFERENCE_UPDATED).total(2);
+
+		call(() -> client().deleteNode(PROJECT_NAME, targetUuid));
+
+		awaitEvents();
+		waitForSearchIdleEvent();
+
 	}
 
 	@Test
