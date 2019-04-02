@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.node;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.test.TestSize.FULL;
 
 import org.junit.Test;

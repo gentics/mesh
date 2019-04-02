@@ -1,8 +1,11 @@
 package com.gentics.mesh.core.field.micronode;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -34,6 +37,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
@@ -401,6 +405,8 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 
 		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
 		field.add(fieldItem);
+		field.add(fieldItem);
+		field.add(fieldItem);
 		updateNode(FIELD_NAME, field);
 
 		// 2. Publish the node so that we have to update documents (draft, published) when deleting the target
@@ -414,7 +420,23 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 		call(() -> client().updateNode(PROJECT_NAME, sourceUuid, nodeUpdateRequest));
 
 		expect(NODE_DELETED).one();
-		expect(NODE_REFERENCE_UPDATED).total(2);
+		expect(NODE_REFERENCE_UPDATED)
+			.match(1, NodeMeshEventModel.class, event -> {
+				assertThat(event)
+					.hasBranchUuid(initialBranchUuid())
+					.hasLanguage("en")
+					.hasType(DRAFT)
+					.hasSchemaName("folder")
+					.hasUuid(sourceUuid);
+			}).match(1, NodeMeshEventModel.class, event -> {
+				assertThat(event)
+					.hasBranchUuid(initialBranchUuid())
+					.hasLanguage("en")
+					.hasType(PUBLISHED)
+					.hasSchemaName("folder")
+					.hasUuid(sourceUuid);
+			})
+			.two();
 
 		call(() -> client().deleteNode(PROJECT_NAME, targetUuid));
 
@@ -462,7 +484,24 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 		call(() -> client().updateNode(PROJECT_NAME, sourceUuid, nodeUpdateRequest));
 
 		expect(NODE_DELETED).one();
-		expect(NODE_REFERENCE_UPDATED).total(2);
+		expect(NODE_REFERENCE_UPDATED)
+		.match(1, NodeMeshEventModel.class, event -> {
+			assertThat(event)
+				.hasBranchUuid(initialBranchUuid())
+				.hasLanguage("en")
+				.hasType(DRAFT)
+				.hasSchemaName("folder")
+				.hasUuid(sourceUuid);
+		}).match(1, NodeMeshEventModel.class, event -> {
+			assertThat(event)
+			.hasBranchUuid(initialBranchUuid())
+			.hasLanguage("en")
+			.hasType(PUBLISHED)
+			.hasSchemaName("folder")
+			.hasUuid(sourceUuid);
+			
+		})
+		.two();
 
 		call(() -> client().deleteNode(PROJECT_NAME, targetUuid));
 

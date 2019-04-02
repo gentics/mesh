@@ -1,7 +1,10 @@
 package com.gentics.mesh.core.field.node;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -28,6 +31,7 @@ import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -234,6 +238,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		NodeFieldListImpl listField = new NodeFieldListImpl();
 		NodeFieldListItemImpl item = new NodeFieldListItemImpl().setUuid(targetUuid);
 		listField.add(item);
+		listField.add(item);
+		listField.add(item);
 		updateNode(FIELD_NAME, listField);
 
 		// 2. Publish the node so that we have to update documents (draft, published) when deleting the target
@@ -247,7 +253,24 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		call(() -> client().updateNode(PROJECT_NAME, sourceUuid, nodeUpdateRequest));
 
 		expect(NODE_DELETED).one();
-		expect(NODE_REFERENCE_UPDATED).total(2);
+		expect(NODE_REFERENCE_UPDATED)
+			.match(1, NodeMeshEventModel.class, event -> {
+				assertThat(event)
+					.hasBranchUuid(initialBranchUuid())
+					.hasLanguage("en")
+					.hasType(DRAFT)
+					.hasSchemaName("folder")
+					.hasUuid(sourceUuid);
+			}).match(1, NodeMeshEventModel.class, event -> {
+				assertThat(event)
+					.hasBranchUuid(initialBranchUuid())
+					.hasLanguage("en")
+					.hasType(PUBLISHED)
+					.hasSchemaName("folder")
+					.hasUuid(sourceUuid);
+
+			})
+			.two();
 
 		call(() -> client().deleteNode(PROJECT_NAME, targetUuid));
 
