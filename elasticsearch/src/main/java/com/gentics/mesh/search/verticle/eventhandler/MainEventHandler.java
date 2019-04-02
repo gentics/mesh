@@ -114,7 +114,7 @@ public class MainEventHandler implements EventHandler {
 	@Override
 	public Flowable<? extends SearchRequest> handle(MessageEvent messageEvent) {
 		return Flowable.fromIterable(handlers.get(messageEvent.event))
-			.concatMap(handler -> handler.handle(messageEvent), 1)
+			.flatMap(handler -> handler.handle(messageEvent), 1)
 			.onErrorResumeNext(err -> {
 				String body = messageEvent.message == null ? null : messageEvent.message.toJson();
 				log.error("Error while handling event {} with body {}", messageEvent.event, body, err);

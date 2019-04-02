@@ -21,6 +21,7 @@ import io.vertx.reactivex.core.eventbus.MessageConsumer;
 import javax.inject.Inject;
 
 import static com.gentics.mesh.core.rest.MeshEvent.SEARCH_FLUSH_REQUEST;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.dummyObject;
 
 import java.time.Duration;
 import java.util.List;
@@ -34,33 +35,35 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 
 	private final MainEventHandler mainEventhandler;
 	private final SearchProvider searchProvider;
-	private BulkOperator bulker;
 
 	private Subject<MessageEvent> requests = PublishSubject.create();
-	private Subject<Object> idling = PublishSubject.create();
-	private static final Object dummyObject = new Object();
-	// TODO put the counters in a dedicated class and use it here
-	private AtomicInteger pendingRequests = new AtomicInteger();
-	private AtomicInteger pendingTransformations = new AtomicInteger();
+
 	private List<MessageConsumer<JsonObject>> vertxHandlers;
 	private final AtomicBoolean stopped = new AtomicBoolean(false);
+	private final IdleChecker idleChecker;
 
 	@Inject
-	public ElasticsearchProcessVerticle(MainEventHandler mainEventhandler, SearchProvider searchProvider) {
+	public ElasticsearchProcessVerticle(MainEventHandler mainEventhandler, SearchProvider searchProvider, IdleChecker idleChecker) {
 		this.mainEventhandler = mainEventhandler;
 		this.searchProvider = searchProvider;
+		this.idleChecker = idleChecker;
 	}
 
 	@Override
 	public void start() {
 		log.trace("Initializing Elasticsearch process verticle");
 		assemble();
+		idleChecker.idling()
+			.subscribe(ignore -> {
+				log.trace("All requests completed. Sending idle event");
+				vertx.eventBus().publish(MeshEvent.SEARCH_IDLE.address, null);
+			});
 
 		vertxHandlers = mainEventhandler.handledEvents()
 			.stream()
 			.map(event -> vertx.eventBus().<JsonObject>consumer(event.address, message -> {
 				if (!stopped.get()) {
-					pendingTransformations.incrementAndGet();
+					idleChecker.incrementAndGetTransformations();
 					log.trace(String.format("Received event message on address {%s}:\n%s", message.address(), message.body()));
 					requests.onNext(new MessageEvent(event, MeshEventModel.fromMessage(message)));
 				}
@@ -79,7 +82,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			.andThen(flush())
 			.subscribe(() -> {
 				requests.onComplete();
-				idling.onComplete();
+				idleChecker.close();
 				log.trace("Done stopping Elasticsearch process verticle");
 				stopFuture.complete();
 			});
@@ -102,17 +105,9 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			.doOnComplete(() -> log.trace("Refresh complete."));
 	}
 
-	/**
-	 * Tests if the verticle has any queued requests.
-	 * @return
-	 */
-	public boolean isIdle() {
-		return pendingRequests.get() == 0 && !bulker.bulking();
-	}
-
 	private void assemble() {
 		// TODO Make bulk operator options configurable
-		bulker = new BulkOperator(vertx, Duration.ofSeconds(500), 1000);
+		BulkOperator bulker = new BulkOperator(vertx, Duration.ofSeconds(500), 1000);
 		requests.toFlowable(BackpressureStrategy.MISSING)
 			.onBackpressureBuffer(1000)
 			.concatMap(this::generateRequests, 1)
@@ -132,20 +127,8 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			)
 			.subscribe(request -> {
 				log.trace("Request completed:\n" + request);
-				pendingRequests.addAndGet(-request.requestCount());
-				idleCheck();
+				idleChecker.addAndGetRequests(-request.requestCount());
 			});
-	}
-
-	private void idleCheck() {
-		if (isIdle()) {
-			log.trace("All requests completed. Sending idle event");
-			vertx.eventBus().publish(MeshEvent.SEARCH_IDLE.address, null);
-			idling.onNext(dummyObject);
-		} else {
-			log.trace("Remaining: {} requests, {} transformations, bulking: {}",
-				pendingRequests.get(), pendingTransformations.get(), bulker.bulking());
-		}
 	}
 
 	private Flowable<? extends SearchRequest> generateRequests(MessageEvent messageEvent) {
@@ -154,10 +137,13 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		}
 		try {
 			return this.mainEventhandler.handle(messageEvent)
-				.doOnNext(req -> pendingRequests.addAndGet(req.requestCount()))
+				.doOnNext(req -> {
+					log.trace("Incoming request");
+					idleChecker.addAndGetRequests(req.requestCount());
+				})
 				.doOnComplete(() -> {
-					pendingTransformations.decrementAndGet();
-					log.trace("Done transforming event {}. Transformations pending: {}", messageEvent.event, pendingTransformations);
+					idleChecker.decrementAndGetTransformations();
+					log.trace("Done transforming event {}. Transformations pending: {}", messageEvent.event, idleChecker.getTransformations());
 				});
 		} catch (Exception e) {
 			// TODO Error handling

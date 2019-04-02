@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 public final class Util {
 	private static final Logger log = LoggerFactory.getLogger(Util.class);
+	public static final Object dummyObject = new Object();
 
 	private Util() {
 	}
