@@ -306,6 +306,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		NodeFieldListImpl nodeList = new NodeFieldListImpl();
 		nodeList.add(new NodeFieldListItemImpl().setUuid(targetUuid));
+		nodeList.add(new NodeFieldListItemImpl().setUuid(targetUuid));
 		field.getFields().put("node", nodeList);
 		updateNode(FIELD_NAME, field);
 

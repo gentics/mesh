@@ -1440,16 +1440,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			ContainerType type = edge.getType();
 			// Only handle published or draft contents
 			if (type.equals(DRAFT) || type.equals(PUBLISHED)) {
-				if (nodeContainer.isDraft() || nodeContainer.isPublished()) {
-					Node node = nodeContainer.getParentNode();
-					String uuid = node.getUuid();
-					String languageTag = nodeContainer.getLanguageTag();
-					String branchUuid = edge.getBranchUuid();
-					String key = uuid + languageTag + branchUuid + type.getCode();
-					if (!handledNodeUuids.contains(key)) {
-						bac.add(onReferenceUpdated(node.getUuid(), node.getSchemaContainer(), branchUuid, type, languageTag));
-						handledNodeUuids.add(key);
-					}
+				Node node = nodeContainer.getParentNode();
+				String uuid = node.getUuid();
+				String languageTag = nodeContainer.getLanguageTag();
+				String branchUuid = edge.getBranchUuid();
+				String key = uuid + languageTag + branchUuid + type.getCode();
+				if (!handledNodeUuids.contains(key)) {
+					bac.add(onReferenceUpdated(node.getUuid(), node.getSchemaContainer(), branchUuid, type, languageTag));
+					handledNodeUuids.add(key);
 				}
 			}
 		}
