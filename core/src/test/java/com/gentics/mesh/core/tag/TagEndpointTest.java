@@ -5,12 +5,10 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
-import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
-import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
@@ -47,7 +45,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
@@ -341,30 +339,14 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 				.hasName("Vehicle")
 				.hasUuid(tagUuid)
 				.hasTagFamily("basic", parentTagFamilyUuid);
-		}).total(1);
+		}).one();
 
 		tx(() -> {
 			tag.getNodes(initialBranch()).forEach(n -> {
-				n.getGraphFieldContainers(initialBranch(), DRAFT).forEach(draft -> {
-					String type = DRAFT.getShortName();
-					String uuid = n.getUuid();
-					String languageTag = draft.getLanguageTag();
-					expect(NODE_UPDATED).match(1, NodeMeshEventModel.class, a -> {
-						System.out.println(n.getUuid());
-						assertEquals(type, a.getType());
-						assertEquals(languageTag, a.getLanguageTag());
-						assertEquals(uuid, a.getUuid());
-					});
-				});
-				n.getGraphFieldContainers(initialBranch(), PUBLISHED).forEach(published -> {
-					String type = DRAFT.getShortName();
-					String uuid = n.getUuid();
-					String languageTag = published.getLanguageTag();
-					expect(NODE_UPDATED).match(1, NodeMeshEventModel.class, a -> {
-						assertEquals(type, a.getType());
-						assertEquals(languageTag, a.getLanguageTag());
-						assertEquals(uuid, a.getUuid());
-					});
+				String uuid = n.getUuid();
+				expect(NODE_UNTAGGED).match(1, NodeTaggedEventModel.class, event -> {
+					assertEquals(uuid, event.getNode().getUuid());
+					assertEquals(tagUuid, event.getTag().getUuid());
 				});
 			});
 		});
