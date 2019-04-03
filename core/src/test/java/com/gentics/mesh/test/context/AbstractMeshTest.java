@@ -147,6 +147,10 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		// We potentially modified existing data thus we need to drop all indices and create them and reindex all data
 		SyncEventHandler.invokeClearCompletable().blockingAwait();
 		SyncEventHandler.invokeSyncCompletable().blockingAwait();
+		refreshIndices();
+	}
+
+	protected void refreshIndices() {
 		((BootstrapInitializerImpl) boot()).loader.get().getSearchVerticle().refresh().blockingAwait();
 	}
 

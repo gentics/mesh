@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.search.request;
 
 import com.gentics.mesh.search.SearchProvider;
 import io.reactivex.Completable;
+import io.reactivex.functions.Action;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -13,10 +14,16 @@ import java.util.stream.Collectors;
 public class BulkRequest implements Bulkable {
 	private static final Logger log = LoggerFactory.getLogger(BulkRequest.class);
 
-	private List<Bulkable> requests;
+	private final List<Bulkable> requests;
+	private final Action onComplete;
 
 	public BulkRequest(List<Bulkable> requests) {
 		this.requests = requests;
+		this.onComplete = () -> {
+			for (SearchRequest request : requests) {
+				request.onComplete().run();
+			}
+		};
 	}
 
 	public BulkRequest(Bulkable... requests) {
@@ -32,7 +39,7 @@ public class BulkRequest implements Bulkable {
 
 	@Override
 	public Completable execute(SearchProvider searchProvider) {
-		return searchProvider.processBulk(requests);
+		return searchProvider.processBulk(requests).doOnComplete(onComplete);
 	}
 
 	@Override

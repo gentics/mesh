@@ -54,10 +54,11 @@ public class NodeIndexSyncTest extends AbstractMeshTest {
 		// Now clear all data
 		searchProvider().clear().blockingAwait();
 
-		waitForEvent(INDEX_SYNC_FINISHED, () -> {
-			GenericMessageResponse message = call(() -> client().invokeIndexSync());
-			assertThat(message).matches("search_admin_index_sync_invoked");
-		});
+		GenericMessageResponse message = call(() -> client().invokeIndexSync());
+		assertThat(message).matches("search_admin_index_sync_invoked");
+
+		waitForSearchIdleEvent();
+
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent)));
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);

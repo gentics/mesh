@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.search.bulk.DeleteBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.model.MeshElement;
@@ -28,6 +29,8 @@ import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Function;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -193,31 +196,34 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				}
 
 				Set<String> needInsertionInES = diff.entriesOnlyOnLeft().keySet();
+				Set<String> needUpdateInEs = diff.entriesDiffering().keySet();
 				Set<String> needRemovalInES = diff.entriesOnlyOnRight().keySet();
-				Set<String> needUpdate = diff.entriesDiffering().keySet();
 
 				log.info("Pending insertions on {" + indexName + "}:" + needInsertionInES.size());
 				log.info("Pending removals on {" + indexName + "}:" + needRemovalInES.size());
-				log.info("Pending updates on {" + indexName + "}:" + needUpdate.size());
 
 				metric.incInsert(needInsertionInES.size());
+				metric.incUpdate(needUpdateInEs.size());
 				metric.incDelete(needRemovalInES.size());
-				metric.incUpdate(needUpdate.size());
 
-				// TODO Metrics
-
-				Flowable<SearchRequest> toInsert = Flowable.merge(
-					Flowable.fromIterable(diff.entriesOnlyOnLeft().keySet()),
-					Flowable.fromIterable(diff.entriesDiffering().keySet())
-				).map(uuid -> {
+				Function <
+					Action,
+					Function<String, CreateDocumentRequest>
+				> toCreateRequest = action -> uuid -> {
 					JsonObject doc = db.tx(() -> getTransformer().toDocument(getElement(uuid)));
-					return helper.createDocumentRequest(indexName, uuid, doc);
-				});
+					return helper.createDocumentRequest(indexName, uuid, doc, action);
+				};
 
-				Flowable<SearchRequest> toDelete = Flowable.fromIterable(diff.entriesOnlyOnRight().keySet())
-					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid));
+				Flowable<SearchRequest> toInsert = Flowable.fromIterable(needInsertionInES)
+					.map(toCreateRequest.apply(metric::decInsert));
 
-				return Flowable.merge(toInsert, toDelete);
+				Flowable<SearchRequest> toUpdate = Flowable.fromIterable(needUpdateInEs)
+					.map(toCreateRequest.apply(metric::decUpdate));
+
+				Flowable<SearchRequest> toDelete = Flowable.fromIterable(needRemovalInES)
+					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, metric::decDelete));
+
+				return Flowable.merge(toInsert, toUpdate, toDelete);
 			}
 		).flatMapPublisher(x -> x);
 	}

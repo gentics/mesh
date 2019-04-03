@@ -12,6 +12,7 @@ import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.SingleSource;
+import io.reactivex.functions.Action;
 import io.reactivex.functions.BiFunction;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
@@ -23,6 +24,8 @@ import io.vertx.reactivex.core.Vertx;
 public final class RxUtil {
 
 	private static final Logger log = LoggerFactory.getLogger(RxUtil.class);
+
+	public static final Action NOOP = () -> {};
 
 	private RxUtil() {
 	}

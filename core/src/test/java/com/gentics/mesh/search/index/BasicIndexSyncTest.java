@@ -362,6 +362,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 	private void syncIndex() {
 		waitForEvent(INDEX_SYNC_FINISHED, SyncEventHandler::invokeSync);
+		refreshIndices();
 	}
 
 }

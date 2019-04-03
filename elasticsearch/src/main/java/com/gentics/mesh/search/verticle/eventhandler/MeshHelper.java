@@ -10,6 +10,7 @@ import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 
+import io.reactivex.functions.Action;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -39,6 +40,10 @@ public class MeshHelper {
 		return new CreateDocumentRequest(index, prefixIndexName(index), id, doc);
 	}
 
+	public CreateDocumentRequest createDocumentRequest(String index, String id, JsonObject doc, Action onComplete) {
+		return new CreateDocumentRequest(index, prefixIndexName(index), id, doc, onComplete);
+	}
+
 	public UpdateDocumentRequest updateDocumentRequest(String index, String id, JsonObject doc) {
 		return new UpdateDocumentRequest(index, prefixIndexName(index), id, doc);
 	}
@@ -46,6 +51,11 @@ public class MeshHelper {
 	public DeleteDocumentRequest deleteDocumentRequest(String index, String id) {
 		return new DeleteDocumentRequest(index, prefixIndexName(index), id);
 	}
+
+	public DeleteDocumentRequest deleteDocumentRequest(String index, String id, Action onComplete) {
+		return new DeleteDocumentRequest(index, prefixIndexName(index), id, onComplete);
+	}
+
 
 	public DropIndexRequest dropIndexRequest(String indexName) {
 		return new DropIndexRequest(indexName);
