@@ -25,8 +25,15 @@ title: Changelog
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 
+[[v0.31.4]]
+== 0.31.4 (TBD)
+
+icon:plus[] Logging:  The default `logback.xml` file has been updated to include automatic scan of the logging configuration. This change will not be applied to existing configurations.
+
+icon:check[] Schema: It is now possible to reset the `allow` property of string fields. Setting the `allow` to empty array will now no longer restrict the values. Instead it will revert back to the original behaviour and allow all values.
+
 [[v0.31.3]]
-== 0.31.3 (TBD)
+== 0.31.3 (28.03.2019)
 
 icon:plus[] Logging: The conflict error logging has been improved. Conflict error information in the log will now be more detailed and also include the conflicting field key and versions.
 

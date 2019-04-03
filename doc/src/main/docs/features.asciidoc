@@ -842,13 +842,13 @@ Using the WebRoot API it is possible to easily integrate Gentics Mesh with many 
 [options="header"]
 |======
 | Framework                           | Language       | Example
-| http://silex.sensiolabs.org/[Silex] | PHP            | https://getmesh.io/Blog/Building+an+API-first+Web+App+with+Gentics+Mesh+and+the+PHP+Microframework+Silex[Blogpost]
-| http://expressjs.com/[ExpressJS]    | JS             | https://getmesh.io/Blog/Getting+started+with+Express+and+the+API-first+CMS+Gentics+Mesh[Blogpost]
-| http://vertx.io/[Vert.x]            | Java,JS,Ceylon | http://vertx.io/blog/data-driven-apps-made-easy-with-vert-x-3-4-0-and-headless-cms-gentics-mesh/[Blogpost]
+| http://silex.sensiolabs.org/[Silex] | PHP            | https://getmesh.io/Blog/Building+an+API-first+Web+App+with+Gentics+Mesh+and+the+PHP+Microframework+Silex[blog post]
+| http://expressjs.com/[ExpressJS]    | JS             | https://getmesh.io/Blog/Getting+started+with+Express+and+the+API-first+CMS+Gentics+Mesh[blog post]
+| http://vertx.io/[Vert.x]            | Java,JS,Ceylon | http://vertx.io/blog/data-driven-apps-made-easy-with-vert-x-3-4-0-and-headless-cms-gentics-mesh/[blog post]
 | http://lotusrb.org/[Lotus]          | Ruby           | -
 |======
 
-//TODO Blogpost on WebRoot API
+//TODO blog post on WebRoot API
 
 === API endpoints
 
@@ -922,7 +922,7 @@ https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binar
 [TIP]
 https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?rect=10,100,800,400&w=300&crop=rect
 
-Find out more about this topic in our blogpost about https://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].
+Find out more about this topic in our blog post about https://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].
 
 
 == Link Resolving
@@ -1089,7 +1089,7 @@ POST /api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binaryTransform/image
 
 include::content/docs/examples/tables/ImageManipulationParametersImpl.adoc-include[]
 
-Find out more about this topic in our blogpost about https://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].
+Find out more about this topic in our blog post about https://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].
 
 == File Upload
 

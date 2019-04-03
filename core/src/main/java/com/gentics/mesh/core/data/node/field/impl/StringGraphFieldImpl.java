@@ -74,8 +74,9 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 
 		// check value restrictions
 		StringFieldSchema stringFieldSchema = (StringFieldSchema) fieldSchema;
-		if (stringFieldSchema.getAllowedValues() != null) {
-			if (stringField.getString() != null && !Arrays.asList(stringFieldSchema.getAllowedValues()).contains(stringField.getString())) {
+		String[] allowedStrings = stringFieldSchema.getAllowedValues();
+		if (allowedStrings != null && allowedStrings.length != 0) {
+			if (stringField.getString() != null && !Arrays.asList(allowedStrings).contains(stringField.getString())) {
 				throw error(BAD_REQUEST, "node_error_invalid_string_field_value", fieldKey, stringField.getString());
 			}
 		}

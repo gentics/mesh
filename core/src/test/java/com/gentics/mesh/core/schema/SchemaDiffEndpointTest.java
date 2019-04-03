@@ -11,6 +11,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 
 import org.junit.Test;
@@ -100,6 +101,74 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
+	public void testAllowFieldDiff() {
+		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+
+		// Add allowed property to slug
+		try (Tx tx = tx()) {
+			SchemaContainerVersion version = schemaContainer("content").getLatestVersion();
+			SchemaModel schema = version.getSchema();
+			schema.getField("slug", StringFieldSchema.class).setAllowedValues("A", "B", "C");
+			version.setJson(schema.toJson());
+			tx.success();
+		}
+
+		Schema request = getSchema();
+		StringFieldSchema field = request.getField("slug", StringFieldSchema.class);
+		field.setAllowedValues("a", "b", "c");
+
+		SchemaChangesListModel changes = call(() -> client().diffSchema(schemaUuid, request));
+		assertThat(changes.getChanges()).hasSize(1);
+		SchemaChangeModel change = changes.getChanges().get(0);
+		assertThat(change).is(UPDATEFIELD).forField("slug").hasProperty("allow", Arrays.asList("a", "b", "c").toArray());
+	}
+
+	@Test
+	public void testAllowNullFieldDiff() {
+		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+
+		// Add allowed property to slug
+		try (Tx tx = tx()) {
+			SchemaContainerVersion version = schemaContainer("content").getLatestVersion();
+			SchemaModel schema = version.getSchema();
+			schema.getField("slug", StringFieldSchema.class).setAllowedValues("A", "B", "C");
+			version.setJson(schema.toJson());
+			tx.success();
+		}
+
+		// Get the content schema (The schema does not contain the allow property)
+		Schema request = getSchema();
+
+		SchemaChangesListModel changes = call(() -> client().diffSchema(schemaUuid, request));
+		assertThat(changes.getChanges()).hasSize(1);
+		SchemaChangeModel change = changes.getChanges().get(0);
+		assertThat(change).is(UPDATEFIELD).forField("slug").hasProperty("allow", null);
+	}
+
+	@Test
+	public void testAllowEmptyFieldDiff() {
+		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+
+		// Add allowed property to slug
+		try (Tx tx = tx()) {
+			SchemaContainerVersion version = schemaContainer("content").getLatestVersion();
+			SchemaModel schema = version.getSchema();
+			schema.getField("slug", StringFieldSchema.class).setAllowedValues("A", "B", "C");
+			version.setJson(schema.toJson());
+			tx.success();
+		}
+
+		// Get the content schema (The schema does not contain the allow property)
+		Schema request = getSchema();
+		request.getField("slug", StringFieldSchema.class).setAllowedValues();
+
+		SchemaChangesListModel changes = call(() -> client().diffSchema(schemaUuid, request));
+		assertThat(changes.getChanges()).hasSize(1);
+		SchemaChangeModel change = changes.getChanges().get(0);
+		assertThat(change).is(UPDATEFIELD).forField("slug").hasProperty("allow", new String[0]);
+	}
+
+	@Test
 	public void testESFieldDiff() {
 		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
 
@@ -111,7 +180,6 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 		SchemaChangesListModel changes = call(() -> client().diffSchema(schemaUuid, request));
 		assertThat(changes.getChanges()).hasSize(1);
 		SchemaChangeModel change = changes.getChanges().get(0);
-		System.out.println(change.toJson());
 		assertThat(change).is(UPDATEFIELD).forField("slug").hasProperty("elasticsearch", setting);
 	}
 

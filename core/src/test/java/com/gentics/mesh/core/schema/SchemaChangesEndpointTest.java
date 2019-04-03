@@ -28,6 +28,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -58,7 +59,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(testSize = FULL, startServer = true)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 	@Before
