@@ -88,7 +88,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			assertNotNull(role);
 			assertEquals("The role name was not set.", roleName, role.getName());
 			assertEquals("The role uuid was not set.", roleUuid, role.getUuid());
-		}).total(1);
+		}).one();
 
 		GroupResponse restGroup = call(() -> client().addRoleToGroup(groupUuid(), roleUuid));
 		awaitEvents();

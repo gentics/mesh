@@ -719,9 +719,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// Scanner scanIn = new Scanner(System.in);
 				// String pw = scanIn.nextLine();
 				// TODO remove later on
-				String pw = "admin";
-				// scanIn.close();
-				adminUser.setPasswordHash(encoder.encode(pw));
+				// Default hash for pw = "admin";
+				// TODO Autogenerate new passwords
+				String hash = "$2a$10$X7NA0kiqrFlyX0NUhPdW1e7jevHyoaoB4OyoxV1pdA7B3SLVSkx22";
+				adminUser.setPasswordHash(hash);
 				log.debug("Created admin user {" + adminUser.getUuid() + "}");
 			}
 

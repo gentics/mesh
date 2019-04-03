@@ -69,7 +69,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		expect(GROUP_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName("test12345").uuidNotNull();
-		}).total(1);
+		}).one();
 
 		GroupResponse restGroup = call(() -> client().createGroup(request));
 		assertThat(restGroup).matches(request);
