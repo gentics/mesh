@@ -1,7 +1,14 @@
 package com.gentics.mesh.core.field.micronode;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,14 +28,20 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
@@ -41,10 +54,12 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.client.PublishParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	protected final static String FIELD_NAME = "micronodeField";
@@ -212,6 +227,126 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		}
 	}
 
+	/**
+	 * Assert that the source node gets updated if the target is deleted.
+	 */
+	@Test
+	public void testReferenceUpdateOnDelete() {
+		String sourceUuid = tx(() -> folder("2015").getUuid());
+		String targetUuid = contentUuid();
+
+		String vcardUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
+		MicroschemaModel vcard = tx(() -> microschemaContainers().get("vcard").getLatestVersion().getSchema());
+		vcard.addField(new NodeFieldSchemaImpl().setName("node"));
+		MicroschemaUpdateRequest request = JsonUtil.readValue(vcard.toJson(), MicroschemaUpdateRequest.class);
+		call(() -> client().updateMicroschema(vcardUuid, request));
+
+		// 1. Set the reference
+		MicronodeResponse field = new MicronodeResponse();
+		field.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
+		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
+		field.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
+		field.getFields().put("node", new NodeFieldImpl().setUuid(targetUuid));
+		updateNode(FIELD_NAME, field);
+
+		// 2. Publish the node so that we have to update documents (draft, published) when deleting the target
+		call(() -> client().publishNode(PROJECT_NAME, sourceUuid, new PublishParametersImpl().setRecursive(true)));
+
+		// 3. Create another draft version to add more complex data for the foreign node traversal
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.setVersion("draft");
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("blub123"));
+		call(() -> client().updateNode(PROJECT_NAME, sourceUuid, nodeUpdateRequest));
+
+		expect(NODE_DELETED).one();
+		expect(NODE_REFERENCE_UPDATED)
+			.match(1, NodeMeshEventModel.class, event -> {
+				assertThat(event)
+					.hasBranchUuid(initialBranchUuid())
+					.hasLanguage("en")
+					.hasType(DRAFT)
+					.hasSchemaName("folder")
+					.hasUuid(sourceUuid);
+			}).match(1, NodeMeshEventModel.class, event -> {
+				assertThat(event)
+				.hasBranchUuid(initialBranchUuid())
+				.hasLanguage("en")
+				.hasType(PUBLISHED)
+				.hasSchemaName("folder")
+				.hasUuid(sourceUuid);
+			}).two();
+
+		call(() -> client().deleteNode(PROJECT_NAME, targetUuid));
+
+		awaitEvents();
+		waitForSearchIdleEvent();
+
+	}
+
+	/**
+	 * Assert that the source node gets updated if the target is deleted.
+	 */
+	@Test
+	public void testReferenceListUpdateOnDelete() {
+		String sourceUuid = tx(() -> folder("2015").getUuid());
+		String targetUuid = contentUuid();
+
+		String vcardUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
+		MicroschemaModel vcard = tx(() -> microschemaContainers().get("vcard").getLatestVersion().getSchema());
+		vcard.addField(new ListFieldSchemaImpl().setListType("node").setName("node"));
+		MicroschemaUpdateRequest request = JsonUtil.readValue(vcard.toJson(), MicroschemaUpdateRequest.class);
+		call(() -> client().updateMicroschema(vcardUuid, request));
+
+		// 1. Set the reference
+		MicronodeResponse field = new MicronodeResponse();
+		field.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
+		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
+		field.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
+
+		NodeFieldListImpl nodeList = new NodeFieldListImpl();
+		nodeList.add(new NodeFieldListItemImpl().setUuid(targetUuid));
+		nodeList.add(new NodeFieldListItemImpl().setUuid(targetUuid));
+		field.getFields().put("node", nodeList);
+		updateNode(FIELD_NAME, field);
+
+		// 2. Publish the node so that we have to update documents (draft, published) when deleting the target
+		call(() -> client().publishNode(PROJECT_NAME, sourceUuid, new PublishParametersImpl().setRecursive(true)));
+
+		// 3. Create another draft version to add more complex data for the foreign node traversal
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.setVersion("draft");
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("blub123"));
+		call(() -> client().updateNode(PROJECT_NAME, sourceUuid, nodeUpdateRequest));
+
+		expect(NODE_DELETED).one();
+		expect(NODE_REFERENCE_UPDATED)
+		.match(1, NodeMeshEventModel.class, event -> {
+			assertThat(event)
+				.hasBranchUuid(initialBranchUuid())
+				.hasLanguage("en")
+				.hasType(DRAFT)
+				.hasSchemaName("folder")
+				.hasUuid(sourceUuid);
+		}).match(1, NodeMeshEventModel.class, event -> {
+			assertThat(event)
+			.hasBranchUuid(initialBranchUuid())
+			.hasLanguage("en")
+			.hasType(PUBLISHED)
+			.hasSchemaName("folder")
+			.hasUuid(sourceUuid);
+			
+		})
+		.two();
+
+		call(() -> client().deleteNode(PROJECT_NAME, targetUuid));
+
+		awaitEvents();
+		waitForSearchIdleEvent();
+
+	}
+
 	@Test
 	public void testCreateNodeWithInvalidMicroschema() {
 		try (Tx tx = tx()) {
@@ -276,7 +411,8 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			for (int i = 0; i < 10; i++) {
 				nodeMicroschema.addField(new NodeFieldSchemaImpl().setName("nodefield_" + i));
 			}
-			microschemaContainers().put("noderef", project().getMicroschemaContainerRoot().create(nodeMicroschema, getRequestUser(), EventQueueBatch.create()));
+			microschemaContainers().put("noderef",
+				project().getMicroschemaContainerRoot().create(nodeMicroschema, getRequestUser(), EventQueueBatch.create()));
 
 			// 2. Update the folder schema and add a micronode field
 			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
@@ -336,7 +472,8 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			fullMicroschema.addField(new StringFieldSchemaImpl().setName("stringfield").setLabel("String Field"));
 
 			// 2. Add the microschema to the list of microschemas of the project
-			microschemaContainers().put("full", project().getMicroschemaContainerRoot().create(fullMicroschema, getRequestUser(), EventQueueBatch.create()));
+			microschemaContainers().put("full",
+				project().getMicroschemaContainerRoot().create(fullMicroschema, getRequestUser(), EventQueueBatch.create()));
 
 			// 3. Update the folder schema and inject a micronode field which uses the full schema
 			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();

@@ -1,9 +1,61 @@
 package com.gentics.mesh.core.data.node.impl;
 
+import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_INDEX_NAME;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.graphdb.spi.FieldType.LINK;
+import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
+import static com.gentics.mesh.util.URIUtils.encodeSegment;
+import static com.tinkerpop.blueprints.Direction.IN;
+import static com.tinkerpop.blueprints.Direction.OUT;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import org.apache.commons.lang3.NotImplementedException;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.Language;
@@ -23,9 +75,13 @@ import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagEdgeImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
+import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
+import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
+import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -34,6 +90,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -91,58 +148,11 @@ import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang3.NotImplementedException;
-
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.INITIAL;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.data.ContainerType.forVersion;
-import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_INDEX_NAME;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.graphdb.spi.FieldType.LINK;
-import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
-import static com.gentics.mesh.util.URIUtils.encodeSegment;
-import static com.tinkerpop.blueprints.Direction.IN;
-import static com.tinkerpop.blueprints.Direction.OUT;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * @see Node
@@ -1385,9 +1395,63 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			log.debug("Deleting node {" + getUuid() + "} vertex.");
 		}
 
-		bac.add(onDeleted(getUuid(), null, getSchemaContainer(), null, null, null));
+		addReferenceUpdates(bac);
+
+		bac.add(onDeleted(getUuid(), getSchemaContainer(), null, null, null));
 		getElement().remove();
 		bac.process();
+	}
+
+	private void addReferenceUpdates(BulkActionContext bac) {
+		Set<String> handledNodeUuids = new HashSet<>();
+
+		// Check whether NodeGraphFields (in either NGFC, or Micronode) reference this node.
+		for (NodeGraphField field : inE(HAS_FIELD).has(NodeGraphFieldImpl.class).frameExplicit(NodeGraphFieldImpl.class)) {
+			for (GraphFieldContainer container : field.outV().frame(GraphFieldContainer.class)) {
+				followContainer(bac, container, handledNodeUuids);
+			}
+		}
+
+		// Check whether Node lists (in either NGFC, or Micronode) reference this node.
+		for (NodeGraphField listItem : inE(HAS_ITEM).has(NodeGraphFieldImpl.class).frameExplicit(NodeGraphFieldImpl.class)) {
+			NodeGraphFieldListImpl list = listItem.outV().nextExplicit(NodeGraphFieldListImpl.class);
+			for (GraphFieldContainer container : list.in(HAS_LIST).frame(GraphFieldContainer.class)) {
+				followContainer(bac, container, handledNodeUuids);
+			}
+		}
+
+	}
+
+	private void followContainer(BulkActionContext bac, GraphFieldContainer container, Set<String> handledNodeUuids) {
+		if (container instanceof NodeGraphFieldContainer) {
+			NodeGraphFieldContainer nodeContainer = ((NodeGraphFieldContainer) container);
+			checkAndAddReferenceEvent(bac, nodeContainer, handledNodeUuids);
+		} else if (container instanceof Micronode) {
+			Micronode micronode = (Micronode) container;
+			// We need to check all containers that the micronode references. Due to the deduplication process the micronode may be used by multiple containers
+			for (NodeGraphFieldContainer nodeContainer : micronode.getContainers()) {
+				checkAndAddReferenceEvent(bac, nodeContainer, handledNodeUuids);
+			}
+		}
+	}
+
+	private void checkAndAddReferenceEvent(BulkActionContext bac, NodeGraphFieldContainer nodeContainer, Set<String> handledNodeUuids) {
+		for (GraphFieldContainerEdgeImpl edge : nodeContainer.inE(HAS_FIELD_CONTAINER).frameExplicit(GraphFieldContainerEdgeImpl.class)) {
+			ContainerType type = edge.getType();
+			// Only handle published or draft contents
+			if (type.equals(DRAFT) || type.equals(PUBLISHED)) {
+				Node node = nodeContainer.getParentNode();
+				String uuid = node.getUuid();
+				String languageTag = nodeContainer.getLanguageTag();
+				String branchUuid = edge.getBranchUuid();
+				String key = uuid + languageTag + branchUuid + type.getCode();
+				if (!handledNodeUuids.contains(key)) {
+					bac.add(onReferenceUpdated(node.getUuid(), node.getSchemaContainer(), branchUuid, type, languageTag));
+					handledNodeUuids.add(key);
+				}
+			}
+		}
+
 	}
 
 	@Override
@@ -1769,7 +1833,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (container == null) {
 			throw error(NOT_FOUND, "node_no_language_found", languageTag);
 		}
-		bac.add(container.onDeleted(branch.getUuid(), null));
+		bac.add(container.onDeleted(branch.getUuid(), DRAFT));
 		container.deleteFromBranch(branch, bac);
 		// No need to delete the published variant because if the container was published the take offline call handled it
 
@@ -2078,8 +2142,22 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return model;
 	}
 
+	public NodeMeshEventModel onReferenceUpdated(String uuid, SchemaContainer schema, String branchUuid, ContainerType type, String languageTag) {
+		NodeMeshEventModel event = new NodeMeshEventModel();
+		event.setEvent(NODE_REFERENCE_UPDATED);
+		event.setUuid(uuid);
+		event.setLanguageTag(languageTag);
+		event.setType(type);
+		event.setBranchUuid(branchUuid);
+		event.setProject(getProject().transformToReference());
+		if (schema != null) {
+			event.setSchema(schema.transformToReference());
+		}
+		return event;
+	}
+
 	@Override
-	public NodeMeshEventModel onDeleted(String uuid, String name, SchemaContainer schema, String branchUuid, String type, String languageTag) {
+	public NodeMeshEventModel onDeleted(String uuid, SchemaContainer schema, String branchUuid, ContainerType type, String languageTag) {
 		NodeMeshEventModel event = new NodeMeshEventModel();
 		event.setEvent(getTypeInfo().getOnDeleted());
 		event.setUuid(uuid);

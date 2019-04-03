@@ -1,6 +1,9 @@
 package com.gentics.mesh.search.verticle.entity;
 
-import com.gentics.mesh.core.data.ContainerType;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
+
+import java.util.Optional;
+
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -9,13 +12,10 @@ import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
 import com.gentics.mesh.search.index.Transformer;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
 import com.gentics.mesh.search.verticle.eventhandler.EventVertexMapper;
+
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import java.util.Optional;
-
-import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 
 public class NodeMeshEntity extends MeshEntity<NodeGraphFieldContainer> {
 
@@ -33,7 +33,7 @@ public class NodeMeshEntity extends MeshEntity<NodeGraphFieldContainer> {
 			.map(element -> tf.toDocument(
 				element,
 				ev.getBranchUuid(),
-				ContainerType.forVersion(ev.getType())
+				ev.getType()
 			));
 	}
 

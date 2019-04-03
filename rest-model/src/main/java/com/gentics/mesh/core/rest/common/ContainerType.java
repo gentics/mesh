@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data;
+package com.gentics.mesh.core.rest.common;
 
 /**
  * Enum of container edge types

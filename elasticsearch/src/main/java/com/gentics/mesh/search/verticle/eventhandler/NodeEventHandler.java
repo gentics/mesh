@@ -15,7 +15,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.request.BulkRequest;
@@ -105,7 +104,7 @@ public class NodeEventHandler implements EventHandler {
 			message.getProject().getUuid(),
 			message.getBranchUuid(),
 			schemaVersionUuid,
-			ContainerType.forVersion(message.getType()));
+			message.getType());
 	}
 
 	private String getSchemaVersionUuid(NodeMeshEventModel message) {

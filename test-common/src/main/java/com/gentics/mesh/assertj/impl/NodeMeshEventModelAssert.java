@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import com.gentics.mesh.assertj.AbstractMeshElementEventModelAssert;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 
 public class NodeMeshEventModelAssert extends AbstractMeshElementEventModelAssert<NodeMeshEventModelAssert, NodeMeshEventModel> {
@@ -31,6 +32,11 @@ public class NodeMeshEventModelAssert extends AbstractMeshElementEventModelAsser
 
 	public NodeMeshEventModelAssert hasLanguage(String lang) {
 		assertEquals("The language within the node event did not match.", lang, actual.getLanguageTag());
+		return this;
+	}
+
+	public NodeMeshEventModelAssert hasType(ContainerType type) {
+		assertEquals("The type within the node event did not match.", type, actual.getType());
 		return this;
 	}
 

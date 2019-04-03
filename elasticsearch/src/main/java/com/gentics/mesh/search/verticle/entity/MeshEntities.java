@@ -14,7 +14,6 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -143,7 +142,7 @@ public class MeshEntities {
 			.flatMap(project -> findElementByUuid(project.getNodeRoot(), eventModel.getUuid()))
 			.flatMap(node -> warningOptional(
 				"Could not find NodeGraphFieldContainer for event " + eventModel.toJson(),
-				node.getGraphFieldContainer(event.getLanguageTag(), event.getBranchUuid(), ContainerType.forVersion(event.getType()))
+				node.getGraphFieldContainer(event.getLanguageTag(), event.getBranchUuid(), event.getType())
 			));
 	}
 

@@ -3,6 +3,7 @@ package com.gentics.mesh.core.rest.event.node;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.AbstractProjectEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
@@ -11,7 +12,7 @@ public class NodeMeshEventModel extends AbstractProjectEventModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Type of the content (e.g. draft/published)")
-	private String type;
+	private ContainerType type;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Branch uuid to which the node belongs.")
@@ -34,11 +35,11 @@ public class NodeMeshEventModel extends AbstractProjectEventModel {
 	 * 
 	 * @return
 	 */
-	public String getType() {
+	public ContainerType getType() {
 		return type;
 	}
 
-	public void setType(String type) {
+	public void setType(ContainerType type) {
 		this.type = type;
 	}
 

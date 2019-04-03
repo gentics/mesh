@@ -3,8 +3,8 @@ package com.gentics.mesh.core.node;
 import java.util.Arrays;
 import java.util.List;
 
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.rest.common.ContainerType;
 
 /***
  * Dummy container class used to conveniently store element references.
