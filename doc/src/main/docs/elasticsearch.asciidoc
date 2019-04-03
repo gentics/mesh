@@ -48,6 +48,8 @@ NOTE: It is not possible to search for specific individual versions. Instead onl
 NOTE: The stored documents within the Elasticsearch indices do not contain all properties which are otherwise available via REST. 
 Only directly accessible values which have minimal dependencies to other elements are stored in order to keep the update effort manageable.
 
+NOTE: Unlike Mesh, Elasticsearch does not allow an unbounded page size in the search result. The default value for the `perPage` parameter is `10`.
+
 == Configuration
 
 The Elasticsearch connection can be configured within the `mesh.yml` configuration file.

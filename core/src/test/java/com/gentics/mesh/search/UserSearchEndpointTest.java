@@ -1,5 +1,6 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.search.index.AbstractSearchHandler.DEFAULT_SEARCH_PER_PAGE;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
@@ -65,6 +66,27 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		assertEquals("The page did not match.", 2, list.getMetainfo().getCurrentPage());
 		assertEquals("The page count did not match.", 4, list.getMetainfo().getPageCount());
 		assertEquals("The total count did not match.", 100, list.getMetainfo().getTotalCount());
+
+	}
+
+	@Test
+	public void testPagingWithoutPagingParameters() throws IOException {
+		String username = "testuser";
+		try (Tx tx = tx()) {
+			for (int i = 0; i < 20; i++) {
+				createUser(username + i);
+			}
+		}
+
+		waitForSearchIdleEvent();
+
+		String json = getESText("userWildcard.es");
+
+		UserListResponse list = call(() -> client().searchUsers(json));
+		assertEquals("The page should be full.", DEFAULT_SEARCH_PER_PAGE, list.getData().size());
+		assertEquals("The page did not match.", 1, list.getMetainfo().getCurrentPage());
+		assertEquals("The page count did not match.", 2, list.getMetainfo().getPageCount());
+		assertEquals("The total count did not match.", 20, list.getMetainfo().getTotalCount());
 
 	}
 

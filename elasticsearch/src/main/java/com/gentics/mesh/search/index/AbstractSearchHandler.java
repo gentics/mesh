@@ -10,6 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -67,6 +68,8 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	protected SearchProvider searchProvider;
 
 	protected IndexHandler<T> indexHandler;
+
+	public static final long DEFAULT_SEARCH_PER_PAGE = 10;
 
 	/**
 	 * Create a new search handler.
@@ -286,12 +289,10 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	 */
 	protected void applyPagingParams(JsonObject request, PagingParameters pagingInfo) {
 		long page = pagingInfo.getPage() - 1;
-		Long perPage = pagingInfo.getPerPage();
-		if (perPage != null) {
-			long low = page * perPage;
-			request.put("from", low);
-			request.put("size", pagingInfo.getPerPage());
-		}
+		Long perPage = Optional.ofNullable(pagingInfo.getPerPage()).orElse(DEFAULT_SEARCH_PER_PAGE);
+		long low = page * perPage;
+		request.put("from", low);
+		request.put("size", perPage);
 	}
 
 	/**
@@ -306,8 +307,8 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		long total = info.getLong("total");
 		metaInfo.setTotalCount(total);
 		int totalPages = 0;
-		Long perPage = pagingInfo.getPerPage();
-		if (perPage != null && perPage != 0) {
+		Long perPage = Optional.ofNullable(pagingInfo.getPerPage()).orElse(DEFAULT_SEARCH_PER_PAGE);
+		if (perPage != 0) {
 			totalPages = (int) Math.ceil(total / (double) perPage);
 		}
 		// Cap totalpages to 1
