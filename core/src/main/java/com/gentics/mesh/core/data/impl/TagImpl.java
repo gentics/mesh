@@ -49,6 +49,7 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -152,15 +153,10 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		}
 		bac.add(onDeleted());
 
-		// Nodes which used this tag must be updated in the search index for all branches
+		// For node which have been previously tagged we need to fire the untagged event.
 		for (Branch branch : getProject().getBranchRoot().findAll()) {
 			for (Node node : getNodes(branch)) {
-				node.getGraphFieldContainers(branch, DRAFT).forEach(c -> {
-					bac.add(c.onUpdated(branch.getUuid(), DRAFT));
-				});
-				node.getGraphFieldContainers(branch, PUBLISHED).forEach(c -> {
-					bac.add(c.onUpdated(branch.getUuid(), PUBLISHED));
-				});
+				bac.add(node.onTagged(this, branch, UNASSIGNED));
 			}
 		}
 		getElement().remove();

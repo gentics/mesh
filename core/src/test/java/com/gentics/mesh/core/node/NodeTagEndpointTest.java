@@ -97,7 +97,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			assertNotNull(tagRef);
 			assertEquals("red", tagRef.getName());
 			assertEquals(tagUuid, tagRef.getUuid());
-		});
+		}).one();
 
 		call(() -> client().addTagToNode(PROJECT_NAME, nodeUuid, tagUuid));
 
@@ -156,6 +156,57 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
+	public void testUntaggingViaDeleteOfTag() {
+		Node node = folder("2015");
+		Tag tag = tag("bike");
+		String schemaUuid = tx(() -> node.getSchemaContainer().getUuid());
+		String nodeUuid = tx(() -> node.getUuid());
+		String tagUuid = tx(() -> tag.getUuid());
+		String tagFamilyUuid = tx(() -> tag.getTagFamily().getUuid());
+
+		try (Tx tx = tx()) {
+			assertTrue(node.getTags(project().getLatestBranch()).list().contains(tag));
+		}
+
+		expect(NODE_UNTAGGED).match(1, NodeTaggedEventModel.class, event -> {
+			BranchReference branchRef = event.getBranch();
+			assertNotNull(branchRef);
+			assertEquals(initialBranchUuid(), branchRef.getUuid());
+			assertEquals(PROJECT_NAME, branchRef.getName());
+
+			ProjectReference projectRef = event.getProject();
+			assertNotNull(projectRef);
+			assertEquals(PROJECT_NAME, projectRef.getName());
+			assertEquals(projectUuid(), projectRef.getUuid());
+
+			NodeReference nodeRef = event.getNode();
+			assertNotNull(nodeRef);
+			assertEquals(nodeUuid, nodeRef.getUuid());
+
+			SchemaReference schemaRef = nodeRef.getSchema();
+			assertNotNull(schemaRef);
+			assertEquals("folder", schemaRef.getName());
+			assertEquals(schemaUuid, schemaRef.getUuid());
+
+			TagReference tagRef = event.getTag();
+			assertNotNull(tagRef);
+			assertEquals("Bike", tagRef.getName());
+			assertEquals(tagUuid, tagRef.getUuid());
+		}).one();
+
+		// Now delete the tag and assert the events
+		call(() -> client().deleteTag(projectName(), tagFamilyUuid, tagUuid));
+
+		awaitEvents();
+		waitForSearchIdleEvent();
+
+		long storeEvents = 2; // Draft and published documents
+		long deleteEvents = 1; // One tag
+		assertThat(trackingSearchProvider()).hasEvents(storeEvents, deleteEvents, 0, 0);
+
+	}
+
+	@Test
 	public void testRemoveTagFromNode() throws Exception {
 		Node node = folder("2015");
 		Tag tag = tag("bike");
@@ -190,7 +241,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			assertNotNull(tagRef);
 			assertEquals("Bike", tagRef.getName());
 			assertEquals(tagUuid, tagRef.getUuid());
-		});
+		}).one();
 
 		call(() -> client().removeTagFromNode(PROJECT_NAME, nodeUuid, tagUuid));
 
