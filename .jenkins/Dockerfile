@@ -3,10 +3,6 @@ FROM jenkinsci/jnlp-slave
 MAINTAINER Johannes Schüth <j.schueth@gentics.com>
 USER root
 
-# Key chains
-RUN wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C2518248EEA14886
-
 # APT
 RUN echo 'deb http://debian.apa.at/debian stretch main contrib non-free' > /etc/apt/sources.list
 RUN echo 'deb http://debian.apa.at/debian stretch-backports main' >> /etc/apt/sources.list
