@@ -295,6 +295,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert update
 		SchemaResponse response = call(() -> client().createSchema(new SchemaCreateRequest().setName("dummy")));
+		waitForSearchIdleEvent();
 		tx(() -> {
 			boot().schemaContainerRoot().findByUuid(response.getUuid()).setName("updated");
 		});
