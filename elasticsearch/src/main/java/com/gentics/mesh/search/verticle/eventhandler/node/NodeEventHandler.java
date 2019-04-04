@@ -1,7 +1,8 @@
-package com.gentics.mesh.search.verticle.eventhandler;
+package com.gentics.mesh.search.verticle.eventhandler.node;
 
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.core.rest.event.EventCauseAction.SCHEMA_MIGRATION;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
@@ -29,6 +30,9 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
 
+import com.gentics.mesh.search.verticle.eventhandler.EventCauseHelper;
+import com.gentics.mesh.search.verticle.eventhandler.EventHandler;
+import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import io.reactivex.Flowable;
 
 @Singleton
@@ -46,7 +50,7 @@ public class NodeEventHandler implements EventHandler {
 
 	@Override
 	public Collection<MeshEvent> handledEvents() {
-		return Arrays.asList(NODE_CONTENT_CREATED, NODE_UPDATED, NODE_CONTENT_DELETED);
+		return Arrays.asList(NODE_CONTENT_CREATED, NODE_UPDATED, NODE_CONTENT_DELETED, NODE_PUBLISHED);
 	}
 
 	@Override
@@ -55,23 +59,25 @@ public class NodeEventHandler implements EventHandler {
 			MeshEvent event = messageEvent.event;
 			NodeMeshEventModel message = requireType(NodeMeshEventModel.class, messageEvent.message);
 
-			if (event == NODE_CONTENT_CREATED || event == NODE_UPDATED) {
-				EventCauseInfo cause = message.getCause();
-				if (cause != null && cause.getAction() == SCHEMA_MIGRATION) {
-					return migrationUpdate(message);
-				} else {
-					return toFlowable(upsertNodes(message));
-				}
-			} else if (event == NODE_CONTENT_DELETED) {
-				// Ignore the node content deletion event if the project is being deleted. 
-				// In this case the deletion can be performed by dropping the index
-				if (EventCauseHelper.isProjectDeleteCause(message)) {
-					return Flowable.empty();
-				} else {
-					return Flowable.just(deleteNodes(message, getSchemaVersionUuid(message)));
-				}
-			} else {
-				throw new RuntimeException("Unexpected event " + event.address);
+			switch (event) {
+				case NODE_CONTENT_CREATED:
+				case NODE_UPDATED:
+				case NODE_PUBLISHED:
+					EventCauseInfo cause = message.getCause();
+					if (cause != null && cause.getAction() == SCHEMA_MIGRATION) {
+						return migrationUpdate(message);
+					} else {
+						return toFlowable(upsertNodes(message));
+					}
+				case NODE_CONTENT_DELETED:
+					if (EventCauseHelper.isProjectDeleteCause(message)) {
+						return Flowable.empty();
+					} else {
+						return Flowable.just(deleteNodes(message, getSchemaVersionUuid(message)));
+					}
+				default:
+					throw new RuntimeException("Unexpected event " + event.address);
+
 			}
 		});
 	}

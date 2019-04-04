@@ -27,6 +27,7 @@ public class NodePermissionSearchTest extends AbstractMeshTest {
 
 		String json = getESText("nodeWildcard.es");
 
+		waitForSearchIdleEvent();
 		NodeListResponse list = call(() -> client().searchNodes(PROJECT_NAME, json));
 		assertEquals("The node should be found since the requestor has permission to see it", 1, list.getData().size());
 
@@ -35,6 +36,7 @@ public class NodePermissionSearchTest extends AbstractMeshTest {
 		request.getPermissions().setRead(false);
 		call(() -> client().updateRolePermissions(roleUuid(), "/projects/" + PROJECT_NAME + "/nodes/" + response.getUuid(), request));
 
+		waitForSearchIdleEvent();
 		list = call(() -> client().searchNodes(PROJECT_NAME, json));
 		assertEquals("The node should not be found since the requestor has no permission to see it", 0, list.getData().size());
 
@@ -42,19 +44,19 @@ public class NodePermissionSearchTest extends AbstractMeshTest {
 
 	@Test
 	public void testIndexPermRoleDeletion() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 		createNode("slug", FieldUtil.createStringField("slugblub"));
 
 		String json = getESText("nodeWildcard.es");
 
+		waitForSearchIdleEvent();
 		NodeListResponse list = call(() -> client().searchNodes(PROJECT_NAME, json));
 		assertEquals("The node should be found since the requestor has permission to see it", 1, list.getData().size());
 
 		// Delete the role
 		call(() -> client().deleteRole(roleUuid()));
 
+		waitForSearchIdleEvent();
 		list = call(() -> client().searchNodes(PROJECT_NAME, json));
 		assertEquals("The node should not be found since the requestor has no permission to see it", 0, list.getData().size());
 
@@ -62,13 +64,13 @@ public class NodePermissionSearchTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadPublishPerm() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 		NodeResponse response = createNode("slug", FieldUtil.createStringField("slugblub"));
 		call(() -> client().publishNode(PROJECT_NAME, response.getUuid()));
 
 		String json = getESText("nodeWildcard.es");
+
+		waitForSearchIdleEvent();
 
 		NodeListResponse list = call(() -> client().searchNodes(PROJECT_NAME, json, new VersioningParametersImpl().published()));
 		assertEquals("The node should be found since the requestor has permission to see it", 1, list.getData().size());
@@ -79,11 +81,16 @@ public class NodePermissionSearchTest extends AbstractMeshTest {
 		request.getPermissions().setReadPublished(true);
 		call(() -> client().updateRolePermissions(roleUuid(), "/projects/" + PROJECT_NAME + "/nodes/" + response.getUuid(), request));
 
+		waitForSearchIdleEvent();
+
 		list = call(() -> client().searchNodes(PROJECT_NAME, json, new VersioningParametersImpl().published()));
 		assertEquals("The node should be found since the requestor has permission read publish", 1, list.getData().size());
 
 		request.getPermissions().setReadPublished(false);
 		call(() -> client().updateRolePermissions(roleUuid(), "/projects/" + PROJECT_NAME + "/nodes/" + response.getUuid(), request));
+
+		waitForSearchIdleEvent();
+
 		list = call(() -> client().searchNodes(PROJECT_NAME, json, new VersioningParametersImpl().published()));
 		assertEquals("The node should not be found since the requestor has no permission to see it", 0, list.getData().size());
 
@@ -96,13 +103,12 @@ public class NodePermissionSearchTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testRoleDeletion() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 		NodeResponse response = createNode("slug", FieldUtil.createStringField("slugblub"));
 		call(() -> client().publishNode(PROJECT_NAME, response.getUuid()));
 
 		String json = getESText("nodeWildcard.es");
+		waitForSearchIdleEvent();
 		NodeListResponse list = call(() -> client().searchNodes(PROJECT_NAME, json, new VersioningParametersImpl().published()));
 		assertEquals("The node should be found since the requestor has permission to see it", 1, list.getData().size());
 
@@ -120,11 +126,14 @@ public class NodePermissionSearchTest extends AbstractMeshTest {
 		request2.getPermissions().setReadPublished(false);
 		call(() -> client().updateRolePermissions(roleUuid(), "/projects/" + PROJECT_NAME + "/nodes/" + response.getUuid(), request2));
 
+		waitForSearchIdleEvent();
 		list = call(() -> client().searchNodes(PROJECT_NAME, json, new VersioningParametersImpl().published()));
 		assertEquals("The node should be found since the requestor has permission read publish", 1, list.getData().size());
 
 		// Delete the role
 		call(() -> client().deleteRole(roleResponse.getUuid()));
+
+		waitForSearchIdleEvent();
 
 		list = call(() -> client().searchNodes(PROJECT_NAME, json, new VersioningParametersImpl().published()));
 		assertEquals("The node should not be found since the requestor has no permission to see it", 0, list.getData().size());
@@ -132,6 +141,8 @@ public class NodePermissionSearchTest extends AbstractMeshTest {
 		// Now recreate the role with the same uuid
 		RoleResponse roleResponse2 = call(() -> client().createRole(roleResponse.getUuid(), new RoleCreateRequest().setName("ReadpubPermRole2")));
 		call(() -> client().addRoleToGroup(groupUuid(), roleResponse2.getUuid()));
+
+		waitForSearchIdleEvent();
 
 		// Search again - The node should still not be visible since the new role has no permissions
 		list = call(() -> client().searchNodes(PROJECT_NAME, json, new VersioningParametersImpl().published()));

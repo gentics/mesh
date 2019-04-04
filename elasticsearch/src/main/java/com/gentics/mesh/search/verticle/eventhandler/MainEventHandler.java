@@ -9,6 +9,7 @@ import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
+import com.gentics.mesh.search.verticle.eventhandler.node.NodeEventHandler;
 import com.gentics.mesh.search.verticle.eventhandler.project.ProjectCreateEventHandler;
 import com.gentics.mesh.search.verticle.eventhandler.project.ProjectDeleteEventHandler;
 import com.gentics.mesh.search.verticle.eventhandler.project.ProjectUpdateEventHandler;
