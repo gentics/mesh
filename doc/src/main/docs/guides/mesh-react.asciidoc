@@ -167,7 +167,9 @@ You can create the three schemas in the admin area by using the provides JSON in
 
 The `VehicleImage` nodes store the image data for each `Vehicle`. Additional fields could be added to store copyright information of `altText` data.
 
-The `name` identifies the schema in the system. The `displayField` controls what field should be used to display in the UI node list. In our case the name will be used to be displayed.
+The `name` identifies the schema in the system.
+
+The `displayField` controls what field should be used to display in the UI node list. In our case the name will be used to be displayed.
 
 The `segmentField` controls which field should be used to identify the node for the webroot API. Nodes can be nested in each other and thus each node can provide a segment for path. This way it is possible to load nodes via a path resolving system.
 
@@ -344,7 +346,7 @@ image:../sts-vehicle.png[STS Vehicle, role="img-responsive"]
 
 Before we can read our data via GraphQL we need to assign the read permission to the newly created project. We need to apply the read permission *recusively* so that it will be applied to all created nodes. Otherwise we would need to deal with authentication in our frontend app. 
 
-By default all unauthenticated requests to Gentics Mesh will fall back to use the `anonymous user` and the assigned `anonymous role`. This is very useful if you just want to serve data publicly without any authentication. This mechanism can of course be turned of in the `mesh.yml` file.
+By default all unauthenticated requests to Gentics Mesh will fall back to use the `anonymous user` and the assigned `anonymous role`. This is very useful if you just want to serve data publicly without any authentication. This mechanism can of course be turned off in the `mesh.yml` file.
 
 image:../role-permissions.png[Role Permissions, role="img-responsive"]
 
@@ -446,6 +448,8 @@ Loading vehicle information and category overview data will be done using the `u
 
 link:https://graphql.org/learn/queries/#fragments[GraphQL fragments] are used to structure the query and are generally useful when loading multi-level navigations.
 
+TIP: In this example we are using hooks. If you want to know more, we recommend reading the link:https://reactjs.org/docs/hooks-intro.html[official introduction].
+
 TIP: Define the needed information per level of your navigation and re-use the fragment to keep the GraphQL query well-arranged.
 
 NOTE: Add the `api.js` file to your `src` directory. 
@@ -453,7 +457,6 @@ NOTE: Add the `api.js` file to your `src` directory.
 .api.js
 [source,js]
 ----
-{
 import {useState, useEffect} from 'react';
 
 export async function getNavigation() {
