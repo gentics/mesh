@@ -12,7 +12,6 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
@@ -27,7 +26,6 @@ import javax.inject.Singleton;
 import java.security.InvalidParameterException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.stream.Stream;
 
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toFlowable;
@@ -68,7 +66,7 @@ public class PermissionChangedEventHandler implements EventHandler {
 			ofNullable(meshHelper.getBoot().projectRoot().findByUuid(model.getProject().getUuid()))
 				.flatMap(project -> ofNullable(project.getNodeRoot().findByUuid(model.getUuid()))
 				.flatMap(node -> project.getBranchRoot().findAll().stream().map(MeshElement::getUuid)
-				.flatMap(branchUuid -> Stream.of(ContainerType.DRAFT, ContainerType.PUBLISHED)
+				.flatMap(branchUuid -> Util.latestVersionTypes()
 				.flatMap(type -> node.getGraphFieldContainers(branchUuid, type).stream()
 				.map(container -> meshHelper.updateDocumentRequest(
 					NodeGraphFieldContainer.composeIndexName(

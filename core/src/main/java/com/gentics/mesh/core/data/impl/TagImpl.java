@@ -218,7 +218,6 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 				setEditor(ac.getUser());
 				setLastEditedTimestamp();
 				setName(newTagName);
-				batch.add(getTagFamily().onUpdated());
 				batch.add(onUpdated());
 				return true;
 			}

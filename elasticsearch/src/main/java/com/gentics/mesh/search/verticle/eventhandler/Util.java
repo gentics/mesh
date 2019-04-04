@@ -3,6 +3,7 @@ package com.gentics.mesh.search.verticle.eventhandler;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.CreateIndexRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
@@ -68,6 +69,10 @@ public final class Util {
 		}
 	}
 
+	public static Stream<ContainerType> latestVersionTypes() {
+		return Stream.of(ContainerType.DRAFT, ContainerType.PUBLISHED);
+	}
+
 	private Single<List<String>> loadResultItems() {
 
 		return Maybe.just(Collections.singletonList(""))
@@ -82,6 +87,10 @@ public final class Util {
 			log.warn(warningMessage);
 		}
 		return opt;
+	}
+
+	public static <T> Stream<T> concat(Stream<T>... streams) {
+		return Stream.of(streams).flatMap(Function.identity());
 	}
 
 	public static <T> Stream<T> toStream(Optional<T> opt) {

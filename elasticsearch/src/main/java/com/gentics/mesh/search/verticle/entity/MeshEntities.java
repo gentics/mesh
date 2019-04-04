@@ -1,5 +1,7 @@
 package com.gentics.mesh.search.verticle.entity;
 
+import static com.gentics.mesh.search.verticle.eventhandler.Util.latestVersionTypes;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.toStream;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.warningOptional;
 
 import java.util.Map;
@@ -14,6 +16,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -146,11 +149,15 @@ public class MeshEntities {
 			));
 	}
 
-	private <T extends MeshCoreVertex<? extends RestModel, T>> Optional<T> findElementByUuid(RootVertex<T> rootVertex, String uuid) {
+	public static <T extends MeshCoreVertex<? extends RestModel, T>> Optional<T> findElementByUuid(RootVertex<T> rootVertex, String uuid) {
 		return warningOptional(
 			String.format("Could not find element with uuid {%s} in class {%s}", uuid, rootVertex.getClass().getSimpleName()),
 			rootVertex.findByUuid(uuid)
 		);
+	}
+
+	public static <T extends MeshCoreVertex<? extends RestModel, T>> Stream<T> findElementByUuidStream(RootVertex<T> rootVertex, String uuid) {
+		return toStream(findElementByUuid(rootVertex, uuid));
 	}
 
 	private <T extends MeshCoreVertex<? extends RestModel, T>> EventVertexMapper<T> byUuid(Supplier<RootVertex<T>> rootVertex) {
@@ -171,5 +178,22 @@ public class MeshEntities {
 
 	public CreateDocumentRequest createRequest(Tag element, String projectUuid) {
 		return helper.createDocumentRequest(Tag.composeIndexName(projectUuid), element.getUuid(), tag.transform(element));
+	}
+
+	public Stream<CreateDocumentRequest> generateNodeRequests(String nodeUuid, Project project, Branch branch) {
+		NodeContainerTransformer transformer = (NodeContainerTransformer) nodeContent.getTransformer();
+		return findElementByUuidStream(project.getNodeRoot(), nodeUuid)
+		.flatMap(node -> latestVersionTypes()
+		.flatMap(type -> node.getGraphFieldContainers(branch, type).stream()
+		.map(container -> helper.createDocumentRequest(
+			NodeGraphFieldContainer.composeIndexName(
+				project.getUuid(),
+				branch.getUuid(),
+				container.getSchemaContainerVersion().getUuid(),
+				type
+			),
+			NodeGraphFieldContainer.composeDocumentId(nodeUuid, container.getLanguageTag()),
+			transformer.toDocument(container, branch.getUuid(), type)
+		))));
 	}
 }

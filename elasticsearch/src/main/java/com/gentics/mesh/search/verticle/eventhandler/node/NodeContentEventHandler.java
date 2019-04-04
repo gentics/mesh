@@ -3,6 +3,7 @@ package com.gentics.mesh.search.verticle.eventhandler.node;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.core.rest.event.EventCauseAction.SCHEMA_MIGRATION;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
@@ -36,13 +37,13 @@ import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import io.reactivex.Flowable;
 
 @Singleton
-public class NodeEventHandler implements EventHandler {
+public class NodeContentEventHandler implements EventHandler {
 	private final MeshHelper helper;
 	private final MeshEntities entities;
 	private final BootstrapInitializer boot;
 
 	@Inject
-	public NodeEventHandler(MeshHelper helper, MeshEntities entities, BootstrapInitializer boot) {
+	public NodeContentEventHandler(MeshHelper helper, MeshEntities entities, BootstrapInitializer boot) {
 		this.helper = helper;
 		this.entities = entities;
 		this.boot = boot;

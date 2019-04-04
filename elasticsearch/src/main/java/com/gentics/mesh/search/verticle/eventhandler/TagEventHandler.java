@@ -2,12 +2,15 @@ package com.gentics.mesh.search.verticle.eventhandler;
 
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
 import io.reactivex.Flowable;
+import sun.font.CreatedFontTracker;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -19,6 +22,8 @@ import java.util.stream.Stream;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
+import static com.gentics.mesh.search.verticle.entity.MeshEntities.findElementByUuidStream;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.concat;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toStream;
 
@@ -51,17 +56,19 @@ public class TagEventHandler implements EventHandler {
 					Optional<Tag> tag = entities.tag.getElement(model);
 					Optional<TagFamily> tagFamily = tag.map(Tag::getTagFamily);
 
-					return Stream.concat(
+					return concat(
 						toStream(tag).map(t -> entities.createRequest(t, projectUuid)),
-						toStream(tagFamily).map(tf -> entities.createRequest(tf, projectUuid))).collect(Util.toFlowable());
+						toStream(tagFamily).map(tf -> entities.createRequest(tf, projectUuid)),
+						event == TAG_UPDATED
+							? toStream(tag).flatMap(t -> taggedNodes(model, t))
+							: Stream.empty()
+					).collect(Util.toFlowable());
 				});
 			} else if (event == TAG_DELETED) {
-				// TODO Update related elements.
 				// The tag was deleted via a project deletion. The project handler takes care of deleting the tag index.
 				if (EventCauseHelper.isProjectDeleteCause(model)) {
 					return Flowable.empty();
 				} else {
-					// At the moment we cannot look up related elements, because the element was already deleted.
 					return Flowable.just(helper.deleteDocumentRequest(Tag.composeIndexName(projectUuid), model.getUuid()));
 				}
 
@@ -69,5 +76,12 @@ public class TagEventHandler implements EventHandler {
 				throw new RuntimeException("Unexpected event " + event.address);
 			}
 		});
+	}
+
+	private Stream<CreateDocumentRequest> taggedNodes(MeshProjectElementEventModel model, Tag tag) {
+		return findElementByUuidStream(helper.getBoot().projectRoot(), model.getProject().getUuid())
+			.flatMap(project -> project.getBranchRoot().findAll().stream()
+			.flatMap(branch -> tag.getNodes(branch).stream()
+			.flatMap(node -> entities.generateNodeRequests(node.getUuid(), project, branch))));
 	}
 }

@@ -3,6 +3,9 @@ package com.gentics.mesh.search.verticle.eventhandler;
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DropIndexRequest;
@@ -10,10 +13,17 @@ import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 
+import com.gentics.mesh.search.index.node.NodeContainerTransformer;
+import com.gentics.mesh.search.verticle.entity.MeshEntities;
 import io.reactivex.functions.Action;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import java.util.stream.Stream;
+
+import static com.gentics.mesh.search.verticle.entity.MeshEntities.findElementByUuidStream;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.latestVersionTypes;
 
 public class MeshHelper {
 	private static final Logger log = LoggerFactory.getLogger(MeshHelper.class);
