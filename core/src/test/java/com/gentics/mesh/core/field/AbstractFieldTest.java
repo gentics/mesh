@@ -53,6 +53,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		Branch branch = initialBranch();
 		branch.assignSchemaVersion(user(), version);
 		project().getBranchRoot().addItem(branch);
+		node.setParentNode(initialBranchUuid(), project().getBaseNode());
 		NodeGraphFieldContainer nodeContainer = node.createGraphFieldContainer(english(), branch, user());
 
 		return Tuple.tuple(node, nodeContainer);
