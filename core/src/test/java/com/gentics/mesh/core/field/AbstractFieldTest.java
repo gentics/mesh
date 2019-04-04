@@ -2,6 +2,8 @@ package com.gentics.mesh.core.field;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
@@ -51,6 +53,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		}
 		version.setSchema(schema);
 		Node node = meshRoot().getNodeRoot().create(user(), version, project());
+		node.setParentNode(initialBranchUuid(), project().getBaseNode());
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
 		initialBranch().assignSchemaVersion(user(), version, batch);
 		NodeGraphFieldContainer nodeContainer = node.createGraphFieldContainer(english(), initialBranch(), user());
