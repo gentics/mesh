@@ -98,11 +98,4 @@ public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableE
 	 */
 	boolean hasPermission(GraphPermission permission, MeshVertex element);
 
-	/**
-	 * Generate a permission changed event.
-	 * 
-	 * @return
-	 */
-	PermissionChangedEventModel onPermissionChanged();
-
 }

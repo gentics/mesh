@@ -13,6 +13,7 @@ import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -35,16 +36,20 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
+import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.tx.Tx;
+import com.syncleus.ferma.tx.Tx;;
 
-@MeshTestSetting(testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 	@Test
 	public void testRevokeAllPermissionFromProject() {
+
+		final String roleName = tx(() -> role().getName());
+
 		try (Tx tx = tx()) {
 			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
@@ -52,10 +57,23 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			tx.success();
 		}
 
+		expect(ROLE_PERMISSIONS_CHANGED).match(1, PermissionChangedEventModel.class, event -> {
+			RoleReference roleRef = event.getRole();
+			assertEquals("The uuid of the role did not match for the event.", roleUuid(), roleRef.getUuid());
+			assertEquals("The name of the role did not match for the event.", roleName, roleRef.getName());
+		}).total(10);
+
+		RolePermissionRequest request = new RolePermissionRequest();
+		request.setRecursive(true);
+		GenericMessageResponse message = call(() -> client().updateRolePermissions(roleUuid(), "projects/" + projectUuid(), request));
+
+		awaitEvents();
+		waitForSearchIdleEvent();
+
+		long storeEvents = 120;
+		assertThat(trackingSearchProvider()).hasEvents(storeEvents, 0, 0, 0);
+
 		try (Tx tx = tx()) {
-			RolePermissionRequest request = new RolePermissionRequest();
-			request.setRecursive(true);
-			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(), "projects/" + project().getUuid(), request));
 			assertThat(message).matches("role_updated_permission", role().getName());
 			assertFalse(role().hasPermission(GraphPermission.READ_PERM, tagFamily("colors")));
 		}
@@ -171,8 +189,8 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		}
 
 		expect(ROLE_PERMISSIONS_CHANGED).match(1, PermissionChangedEventModel.class, event -> {
-			assertEquals("The role name in the event did not match.", roleName, event.getName());
-			assertEquals("The role uuid in the event did not match.", roleUuid(), event.getUuid());
+			assertEquals("The role name in the event did not match.", roleName, event.getRole().getName());
+			assertEquals("The role uuid in the event did not match.", roleUuid(), event.getRole().getUuid());
 		}).total(1);
 		expect(ROLE_UPDATED).total(0);
 

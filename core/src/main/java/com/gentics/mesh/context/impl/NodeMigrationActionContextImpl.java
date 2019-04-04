@@ -31,6 +31,7 @@ import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -129,7 +130,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	@Override
 	public void setUser(MeshAuthUser user) {
-		// TODO Auto-generated method stub
+
 	}
 
 	@Override
@@ -419,319 +420,287 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public Vertex getElement() {
-				// TODO Auto-generated method stub
+
 				return null;
 			}
 
 			@Override
 			public <T> T addFramedEdge(String label, VertexFrame inVertex, ClassInitializer<T> initializer) {
-				// TODO Auto-generated method stub
+
 				return null;
 			}
 
 			@Override
 			public <T> T addFramedEdge(String label, VertexFrame inVertex, Class<T> kind) {
-				// TODO Auto-generated method stub
+
 				return null;
 			}
 
 			@Override
 			public <T> T addFramedEdgeExplicit(String label, VertexFrame inVertex, ClassInitializer<T> initializer) {
-				// TODO Auto-generated method stub
+
 				return null;
 			}
 
 			@Override
 			public <T> T addFramedEdgeExplicit(String label, VertexFrame inVertex, Class<T> kind) {
-				// TODO Auto-generated method stub
+
 				return null;
 			}
 
 			@Override
 			public TEdge addFramedEdge(String label, VertexFrame inVertex) {
-				// TODO Auto-generated method stub
+
 				return null;
 			}
 
 			@Override
 			public TEdge addFramedEdgeExplicit(String label, VertexFrame inVertex) {
-				// TODO Auto-generated method stub
+
 				return null;
 			}
 
 			@Override
 			public VertexTraversal<?, ?, ?> out(int branchFactor, String... labels) {
-				// TODO Auto-generated method stub
+
 				return null;
 			}
 
 			@Override
 			public VertexTraversal<?, ?, ?> out(String... labels) {
-				// TODO Auto-generated method stub
+
 				return null;
 			}
 
 			@Override
 			public VertexTraversal<?, ?, ?> in(int branchFactor, String... labels) {
-				// TODO Auto-generated method stub
+
 				return null;
 			}
 
 			@Override
 			public VertexTraversal<?, ?, ?> in(String... labels) {
-				// TODO Auto-generated method stub
+
 				return null;
 			}
 
 			@Override
 			public VertexTraversal<?, ?, ?> both(int branchFactor, String... labels) {
-				// TODO Auto-generated method stub
+
 				return null;
 			}
 
 			@Override
 			public VertexTraversal<?, ?, ?> both(String... labels) {
-				// TODO Auto-generated method stub
+
 				return null;
 			}
 
 			@Override
 			public EdgeTraversal<?, ?, ?> outE(int branchFactor, String... labels) {
-				// TODO Auto-generated method stub
+
 				return null;
 			}
 
 			@Override
 			public EdgeTraversal<?, ?, ?> outE(String... labels) {
-				// TODO Auto-generated method stub
+
 				return null;
 			}
 
 			@Override
 			public EdgeTraversal<?, ?, ?> inE(int branchFactor, String... labels) {
-				// TODO Auto-generated method stub
+
 				return null;
 			}
 
 			@Override
 			public EdgeTraversal<?, ?, ?> inE(String... labels) {
-				// TODO Auto-generated method stub
+
 				return null;
 			}
 
 			@Override
 			public EdgeTraversal<?, ?, ?> bothE(int branchFactor, String... labels) {
-				// TODO Auto-generated method stub
+
 				return null;
 			}
 
 			@Override
 			public EdgeTraversal<?, ?, ?> bothE(String... labels) {
-				// TODO Auto-generated method stub
+
 				return null;
 			}
 
 			@Override
 			public void linkOut(VertexFrame vertex, String... labels) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void linkIn(VertexFrame vertex, String... labels) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void linkBoth(VertexFrame vertex, String... labels) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void unlinkOut(VertexFrame vertex, String... labels) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void unlinkIn(VertexFrame vertex, String... labels) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void unlinkBoth(VertexFrame vertex, String... labels) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void setLinkOut(VertexFrame vertex, String... labels) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void setLinkIn(VertexFrame vertex, String... labels) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void setLinkBoth(VertexFrame vertex, String... labels) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public <K> K setLinkOut(ClassInitializer<K> initializer, String... labels) {
-				// TODO Auto-generated method stub
+
 				return null;
 			}
 
 			@Override
 			public <K> K setLinkOut(Class<K> kind, String... labels) {
-				// TODO Auto-generated method stub
+
 				return null;
 			}
 
 			@Override
 			public <K> K setLinkOutExplicit(ClassInitializer<K> initializer, String... labels) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public <K> K setLinkOutExplicit(Class<K> kind, String... labels) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public <K> K setLinkIn(ClassInitializer<K> initializer, String... labels) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public <K> K setLinkIn(Class<K> kind, String... labels) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public <K> K setLinkInExplicit(ClassInitializer<K> initializer, String... labels) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public <K> K setLinkInExplicit(Class<K> kind, String... labels) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public <K> K setLinkBoth(ClassInitializer<K> initializer, String... labels) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public <K> K setLinkBoth(Class<K> kind, String... labels) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public <K> K setLinkBothExplicit(ClassInitializer<K> initializer, String... labels) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public <K> K setLinkBothExplicit(Class<K> kind, String... labels) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public VertexTraversal<?, ?, ?> traversal() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public com.google.gson.JsonObject toJson() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public <T> T reframe(Class<T> kind) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public <T> T reframeExplicit(Class<T> kind) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public <N> N getId() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public Set<String> getPropertyKeys() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public void remove() {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public void setElement(Element element) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public FramedGraph getGraph() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public <T> T getProperty(String name) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public <T> T getProperty(String name, Class<T> type) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public void setProperty(String name, Object value) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public Class<?> getTypeResolution() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
@@ -742,55 +711,45 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public void removeTypeResolution() {
-				// TODO Auto-generated method stub
-
 			}
 
 			@Override
 			public VertexTraversal<?, ?, ?> v() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public EdgeTraversal<?, ?, ?> e() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public VertexTraversal<?, ?, ?> v(Object... ids) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public EdgeTraversal<?, ?, ?> e(Object... ids) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public void setUniqueLinkOutTo(VertexFrame vertex, String... labels) {
-				// TODO Auto-generated method stub
 
 			}
 
 			@Override
 			public VertexTraversal<?, ?, ?> getPermTraversal(GraphPermission permission) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public User getCreator() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public User getEditor() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
@@ -813,59 +772,54 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public Long getResetTokenIssueTimestamp() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public User setResetTokenIssueTimestamp(Long timestamp) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public void fillCommonRestFields(InternalActionContext ac, FieldsSet fields, GenericRestResponse model) {
-				// TODO Auto-generated method stub
 			}
 
 			@Override
 			public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public void setRolePermissions(InternalActionContext ac, GenericRestResponse model) {
-				// TODO Auto-generated method stub
 			}
 
 			@Override
 			public PermissionInfo getPermissionInfo(MeshVertex vertex) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public String getElementVersion() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public MeshElementEventModel onCreated() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public MeshElementEventModel onUpdated() {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public MeshElementEventModel onDeleted() {
-				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public PermissionChangedEventModel onPermissionChanged(Role role) {
 				return null;
 			}
 		};
@@ -874,19 +828,19 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	@Override
 	public Set<FileUpload> getFileUploads() {
-		// TODO Auto-generated method stub
+
 		return null;
 	}
 
 	@Override
 	public MultiMap requestHeaders() {
-		// TODO Auto-generated method stub
+
 		return null;
 	}
 
 	@Override
 	public void addCookie(Cookie cookie) {
-		// TODO Auto-generated method stub
+
 	}
 
 	@Override
@@ -906,38 +860,38 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	@Override
 	public void send(String body, HttpResponseStatus status, String contentType) {
-		// TODO Auto-generated method stub
+
 	}
 
 	@Override
 	public void send(HttpResponseStatus status) {
-		// TODO Auto-generated method stub
+
 	}
 
 	@Override
 	public void fail(Throwable cause) {
-		// TODO Auto-generated method stub
+
 	}
 
 	@Override
 	public Locale getLocale() {
-		// TODO Auto-generated method stub
+
 		return null;
 	}
 
 	@Override
 	public void logout() {
-		// TODO Auto-generated method stub
+
 	}
 
 	@Override
 	public void setEtag(String entityTag, boolean isWeak) {
-		// TODO Auto-generated method stub
+
 	}
 
 	@Override
 	public void setLocation(String location) {
-		// TODO Auto-generated method stub
+
 	}
 
 	@Override

@@ -1,5 +1,16 @@
 package com.gentics.mesh.core.data.node;
 
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+import java.util.stream.Stream;
+
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -11,6 +22,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.ProjectElement;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.User;
@@ -37,18 +49,8 @@ import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.syncleus.ferma.EdgeFrame;
+
 import io.reactivex.Single;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-import java.util.stream.Stream;
-
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
-import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 
 /**
  * The Node Domain Model interface.
@@ -57,7 +59,7 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
  * this node and to the created nodes in order to create a project data structure. Each node may be linked to one or more {@link NodeGraphFieldContainer}
  * vertices which contain the language specific data.
  */
-public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackingVertex, Taggable {
+public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackingVertex, Taggable, ProjectElement {
 
 	String BRANCH_UUID_KEY = "branchUuid";
 
@@ -272,13 +274,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 */
 	List<String> getAvailableLanguageNames(Branch branch, ContainerType type);
-
-	/**
-	 * Return the project of the node.
-	 * 
-	 * @return
-	 */
-	Project getProject();
 
 	/**
 	 * Set the project of the node.

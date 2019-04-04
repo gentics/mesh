@@ -1,5 +1,11 @@
 package com.gentics.mesh.core.data;
 
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_UPDATED;
+
+import java.util.Objects;
+
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
@@ -11,12 +17,6 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
-import java.util.Objects;
-
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_UPDATED;
-
 /**
  * The TagFamily domain model interface.
  * 
@@ -24,7 +24,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_UPDATED;
  * projects via the {@link TagFamilyRootImpl} class.
  */
 public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>, ReferenceableElement<TagFamilyReference>, UserTrackingVertex,
-		RootVertex<Tag> {
+	RootVertex<Tag>, ProjectElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.TAGFAMILY, TAG_FAMILY_CREATED, TAG_FAMILY_UPDATED, TAG_FAMILY_DELETED);
 
@@ -119,13 +119,6 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	 * @return
 	 */
 	TagFamilyRoot getTagFamilyRoot();
-
-	/**
-	 * Return the project to which the tag family has been assigned.
-	 * 
-	 * @return
-	 */
-	Project getProject();
 
 	/**
 	 * Set the project to which the tag family should be assigned.

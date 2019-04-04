@@ -53,6 +53,13 @@ public class PermissionChangedEventHandler implements EventHandler {
 	public Flowable<UpdateDocumentRequest> handle(MessageEvent messageEvent) {
 		PermissionChangedEventModel model = requireType(PermissionChangedEventModel.class, messageEvent.message);
 
+		// Check whether the action affects read permissions. We only need to update the document in the index if the action affects those perms
+		// boolean grantReads = permissionsToGrant.contains(READ_PERM) || permissionsToGrant.contains(READ_PUBLISHED_PERM);
+		// boolean revokesRead = permissionsToRevoke.contains(READ_PERM) || permissionsToRevoke.contains(READ_PUBLISHED_PERM);
+		// if (grantReads || revokesRead) {
+		//
+		// }
+
 		if (model.getType() == ElementType.NODE) {
 			return handleNodePermissionsChange(model);
 		} else {

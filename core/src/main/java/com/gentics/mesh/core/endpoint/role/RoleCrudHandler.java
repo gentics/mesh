@@ -126,37 +126,33 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 				throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 			}
 
-			return utils.eventAction(event -> {
+			String name = utils.eventAction(batch -> {
 				RolePermissionRequest requestModel = ac.fromJson(RolePermissionRequest.class);
 
 				// Prepare the sets for revoke and grant actions
-				String name = utils.eventAction(batch -> {
-					Set<GraphPermission> permissionsToGrant = new HashSet<>();
-					Set<GraphPermission> permissionsToRevoke = new HashSet<>();
+				Set<GraphPermission> permissionsToGrant = new HashSet<>();
+				Set<GraphPermission> permissionsToRevoke = new HashSet<>();
 
-					for (GraphPermission permission : GraphPermission.values()) {
-
-						if (requestModel.getPermissions().get(permission.getRestPerm()) == true) {
-							permissionsToGrant.add(permission);
-						} else {
-							permissionsToRevoke.add(permission);
-						}
+				for (GraphPermission permission : GraphPermission.values()) {
+					if (requestModel.getPermissions().get(permission.getRestPerm()) == true) {
+						permissionsToGrant.add(permission);
+					} else {
+						permissionsToRevoke.add(permission);
 					}
-					if (log.isDebugEnabled()) {
-						for (GraphPermission p : permissionsToGrant) {
-							log.debug("Granting permission: " + p);
-						}
-						for (GraphPermission p : permissionsToRevoke) {
-							log.debug("Revoking permission: " + p);
-						}
+				}
+				if (log.isDebugEnabled()) {
+					for (GraphPermission p : permissionsToGrant) {
+						log.debug("Granting permission: " + p);
 					}
-					event.add(role.onPermissionChanged());
-					// 3. Apply the permission actions
-					element.applyPermissions(batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
-					return role.getName();
-				});
-				return message(ac, "role_updated_permission", name);
+					for (GraphPermission p : permissionsToRevoke) {
+						log.debug("Revoking permission: " + p);
+					}
+				}
+				// 3. Apply the permission actions
+				element.applyPermissions(batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
+				return role.getName();
 			});
+			return message(ac, "role_updated_permission", name);
 		}, model -> ac.send(model, OK));
 	}
 

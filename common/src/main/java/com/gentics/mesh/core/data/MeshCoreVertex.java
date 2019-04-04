@@ -1,11 +1,14 @@
 package com.gentics.mesh.core.data;
 
+import java.util.Set;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -71,14 +74,24 @@ public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R,
 
 	/**
 	 * Method which is being invoked once the element has been updated.
+	 * 
 	 * @return Created event
 	 */
 	MeshElementEventModel onUpdated();
 
 	/**
 	 * Method which is being invoked once the element has been deleted.
+	 * 
 	 * @return Created event
 	 */
 	MeshElementEventModel onDeleted();
+
+	/**
+	 * Method which is being invoked once the permissions on the element have been updated.
+	 * 
+	 * @param role
+	 * @return
+	 */
+	PermissionChangedEventModel onPermissionChanged(Role role);
 
 }

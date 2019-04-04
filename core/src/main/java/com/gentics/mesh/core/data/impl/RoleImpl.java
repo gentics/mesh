@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLI
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
-import static com.gentics.mesh.core.rest.MeshEvent.ROLE_PERMISSIONS_CHANGED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 
 import java.util.Arrays;
@@ -26,7 +25,6 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
@@ -231,12 +229,5 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 		});
 	}
 
-	@Override
-	public PermissionChangedEventModel onPermissionChanged() {
-		PermissionChangedEventModel model = new PermissionChangedEventModel();
-		model.setEvent(ROLE_PERMISSIONS_CHANGED);
-		fillEventInfo(model);
-		return model;
-	}
 
 }

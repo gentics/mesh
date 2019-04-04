@@ -1,5 +1,11 @@
 package com.gentics.mesh.core.data.generic;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_PERMISSIONS_CHANGED;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+import java.util.Set;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
@@ -7,6 +13,8 @@ import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NamedElement;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.ProjectElement;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.RoleImpl;
@@ -17,16 +25,13 @@ import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.value.FieldsSet;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import java.util.Set;
-
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * Abstract class for mesh core vertices that includes methods which are commonly used when transforming the vertices into REST POJO's.
@@ -161,6 +166,28 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		keyBuilder.append("-");
 		keyBuilder.append(ac.getUser().getPermissionInfo(this).getHash());
 		return keyBuilder.toString();
+	}
+
+	@Override
+	public PermissionChangedEventModel onPermissionChanged(Role role) {
+		PermissionChangedEventModel model = new PermissionChangedEventModel();
+		model.setEvent(ROLE_PERMISSIONS_CHANGED);
+		model.setRole(role.transformToReference());
+		model.setType(getTypeInfo().getType());
+		model.setUuid(getUuid());
+		if (this instanceof ProjectElement) {
+			Project project = ((ProjectElement) this).getProject();
+			if (project != null) {
+				model.setProject(project.transformToReference());
+			} else {
+				log.warn("The project for element {" + getUuid() + "} could not be found.");
+			}
+		}
+		if (this instanceof NamedElement) {
+			String name = ((NamedElement) this).getName();
+			model.setName(name);
+		}
+		return model;
 	}
 
 }

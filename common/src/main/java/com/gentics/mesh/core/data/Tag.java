@@ -22,7 +22,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
  * 
  * Tags can currently only hold a single string value. Tags are not localizable. A tag can only be assigned to a single tag family.
  */
-public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElement<TagReference>, UserTrackingVertex {
+public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElement<TagReference>, UserTrackingVertex, ProjectElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.TAG, TAG_CREATED, TAG_UPDATED, TAG_DELETED);
 
@@ -100,12 +100,5 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	 * @param project
 	 */
 	void setProject(Project project);
-
-	/**
-	 * Return the project to which the tag was assigned to
-	 * 
-	 * @return Project of the tag
-	 */
-	Project getProject();
 
 }

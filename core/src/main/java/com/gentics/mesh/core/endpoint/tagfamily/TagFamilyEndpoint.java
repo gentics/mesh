@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.endpoint.tagfamily;
 
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_CREATED;
@@ -167,7 +168,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Remove the tag from the tag family.");
 		endpoint.exampleResponse(NO_CONTENT, "Tag was removed from the tag family");
-		endpoint.events(TAG_DELETED);
+		endpoint.events(TAG_DELETED, NODE_UNTAGGED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
@@ -202,7 +203,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Delete the tag family.");
 		endpoint.exampleResponse(NO_CONTENT, "Tag family was deleted.");
-		endpoint.events(TAG_FAMILY_DELETED);
+		endpoint.events(TAG_FAMILY_DELETED, TAG_DELETED, NODE_UNTAGGED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("tagFamilyUuid");

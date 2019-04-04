@@ -1,8 +1,5 @@
 package com.gentics.mesh.core.data.generic;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -10,6 +7,7 @@ import java.util.Set;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -170,13 +168,12 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		Set<GraphPermission> permissionsToRevoke) {
 		role.grantPermissions(this, permissionsToGrant.toArray(new GraphPermission[permissionsToGrant.size()]));
 		role.revokePermissions(this, permissionsToRevoke.toArray(new GraphPermission[permissionsToRevoke.size()]));
-		// Check whether the action affects read permissions. We only need to update the document in the index if the action affects those perms
-		boolean grantReads = permissionsToGrant.contains(READ_PERM) || permissionsToGrant.contains(READ_PUBLISHED_PERM);
-		boolean revokesRead = permissionsToRevoke.contains(READ_PERM) || permissionsToRevoke.contains(READ_PUBLISHED_PERM);
-		if (grantReads || revokesRead) {
-			// .updatePermissions((IndexableElement) this);
-			// batch.add();
+
+		if (this instanceof MeshCoreVertex) {
+			MeshCoreVertex<?, ?> coreVertex = (MeshCoreVertex<?, ?>) this;
+			batch.add(coreVertex.onPermissionChanged(role));
 		}
+		// TODO Also handle RootVertex - We need to add a dedicated event in those cases.
 	}
 
 	@Override
