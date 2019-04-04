@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.gentics.mesh.core.rest.MeshEvent.MESH_MIGRATION;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
@@ -84,10 +85,9 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 
 		// Handle msgs
 		ws.events().firstOrError().subscribe(event -> {
-			ObjectNode body = event.getBodyAsJson();
-			context.assertNotNull(body.get("uuid").textValue());
-			context.assertEquals("content", body.get("schemaName").textValue());
-			context.assertFalse(body.has("languageTag"));
+			NodeMeshEventModel body = JsonUtil.readValue(event.getBodyAsJson().toString(), NodeMeshEventModel.class);
+			context.assertNotNull(body.getUuid());
+			context.assertEquals("content", body.getSchema().getName());
 			async.complete();
 		});
 		call(() -> client().deleteNode(PROJECT_NAME, contentUuid()));
@@ -97,14 +97,14 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 	public void testNodeDeleteLanguageEvent(TestContext context) throws Exception {
 		Async async = context.async();
 
-		ws.registerEvents(NODE_DELETED);
+		ws.registerEvents(NODE_CONTENT_DELETED);
 
 		// Handle msgs
 		ws.events().firstOrError().subscribe(event -> {
-			ObjectNode body = event.getBodyAsJson();
-			context.assertNotNull(body.get("uuid").textValue());
-			context.assertEquals("content", body.get("schemaName").textValue());
-			context.assertEquals("en", body.get("languageTag").textValue());
+			NodeMeshEventModel body = JsonUtil.readValue(event.getBodyAsJson().toString(), NodeMeshEventModel.class);
+			context.assertNotNull(body.getUuid());
+			context.assertEquals("content", body.getSchema().getName());
+			context.assertEquals("en", body.getLanguageTag());
 			async.complete();
 		});
 		call(() -> client().deleteNode(PROJECT_NAME, contentUuid(), "en"));
@@ -119,9 +119,9 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 
 		// Handle msgs
 		ws.events().firstOrError().subscribe(event -> {
-			ObjectNode body = event.getBodyAsJson();
-			assertNotNull(body.get("uuid").textValue());
-			assertEquals("content", body.get("schemaName").textValue());
+			NodeMeshEventModel body = JsonUtil.readValue(event.getBodyAsJson().toString(), NodeMeshEventModel.class);
+			assertNotNull(body.getUuid());
+			assertEquals("content", body.getSchema().getName());
 			async.complete();
 		});
 

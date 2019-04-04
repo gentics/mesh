@@ -115,7 +115,7 @@ public class CoreVerticleLoader {
 
 	public Completable unloadVerticles() {
 		return Observable.merge(
-			Observable.just(searchVerticleId),
+			searchVerticleId != null ? Observable.just(searchVerticleId) : Observable.empty(),
 			Observable.fromIterable(deploymentIds)
 		).flatMapCompletable(rxVertx::rxUndeploy)
 		.doOnComplete(deploymentIds::clear);
