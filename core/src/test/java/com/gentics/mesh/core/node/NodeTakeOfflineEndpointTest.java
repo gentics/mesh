@@ -48,6 +48,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
 		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
 		String folderSchemaUuid = tx(() -> schemaContainer("folder").getUuid());
+		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
 		String parentNodeUuid = tx(() -> folder("news").getUuid());
 
 		// Create a lot of test nodes
@@ -66,14 +67,14 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			call(() -> client().publishNode(PROJECT_NAME, response.getUuid()));
 		}
 
-		expect(NODE_UNPUBLISHED).match(2, NodeMeshEventModel.class, event -> {
+		expect(NODE_UNPUBLISHED).match(1029, NodeMeshEventModel.class, event -> {
 			assertThat(event)
 				.uuidNotNull()
-				.hasBranchUuid(initialBranchUuid())
-				.hasSchemaName("folder")
-				.hasSchemaUuid(folderSchemaUuid)
-				.hasLanguage("en");
-		}).total(1001);
+				.hasBranchUuid(initialBranchUuid());
+			assertThat(event.getSchema().getUuid()).matches(contentSchemaUuid + "|" + folderSchemaUuid);
+			assertThat(event.getLanguageTag()).matches("en|de");
+			assertThat(event.getSchema().getName()).matches("folder|content");
+		}).total(1029);
 
 		expect(NODE_DELETED).none();
 		expect(NODE_CONTENT_DELETED).none();
