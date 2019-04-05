@@ -17,7 +17,6 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.mockito.Mockito;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;

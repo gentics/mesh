@@ -1,9 +1,6 @@
 package com.gentics.mesh.core.tag;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -13,9 +10,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Before;
@@ -35,8 +30,6 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandler;
-import com.gentics.mesh.core.node.ElementEntry;
-import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
@@ -486,19 +479,15 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testDelete() throws Exception {
+		BulkActionContext bac = createBulkContext();
 		try (Tx tx = tx()) {
 			Tag tag = tag("red");
-			Map<String, ElementEntry> expectedEntries = new HashMap<>();
-			String uuid = tag.getUuid();
 
 			// Deletion of a tag must remove the tag from the index and update the nodes which reference the tag
-			expectedEntries.put("tag", new ElementEntry(DELETE_ACTION, uuid));
-			expectedEntries.put("node-with-tag", new ElementEntry(STORE_ACTION, content("concorde").getUuid(), project().getUuid(), project()
-				.getLatestBranch().getUuid(), ContainerType.DRAFT));
-			BulkActionContext context = createBulkContext();
-			tag.delete(context);
-			assertThat(context.batch()).containsEntries(expectedEntries);
+			tag.delete(bac);
 		}
+		// 2 = 1 tag + 1 tagged node
+		assertEquals(2, bac.batch().size());
 	}
 
 	@Test

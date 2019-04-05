@@ -1,9 +1,6 @@
 package com.gentics.mesh.core.project;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DROP_INDEX;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
 import static org.junit.Assert.assertEquals;
@@ -12,23 +9,17 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.junit.Test;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
-import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
@@ -70,41 +61,11 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testDelete() throws Exception {
-
+		Project project = project();
+		BulkActionContext bac = createBulkContext();
 		try (Tx tx = tx()) {
-			String uuid = project().getUuid();
-
-			Map<String, ElementEntry> batchEnttries = new HashMap<>();
-
-			// The project
-			batchEnttries.put("project", new ElementEntry(DELETE_ACTION, uuid));
-
-			// Meta vertices
-			batchEnttries.put("project.tagFamilyRoot", new ElementEntry(null, project().getTagFamilyRoot().getUuid()));
-			batchEnttries.put("project.schemaContainerRoot", new ElementEntry(null, project().getSchemaContainerRoot().getUuid()));
-			batchEnttries.put("project.nodeRoot", new ElementEntry(null, project().getNodeRoot().getUuid()));
-			batchEnttries.put("project.baseNode", new ElementEntry(null, project().getBaseNode().getUuid()));
-
-			// Nodes
-			int i = 0;
-			batchEnttries.put("project node index " + i, new ElementEntry(DROP_INDEX, project().getUuid()));
-			i++;
-
-			// Project tagFamilies
-			for (TagFamily tagFamily : project().getTagFamilyRoot().findAll()) {
-				batchEnttries.put("project tagfamily " + tagFamily.getName(), new ElementEntry(DROP_INDEX, tagFamily.getUuid()));
-
-				// tags
-				for (Tag tag : tagFamily.findAll()) {
-					batchEnttries.put("project tag " + tag.getName(), new ElementEntry(DROP_INDEX, tag.getUuid()));
-				}
-			}
-
-			BulkActionContext bac = createBulkContext();
-			Project project = project();
 			project.delete(bac);
-			assertElement(meshRoot().getProjectRoot(), uuid, false);
-			assertThat(bac.batch()).containsEntries(batchEnttries);
+			assertElement(meshRoot().getProjectRoot(), projectUuid(), false);
 		}
 	}
 

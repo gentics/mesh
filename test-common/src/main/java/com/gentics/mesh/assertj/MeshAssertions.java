@@ -8,7 +8,6 @@ import com.gentics.mesh.assertj.impl.BranchAssert;
 import com.gentics.mesh.assertj.impl.BranchResponseAssert;
 import com.gentics.mesh.assertj.impl.BufferedImageAssert;
 import com.gentics.mesh.assertj.impl.DummySearchProviderAssert;
-import com.gentics.mesh.assertj.impl.EventQueueBatchAssert;
 import com.gentics.mesh.assertj.impl.FieldMapAssert;
 import com.gentics.mesh.assertj.impl.FieldSchemaContainerAssert;
 import com.gentics.mesh.assertj.impl.GenericMessageResponseAssert;
@@ -76,7 +75,6 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.search.TrackingSearchProvider;
 
@@ -111,10 +109,6 @@ public class MeshAssertions extends Assertions {
 
 	public static NodeResponseAssert assertThat(NodeResponse actual) {
 		return new NodeResponseAssert(actual);
-	}
-
-	public static EventQueueBatchAssert assertThat(EventQueueBatch actual) {
-		return new EventQueueBatchAssert(actual);
 	}
 
 	public static GroupResponseAssert assertThat(GroupResponse actual) {
