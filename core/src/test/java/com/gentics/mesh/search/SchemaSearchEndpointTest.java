@@ -62,6 +62,8 @@ public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicS
 		try (Tx tx = tx()) {
 			assertElement(boot().schemaContainerRoot(), schema.getUuid(), true);
 		}
+		waitForSearchIdleEvent();
+
 		SchemaListResponse response = client()
 			.searchSchemas(getSimpleTermQuery("name.raw", newName), new PagingParametersImpl().setPage(1).setPerPage(2L)).blockingGet();
 		assertEquals(1, response.getData().size());
@@ -73,6 +75,7 @@ public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicS
 		final String schemaName = "newschemaname";
 		SchemaResponse schema = createSchema(schemaName);
 
+		waitForSearchIdleEvent();
 		SchemaListResponse response = client()
 			.searchSchemas(getSimpleTermQuery("name.raw", schemaName), new PagingParametersImpl().setPage(1).setPerPage(2L)).blockingGet();
 		assertEquals(1, response.getData().size());
@@ -90,10 +93,12 @@ public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicS
 		// 1. Create a new schema
 		final String schemaName = "newschemaname";
 		SchemaResponse schema = createSchema(schemaName);
+		waitForSearchIdleEvent();
 
 		// 2. Migrate Schema
 		String newSchemaName = "updatedschemaname";
 		waitForLatestJob(() -> updateSchema(schema.getUuid(), newSchemaName));
+		waitForSearchIdleEvent();
 
 		// 3. Search for the original schema
 		SchemaListResponse response = client()
