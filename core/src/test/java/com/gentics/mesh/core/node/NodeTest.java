@@ -381,13 +381,13 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			project.getNodeRoot().findAll().forEach(node -> nodeUuids.add(node.getUuid()));
 			assertThat(nodeUuids).as("All nodes").contains(folderUuid).doesNotContain(subFolderUuid, subSubFolderUuid);
 
-			assertEquals(2, bac.batch().size());
+			assertEquals(6, bac.batch().size());
 		}
 	}
 
 	@Test
 	public void testDeleteWithChildrenInBranch() throws InvalidArgumentException {
-		Branch initialBranch = initialBranch();
+		Branch initialBranch = tx(() -> initialBranch());
 		Project project = project();
 		BulkActionContext bac = createBulkContext();
 
@@ -451,13 +451,14 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertThat(folder).as("folder").hasNoChildren(initialBranch);
 
 		}
-		assertEquals(2, bac.batch().size());
+		// 2 nodes and two contents affected
+		assertEquals(4, bac.batch().size());
 	}
 
 	@Test
 	public void testDeletePublished() throws InvalidArgumentException {
 		Project project = project();
-		Branch initialBranch = project.getInitialBranch();
+		Branch initialBranch = tx(() -> initialBranch());
 		BulkActionContext bac = createBulkContext();
 
 		try (Tx tx = tx()) {
@@ -470,8 +471,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 				folder.applyPermissions(bac.batch(), role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
 					GraphPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
 				folder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("Folder");
-				folder.publish(mockActionContext(), bac);
-				assertEquals(2, bac.batch().size());
+				folder.publish(mockActionContext(), bac2);
+				assertEquals(1, bac2.batch().size());
 				return folder.getUuid();
 			});
 
@@ -506,7 +507,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 				assertThat(nodeUuids).as("Published nodes").doesNotContain(folderUuid);
 			});
 		}
-		assertEquals(2, bac.batch().size());
+		assertEquals(5, bac.batch().size());
 	}
 
 	@Test
