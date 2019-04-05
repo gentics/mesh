@@ -18,8 +18,11 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
+import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchTaggedEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectBranchEventModel;
 import com.gentics.mesh.event.Assignment;
@@ -424,4 +427,25 @@ public interface Branch
 	 * @return
 	 */
 	BranchTaggedEventModel onTagged(Tag tag, Assignment assignment);
+
+	/**
+	 * Create a project schema assignment event.
+	 *
+	 * @param schemaContainerVersion
+	 * @param assigned
+	 * @param status
+	 * @return
+	 */
+	BranchSchemaAssignEventModel onSchemaAssignEvent(SchemaContainerVersion schemaContainerVersion, Assignment assigned, MigrationStatus status);
+
+	/**
+	 * Create a project microschema assignment event.
+	 *
+	 * @param microschemaContainerVersion
+	 * @param assigned
+	 * @param status
+	 * @return
+	 */
+	BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion, Assignment assigned, MigrationStatus status);
+
 }

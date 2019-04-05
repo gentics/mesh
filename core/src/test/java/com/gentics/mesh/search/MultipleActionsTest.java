@@ -31,8 +31,14 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 	public static final String SCHEMA_NAME = "content";
 
 	/**
-	 * This test does the following: 1. Delete all nodes of a schema 2. Delete that schema 3. Create a new schema 4. Create nodes of that schema 5. Search for
-	 * all nodes of that schema
+	 * This test does the following:
+	 * <ol>
+	 *     <li>Delete all nodes of a schema</li>
+	 *     <li>Delete that schema</li>
+	 *     <li>Create a new schema</li>
+	 *     <li>Create nodes of that schema</li>
+	 *     <li>Search for all nodes of that schema</li>
+	 * </ol>
 	 *
 	 * @throws Exception
 	 */
@@ -41,7 +47,7 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 		recreateIndices();
 		final int nodeCount = 1;
 
-		waitForSearchIdleEvent(() -> {
+		waitForSearchIdleEvent(
 			getNodesBySchema(SCHEMA_NAME)
 				.flatMapCompletable(this::deleteNode)
 				.andThen(deleteSchemaByName(SCHEMA_NAME))
@@ -49,8 +55,8 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 				.flatMapObservable(newSchema -> getRootNodeReference()
 				.flatMapObservable(rootNodeReference -> Observable.range(1, nodeCount)
 				.flatMapSingle(unused -> createEmptyNode(newSchema, rootNodeReference))))
-				.ignoreElements().blockingAwait();
-		});
+				.ignoreElements()
+		);
 
 		NodeListResponse searchResult = client().searchNodes(getSimpleTermQuery("schema.name.raw", SCHEMA_NAME))
 				.toSingle().blockingGet();

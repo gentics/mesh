@@ -57,9 +57,19 @@ public enum MeshEvent {
 	SCHEMA_BRANCH_ASSIGN("mesh.schema-branch.assign", BranchSchemaAssignEventModel.class),
 
 	/**
+	 * Event which is send once the schema gets assigned to a branch.
+	 */
+	SCHEMA_BRANCH_UNASSIGN("mesh.schema-branch.unassign", BranchSchemaAssignEventModel.class),
+
+	/**
 	 * Event which is send once the microschema gets assigned to a branch.
 	 */
 	MICROSCHEMA_BRANCH_ASSIGN("mesh.microschema-branch.assign", BranchMicroschemaAssignModel.class),
+
+	/**
+	 * Event which is send once the microschema gets assigned to a branch.
+	 */
+	MICROSCHEMA_BRANCH_UNASSIGN("mesh.microschema-branch.unassign", BranchMicroschemaAssignModel.class),
 
 	/**
 	 * Microschema migration start event.

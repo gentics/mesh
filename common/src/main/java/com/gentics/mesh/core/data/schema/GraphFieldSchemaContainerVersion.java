@@ -12,6 +12,7 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.util.VersionUtil;
 
 /**
@@ -170,7 +171,7 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 * 
 	 * @return Found branches of this version
 	 */
-	List<? extends Branch> getBranches();
+	TraversalResult<? extends Branch> getBranches();
 
 	/**
 	 * Load the stored schema JSON data.

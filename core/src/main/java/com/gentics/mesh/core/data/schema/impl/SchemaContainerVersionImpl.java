@@ -9,6 +9,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 
 import java.util.Iterator;
 import java.util.List;
@@ -34,12 +35,14 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
+import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madlmigration.TraversalResult;
@@ -138,6 +141,7 @@ public class SchemaContainerVersionImpl extends
 		reference.setName(getName());
 		reference.setUuid(getSchemaContainer().getUuid());
 		reference.setVersion(getVersion());
+		reference.setVersionUuid(getUuid());
 		return reference;
 	}
 
@@ -152,8 +156,8 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public List<? extends Branch> getBranches() {
-		return in(HAS_SCHEMA_VERSION).toListExplicit(BranchImpl.class);
+	public TraversalResult<? extends Branch> getBranches() {
+		return new TraversalResult<>(in(HAS_SCHEMA_VERSION).frameExplicit(BranchImpl.class));
 	}
 
 	@Override
@@ -175,6 +179,7 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public void delete(BulkActionContext context) {
+		generateUnassignEvents().forEach(context::add);
 		// Delete change
 		SchemaChange<?> change = getNextChange();
 		if (change != null) {
@@ -189,6 +194,15 @@ public class SchemaContainerVersionImpl extends
 		}
 		// Delete version
 		remove();
+	}
+
+	/**
+	 * Genereates branch unassign events for every assigned branch.
+	 * @return
+	 */
+	private Stream<BranchSchemaAssignEventModel> generateUnassignEvents() {
+		return getBranches().stream()
+			.map(branch -> branch.onSchemaAssignEvent(this, UNASSIGNED, null));
 	}
 
 	@Override

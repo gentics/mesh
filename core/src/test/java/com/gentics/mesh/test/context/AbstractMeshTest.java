@@ -636,7 +636,10 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	}
 
 	protected void waitForSearchIdleEvent(Completable completable) {
-		waitForSearchIdleEvent((Action) completable::blockingAwait);
+		waitForEvent(MeshEvent.SEARCH_IDLE, () -> {
+			completable.subscribe(() -> vertx().eventBus().publish(MeshEvent.SEARCH_FLUSH_REQUEST.address, null));
+		});
+		refreshIndices();
 	}
 
 	protected void waitForSearchIdleEvent(Action action) {

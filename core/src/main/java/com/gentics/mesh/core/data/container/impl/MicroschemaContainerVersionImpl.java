@@ -129,6 +129,7 @@ public class MicroschemaContainerVersionImpl extends
 		reference.setName(getName());
 		reference.setUuid(getSchemaContainer().getUuid());
 		reference.setVersion(getVersion());
+		reference.setVersionUuid(getUuid());
 		return reference;
 	}
 
@@ -144,8 +145,8 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	public List<? extends Branch> getBranches() {
-		return in(HAS_MICROSCHEMA_VERSION).toListExplicit(BranchImpl.class);
+	public TraversalResult<? extends Branch> getBranches() {
+		return new TraversalResult<>(in(HAS_MICROSCHEMA_VERSION).frameExplicit(BranchImpl.class));
 	}
 
 	@Override
