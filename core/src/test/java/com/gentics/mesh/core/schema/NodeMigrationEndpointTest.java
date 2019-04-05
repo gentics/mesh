@@ -121,6 +121,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertTrue("The assignment should be active.", edge1.isActive());
 		}
 		assertThat(call(() -> client().findJobs())).isEmpty();
+
+		waitForSearchIdleEvent();
 		assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
 			DRAFT));
 		assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
@@ -176,6 +178,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		// The initial index should have been removed
+		waitForSearchIdleEvent();
 		assertThat(trackingSearchProvider())
 			.hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid, DRAFT));
 		assertThat(trackingSearchProvider()).hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
