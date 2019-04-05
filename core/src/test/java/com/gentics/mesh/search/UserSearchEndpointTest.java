@@ -188,7 +188,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	}
 
 	@Test
-	public void testSearchForUserByEmail() throws InterruptedException, JSONException {
+	public void testSearchForUserByEmail() throws Exception {
+		recreateIndices();
 		String email = "testmail@test.com";
 
 		UserCreateRequest request = new UserCreateRequest();
@@ -206,8 +207,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	}
 
 	@Test
-	public void testSearchUserForGroup() throws InterruptedException, JSONException {
-
+	public void testSearchUserForGroup() throws Exception {
+		recreateIndices();
 		String username = "extrauser42a";
 		String groupName = db().tx(() -> group().getName());
 		try (Tx tx = tx()) {
@@ -312,8 +313,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	}
 
 	@Test
-	public void testSearchUserWithPerPageZero() throws InterruptedException, JSONException {
-
+	public void testSearchUserWithPerPageZero() throws Exception {
+		recreateIndices();
 		String groupName = db().tx(() -> group().getName());
 		String username = "extrauser42a";
 		try (Tx tx = tx()) {
