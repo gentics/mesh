@@ -35,7 +35,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -62,7 +62,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		expect(ROLE_PERMISSIONS_CHANGED).match(1, PermissionChangedEventModel.class, event -> {
+		expect(ROLE_PERMISSIONS_CHANGED).match(1, PermissionChangedEventModelImpl.class, event -> {
 			RoleReference roleRef = event.getRole();
 			assertEquals("The uuid of the role did not match for the event.", roleUuid(), roleRef.getUuid());
 			assertEquals("The name of the role did not match for the event.", roleName, roleRef.getName());
@@ -193,7 +193,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			assertTrue("The role should have delete permission on the group.", role().hasPermission(DELETE_PERM, group()));
 		}
 
-		expect(ROLE_PERMISSIONS_CHANGED).match(9, PermissionChangedEventModel.class, event -> {
+		expect(ROLE_PERMISSIONS_CHANGED).match(9, PermissionChangedEventModelImpl.class, event -> {
 			RoleReference roleRef = event.getRole();
 			assertEquals("The role name in the event did not match.", roleName, roleRef.getName());
 			assertEquals("The role uuid in the event did not match.", roleUuid(), roleRef.getUuid());

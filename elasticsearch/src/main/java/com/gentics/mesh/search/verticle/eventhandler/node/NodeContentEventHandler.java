@@ -3,7 +3,6 @@ package com.gentics.mesh.search.verticle.eventhandler.node;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.core.rest.event.EventCauseAction.SCHEMA_MIGRATION;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
@@ -30,10 +29,10 @@ import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
-
 import com.gentics.mesh.search.verticle.eventhandler.EventCauseHelper;
 import com.gentics.mesh.search.verticle.eventhandler.EventHandler;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
+
 import io.reactivex.Flowable;
 
 @Singleton

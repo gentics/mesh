@@ -3,7 +3,7 @@ package com.gentics.mesh.search.verticle.entity;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
-import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.search.index.Transformer;
 import com.gentics.mesh.search.verticle.eventhandler.EventVertexMapper;
 import io.vertx.core.json.JsonObject;
@@ -57,5 +57,5 @@ public abstract class MeshEntity<T> {
 
 	public abstract Optional<JsonObject> getDocument(MeshElementEventModel event);
 
-	public abstract Optional<JsonObject> getPermissionPartial(PermissionChangedEventModel event);
+	public abstract Optional<JsonObject> getPermissionPartial(PermissionChangedEventModelImpl event);
 }

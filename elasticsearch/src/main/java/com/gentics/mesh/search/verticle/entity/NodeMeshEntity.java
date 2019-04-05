@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
-import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.search.index.Transformer;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
 import com.gentics.mesh.search.verticle.eventhandler.EventVertexMapper;
@@ -38,7 +38,7 @@ public class NodeMeshEntity extends MeshEntity<NodeGraphFieldContainer> {
 	}
 
 	@Override
-	public Optional<JsonObject> getPermissionPartial(PermissionChangedEventModel event) {
+	public Optional<JsonObject> getPermissionPartial(PermissionChangedEventModelImpl event) {
 		log.warn("permission partial for node requested. This should never happen", new Throwable());
 		return Optional.empty();
 	}

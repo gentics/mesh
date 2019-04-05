@@ -31,7 +31,7 @@ import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
-import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -819,8 +819,12 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public PermissionChangedEventModel onPermissionChanged(Role role) {
+			public PermissionChangedEventModelImpl onPermissionChanged(Role role) {
 				return null;
+			}
+
+			@Override
+			public void fillPermissionChanged(PermissionChangedEventModelImpl model, Role role) {
 			}
 		};
 		return user;

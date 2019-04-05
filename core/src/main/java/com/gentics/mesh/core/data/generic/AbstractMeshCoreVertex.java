@@ -25,7 +25,8 @@ import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
-import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -169,25 +170,33 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	}
 
 	@Override
-	public PermissionChangedEventModel onPermissionChanged(Role role) {
-		PermissionChangedEventModel model = new PermissionChangedEventModel();
+	public PermissionChangedEventModelImpl onPermissionChanged(Role role) {
+		PermissionChangedEventModelImpl model = new PermissionChangedEventModelImpl();
+		fillPermissionChanged(model, role);
+		return model;
+	}
+
+	@Override
+	public void fillPermissionChanged(PermissionChangedEventModelImpl model, Role role) {
 		model.setEvent(ROLE_PERMISSIONS_CHANGED);
 		model.setRole(role.transformToReference());
 		model.setType(getTypeInfo().getType());
 		model.setUuid(getUuid());
-		if (this instanceof ProjectElement) {
-			Project project = ((ProjectElement) this).getProject();
-			if (project != null) {
-				model.setProject(project.transformToReference());
-			} else {
-				log.warn("The project for element {" + getUuid() + "} could not be found.");
-			}
-		}
 		if (this instanceof NamedElement) {
 			String name = ((NamedElement) this).getName();
 			model.setName(name);
 		}
-		return model;
+		if (this instanceof ProjectElement) {
+			Project project = ((ProjectElement) this).getProject();
+			if (project != null) {
+				if (model instanceof PermissionChangedProjectElementEventModel) {
+					((PermissionChangedProjectElementEventModel) model).setProject(project.transformToReference());
+				}
+			} else {
+				log.warn("The project for element {" + getUuid() + "} could not be found.");
+			}
+		}
+
 	}
 
 }
