@@ -41,9 +41,10 @@ public class NodeBinaryNoIngestSearchTest extends AbstractNodeSearchEndpointTest
 
 	@Test
 	public void testBinarySearchMapping() throws Exception {
+		Node nodeA = content("concorde");
+		Node nodeB = content();
+
 		try (Tx tx = tx()) {
-			Node nodeA = content("concorde");
-			Node nodeB = content();
 			SchemaModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 
 			List<String> names = Arrays.asList("binary", "binary2", "binary3");
@@ -75,8 +76,12 @@ public class NodeBinaryNoIngestSearchTest extends AbstractNodeSearchEndpointTest
 				.setMimeType("text/plain");
 			nodeB.getLatestDraftFieldContainer(english()).createBinary("binary2", binaryB).setFileName("somefile.dat")
 				.setMimeType("text/plain");
+			tx.success();
+		}
 
-			recreateIndices();
+		recreateIndices();
+
+		try (Tx tx = tx()) {
 
 			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
 				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
@@ -105,9 +110,10 @@ public class NodeBinaryNoIngestSearchTest extends AbstractNodeSearchEndpointTest
 
 	@Test
 	public void testSearchBinaryField() throws Exception {
+		Node nodeA = content("concorde");
+		Node nodeB = content();
+
 		try (Tx tx = tx()) {
-			Node nodeA = content("concorde");
-			Node nodeB = content();
 			SchemaModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new BinaryFieldSchemaImpl().setName("binary"));
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
@@ -125,8 +131,12 @@ public class NodeBinaryNoIngestSearchTest extends AbstractNodeSearchEndpointTest
 				.setMimeType("text/plain");
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
 			MeshInternal.get().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binary.getBinary().getUuid()).blockingAwait();
-			recreateIndices();
+			tx.success();
+		}
 
+		recreateIndices();
+
+		try (Tx tx = tx()) {
 			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
 				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
 			String id = NodeGraphFieldContainer.composeDocumentId(nodeB.getUuid(), "en");
