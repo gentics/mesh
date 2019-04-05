@@ -19,4 +19,15 @@ public interface MicroschemaReference extends NameUuidReference<MicroschemaRefer
 	 */
 	MicroschemaReference setVersion(String version);
 
+	/**
+	 * Return the uuid of the microschema version
+	 * @return
+	 */
+	String getVersionUuid();
+
+	/**
+	 * Set the uuid of the microschema version
+	 * @return
+	 */
+	MicroschemaReference setVersionUuid(String uuid);
 }

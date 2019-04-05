@@ -5,6 +5,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.madlmigration.TraversalResult;
 
 import java.util.List;
 import java.util.Objects;
@@ -58,6 +59,6 @@ public interface SchemaContainer extends GraphFieldSchemaContainer<SchemaRespons
 	 * 
 	 * @return
 	 */
-	List<? extends SchemaContainerRoot> getRoots();
+	TraversalResult<? extends SchemaContainerRoot> getRoots();
 
 }

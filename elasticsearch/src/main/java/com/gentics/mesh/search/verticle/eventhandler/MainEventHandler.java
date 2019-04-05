@@ -117,7 +117,10 @@ public class MainEventHandler implements EventHandler {
 	}
 
 	private static Flowable<SearchRequest> flushRequest(MessageEvent event) {
-		return Flowable.just(SearchRequest.create(provider -> Completable.complete()));
+		log.info("Flush request received");
+		return Flowable.just(SearchRequest.create(provider -> Completable.complete()
+			.doOnComplete(() -> log.info("Flushing requests"))
+		));
 	}
 
 	@Override

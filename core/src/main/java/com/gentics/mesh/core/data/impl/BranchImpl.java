@@ -73,7 +73,13 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PAR
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_TAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UNTAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_BRANCH_ASSIGN;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_BRANCH_UNASSIGN;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_LATEST_BRANCH_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_ASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_UNASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_ASSIGN;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_UNASSIGN;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
@@ -393,7 +399,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 				// No migration needed since there was no previous version assigned.
 				edge.setMigrationStatus(COMPLETED);
 			}
-			batch.add(createSchemaAssignEvent(schemaContainerVersion, edge.getMigrationStatus()));
+			batch.add(onSchemaAssignEvent(schemaContainerVersion, ASSIGNED, edge.getMigrationStatus()));
 		}
 		return job;
 	}
@@ -416,15 +422,23 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 				// No migration needed since there was no previous version assigned.
 				edge.setMigrationStatus(COMPLETED);
 			}
-			batch.add(createMicroschemaAssignEvent(microschemaContainerVersion, edge.getMigrationStatus()));
+			batch.add(onMicroschemaAssignEvent(microschemaContainerVersion, ASSIGNED, edge.getMigrationStatus()));
 		}
 		return job;
 	}
 
-	private BranchSchemaAssignEventModel createSchemaAssignEvent(SchemaContainerVersion schemaContainerVersion, MigrationStatus status) {
+	@Override
+	public BranchSchemaAssignEventModel onSchemaAssignEvent(SchemaContainerVersion schemaContainerVersion, Assignment assigned, MigrationStatus status) {
 		BranchSchemaAssignEventModel model = new BranchSchemaAssignEventModel();
 		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
-		model.setEvent(MeshEvent.SCHEMA_BRANCH_ASSIGN);
+		switch (assigned) {
+			case ASSIGNED:
+				model.setEvent(SCHEMA_BRANCH_ASSIGN);
+				break;
+			case UNASSIGNED:
+				model.setEvent(SCHEMA_BRANCH_UNASSIGN);
+				break;
+		}
 		model.setSchema(schemaContainerVersion.transformToReference());
 		model.setStatus(status);
 		model.setBranch(transformToReference());
@@ -432,11 +446,18 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 		return model;
 	}
 
-	private BranchMicroschemaAssignModel createMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion,
-		MigrationStatus status) {
+	@Override
+	public BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion, Assignment assigned, MigrationStatus status) {
 		BranchMicroschemaAssignModel model = new BranchMicroschemaAssignModel();
 		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
-		model.setEvent(MeshEvent.MICROSCHEMA_BRANCH_ASSIGN);
+		switch (assigned) {
+			case ASSIGNED:
+				model.setEvent(MICROSCHEMA_BRANCH_ASSIGN);
+				break;
+			case UNASSIGNED:
+				model.setEvent(MICROSCHEMA_BRANCH_UNASSIGN);
+				break;
+		}
 		model.setSchema(microschemaContainerVersion.transformToReference());
 		model.setStatus(status);
 		model.setBranch(transformToReference());

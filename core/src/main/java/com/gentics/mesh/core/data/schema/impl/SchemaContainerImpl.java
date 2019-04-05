@@ -5,10 +5,12 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDI
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Iterator;
-import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -21,12 +23,14 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.madlmigration.TraversalResult;
 
 /**
  * @see SchemaContainer
@@ -55,8 +59,8 @@ public class SchemaContainerImpl extends
 	}
 
 	@Override
-	public List<? extends SchemaContainerRoot> getRoots() {
-		return in(HAS_SCHEMA_CONTAINER_ITEM).toListExplicit(SchemaContainerRootImpl.class);
+	public TraversalResult<? extends SchemaContainerRoot> getRoots() {
+		return new TraversalResult<>(in(HAS_SCHEMA_CONTAINER_ITEM).frameExplicit(SchemaContainerRootImpl.class));
 	}
 
 	@Override
@@ -74,7 +78,10 @@ public class SchemaContainerImpl extends
 		// Check whether the schema is currently being referenced by nodes.
 		Iterator<? extends NodeImpl> it = getNodes().iterator();
 		if (!it.hasNext()) {
+
+			unassignEvents().forEach(bac::add);
 			bac.add(onDeleted());
+
 			for(SchemaContainerVersion v : findAll()) {
 				v.delete(bac);
 			}
@@ -82,6 +89,17 @@ public class SchemaContainerImpl extends
 		} else {
 			throw error(BAD_REQUEST, "schema_delete_still_in_use", getUuid());
 		}
+	}
+
+	/**
+	 * Returns events for unassignment on deletion.
+	 * @return
+	 */
+	private Stream<ProjectSchemaEventModel> unassignEvents() {
+		return getRoots().stream()
+			.map(SchemaContainerRoot::getProject)
+			.filter(Objects::nonNull)
+			.map(project -> project.onSchemaAssignEvent(this, UNASSIGNED));
 	}
 
 	@Override

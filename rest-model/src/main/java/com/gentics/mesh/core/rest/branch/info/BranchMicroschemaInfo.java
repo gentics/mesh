@@ -4,6 +4,8 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 
 public class BranchMicroschemaInfo extends AbstractBranchSchemaInfo<MicroschemaReference> implements MicroschemaReference {
 
+	private String versionUuid;
+
 	public BranchMicroschemaInfo() {
 	}
 
@@ -11,6 +13,7 @@ public class BranchMicroschemaInfo extends AbstractBranchSchemaInfo<MicroschemaR
 		this.setUuid(reference.getUuid());
 		this.setName(reference.getName());
 		this.setVersion(reference.getVersion());
+		this.setVersionUuid(reference.getVersionUuid());
 	}
 
 	@Override
@@ -31,4 +34,14 @@ public class BranchMicroschemaInfo extends AbstractBranchSchemaInfo<MicroschemaR
 		return this;
 	}
 
+	@Override
+	public String getVersionUuid() {
+		return versionUuid;
+	}
+
+	@Override
+	public BranchMicroschemaInfo setVersionUuid(String versionUuid) {
+		this.versionUuid = versionUuid;
+		return this;
+	}
 }

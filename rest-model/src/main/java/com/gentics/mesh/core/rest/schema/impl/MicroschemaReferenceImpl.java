@@ -10,6 +10,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 public class MicroschemaReferenceImpl extends AbstractNameUuidReference<MicroschemaReference> implements MicroschemaReference {
 
 	private String version;
+	private String versionUuid;
 
 	@Override
 	public String getVersion() {
@@ -19,6 +20,17 @@ public class MicroschemaReferenceImpl extends AbstractNameUuidReference<Microsch
 	@Override
 	public MicroschemaReference setVersion(String version) {
 		this.version = version;
+		return this;
+	}
+
+	@Override
+	public String getVersionUuid() {
+		return versionUuid;
+	}
+
+	@Override
+	public MicroschemaReferenceImpl setVersionUuid(String versionUuid) {
+		this.versionUuid = versionUuid;
 		return this;
 	}
 

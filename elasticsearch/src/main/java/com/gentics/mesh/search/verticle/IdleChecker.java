@@ -3,6 +3,8 @@ package com.gentics.mesh.search.verticle;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.concurrent.TimeUnit;
@@ -12,6 +14,8 @@ import static com.gentics.mesh.search.verticle.eventhandler.Util.dummyObject;
 
 
 public class IdleChecker {
+	private static final Logger log = LoggerFactory.getLogger(IdleChecker.class);
+
 	private final AtomicInteger requests = new AtomicInteger();
 	private final AtomicInteger transformations = new AtomicInteger();
 	private final Subject<Object> idling = PublishSubject.create();
@@ -63,6 +67,8 @@ public class IdleChecker {
 	}
 
 	private int checkIdle(int value) {
+		log.trace("Idle check invoked. Remaining requests: {}, remaining transformations: {}",
+			requests.get(), transformations.get());
 		if (isIdle()) {
 			idling.onNext(dummyObject);
 		}
