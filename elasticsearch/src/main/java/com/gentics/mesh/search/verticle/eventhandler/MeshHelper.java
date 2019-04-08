@@ -1,5 +1,7 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
+import javax.inject.Inject;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
@@ -7,12 +9,11 @@ import com.gentics.mesh.core.data.search.request.DropIndexRequest;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+
 import io.reactivex.functions.Action;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import javax.inject.Inject;
 
 public class MeshHelper {
 	private static final Logger log = LoggerFactory.getLogger(MeshHelper.class);

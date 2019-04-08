@@ -9,6 +9,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -30,6 +31,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -372,15 +374,26 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	}
 
 	@Test
-	public void testUpdateWithConflictingName() {
-		try (Tx tx = tx()) {
-			String newName = "colors";
-			TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
-			request.setName(newName);
+	public void testUpdateWithSameName() {
+		String newName = "basic";
+		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
+		request.setName(newName);
+		String tagFamilyUuid = tx(() -> tagFamily("basic").getUuid());
 
-			call(() -> client().updateTagFamily(PROJECT_NAME, tagFamily("basic").getUuid(), request), CONFLICT, "tagfamily_conflicting_name",
-				newName);
-		}
+		expect(TAG_FAMILY_UPDATED).none();
+		expect(TAG_UPDATED).none();
+		call(() -> client().updateTagFamily(PROJECT_NAME, tagFamilyUuid, request));
+	}
+
+	@Test
+	public void testUpdateWithConflictingName() {
+		String tagFamilyUuid = tx(() -> tagFamily("basic").getUuid());
+		String newName = "colors";
+		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
+		request.setName(newName);
+
+		call(() -> client().updateTagFamily(PROJECT_NAME, tagFamilyUuid, request), CONFLICT, "tagfamily_conflicting_name",
+			newName);
 	}
 
 	@Test
@@ -420,15 +433,19 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 	@Test
 	public void testUpdateNodeIndex() {
+		Project project = project();
+		TagFamily tagfamily = tagFamily("basic");
+		String tagFamilyUuid = tx(() -> tagfamily.getUuid());
+		Branch branch = tx(() -> initialBranch());
+
+		expect(TAG_FAMILY_UPDATED).one();
+		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
+		request.setName("basicChanged");
+		call(() -> client().updateTagFamily(PROJECT_NAME, tagFamilyUuid, request));
+		waitForSearchIdleEvent();
+		awaitEvents();
+
 		try (Tx tx = tx()) {
-			Project project = project();
-			Branch branch = project.getBranchRoot().getLatestBranch();
-			TagFamily tagfamily = tagFamily("basic");
-
-			TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
-			request.setName("basicChanged");
-			call(() -> client().updateTagFamily(PROJECT_NAME, tagfamily.getUuid(), request));
-
 			// Multiple tags of the same family can be tagged on same node. This should still trigger only 1 update for that node.
 			HashSet<String> taggedNodes = new HashSet<>();
 			int storeCount = 0;
@@ -437,7 +454,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 				for (Node node : tag.getNodes(branch)) {
 					if (!taggedNodes.contains(node.getUuid())) {
 						taggedNodes.add(node.getUuid());
-						for (ContainerType containerType : new ContainerType[] { ContainerType.DRAFT, ContainerType.PUBLISHED }) {
+						for (ContainerType containerType : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
 							for (NodeGraphFieldContainer fieldContainer : node.getGraphFieldContainers(branch, containerType)) {
 								SchemaContainerVersion schema = node.getSchemaContainer().getLatestVersion();
 								storeCount++;
