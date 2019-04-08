@@ -73,9 +73,14 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 	@Override
 	public SchemaContainer create(SchemaModel schema, User creator, String uuid) {
+		return create(schema, creator, uuid, true);
+	}
+
+	@Override
+	public SchemaContainer create(SchemaModel schema, User creator, String uuid, boolean validate) {
 		// TODO FIXME - We need to skip the validation check if the instance is creating a clustered instance because vert.x is not yet ready.
 		// https://github.com/gentics/mesh/issues/210
-		if (Mesh.vertx() != null) {
+		if (validate && Mesh.vertx() != null) {
 			validateSchema(schema);
 		}
 
