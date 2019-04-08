@@ -389,9 +389,9 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testDeleteWithChildrenInBranch() throws InvalidArgumentException {
 		Branch initialBranch = tx(() -> initialBranch());
 		Project project = project();
-		BulkActionContext bac = createBulkContext();
 
 		try (Tx tx = tx()) {
+			BulkActionContext bac = createBulkContext();
 			SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder with subfolder and subsubfolder
@@ -451,8 +451,6 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertThat(folder).as("folder").hasNoChildren(initialBranch);
 
 		}
-		// 2 nodes and two contents affected
-		assertEquals(4, bac.batch().size());
 	}
 
 	@Test
