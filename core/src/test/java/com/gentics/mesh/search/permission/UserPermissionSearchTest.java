@@ -64,6 +64,7 @@ public class UserPermissionSearchTest extends AbstractMeshTest {
 	public void testIndexPermUpdate() throws Exception {
 		String username = "testuser42a";
 		UserResponse response = createUser(username);
+		waitForSearchIdleEvent();
 
 		String json = getESText("userWildcard.es");
 
@@ -74,6 +75,7 @@ public class UserPermissionSearchTest extends AbstractMeshTest {
 		RolePermissionRequest request = new RolePermissionRequest();
 		request.getPermissions().setRead(false);
 		call(() -> client().updateRolePermissions(roleUuid(), "/users/" + response.getUuid(), request));
+		waitForSearchIdleEvent();
 
 		list = call(() -> client().searchUsers(json));
 		assertEquals("The user should not be found since the requestor has no permission to see it", 0, list.getData().size());
