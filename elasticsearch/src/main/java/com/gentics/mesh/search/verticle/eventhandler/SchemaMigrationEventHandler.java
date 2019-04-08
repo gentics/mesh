@@ -10,9 +10,9 @@ import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
+import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.spi.Transactional;
-import com.gentics.mesh.search.index.node.NodeContainerTransformer;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import io.reactivex.Flowable;
@@ -24,10 +24,10 @@ import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_ASSIGN;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_UNASSIGN;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_FINISHED;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toFlowable;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toRequests;
@@ -48,24 +48,36 @@ public class SchemaMigrationEventHandler implements EventHandler {
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
 		return Flowable.defer(() -> {
-			if (messageEvent.event == SCHEMA_BRANCH_ASSIGN) {
+			MeshEvent event = messageEvent.event;
+			if (event == SCHEMA_BRANCH_ASSIGN) {
 				BranchSchemaAssignEventModel model = requireType(BranchSchemaAssignEventModel.class, messageEvent.message);
 				return migrationStart(model);
-			} else if (messageEvent.event == SCHEMA_BRANCH_UNASSIGN) {
+			} else if (event == SCHEMA_BRANCH_UNASSIGN) {
 				BranchSchemaAssignEventModel model = requireType(BranchSchemaAssignEventModel.class, messageEvent.message);
-				return migrationEnd(model);
+				return migrationEnd(
+					model.getProject().getUuid(),
+					model.getBranch().getUuid(),
+					model.getSchema().getVersionUuid()
+				);
+			} else if (event == SCHEMA_MIGRATION_FINISHED) {
+				SchemaMigrationMeshEventModel model = requireType(SchemaMigrationMeshEventModel.class, messageEvent.message);
+				return migrationEnd(
+					model.getProject().getUuid(),
+					model.getBranch().getUuid(),
+					model.getFromVersion().getVersionUuid()
+				);
 			} else {
-				throw new RuntimeException("Unexpected event " + messageEvent.event.address);
+				throw new RuntimeException("Unexpected event " + event.address);
 			}
 		});
 	}
 
-	private Flowable<DropIndexRequest> migrationEnd(BranchSchemaAssignEventModel model) {
+	private Flowable<DropIndexRequest> migrationEnd(String projectUuid, String branchUuid, String schemaVersionUuid) {
 		return Flowable.just(ContainerType.DRAFT, ContainerType.PUBLISHED)
 			.map(type -> new DropIndexRequest(NodeGraphFieldContainer.composeIndexName(
-				model.getProject().getUuid(),
-				model.getBranch().getUuid(),
-				model.getSchema().getVersionUuid(),
+				projectUuid,
+				branchUuid,
+				schemaVersionUuid,
 				type
 			)));
 	}
@@ -92,6 +104,6 @@ public class SchemaMigrationEventHandler implements EventHandler {
 
 	@Override
 	public Collection<MeshEvent> handledEvents() {
-		return Arrays.asList(SCHEMA_BRANCH_ASSIGN, SCHEMA_BRANCH_UNASSIGN);
+		return Arrays.asList(SCHEMA_BRANCH_ASSIGN, SCHEMA_BRANCH_UNASSIGN, SCHEMA_MIGRATION_FINISHED);
 	}
 }

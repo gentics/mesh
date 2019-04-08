@@ -38,12 +38,6 @@ public class BranchMigrationJobImpl extends JobImpl {
 		database.addVertexType(BranchMigrationJobImpl.class, MeshVertexImpl.class);
 	}
 
-	@Override
-	public void prepare() {
-		// TODO check whether this is in fact start
-		EventQueueBatch.create().add(createEvent(BRANCH_MIGRATION_START, STARTING)).dispatch();
-	}
-
 	public BranchMigrationMeshEventModel createEvent(MeshEvent event, MigrationStatus status) {
 		BranchMigrationMeshEventModel model = new BranchMigrationMeshEventModel();
 		model.setEvent(event);
@@ -107,6 +101,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 		BranchMigrationHandler handler = MeshInternal.get().branchMigrationHandler();
 
 		return Completable.defer(() -> {
+			EventQueueBatch.create().add(createEvent(BRANCH_MIGRATION_START, STARTING)).dispatch();
 			BranchMigrationContext context = prepareContext();
 
 			return handler.migrateBranch(context)

@@ -101,7 +101,6 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		job.setStatus(QUEUED);
 		job.setFromSchemaVersion(fromVersion);
 		job.setToSchemaVersion(toVersion);
-		job.prepare();
 		addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued schema migration job {" + job.getUuid() + "}");
@@ -119,7 +118,6 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		job.setStatus(QUEUED);
 		job.setFromMicroschemaVersion(fromVersion);
 		job.setToMicroschemaVersion(toVersion);
-		job.prepare();
 		addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued microschema migration job {" + job.getUuid() + "} - " + toVersion.getSchemaContainer().getName() + " "
@@ -137,7 +135,6 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		job.setStatus(QUEUED);
 		job.setFromSchemaVersion(fromVersion);
 		job.setToSchemaVersion(toVersion);
-		job.prepare();
 		addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued branch migration job {" + job.getUuid() + "} for branch {" + branch.getUuid() + "}");
@@ -152,7 +149,6 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		job.setType(MigrationType.branch);
 		job.setStatus(QUEUED);
 		job.setBranch(branch);
-		job.prepare();
 		addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued branch migration job {" + job.getUuid() + "} for branch {" + branch.getUuid() + "}");

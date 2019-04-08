@@ -44,11 +44,6 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 		database.addVertexType(MicronodeMigrationJobImpl.class, MeshVertexImpl.class);
 	}
 
-	@Override
-	public void prepare() {
-		EventQueueBatch.create().add(createEvent(MICROSCHEMA_MIGRATION_START, STARTING)).dispatch();
-	}
-
 	public MicroschemaMigrationMeshEventModel createEvent(MeshEvent event, MigrationStatus status) {
 		MicroschemaMigrationMeshEventModel model = new MicroschemaMigrationMeshEventModel();
 		model.setEvent(event);
@@ -124,6 +119,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 
 	protected Completable processTask() {
 		return Completable.defer(() -> {
+			EventQueueBatch.create().add(createEvent(MICROSCHEMA_MIGRATION_START, STARTING)).dispatch();
 			MicronodeMigrationContext context = prepareContext();
 			MicronodeMigrationHandler handler = MeshInternal.get().micronodeMigrationHandler();
 			return handler.migrateMicronodes(context)

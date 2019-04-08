@@ -144,6 +144,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		updateRequest.validate();
 		call(() -> client().updateSchema(schemaResponse.getUuid(), updateRequest));
 
+		waitForSearchIdleEvent();
+
 		// Assert that the indices have been created and the job has been queued
 		BranchSchemaEdge edge2;
 		SchemaContainerVersion versionB;
@@ -199,12 +201,16 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		nodeCreateRequest.getFields().put("text2", new StringFieldImpl().setString("text2_value"));
 		NodeResponse response = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 
+		waitForSearchIdleEvent();
+
 		assertThat(trackingSearchProvider()).hasStore(
 			NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid, DRAFT),
 			response.getUuid() + "-en");
 
 		updateRequest.addField(FieldUtil.createStringFieldSchema("text3"));
 		call(() -> client().updateSchema(schemaResponse.getUuid(), updateRequest));
+
+		waitForSearchIdleEvent();
 
 		BranchSchemaEdge edge3;
 		SchemaContainerVersion versionC;

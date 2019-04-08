@@ -43,14 +43,6 @@ public class NodeMigrationJobImpl extends JobImpl {
 		database.addVertexType(NodeMigrationJobImpl.class, MeshVertexImpl.class);
 	}
 
-	/**
-	 * Create the needed indices.
-	 */
-	@Override
-	public void prepare() {
-		EventQueueBatch.create().add(createEvent(SCHEMA_MIGRATION_START, STARTING)).dispatch();
-	}
-
 	private SchemaMigrationMeshEventModel createEvent(MeshEvent event, MigrationStatus status) {
 		SchemaMigrationMeshEventModel model = new SchemaMigrationMeshEventModel();
 		model.setEvent(event);
@@ -138,6 +130,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 		NodeMigrationHandler handler = MeshInternal.get().nodeMigrationHandler();
 
 		return Completable.defer(() -> {
+			EventQueueBatch.create().add(createEvent(SCHEMA_MIGRATION_START, STARTING)).dispatch();
 			NodeMigrationActionContextImpl context = prepareContext();
 
 			return handler.migrateNodes(context)
