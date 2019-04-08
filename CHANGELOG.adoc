@@ -24,6 +24,12 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.32.0]]
+== 0.32.0 (TBD)
+
+icon:check[] Permissions: Applying permissions recursively on projects did not affect branches. This has been fixed.
+
+icon:plus[] Permissions: Setting permissions recursively is now done more efficiently.
 
 [[v0.31.4]]
 == 0.31.4 (TBD)
