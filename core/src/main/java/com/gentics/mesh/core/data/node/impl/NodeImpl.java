@@ -1853,7 +1853,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (container == null) {
 			throw error(NOT_FOUND, "node_no_language_found", languageTag);
 		}
-		bac.add(container.onDeleted(branch.getUuid(), DRAFT));
 		container.deleteFromBranch(branch, bac);
 		// No need to delete the published variant because if the container was published the take offline call handled it
 
