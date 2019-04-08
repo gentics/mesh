@@ -7,8 +7,6 @@ import static com.gentics.mesh.core.rest.MeshEvent.GROUP_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.ROLE_PERMISSIONS_CHANGED;
 import static com.gentics.mesh.core.rest.MeshEvent.ROLE_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
-import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
-import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
@@ -26,7 +24,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import com.gentics.mesh.core.rest.common.ContainerType;
 import org.junit.Test;
 
 import com.gentics.mesh.ElementType;
@@ -48,7 +45,7 @@ import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.tx.Tx;;import java.util.stream.Stream;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class RoleEndpointPermissionsTest extends AbstractMeshTest {
