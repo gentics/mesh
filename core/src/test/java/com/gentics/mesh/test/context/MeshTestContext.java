@@ -276,15 +276,17 @@ public class MeshTestContext extends TestWatcher {
 	 */
 	private void resetDatabase(MeshTestSetting settings) throws Exception {
 		BootstrapInitializerImpl.clearReferences();
-		Database db = MeshInternal.get().database();
 		long start = System.currentTimeMillis();
 		if (settings.inMemoryDB()) {
-			db.clear();
+			MeshInternal.get().database().clear();
+		} else if (settings.clusterMode()) {
+			MeshInternal.get().database().clear();
 		} else {
-			db.stop();
-			File dbDir = new File(Mesh.mesh().getOptions().getStorageOptions().getDirectory());
+			MeshInternal.get().database().stop();
+			String dir = Mesh.mesh().getOptions().getStorageOptions().getDirectory();
+			File dbDir = new File(dir);
 			FileUtils.deleteDirectory(dbDir);
-			db.setupConnectionPool();
+			MeshInternal.get().database().setupConnectionPool();
 		}
 		long duration = System.currentTimeMillis() - start;
 		log.info("Clearing DB took {" + duration + "} ms.");
