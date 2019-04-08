@@ -3,6 +3,7 @@ package com.gentics.mesh.search.verticle.eventhandler.node;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNPUBLISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.core.rest.event.EventCauseAction.SCHEMA_MIGRATION;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
@@ -50,7 +51,7 @@ public class NodeContentEventHandler implements EventHandler {
 
 	@Override
 	public Collection<MeshEvent> handledEvents() {
-		return Arrays.asList(NODE_CONTENT_CREATED, NODE_UPDATED, NODE_CONTENT_DELETED, NODE_PUBLISHED);
+		return Arrays.asList(NODE_CONTENT_CREATED, NODE_UPDATED, NODE_CONTENT_DELETED, NODE_PUBLISHED, NODE_UNPUBLISHED);
 	}
 
 	@Override
@@ -70,6 +71,7 @@ public class NodeContentEventHandler implements EventHandler {
 						return toFlowable(upsertNodes(message));
 					}
 				case NODE_CONTENT_DELETED:
+				case NODE_UNPUBLISHED:
 					if (EventCauseHelper.isProjectDeleteCause(message)) {
 						return Flowable.empty();
 					} else {
