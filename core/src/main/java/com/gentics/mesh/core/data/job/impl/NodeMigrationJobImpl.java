@@ -67,6 +67,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.schema);
 		try {
 			return DB.get().tx(() -> {
+				EventQueueBatch.create().add(createEvent(SCHEMA_MIGRATION_START, STARTING)).dispatch();
 				NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 				context.setStatus(status);
 
@@ -130,7 +131,6 @@ public class NodeMigrationJobImpl extends JobImpl {
 		NodeMigrationHandler handler = MeshInternal.get().nodeMigrationHandler();
 
 		return Completable.defer(() -> {
-			EventQueueBatch.create().add(createEvent(SCHEMA_MIGRATION_START, STARTING)).dispatch();
 			NodeMigrationActionContextImpl context = prepareContext();
 
 			return handler.migrateNodes(context)

@@ -68,6 +68,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.microschema);
 		try {
 			return DB.get().tx(() -> {
+				EventQueueBatch.create().add(createEvent(MICROSCHEMA_MIGRATION_START, STARTING)).dispatch();
 				MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();
 				context.setStatus(status);
 
@@ -119,7 +120,6 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 
 	protected Completable processTask() {
 		return Completable.defer(() -> {
-			EventQueueBatch.create().add(createEvent(MICROSCHEMA_MIGRATION_START, STARTING)).dispatch();
 			MicronodeMigrationContext context = prepareContext();
 			MicronodeMigrationHandler handler = MeshInternal.get().micronodeMigrationHandler();
 			return handler.migrateMicronodes(context)

@@ -149,7 +149,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		job.setType(MigrationType.branch);
 		job.setStatus(QUEUED);
 		job.setBranch(branch);
-		addItem(job);
+			addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued branch migration job {" + job.getUuid() + "} for branch {" + branch.getUuid() + "}");
 		}

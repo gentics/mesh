@@ -57,6 +57,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.branch);
 		try {
 			return DB.get().tx(() -> {
+				EventQueueBatch.create().add(createEvent(BRANCH_MIGRATION_START, STARTING)).dispatch();
 				BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 				context.setStatus(status);
 
@@ -101,7 +102,6 @@ public class BranchMigrationJobImpl extends JobImpl {
 		BranchMigrationHandler handler = MeshInternal.get().branchMigrationHandler();
 
 		return Completable.defer(() -> {
-			EventQueueBatch.create().add(createEvent(BRANCH_MIGRATION_START, STARTING)).dispatch();
 			BranchMigrationContext context = prepareContext();
 
 			return handler.migrateBranch(context)
