@@ -17,7 +17,6 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.tx.Tx;
 @MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class NodePermissionSearchTest extends AbstractMeshTest {
 
@@ -148,5 +147,74 @@ public class NodePermissionSearchTest extends AbstractMeshTest {
 		list = call(() -> client().searchNodes(PROJECT_NAME, json, new VersioningParametersImpl().published()));
 		assertEquals("The node should not be found since the requestor has no permission to see it", 0, list.getData().size());
 
+	}
+
+	/**
+	 * Verify that the permission handling works correct when deleting roles which only grant read perm on nodes.
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void testRoleDeletionMultipleNodes() throws Exception {
+		int childNodeCount = 30;
+		recreateIndices();
+		NodeResponse response = createNode("slug", FieldUtil.createStringField("slugblub"));
+		call(() -> client().publishNode(PROJECT_NAME, response.getUuid()));
+
+		String json = getESText("nodeWildcard.es");
+		waitForSearchIdleEvent();
+		NodeListResponse list = call(() -> client().searchNodes(PROJECT_NAME, json, new VersioningParametersImpl().published()));
+		assertEquals("The node should be found since the requestor has permission to see it", 1, list.getData().size());
+
+		// Create a role which only grant read published perm
+		RoleResponse roleResponse = call(() -> client().createRole(new RoleCreateRequest().setName("ReadpubPermRole")));
+		RolePermissionRequest request = new RolePermissionRequest();
+		request.getPermissions().setRead(false);
+		request.getPermissions().setReadPublished(true);
+		request.setRecursive(true);
+		call(() -> client().addRoleToGroup(groupUuid(), roleResponse.getUuid()));
+		call(() -> client().updateRolePermissions(roleResponse.getUuid(), "/projects/" + PROJECT_NAME + "/nodes/" + response.getUuid(), request));
+
+		System.out.println("Creating children...");
+		createChildren(response, childNodeCount);
+		System.out.println("Done creating children...");
+
+		// Revoke read perm from own role
+		RolePermissionRequest request2 = new RolePermissionRequest();
+		request2.getPermissions().setRead(false);
+		request2.getPermissions().setReadPublished(false);
+		request2.setRecursive(true);
+		call(() -> client().updateRolePermissions(roleUuid(), "/projects/" + PROJECT_NAME + "/nodes/" + response.getUuid(), request2));
+
+
+		waitForSearchIdleEvent();
+		list = call(() -> client().searchNodes(PROJECT_NAME, json, new VersioningParametersImpl().published()));
+		assertEquals("The nodes should be found since the requestor has permission read publish", 1 + childNodeCount, list.getMetainfo().getTotalCount());
+
+		// Delete the role
+		call(() -> client().deleteRole(roleResponse.getUuid()));
+
+		waitForSearchIdleEvent();
+
+		list = call(() -> client().searchNodes(PROJECT_NAME, json, new VersioningParametersImpl().published()));
+		assertEquals("The node should not be found since the requestor has no permission to see it", 0, list.getMetainfo().getTotalCount());
+
+		// Now recreate the role with the same uuid
+		RoleResponse roleResponse2 = call(() -> client().createRole(roleResponse.getUuid(), new RoleCreateRequest().setName("ReadpubPermRole2")));
+		call(() -> client().addRoleToGroup(groupUuid(), roleResponse2.getUuid()));
+
+		waitForSearchIdleEvent();
+
+		// Search again - The node should still not be visible since the new role has no permissions
+		list = call(() -> client().searchNodes(PROJECT_NAME, json, new VersioningParametersImpl().published()));
+		assertEquals("The node should not be found since the requestor has no permission to see it", 0, list.getMetainfo().getTotalCount());
+
+	}
+
+	private void createChildren(NodeResponse parent, int childNodeCount) {
+		for (int i = 0; i < childNodeCount; i++) {
+			NodeResponse node = createNode(parent.getUuid(), "slug", FieldUtil.createStringField("slugblub" + i));
+			client().publishNode(PROJECT_NAME, node.getUuid()).blockingAwait();
+		}
 	}
 }
