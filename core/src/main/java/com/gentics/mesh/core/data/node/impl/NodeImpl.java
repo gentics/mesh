@@ -1834,7 +1834,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		getGraphFieldContainers(branchUuid, DRAFT).stream().forEach(container -> {
 			container.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_move");
 		});
-		batch.add(onNodeMoved(targetNode));
+		batch.add(onNodeMoved(branchUuid, targetNode));
 		assertPublishConsistency(ac, branch);
 	}
 
@@ -2145,10 +2145,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		throw new NotImplementedException("Use dedicated onDeleted method for nodes instead.");
 	}
 
-	public NodeMovedEventModel onNodeMoved(Node target) {
+	public NodeMovedEventModel onNodeMoved(String branchUuid, Node target) {
 		NodeMovedEventModel model = new NodeMovedEventModel();
 		model.setEvent(NODE_MOVED);
-		model.setSource(transformToMinimalReference());
+		model.setBranchUuid(branchUuid);
+		model.setProject(getProject().transformToReference());
+		fillEventInfo(model);
 		model.setTarget(target.transformToMinimalReference());
 		return model;
 	}

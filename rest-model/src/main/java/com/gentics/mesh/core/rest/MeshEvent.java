@@ -22,6 +22,7 @@ import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.event.node.NodeMovedEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectBranchEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
@@ -216,7 +217,7 @@ public enum MeshEvent {
 
 	NODE_UNPUBLISHED("mesh.node.unpublished", NodeMeshEventModel.class),
 
-	NODE_MOVED("mesh.node.moved", MeshElementEventModelImpl.class),
+	NODE_MOVED("mesh.node.moved", NodeMovedEventModel.class),
 
 	NODE_CONTENT_DELETED("mesh.node-content.deleted", NodeMeshEventModel.class),
 

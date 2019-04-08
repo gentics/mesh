@@ -10,6 +10,7 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
 import com.gentics.mesh.search.verticle.eventhandler.node.NodeContentEventHandler;
+import com.gentics.mesh.search.verticle.eventhandler.node.NodeMoveEventHandler;
 import com.gentics.mesh.search.verticle.eventhandler.node.NodeTagEventHandler;
 import com.gentics.mesh.search.verticle.eventhandler.project.ProjectCreateEventHandler;
 import com.gentics.mesh.search.verticle.eventhandler.project.ProjectDeleteEventHandler;
@@ -43,8 +44,10 @@ public class MainEventHandler implements EventHandler {
 	private final GroupEventHandler groupEventHandler;
 	private final TagEventHandler tagEventHandler;
 	private final TagFamilyEventHandler tagFamilyEventHandler;
+
 	private final NodeContentEventHandler nodeContentEventHandler;
 	private final NodeTagEventHandler nodeTagEventHandler;
+	private final NodeMoveEventHandler nodeMoveEventHandler;
 
 	private final Map<MeshEvent, List<EventHandler>> handlers;
 	private final ClearEventHandler clearEventHandler;
@@ -66,7 +69,7 @@ public class MainEventHandler implements EventHandler {
 							TagEventHandler tagEventHandler,
 							TagFamilyEventHandler tagFamilyEventHandler,
 							NodeContentEventHandler nodeContentEventHandler,
-							NodeTagEventHandler nodeTagEventHandler, RoleDeletedEventHandler roleDeletedEventHandler, ProjectDeleteEventHandler projectDeleteEventHandler,
+							NodeTagEventHandler nodeTagEventHandler, NodeMoveEventHandler nodeMoveEventHandler, RoleDeletedEventHandler roleDeletedEventHandler, ProjectDeleteEventHandler projectDeleteEventHandler,
 							ClearEventHandler clearEventHandler,
 							BranchEventHandler branchEventHandler,
 							SchemaMigrationEventHandler schemaMigrationEventHandler,
@@ -80,6 +83,7 @@ public class MainEventHandler implements EventHandler {
 		this.tagFamilyEventHandler = tagFamilyEventHandler;
 		this.nodeContentEventHandler = nodeContentEventHandler;
 		this.nodeTagEventHandler = nodeTagEventHandler;
+		this.nodeMoveEventHandler = nodeMoveEventHandler;
 		this.roleDeletedEventHandler = roleDeletedEventHandler;
 		this.projectDeleteEventHandler = projectDeleteEventHandler;
 		this.clearEventHandler = clearEventHandler;
@@ -108,6 +112,7 @@ public class MainEventHandler implements EventHandler {
 			tagFamilyEventHandler,
 			nodeContentEventHandler,
 			nodeTagEventHandler,
+			nodeMoveEventHandler,
 			roleDeletedEventHandler,
 			projectDeleteEventHandler,
 			projectUpdateEventHandler,

@@ -5,11 +5,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.event.AbstractMeshEventModel;
 import com.gentics.mesh.core.rest.user.NodeReference;
 
-public class NodeMovedEventModel extends AbstractMeshEventModel {
-
-	@JsonProperty(required = true)
-	@JsonPropertyDescription("Reference of the source node which was moved.")
-	NodeReference source;
+public class NodeMovedEventModel extends NodeMeshEventModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Reference of the target node into which the source node was moved.")
@@ -17,14 +13,6 @@ public class NodeMovedEventModel extends AbstractMeshEventModel {
 
 	public NodeMovedEventModel() {
 
-	}
-
-	public NodeReference getSource() {
-		return source;
-	}
-
-	public void setSource(NodeReference source) {
-		this.source = source;
 	}
 
 	public NodeReference getTarget() {
