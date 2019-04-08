@@ -41,16 +41,19 @@ import com.syncleus.ferma.tx.Tx;
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+
 @MeshTestSetting(elasticsearch = CONTAINER_WITH_INGEST, testSize = FULL, startServer = true)
 public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testBinarySearchMapping() throws Exception {
+		Node nodeA = content("concorde");
+		Node nodeB = content();
+
 		try (Tx tx = tx()) {
-			Node nodeA = content("concorde");
-			Node nodeB = content();
 			SchemaModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 
+			// Update the schema to include the binary fields we need
 			List<String> names = Arrays.asList("binary", "binary2", "binary3");
 			for (String name : names) {
 				BinaryFieldSchema binaryField = new BinaryFieldSchemaImpl();
@@ -61,17 +64,16 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 				binaryField.setElasticsearch(customMapping);
 				schema.addField(binaryField);
 			}
-
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-			// image
+			// Add image binary to node content
 			Binary binaryA = MeshInternal.get().boot().binaryRoot().create("someHashA", 200L);
 			binaryA.setImageHeight(200);
 			binaryA.setImageWidth(400);
 			nodeA.getLatestDraftFieldContainer(english()).createBinary("binary", binaryA).setFileName("somefile.jpg").setMimeType("image/jpeg")
 				.setImageDominantColor("#super");
 
-			// file
+			// Add shared binary to node content in two fields
 			Binary binaryB = MeshInternal.get().boot().binaryRoot().create("someHashB", 200L);
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
 			MeshInternal.get().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binaryB.getUuid()).blockingAwait();
@@ -80,11 +82,15 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 				.setMimeType("text/plain");
 			nodeB.getLatestDraftFieldContainer(english()).createBinary("binary2", binaryB).setFileName("somefile.dat")
 				.setMimeType("text/plain");
+			tx.success();
+		}
 
-			recreateIndices();
+		recreateIndices();
 
+		try (Tx tx = tx()) {
+			String schemaVersionUuid = nodeB.getSchemaContainer().getLatestVersion().getUuid();
 			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
-				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
+				schemaVersionUuid, ContainerType.DRAFT);
 			String id = NodeGraphFieldContainer.composeDocumentId(nodeB.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertEquals("Lorem ipsum dolor sit amet",
@@ -124,7 +130,8 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 			nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
 			nodeCreateRequest.setSchemaName("binary_content");
 			NodeResponse node = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
-			call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", new ByteArrayInputStream(buffer.getBytes()), buffer.length(), image, "image/jpeg"));
+			call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary",
+				new ByteArrayInputStream(buffer.getBytes()), buffer.length(), image, "image/jpeg"));
 		}
 		String query = getESText("geosearch.es");
 		NodeListResponse result = call(() -> client().searchNodes(PROJECT_NAME, query));

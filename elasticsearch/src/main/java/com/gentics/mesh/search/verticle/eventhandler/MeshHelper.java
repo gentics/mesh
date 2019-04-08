@@ -1,5 +1,7 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
+import static com.gentics.mesh.util.RxUtil.NOOP;
+
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -9,6 +11,7 @@ import com.gentics.mesh.core.data.search.request.DropIndexRequest;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.SearchProvider;
 
 import io.reactivex.functions.Action;
 import io.vertx.core.json.JsonObject;
@@ -21,12 +24,14 @@ public class MeshHelper {
 	private final Database db;
 	private final MeshOptions options;
 	private final BootstrapInitializer boot;
+	private final SearchProvider searchProvider;
 
 	@Inject
-	public MeshHelper(Database db, MeshOptions options, BootstrapInitializer boot) {
+	public MeshHelper(Database db, MeshOptions options, BootstrapInitializer boot, SearchProvider searchProvider) {
 		this.db = db;
 		this.options = options;
 		this.boot = boot;
+		this.searchProvider = searchProvider;
 	}
 
 	private String prefixIndexName(String index) {
@@ -37,11 +42,11 @@ public class MeshHelper {
 	}
 
 	public CreateDocumentRequest createDocumentRequest(String index, String id, JsonObject doc) {
-		return new CreateDocumentRequest(index, prefixIndexName(index), id, doc);
+		return new CreateDocumentRequest(index, prefixIndexName(index), id, doc, NOOP, searchProvider.hasIngestPipelinePlugin());
 	}
 
 	public CreateDocumentRequest createDocumentRequest(String index, String id, JsonObject doc, Action onComplete) {
-		return new CreateDocumentRequest(index, prefixIndexName(index), id, doc, onComplete);
+		return new CreateDocumentRequest(index, prefixIndexName(index), id, doc, onComplete, searchProvider.hasIngestPipelinePlugin());
 	}
 
 	public UpdateDocumentRequest updateDocumentRequest(String index, String id, JsonObject doc) {
@@ -55,7 +60,6 @@ public class MeshHelper {
 	public DeleteDocumentRequest deleteDocumentRequest(String index, String id, Action onComplete) {
 		return new DeleteDocumentRequest(index, prefixIndexName(index), id, onComplete);
 	}
-
 
 	public DropIndexRequest dropIndexRequest(String indexName) {
 		return new DropIndexRequest(indexName);
