@@ -182,6 +182,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 		PublishStatusResponse statusResponse = call(() -> client().publishNode(PROJECT_NAME, nodeUuid));
 		awaitEvents();
+		waitForSearchIdleEvent();
 		assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "2.0");
 
 		try (Tx tx = tx()) {
@@ -209,7 +210,8 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 		// Take node fully offline
 		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
-
+		waitForSearchIdleEvent();
+		trackingSearchProvider().reset();
 		PublishStatusResponse status = call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid));
 		assertThat(status).as("Publish status").isNotNull().isNotPublished("en").hasVersion("en", "1.0");
 
@@ -231,6 +233,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 		PublishStatusResponse statusResponse = call(() -> client().publishNode(PROJECT_NAME, nodeUuid));
 		awaitEvents();
+		waitForSearchIdleEvent();
 		assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "2.0");
 
 		try (Tx tx = tx()) {

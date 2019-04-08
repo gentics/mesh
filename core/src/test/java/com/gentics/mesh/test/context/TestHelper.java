@@ -389,8 +389,12 @@ public interface TestHelper {
 		return call(() -> client().updateTag(projectName, tagFamilyUuid, uuid, tagUpdateRequest));
 	}
 
-	default public MeshRequest<NodeResponse> createNodeAsync(String fieldKey, Field field) {
+	default MeshRequest<NodeResponse> createNodeAsync(String fieldKey, Field field) {
 		String parentNodeUuid = tx(() -> folder("2015").getUuid());
+		return createNodeAsync(parentNodeUuid, fieldKey, field);
+	}
+
+	default public MeshRequest<NodeResponse> createNodeAsync(String parentNodeUuid, String fieldKey, Field field) {
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setParentNode(new NodeReference().setUuid(parentNodeUuid));
 		nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
@@ -402,7 +406,17 @@ public interface TestHelper {
 	}
 
 	default public NodeResponse createNode(String fieldKey, Field field) {
-		NodeResponse response = call(() -> createNodeAsync(fieldKey, field));
+		String parentNodeUuid = tx(() -> folder("2015").getUuid());
+		NodeResponse response = call(() -> createNodeAsync(parentNodeUuid, fieldKey, field));
+		assertNotNull("The response could not be found in the result of the future.", response);
+		if (fieldKey != null) {
+			assertNotNull("The field was not included in the response.", response.getFields().hasField(fieldKey));
+		}
+		return response;
+	}
+
+	default public NodeResponse createNode(String parentNodeUuid, String fieldKey, Field field) {
+		NodeResponse response = call(() -> createNodeAsync(parentNodeUuid, fieldKey, field));
 		assertNotNull("The response could not be found in the result of the future.", response);
 		if (fieldKey != null) {
 			assertNotNull("The field was not included in the response.", response.getFields().hasField(fieldKey));

@@ -53,6 +53,7 @@ public class MainEventHandler implements EventHandler {
 	private final SchemaMigrationEventHandler schemaMigrationEventHandler;
 	private final PermissionChangedEventHandler permissionChangedEventHandler;
 	private final GroupUserAssignmentHandler userGroupAssignmentHandler;
+	private final RoleDeletedEventHandler roleDeletedEventHandler;
 
 	private final ProjectUpdateEventHandler projectUpdateEventHandler;
 	private final ProjectCreateEventHandler projectCreateEventHandler;
@@ -65,7 +66,7 @@ public class MainEventHandler implements EventHandler {
 							TagEventHandler tagEventHandler,
 							TagFamilyEventHandler tagFamilyEventHandler,
 							NodeContentEventHandler nodeContentEventHandler,
-							NodeTagEventHandler nodeTagEventHandler, ProjectDeleteEventHandler projectDeleteEventHandler,
+							NodeTagEventHandler nodeTagEventHandler, RoleDeletedEventHandler roleDeletedEventHandler, ProjectDeleteEventHandler projectDeleteEventHandler,
 							ClearEventHandler clearEventHandler,
 							BranchEventHandler branchEventHandler,
 							SchemaMigrationEventHandler schemaMigrationEventHandler,
@@ -79,6 +80,7 @@ public class MainEventHandler implements EventHandler {
 		this.tagFamilyEventHandler = tagFamilyEventHandler;
 		this.nodeContentEventHandler = nodeContentEventHandler;
 		this.nodeTagEventHandler = nodeTagEventHandler;
+		this.roleDeletedEventHandler = roleDeletedEventHandler;
 		this.projectDeleteEventHandler = projectDeleteEventHandler;
 		this.clearEventHandler = clearEventHandler;
 		this.branchEventHandler = branchEventHandler;
@@ -106,6 +108,7 @@ public class MainEventHandler implements EventHandler {
 			tagFamilyEventHandler,
 			nodeContentEventHandler,
 			nodeTagEventHandler,
+			roleDeletedEventHandler,
 			projectDeleteEventHandler,
 			projectUpdateEventHandler,
 			projectCreateEventHandler,
