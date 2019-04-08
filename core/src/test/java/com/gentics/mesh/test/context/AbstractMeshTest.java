@@ -656,6 +656,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 				ref.set(action.call());
 				vertx().eventBus().publish(MeshEvent.SEARCH_FLUSH_REQUEST.address, null);
 			});
+			refreshIndices();
 			return ref.get();
 		} catch (Exception e) {
 			throw new RuntimeException(e);

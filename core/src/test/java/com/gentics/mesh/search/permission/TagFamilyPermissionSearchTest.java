@@ -60,6 +60,7 @@ public class TagFamilyPermissionSearchTest extends AbstractMeshTest {
 
 	@Test
 	public void testIndexPermUpdate() throws Exception {
+		recreateIndices();
 		String tagfamilyName = "testtagfamily42a";
 		TagFamilyResponse response = waitForSearchIdleEvent(() -> createTagFamily(PROJECT_NAME, tagfamilyName));
 
