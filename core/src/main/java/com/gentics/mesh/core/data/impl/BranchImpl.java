@@ -1,5 +1,33 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH_TAG;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_BRANCH;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_BRANCH;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_TAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UNTAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_BRANCH_ASSIGN;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_BRANCH_UNASSIGN;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_LATEST_BRANCH_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_ASSIGN;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_UNASSIGN;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.event.Assignment.ASSIGNED;
+import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
+import static com.gentics.mesh.util.URIUtils.encodeSegment;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -54,38 +82,9 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.VersionUtil;
 import com.syncleus.ferma.traversals.VertexTraversal;
+
 import io.reactivex.Observable;
 import io.reactivex.Single;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH_TAG;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_BRANCH;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_BRANCH;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
-import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_TAGGED;
-import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UNTAGGED;
-import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_BRANCH_ASSIGN;
-import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_BRANCH_UNASSIGN;
-import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_LATEST_BRANCH_UPDATED;
-import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_ASSIGNED;
-import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_UNASSIGNED;
-import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_ASSIGN;
-import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_UNASSIGN;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
-import static com.gentics.mesh.event.Assignment.ASSIGNED;
-import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
-import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 /**
  * @see Branch
@@ -144,6 +143,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 		if (modified) {
 			setEditor(ac.getUser());
 			setLastEditedTimestamp();
+			batch.add(onUpdated());
 		}
 		return modified;
 	}
