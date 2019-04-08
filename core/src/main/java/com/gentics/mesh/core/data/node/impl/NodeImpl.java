@@ -25,6 +25,8 @@ import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.event.Assignment.ASSIGNED;
+import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static com.gentics.mesh.graphdb.spi.FieldType.LINK;
 import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
@@ -139,6 +141,7 @@ import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
+import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.URIUtils;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.EdgeFrame;
@@ -1759,22 +1762,38 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public TransformablePage<? extends Tag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
-		batch.add(onUpdated());
 		List<Tag> tags = getTagsToSet(ac, batch);
 		Branch branch = ac.getBranch();
+		applyTags(branch, tags, batch);
 		User user = ac.getUser();
-		removeAllTags(branch);
-		tags.forEach(tag -> addTag(tag, branch));
 		return getTags(user, ac.getPagingParameters(), branch);
 	}
 
 	@Override
 	public void updateTags(InternalActionContext ac, EventQueueBatch batch, List<TagReference> list) {
-		batch.add(onUpdated());
 		List<Tag> tags = getTagsToSet(list, ac, batch);
 		Branch branch = ac.getBranch();
-		removeAllTags(branch);
-		tags.forEach(tag -> addTag(tag, branch));
+		applyTags(branch, tags, batch);
+	}
+
+	private void applyTags(Branch branch, List<? extends Tag> tags, EventQueueBatch batch) {
+		List<? extends Tag> currentTags = getTags(branch).list();
+
+		List<Tag> toBeAdded = tags.stream()
+			.filter(StreamUtil.not(new HashSet<>(currentTags)::contains))
+			.collect(Collectors.toList());
+		toBeAdded.forEach(tag -> {
+			addTag(tag, branch);
+			batch.add(onTagged(tag, branch, ASSIGNED));
+		});
+
+		List<Tag> toBeRemoved = currentTags.stream()
+			.filter(StreamUtil.not(new HashSet<>(tags)::contains))
+			.collect(Collectors.toList());
+		toBeRemoved.forEach(tag -> {
+			removeTag(tag, branch);
+			batch.add(onTagged(tag, branch, UNASSIGNED));
+		});
 	}
 
 	@Override
