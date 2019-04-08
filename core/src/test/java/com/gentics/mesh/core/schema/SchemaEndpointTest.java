@@ -107,7 +107,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		});
 
 		SchemaResponse restSchema = call(() -> client().createSchema(createRequest));
-
+		waitForSearchIdleEvent();
 		awaitEvents();
 
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
@@ -157,13 +157,16 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
 
 			SchemaResponse restSchema = call(() -> client().createSchema(schema));
+			waitForSearchIdleEvent();
+
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
 			assertThat(schema).matches(restSchema);
 			assertElement(boot().meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
 			call(() -> client().findSchemaByUuid(restSchema.getUuid()));
+			trackingSearchProvider().reset();
 
-			trackingSearchProvider().clear().blockingAwait();
 			call(() -> client().deleteSchema(restSchema.getUuid()));
+			waitForSearchIdleEvent();
 			// Only schemas which are not in use can be delete and also removed from the index
 			assertThat(trackingSearchProvider()).hasEvents(0, 1, 0, 0);
 		}
@@ -447,8 +450,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		});
 		expect(NODE_UPDATED).match(36, NodeMeshEventModel.class, event -> {
 			EventCauseInfo cause = event.getCause();
-			assertTrue("The cause of the node update event did not have the correct type.",cause instanceof SchemaMigrationCause);
-			SchemaMigrationCause migrationCause = (SchemaMigrationCause)cause;
+			assertTrue("The cause of the node update event did not have the correct type.", cause instanceof SchemaMigrationCause);
+			SchemaMigrationCause migrationCause = (SchemaMigrationCause) cause;
 			assertMigrationEvent(migrationCause, schemaVersion, schemaUuid);
 		});
 		expect(SCHEMA_MIGRATION_FINISHED).match(1, SchemaMigrationMeshEventModel.class, event -> {

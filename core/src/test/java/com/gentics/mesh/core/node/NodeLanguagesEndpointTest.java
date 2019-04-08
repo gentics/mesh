@@ -47,8 +47,8 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 
 		// Delete the english version again
 		call(() -> client().deleteNode(PROJECT_NAME, contentUuid(), "en"), NOT_FOUND, "node_no_language_found", "en");
-
 		waitForSearchIdleEvent();
+		
 		try (Tx tx = tx()) {
 			// Check the deletion
 			assertThat(trackingSearchProvider()).recordedDeleteEvents(2);
