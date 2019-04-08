@@ -207,6 +207,8 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 			MICROSCHEMA_NAME));
 		this.schema = call(() -> client().createSchema(createSchema));
 		call(() -> client().assignSchemaToProject(PROJECT_NAME, this.schema.getUuid()));
+
+		waitForSearchIdleEvent();
 	}
 
 	@Test
@@ -249,6 +251,8 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 				FieldUtil.createMicronodeField(MICROSCHEMA_NAME, new Tuple<>(DYNAMIC_FIELD_NAME, this.nodeField)));
 			NodeResponse node = call(() -> client().createNode(PROJECT_NAME, createNode));
 
+			waitForSearchIdleEvent();
+
 			// Search for the node
 			NodeListResponse response = call(() -> client().searchNodes(project().getName(),
 				new JsonObject().put("query", this.searchQuery.apply(searchPath)).encode()));
@@ -288,6 +292,7 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 					)
 			);
 
+			waitForSearchIdleEvent();
 			// Search for the node
 			NodeListResponse response = call(() -> client().searchNodes(project().getName(), query.encode()));
 
