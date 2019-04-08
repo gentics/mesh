@@ -138,7 +138,8 @@ public class MeshTestContext extends TestWatcher {
 		try {
 			MeshTestSetting settings = getSettings(description);
 			if (description.isSuite()) {
-				Mesh.mesh().shutdown();
+				// TODO CI does not like this, reactivate later:
+//				Mesh.mesh().shutdown();
 				removeDataDirectory();
 				removeConfigDirectory();
 				if (elasticsearch != null && elasticsearch.isRunning()) {
