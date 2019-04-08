@@ -32,6 +32,7 @@ import static java.lang.System.currentTimeMillis;
 import static java.lang.System.out;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -98,6 +99,7 @@ import com.syncleus.ferma.tx.Tx;
 import io.reactivex.Observable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 	@Before
@@ -1880,8 +1882,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		String uuid = tx(() -> content("concorde").getUuid());
+		Node node = content("concorde");
+		String uuid = tx(() -> node.getUuid());
 		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+		assertTrue("The node is expected to be published", tx(() -> node.getGraphFieldContainer("en").isPublished()));
 
 		expect(NODE_DELETED).match(1, NodeMeshEventModel.class, event -> {
 			assertThat(event)
@@ -1898,7 +1902,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx = tx()) {
 			assertElement(meshRoot().getNodeRoot(), uuid, false);
 			// Delete Events after node delete. We expect 4 since both languages have draft and publish version.
-			assertThat(trackingSearchProvider()).hasEvents(0, 0, 4, 0, 0);
+			int deletes = 4;
+			assertThat(trackingSearchProvider()).hasEvents(0, 0, deletes, 0, 0);
 		}
 	}
 
