@@ -74,7 +74,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		waitForSearchIdleEvent();
 
 		assertThat(trackingSearchProvider()).hasStore(Role.composeIndexName(), restRole.getUuid());
-		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
 			Role createdRole = meshRoot().getRoleRoot().findByUuid(restRole.getUuid());
@@ -447,7 +447,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		waitForSearchIdleEvent();
 
 		assertThat(trackingSearchProvider()).hasDelete(Role.composeIndexName(), extraRoleUuid);
-		assertThat(trackingSearchProvider()).hasEvents(0, 1, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(0, 0, 1, 0, 0);
 
 		try (Tx tx = tx()) {
 			assertElement(meshRoot().getRoleRoot(), extraRoleUuid, false);

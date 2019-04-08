@@ -137,15 +137,20 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * Assert that the correct count of events was registered.
 	 * 
 	 * @param storeEvents
+	 * @param updateEvents
 	 * @param deleteEvents
 	 * @param dropIndexEvents
 	 * @param createIndexEvents
 	 * @return Fluent API
 	 */
-	public DummySearchProviderAssert hasEvents(long storeEvents, long deleteEvents, long dropIndexEvents, long createIndexEvents) {
+	public DummySearchProviderAssert hasEvents(long storeEvents, long updateEvents, long deleteEvents, long dropIndexEvents, long createIndexEvents) {
 		String storeInfo = actual.getStoreEvents().keySet().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
 		assertEquals("The search provider did not record the correct amount of store events. Found events: {\n" + storeInfo + "\n}", storeEvents,
 				actual.getStoreEvents().size());
+
+		String updateInfo = actual.getUpdateEvents().keySet().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
+		assertEquals("The search provider did not record the correct amount of update events. Found events: {\n" + updateInfo + "\n}", updateEvents,
+			actual.getUpdateEvents().size());
 
 		String deleteInfo = actual.getDeleteEvents().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
 		assertEquals("The search provider did not record the correct amount of delete events. Found events: {\n" + deleteInfo + "\n}", deleteEvents,

@@ -78,7 +78,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		waitForSearchIdleEvent();
 
 		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), restGroup.getUuid());
-		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		trackingSearchProvider().clear().blockingAwait();
 
 		try (Tx tx = tx()) {
@@ -114,7 +114,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		waitForSearchIdleEvent();
 
 		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), uuid);
-		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		try (Tx tx = db().tx()) {
 			assertThat(restGroup).matches(request);
@@ -150,7 +150,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			assertThat(restGroup).matches(request);
 		}
 		waitForSearchIdleEvent();
-		assertThat(trackingSearchProvider()).hasEvents(10, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(10, 0, 0, 0, 0);
 	}
 
 	@Test
@@ -349,7 +349,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), groupUuid);
 		assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), userUuid());
-		assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
 			assertThat(restGroup).matches(request);
@@ -482,7 +482,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		assertThat(trackingSearchProvider()).hasDelete(Group.composeIndexName(), uuid);
 		assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), userUuid());
-		assertThat(trackingSearchProvider()).hasEvents(1, 1, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(1, 0, 1, 0, 0);
 
 		try (Tx tx = tx()) {
 			assertElement(boot().groupRoot(), groupUuid(), false);

@@ -36,7 +36,7 @@ public class EventAsserterChain {
 	 * @param count
 	 * @return Fluent API
 	 */
-	public EventAsserterChain total(int count) {
+	public EventAsserterChain total(long count) {
 		this.asserter.addExpectation(new EventCountExpectation(event, count));
 		return this;
 	}

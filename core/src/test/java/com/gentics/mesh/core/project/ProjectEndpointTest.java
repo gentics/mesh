@@ -557,7 +557,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			expectedCount += project.getTagFamilyRoot().computeCount();
 
 			assertThat(trackingSearchProvider()).hasStore(Project.composeIndexName(), Project.composeDocumentId(uuid));
-			assertThat(trackingSearchProvider()).hasEvents(expectedCount, 0, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(expectedCount, 0, 0, 0, 0);
 
 			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertEquals(newName, reloadedProject.getName());
@@ -673,7 +673,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}
 		// 1 project
 		long deleted = 1;
-		assertThat(trackingSearchProvider()).hasEvents(0, deleted, droppedIndices.size(), 0);
+		assertThat(trackingSearchProvider()).hasEvents(0, 0, deleted, droppedIndices.size(), 0);
 
 		try (Tx tx = tx()) {
 			assertElement(meshRoot().getProjectRoot(), uuid, false);
@@ -693,7 +693,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		call(() -> client().deleteProject(uuid), FORBIDDEN, "error_missing_perm", uuid, DELETE_PERM.getRestPerm().getName(),
 			DELETE_PERM.getRestPerm().getName());
-		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
 			Project project = meshRoot().getProjectRoot().findByUuid(uuid);

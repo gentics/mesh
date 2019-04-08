@@ -95,7 +95,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 
 		// The role and group is not updated since it is not changing
-		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0, 0);
 
 		// Check for idempotency
 		expect(GROUP_ROLE_ASSIGNED).none();
@@ -183,7 +183,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		call(() -> client().removeRoleFromGroup(groupUuid(), roleUuid));
 		awaitEvents();
 		// The role and group is not updated since it is not changing
-		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0, 0);
 
 		GroupResponse restGroup = call(() -> client().findGroupByUuid(groupUuid()));
 		assertFalse(restGroup.getRoles().stream()

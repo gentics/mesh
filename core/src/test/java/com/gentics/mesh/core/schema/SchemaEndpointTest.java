@@ -100,7 +100,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testCreate() throws GenericRestException, Exception {
 		SchemaCreateRequest createRequest = FieldUtil.createMinimalValidSchemaCreateRequest();
 
-		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0, 0);
 
 		expect(SCHEMA_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(createRequest.getName()).uuidNotNull();
@@ -110,7 +110,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		waitForSearchIdleEvent();
 		awaitEvents();
 
-		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		assertThat(trackingSearchProvider()).hasStore(SchemaContainer.composeIndexName(), SchemaContainer.composeDocumentId(restSchema.getUuid()));
 		try (Tx tx = tx()) {
 			assertThat(createRequest).matches(restSchema);
@@ -153,13 +153,13 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testCreateReadDelete() throws GenericRestException, Exception {
 
 		try (Tx tx = tx()) {
-			assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0, 0);
 			SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
 
 			SchemaResponse restSchema = call(() -> client().createSchema(schema));
 			waitForSearchIdleEvent();
 
-			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 			assertThat(schema).matches(restSchema);
 			assertElement(boot().meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
 			call(() -> client().findSchemaByUuid(restSchema.getUuid()));
@@ -168,7 +168,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			call(() -> client().deleteSchema(restSchema.getUuid()));
 			waitForSearchIdleEvent();
 			// Only schemas which are not in use can be delete and also removed from the index
-			assertThat(trackingSearchProvider()).hasEvents(0, 1, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(0, 0, 1, 0, 0);
 		}
 
 	}

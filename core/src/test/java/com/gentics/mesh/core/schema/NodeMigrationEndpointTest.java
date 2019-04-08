@@ -408,7 +408,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			// The old indices are dropped -> 2 Deleted
 			// The new indices are created -> 2 Creates
 			// The mappings of the new indices are created -> 2 Mappings
-			assertThat(trackingSearchProvider()).hasEvents(2, 2, 2, 2);
+			assertThat(trackingSearchProvider()).hasEvents(2, 0, 2, 2, 2);
 		}
 
 		JobListResponse status = call(() -> client().findJobs());
@@ -444,7 +444,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		JobListResponse status = call(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
-		assertThat(trackingSearchProvider()).hasEvents(size + size + 1, size + size, 2, 2);
+		assertThat(trackingSearchProvider()).hasEvents(size + size + 1, 0, size + size, 2, 2);
 		for (JsonObject mapping : trackingSearchProvider().getCreateIndexEvents().values()) {
 			assertThat(mapping).has("$.mapping.default.properties.fields.properties.teaser.fields.raw.type", "keyword",
 				"The mapping should include a raw field for the teaser field");

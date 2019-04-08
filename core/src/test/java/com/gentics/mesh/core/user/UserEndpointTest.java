@@ -538,7 +538,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		waitForSearchIdleEvent();
 
 		assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), uuid);
-		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		trackingSearchProvider().clear().blockingAwait();
 
 		try (Tx tx = tx()) {
@@ -1248,7 +1248,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			waitForSearchIdleEvent();
 
 			assertThat(trackingSearchProvider()).hasStore(composeIndexName(), restUser.getUuid());
-			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 			trackingSearchProvider().reset();
 
 			assertTrue(restUser.getEnabled());
@@ -1272,7 +1272,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			call(() -> client().findUserByUuid(uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);
 
 			assertThat(trackingSearchProvider()).hasDelete(composeIndexName(), uuid);
-			assertThat(trackingSearchProvider()).hasEvents(0, 1, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(0, 0, 1, 0, 0);
 		}
 
 	}

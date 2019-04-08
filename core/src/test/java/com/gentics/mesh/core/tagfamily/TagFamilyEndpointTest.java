@@ -347,7 +347,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		int deleted = 1 + tagUuids.size();
 		// The nodes need to be updated since the tags were removed
 		int stored = taggedPublishedContentUuids.size() + taggedDraftContentUuids.size();
-		assertThat(trackingSearchProvider()).hasEvents(stored, deleted, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(stored, 0, deleted, 0, 0);
 
 		try (Tx tx = tx()) {
 			assertElement(project().getTagFamilyRoot(), tagFamilyUuid, false);
@@ -467,7 +467,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 				}
 			}
 
-			assertThat(trackingSearchProvider()).hasEvents(storeCount + 1, 0, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(storeCount + 1, 0, 0, 0, 0);
 		}
 	}
 

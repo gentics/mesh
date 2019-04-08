@@ -120,7 +120,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			assertThat(restGroup).matches(group());
 			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), extraUserUuid);
-			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 			trackingSearchProvider().reset();
 			assertTrue("User should be member of the group.", group().hasUser(extraUser));
 		}
@@ -219,7 +219,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), extraUserUuid);
-			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 			assertFalse("User should not be member of the group.", group().hasUser(extraUser));
 		}
 

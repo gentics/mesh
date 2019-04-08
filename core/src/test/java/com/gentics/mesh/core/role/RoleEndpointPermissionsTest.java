@@ -7,6 +7,8 @@ import static com.gentics.mesh.core.rest.MeshEvent.GROUP_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.ROLE_PERMISSIONS_CHANGED;
 import static com.gentics.mesh.core.rest.MeshEvent.ROLE_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
@@ -24,6 +26,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import com.gentics.mesh.core.rest.common.ContainerType;
 import org.junit.Test;
 
 import com.gentics.mesh.ElementType;
@@ -45,7 +48,7 @@ import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.tx.Tx;;
+import com.syncleus.ferma.tx.Tx;;import java.util.stream.Stream;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class RoleEndpointPermissionsTest extends AbstractMeshTest {
@@ -62,11 +65,15 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		expect(ROLE_PERMISSIONS_CHANGED).match(1, PermissionChangedEventModelImpl.class, event -> {
+		// All elements in the project should be affected.
+		// +2 for the project and the branch
+		int totalEvents = getNodeCount() + tagFamilies().size() + tags().size() + 2;
+
+		expect(ROLE_PERMISSIONS_CHANGED).match(totalEvents, PermissionChangedEventModelImpl.class, event -> {
 			RoleReference roleRef = event.getRole();
 			assertEquals("The uuid of the role did not match for the event.", roleUuid(), roleRef.getUuid());
 			assertEquals("The name of the role did not match for the event.", roleName, roleRef.getName());
-		}).total(10);
+		}).total(totalEvents);
 
 		RolePermissionRequest request = new RolePermissionRequest();
 		request.setRecursive(true);
@@ -75,8 +82,12 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		awaitEvents();
 		waitForSearchIdleEvent();
 
-		long storeEvents = 120;
-		assertThat(trackingSearchProvider()).hasEvents(storeEvents, 0, 0, 0);
+		long nodecontainerCount = tx(() -> getAllContents().count());
+
+		// +1 for Project (Branch is not indexed)
+		long updateEvents = nodecontainerCount + tagFamilies().size() + tags().size() + 1;
+
+		assertThat(trackingSearchProvider()).hasEvents(0, updateEvents, 0, 0, 0);
 
 		try (Tx tx = tx()) {
 			assertThat(message).matches("role_updated_permission", role().getName());

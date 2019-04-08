@@ -166,6 +166,10 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	@Override
 	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
 		Set<GraphPermission> permissionsToRevoke) {
+		applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke);
+	}
+
+	protected void applyVertexPermissions(EventQueueBatch batch, Role role, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		role.grantPermissions(this, permissionsToGrant.toArray(new GraphPermission[permissionsToGrant.size()]));
 		role.revokePermissions(this, permissionsToRevoke.toArray(new GraphPermission[permissionsToRevoke.size()]));
 
@@ -175,6 +179,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		}
 		// TODO Also handle RootVertex - We need to add a dedicated event in those cases.
 	}
+
 
 	@Override
 	public Vertex getElement() {

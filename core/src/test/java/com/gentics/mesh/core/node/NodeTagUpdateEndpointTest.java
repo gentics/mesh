@@ -77,7 +77,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 
 		waitForSearchIdleEvent();
 		try (Tx tx = tx()) {
-			assertThat(trackingSearchProvider()).storedAllContainers(content(), project(), latestBranch(), "en", "de").hasEvents(4, 0, 0, 0);
+			assertThat(trackingSearchProvider()).storedAllContainers(content(), project(), latestBranch(), "en", "de").hasEvents(4, 0, 0, 0, 0);
 		}
 
 	}
@@ -128,7 +128,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 			assertThat(trackingSearchProvider()).stored(tagFamily("colors").findByName("purple"));
 			// 4( contents (en,de * type) + 1 new tag + 1 tagfamily doc updated
 			long stores = 6;
-			assertThat(trackingSearchProvider()).hasEvents(stores, 0, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(stores, 0, 0, 0, 0);
 		}
 
 		// Test for idempotency
@@ -141,7 +141,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		response = call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request));
 		awaitEvents();
 		waitForSearchIdleEvent();
-		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0, 0);
 
 		// Test removal of tag
 		expect(TAG_CREATED).none();
@@ -166,7 +166,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 
 		// 4 content docs (en,de * type)
 		long stores = 4;
-		assertThat(trackingSearchProvider()).hasEvents(stores, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(stores, 0, 0, 0, 0);
 
 	}
 
@@ -185,7 +185,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 		try (Tx tx = tx()) {
 			// 4 Node containers need to be updated and two tag families and 4 new tags
-			assertThat(trackingSearchProvider()).storedAllContainers(content(), project(), latestBranch(), "en", "de").hasEvents(4 + 2 + 4, 0, 0, 0);
+			assertThat(trackingSearchProvider()).storedAllContainers(content(), project(), latestBranch(), "en", "de").hasEvents(4 + 2 + 4, 0, 0, 0, 0);
 		}
 
 		trackingSearchProvider().clear().blockingAwait();
@@ -197,7 +197,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 		try (Tx tx = tx()) {
 			// No tag family is modified - no Tag is created
-			assertThat(trackingSearchProvider()).storedAllContainers(content(), project(), latestBranch(), "en", "de").hasEvents(4, 0, 0, 0);
+			assertThat(trackingSearchProvider()).storedAllContainers(content(), project(), latestBranch(), "en", "de").hasEvents(4, 0, 0, 0, 0);
 		}
 
 	}
@@ -236,7 +236,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request), FORBIDDEN, "error_missing_perm", nodeUuid,
 			UPDATE_PERM.getRestPerm().getName());
 		waitForSearchIdleEvent();
-		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0, 0);
 
 	}
 
@@ -254,6 +254,6 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		// 2. Invoke the tag request
 		call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request), FORBIDDEN, "tag_error_missing_perm_on_tag_family", "colors",
 			tagFamilyUuid, "blub1");
-		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0, 0);
 	}
 }

@@ -202,7 +202,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 		long storeEvents = 2; // Draft and published documents
 		long deleteEvents = 1; // One tag
-		assertThat(trackingSearchProvider()).hasEvents(storeEvents, deleteEvents, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(storeEvents, 0, deleteEvents, 0, 0);
 
 	}
 

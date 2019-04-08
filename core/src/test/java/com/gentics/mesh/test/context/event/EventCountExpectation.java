@@ -15,7 +15,7 @@ public class EventCountExpectation implements EventExpectation {
 	private MeshEvent event;
 	private long count;
 
-	public EventCountExpectation(MeshEvent event, int expectedCount) {
+	public EventCountExpectation(MeshEvent event, long expectedCount) {
 		this.event = event;
 		this.count = expectedCount;
 	}

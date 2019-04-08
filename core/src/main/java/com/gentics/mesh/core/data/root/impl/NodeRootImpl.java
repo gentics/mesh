@@ -383,7 +383,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				node.applyPermissions(batch, role, false, permissionsToGrant, permissionsToRevoke);
 			}
 		}
-		super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
+
+		applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke);
 	}
 
 }
