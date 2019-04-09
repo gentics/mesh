@@ -63,6 +63,7 @@ stage("Setup Build Environment") {
 						branches["split${i}"] = {
 							node('mesh-worker') {
 								echo "Preparing slave environment for ${current}"
+								sh "rm -rf split${i}"
 								sh "mkdir split${i}"
 								dir("split${i}") {
 									unstash 'project'
