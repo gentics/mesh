@@ -14,6 +14,7 @@ import java.util.concurrent.TimeoutException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.MeshEvent;
 
+import com.gentics.mesh.search.verticle.eventhandler.Util;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
@@ -30,7 +31,7 @@ public class EventAsserter {
 
 	private Map<MeshEvent, List<JsonObject>> events = new ConcurrentHashMap<>();
 
-	private Subject<JsonObject> eventSubject = PublishSubject.create();
+	private Subject<Object> eventSubject = PublishSubject.create();
 
 	private List<EventExpectation> expectations = new ArrayList<>();
 
@@ -90,7 +91,7 @@ public class EventAsserter {
 				// Add the event to the list of events
 				JsonObject body = mh.body();
 				list.add(body);
-				eventSubject.onNext(body);
+				eventSubject.onNext(Util.dummyObject);
 				fut.complete(null);
 			});
 			futures.put(fut, event);
