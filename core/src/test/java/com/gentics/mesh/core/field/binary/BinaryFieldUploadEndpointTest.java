@@ -265,7 +265,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			String fileName = "somefile" + i + ".dat";
 			call(() -> uploadRandomData(node, "en", "image", binaryLen, contentType, fileName));
 		}
-		MeshCoreAssertion.assertThat(testContext).hasUploads(100, 100).hasTempFiles(0).hasTempUploads(0);
+		MeshCoreAssertion.assertThat(testContext).hasUploadFiles(100).hasTempFiles(0).hasTempUploads(0);
 	}
 
 	@Test
