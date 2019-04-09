@@ -259,26 +259,27 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public Completable createIndex(IndexInfo info) {
 		String indexName = installationPrefix() + info.getIndexName();
+		return Completable.defer(() -> {
 
-		if (log.isDebugEnabled()) {
-			log.debug("Creating ES Index {" + indexName + "}");
-		}
+			if (log.isDebugEnabled()) {
+				log.debug("Creating ES Index {" + indexName + "}");
+			}
 
-		JsonObject json = createIndexSettings(info);
-		Completable indexCreation = client.createIndex(indexName, json).async()
-			.doOnSuccess(response -> {
-				if (log.isDebugEnabled()) {
-					log.debug("Create index {" + indexName + "} - {" + info.getSourceInfo() + "} response: {" + response.toString() + "}");
-				}
-			}).toCompletable()
-			.onErrorResumeNext(error -> isResourceAlreadyExistsError(error) ? Completable.complete() : Completable.error(error))
-			.compose(withTimeoutAndLog("Creating index {" + indexName + "} for {" + info.getSourceInfo() + "}", true));
+			JsonObject json = createIndexSettings(info);
+			Completable indexCreation = client.createIndex(indexName, json).async()
+				.doOnSuccess(response -> {
+					if (log.isDebugEnabled()) {
+						log.debug("Create index {" + indexName + "} - {" + info.getSourceInfo() + "} response: {" + response.toString() + "}");
+					}
+				}).toCompletable()
+				.onErrorResumeNext(error -> isResourceAlreadyExistsError(error) ? Completable.complete() : Completable.error(error));
 
-		if (info.getIngestPipelineSettings() != null && hasIngestPipelinePlugin()) {
-			return Completable.mergeArray(indexCreation, registerIngestPipeline(info));
-		} else {
-			return indexCreation;
-		}
+			if (info.getIngestPipelineSettings() != null && hasIngestPipelinePlugin()) {
+				return Completable.mergeArray(indexCreation, registerIngestPipeline(info));
+			} else {
+				return indexCreation;
+			}
+		}).compose(withTimeoutAndLog("Creating index {" + indexName + "} for {" + info.getSourceInfo() + "}", true));
 	}
 
 	@Override
