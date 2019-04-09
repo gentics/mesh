@@ -365,7 +365,7 @@
 				<configuration>
 					<skip>${skip.unit.tests}</skip>
 					<jvm>${env.JAVA_1_8_HOME}/bin/java</jvm>
-					<argLine>-Xms128m -Xmx256m -XX:MaxDirectMemorySize=128m ${argLine}</argLine>
+					<argLine>-Xms128m -Xmx256m -XX:MaxDirectMemorySize=128m -Dstorage.diskCache.bufferSize=128 ${argLine}</argLine>
 					<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
 					<rerunFailingTestsCount>0</rerunFailingTestsCount>
 					<reuseForks>false</reuseForks>
