@@ -133,6 +133,7 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 			call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary",
 				new ByteArrayInputStream(buffer.getBytes()), buffer.length(), image, "image/jpeg"));
 		}
+		waitForSearchIdleEvent();
 		String query = getESText("geosearch.es");
 		NodeListResponse result = call(() -> client().searchNodes(PROJECT_NAME, query));
 		assertThat(result.getData()).hasSize(2);
@@ -145,9 +146,9 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchBinaryField() throws Exception {
+		Node nodeA = content("concorde");
+		Node nodeB = content();
 		try (Tx tx = tx()) {
-			Node nodeA = content("concorde");
-			Node nodeB = content();
 			SchemaModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new BinaryFieldSchemaImpl().setName("binary"));
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
@@ -165,8 +166,11 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 				.setMimeType("text/plain");
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
 			MeshInternal.get().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binary.getBinary().getUuid()).blockingAwait();
-			recreateIndices();
+			tx.success();
+		}
+		recreateIndices();
 
+		try (Tx tx = tx()) {
 			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
 				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
 			String id = NodeGraphFieldContainer.composeDocumentId(nodeB.getUuid(), "en");

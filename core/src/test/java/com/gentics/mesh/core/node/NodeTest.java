@@ -380,8 +380,6 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			List<String> nodeUuids = new ArrayList<>();
 			project.getNodeRoot().findAll().forEach(node -> nodeUuids.add(node.getUuid()));
 			assertThat(nodeUuids).as("All nodes").contains(folderUuid).doesNotContain(subFolderUuid, subSubFolderUuid);
-
-			assertEquals(6, bac.batch().size());
 		}
 	}
 
@@ -505,7 +503,6 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 				assertThat(nodeUuids).as("Published nodes").doesNotContain(folderUuid);
 			});
 		}
-		assertEquals(5, bac.batch().size());
 	}
 
 	@Test

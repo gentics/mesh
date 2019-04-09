@@ -45,6 +45,7 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
+
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class NodePublishEndpointTest extends AbstractMeshTest {
 	@Before
@@ -159,6 +160,9 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String schemaContainerVersionUuid = tx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
 
 		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
+		waitForSearchIdleEvent();
+		assertThat(trackingSearchProvider()).hasEvents(0, 0, 5, 0, 0);
+		trackingSearchProvider().reset();
 
 		PublishStatusResponse status = call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid));
 		assertThat(status).as("Publish status").isNotNull().isNotPublished("en").hasVersion("en", "1.0");
@@ -181,8 +185,8 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		}).one();
 
 		PublishStatusResponse statusResponse = call(() -> client().publishNode(PROJECT_NAME, nodeUuid));
-		awaitEvents();
 		waitForSearchIdleEvent();
+		awaitEvents();
 		assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "2.0");
 
 		try (Tx tx = tx()) {

@@ -86,7 +86,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	@Before
 	public void setup() {
 		// Grant admin perms. Otherwise we can't check the jobs
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdminRole();
 	}
 
 	/**
@@ -379,6 +379,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			EventQueueBatch batch = EventQueueBatch.create();
 			assertNull("No job should be scheduled since this is the first time we assigned the schema to the branch. No need for a migration",
 				project().getLatestBranch().assignSchemaVersion(user, versionA, batch));
+			batch.dispatch();
 
 			// create a node based on the old schema
 			String english = english();
@@ -398,7 +399,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		triggerAndWaitForJob(jobUuid);
-
+		waitForSearchIdleEvent();
 		try (Tx tx = tx()) {
 			// assert that migration worked
 			assertThat(firstNode).as("Migrated Node").isOf(container).hasTranslation("en");
@@ -414,7 +415,12 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			// The old indices are dropped -> 2 Deleted
 			// The new indices are created -> 2 Creates
 			// The mappings of the new indices are created -> 2 Mappings
-			assertThat(trackingSearchProvider()).hasEvents(2, 0, 2, 2, 2);
+			int store = 2;
+			int update = 0;
+			int delete = 2;
+			int indexDrop = 2;
+			int indexCreate =2;
+			assertThat(trackingSearchProvider()).hasEvents(store, update, delete, indexDrop, indexCreate);
 		}
 
 		JobListResponse status = call(() -> client().findJobs());
@@ -436,8 +442,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		String schemaUuid = tx(() -> node.getSchemaContainer().getUuid());
 
-		int size = tx(() -> {
-			return Long.valueOf(node.getSchemaContainer().getLatestVersion().getFieldContainers(initialBranchUuid()).count()).intValue();
+		int nFieldContainers = tx(() -> {
+			return Long.valueOf(node.getSchemaContainer().getLatestVersion().getFieldContainers(initialBranchUuid())
+				.filter(c -> c.isPublished() || c.isPublished())
+				.count()).intValue();
 		});
 
 		// Update the schema and enable the addRaw field
@@ -450,7 +458,14 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		JobListResponse status = call(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
-		assertThat(trackingSearchProvider()).hasEvents(size + size + 1, 0, size + size, 2, 2);
+		waitForSearchIdleEvent();
+
+		int store = nFieldContainers + nFieldContainers + 1;
+		int update = 0;
+		int delete = nFieldContainers + nFieldContainers;
+		int dropIndex = 2;
+		int createIndex = 2;
+		assertThat(trackingSearchProvider()).hasEvents(store, update, delete, dropIndex, createIndex);
 		for (JsonObject mapping : trackingSearchProvider().getCreateIndexEvents().values()) {
 			assertThat(mapping).has("$.mapping.default.properties.fields.properties.teaser.fields.raw.type", "keyword",
 				"The mapping should include a raw field for the teaser field");

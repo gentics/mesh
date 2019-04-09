@@ -71,10 +71,10 @@ public class MeshTestContext extends TestWatcher {
 	public static KeycloakContainer keycloak;
 
 	public static OkHttpClient okHttp = new OkHttpClient.Builder()
-		.callTimeout(Duration.ofMinutes(15))
-		.connectTimeout(Duration.ofMinutes(15))
-		.writeTimeout(Duration.ofMinutes(15))
-		.readTimeout(Duration.ofMinutes(15))
+		.callTimeout(Duration.ofMinutes(1))
+		.connectTimeout(Duration.ofMinutes(1))
+		.writeTimeout(Duration.ofMinutes(1))
+		.readTimeout(Duration.ofMinutes(1))
 		.build();
 
 	private List<File> tmpFolders = new ArrayList<>();
