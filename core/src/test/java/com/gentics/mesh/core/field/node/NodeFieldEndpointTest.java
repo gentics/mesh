@@ -201,7 +201,6 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 					.hasType(PUBLISHED)
 					.hasSchemaName("folder")
 					.hasUuid(sourceUuid);
-
 			}).two();
 
 		call(() -> client().deleteNode(PROJECT_NAME, targetUuid));

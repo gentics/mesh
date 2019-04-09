@@ -14,14 +14,23 @@ import java.util.concurrent.TimeoutException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.MeshEvent;
 
+import io.reactivex.Observable;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class EventAsserter {
+
+	private static final Logger log = LoggerFactory.getLogger(EventAsserter.class);
 
 	private Map<CompletableFuture<Void>, MeshEvent> futures = new HashMap<>();
 
 	private Map<MeshEvent, List<JsonObject>> events = new ConcurrentHashMap<>();
+
+	private Subject<JsonObject> eventSubject = PublishSubject.create();
 
 	private List<EventExpectation> expectations = new ArrayList<>();
 
@@ -40,13 +49,21 @@ public class EventAsserter {
 	 * Wait for events and assert the expectations.
 	 */
 	public void await() {
-		for (Entry<CompletableFuture<Void>, MeshEvent> entry : futures.entrySet()) {
-			try {
-				entry.getKey().get(500, TimeUnit.MILLISECONDS);
-			} catch (ExecutionException | TimeoutException | InterruptedException e) {
-				// Ignored
-			}
-		}
+		log.info("Waiting for events...");
+		// Wait for all events with a timeout between events of 500 ms.
+		eventSubject
+			.timeout(500, TimeUnit.MILLISECONDS)
+			.onErrorResumeNext((Throwable err) -> {
+				if (err instanceof TimeoutException) {
+					return Observable.empty();
+				} else {
+					return Observable.error(err);
+				}
+			})
+			.ignoreElements().blockingAwait();
+
+		log.info("Done waiting for events");
+
 		for (EventExpectation expectation : expectations) {
 			expectation.verify(events);
 		}
@@ -71,7 +88,9 @@ public class EventAsserter {
 			List<JsonObject> list = events.computeIfAbsent(event, e -> new ArrayList<>());
 			Mesh.vertx().eventBus().consumer(event.getAddress(), (Message<JsonObject> mh) -> {
 				// Add the event to the list of events
-				list.add(mh.body());
+				JsonObject body = mh.body();
+				list.add(body);
+				eventSubject.onNext(body);
 				fut.complete(null);
 			});
 			futures.put(fut, event);
