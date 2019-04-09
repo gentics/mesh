@@ -10,7 +10,6 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -370,8 +369,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		String fieldName = "changedfield";
 		String jobUuid;
 
+		container = tx(() -> createDummySchemaWithChanges(fieldName, false));
 		try (Tx tx = tx()) {
-			container = createDummySchemaWithChanges(fieldName, false);
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
 
@@ -672,12 +671,12 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				microschemaContainer("vcard").getLatestVersion()).getUuid();
 		});
 
-		tx(() -> microschemaContainer("vcard").getLatestVersion().remove());
+		client().deleteProject(projectUuid()).blockingAwait();
 		triggerAndWaitForJob(jobUuid, FAILED);
 
 		JobListResponse status = call(() -> client().findJobs());
 		assertThat(status).listsAll(FAILED).hasInfos(1);
-		assertNotNull("An error should be stored along with the info.", status.getData().get(0).getErrorMessage());
+		assertNotNull("An error should be stored along with the info.", status.getData().get(0).getErrorDetail());
 	}
 
 	/**

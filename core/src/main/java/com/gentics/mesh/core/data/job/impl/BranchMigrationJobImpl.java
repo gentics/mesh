@@ -57,9 +57,10 @@ public class BranchMigrationJobImpl extends JobImpl {
 		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.branch);
 		try {
 			return DB.get().tx(() -> {
-				EventQueueBatch.create().add(createEvent(BRANCH_MIGRATION_START, STARTING)).dispatch();
 				BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 				context.setStatus(status);
+
+				EventQueueBatch.create().add(createEvent(BRANCH_MIGRATION_START, STARTING)).dispatch();
 
 				Branch newBranch = getBranch();
 				if (newBranch == null) {

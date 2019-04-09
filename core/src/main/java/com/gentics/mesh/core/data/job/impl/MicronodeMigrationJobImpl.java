@@ -68,9 +68,10 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.microschema);
 		try {
 			return DB.get().tx(() -> {
-				EventQueueBatch.create().add(createEvent(MICROSCHEMA_MIGRATION_START, STARTING)).dispatch();
 				MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();
 				context.setStatus(status);
+
+				EventQueueBatch.create().add(createEvent(MICROSCHEMA_MIGRATION_START, STARTING)).dispatch();
 
 				Branch branch = getBranch();
 				if (branch == null) {
