@@ -63,19 +63,22 @@ stage("Setup Build Environment") {
 						branches["split${i}"] = {
 							node('mesh-worker') {
 								echo "Preparing slave environment for ${current}"
-								unstash 'project'
-								def postfix = current;
-								if (current <= 9) {
-									postfix = "0" + current
-								}
-								echo "Setting correct inclusions file ${postfix}"
-								sh "mv includes-${postfix} inclusions.txt"
-								sshagent(["git"]) {
-									try {
-										sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!performance-tests' clean install"
-										stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
-									} finally {
-										step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+								sh "mkdir split${i}"
+								dir("split${i}") {
+									unstash 'project'
+									def postfix = current;
+									if (current <= 9) {
+										postfix = "0" + current
+									}
+									echo "Setting correct inclusions file ${postfix}"
+									sh "mv includes-${postfix} inclusions.txt"
+									sshagent(["git"]) {
+										try {
+											sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!performance-tests' clean install"
+											stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
+										} finally {
+											step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+										}
 									}
 								}
 							}
