@@ -518,7 +518,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 			}
 		});
 		try {
-			latch.await(2000, TimeUnit.SECONDS);
+			latch.await(10, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}

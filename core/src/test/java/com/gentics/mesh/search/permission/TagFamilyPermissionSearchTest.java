@@ -62,7 +62,8 @@ public class TagFamilyPermissionSearchTest extends AbstractMeshTest {
 	public void testIndexPermUpdate() throws Exception {
 		recreateIndices();
 		String tagfamilyName = "testtagfamily42a";
-		TagFamilyResponse response = waitForSearchIdleEvent(() -> createTagFamily(PROJECT_NAME, tagfamilyName));
+		TagFamilyResponse response = createTagFamily(PROJECT_NAME, tagfamilyName);
+		waitForSearchIdleEvent();
 
 		String json = getESText("tagFamilyWildcard.es");
 
@@ -72,12 +73,12 @@ public class TagFamilyPermissionSearchTest extends AbstractMeshTest {
 		// Revoke read permission
 		RolePermissionRequest request = new RolePermissionRequest();
 		request.getPermissions().setRead(false);
-		callAndWait(() -> client().updateRolePermissions(roleUuid(), "/projects/" + PROJECT_NAME + "/tagFamilies/" + response.getUuid(), request));
+		call(() -> client().updateRolePermissions(roleUuid(), "/projects/" + PROJECT_NAME + "/tagFamilies/" + response.getUuid(), request));
+		waitForSearchIdleEvent();
 
 		list = call(() -> client().searchTagFamilies(json));
 		assertEquals("The tagFamily should not be found since the requestor has no permission to see it", 0, list.getData().size());
 
 	}
-
 
 }
