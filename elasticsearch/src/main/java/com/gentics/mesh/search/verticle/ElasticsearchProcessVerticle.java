@@ -11,7 +11,6 @@ import io.reactivex.BackpressureStrategy;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 import io.vertx.core.AbstractVerticle;
@@ -22,15 +21,14 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
 
 import javax.inject.Inject;
-
-import static com.gentics.mesh.core.rest.MeshEvent.SEARCH_FLUSH_REQUEST;
-
 import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.gentics.mesh.core.rest.MeshEvent.SEARCH_FLUSH_REQUEST;
+import static com.gentics.mesh.search.verticle.eventhandler.RxUtil.retryWithDelay;
 
 public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	private static final Logger log = LoggerFactory.getLogger(ElasticsearchProcessVerticle.class);
@@ -142,14 +140,6 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			.andThen(Observable.just(request))
 			.onErrorResumeNext(this::syncIndices)
 			.retryWhen(retryWithDelay(3, Duration.ofSeconds(5)));
-	}
-
-	private io.reactivex.functions.Function<? super Observable<Throwable>, ? extends ObservableSource<?>> retryWithDelay(int maxTries, Duration delay) {
-		return attempts -> attempts.zipWith(
-			Observable.range(1, maxTries),
-			(n, i) -> i
-		).doOnNext(i -> log.info("Retrying {}/{} after {}", i, maxTries, delay))
-		.delay(delay.toMillis(), TimeUnit.MILLISECONDS);
 	}
 
 	/**

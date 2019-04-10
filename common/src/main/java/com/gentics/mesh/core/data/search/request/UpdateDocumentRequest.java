@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.search.request;
 
 import com.gentics.mesh.search.SearchProvider;
 import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 
 import java.util.Arrays;
@@ -31,8 +32,8 @@ public class UpdateDocumentRequest implements Bulkable {
 	}
 
 	@Override
-	public List<String> toBulkActions() {
-		return Arrays.asList(
+	public Single<List<String>> toBulkActions() {
+		return Single.just(Arrays.asList(
 			new JsonObject()
 				.put("update", new JsonObject()
 					.put("_index", transformedIndex)
@@ -41,7 +42,7 @@ public class UpdateDocumentRequest implements Bulkable {
 				).encode(),
 			new JsonObject()
 				.put("doc", doc).encode()
-		);
+		));
 	}
 
 	public String getIndex() {

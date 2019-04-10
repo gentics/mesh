@@ -2,11 +2,19 @@ package com.gentics.mesh.search.verticle.eventhandler;
 
 import com.gentics.mesh.search.impl.SearchClient;
 import io.reactivex.Flowable;
+import io.reactivex.Observable;
 import io.reactivex.functions.Function;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 
 public final class RxUtil {
+	private static final Logger log = LoggerFactory.getLogger(RxUtil.class);
+
 	private RxUtil() {
 
 	}
@@ -28,5 +36,13 @@ public final class RxUtil {
 					.startWith(response);
 			}
 		};
+	}
+
+	public static Function<Observable<Throwable>, Observable<?>> retryWithDelay(int maxTries, Duration delay) {
+		return attempts -> attempts.zipWith(
+			Observable.range(1, maxTries),
+			(n, i) -> i
+		).doOnNext(i -> log.info("Retrying {}/{} after {}ms", i, maxTries, delay.toMillis()))
+		.delay(delay.toMillis(), TimeUnit.MILLISECONDS);
 	}
 }
