@@ -527,7 +527,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			type);
 		String oldLanguageTag = oldContainer.getLanguageTag();
 		String oldDocumentId = NodeGraphFieldContainer.composeDocumentId(oldContainer.getParentNode().getUuid(), oldLanguageTag);
-		DeleteBulkEntry deleteEntry = new DeleteBulkEntry(oldIndexName, oldDocumentId);
+		Observable<DeleteBulkEntry> deleteEntry = Observable.just(new DeleteBulkEntry(oldIndexName, oldDocumentId));
 
 		NodeGraphFieldContainer newContainer = context.getNewContainer();
 		String newProjectUuid = newContainer.getParentNode().getProject().getUuid();
@@ -537,9 +537,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String newLanguageTag = newContainer.getLanguageTag();
 		String newDocumentId = NodeGraphFieldContainer.composeDocumentId(newContainer.getParentNode().getUuid(), newLanguageTag);
 		JsonObject doc = transformer.toDocument(newContainer, releaseUuid, type);
-		IndexBulkEntry addEntry = new IndexBulkEntry(newIndexName, newDocumentId, doc, searchProvider.hasIngestPipelinePlugin());
+		Observable<IndexBulkEntry> addEntry = searchProvider.hasIngestPipelinePlugin().flatMapObservable(enabled ->
+			Observable.just(new IndexBulkEntry(newIndexName, newDocumentId, doc, enabled))
+		);
 
-		return Observable.fromArray(addEntry, deleteEntry);
+		return Observable.concatArray(
+			addEntry,
+			deleteEntry
+		);
 	}
 
 	/**
@@ -593,7 +598,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String languageTag = container.getLanguageTag();
 		String documentId = NodeGraphFieldContainer.composeDocumentId(container.getParentNode().getUuid(), languageTag);
 
-		return Single.just(new IndexBulkEntry(indexName, documentId, doc, searchProvider.hasIngestPipelinePlugin()));
+		return searchProvider.hasIngestPipelinePlugin()
+			.map(enabled -> new IndexBulkEntry(indexName, documentId, doc, enabled));
 	}
 
 	@Override

@@ -4,11 +4,14 @@ import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.impl.ElasticsearchResponseErrorStreamable;
 import com.gentics.mesh.search.verticle.eventhandler.MainEventHandler;
+import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 import io.vertx.core.AbstractVerticle;
@@ -21,12 +24,11 @@ import io.vertx.reactivex.core.eventbus.MessageConsumer;
 import javax.inject.Inject;
 
 import static com.gentics.mesh.core.rest.MeshEvent.SEARCH_FLUSH_REQUEST;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.dummyObject;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -41,12 +43,14 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	private List<MessageConsumer<JsonObject>> vertxHandlers;
 	private final AtomicBoolean stopped = new AtomicBoolean(false);
 	private final IdleChecker idleChecker;
+	private final SyncEventHandler syncEventHandler;
 
 	@Inject
-	public ElasticsearchProcessVerticle(MainEventHandler mainEventhandler, SearchProvider searchProvider, IdleChecker idleChecker) {
+	public ElasticsearchProcessVerticle(MainEventHandler mainEventhandler, SearchProvider searchProvider, IdleChecker idleChecker, SyncEventHandler syncEventHandler) {
 		this.mainEventhandler = mainEventhandler;
 		this.searchProvider = searchProvider;
 		this.idleChecker = idleChecker;
+		this.syncEventHandler = syncEventHandler;
 	}
 
 	@Override
@@ -107,7 +111,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 
 	private void assemble() {
 		// TODO Make bulk operator options configurable
-		BulkOperator bulker = new BulkOperator(vertx, Duration.ofSeconds(500), 1000);
+		BulkOperator bulker = new BulkOperator(vertx, Duration.ofSeconds(2), 1000);
 		requests.toFlowable(BackpressureStrategy.MISSING)
 			.onBackpressureBuffer(1000)
 			.concatMap(this::generateRequests, 1)
@@ -118,17 +122,51 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			})
 			.toObservable()
 			.lift(bulker)
-			.concatMap(request ->
-				stopped.get()
-				? Observable.empty()
-				: request.execute(searchProvider).andThen(Observable.just(request))
-					.doOnSubscribe(ignore -> log.trace("Sending request to Elasticsearch:\n" + request)),
-				1
-			)
-			.subscribe(request -> {
-				log.trace("Request completed:\n" + request);
-				idleChecker.addAndGetRequests(-request.requestCount());
-			});
+			.concatMap(this::sendRequest,1)
+			// To make sure the subscription stays alive
+			.onErrorResumeNext(Observable.empty())
+			.subscribe();
+	}
+
+	private Observable<SearchRequest> sendRequest(SearchRequest request) {
+		return stopped.get()
+			? Observable.empty()
+			: request.execute(searchProvider)
+			.doOnSubscribe(ignore -> {
+				log.trace("Sending request to Elasticsearch:\n" + request);
+				idleChecker.addAndGetRequests(request.requestCount());
+			})
+			.doOnComplete(() -> log.trace("Request completed:\n" + request))
+			.doOnError(err -> log.error("Error after sending request to Elasticsearch", err))
+			.doFinally(() -> idleChecker.addAndGetRequests(-request.requestCount()))
+			.andThen(Observable.just(request))
+			.onErrorResumeNext(this::syncIndices)
+			.retryWhen(retryWithDelay(3, Duration.ofSeconds(5)));
+	}
+
+	private io.reactivex.functions.Function<? super Observable<Throwable>, ? extends ObservableSource<?>> retryWithDelay(int maxTries, Duration delay) {
+		return attempts -> attempts.zipWith(
+			Observable.range(1, maxTries),
+			(n, i) -> i
+		).doOnNext(i -> log.info("Retrying {}/{} after {}", i, maxTries, delay))
+		.delay(delay.toMillis(), TimeUnit.MILLISECONDS);
+	}
+
+	/**
+	 * Invokes index sync if an index not found error has been encountered.
+	 * @param error
+	 * @return
+	 */
+	private Observable<SearchRequest> syncIndices(Throwable error) {
+		if (error instanceof ElasticsearchResponseErrorStreamable) {
+			boolean indexNotFound = ((ElasticsearchResponseErrorStreamable) error).stream()
+				.anyMatch(err -> "index_not_found_exception".equals(err.getType()));
+			if (indexNotFound && !stopped.get()) {
+				return syncEventHandler.generateSyncRequests().toObservable()
+					.concatMap(this::sendRequest, 1);
+			}
+		}
+		return Observable.error(error);
 	}
 
 	private Flowable<? extends SearchRequest> generateRequests(MessageEvent messageEvent) {
@@ -137,14 +175,9 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		}
 		try {
 			return this.mainEventhandler.handle(messageEvent)
-				.doOnNext(req -> {
-					log.trace("Incoming request");
-					idleChecker.addAndGetRequests(req.requestCount());
-				})
-				.doOnComplete(() -> {
-					idleChecker.decrementAndGetTransformations();
-					log.trace("Done transforming event {}. Transformations pending: {}", messageEvent.event, idleChecker.getTransformations());
-				});
+				.doOnError(err -> log.error("Error while transforming event", err))
+				.doOnComplete(() -> log.trace("Done transforming event {}. Transformations pending: {}", messageEvent.event, idleChecker.getTransformations()))
+				.doFinally(idleChecker::decrementAndGetTransformations);
 		} catch (Exception e) {
 			// TODO Error handling
 			e.printStackTrace();

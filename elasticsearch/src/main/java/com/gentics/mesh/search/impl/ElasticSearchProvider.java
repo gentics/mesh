@@ -65,7 +65,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private final static int MAX_RETRY_ON_ERROR = 5;
 
-	private Boolean hasAttachmentIngestProcessor = null;
+	private Single<Boolean> hasAttachmentIngestProcessor = null;
 
 	private Lazy<Vertx> vertx;
 
@@ -274,8 +274,10 @@ public class ElasticSearchProvider implements SearchProvider {
 				}).toCompletable()
 				.onErrorResumeNext(error -> isResourceAlreadyExistsError(error) ? Completable.complete() : Completable.error(error));
 
-			if (info.getIngestPipelineSettings() != null && hasIngestPipelinePlugin()) {
-				return Completable.mergeArray(indexCreation, registerIngestPipeline(info));
+			if (info.getIngestPipelineSettings() != null) {
+				return hasIngestPipelinePlugin().flatMapCompletable(enabled -> enabled
+					? Completable.mergeArray(indexCreation, registerIngestPipeline(info))
+					: indexCreation);
 			} else {
 				return indexCreation;
 			}
@@ -352,9 +354,10 @@ public class ElasticSearchProvider implements SearchProvider {
 	public Completable processBulk(String actions) {
 		long start = System.currentTimeMillis();
 		return client.processBulk(actions).async()
-			.doOnSuccess(response -> {
+			.flatMap(response -> {
 				boolean errors = response.getBoolean("errors");
 				if (errors) {
+					log.trace("Error after processing bulk:\n{}", response);
 					JsonArray items = response.getJsonArray("items");
 					for (int i = 0; i < items.size(); i++) {
 						JsonObject item = items.getJsonObject(i).getJsonObject("index");
@@ -367,13 +370,15 @@ public class ElasticSearchProvider implements SearchProvider {
 							log.error("Could not store document {" + index + ":" + id + "} - " + type + " : " + reason);
 						}
 					}
+					return Single.error(new ElasticsearchBulkResponseError(response));
 				}
 
 				if (log.isDebugEnabled()) {
 					log.debug("Finished bulk request. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
+				return Single.just(response);
 			}).toCompletable()
-			.compose(withTimeoutAndLog("Storing document batch.", true));
+			.compose(withTimeoutAndLog("Storing document batch.", false));
 	}
 
 	@Override
@@ -444,23 +449,24 @@ public class ElasticSearchProvider implements SearchProvider {
 			.onErrorResumeNext(ignore404)
 			.compose(withTimeoutAndLog("Deletion of indices " + indices, true));
 
-		if (hasIngestPipelinePlugin()) {
-			Completable deletePipelines = Observable.fromArray(indexNames).flatMapCompletable(indexName -> {
-				// We don't need to delete the pipeline for non node indices
-				if (!indexName.startsWith("node")) {
-					return Completable.complete();
-				}
-				return deregisterPipeline(indexName);
-			})
-				.onErrorResumeNext(error -> {
-					return isNotFoundError(error) ? Completable.complete() : Completable.error(error);
+		return hasIngestPipelinePlugin().flatMapCompletable(enabled -> {
+			if (enabled) {
+				Completable deletePipelines = Observable.fromArray(indexNames).flatMapCompletable(indexName -> {
+					// We don't need to delete the pipeline for non node indices
+					if (!indexName.startsWith("node")) {
+						return Completable.complete();
+					}
+					return deregisterPipeline(indexName);
 				})
-				.compose(withTimeoutAndLog("Deletion of pipelines " + indices, true));
-			return Completable.mergeArray(deleteIndex, deletePipelines);
-		} else {
-			return deleteIndex;
-		}
-
+					.onErrorResumeNext(error -> {
+						return isNotFoundError(error) ? Completable.complete() : Completable.error(error);
+					})
+					.compose(withTimeoutAndLog("Deletion of pipelines " + indices, true));
+				return Completable.mergeArray(deleteIndex, deletePipelines);
+			} else {
+				return deleteIndex;
+			}
+		});
 	}
 
 	@Override
@@ -566,14 +572,9 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public boolean hasIngestPipelinePlugin() {
-		if (hasAttachmentIngestProcessor != null) {
-			return hasAttachmentIngestProcessor;
-		} else {
-			hasAttachmentIngestProcessor = this.client.hasIngestProcessor(INGEST_ATTACHMENT_PROCESSOR_NAME).blockingGet();
-		}
+	public Single<Boolean> hasIngestPipelinePlugin() {
 		if (hasAttachmentIngestProcessor == null) {
-			return false;
+			hasAttachmentIngestProcessor = this.client.hasIngestProcessor(INGEST_ATTACHMENT_PROCESSOR_NAME).cache();
 		}
 		return hasAttachmentIngestProcessor;
 	}

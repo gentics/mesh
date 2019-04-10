@@ -42,11 +42,11 @@ public class MeshHelper {
 	}
 
 	public CreateDocumentRequest createDocumentRequest(String index, String id, JsonObject doc) {
-		return new CreateDocumentRequest(index, prefixIndexName(index), id, doc, NOOP, searchProvider.hasIngestPipelinePlugin());
+		return new CreateDocumentRequest(index, prefixIndexName(index), id, doc, NOOP, searchProvider.hasIngestPipelinePlugin().blockingGet());
 	}
 
 	public CreateDocumentRequest createDocumentRequest(String index, String id, JsonObject doc, Action onComplete) {
-		return new CreateDocumentRequest(index, prefixIndexName(index), id, doc, onComplete, searchProvider.hasIngestPipelinePlugin());
+		return new CreateDocumentRequest(index, prefixIndexName(index), id, doc, onComplete, searchProvider.hasIngestPipelinePlugin().blockingGet());
 	}
 
 	public UpdateDocumentRequest updateDocumentRequest(String index, String id, JsonObject doc) {

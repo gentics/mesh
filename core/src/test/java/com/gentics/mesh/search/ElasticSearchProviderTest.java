@@ -73,7 +73,7 @@ public class ElasticSearchProviderTest extends AbstractMeshTest {
 				client.hasIngestProcessor("append", "attachment").blockingGet());
 
 		assertTrue("The ingest attachment processors should be configured",
-				getProvider().hasIngestPipelinePlugin());
+				getProvider().hasIngestPipelinePlugin().blockingGet());
 	}
 
 	/**
