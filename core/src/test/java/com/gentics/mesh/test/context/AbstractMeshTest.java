@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
@@ -61,16 +60,17 @@ import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.router.ProjectsRouter;
 import com.gentics.mesh.router.RouterStorage;
-import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.context.event.EventAsserter;
 import com.gentics.mesh.test.context.event.EventAsserterChain;
+import com.gentics.mesh.test.docker.ElasticsearchContainer;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
 
+import eu.rekawek.toxiproxy.model.ToxicList;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -719,5 +719,22 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	public void awaitEvents() {
 		eventAsserter.await();
+	}
+
+	/**
+	 * Return toxics for ES proxy.
+	 * 
+	 * @return
+	 */
+	public ToxicList toxics() {
+		return MeshTestContext.getProxy().toxics();
+	}
+
+	/**
+	 * Return the used elasticsearch container.
+	 * @return
+	 */
+	public ElasticsearchContainer elasticsearch() {
+		return MeshTestContext.elasticsearchContainer();
 	}
 }

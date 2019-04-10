@@ -23,6 +23,12 @@ public enum ElasticsearchTestMode {
 	 * Run using a ES docker container
 	 */
 	CONTAINER,
+
+	/**
+	 * Run using a toxified ES docker container
+	 */
+	CONTAINER_TOXIC,
+
 	/**
 	 * Run using a ES docker container which includes the ingest plugin
 	 */

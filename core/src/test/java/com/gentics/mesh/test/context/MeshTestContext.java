@@ -14,7 +14,10 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
-import org.testcontainers.containers.wait.Wait;
+import org.testcontainers.containers.Network;
+import org.testcontainers.containers.ToxiproxyContainer;
+import org.testcontainers.containers.ToxiproxyContainer.ContainerProxy;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
@@ -48,6 +51,7 @@ import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 
+import eu.rekawek.toxiproxy.Proxy;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.logging.Logger;
@@ -69,6 +73,12 @@ public class MeshTestContext extends TestWatcher {
 	public static ElasticsearchContainer elasticsearch;
 
 	public static KeycloakContainer keycloak;
+
+	public static Network network;
+
+	public static ToxiproxyContainer toxiproxy;
+
+	public static ContainerProxy proxy;
 
 	public static OkHttpClient okHttp = new OkHttpClient.Builder()
 		.callTimeout(Duration.ofMinutes(1))
@@ -139,7 +149,7 @@ public class MeshTestContext extends TestWatcher {
 			MeshTestSetting settings = getSettings(description);
 			if (description.isSuite()) {
 				// TODO CI does not like this, reactivate later:
-//				Mesh.mesh().shutdown();
+				// Mesh.mesh().shutdown();
 				removeDataDirectory();
 				removeConfigDirectory();
 				if (elasticsearch != null && elasticsearch.isRunning()) {
@@ -147,6 +157,10 @@ public class MeshTestContext extends TestWatcher {
 				}
 				if (keycloak != null && keycloak.isRunning()) {
 					keycloak.stop();
+				}
+				if (toxiproxy != null) {
+					toxiproxy.stop();
+					network.close();
 				}
 			} else {
 				cleanupFolders();
@@ -157,6 +171,7 @@ public class MeshTestContext extends TestWatcher {
 				idleConsumer.unregister();
 				switch (settings.elasticsearch()) {
 				case CONTAINER:
+				case CONTAINER_TOXIC:
 				case EMBEDDED:
 				case CONTAINER_WITH_INGEST:
 					meshDagger.searchProvider().clear().blockingAwait();
@@ -370,16 +385,37 @@ public class MeshTestContext extends TestWatcher {
 		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
 		searchOptions.setTimeout(10_000L);
 		meshOptions.getStorageOptions().setDirectory(graphPath);
+
 		switch (settings.elasticsearch()) {
 		case CONTAINER:
 		case CONTAINER_WITH_INGEST:
-			searchOptions.setStartEmbedded(false);
 			elasticsearch = new ElasticsearchContainer(settings.elasticsearch() == ElasticsearchTestMode.CONTAINER_WITH_INGEST);
 			if (!elasticsearch.isRunning()) {
 				elasticsearch.start();
 			}
 			elasticsearch.waitingFor(Wait.forHttp("/"));
+
+			searchOptions.setStartEmbedded(false);
 			searchOptions.setUrl("http://localhost:" + elasticsearch.getMappedPort(9200));
+			break;
+		case CONTAINER_TOXIC:
+			network = Network.newNetwork();
+			elasticsearch = new ElasticsearchContainer(false).withNetwork(network);
+			elasticsearch.waitingFor(Wait.forHttp(("/")));
+			toxiproxy = new ToxiproxyContainer().withNetwork(network);
+			if (!toxiproxy.isRunning()) {
+				toxiproxy.start();
+			}
+			proxy = toxiproxy.getProxy(elasticsearch, 9200);
+
+			final String ipAddressViaToxiproxy = proxy.getContainerIpAddress();
+			final int portViaToxiproxy = proxy.getProxyPort();
+
+			if (!elasticsearch.isRunning()) {
+				elasticsearch.start();
+			}
+			searchOptions.setStartEmbedded(false);
+			searchOptions.setUrl("http://" + ipAddressViaToxiproxy + ":" + portViaToxiproxy);
 			break;
 		case EMBEDDED:
 			searchOptions.setStartEmbedded(true);
@@ -531,4 +567,13 @@ public class MeshTestContext extends TestWatcher {
 	public ElasticsearchProcessVerticle getElasticSearchVerticle() {
 		return ((BootstrapInitializerImpl) meshDagger.boot()).loader.get().getSearchVerticle();
 	}
+
+	public static ContainerProxy getProxy() {
+		return proxy;
+	}
+
+	public static ElasticsearchContainer elasticsearchContainer() {
+		return elasticsearch;
+	}
+
 }
