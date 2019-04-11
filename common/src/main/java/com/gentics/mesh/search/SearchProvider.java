@@ -250,7 +250,7 @@ public interface SearchProvider {
 	 * 
 	 * @return
 	 */
-	boolean hasIngestPipelinePlugin();
+	Single<Boolean> hasIngestPipelinePlugin();
 
 	/**
 	 * Return the specific prefix for this installation. Indices and pipelines will make use of this prefix so that multiple mesh instances can use the same

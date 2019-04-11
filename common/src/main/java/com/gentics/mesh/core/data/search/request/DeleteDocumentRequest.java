@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.search.request;
 
 import com.gentics.mesh.search.SearchProvider;
 import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.reactivex.functions.Action;
 import io.vertx.core.json.JsonObject;
 
@@ -39,15 +40,15 @@ public class DeleteDocumentRequest implements Bulkable {
 	}
 
 	@Override
-	public List<String> toBulkActions() {
-		return Collections.singletonList(
+	public Single<List<String>> toBulkActions() {
+		return Single.just(Collections.singletonList(
 			new JsonObject()
 				.put("delete", new JsonObject()
 					.put("_index", transformedIndex)
 					.put("_type", SearchProvider.DEFAULT_TYPE)
 					.put("_id", id)
 				).encode()
-		);
+		));
 	}
 
 	@Override

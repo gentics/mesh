@@ -136,8 +136,8 @@ public class DevNullSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public boolean hasIngestPipelinePlugin() {
-		return true;
+	public Single<Boolean> hasIngestPipelinePlugin() {
+		return Single.just(true);
 	}
 
 	@Override

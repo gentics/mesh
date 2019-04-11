@@ -2,6 +2,8 @@ package com.gentics.mesh.core.data.search.request;
 
 import com.gentics.mesh.search.SearchProvider;
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
+import io.reactivex.Single;
 import io.reactivex.functions.Action;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -9,7 +11,6 @@ import io.vertx.core.logging.LoggerFactory;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class BulkRequest implements Bulkable {
 	private static final Logger log = LoggerFactory.getLogger(BulkRequest.class);
@@ -43,15 +44,16 @@ public class BulkRequest implements Bulkable {
 	}
 
 	@Override
-	public List<String> toBulkActions() {
-		return requests.stream()
-			.flatMap(req -> req.toBulkActions().stream())
-			.collect(Collectors.toList());
+	public Single<List<String>> toBulkActions() {
+		return Flowable.fromIterable(requests)
+			.flatMapSingle(Bulkable::toBulkActions)
+			.flatMapIterable(request -> request)
+			.toList();
 	}
 
 	@Override
 	public String toString() {
-		return String.join("\n", toBulkActions());
+		return requests.size() + " bulked requests";
 	}
 
 	public Collection<Bulkable> getRequests() {

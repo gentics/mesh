@@ -1,13 +1,33 @@
 package com.gentics.mesh.search.impl;
 
-import static com.gentics.mesh.core.rest.MeshEvent.INDEX_CLEAR_FINISHED;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isConflictError;
-import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isNotFoundError;
-import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isResourceAlreadyExistsError;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import com.gentics.elasticsearch.client.HttpErrorException;
+import com.gentics.mesh.core.data.search.bulk.BulkEntry;
+import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.Bulkable;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
+import com.gentics.mesh.search.ElasticsearchProcessManager;
+import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.verticle.eventhandler.SingleCacheSuccess;
+import com.gentics.mesh.util.UUIDUtil;
+import dagger.Lazy;
+import io.reactivex.Completable;
+import io.reactivex.CompletableSource;
+import io.reactivex.CompletableTransformer;
+import io.reactivex.Flowable;
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.functions.Function;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import joptsimple.internal.Strings;
+import net.lingala.zip4j.exception.ZipException;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -19,33 +39,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import com.gentics.elasticsearch.client.HttpErrorException;
-import com.gentics.mesh.core.data.search.bulk.BulkEntry;
-import com.gentics.mesh.core.data.search.index.IndexInfo;
-import com.gentics.mesh.core.data.search.request.Bulkable;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
-import com.gentics.mesh.search.ElasticsearchProcessManager;
-import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.util.UUIDUtil;
-
-import dagger.Lazy;
-import io.reactivex.Completable;
-import io.reactivex.CompletableSource;
-import io.reactivex.CompletableTransformer;
-import io.reactivex.Observable;
-import io.reactivex.Single;
-import io.reactivex.functions.Function;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import joptsimple.internal.Strings;
-import net.lingala.zip4j.exception.ZipException;
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_CLEAR_FINISHED;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isConflictError;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isNotFoundError;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isResourceAlreadyExistsError;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 /**
  * Elastic search provider class which implements the {@link SearchProvider} interface.
@@ -65,7 +65,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private final static int MAX_RETRY_ON_ERROR = 5;
 
-	private Boolean hasAttachmentIngestProcessor = null;
+	private Single<Boolean> hasAttachmentIngestProcessor = null;
 
 	private Lazy<Vertx> vertx;
 
@@ -274,8 +274,10 @@ public class ElasticSearchProvider implements SearchProvider {
 				}).toCompletable()
 				.onErrorResumeNext(error -> isResourceAlreadyExistsError(error) ? Completable.complete() : Completable.error(error));
 
-			if (info.getIngestPipelineSettings() != null && hasIngestPipelinePlugin()) {
-				return Completable.mergeArray(indexCreation, registerIngestPipeline(info));
+			if (info.getIngestPipelineSettings() != null) {
+				return hasIngestPipelinePlugin().flatMapCompletable(enabled -> enabled
+					? Completable.mergeArray(indexCreation, registerIngestPipeline(info))
+					: indexCreation);
 			} else {
 				return indexCreation;
 			}
@@ -352,9 +354,10 @@ public class ElasticSearchProvider implements SearchProvider {
 	public Completable processBulk(String actions) {
 		long start = System.currentTimeMillis();
 		return client.processBulk(actions).async()
-			.doOnSuccess(response -> {
+			.flatMap(response -> {
 				boolean errors = response.getBoolean("errors");
 				if (errors) {
+					log.trace("Error after processing bulk:\n{}", response);
 					JsonArray items = response.getJsonArray("items");
 					for (int i = 0; i < items.size(); i++) {
 						JsonObject item = items.getJsonObject(i).getJsonObject("index");
@@ -367,13 +370,15 @@ public class ElasticSearchProvider implements SearchProvider {
 							log.error("Could not store document {" + index + ":" + id + "} - " + type + " : " + reason);
 						}
 					}
+					return Single.error(new ElasticsearchBulkResponseError(response));
 				}
 
 				if (log.isDebugEnabled()) {
 					log.debug("Finished bulk request. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
+				return Single.just(response);
 			}).toCompletable()
-			.compose(withTimeoutAndLog("Storing document batch.", true));
+			.compose(withTimeoutAndLog("Storing document batch.", false));
 	}
 
 	@Override
@@ -382,16 +387,17 @@ public class ElasticSearchProvider implements SearchProvider {
 			return Completable.complete();
 		}
 
-		String bulkData = entries.stream()
-			.flatMap(bulkable -> bulkable.toBulkActions().stream())
-			.collect(Collectors.joining("\n")) + "\n";
-
-		if (log.isTraceEnabled()) {
-			log.trace("Using bulk payload:");
-			log.trace(bulkData);
-		}
-
-		return processBulk(bulkData);
+		return Flowable.fromIterable(entries)
+			.flatMapSingle(Bulkable::toBulkActions)
+			.flatMapIterable(list -> list)
+			.reduce(new StringBuilder(), (builder, str) -> builder.append(str).append("\n"))
+			.map(StringBuilder::toString)
+			.doOnSuccess(bulkData -> {
+				if (log.isTraceEnabled()) {
+					log.trace("Using bulk payload:");
+					log.trace(bulkData);
+				}
+			}).flatMapCompletable(this::processBulk);
 	}
 
 	@Override
@@ -444,23 +450,24 @@ public class ElasticSearchProvider implements SearchProvider {
 			.onErrorResumeNext(ignore404)
 			.compose(withTimeoutAndLog("Deletion of indices " + indices, true));
 
-		if (hasIngestPipelinePlugin()) {
-			Completable deletePipelines = Observable.fromArray(indexNames).flatMapCompletable(indexName -> {
-				// We don't need to delete the pipeline for non node indices
-				if (!indexName.startsWith("node")) {
-					return Completable.complete();
-				}
-				return deregisterPipeline(indexName);
-			})
-				.onErrorResumeNext(error -> {
-					return isNotFoundError(error) ? Completable.complete() : Completable.error(error);
+		return hasIngestPipelinePlugin().flatMapCompletable(enabled -> {
+			if (enabled) {
+				Completable deletePipelines = Observable.fromArray(indexNames).flatMapCompletable(indexName -> {
+					// We don't need to delete the pipeline for non node indices
+					if (!indexName.startsWith("node")) {
+						return Completable.complete();
+					}
+					return deregisterPipeline(indexName);
 				})
-				.compose(withTimeoutAndLog("Deletion of pipelines " + indices, true));
-			return Completable.mergeArray(deleteIndex, deletePipelines);
-		} else {
-			return deleteIndex;
-		}
-
+					.onErrorResumeNext(error -> {
+						return isNotFoundError(error) ? Completable.complete() : Completable.error(error);
+					})
+					.compose(withTimeoutAndLog("Deletion of pipelines " + indices, true));
+				return Completable.mergeArray(deleteIndex, deletePipelines);
+			} else {
+				return deleteIndex;
+			}
+		});
 	}
 
 	@Override
@@ -566,14 +573,9 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public boolean hasIngestPipelinePlugin() {
-		if (hasAttachmentIngestProcessor != null) {
-			return hasAttachmentIngestProcessor;
-		} else {
-			hasAttachmentIngestProcessor = this.client.hasIngestProcessor(INGEST_ATTACHMENT_PROCESSOR_NAME).blockingGet();
-		}
+	public Single<Boolean> hasIngestPipelinePlugin() {
 		if (hasAttachmentIngestProcessor == null) {
-			return false;
+			hasAttachmentIngestProcessor = SingleCacheSuccess.create(this.client.hasIngestProcessor(INGEST_ATTACHMENT_PROCESSOR_NAME));
 		}
 		return hasAttachmentIngestProcessor;
 	}

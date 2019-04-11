@@ -71,6 +71,10 @@ public class SyncEventHandler implements EventHandler {
 
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
+		return generateSyncRequests();
+	}
+
+	public Flowable<SearchRequest> generateSyncRequests() {
 		return Flowable.concatArray(
 			purgeOldIndices(),
 			syncIndices(),
