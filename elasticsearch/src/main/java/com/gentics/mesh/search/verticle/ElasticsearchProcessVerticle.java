@@ -63,7 +63,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 
 		vertxHandlers = mainEventhandler.handledEvents()
 			.stream()
-			.map(event -> vertx.eventBus().<JsonObject>consumer(event.address, message -> {
+			.map(event -> vertx.eventBus().<JsonObject>localConsumer(event.address, message -> {
 				if (!stopped.get()) {
 					idleChecker.incrementAndGetTransformations();
 					log.trace(String.format("Received event message on address {%s}:\n%s", message.address(), message.body()));
@@ -139,7 +139,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			.doFinally(() -> idleChecker.addAndGetRequests(-request.requestCount()))
 			.andThen(Observable.just(request))
 			.onErrorResumeNext(this::syncIndices)
-			.retryWhen(retryWithDelay(3, Duration.ofSeconds(5)));
+			.retryWhen(retryWithDelay(Duration.ofSeconds(5)));
 	}
 
 	/**

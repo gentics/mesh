@@ -1,6 +1,7 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
 import com.gentics.mesh.search.impl.SearchClient;
+import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.functions.Function;
@@ -10,6 +11,7 @@ import io.vertx.core.logging.LoggerFactory;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.LongStream;
 
 
 public final class RxUtil {
@@ -44,5 +46,15 @@ public final class RxUtil {
 			(n, i) -> i
 		).doOnNext(i -> log.info("Retrying {}/{} after {}ms", i, maxTries, delay.toMillis()))
 		.delay(delay.toMillis(), TimeUnit.MILLISECONDS);
+	}
+
+	public static Function<Observable<Throwable>, Observable<?>> retryWithDelay(Duration delay) {
+		return attempts -> attempts.toFlowable(BackpressureStrategy.BUFFER)
+			.zipWith(
+				LongStream.iterate(1, i -> i + 1)::iterator,
+				(n, i) -> i
+			).doOnNext(i -> log.info("Retry #{} after {}ms", i, delay.toMillis()))
+			.delay(delay.toMillis(), TimeUnit.MILLISECONDS)
+			.toObservable();
 	}
 }
