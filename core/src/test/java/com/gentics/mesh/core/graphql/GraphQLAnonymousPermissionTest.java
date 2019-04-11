@@ -23,6 +23,8 @@ public class GraphQLAnonymousPermissionTest extends AbstractMeshTest {
 	public void testReadViaAnonymous() throws Throwable {
 		final String QUERY_NAME = "anonymous-perm-query";
 		final Node node = folder("news");
+		final String tagUuid = tx(() -> tag("red").getUuid());
+		final String tagFamilyUuid = tx(() -> tag("red").getTagFamily().getUuid());
 		final String nodeUuid = tx(() -> node.getUuid());
 		final String anonRoleUuid = tx(() -> anonymousRole().getUuid());
 		final String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
@@ -31,7 +33,12 @@ public class GraphQLAnonymousPermissionTest extends AbstractMeshTest {
 		request.setRecursive(true);
 		request.getPermissions().setRead(false).setReadPublished(true);
 		call(() -> client().updateRolePermissions(anonRoleUuid, "projects/" + projectUuid(), request));
+		request.getPermissions().setRead(true).setReadPublished(false);
+		call(() -> client().updateRolePermissions(anonRoleUuid, "projects/" + projectUuid() + "/tagFamilies/" + tagFamilyUuid + "/tags/" + tagUuid,
+			request));
 
+		call(() -> client().addTagToNode(PROJECT_NAME, nodeUuid, tagUuid));
+		call(() -> client().addTagToNode(PROJECT_NAME, baseNodeUuid, tagUuid));
 		// Ensure that only two nodes are published
 		call(() -> client().takeNodeOffline(PROJECT_NAME, baseNodeUuid, new PublishParametersImpl().setRecursive(true)));
 		call(() -> client().publishNode(PROJECT_NAME, baseNodeUuid));
@@ -42,7 +49,6 @@ public class GraphQLAnonymousPermissionTest extends AbstractMeshTest {
 		// Now execute the query and assert it
 		GraphQLResponse response = call(
 			() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(QUERY_NAME)));
-		//System.out.println(response.toJson());
 		JsonObject jsonResponse = new JsonObject(response.toJson());
 		assertThat(jsonResponse).compliesToAssertions(QUERY_NAME);
 	}
