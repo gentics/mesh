@@ -1,6 +1,9 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
@@ -15,6 +18,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -32,6 +36,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
@@ -164,7 +169,35 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	public TransformablePage<? extends Node> findTaggedNodes(MeshAuthUser user, Branch branch, List<String> languageTags, ContainerType type,
 		PagingParameters pagingInfo) {
 		VertexTraversal<?, ?, ?> traversal = getTaggedNodesTraversal(branch, languageTags, type);
-		return new DynamicTransformablePageImpl<Node>(user, traversal, pagingInfo, READ_PERM, NodeImpl.class);
+		return new DynamicTransformablePageImpl<Node>(user, traversal, pagingInfo, READ_PUBLISHED_PERM, NodeImpl.class);
+	}
+
+	@Override
+	public TraversalResult<? extends Node> findTaggedNodes(InternalActionContext ac, GraphPermission permission) {
+		MeshAuthUser user = ac.getUser();
+		Branch branch = ac.getBranch();
+		String branchUuid = branch.getUuid();
+		TraversalResult<? extends Node> nodes = new TraversalResult<>(inE(HAS_TAG).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).outV().frameExplicit(NodeImpl.class));
+		Stream<? extends Node> s = nodes.stream()
+			.filter(item -> {
+				// Check whether the node has at least a draft in the selected branch - Otherwise the node should be skipped
+				return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, DRAFT.getCode());
+			})
+			.filter(item -> {
+				boolean hasRead = user.hasPermissionForId(item.getId(), READ_PERM);
+				if (hasRead) {
+					return true;
+				} else {
+					// Check whether the node is published. In this case we need to check the read publish perm.
+					boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED.getCode());
+					if (isPublishedForBranch) {
+						return user.hasPermissionForId(item.getId(), READ_PUBLISHED_PERM);
+					}
+				}
+				return false;
+			});
+
+		return new TraversalResult<>(() -> s.iterator());
 	}
 
 	/**
