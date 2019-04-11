@@ -23,6 +23,10 @@ public class ElasticSearchOptions implements Option {
 
 	public static final int DEFAULT_BULK_LIMIT = 2000;
 
+	public static final int DEFAULT_EVENT_BUFFER_SIZE = 1000;
+	public static final int DEFAULT_BULK_DEBOUNCE_TIME = 2000;
+	public static final int DEFAULT_RETRY_INTERVAL = 5000;
+
 	public static final String DEFAULT_PREFIX = "mesh-";
 
 	public static final String DEFAULT_ARGS = "-Xms1g -Xmx1g -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -client -Xss1m -Djava.awt.headless=true -Dfile.encoding=UTF-8 -Djna.nosys=true -XX:-OmitStackTraceInFastThrow -Dio.netty.noUnsafe=true -Dio.netty.noKeySetOptimization=true -Dio.netty.recycler.maxCapacityPerThread=0 -Dlog4j.shutdownHookEnabled=false -Dlog4j2.disable.jmx=true -XX:+HeapDumpOnOutOfMemoryError";
@@ -33,6 +37,9 @@ public class ElasticSearchOptions implements Option {
 	public static final String MESH_ELASTICSEARCH_START_EMBEDDED_ENV = "MESH_ELASTICSEARCH_START_EMBEDDED";
 	public static final String MESH_ELASTICSEARCH_PREFIX_ENV = "MESH_ELASTICSEARCH_PREFIX";
 	public static final String MESH_ELASTICSEARCH_BULK_LIMIT_ENV = "MESH_ELASTICSEARCH_BULK_LIMIT";
+	public static final String MESH_ELASTICSEARCH_EVENT_BUFFER_SIZE_ENV = "MESH_ELASTICSEARCH_EVENT_BUFFER_SIZE";
+	public static final String MESH_ELASTICSEARCH_BULK_DEBOUNCE_TIME_ENV = "MESH_ELASTICSEARCH_BULK_DEBOUNCE_TIME";
+	public static final String MESH_ELASTICSEARCH_RETRY_INTERVAL_ENV = "MESH_ELASTICSEARCH_RETRY_INTERVAL";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Elasticsearch connection url to be used. Set this setting to null will disable the Elasticsearch support.")
@@ -59,15 +66,33 @@ public class ElasticSearchOptions implements Option {
 	private String embeddedArguments = DEFAULT_ARGS;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Upper limit for the size of bulk requests.")
-	@EnvironmentVariable(name = MESH_ELASTICSEARCH_BULK_LIMIT_ENV, description = "Override the batch bulk limit. Default: " + DEFAULT_BULK_LIMIT)
-	private int bulkLimit = DEFAULT_BULK_LIMIT;
-
-	@JsonProperty(required = false)
 	@JsonPropertyDescription("Search server prefix for this installation. Choosing different prefixes for each Gentics Mesh instance will allow you to use a single Elasticsearch cluster for multiple Gentics Mesh instances. Default: "
 		+ DEFAULT_PREFIX)
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_PREFIX_ENV, description = "Override the configured elasticsearch prefix.")
 	private String prefix = DEFAULT_PREFIX;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Upper limit for the size of bulk requests. Default: " + DEFAULT_BULK_LIMIT)
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_BULK_LIMIT_ENV, description = "Override the batch bulk limit. Default: " + DEFAULT_BULK_LIMIT)
+	private int bulkLimit = DEFAULT_BULK_LIMIT;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Upper limit for mesh events that are to be mapped to elastic search requests. Default: "
+		+ DEFAULT_EVENT_BUFFER_SIZE)
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_EVENT_BUFFER_SIZE_ENV, description = "Override the configured event buffer size.")
+	private int eventBufferSize = DEFAULT_EVENT_BUFFER_SIZE;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("The maximum amount of time in milliseconds between two bulkable requests before they are sent. Default: "
+		+ DEFAULT_BULK_DEBOUNCE_TIME)
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_BULK_DEBOUNCE_TIME_ENV, description = "Override the bulk debounce time.")
+	private int bulkDebounceTime = DEFAULT_BULK_DEBOUNCE_TIME;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("The time in milliseconds between retries of elastic search requests in case of a failure. Default: "
+		+ DEFAULT_RETRY_INTERVAL)
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_RETRY_INTERVAL_ENV, description = "Override the retry interval.")
+	private int retryInterval = DEFAULT_RETRY_INTERVAL;
 
 	public ElasticSearchOptions() {
 
@@ -162,4 +187,30 @@ public class ElasticSearchOptions implements Option {
 		return this;
 	}
 
+	public int getEventBufferSize() {
+		return eventBufferSize;
+	}
+
+	public ElasticSearchOptions setEventBufferSize(int eventBufferSize) {
+		this.eventBufferSize = eventBufferSize;
+		return this;
+	}
+
+	public int getBulkDebounceTime() {
+		return bulkDebounceTime;
+	}
+
+	public ElasticSearchOptions setBulkDebounceTime(int bulkDebounceTime) {
+		this.bulkDebounceTime = bulkDebounceTime;
+		return this;
+	}
+
+	public int getRetryInterval() {
+		return retryInterval;
+	}
+
+	public ElasticSearchOptions setRetryInterval(int retryInterval) {
+		this.retryInterval = retryInterval;
+		return this;
+	}
 }

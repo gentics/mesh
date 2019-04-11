@@ -3,6 +3,8 @@ package com.gentics.mesh.search.verticle;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.ElasticsearchResponseErrorStreamable;
 import com.gentics.mesh.search.verticle.eventhandler.MainEventHandler;
@@ -35,20 +37,26 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 
 	private final MainEventHandler mainEventhandler;
 	private final SearchProvider searchProvider;
+	private final IdleChecker idleChecker;
+	private final SyncEventHandler syncEventHandler;
+	private final ElasticSearchOptions options;
 
 	private Subject<MessageEvent> requests = PublishSubject.create();
 
 	private List<MessageConsumer<JsonObject>> vertxHandlers;
 	private final AtomicBoolean stopped = new AtomicBoolean(false);
-	private final IdleChecker idleChecker;
-	private final SyncEventHandler syncEventHandler;
 
 	@Inject
-	public ElasticsearchProcessVerticle(MainEventHandler mainEventhandler, SearchProvider searchProvider, IdleChecker idleChecker, SyncEventHandler syncEventHandler) {
+	public ElasticsearchProcessVerticle(MainEventHandler mainEventhandler,
+										SearchProvider searchProvider,
+										IdleChecker idleChecker,
+										SyncEventHandler syncEventHandler,
+										MeshOptions options) {
 		this.mainEventhandler = mainEventhandler;
 		this.searchProvider = searchProvider;
 		this.idleChecker = idleChecker;
 		this.syncEventHandler = syncEventHandler;
+		this.options = options.getSearchOptions();
 	}
 
 	@Override
@@ -108,10 +116,10 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	}
 
 	private void assemble() {
-		// TODO Make bulk operator options configurable
-		BulkOperator bulker = new BulkOperator(vertx, Duration.ofSeconds(2), 1000);
+		BulkOperator bulker = new BulkOperator(vertx, Duration.ofMillis(options.getBulkDebounceTime()), options.getBulkLimit());
 		requests.toFlowable(BackpressureStrategy.MISSING)
-			.onBackpressureBuffer(1000)
+			// TODO handle overflow
+			.onBackpressureBuffer(options.getEventBufferSize())
 			.concatMap(this::generateRequests, 1)
 			.doOnNext(request -> {
 				if (log.isTraceEnabled()) {
@@ -139,7 +147,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			.doFinally(() -> idleChecker.addAndGetRequests(-request.requestCount()))
 			.andThen(Observable.just(request))
 			.onErrorResumeNext(this::syncIndices)
-			.retryWhen(retryWithDelay(Duration.ofSeconds(5)));
+			.retryWhen(retryWithDelay(Duration.ofMillis(options.getRetryInterval())));
 	}
 
 	/**
