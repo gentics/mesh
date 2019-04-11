@@ -7,9 +7,11 @@ import static com.gentics.mesh.MeshEvent.TAG_UPDATED;
 import java.util.List;
 import java.util.Objects;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.madlmigration.TraversalResult;
@@ -110,5 +112,7 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	 * @return Project of the tag
 	 */
 	Project getProject();
+
+	TraversalResult<? extends Node> findTaggedNodes(InternalActionContext ac, GraphPermission permission);
 
 }
