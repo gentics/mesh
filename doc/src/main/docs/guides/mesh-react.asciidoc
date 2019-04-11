@@ -16,6 +16,12 @@ image:../app-overview.png[React App Vehicle Page, role="img-responsive"]
 
 The *welcome page* contains just a basic intro text and the navigation. The *category overview* page displays a list entries of the category. Initially we only display static contents and thus only the aircrafts category is displayed which contains a single vehicle. The last page provides the *vehicle view* of the selected vehicle.
 
+Next Steps:
+
+* We will prepare the frontend app and set the views up.
+* Get Gentics Mesh ready and create our schemas.
+* Add contents and update the app to load JSON from the server.
+
 == Building Blocks / Domain Model
 
 In our app we use a few different data elements.
@@ -36,12 +42,12 @@ Initially the content in the example is hard coded and not dynamic. The connecti
 
 Sources:
 
-* App.jsx - Setup of `react-router-dom` and rendering of navigation and content area.
-* Category.jsx - Renders the vehicle overview which contains teasers for each vehicle in the category.
-* Content.jsx - Handles the routing between category overview and vehicle detail view.
-* Navigation.jsx - Renders the navigation which consists of all categories.
-* Vehicle.jsx - Renders the detail view of a vehicle.
-* WelcomeScreen.jsx - Renders the welcome screen content.
+* `App.jsx` - Setup of `react-router-dom` and rendering of navigation and content area.
+* `Category.jsx` - Renders the vehicle overview which contains teasers for each vehicle in the category.
+* `Content.jsx` - Handles the routing between category overview and vehicle detail view.
+* `Navigation.jsx` - Renders the navigation which consists of all categories.
+* `Vehicle.jsx` - Renders the detail view of a vehicle.
+* `WelcomeScreen.jsx` - Renders the welcome screen content.
 
 === Routing
 
@@ -647,7 +653,16 @@ const navResponse = usePromise(() => getNavigation(), []);
 
 ==  Conclusion
 
-Your app should now be able to load the content from Gentics Mesh. New categories and vehicles will now directly show up in you app.
+Your app should now be able to load the content from Gentics Mesh. New categories and vehicles will now directly show up in you app. You can now for example alter the schema and add extra fields which can later on be used in your app.
 
+
+More guides will follow in the future which will cover:
+
+* In depth content modelling
+* Authentication handling with Login, registration and password reset
+* Adding a custom search which uses Elasticsearch queries to filter and sort by
+* Staging content deployments and restructuring contents using branches
+* Event handling via websocket
+* Permission handling
 
 
