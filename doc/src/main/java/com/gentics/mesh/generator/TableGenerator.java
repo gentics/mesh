@@ -19,6 +19,7 @@ import org.reflections.Reflections;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
@@ -44,6 +45,15 @@ public class TableGenerator extends AbstractRenderingGenerator {
 		this.paramTableTemplateSource = getTemplate(PARAM_TABLE_TEMPLATE_NAME);
 	}
 
+	public static void main(String[] args) throws Exception {
+		// Generate asciidoc tables to be included in the docs.
+		final File DOCS_FOLDER = new File("src/main/docs");
+		final File OUTPUT_ROOT_FOLDER = new File(DOCS_FOLDER, "generated");
+
+		TableGenerator tableGen = new TableGenerator(OUTPUT_ROOT_FOLDER);
+		tableGen.run();
+	}
+
 	public void run() throws Exception {
 		for (Class<?> clazz : allFoundClassesAnnotatedWithEntityToBeScanned()) {
 
@@ -64,6 +74,7 @@ public class TableGenerator extends AbstractRenderingGenerator {
 			} else {
 				writeFile(clazz.getSimpleName() + ".adoc-include", renderModelTableViaSchema(clazz, modelTableTemplateSource));
 			}
+
 		}
 
 	}

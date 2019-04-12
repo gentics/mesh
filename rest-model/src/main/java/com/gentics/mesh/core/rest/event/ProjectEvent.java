@@ -7,8 +7,18 @@ import com.gentics.mesh.core.rest.project.ProjectReference;
  */
 public interface ProjectEvent extends MeshEventModel {
 
+	/**
+	 * Return the project reference.
+	 * 
+	 * @return
+	 */
 	ProjectReference getProject();
 
+	/**
+	 * Set the project reference.
+	 * 
+	 * @param project
+	 */
 	void setProject(ProjectReference project);
 
 }

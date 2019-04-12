@@ -1,5 +1,6 @@
 package com.gentics.mesh.generator;
 
+import static com.gentics.mesh.dagger.SearchProviderType.TRACKING;
 import static com.gentics.mesh.example.ExampleUuids.UUID_1;
 import static com.gentics.mesh.mock.TestMocks.mockGroup;
 import static com.gentics.mesh.mock.TestMocks.mockMicroschemaContainer;
@@ -112,8 +113,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		System.out.println("Writing files to  {" + outputFolder.getAbsolutePath() + "}");
 		// outputDir.mkdirs();
 
-		System.setProperty(TrackingSearchProvider.TEST_PROPERTY_KEY, "true");
-		meshDagger = DaggerMeshComponent.builder().configuration(new MeshOptions()).build();
+		meshDagger = DaggerMeshComponent.builder().configuration(new MeshOptions()).searchProviderType(TRACKING).build();
 		provider = (TrackingSearchProvider) meshDagger.searchProvider();
 
 		try {
@@ -144,7 +144,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 		NodeIndexHandler nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
 		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), UUID_1, ContainerType.PUBLISHED).toCompletable()
-				.blockingAwait();
+			.blockingAwait();
 		writeStoreEvent("node.search");
 	}
 

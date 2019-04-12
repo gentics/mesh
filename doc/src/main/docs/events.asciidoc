@@ -4,7 +4,8 @@ title: Events
 
 :icons: font
 :source-highlighter: prettify
-:toc:
 
 == Events
+
+include::content/docs/examples/tables/MeshEvent.adoc-include[]
 
