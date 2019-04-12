@@ -14,7 +14,7 @@ The application we will use is very basic and only consists of three different v
 
 image:../app-overview.png[React App Vehicle Page, role="img-responsive"]
 
-The *welcome page* contains just a basic intro text and the navigation. The *category overview* page displays a list entries of the category. Initially we only display static contents and thus only the aircrafts category is displayed which contains a single vehicle. The last page provides the *vehicle view* of the selected vehicle.
+The *welcome page* contains just a basic intro text and the navigation. The *category overview* page displays a list entries of the category. Initially we only display hardcoded contents and thus only the aircrafts category is displayed which contains a single vehicle. The last page provides the *vehicle view* of the selected vehicle.
 
 Next Steps:
 
@@ -28,7 +28,7 @@ In our app we use a few different data elements.
 
 Each `Vehicle` has a `name`, `description`, `SKU`, `price`, `weight`, `stockLevel` and `image` field. Each `Category` with a `name` field can list multiple `Vehicles`.
 
-== Step 1 - A Static App
+== Step 1 - Frontend App
 
 The `guide-step-1` branch of the https://github.com/gentics/mesh-react-example[mesh-react-example] repository contains the example react app. The app was created using `create-react-app`. Bootstrap and `react-router-dom` were added along with the basic components and css which are needed for the views.
 
@@ -51,7 +51,7 @@ Sources:
 
 === Routing
 
-The `Content.jsx` handles the dynamic routing. For paths other than `/` it will render the `WebrootContent` component. This component examines the current `location.pathname` to either render a `Vehicle` or a `Category` component. The static content data for each case is passed along.
+The `Content.jsx` handles the dynamic routing. For paths other than `/` it will render the `WebrootContent` component. This component examines the current `location.pathname` to either render a `Vehicle` or a `Category` component. The content JSON data for each case is passed along.
 
 === Navigation
 
@@ -123,7 +123,7 @@ The `Category.jsx` iterates over all children of the category to render the list
 
 === Vehicle View
 
-The `Vehicle.jsx` will use the static JSON data which was entered in the `Content.jsx` to render the detail view.
+The `Vehicle.jsx` will use the hardcoded JSON data which was entered in the `Content.jsx` to render the detail view.
 At this stage only the Space Shuttle will be listed in the Aircraft category.
 
 [source,json]
