@@ -1,19 +1,19 @@
 package com.gentics.mesh.test.context;
 
-import static org.junit.Assert.assertFalse;
+import com.gentics.mesh.core.rest.common.AbstractResponse;
+import com.gentics.mesh.rest.client.MeshRequest;
+import io.reactivex.Observable;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
-import com.gentics.mesh.core.rest.common.AbstractResponse;
-import com.gentics.mesh.rest.client.MeshRequest;
-
-import io.reactivex.Observable;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
+import static org.junit.Assert.assertFalse;
 
 /**
  * Collection of helper methods which are useful for testing mesh.
@@ -83,4 +83,7 @@ public final class MeshTestHelper {
 		return json.encodePrettily();
 	}
 
+	public static <T> Consumer<T> noopConsumer() {
+		return t -> {};
+	}
 }

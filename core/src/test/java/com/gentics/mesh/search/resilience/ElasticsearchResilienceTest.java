@@ -1,21 +1,19 @@
-package com.gentics.mesh.search;
-
-import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_TOXIC;
-import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-
-import org.junit.Test;
+package com.gentics.mesh.search.resilience;
 
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-
 import eu.rekawek.toxiproxy.model.ToxicDirection;
+import org.junit.Test;
+
+import java.io.IOException;
+
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_TOXIC;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
+import static org.junit.Assert.assertEquals;
 
 @MeshTestSetting(elasticsearch = CONTAINER_TOXIC, startServer = true, testSize = FULL)
 public class ElasticsearchResilienceTest extends AbstractMeshTest {
@@ -36,5 +34,4 @@ public class ElasticsearchResilienceTest extends AbstractMeshTest {
 		assertEquals(0, response.getData().size());
 
 	}
-
 }

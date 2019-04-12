@@ -35,10 +35,6 @@ public class BulkOperator implements ObservableOperator<SearchRequest, SearchReq
 	private final int requestLimit;
 	private FlushSubscriber<SearchRequest> subscriber;
 
-	public BulkOperator(Vertx vertx) {
-		this(vertx, Duration.ofSeconds(10), 1000);
-	}
-
 	public BulkOperator(Vertx vertx, Duration bulkTime, int requestLimit) {
 		this.vertx = vertx;
 		this.bulkTime = bulkTime.toMillis();
@@ -63,6 +59,10 @@ public class BulkOperator implements ObservableOperator<SearchRequest, SearchReq
 
 			@Override
 			public void onNext(SearchRequest elasticSearchRequest) {
+				if (sub.isDisposed()) {
+					cleanup();
+					return;
+				}
 				if (elasticSearchRequest instanceof Bulkable) {
 					if (bulkableRequests.isEmpty()) {
 						resetTimer();
@@ -102,7 +102,7 @@ public class BulkOperator implements ObservableOperator<SearchRequest, SearchReq
 			@Override
 			public void flush() {
 				cancelTimer();
-				if (!bulkableRequests.isEmpty()) {
+				if (!bulkableRequests.isEmpty() && !sub.isDisposed()) {
 					BulkRequest request = new BulkRequest(new ArrayList<>(bulkableRequests));
 					bulkableRequests.clear();
 					observer.onNext(request);
@@ -116,13 +116,25 @@ public class BulkOperator implements ObservableOperator<SearchRequest, SearchReq
 
 			@Override
 			public void onError(Throwable t) {
+				if (sub.isDisposed()) {
+					cleanup();
+					return;
+				}
 				observer.onError(t);
 			}
 
 			@Override
 			public void onComplete() {
+				if (sub.isDisposed()) {
+					cleanup();
+					return;
+				}
 				flush();
 				observer.onComplete();
+			}
+
+			private void cleanup() {
+				cancelTimer();
 			}
 		};
 		return subscriber;

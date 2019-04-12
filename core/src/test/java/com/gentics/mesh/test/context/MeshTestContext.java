@@ -1,24 +1,5 @@
 package com.gentics.mesh.test.context;
 
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.IOException;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.io.FileUtils;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-import org.testcontainers.containers.Network;
-import org.testcontainers.containers.ToxiproxyContainer;
-import org.testcontainers.containers.ToxiproxyContainer.ContainerProxy;
-import org.testcontainers.containers.wait.strategy.Wait;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.cache.PermissionStore;
@@ -50,13 +31,31 @@ import com.gentics.mesh.test.docker.KeycloakContainer;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
-
-import eu.rekawek.toxiproxy.Proxy;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import okhttp3.OkHttpClient;
+import org.apache.commons.io.FileUtils;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
+import org.testcontainers.containers.Network;
+import org.testcontainers.containers.ToxiproxyContainer;
+import org.testcontainers.containers.ToxiproxyContainer.ContainerProxy;
+import org.testcontainers.containers.wait.strategy.Wait;
+
+import java.io.File;
+import java.io.IOException;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+
+import static com.gentics.mesh.test.context.MeshTestHelper.noopConsumer;
+import static org.junit.Assert.assertTrue;
 
 public class MeshTestContext extends TestWatcher {
 
@@ -104,6 +103,8 @@ public class MeshTestContext extends TestWatcher {
 
 	private CountDownLatch idleLatch;
 	private MessageConsumer<Object> idleConsumer;
+
+	private Consumer<MeshOptions> optionChanger = noopConsumer();
 
 	@Override
 	protected void starting(Description description) {
@@ -162,6 +163,7 @@ public class MeshTestContext extends TestWatcher {
 					toxiproxy.stop();
 					network.close();
 				}
+				optionChanger = noopConsumer();
 			} else {
 				cleanupFolders();
 				if (settings.startServer()) {
@@ -452,7 +454,7 @@ public class MeshTestContext extends TestWatcher {
 
 			oauth2Options.setConfig(realmConfig);
 		}
-
+		settings.optionChanger().changer.accept(meshOptions);
 		Mesh.mesh(meshOptions);
 		return meshOptions;
 	}
@@ -576,4 +578,8 @@ public class MeshTestContext extends TestWatcher {
 		return elasticsearch;
 	}
 
+	public MeshTestContext setOptionChanger(Consumer<MeshOptions> optionChanger) {
+		this.optionChanger = optionChanger;
+		return this;
+	}
 }

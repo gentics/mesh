@@ -74,4 +74,9 @@ public class IdleChecker {
 		}
 		return value;
 	}
+
+
+	public void resetTransformations() {
+		transformations.set(0);
+	}
 }

@@ -1,12 +1,13 @@
 package com.gentics.mesh.test.context;
 
-import static com.gentics.mesh.test.TestSize.PROJECT;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
+import com.gentics.mesh.test.TestSize;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-import com.gentics.mesh.test.TestSize;
+import static com.gentics.mesh.test.TestSize.PROJECT;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
+import static com.gentics.mesh.test.context.MeshOptionChanger.NO_CHANGE;
 
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MeshTestSetting {
@@ -66,4 +67,6 @@ public @interface MeshTestSetting {
 	 * @return
 	 */
 	boolean ssl() default false;
+
+	MeshOptionChanger optionChanger() default NO_CHANGE;
 }
