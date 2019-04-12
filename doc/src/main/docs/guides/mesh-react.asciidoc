@@ -444,8 +444,7 @@ query Navigation {
 
 Now that we have added our content and know how to fetch the data we can update the React app to utilize the GraphQL API to load the contents.
 
-TIP: You can also directly checkout the updated sources from the `guide-step-2` branch.
-
+TIP: You can also directly checkout the updated sources from the `guide-step-2` branch which contain all needed changes.
 
 === API
 
@@ -568,6 +567,21 @@ function post(path, data) {
 }
 ----
 
+=== React Proxy
+
+React scripts provide a great way to add API server to our development app by link:https://facebook.github.io/create-react-app/docs/proxying-api-requests-in-development[proxying API request].
+
+We just need to add the `proxy` field to our `package.json` file. This way the Gentics Mesh API will also be exposed in the React App development server.
+
+.package.json
+[source,js]
+----
+…
+"proxy": "http://localhost:8080"
+…
+----
+
+TIP: In production we could either use an link:https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/[nginx proxy] or use link:https://getmesh.io/docs/references/#_cors[CORS] to utilize a different domain for our Gentics Mesh server.
 
 === Content
 
