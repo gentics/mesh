@@ -1,5 +1,7 @@
 package com.gentics.mesh.search.verticle;
 
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
@@ -20,13 +22,15 @@ public class IdleChecker {
 	private final AtomicInteger transformations = new AtomicInteger();
 	private final Subject<Object> idling = PublishSubject.create();
 
-	@Inject
-	public IdleChecker() {
+	private final ElasticSearchOptions options;
 
+	@Inject
+	public IdleChecker(MeshOptions options) {
+		this.options = options.getSearchOptions();
 	}
 
 	public Observable<Object> idling() {
-		return idling.debounce(1, TimeUnit.SECONDS)
+		return idling.debounce(options.getIdleDebounceTime(), TimeUnit.MILLISECONDS)
 			.filter(ignore -> isIdle());
 	}
 

@@ -25,6 +25,7 @@ public class ElasticSearchOptions implements Option {
 
 	public static final int DEFAULT_EVENT_BUFFER_SIZE = 1000;
 	public static final int DEFAULT_BULK_DEBOUNCE_TIME = 2000;
+	public static final int DEFAULT_IDLE_DEBOUNCE_TIME = 100;
 	public static final int DEFAULT_RETRY_INTERVAL = 5000;
 
 	public static final String DEFAULT_PREFIX = "mesh-";
@@ -39,6 +40,7 @@ public class ElasticSearchOptions implements Option {
 	public static final String MESH_ELASTICSEARCH_BULK_LIMIT_ENV = "MESH_ELASTICSEARCH_BULK_LIMIT";
 	public static final String MESH_ELASTICSEARCH_EVENT_BUFFER_SIZE_ENV = "MESH_ELASTICSEARCH_EVENT_BUFFER_SIZE";
 	public static final String MESH_ELASTICSEARCH_BULK_DEBOUNCE_TIME_ENV = "MESH_ELASTICSEARCH_BULK_DEBOUNCE_TIME";
+	public static final String MESH_ELASTICSEARCH_IDLE_DEBOUNCE_TIME_ENV = "MESH_ELASTICSEARCH_IDLE_DEBOUNCE_TIME";
 	public static final String MESH_ELASTICSEARCH_RETRY_INTERVAL_ENV = "MESH_ELASTICSEARCH_RETRY_INTERVAL";
 
 	@JsonProperty(required = false)
@@ -87,6 +89,12 @@ public class ElasticSearchOptions implements Option {
 		+ DEFAULT_BULK_DEBOUNCE_TIME)
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_BULK_DEBOUNCE_TIME_ENV, description = "Override the bulk debounce time.")
 	private int bulkDebounceTime = DEFAULT_BULK_DEBOUNCE_TIME;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("The maximum amount of time in milliseconds between two successful requests before the idle event is emitted. Default: "
+		+ DEFAULT_IDLE_DEBOUNCE_TIME)
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_IDLE_DEBOUNCE_TIME_ENV, description = "Override the idle debounce time.")
+	private int idleDebounceTime = DEFAULT_IDLE_DEBOUNCE_TIME;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The time in milliseconds between retries of elastic search requests in case of a failure. Default: "
@@ -202,6 +210,15 @@ public class ElasticSearchOptions implements Option {
 
 	public ElasticSearchOptions setBulkDebounceTime(int bulkDebounceTime) {
 		this.bulkDebounceTime = bulkDebounceTime;
+		return this;
+	}
+
+	public int getIdleDebounceTime() {
+		return idleDebounceTime;
+	}
+
+	public ElasticSearchOptions setIdleDebounceTime(int idleDebounceTime) {
+		this.idleDebounceTime = idleDebounceTime;
 		return this;
 	}
 
