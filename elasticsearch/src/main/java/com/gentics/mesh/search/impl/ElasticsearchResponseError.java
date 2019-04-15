@@ -8,6 +8,7 @@ public class ElasticsearchResponseError extends Throwable implements Elasticsear
 	private final JsonObject json;
 
 	public ElasticsearchResponseError(JsonObject json) {
+		super(json.getString("reason"));
 		this.json = json;
 	}
 

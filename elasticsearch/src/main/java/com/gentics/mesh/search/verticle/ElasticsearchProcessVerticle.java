@@ -187,10 +187,11 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			})
 			.doOnComplete(() -> log.trace("Request completed:\n" + request))
 			.doOnError(err -> log.error("Error after sending request to Elasticsearch", err))
-			.doFinally(() -> idleChecker.addAndGetRequests(-request.requestCount()))
 			.andThen(Flowable.just(request))
 			.onErrorResumeNext(this::syncIndices)
-			.retryWhen(retryWithDelay(Duration.ofMillis(options.getRetryInterval())));
+			.onErrorResumeNext(ignoreElasticsearchErrors(request))
+			.retryWhen(retryWithDelay(Duration.ofMillis(options.getRetryInterval())))
+			.doFinally(() -> idleChecker.addAndGetRequests(-request.requestCount()));
 	}
 
 	/**
@@ -208,6 +209,22 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			}
 		}
 		return Flowable.error(error);
+	}
+
+	/**
+	 * Most errors inside elasticsearch are not recoverable by retrying. These errors will only be logged.
+	 * @param request
+	 * @return
+	 */
+	private io.reactivex.functions.Function<Throwable, Flowable<SearchRequest>> ignoreElasticsearchErrors(SearchRequest request) {
+		return error -> {
+			if (error instanceof ElasticsearchResponseErrorStreamable) {
+				log.error("Not retrying because it is an error inside elasticsearch.");
+				return Flowable.just(request);
+			} else {
+				return Flowable.error(error);
+			}
+		};
 	}
 
 	private Flowable<? extends SearchRequest> generateRequests(MessageEvent messageEvent) {
