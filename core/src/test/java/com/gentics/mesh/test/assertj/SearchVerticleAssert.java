@@ -10,8 +10,10 @@ public class SearchVerticleAssert extends AbstractAssert<SearchVerticleAssert, E
 		super(actual, SearchVerticleAssert.class);
 	}
 
-	public SearchVerticleAssert isIdle() {
-		assertThat(actual.getIdleChecker().isIdle()).as("Search is idle").isTrue();
+	public SearchVerticleAssert isIdleIfUsed() {
+		if (actual != null) {
+			assertThat(actual.getIdleChecker().isIdle()).as("Search is idle").isTrue();
+		}
 		return this;
 	}
 }

@@ -123,7 +123,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	@After
 	public void resetSearchVerticle() throws Exception {
 		// Make sure that the search is idle
-		MeshCoreAssertion.assertThat(getSearchVerticle()).isIdle();
+		MeshCoreAssertion.assertThat(getSearchVerticle()).isIdleIfUsed();
 		((BootstrapInitializerImpl) boot()).loader.get().reloadSearchVerticle();
 	}
 
