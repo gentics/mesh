@@ -26,7 +26,7 @@ public class IdleChecker {
 	}
 
 	public Observable<Object> idling() {
-		return idling.debounce(100, TimeUnit.MILLISECONDS)
+		return idling.debounce(1, TimeUnit.SECONDS)
 			.filter(ignore -> isIdle());
 	}
 
@@ -34,7 +34,7 @@ public class IdleChecker {
 		idling.onComplete();
 	}
 
-	private boolean isIdle() {
+	public boolean isIdle() {
 		return requests.get() == 0 && transformations.get() == 0;
 	}
 

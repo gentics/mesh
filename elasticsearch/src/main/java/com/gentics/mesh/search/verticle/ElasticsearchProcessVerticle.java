@@ -149,7 +149,6 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			.doOnNext(request -> {
 				int count = request.requestCount();
 				bufferedRequests.addAndGet(count);
-				idleChecker.addAndGetRequests(count);
 			})
 			.toFlowable(BackpressureStrategy.MISSING)
 			.onBackpressureBuffer(
@@ -221,6 +220,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 					if (log.isTraceEnabled()) {
 						log.trace(String.format("Generated request of class {%s}", request.getClass().getSimpleName()));
 					}
+					idleChecker.addAndGetRequests(request.requestCount());
 				})
 				.doOnError(err -> log.error("Error while transforming event", err))
 				.doOnComplete(() -> log.trace("Done transforming event {}. Transformations pending: {}", messageEvent.event, idleChecker.getTransformations()))
@@ -232,5 +232,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		}
 	}
 
-
+	public IdleChecker getIdleChecker() {
+		return idleChecker;
+	}
 }
