@@ -17,6 +17,11 @@ import java.util.Collection;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toFlowable;
 
+/**
+ * An event handler that uses the events from {@link MeshEntity#allEvents()} and creates/updates/deletes documents
+ * according to {@link MeshEntity#transform(Object)}
+ * @param <T>
+ */
 @ParametersAreNonnullByDefault
 public class SimpleEventHandler<T extends MeshCoreVertex<? extends RestModel, T>> implements EventHandler {
 	private static final Logger log = LoggerFactory.getLogger(SimpleEventHandler.class);

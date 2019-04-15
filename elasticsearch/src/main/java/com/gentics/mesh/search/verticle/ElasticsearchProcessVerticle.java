@@ -38,6 +38,16 @@ import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_REQUEST;
 import static com.gentics.mesh.core.rest.MeshEvent.SEARCH_FLUSH_REQUEST;
 import static com.gentics.mesh.search.verticle.eventhandler.RxUtil.retryWithDelay;
 
+/**
+ * <p>Listens to events that require a change in elasticsearch.</p>
+ * <p>The basic flow of events can be found in the {@link #assemble()} method. It looks like this:</p>
+ * <ol>
+ *     <li>Event received</li>
+ *     <li>Generate necessary requests out of the event</li>
+ *     <li>Bulk bulkable requests together</li>
+ *     <li>Send request to elasticsearch</li>
+ * </ol>
+ */
 public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	private static final Logger log = LoggerFactory.getLogger(ElasticsearchProcessVerticle.class);
 
@@ -82,6 +92,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			.map(event -> vertx.eventBus().<JsonObject>localConsumer(event.address, message -> {
 				if (!stopped.get() && !isDroppedEvent(message)) {
 					idleChecker.incrementAndGetTransformations();
+					// Only continue processing the event if elasticsearch is available.
 					elasticsearchAvailable.filter(available -> available)
 						.firstOrError()
 						.subscribe(ignore -> {
@@ -96,6 +107,14 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		log.trace("Done Initializing Elasticsearch process verticle");
 	}
 
+	/**
+	 * Tests if an event in a message should be ignore for further processing.
+	 * Events will be ignored when an index sync has been requested but not yet started.
+	 * Effectively this will ignore all events that occurred before the index sync request.
+	 *
+	 * @param message
+	 * @return
+	 */
 	private boolean isDroppedEvent(Message<JsonObject> message) {
 		return waitForSync.get() && !message.address().equals(INDEX_SYNC_REQUEST.address);
 	}
@@ -124,7 +143,6 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 
 	/**
 	 * Refreshes the Elasticsearch indices so that all changes are readable
-	 * @return
 	 */
 	public Completable refresh() {
 		return searchProvider.refreshIndex()
@@ -132,6 +150,9 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			.doOnComplete(() -> log.trace("Refresh complete."));
 	}
 
+	/**
+	 * Assembles the main Flowable through which all requests are processed.
+	 */
 	private void assemble() {
 		BulkOperator bulker = new BulkOperator(vertx, Duration.ofMillis(options.getBulkDebounceTime()), options.getBulkLimit());
 		requests.concatMap(event -> generateRequests(event).toObservable(), 1)
@@ -143,6 +164,14 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			.subscribe();
 	}
 
+	/**
+	 * Buffers requests to elasticsearch when the requests to elasticsearch are slower than the flow of incoming events.
+	 * If too many events are queued, the queue is cleared and an index sync will be requested.
+	 *
+	 * @see ElasticSearchOptions#getEventBufferSize()
+	 * @param upstream
+	 * @return
+	 */
 	private Flowable<SearchRequest> bufferRequests(Observable<SearchRequest> upstream) {
 		AtomicInteger bufferedRequests = new AtomicInteger(0);
 		return upstream
@@ -164,6 +193,9 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		.doOnNext(request -> bufferedRequests.addAndGet(-request.requestCount()));
 	}
 
+	/**
+	 * Waits until elasticsearch is reachable and then starts the syncing process.
+	 */
 	private void startSync() {
 		waitForSync.set(true);
 		elasticsearchAvailable.onNext(false);
@@ -178,6 +210,21 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		vertx.eventBus().publish(INDEX_SYNC_REQUEST.address, null);
 	}
 
+	/**
+	 * Sends a request to elasticsearch. Handles the following errors:
+	 *
+	 * <h2>index_not_found_exception</h2>
+	 * Sync indices before any other event is processed.
+	 *
+	 * <h2>Connection errors</h2>
+	 * The request will be retried indefinitely in a configurable interval.
+	 *
+	 * <h2>Errors inside elasticsearch</h2>
+	 * These errors will not affect this verticle and will be loggend and then ignored.
+	 *
+	 * @param request
+	 * @return
+	 */
 	private Flowable<SearchRequest> sendRequest(SearchRequest request) {
 		return stopped.get()
 			? Flowable.empty()
@@ -227,6 +274,11 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		};
 	}
 
+	/**
+	 * Generate events out of the given event. The requests are not sent yet.
+	 * @param messageEvent
+	 * @return
+	 */
 	private Flowable<? extends SearchRequest> generateRequests(MessageEvent messageEvent) {
 		if (stopped.get()) {
 			return Flowable.empty();
@@ -249,6 +301,10 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		}
 	}
 
+	/**
+	 * Returns the idle checker for this verticle.
+	 * @return
+	 */
 	public IdleChecker getIdleChecker() {
 		return idleChecker;
 	}

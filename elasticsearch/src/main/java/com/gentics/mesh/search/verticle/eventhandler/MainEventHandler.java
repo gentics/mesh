@@ -97,6 +97,10 @@ public class MainEventHandler implements EventHandler {
 		handlers = createHandlers();
 	}
 
+	/**
+	 * Creates a map of event handlers that will be used to delegate events to the correct handler.
+	 * @return
+	 */
 	private Map<MeshEvent, List<EventHandler>> createHandlers() {
 		return Stream.of(
 			syncEventHandler,
@@ -124,6 +128,12 @@ public class MainEventHandler implements EventHandler {
 		).collect(toMultiMap(EventHandler::handledEvents));
 	}
 
+	/**
+	 * Creates a fake elasticsearch request that is not bulkable. This will cause the bulk operator to flush
+	 * pending requests.
+	 * @param event
+	 * @return
+	 */
 	private static Flowable<SearchRequest> flushRequest(MessageEvent event) {
 		log.info("Flush request received");
 		return Flowable.just(SearchRequest.create(provider -> Completable.complete()

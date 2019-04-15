@@ -9,6 +9,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.function.Function;
 
+/**
+ * A factory to create simple event handlers.
+ */
 @Singleton
 public class EventHandlerFactory {
 	private final MeshEntities entities;
@@ -20,6 +23,13 @@ public class EventHandlerFactory {
 		this.helper = helper;
 	}
 
+	/**
+	 * Creates a simple event handler for an entity.
+	 * @param entity A function to get an entity.
+	 * @param indexName The static index name for the entity
+	 * @param <T>
+	 * @return
+	 */
 	public <T extends MeshCoreVertex<? extends RestModel, T>> EventHandler createSimpleEventHandler(Function<MeshEntities, MeshEntity<T>> entity, String indexName) {
 		return new SimpleEventHandler<>(helper, entity.apply(entities), indexName);
 	}

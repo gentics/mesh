@@ -9,6 +9,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Function;
 
+/**
+ * Handles events from mesh by turning them into a flow of Elasticsearch requests.
+ */
 public interface EventHandler {
 
 	/**

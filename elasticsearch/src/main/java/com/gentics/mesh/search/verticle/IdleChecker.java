@@ -29,43 +29,67 @@ public class IdleChecker {
 		this.options = options.getSearchOptions();
 	}
 
+	/**
+	 * Returns a hot observable that emits a dummy object whenever the search is idle.
+	 * @return
+	 */
 	public Observable<Object> idling() {
 		return idling.debounce(options.getIdleDebounceTime(), TimeUnit.MILLISECONDS)
 			.filter(ignore -> isIdle());
 	}
 
+	/**
+	 * Completes the {@link #idling()} observable.
+	 */
 	public void close() {
 		idling.onComplete();
 	}
 
+	/**
+	 * Tests if search has currently no pending transformations or requests.
+	 * @return
+	 */
 	public boolean isIdle() {
 		return requests.get() == 0 && transformations.get() == 0;
 	}
 
+	/**
+	 * The amount of pending requests.
+	 * @return
+	 */
 	public int getRequests() {
 		return requests.get();
 	}
 
+	/**
+	 * The amount of pending event transformations.
+	 * @return
+	 */
 	public int getTransformations() {
 		return transformations.get();
 	}
 
-	public int incrementAndGetRequests() {
-		return requests.incrementAndGet();
-	}
-
+	/**
+	 * Adds a pending transformation.
+	 * @return
+	 */
 	public int incrementAndGetTransformations() {
 		return transformations.incrementAndGet();
 	}
 
-	public int decrementAndGetRequests() {
-		return checkIdle(requests.decrementAndGet());
-	}
-
+	/**
+	 * Subtracts a pending transformation.
+	 * @return
+	 */
 	public int decrementAndGetTransformations() {
 		return checkIdle(transformations.decrementAndGet());
 	}
 
+	/**
+	 * Adds an amount of requests
+	 * @param i
+	 * @return
+	 */
 	public int addAndGetRequests(int i) {
 		return checkIdle(requests.addAndGet(i));
 	}
@@ -79,7 +103,9 @@ public class IdleChecker {
 		return value;
 	}
 
-
+	/**
+	 * Resets the amount of pending transformations.
+	 */
 	public void resetTransformations() {
 		transformations.set(0);
 	}
