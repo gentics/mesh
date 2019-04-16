@@ -164,4 +164,4 @@ The `INFO` lines will be logged to the file and to stdout.
 
 The OrientDB server logging can be configured using the `orientdb-server-config.xml` and `orientdb-server-log.properties` files.
 
-More detailed information can be found in the http://orientdb.com/docs/3.0.x/admin/Logging.html[OrientDB Docs].
+More detailed information can be found in the https://orientdb.com/docs/3.0.x/admin/Logging.html[OrientDB Docs].

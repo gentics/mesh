@@ -12,12 +12,12 @@ title: Administration Guide
 [options="header"]
 |======
 | Component                                                    | Type                 | Version
-| http://orientdb.com/[OrientDB]                               | Graph Database       | 2.2.x
+| https://orientdb.com/[OrientDB]                              | Graph Database       | 3.0.x
 | https://github.com/Syncleus/Ferma[Ferma]                     | OGM                  | 2.4.x
 | https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine        | 6.1.x
 | http://vertx.io/[Vert.x]                                     | Core Framework       | 3.5.x
-| https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid  | 3.5.x
-| https://google.github.io/dagger/[Dagger 2]                   | Dependency Injection | 2.6.x
+| https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid  | 3.10.x
+| https://google.github.io/dagger/[Dagger 2]                   | Dependency Injection | 2.11.x
 |======
 
 TIP: You can find the components' current version numbers by querying the Gentics Mesh demo instance https://demo.getmesh.io/api/v1/ or your local instance http://localhost:8080/api/v1/.

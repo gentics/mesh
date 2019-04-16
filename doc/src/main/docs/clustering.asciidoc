@@ -156,7 +156,7 @@ upload:
 
 == Transaction handling / Change propagation
 
-Transactions are directly being handled by link:http://orientdb.com/docs/2.2.x/Transactions.html[OrientDB].
+Transactions are directly being handled by link:https://orientdb.com/docs/3.0.x/internals/Transactions.html[OrientDB].
 
 The distribution of data (write) is executed synchronous and will be directly visible on other instances. 
 Operations which modify permissions are handled asynchronous and may take a few milliseconds to propagate throughout the cluster.
@@ -211,7 +211,7 @@ Yes. New instances can be added at any time.
 Are my changes directly visible on other instances?::
 The replication handles this as fast as the network allows but by default replication is happening synchronous to full fill the `writeQuorum` and asynchronous once the quorum has been satisfied.
 which means that it could take a few moments until your changes are propagated throughout the cluster.
-This behaviour is configurable via the OrientDB `writeQuorum` setting. Take a look at the link:https://orientdb.com/docs/2.2/Distributed-Configuration.html[OrientDB distributed configuration] if you want to know more.
+This behaviour is configurable via the OrientDB `writeQuorum` setting. Take a look at the link:https://orientdb.com/docs/3.0.x/distributed/Distributed-Configuration.html[OrientDB distributed configuration] if you want to know more.
 Our tests currently only cover the `writeQuorum` and `readQuorum` of *1*.
 
 What happens if the network between my instances fails?::
