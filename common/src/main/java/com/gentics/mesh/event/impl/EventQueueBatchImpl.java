@@ -1,8 +1,5 @@
 package com.gentics.mesh.event.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -12,11 +9,13 @@ import com.gentics.mesh.core.rest.event.EventCauseInfoImpl;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
-
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @see EventQueueBatch
@@ -271,9 +270,9 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 				log.debug("Created event sent {}", event);
 			}
 			String json = JsonUtil.toJson(entry);
-			// if (log.isTraceEnabled()) {
-			log.info("Dispatching event '{}' with payload:\n{}", event, json);
-			// }
+			if (log.isTraceEnabled()) {
+				log.trace("Dispatching event '{}' with payload:\n{}", event, json);
+			}
 			eventbus.publish(event.getAddress(), new JsonObject(json));
 		});
 		getEntries().clear();
