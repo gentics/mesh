@@ -31,7 +31,6 @@ import com.gentics.mesh.search.impl.ElasticSearchProvider;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.test.TestDataProvider;
-import com.gentics.mesh.test.assertj.MeshCoreAssertion;
 import com.gentics.mesh.test.context.event.EventAsserter;
 import com.gentics.mesh.test.context.event.EventAsserterChain;
 import com.gentics.mesh.test.docker.ElasticsearchContainer;
@@ -122,8 +121,6 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	@After
 	public void resetSearchVerticle() throws Exception {
-		// Make sure that the search is idle
-		MeshCoreAssertion.assertThat(getSearchVerticle()).isIdleIfUsed();
 		((BootstrapInitializerImpl) boot()).loader.get().reloadSearchVerticle();
 	}
 
