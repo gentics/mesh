@@ -1,5 +1,43 @@
 package com.gentics.mesh.core.schema;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.validateDeletion;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
+import static com.gentics.mesh.test.util.MeshAssert.assertElement;
+import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
+
+import io.reactivex.Observable;
+import org.junit.After;
+import org.junit.Ignore;
+import org.junit.Test;
+
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.node.Node;
@@ -25,42 +63,8 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.gentics.mesh.test.util.TestUtils;
 import com.syncleus.ferma.tx.Tx;
-import io.reactivex.Observable;
-import org.junit.After;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.common.Permission.CREATE;
-import static com.gentics.mesh.core.rest.common.Permission.DELETE;
-import static com.gentics.mesh.core.rest.common.Permission.READ;
-import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.ClientHelper.validateDeletion;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
-import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
-import static com.gentics.mesh.test.util.MeshAssert.assertElement;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -554,6 +558,13 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		SchemaUpdateRequest request = new SchemaUpdateRequest();
 		request.setName("new-name");
 		call(() -> client().updateSchema(schemaUuid, request), FORBIDDEN, "error_missing_perm", schemaUuid, UPDATE_PERM.getRestPerm().getName());
+	}
+
+	@Test
+	@Override
+	public void testPermissionResponse() {
+		SchemaResponse schema = client().findSchemas().blockingGet().getData().get(0);
+		assertThat(schema.getPermissions()).hasNoPublishPermsSet();
 	}
 
 	@Test

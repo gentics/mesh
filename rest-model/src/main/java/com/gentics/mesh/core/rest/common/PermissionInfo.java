@@ -1,20 +1,20 @@
 package com.gentics.mesh.core.rest.common;
 
-import static com.gentics.mesh.core.rest.common.Permission.CREATE;
-import static com.gentics.mesh.core.rest.common.Permission.DELETE;
-import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
-import static com.gentics.mesh.core.rest.common.Permission.READ;
-import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
-import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 
 /**
  * Permission information
@@ -37,11 +37,11 @@ public class PermissionInfo implements RestModel {
 	@JsonPropertyDescription("Flag which indicates whether the delete permission is granted.")
 	private Boolean delete;
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether the publish permission is granted.")
 	private Boolean publish;
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether the read published permission is granted.")
 	private Boolean readPublished;
 
@@ -216,6 +216,16 @@ public class PermissionInfo implements RestModel {
 	 * @return Fluent API
 	 */
 	public PermissionInfo setOthers(boolean flag) {
+		return setOthers(flag, true);
+	}
+
+	/**
+	 * Set other permissions to the given flag.
+	 * 
+	 * @param flag
+	 * @return Fluent API
+	 */
+	public PermissionInfo setOthers(boolean flag, boolean includePublishPermissions) {
 		if (create == null) {
 			create = flag;
 		}
@@ -228,11 +238,13 @@ public class PermissionInfo implements RestModel {
 		if (delete == null) {
 			delete = flag;
 		}
-		if (publish == null) {
-			publish = flag;
-		}
-		if (readPublished == null) {
-			readPublished = flag;
+		if (includePublishPermissions) {
+			if (publish == null) {
+				publish = flag;
+			}
+			if (readPublished == null) {
+				readPublished = flag;
+			}
 		}
 		return this;
 	}

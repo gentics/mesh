@@ -1,48 +1,5 @@
 package com.gentics.mesh.core.project;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.common.Permission.CREATE;
-import static com.gentics.mesh.core.rest.common.Permission.DELETE;
-import static com.gentics.mesh.core.rest.common.Permission.READ;
-import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.ClientHelper.validateDeletion;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.PROJECT;
-import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
-import static com.gentics.mesh.test.util.MeshAssert.assertElement;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static java.lang.Math.ceil;
-import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.StreamSupport;
-
-import io.reactivex.Observable;
-import org.junit.Ignore;
-import org.junit.Test;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Branch;
@@ -80,9 +37,50 @@ import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
-
+import io.reactivex.Observable;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.StreamSupport;
+
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.validateDeletion;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.PROJECT;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
+import static com.gentics.mesh.test.util.MeshAssert.assertElement;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static java.lang.Math.ceil;
+import static java.util.stream.Collectors.toList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
 public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -730,6 +728,13 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		Observable.range(0, nJobs)
 			.flatMapCompletable(i -> client().findProjectByUuid(projectUuid()).toCompletable())
 			.blockingAwait();
+	}
+
+	@Test
+	@Override
+	public void testPermissionResponse() {
+		ProjectResponse project = client().findProjects().blockingGet().getData().get(0);
+		assertThat(project.getPermissions()).hasNoPublishPermsSet();
 	}
 
 	@Test

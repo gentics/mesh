@@ -1,5 +1,36 @@
 package com.gentics.mesh.core.tagfamily;
 
+import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.ContainerType;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.common.Permission;
+import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
+import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
+import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
+import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.gentics.mesh.util.UUIDUtil;
+import com.syncleus.ferma.tx.Tx;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
@@ -20,38 +51,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.junit.Ignore;
-import org.junit.Test;
-
-import com.gentics.mesh.core.data.ContainerType;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
-import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
-import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
-import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
-import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.test.definition.BasicRestTestcases;
-import com.gentics.mesh.util.UUIDUtil;
-import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -468,4 +467,10 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		}
 	}
 
+	@Test
+	@Override
+	public void testPermissionResponse() {
+		TagFamilyResponse family = client().findTagFamilies(PROJECT_NAME).blockingGet().getData().get(0);
+		assertThat(family.getPermissions()).hasNoPublishPermsSet();
+	}
 }

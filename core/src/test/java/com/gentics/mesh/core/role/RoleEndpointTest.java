@@ -1,35 +1,7 @@
 package com.gentics.mesh.core.role;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.ClientHelper.validateDeletion;
-import static com.gentics.mesh.test.TestSize.PROJECT;
-import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
-import static com.gentics.mesh.test.util.MeshAssert.assertElement;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.junit.Ignore;
-import org.junit.Test;
-
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -48,8 +20,34 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
-
+import com.syncleus.ferma.tx.Tx;
 import io.reactivex.Single;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.validateDeletion;
+import static com.gentics.mesh.test.TestSize.PROJECT;
+import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
+import static com.gentics.mesh.test.util.MeshAssert.assertElement;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
 public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -511,4 +509,10 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		awaitConcurrentRequests(nJobs, i -> client().findRoleByUuid(uuid));
 	}
 
+	@Test
+	@Override
+	public void testPermissionResponse() {
+		RoleResponse role = client().findRoles().blockingGet().getData().get(0);
+		assertThat(role.getPermissions()).hasNoPublishPermsSet();
+	}
 }
