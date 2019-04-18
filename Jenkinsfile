@@ -8,7 +8,6 @@ JobContext.set(this)
 final def dockerRegistry       = "gentics-docker-jenkinsbuilds.docker.apa-it.at"
 final def dockerImageName      = dockerRegistry + "/gentics/jenkinsbuilds/mesh-slave-openjdk8"
 
-
 properties([
 	parameters([
 		booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests"),
@@ -231,5 +230,3 @@ stage("Setup Build Environment") {
 		}
 	}
 }
-
-
