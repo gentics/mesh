@@ -675,5 +675,4 @@ public interface TestHelperMethods {
 			throw new RuntimeException(e);
 		}
 	}
-
 }

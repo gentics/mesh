@@ -1,10 +1,7 @@
 package com.gentics.mesh.assertj;
 
-import java.awt.image.BufferedImage;
-
-import com.gentics.mesh.rest.client.MeshWebrootResponse;
-import org.assertj.core.api.Assertions;
-
+import com.gentics.mesh.assertj.impl.BranchAssert;
+import com.gentics.mesh.assertj.impl.BranchResponseAssert;
 import com.gentics.mesh.assertj.impl.BufferedImageAssert;
 import com.gentics.mesh.assertj.impl.DummySearchProviderAssert;
 import com.gentics.mesh.assertj.impl.FieldMapAssert;
@@ -16,6 +13,7 @@ import com.gentics.mesh.assertj.impl.JobListResponseAssert;
 import com.gentics.mesh.assertj.impl.JsonArrayAssert;
 import com.gentics.mesh.assertj.impl.JsonObjectAssert;
 import com.gentics.mesh.assertj.impl.LanguageAssert;
+import com.gentics.mesh.assertj.impl.MeshRestClientMessageExceptionAssert;
 import com.gentics.mesh.assertj.impl.MicronodeAssert;
 import com.gentics.mesh.assertj.impl.MicronodeResponseAssert;
 import com.gentics.mesh.assertj.impl.NavigationResponseAssert;
@@ -26,8 +24,6 @@ import com.gentics.mesh.assertj.impl.PermissionInfoAssert;
 import com.gentics.mesh.assertj.impl.ProjectResponseAssert;
 import com.gentics.mesh.assertj.impl.PublishStatusModelAssert;
 import com.gentics.mesh.assertj.impl.PublishStatusResponseAssert;
-import com.gentics.mesh.assertj.impl.BranchAssert;
-import com.gentics.mesh.assertj.impl.BranchResponseAssert;
 import com.gentics.mesh.assertj.impl.RoleResponseAssert;
 import com.gentics.mesh.assertj.impl.SchemaChangeModelAssert;
 import com.gentics.mesh.assertj.impl.SchemaContainerAssert;
@@ -39,9 +35,9 @@ import com.gentics.mesh.assertj.impl.TagListResponseAssert;
 import com.gentics.mesh.assertj.impl.TagResponseAssert;
 import com.gentics.mesh.assertj.impl.UserResponseAssert;
 import com.gentics.mesh.assertj.impl.WebRootResponseAssert;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
@@ -68,10 +64,14 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.search.TrackingSearchProvider;
-
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.assertj.core.api.Assertions;
+
+import java.awt.image.BufferedImage;
 
 public class MeshAssertions extends Assertions {
 
@@ -209,5 +209,9 @@ public class MeshAssertions extends Assertions {
 
 	public static LanguageAssert assertThat(Language actual) {
 		return new LanguageAssert(actual);
+	}
+
+	public static MeshRestClientMessageExceptionAssert assertThat(MeshRestClientMessageException actual) {
+		return new MeshRestClientMessageExceptionAssert(actual);
 	}
 }
