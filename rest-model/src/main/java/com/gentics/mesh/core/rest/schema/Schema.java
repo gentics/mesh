@@ -30,11 +30,11 @@ public interface Schema extends FieldSchemaContainer {
 	Schema setDisplayField(String displayField);
 
 	/**
-	 * Return the container flag. When enabled nodes of this schema can contain other nodes. (parent/child relationship)
+	 * Return the container flag.
 	 * 
-	 * @return Container flag value
+	 * @return
 	 */
-	boolean isContainer();
+	Boolean getContainer();
 
 	/**
 	 * Set the container flag for this schema. Nodes that are created using a schema which has an enabled container flag can be used as a parent for new nodes.
@@ -42,7 +42,7 @@ public interface Schema extends FieldSchemaContainer {
 	 * @param flag
 	 *            Container flag value
 	 */
-	Schema setContainer(boolean flag);
+	Schema setContainer(Boolean flag);
 
 	/**
 	 * Return the segment field name.

@@ -237,7 +237,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			assertEquals("folder", node.getSchemaContainer().getLatestVersion().getSchema().getName());
-			assertTrue(node.getSchemaContainer().getLatestVersion().getSchema().isContainer());
+			assertTrue(node.getSchemaContainer().getLatestVersion().getSchema().getContainer());
 			NodeGraphFieldContainer englishVersion = node.getGraphFieldContainer("en");
 			assertNotNull(englishVersion);
 		}

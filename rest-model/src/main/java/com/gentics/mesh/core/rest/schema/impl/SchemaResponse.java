@@ -106,12 +106,12 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	}
 
 	@Override
-	public boolean isContainer() {
+	public Boolean getContainer() {
 		return container;
 	}
 
 	@Override
-	public SchemaResponse setContainer(boolean flag) {
+	public SchemaResponse setContainer(Boolean flag) {
 		this.container = flag;
 		return this;
 	}
@@ -153,7 +153,7 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 
 	public SchemaUpdateRequest toUpdateRequest() {
 		SchemaUpdateRequest updateRequest = new SchemaUpdateRequest();
-		updateRequest.setContainer(isContainer());
+		updateRequest.setContainer(getContainer());
 		updateRequest.getFields().addAll(getFields());
 		updateRequest.setName(getName());
 		updateRequest.setSegmentField(getSegmentField());

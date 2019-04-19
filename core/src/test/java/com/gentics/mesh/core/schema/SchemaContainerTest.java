@@ -219,17 +219,17 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 
 			schema = currentVersion.getSchema();
 			schema.setContainer(true);
-			assertTrue("The schema container flag should be set to true since we updated it.", schema.isContainer());
+			assertTrue("The schema container flag should be set to true since we updated it.", schema.getContainer());
 			currentVersion.setSchema(schema);
 			schema = currentVersion.getSchema();
-			assertTrue(schema.isContainer());
+			assertTrue(schema.getContainer());
 
 			schema = currentVersion.getSchema();
 			schema.setContainer(false);
-			assertFalse(schema.isContainer());
+			assertFalse(schema.getContainer());
 			currentVersion.setSchema(schema);
 			schema = currentVersion.getSchema();
-			assertFalse(schema.isContainer());
+			assertFalse(schema.getContainer());
 		}
 	}
 
