@@ -377,4 +377,9 @@ public class PluginContext implements RoutingContext {
 		return rc.queryParam(query);
 	}
 
+	@Override
+	public void fail(int statusCode, Throwable throwable) {
+		rc.fail(statusCode, throwable);
+	}
+
 }
