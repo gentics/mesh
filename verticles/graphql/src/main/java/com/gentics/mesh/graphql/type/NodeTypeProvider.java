@@ -162,7 +162,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		nodeType.typeResolver(env -> {
 			NodeContent content = env.getObject();
-			String schemaName = content.getContainer().getSchemaContainerVersion().getName();
+			String schemaName = content.getNode().getSchemaContainer().getName();
 			return env.getSchema().getObjectType(schemaName);
 		});
 
