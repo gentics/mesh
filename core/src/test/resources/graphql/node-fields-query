@@ -83,6 +83,14 @@
 				stringLink
 
 				micronode {
+                    # [$.data.node.fields.micronode.uuid=<is-uuid>]
+                    uuid
+                    microschema {
+                        # [$.data.node.fields.micronode.microschema.uuid=<is-uuid>]
+                        uuid
+                        # [$.data.node.fields.micronode.microschema.name=vcard]
+                        name
+                    }
 					... on vcard {
 					    fields {
                             firstName
@@ -93,6 +101,14 @@
 
 				micronodeList {
 					... on vcard {
+                        # [$.data.node.fields.micronodeList[0].uuid=<is-uuid>]
+					    uuid
+					    microschema {
+					        # [$.data.node.fields.micronodeList[0].microschema.uuid=<is-uuid>]
+					        uuid
+					        # [$.data.node.fields.micronodeList[0].microschema.name=vcard]
+					        name
+					    }
 					    fields {
                             # [$.data.node.fields.micronodeList[0].fields.firstName=Joe]
                             firstName
@@ -101,6 +117,14 @@
 					    }
 					}
 					... on TestMicroschema {
+                        # [$.data.node.fields.micronodeList[1].uuid=<is-uuid>]
+                        uuid
+                        microschema {
+                            # [$.data.node.fields.micronodeList[1].microschema.uuid=<is-uuid>]
+                            uuid
+                            # [$.data.node.fields.micronodeList[1].microschema.name=TestMicroschema]
+                            name
+                        }
 					    fields {
                             text
                             nodeRef {
