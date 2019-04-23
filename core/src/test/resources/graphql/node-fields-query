@@ -84,31 +84,37 @@
 
 				micronode {
 					... on vcard {
-						firstName
-						lastName
+					    fields {
+                            firstName
+                            lastName
+					    }
 					}
 				}
 
 				micronodeList {
 					... on vcard {
-						# [$.data.node.fields.micronodeList[0].firstName=Joe]
-						firstName
-						# [$.data.node.fields.micronodeList[0].lastName=Doe]
-						lastName
+					    fields {
+                            # [$.data.node.fields.micronodeList[0].fields.firstName=Joe]
+                            firstName
+                            # [$.data.node.fields.micronodeList[0].fields.lastName=Doe]
+                            lastName
+					    }
 					}
 					... on TestMicroschema {
-						text
-						nodeRef {
-							path
-						}
-						nodeList {
-							# [$.data.node.fields.micronodeList[1].nodeList[0].uuid=<is-uuid>]
-							# [$.data.node.fields.micronodeList[1].nodeList[1].uuid=<is-uuid>]
-							uuid
-							# [$.data.node.fields.micronodeList[1].nodeList[0].language=en]
-							# [$.data.node.fields.micronodeList[1].nodeList[1].language=en]
-							language
-						}
+					    fields {
+                            text
+                            nodeRef {
+                                path
+                            }
+                            nodeList {
+                                # [$.data.node.fields.micronodeList[1].fields.nodeList[0].uuid=<is-uuid>]
+                                # [$.data.node.fields.micronodeList[1].fields.nodeList[1].uuid=<is-uuid>]
+                                uuid
+                                # [$.data.node.fields.micronodeList[1].fields.nodeList[0].language=en]
+                                # [$.data.node.fields.micronodeList[1].fields.nodeList[1].language=en]
+                                language
+                            }
+					    }
 					}
 				}
 			}

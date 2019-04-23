@@ -571,6 +571,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		additionalTypes.add(createLinkEnumType());
 
 		additionalTypes.addAll(nodeFieldTypeProvider.generateSchemaFieldTypes(context));
+		additionalTypes.addAll(micronodeFieldTypeProvider.generateMicroschemaFieldTypes(context));
 
 		GraphQLSchema schema = builder.query(getRootType(context)).additionalTypes(additionalTypes).build();
 		return schema;
