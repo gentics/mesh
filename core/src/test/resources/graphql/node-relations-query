@@ -46,10 +46,8 @@
 			# [$.data.deNode.child.uuid=<is-uuid>]
 			uuid
 			parent {
-				fields {
-					# [$.data.deNode.child.parent.fields.slug=News]
-					... on folder { slug }
-				}
+                # [$.data.deNode.child.parent.fields.slug=News]
+                ... on folder { fields { slug }}
 			}
 		}
 

@@ -4,11 +4,8 @@
 		uuid
 		# [$.data.nodeByUuid.language=en]
 		language
-		fields {
-			# [$.data.nodeByUuid.fields.title=News Overview english title]
-			... on content { title }
-		}
-		
+        # [$.data.nodeByUuid.fields.title=News Overview english title]
+        ... on content { fields { title }}
 	}
 	# Try to load the node in russian - Some fields should be null since the container for "ru" does not exist
 	nodeByUuidRu: node(uuid: "43ee8f9ff71e4016ae8f9ff71e10161c", lang: "ru") {
@@ -17,43 +14,32 @@
 		# [$.data.nodeByUuidRu.language=<is-null>]
 		language
 		# [$.data.nodeByUuidRu.fields=<is-null>]
-		fields {
-			... on content { title }
-		}
+        ... on content { fields { title }}
 	}
 	nodeByUuidDe: node(uuid: "43ee8f9ff71e4016ae8f9ff71e10161c", lang: "de") {
 		# [$.data.nodeByUuidDe.uuid=43ee8f9ff71e4016ae8f9ff71e10161c]
 		uuid
 		# [$.data.nodeByUuidDe.language=de]
 		language
-		fields {
-			# [$.data.nodeByUuidDe.fields.title=News Overview german title]
-			... on content { title }
-		}
-		
+        # [$.data.nodeByUuidDe.fields.title=News Overview german title]
+        ... on content { fields { title }}
 	}
 	
 	node(path:"/Neuigkeiten") {
 		# [$.data.node.uuid=<is-uuid>]
 		uuid
-		fields {
-			# [$.data.node.fields.slug=Neuigkeiten]
-			... on folder { slug }
-		}
+        # [$.data.node.fields.slug=Neuigkeiten]
+        ... on folder { fields { slug }}
 
 		# This should yield the english content of the node (english is the default language)
 		enNode: node {
-			fields {
-				# [$.data.node.enNode.fields.slug=News]
-				... on folder { slug }
-			}
+            # [$.data.node.enNode.fields.slug=News]
+            ... on folder { fields { slug }}
 		}
 
 		deNode: node(lang: "de") {
-			fields {
-				# [$.data.node.deNode.fields.slug=Neuigkeiten]
-				... on folder { slug }
-			}
+            # [$.data.node.deNode.fields.slug=Neuigkeiten]
+            ... on folder { fields { slug }}
 		}
 	}
 }

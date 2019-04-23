@@ -2,13 +2,13 @@
 	enNode: node(uuid: "e8f5c7875b2f49a7b5c7875b2fa9a718", lang: "en") {
 		uuid
 		language
-		fields {
-			... on folder {
+        ... on folder {
+		    fields {
 				nodeList {
 					uuid
 					language
-					fields {
-						... on folder {
+                    ... on folder {
+					    fields {
 							# [$.data.enNode.fields.nodeList[0].fields.stringList[0]=A Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
 							# [$.data.enNode.fields.nodeList[0].fields.stringList[1]=B Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
 							# [$.data.enNode.fields.nodeList[0].fields.stringList[2]=C Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
@@ -24,8 +24,8 @@
 				nodeRef {
 					uuid
 					language
-					fields {
-						... on folder {
+                    ... on folder {
+					    fields {
 							# [$.data.enNode.fields.nodeRef.fields.stringList[0]=A Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
 							# [$.data.enNode.fields.nodeRef.fields.stringList[1]=B Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
 							# [$.data.enNode.fields.nodeRef.fields.stringList[2]=C Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
@@ -45,13 +45,13 @@
 	deNode: node(uuid: "e8f5c7875b2f49a7b5c7875b2fa9a718", lang: "de") {
 		uuid
 		language
-		fields {
-			... on folder {
+        ... on folder {
+		    fields {
 				nodeList {
 					uuid
 					language
-					fields {
-						... on folder {
+                    ... on folder {
+					    fields {
 							# [$.data.deNode.fields.nodeList[0].fields.stringList[0]=A Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
 							# [$.data.deNode.fields.nodeList[0].fields.stringList[1]=B Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
 							# [$.data.deNode.fields.nodeList[0].fields.stringList[2]=C Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
@@ -67,8 +67,8 @@
 				nodeRef {
 					uuid
 					language
-					fields {
-						... on folder {
+                    ... on folder {
+					    fields {
 							# [$.data.deNode.fields.nodeRef.fields.stringList[0]=A Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
 							# [$.data.deNode.fields.nodeRef.fields.stringList[1]=B Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
 							# [$.data.deNode.fields.nodeRef.fields.stringList[2]=C Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]

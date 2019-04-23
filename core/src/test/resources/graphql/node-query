@@ -4,10 +4,8 @@
 		uuid
 	}
 	node(path:"/Neuigkeiten/2015/News_2015.en.html") {
-		fields {
-			# [$.data.node.fields.teaser=News_2015_english_name]
-			... on content { teaser }
-		}
+        # [$.data.node.fields.teaser=News_2015_english_name]
+        ... on content { fields { teaser }}
 		# [$.data.node.language=en]
 		language
 
@@ -22,10 +20,8 @@
 		availableLanguages
 
 		node(lang: "de") {
-			fields {
-				# [$.data.node.node.fields.teaser=News_2015 german]
-				... on content { teaser }
-			}
+            # [$.data.node.node.fields.teaser=News_2015 german]
+            ... on content { fields { teaser }}
 			# [$.data.node.node.language=de]
 			language
 			version

@@ -13,8 +13,8 @@
       schema {
         name
       }
-      fields {
-        ... on folder {
+      ... on folder {
+        fields {
           name
         }
       }

@@ -1,8 +1,8 @@
 {
 	node(path:"/Neuigkeiten/2015") {
-		fields {
-		... on content { title },
-		... on folder { 
+		... on content { fields { title }},
+		... on folder {
+		    fields {
 				# [$.data.node.fields.name=2015]
 				name
 
@@ -23,18 +23,13 @@
 						# [$.data.node.fields.nodeRef.node.isDraft=true]
 						isDraft
 
-						fields {
-						# [$.data.node.fields.nodeRef.node.fields.title=News Overview english title]
-						... on content { title }
-						... on folder { name }
-						}
+						... on content { fields { title }}
+						... on folder { fields { name }}
 					}
 				}
 				deRef: nodeRef(lang: "de") {
-					fields {
-					... on content { title }
-					... on folder { name }
-					}
+					... on content { fields { title }}
+					... on folder { fields { name }}
 				}
 				binary {
 					# [$.data.node.fields.binary.binaryUuid=<is-uuid>]

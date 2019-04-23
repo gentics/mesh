@@ -2,9 +2,9 @@
 	node(path:"/Neuigkeiten/2015") {
 		# [$.data.node.uuid=<is-uuid>]
 		uuid
-		fields {
-			... on folder {
-				nodeList { 
+        ... on folder {
+		    fields {
+				nodeList {
 					# [$.data.node.fields.nodeList[0].uuid=<is-uuid>]
 					uuid
 

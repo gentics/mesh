@@ -35,7 +35,7 @@
 				nodes {
 					elements  { 
 						uuid
-						fields { ... on content { slug } }
+						... on content { fields { slug }}
 					}
 				}
 			}

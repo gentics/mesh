@@ -1,7 +1,7 @@
 {
 	node(path:"/Neuigkeiten/2015") {
-		fields {
-			... on folder {
+        ... on folder {
+		    fields {
 				# [$.data.node.fields.html=some html]
 				html(linkType: FULL)
 	
