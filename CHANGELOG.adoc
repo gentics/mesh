@@ -24,6 +24,10 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.31.5]]
+== 0.31.5 (TBD)
+
+CAUTION: Fetching fields of a node in GraphQL requires a different syntax. Please refer to the link:https://github.com/gentics/mesh/issues/428[Github issue] for details.
 
 [[v0.31.4]]
 == 0.31.4 (11.04.2019)
