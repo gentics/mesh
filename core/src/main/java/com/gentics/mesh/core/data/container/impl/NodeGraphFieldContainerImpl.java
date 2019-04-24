@@ -165,7 +165,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		// Invoke common field removal operations
 		super.delete(bac);
 
-		// TODO delete linked aggregation nodes for node lists etc
 		for (BinaryGraphField binaryField : outE(HAS_FIELD).has(BinaryGraphFieldImpl.class).frameExplicit(BinaryGraphFieldImpl.class)) {
 			binaryField.removeField(bac, this);
 		}

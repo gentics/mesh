@@ -30,6 +30,9 @@ title: Changelog
 
 icon:check[] Core: A bug in the image transform endpoint has been fixed. Previously nodes which were updated using that endpoint could not be found via webroot anymore. link:https://github.com/gentics/mesh/issues/599[#599]
 
+icon:plus[] Job: The endpoint `POST /api/v1/admin/jobs/:jobUuid/process` has been added. It can be used to trigger job processing. The endpoint will also automatically reset a failed job to be queued again. The endpoints `DELETE /api/v1/admin/jobs/:jobUuid/error` and `POST /api/v1/admin/processJobs` will be removed in a future release. link:https://github.com/gentics/mesh/issues/171[#171]
+
+icon:check[] Plugins: A `NullPointerException` has been fixed which has happened when accessing `rc.user().principal()` within a plugin. link:https://github.com/gentics/mesh/issues/516[#516]
 
 [[v0.31.4]]
 == 0.31.4 (11.04.2019)
