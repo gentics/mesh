@@ -34,6 +34,8 @@ icon:plus[] Job: The endpoint `POST /api/v1/admin/jobs/:jobUuid/process` has bee
 
 icon:check[] Plugins: A `NullPointerException` has been fixed which has happened when accessing `rc.user().principal()` within a plugin. link:https://github.com/gentics/mesh/issues/516[#516]
 
+icon:check[] REST: Creating a schema with a micronode field and the allow option set to `[]` will now allow micronodes of all microschemas.
+
 [[v0.31.4]]
 == 0.31.4 (11.04.2019)
 
