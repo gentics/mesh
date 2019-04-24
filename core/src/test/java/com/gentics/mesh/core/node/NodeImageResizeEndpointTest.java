@@ -1,5 +1,32 @@
 package com.gentics.mesh.core.node;
 
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.etc.config.ImageManipulatorOptions;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.parameter.image.CropMode;
+import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+import com.gentics.mesh.rest.client.MeshBinaryResponse;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.VersionNumber;
+import com.syncleus.ferma.tx.Tx;
+import io.vertx.core.buffer.Buffer;
+import org.apache.commons.io.IOUtils;
+import org.junit.Test;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -11,37 +38,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-
-import javax.imageio.ImageIO;
-
-import com.gentics.mesh.rest.client.MeshBinaryResponse;
-import org.apache.commons.io.IOUtils;
-import org.junit.Test;
-
-import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.BinaryField;
-import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.parameter.ImageManipulationParameters;
-import com.gentics.mesh.parameter.image.CropMode;
-import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
-import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.VersionNumber;
-import com.syncleus.ferma.tx.Tx;
-
-import io.vertx.core.buffer.Buffer;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeImageResizeEndpointTest extends AbstractMeshTest {
@@ -314,8 +310,28 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		assertEquals("blume.jpg", result.getFilename());
 	}
 
+	@Test
+	public void testWebrootAfterTransform() throws IOException {
+		NodeResponse imageNode = createBinaryContent().blockingGet();
+		NodeResponse image = uploadImage(imageNode, "en", "binary");
+		String version = image.getVersion();
+		String uuid = image.getUuid();
+		String path = "/blume.jpg";
+
+		// Make sure that the image is found via webroot
+		client().webroot(PROJECT_NAME, path).blockingAwait();
+
+		// 2. Transform the image
+		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100);
+		NodeResponse transformResponse = call(() -> client().transformNodeBinaryField(PROJECT_NAME, uuid, "en", version, "binary", params));
+		assertEquals("The image should have been resized", 100, transformResponse.getFields().getBinaryField("binary").getWidth().intValue());
+
+		// Make sure that it is still found
+		client().webroot(PROJECT_NAME, path).blockingAwait();
+	}
+
 	private void validateResizeImage(MeshBinaryResponse download, BinaryGraphField binaryField, ImageManipulationParameters params,
-		int expectedWidth, int expectedHeight) throws Exception {
+									 int expectedWidth, int expectedHeight) throws Exception {
 		File targetFile = new File("target", UUID.randomUUID() + "_resized.jpg");
 		CountDownLatch latch = new CountDownLatch(1);
 		byte[] bytes = IOUtils.toByteArray(download.getStream());
