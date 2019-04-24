@@ -298,7 +298,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			// Create a new project
 			ProjectResponse restProject = call(() -> client().createProject(request));
 			assertThat(restProject).matches(request);
-			assertThat(restProject.getPermissions()).hasPerm(Permission.values());
+			assertThat(restProject.getPermissions()).hasPerm(Permission.basicPermissions());
 
 			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 
