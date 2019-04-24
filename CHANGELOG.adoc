@@ -28,7 +28,7 @@ title: Changelog
 [[v0.31.5]] (TBD)
 == 0.31.5
 
-icon:check[] Plugins: A `NullPointerException` has been fixed which happend when accessing `rc.user().principal()` within a plugin. link:https://github.com/gentics/mesh/issues/516[#516]
+icon:check[] Plugins: A `NullPointerException` has been fixed which has happened when accessing `rc.user().principal()` within a plugin. link:https://github.com/gentics/mesh/issues/516[#516]
 
 [[v0.31.4]]
 == 0.31.4 (11.04.2019)
