@@ -200,7 +200,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadByUuidWithRolePerms() {
 		RoleResponse restRole = call(() -> client().findRoleByUuid(roleUuid(), new RolePermissionParametersImpl().setRoleUuid(roleUuid())));
 		assertNotNull(restRole.getRolePerms());
-		assertThat(restRole.getRolePerms()).hasPerm(Permission.values());
+		assertThat(restRole.getRolePerms()).hasPerm(Permission.basicPermissions());
 	}
 
 	@Test

@@ -236,7 +236,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			MicroschemaResponse microschema = call(
 				() -> client().findMicroschemaByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
 			assertNotNull(microschema.getRolePerms());
-			assertThat(microschema.getRolePerms()).hasPerm(Permission.values());
+			assertThat(microschema.getRolePerms()).hasPerm(Permission.basicPermissions());
 		}
 	}
 

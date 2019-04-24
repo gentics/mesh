@@ -284,7 +284,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		SchemaResponse schema = call(() -> client().findSchemaByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(db().tx(() -> role()
 				.getUuid()))));
 		assertNotNull(schema.getRolePerms());
-		assertThat(schema.getRolePerms()).hasPerm(Permission.values());
+		assertThat(schema.getRolePerms()).hasPerm(Permission.basicPermissions());
 	}
 
 	@Test

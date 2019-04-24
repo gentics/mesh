@@ -447,7 +447,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			ProjectResponse response = call(() -> client().findProjectByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
 			assertNotNull(response.getRolePerms());
-			assertThat(response.getRolePerms()).hasPerm(Permission.values());
+			assertThat(response.getRolePerms()).hasPerm(Permission.basicPermissions());
 		}
 	}
 

@@ -31,9 +31,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
-import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
-import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
@@ -291,7 +289,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	public void testReadByUuidWithRolePerms() {
 		GroupResponse response = call(() -> client().findGroupByUuid(groupUuid(), new RolePermissionParametersImpl().setRoleUuid(roleUuid())));
 		assertNotNull(response.getRolePerms());
-		assertThat(response.getRolePerms()).hasPerm(READ, READ_PUBLISHED, PUBLISH, UPDATE, DELETE, CREATE);
+		assertThat(response.getRolePerms()).hasPerm(READ, UPDATE, DELETE, CREATE);
 	}
 
 	@Test

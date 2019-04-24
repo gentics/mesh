@@ -77,7 +77,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			TagFamilyResponse response = call(() -> client().findTagFamilyByUuid(PROJECT_NAME, uuid, new RolePermissionParametersImpl().setRoleUuid(
 					role().getUuid())));
 			assertNotNull("The response did not contain the expected role permission field value", response.getRolePerms());
-			assertThat(response.getRolePerms()).hasPerm(Permission.values());
+			assertThat(response.getRolePerms()).hasPerm(Permission.basicPermissions());
 		}
 
 	}
