@@ -282,13 +282,19 @@ public class PermissionInfo implements RestModel {
 	 */
 	public Map<Permission, Boolean> asMap() {
 		Map<Permission, Boolean> map = new HashMap<>();
-		map.put(CREATE, create);
-		map.put(READ, read);
-		map.put(UPDATE, update);
-		map.put(DELETE, delete);
-		map.put(PUBLISH, publish);
-		map.put(READ_PUBLISHED, readPublished);
+		putIfNotNull(map, CREATE, create);
+		putIfNotNull(map, READ, read);
+		putIfNotNull(map, UPDATE, update);
+		putIfNotNull(map, DELETE, delete);
+		putIfNotNull(map, PUBLISH, publish);
+		putIfNotNull(map, READ_PUBLISHED, readPublished);
 		return map;
+	}
+
+	private <K, V> void putIfNotNull(Map<K, V> map, K key, V value) {
+		if (value != null) {
+			map.put(key, value);
+		}
 	}
 
 	/**
