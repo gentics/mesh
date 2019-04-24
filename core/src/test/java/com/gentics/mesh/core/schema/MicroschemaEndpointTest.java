@@ -20,7 +20,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
@@ -453,11 +452,6 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		SchemaCreateRequest schemaRequest = new SchemaCreateRequest().setName("test");
 
 		client().createSchema(schemaRequest).blockingAwait();
-		Throwable err = client().createMicroschema(microSchemaRequest).toSingle().test()
-			.await().errors().get(0);
-		assertThat((MeshRestClientMessageException)err)
-			.isNotNull()
-			.hasStatusCode(409)
-			.hasMessageKey("schema_conflicting_name");
+		call(() -> client().createMicroschema(microSchemaRequest), CONFLICT, "schema_conflicting_name", "test");
 	}
 }
