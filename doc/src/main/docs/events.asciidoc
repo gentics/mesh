@@ -5,7 +5,101 @@ title: Events
 :icons: font
 :source-highlighter: prettify
 
+In Gentics Mesh events can be used to exchange information in between clients and to inform clients about changes in the CMS.
+
+Typical usecases for event handling:
+
+* Exchange data in between client applications (e.g. Chat)
+* Real time reload if data via `mesh.node.updated` changes.
+* Client-Side cache purging if data is updated, created, deleted.
+* Hooking external hardware sensors into your frontend.
+
+== Eventbus Bridge & Websocket
+
+The ```/api/v1/eventbus``` endpoint allows clients to access the eventbus. This is useful if you want to react on specific events.
+
+The endpoint is https://github.com/sockjs[SockJS] compliant. It is also possible to access the websocket directly via: ```/api/v1/eventbus/websocket```.
+
 == Events
 
+The following list contains all Events which Gentics Mesh exposes.
+
 include::content/docs/examples/tables/MeshEvent.adoc-include[]
+
+[[customevents]]
+=== Custom Events
+
+It is also possible to register and send custom events. The address of those events must start with `custom.`.
+
+Custom events can be used to exchange events in between connected clients.
+
+[[iot]]
+=== IoT Example
+
+The eventbus provides a great way to utilize data of your IoT devices in your frontend application.
+The following example shows how the link:https://www.arduino.cc/[Arduino] compatibile link:https://de.wikipedia.org/wiki/ESP8266[ESP8266] WIFI enabled microcontroller can utilize the Gentics Mesh eventbus.
+
+The shown sketch utilizes the link:https://github.com/Links2004/arduinoWebSockets[arduinoWebSockets] library.
+
+[source,c]
+----
+#include <Arduino.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266WiFiMulti.h>
+#include <WebSocketsClient.h>
+#include <Hash.h>
+
+ESP8266WiFiMulti WiFiMulti;
+WebSocketsClient webSocket;
+#define USE_SERIAL Serial1
+const char* ssid     = "Demo";
+const char* password = "12345678";
+const byte interruptPin = 13; // D7 on Wemos D1 Mini
+volatile byte interruptCounter = 0;
+int numberOfInterrupts = 0;
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+ 
+  // Set the connection details to the Gentics Mesh Server
+  webSocket.begin("1.2.3.4", 8080, "/api/v1/eventbus/websocket");
+  webSocket.setReconnectInterval(2000);
+  // Register the interrupt pin
+  pinMode(interruptPin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(interruptPin), handleInterrupt, RISING);
+}
+
+// Interrupt method which will just count up
+void handleInterrupt() {
+  interruptCounter++;
+}
+
+void loop() {
+  // Check whether the connection needs to be re-established
+  webSocket.loop();
+  // Check whether an interrupt has happend and send an event if needed
+  if (interruptCounter > 0) {
+    Serial.println("Detected interrupt");
+    webSocket.sendTXT("{\"type\":\"publish\",\"address\":\"custom.event\",\"body\":\"someText\"}");
+    // Reset the interrupt counter to get ready for the next event
+    interruptCounter = 0;
+  }
+  delay(100);
+  // Send a ping to prevent the server to disconnect the connection
+  webSocket.sendTXT("{\"type\":\"ping\"}");
+}
+----
+
+In this example the Pin 13 (D7) on the ESP8266 will be used to trigger an event.
 
