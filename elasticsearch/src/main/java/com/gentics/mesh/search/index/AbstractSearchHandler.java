@@ -1,24 +1,5 @@
 package com.gentics.mesh.search.index;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapError;
-import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapToMeshError;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Supplier;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.mesh.context.InternalActionContext;
@@ -29,12 +10,15 @@ import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.IndexHandler;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.error.MeshConfigurationException;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.event.MeshEventSender;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -45,14 +29,33 @@ import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.impl.SearchClient;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
-
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
+
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapError;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapToMeshError;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
 /**
  * Abstract implementation for a mesh search handler.
@@ -62,6 +65,12 @@ import io.vertx.core.logging.LoggerFactory;
 public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM extends RestModel> implements SearchHandler<T, RM> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractSearchHandler.class);
+
+	@Inject
+	public MeshEventSender meshEventSender;
+
+	@Inject
+	public MeshOptions options;
 
 	protected Database db;
 
@@ -197,32 +206,39 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			throw new InvalidArgumentException("The pageSize must always be zero or greater than zero");
 		}
 
+		Completable awaitSync = syncRequested(ac)
+			? awaitSync()
+			: Completable.complete();
+
 		RL listResponse = classOfRL.newInstance();
-		SearchClient client = searchProvider.getClient();
-		String searchQuery = ac.getBodyAsString();
-		if (log.isDebugEnabled()) {
-			log.debug("Invoking search with query {" + searchQuery + "} for {" + classOfRL.getName() + "}");
-		}
 
-		Set<String> indices = indexHandler.getSelectedIndices(ac);
+		awaitSync.andThen(Single.defer(() -> {
+			SearchClient client = searchProvider.getClient();
+			String searchQuery = ac.getBodyAsString();
+			if (log.isDebugEnabled()) {
+				log.debug("Invoking search with query {" + searchQuery + "} for {" + classOfRL.getName() + "}");
+			}
 
-		// Add permission checks to the query
-		JsonObject request = prepareSearchQuery(ac, searchQuery, filterLanguage);
+			Set<String> indices = indexHandler.getSelectedIndices(ac);
 
-		// Add paging to query. Internally we start with page 0
-		applyPagingParams(request, pagingInfo);
+			// Add permission checks to the query
+			JsonObject request = prepareSearchQuery(ac, searchQuery, filterLanguage);
 
-		if (log.isDebugEnabled()) {
-			log.debug("Using parsed query {" + request.encodePrettily() + "}");
-		}
+			// Add paging to query. Internally we start with page 0
+			applyPagingParams(request, pagingInfo);
 
-		JsonObject queryOption = new JsonObject();
-		queryOption.put("index", StringUtils.join(indices.stream().map(i -> searchProvider.installationPrefix() + i).toArray(String[]::new), ","));
-		queryOption.put("search_type", "dfs_query_then_fetch");
-		log.debug("Using options {" + queryOption.encodePrettily() + "}");
+			if (log.isDebugEnabled()) {
+				log.debug("Using parsed query {" + request.encodePrettily() + "}");
+			}
 
-		RequestBuilder<JsonObject> requestBuilder = client.multiSearch(queryOption, request);
-		requestBuilder.async().flatMapObservable(response -> {
+			JsonObject queryOption = new JsonObject();
+			queryOption.put("index", StringUtils.join(indices.stream().map(i -> searchProvider.installationPrefix() + i).toArray(String[]::new), ","));
+			queryOption.put("search_type", "dfs_query_then_fetch");
+			log.debug("Using options {" + queryOption.encodePrettily() + "}");
+
+			RequestBuilder<JsonObject> requestBuilder = client.multiSearch(queryOption, request);
+			return requestBuilder.async();
+		})).flatMapObservable(response -> {
 			JsonArray responses = response.getJsonArray("responses");
 			JsonObject firstResponse = responses.getJsonObject(0);
 
@@ -279,6 +295,21 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			log.error("Error while processing search response items", error);
 			ac.fail(error);
 		});
+	}
+
+	private boolean syncRequested(InternalActionContext ac) {
+		return ac.getSearchParameters().isWait()
+			.orElseGet(options.getSearchOptions()::isWaitForIdle);
+	}
+
+	private Completable awaitSync() {
+		return meshEventSender.isSearchIdle().flatMapCompletable(isIdle -> {
+			if (isIdle) {
+				return Completable.complete();
+			}
+			meshEventSender.flushSearch();
+			return meshEventSender.waitForEvent(MeshEvent.SEARCH_IDLE);
+		}).andThen(meshEventSender.refreshSearch());
 	}
 
 	/**
