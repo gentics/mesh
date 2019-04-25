@@ -179,8 +179,6 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 	 *            Aggregation node that should be used to load the objects that were found within the search index
 	 * @param classOfRL
 	 *            Class of matching list response
-	 * @param indexHandlerKey
-	 *            key of the index handlers
 	 */
 	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName,
 		Supplier<RootVertex<T>> root, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleListResponse, boolean filterByLanguage) {
