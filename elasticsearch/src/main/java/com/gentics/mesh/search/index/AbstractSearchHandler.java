@@ -144,26 +144,28 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			return;
 		}
 
-		SearchClient client = searchProvider.getClient();
-		String searchQuery = ac.getBodyAsString();
-		if (log.isDebugEnabled()) {
-			log.debug("Invoking search with query {" + searchQuery + "}");
-		}
-		Set<String> indices = indexHandler.getSelectedIndices(ac);
+		awaitSync(ac).andThen(Single.defer(() -> {
+			SearchClient client = searchProvider.getClient();
+			String searchQuery = ac.getBodyAsString();
+			if (log.isDebugEnabled()) {
+				log.debug("Invoking search with query {" + searchQuery + "}");
+			}
+			Set<String> indices = indexHandler.getSelectedIndices(ac);
 
-		// Modify the query and add permission checks
-		JsonObject request = prepareSearchQuery(ac, searchQuery, false);
-		if (log.isDebugEnabled()) {
-			log.debug("Using parsed query {" + request.encodePrettily() + "}");
-		}
+			// Modify the query and add permission checks
+			JsonObject request = prepareSearchQuery(ac, searchQuery, false);
+			if (log.isDebugEnabled()) {
+				log.debug("Using parsed query {" + request.encodePrettily() + "}");
+			}
 
-		JsonObject queryOption = new JsonObject();
-		queryOption.put("index", StringUtils.join(indices.stream().map(i -> searchProvider.installationPrefix() + i).toArray(String[]::new), ","));
-		queryOption.put("search_type", "dfs_query_then_fetch");
-		log.debug("Using options {" + queryOption.encodePrettily() + "}");
+			JsonObject queryOption = new JsonObject();
+			queryOption.put("index", StringUtils.join(indices.stream().map(i -> searchProvider.installationPrefix() + i).toArray(String[]::new), ","));
+			queryOption.put("search_type", "dfs_query_then_fetch");
+			log.debug("Using options {" + queryOption.encodePrettily() + "}");
 
-		RequestBuilder<JsonObject> requestBuilder = client.multiSearch(queryOption, request);
-		requestBuilder.async().subscribe(response -> {
+			RequestBuilder<JsonObject> requestBuilder = client.multiSearch(queryOption, request);
+			return requestBuilder.async();
+		})).subscribe(response -> {
 			// JsonObject firstResponse = response.getJsonArray("responses").getJsonObject(0);
 			// Directly relay the response to the requester without converting it.
 			ac.send(response.toString(), OK);
@@ -206,13 +208,9 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			throw new InvalidArgumentException("The pageSize must always be zero or greater than zero");
 		}
 
-		Completable awaitSync = syncRequested(ac)
-			? awaitSync()
-			: Completable.complete();
-
 		RL listResponse = classOfRL.newInstance();
 
-		awaitSync.andThen(Single.defer(() -> {
+		awaitSync(ac).andThen(Single.defer(() -> {
 			SearchClient client = searchProvider.getClient();
 			String searchQuery = ac.getBodyAsString();
 			if (log.isDebugEnabled()) {
@@ -297,12 +295,16 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		});
 	}
 
-	private boolean syncRequested(InternalActionContext ac) {
+	private boolean delayRequested(InternalActionContext ac) {
 		return ac.getSearchParameters().isWait()
 			.orElseGet(options.getSearchOptions()::isWaitForIdle);
 	}
 
-	private Completable awaitSync() {
+	private Completable awaitSync(InternalActionContext ac) {
+		if (!delayRequested(ac)) {
+			return Completable.complete();
+		}
+
 		return meshEventSender.isSearchIdle().flatMapCompletable(isIdle -> {
 			if (isIdle) {
 				return Completable.complete();

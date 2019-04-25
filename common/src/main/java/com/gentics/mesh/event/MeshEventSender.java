@@ -35,10 +35,18 @@ public final class MeshEventSender {
 			.map(msg -> (Boolean) msg.body());
 	}
 
+	/**
+	 * Sends the SEARCH_REFRESH_REQUEST event. This causes the indices in Elasticsearch to be refreshed.
+	 * Completes when Elasticsearch has sent a response.
+	 * @return
+	 */
 	public Completable refreshSearch() {
 		return vertx.eventBus().rxSend(SEARCH_REFRESH_REQUEST.address, null).toCompletable();
 	}
 
+	/**
+	 * Sends the SEARCH_FLUSH_REQUEST event. This causes bulked operations to Elasticsearch to be flushed immediately.
+	 */
 	public void flushSearch() {
 		vertx.eventBus().publish(SEARCH_FLUSH_REQUEST.address, null);
 	}

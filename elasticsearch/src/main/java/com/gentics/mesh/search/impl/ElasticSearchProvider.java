@@ -225,7 +225,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public Completable refreshIndex(String... indices) {
 		if (indices.length == 0) {
-			return client.refresh().async()
+			return client.refresh(installationPrefix() + "*").async()
 				.doOnError(error -> {
 					log.error("Refreshing of all indices failed.", error);
 					throw error(INTERNAL_SERVER_ERROR, "search_error_refresh_failed", error);

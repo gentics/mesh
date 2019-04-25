@@ -109,7 +109,7 @@ We currently run and test against Elasticsearch version 6.1.2. Other versions ha
 Search requests are handled by the ```/api/v1/search``` or ```/api/v1/:projectName/search``` endpoints.
 
 If you want the search endpoints to wait until Elasticsearch has processed all pending changes to the index, you can set the query parameter `?wait=true`.
-The default value can be configured in the link:https://getmesh.io/docs/administration-guide/#_search_options[search options].
+The default value can be configured in the link:/docs/administration-guide/#_search_options[search options].
 
 NOTE: If no query parameter and no configuration was provided, the wait parameter defaults to `true` to not break any existing implementations. In the future this will change to `false`.
 

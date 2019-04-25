@@ -1,5 +1,6 @@
 package com.gentics.mesh.search;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.parameter.impl.SearchParametersImpl;
@@ -28,6 +29,13 @@ public class WaitSearchEndpointTest extends AbstractMeshTest {
 		).blockingGet();
 	}
 
+	private ObjectNode rawSearch(boolean wait) {
+		return client().searchNodesRaw(
+			getSimpleQuery("fields.slug", "waittest"),
+			new SearchParametersImpl().setWait(wait)
+		).blockingGet();
+	}
+
 	@Test
 	public void searchWithWaitDisabled() {
 		NodeListResponse result = search(false);
@@ -42,4 +50,18 @@ public class WaitSearchEndpointTest extends AbstractMeshTest {
 		assertThat(result.getMetainfo().getTotalCount()).isEqualTo(1);
 	}
 
+
+	@Test
+	public void rawSearchWithWaitDisabled() {
+		ObjectNode result = rawSearch(false);
+
+		assertThat(result.get("responses").get(0).get("hits").get("total").asLong()).isEqualTo(0);
+	}
+
+	@Test
+	public void rawSearchWithWaitEnabled() {
+		ObjectNode result = rawSearch(true);
+
+		assertThat(result.get("responses").get(0).get("hits").get("total").asLong()).isEqualTo(1);
+	}
 }

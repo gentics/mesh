@@ -31,7 +31,7 @@ public class SearchParametersImpl extends AbstractParameters implements SearchPa
 	@Override
 	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
 		QueryParameter waitParameter = new QueryParameter();
-		waitParameter.setDescription("Specify whether search should wait for the search verticle to be idle before responding.");
+		waitParameter.setDescription("Specify whether search should wait for the search to be idle before responding.");
 		waitParameter.setExample("true");
 		waitParameter.setRequired(false);
 		waitParameter.setType(ParamType.BOOLEAN);
