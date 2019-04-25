@@ -25,6 +25,7 @@
 		<dagger.version>2.11</dagger.version>
 		<hazelcast.version>3.10.4</hazelcast.version>
 		<jackson.version>2.9.8</jackson.version>
+		<netty.version>4.1.30.Final</netty.version>
 
 		<surefire.forkcount>3</surefire.forkcount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>
