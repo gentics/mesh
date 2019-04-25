@@ -284,7 +284,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		SchemaResponse schema = call(() -> client().findSchemaByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(db().tx(() -> role()
 				.getUuid()))));
 		assertNotNull(schema.getRolePerms());
-		assertThat(schema.getRolePerms()).hasPerm(Permission.values());
+		assertThat(schema.getRolePerms()).hasPerm(Permission.basicPermissions());
 	}
 
 	@Test
@@ -560,4 +560,19 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		call(() -> client().updateSchema(schemaUuid, request), FORBIDDEN, "error_missing_perm", schemaUuid, UPDATE_PERM.getRestPerm().getName());
 	}
 
+	@Test
+	@Override
+	public void testPermissionResponse() {
+		SchemaResponse schema = client().findSchemas().blockingGet().getData().get(0);
+		assertThat(schema.getPermissions()).hasNoPublishPermsSet();
+	}
+
+	@Test
+	public void testConflictingNameWithMicroschema() throws InterruptedException {
+		MicroschemaCreateRequest microSchemaRequest = new MicroschemaCreateRequest().setName("test");
+		SchemaCreateRequest schemaRequest = new SchemaCreateRequest().setName("test");
+
+		client().createMicroschema(microSchemaRequest).blockingAwait();
+		call(() -> client().createSchema(schemaRequest), CONFLICT,"microschema_conflicting_name", "test");
+	}
 }

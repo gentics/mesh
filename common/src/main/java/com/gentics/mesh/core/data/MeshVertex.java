@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data;
 
-import java.util.Set;
-
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -9,6 +7,8 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.VertexFrame;
 import com.tinkerpop.blueprints.Vertex;
+
+import java.util.Set;
 
 /**
  * A mesh vertex is a mesh element that exposes various graph OGM specific methods. We use the interface abstraction in order to hide certain ferma methods
@@ -51,6 +51,14 @@ public interface MeshVertex extends MeshElement, VertexFrame {
 	 */
 	void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
 		Set<GraphPermission> permissionsToRevoke);
+
+	/**
+	 * Tests if the {@link GraphPermission}s READ_PUBLISHED_PERM and READ_PUBLISHED can be set for this element.
+	 * @return
+	 */
+	default boolean hasPublishPermissions() {
+		return false;
+	}
 
 	/**
 	 * Add a unique <b>out-bound</b> link to the given vertex for the given set of labels. Note that this method will effectively ensure that only one

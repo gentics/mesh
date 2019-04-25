@@ -1366,6 +1366,12 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
+	public MeshRequest<JobResponse> processJob(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(POST, "/admin/jobs/" + uuid + "/process", JobResponse.class);
+	}
+
+	@Override
 	public MeshRequest<GenericMessageResponse> invokeJobProcessing() {
 		return prepareRequest(POST, "/admin/processJobs", GenericMessageResponse.class);
 	}

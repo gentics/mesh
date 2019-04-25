@@ -25,6 +25,21 @@ title: Changelog
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 
+[[v0.31.5]]
+== 0.31.5 (TBD)
+
+icon:check[] REST: The `publish` and `readPublished` permissions are now only shown for nodes.
+
+icon:check[] Core: Creation of schemas with the same name of an existing microschema or vice versa is not allowed anymore. Doing so caused conflicts in GraphQL. link:https://github.com/gentics/mesh/issues/597[#597]
+
+icon:check[] Core: A bug in the image transform endpoint has been fixed. Previously nodes which were updated using that endpoint could not be found via webroot anymore. link:https://github.com/gentics/mesh/issues/599[#599]
+
+icon:plus[] Job: The endpoint `POST /api/v1/admin/jobs/:jobUuid/process` has been added. It can be used to trigger job processing. The endpoint will also automatically reset a failed job to be queued again. The endpoints `DELETE /api/v1/admin/jobs/:jobUuid/error` and `POST /api/v1/admin/processJobs` will be removed in a future release. link:https://github.com/gentics/mesh/issues/171[#171]
+
+icon:check[] Plugins: A `NullPointerException` has been fixed which has happened when accessing `rc.user().principal()` within a plugin. link:https://github.com/gentics/mesh/issues/516[#516]
+
+icon:check[] REST: Creating a schema with a micronode field and the allow option set to `[]` will now allow micronodes of all microschemas.
+
 [[v0.31.4]]
 == 0.31.4 (11.04.2019)
 

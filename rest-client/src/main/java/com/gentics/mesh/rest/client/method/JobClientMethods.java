@@ -46,6 +46,14 @@ public interface JobClientMethods {
 	MeshRequest<EmptyResponse> resetJob(String uuid);
 
 	/**
+	 * Process the job and reset the error state of the job.
+	 *
+	 * @param uuid
+	 * @return
+	 */
+	MeshRequest<JobResponse> processJob(String uuid);
+
+	/**
 	 * Manually invoke the job processing.
 	 * 
 	 * @return

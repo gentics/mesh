@@ -1,17 +1,5 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import org.apache.commons.lang.ArrayUtils;
-
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -34,9 +22,19 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.CompareUtils;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang.ArrayUtils;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 /**
  * See {@link MicronodeGraphField}
@@ -90,9 +88,8 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		Micronode micronode = null;
 
 		// check whether microschema is allowed
-		// TODO should we allow all microschemas if the list is empty?
-		if (ArrayUtils.isEmpty(microschemaFieldSchema.getAllowedMicroSchemas())
-				|| !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaContainerVersion.getName())) {
+		if (!ArrayUtils.isEmpty(microschemaFieldSchema.getAllowedMicroSchemas())
+				&& !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaContainerVersion.getName())) {
 			log.error("Node update not allowed since the microschema {" + microschemaContainerVersion.getName()
 					+ "} is now allowed. Allowed microschemas {" + Arrays.toString(microschemaFieldSchema.getAllowedMicroSchemas()) + "}");
 			throw error(BAD_REQUEST, "node_error_invalid_microschema_field_value", fieldKey, microschemaContainerVersion.getName());
