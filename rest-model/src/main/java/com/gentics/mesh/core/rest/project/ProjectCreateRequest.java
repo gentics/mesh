@@ -30,6 +30,10 @@ public class ProjectCreateRequest implements RestModel {
 	@JsonPropertyDescription("Optional path prefix for webroot path and rendered links.")
 	private String pathPrefix;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Settings for the new project")
+	private ProjectSettings settings;
+
 	/**
 	 * Return the project name.
 	 * 
@@ -138,6 +142,14 @@ public class ProjectCreateRequest implements RestModel {
 	public ProjectCreateRequest setPathPrefix(String pathPrefix) {
 		this.pathPrefix = pathPrefix;
 		return this;
+	}
+
+	public ProjectSettings getSettings() {
+		return settings;
+	}
+
+	public void setSettings(ProjectSettings settings) {
+		this.settings = settings;
 	}
 
 }

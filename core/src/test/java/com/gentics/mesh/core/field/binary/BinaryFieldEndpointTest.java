@@ -23,9 +23,9 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
@@ -272,7 +272,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		schemaUpdateRequest.setDisplayField("binary");
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(binarySchema.getUuid(), schemaUpdateRequest));
-		}, MigrationStatus.COMPLETED, 1);
+		}, JobStatus.COMPLETED, 1);
 
 		NodeResponse nodeResponse3 = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeResponse1.getUuid()));
 		assertEquals(nodeResponse3.getDisplayName(), fileName);

@@ -3,10 +3,10 @@ package com.gentics.mesh.core.data.job.impl;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_MIGRATION_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_MIGRATION_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_MIGRATION_START;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.STARTING;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
+import static com.gentics.mesh.core.rest.job.JobStatus.STARTING;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.Mesh;
@@ -22,11 +22,11 @@ import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.endpoint.migration.micronode.MicronodeMigrationHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
-import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
+import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -44,7 +44,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 		database.addVertexType(MicronodeMigrationJobImpl.class, MeshVertexImpl.class);
 	}
 
-	public MicroschemaMigrationMeshEventModel createEvent(MeshEvent event, MigrationStatus status) {
+	public MicroschemaMigrationMeshEventModel createEvent(MeshEvent event, JobStatus status) {
 		MicroschemaMigrationMeshEventModel model = new MicroschemaMigrationMeshEventModel();
 		model.setEvent(event);
 
@@ -65,7 +65,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 	}
 
 	private MicronodeMigrationContext prepareContext() {
-		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.microschema);
+		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), JobType.microschema);
 		try {
 			return DB.get().tx(() -> {
 				MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();

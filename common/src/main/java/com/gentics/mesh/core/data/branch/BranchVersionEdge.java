@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.branch;
 
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.syncleus.ferma.EdgeFrame;
 
 /**
@@ -20,14 +20,14 @@ public interface BranchVersionEdge extends EdgeFrame  {
 	 * 
 	 * @return
 	 */
-	MigrationStatus getMigrationStatus();
+	JobStatus getMigrationStatus();
 
 	/**
 	 * Set the migration status for this edge.
 	 * 
 	 * @param flag
 	 */
-	void setMigrationStatus(MigrationStatus status);
+	void setMigrationStatus(JobStatus status);
 
 	/**
 	 * Return the branch of this edge.

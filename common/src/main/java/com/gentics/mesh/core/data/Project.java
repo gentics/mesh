@@ -174,4 +174,18 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * @return
 	 */
 	ProjectMicroschemaEventModel onMicroschemaAssignEvent(MicroschemaContainer microschema, Assignment assigned);
+
+	/**
+	 * Check whether versioing is enabled for the project.
+	 * 
+	 * @return
+	 */
+	boolean isVersioningEnabled();
+
+	/**
+	 * Set the versioning flag for the project.
+	 * 
+	 * @param flag
+	 */
+	void setVersioning(boolean flag);
 }

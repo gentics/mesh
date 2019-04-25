@@ -93,6 +93,18 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
+	public boolean isVersioningEnabled() {
+		Boolean flag = property("versioning");
+		//TODO decide the default setting for existing installations
+		return flag == null ? false : flag;
+	}
+
+	@Override
+	public void setVersioning(boolean flag) {
+		property("versioning", flag);
+	}
+
+	@Override
 	public void addLanguage(Language language) {
 		setUniqueLinkOutTo(language, HAS_LANGUAGE);
 	}

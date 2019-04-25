@@ -14,11 +14,11 @@ import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_START;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_UPDATED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -52,7 +52,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -63,6 +62,7 @@ import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.project.ProjectReference;
@@ -309,7 +309,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		tx(() -> group().addRole(roles().get("admin")));
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(uuid, request));
-		}, MigrationStatus.COMPLETED, 1);
+		}, JobStatus.COMPLETED, 1);
 		tx(() -> group().removeRole(roles().get("admin")));
 
 		// Load the previous version
@@ -490,7 +490,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		grantAdminRole();
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
-		}, MigrationStatus.COMPLETED, 1);
+		}, JobStatus.COMPLETED, 1);
 		revokeAdminRole();
 
 		awaitEvents();

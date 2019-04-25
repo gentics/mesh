@@ -4,7 +4,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_BRANCH_ASSIGN;
 import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_MIGRATION_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_MIGRATION_START;
 import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_UPDATED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;

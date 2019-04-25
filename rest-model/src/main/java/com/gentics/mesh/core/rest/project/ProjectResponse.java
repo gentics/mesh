@@ -15,6 +15,10 @@ public class ProjectResponse extends AbstractGenericRestResponse {
 	@JsonPropertyDescription("The project root node. All futher nodes are children of this node.")
 	private NodeReference rootNode;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Settings of the project")
+	private ProjectSettings settings;
+
 	public ProjectResponse() {
 	}
 
@@ -52,6 +56,24 @@ public class ProjectResponse extends AbstractGenericRestResponse {
 	 */
 	public void setRootNode(NodeReference rootNode) {
 		this.rootNode = rootNode;
+	}
+
+	/**
+	 * Return the project settings.
+	 * 
+	 * @return
+	 */
+	public ProjectSettings getSettings() {
+		return settings;
+	}
+
+	/**
+	 * Set the project settings.
+	 * 
+	 * @param settings
+	 */
+	public void setSettings(ProjectSettings settings) {
+		this.settings = settings;
 	}
 
 }

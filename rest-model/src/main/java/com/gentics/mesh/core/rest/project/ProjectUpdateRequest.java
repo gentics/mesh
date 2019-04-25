@@ -10,6 +10,10 @@ public class ProjectUpdateRequest implements RestModel {
 	@JsonPropertyDescription("New name of the project")
 	private String name;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Project settings")
+	private ProjectSettings settings;
+
 	public ProjectUpdateRequest() {
 	}
 
@@ -32,6 +36,24 @@ public class ProjectUpdateRequest implements RestModel {
 	public ProjectUpdateRequest setName(String name) {
 		this.name = name;
 		return this;
+	}
+
+	/**
+	 * Return the project settings.
+	 * 
+	 * @return
+	 */
+	public ProjectSettings getSettings() {
+		return settings;
+	}
+
+	/**
+	 * Set the project settings.
+	 * 
+	 * @param settings
+	 */
+	public void setSettings(ProjectSettings settings) {
+		this.settings = settings;
 	}
 
 }

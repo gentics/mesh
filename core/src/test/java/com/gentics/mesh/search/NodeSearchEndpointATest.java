@@ -1,6 +1,6 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;

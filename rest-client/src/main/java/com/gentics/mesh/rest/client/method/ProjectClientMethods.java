@@ -1,5 +1,6 @@
 package com.gentics.mesh.rest.client.method;
 
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -90,4 +91,11 @@ public interface ProjectClientMethods {
 	 * @return
 	 */
 	MeshRequest<EmptyResponse> deleteProject(String uuid);
+
+	/**
+	 * Invoke a version purge on the project to get rid of all versions across all nodes and branches of this project.
+	 * @param uuid
+	 * @return
+	 */
+	MeshRequest<GenericMessageResponse> purgeProject(String uuid);
 }

@@ -4,9 +4,9 @@ import static com.gentics.mesh.example.ExampleUuids.BRANCH_UUID;
 import static com.gentics.mesh.example.ExampleUuids.JOB_UUID;
 import static com.gentics.mesh.example.ExampleUuids.SCHEMA_VEHICLE_UUID;
 
-import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.job.JobType;
 
 public class JobExamples extends AbstractExamples {
 
@@ -22,7 +22,7 @@ public class JobExamples extends AbstractExamples {
 		response.setUuid(JOB_UUID);
 		response.setCreator(createUserReference());
 		response.setCreated(createNewTimestamp());
-		response.setType(MigrationType.branch);
+		response.setType(JobType.branch);
 		response.getProperties().put("branchUuid", BRANCH_UUID);
 		response.getProperties().put("schemaUuid", SCHEMA_VEHICLE_UUID);
 		response.getProperties().put("fromVersion", "1.0");

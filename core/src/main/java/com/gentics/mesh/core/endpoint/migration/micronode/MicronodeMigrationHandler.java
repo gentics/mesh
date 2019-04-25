@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.endpoint.migration.micronode;
 
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
 
 import java.util.ArrayList;
 import java.util.HashSet;
