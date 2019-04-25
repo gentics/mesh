@@ -8,10 +8,12 @@ import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
+import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.job.ProjectVersionPurgeEventModel;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.dagger.DB;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -38,15 +40,16 @@ public class VersionPurgeJobImpl extends JobImpl {
 	@Override
 	protected Completable processTask() {
 		Database db = DB.get();
-		return Completable.complete()
+		ProjectVersionPurgeHandler handler = MeshInternal.get().projectVersionPurgeHandler();
+		Project project = db.tx(() -> getProject());
+		return handler.purgeVersions(project)
 			.doOnComplete(() -> {
 				db.tx(() -> {
 					setStopTimestamp();
 					setStatus(COMPLETED);
 				});
 				db.tx(() -> {
-					log.info("Version purge job " + getUuid() + " completed.");
-					Project project = getProject();
+					log.info("Version purge job {" + getUuid() + "} for project {" + project.getName() + "} completed.");
 					EventQueueBatch.create().add(createEvent(PROJECT_VERSION_PURGE_FINISHED, COMPLETED, project.getName(), project.getUuid()))
 						.dispatch();
 				});
@@ -57,8 +60,7 @@ public class VersionPurgeJobImpl extends JobImpl {
 					setError(error);
 				});
 				db.tx(() -> {
-					log.info("Version purge job " + getUuid() + " failed.", error);
-					Project project = getProject();
+					log.info("Version purge job {" + getUuid() + "} for project {" + project.getName() + "} failed.", error);
 					EventQueueBatch.create().add(createEvent(PROJECT_VERSION_PURGE_FINISHED, FAILED, project.getName(), project.getUuid()))
 						.dispatch();
 				});
