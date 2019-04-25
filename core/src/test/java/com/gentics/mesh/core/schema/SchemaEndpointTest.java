@@ -43,6 +43,7 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -99,7 +100,25 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testCreateWithoutContainerFlag() {
 		SchemaCreateRequest createRequest = FieldUtil.createMinimalValidSchemaCreateRequest();
 		createRequest.setContainer(null);
-		call(() -> client().createSchema(createRequest), BAD_REQUEST, "schema_error_container_flag_missing");
+		SchemaResponse schema = call(() -> client().createSchema(createRequest));
+		assertFalse("The flag should be set to false", schema.getContainer());
+	}
+
+	@Test
+	public void testUpdateWithoutContainerFlag() {
+		// 1. Create schema
+		SchemaCreateRequest createRequest = FieldUtil.createMinimalValidSchemaCreateRequest();
+		createRequest.setContainer(true);
+		SchemaResponse schema = call(() -> client().createSchema(createRequest));
+		assertTrue("The flag should be set to true", schema.getContainer());
+
+		// 2. Update the schema
+		SchemaUpdateRequest updateRequest = schema.toUpdateRequest();
+		updateRequest.setContainer(null);
+		call(() -> client().updateSchema(schema.getUuid(), updateRequest));
+
+		SchemaResponse schema2 = call(() -> client().findSchemaByUuid(schema.getUuid()));
+		assertTrue("The schema container flag should still be set to true", schema2.getContainer());
 	}
 
 	@Test

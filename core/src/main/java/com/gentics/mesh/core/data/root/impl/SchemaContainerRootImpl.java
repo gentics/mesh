@@ -142,10 +142,6 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		SchemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
 		requestModel.validate();
 
-		if (requestModel.getContainer() == null) {
-			throw error(BAD_REQUEST, "schema_error_container_flag_missing");
-		}
-
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
