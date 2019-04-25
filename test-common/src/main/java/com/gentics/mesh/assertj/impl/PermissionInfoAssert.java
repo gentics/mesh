@@ -1,15 +1,14 @@
 package com.gentics.mesh.assertj.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.gentics.mesh.core.rest.common.Permission;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
+import org.assertj.core.api.AbstractAssert;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.assertj.core.api.AbstractAssert;
-
-import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class PermissionInfoAssert extends AbstractAssert<PermissionInfoAssert, PermissionInfo> {
 
@@ -34,4 +33,15 @@ public class PermissionInfoAssert extends AbstractAssert<PermissionInfoAssert, P
 
 	}
 
+	public PermissionInfoAssert hasPublishPermsSet() {
+		assertThat(actual.getPublish()).as("Publish perm is set").isNotNull();
+		assertThat(actual.getReadPublished()).as("Read published perm is set").isNotNull();
+		return this;
+	}
+
+	public PermissionInfoAssert hasNoPublishPermsSet() {
+		assertThat(actual.getPublish()).as("Publish perm is not set").isNull();
+		assertThat(actual.getReadPublished()).as("Read published perm is not set").isNull();
+		return this;
+	}
 }
