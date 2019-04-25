@@ -58,7 +58,7 @@ The Elasticsearch integration has been overhauled.
 
 Elasticsearch synchronization operations have been decoupled from regular write operations.
 
-This has two main effects. First, regular write operations (e.g. Node Update, Node Create) will not block until the changed data has been synchronized with elasticsearch. This will result in higher overall write performance. Secondly, changes will not be directly visible in Elasticsearch since write operations in Elasticsearch have been decoupled and will be executed asynchrously after a element in Gentics Mesh has been modified. Implementations which highly rely on Gentics Mesh being in sync with ES for each operation may need to be adapted. When using the `/search` or `/rawSearch` endpoints in mesh, you can now provide the `?wait=true` query parameter. See details link:/docs/elasticsearch/#endpoints[here]
+This has two main effects. First, regular write operations (e.g. Node Update, Node Create) will not block until the changed data has been synchronized with elasticsearch. This will result in higher overall write performance. Secondly, changes will not be directly visible in Elasticsearch since write operations in Elasticsearch have been decoupled and will be executed asynchrously after a element in Gentics Mesh has been modified. Implementations which highly rely on Gentics Mesh being in sync with ES for each operation may need to be adapted. When using the `/search` or `/rawSearch` endpoints in mesh, you can now provide the `?wait=true` query parameter. See details link:{{< relref "elasticsearch.asciidoc" >}}#endpoints[here]
 
 *Fixes*
 
