@@ -42,7 +42,10 @@ public class SchemaComparator extends AbstractFieldSchemaContainerComparator<Sch
 		compareAndAddSchemaProperty(changes, DISPLAY_FIELD_NAME_KEY, schemaA.getDisplayField(), schemaB.getDisplayField(), Schema.class);
 
 		// .container
-		compareAndAddSchemaProperty(changes, CONTAINER_FLAG_KEY, schemaA.isContainer(), schemaB.isContainer(), Schema.class);
+		// Only diff the container flag if a value has been set in the schemaB
+		if (schemaB.getContainer() != null) {
+			compareAndAddSchemaProperty(changes, CONTAINER_FLAG_KEY, schemaA.getContainer(), schemaB.getContainer(), Schema.class);
+		}
 
 		// .elasticsearch
 		compareAndAddSchemaElasticSearchProperty(changes, ELASTICSEARCH_KEY, schemaA.getElasticsearch(), schemaB.getElasticsearch(), Schema.class);

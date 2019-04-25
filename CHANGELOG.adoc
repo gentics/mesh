@@ -43,6 +43,8 @@ icon:check[] REST: Creating a schema with a micronode field and the allow option
 [[v0.31.4]]
 == 0.31.4 (11.04.2019)
 
+icon:check[] Schema: The `container` flag in the schema update request is now optional. Omitting the value will no longer cause Gentics Mesh to use the default value `false`. Subsequently the java request model was altered. The `Schema#isContainer` method was replaced with `Schema#getContainer`. Older REST client versions which by default always specified the container flag are still compatible with this change. link:https://github.com/gentics/mesh/issues/165[#165]
+
 icon:check[] GraphQL: The permission check for the `nodes` field of the type `Tag` has been fixed. Previously loading tagged nodes for a tag did not return the expected result. The `published` permission for published nodes was not checked correctly. This has been fixed now.
 
 icon:plus[] Logging:  The default `logback.xml` file has been updated to include automatic scan of the logging configuration. This change will not be applied to existing configurations.

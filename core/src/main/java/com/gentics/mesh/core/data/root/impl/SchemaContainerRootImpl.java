@@ -146,6 +146,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		MeshAuthUser requestUser = ac.getUser();
 		SchemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
 		requestModel.validate();
+
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid(), CREATE_PERM.getRestPerm().getName());
 		}

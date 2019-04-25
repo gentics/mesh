@@ -17,11 +17,11 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
-import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -30,10 +30,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
-import io.reactivex.Observable;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -45,6 +43,7 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -63,8 +62,9 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
-import com.gentics.mesh.test.util.TestUtils;
 import com.syncleus.ferma.tx.Tx;
+
+import io.reactivex.Observable;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -94,6 +94,31 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			// assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
 			// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
 		}
+	}
+
+	@Test
+	public void testCreateWithoutContainerFlag() {
+		SchemaCreateRequest createRequest = FieldUtil.createMinimalValidSchemaCreateRequest();
+		createRequest.setContainer(null);
+		SchemaResponse schema = call(() -> client().createSchema(createRequest));
+		assertFalse("The flag should be set to false", schema.getContainer());
+	}
+
+	@Test
+	public void testUpdateWithoutContainerFlag() {
+		// 1. Create schema
+		SchemaCreateRequest createRequest = FieldUtil.createMinimalValidSchemaCreateRequest();
+		createRequest.setContainer(true);
+		SchemaResponse schema = call(() -> client().createSchema(createRequest));
+		assertTrue("The flag should be set to true", schema.getContainer());
+
+		// 2. Update the schema
+		SchemaUpdateRequest updateRequest = schema.toUpdateRequest();
+		updateRequest.setContainer(null);
+		call(() -> client().updateSchema(schema.getUuid(), updateRequest));
+
+		SchemaResponse schema2 = call(() -> client().findSchemaByUuid(schema.getUuid()));
+		assertTrue("The schema container flag should still be set to true", schema2.getContainer());
 	}
 
 	@Test
