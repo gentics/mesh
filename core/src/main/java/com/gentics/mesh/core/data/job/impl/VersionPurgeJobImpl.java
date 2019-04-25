@@ -5,6 +5,9 @@ import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_VERSION_PURGE_FINISHE
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 
+import java.time.ZonedDateTime;
+import java.util.Optional;
+
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
@@ -16,6 +19,7 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.util.DateUtils;
 
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
@@ -24,6 +28,8 @@ import io.vertx.core.logging.LoggerFactory;
 public class VersionPurgeJobImpl extends JobImpl {
 
 	private static final Logger log = LoggerFactory.getLogger(VersionPurgeJobImpl.class);
+
+	private static final String MAX_AGE_PROPERTY = "maxAge";
 
 	public static void init(Database database) {
 		database.addVertexType(VersionPurgeJobImpl.class, MeshVertexImpl.class);
@@ -36,13 +42,29 @@ public class VersionPurgeJobImpl extends JobImpl {
 	public void setProject(Project project) {
 		setSingleLinkOutTo(project, HAS_PROJECT);
 	}
+	
+	public Optional<ZonedDateTime> getMaxAge() {
+		Long maxAge = getProperty(MAX_AGE_PROPERTY);
+		if (maxAge == null) {
+			return Optional.empty();
+		} else {
+			ZonedDateTime maxAgeDate = DateUtils.toZonedDateTime(maxAge);
+			return Optional.of(maxAgeDate);
+		}
+	}
+	
+	public void setMaxAge(ZonedDateTime time) {
+		Long ms = time.toInstant().toEpochMilli();
+		setProperty(MAX_AGE_PROPERTY, ms);
+	}
 
 	@Override
 	protected Completable processTask() {
 		Database db = DB.get();
 		ProjectVersionPurgeHandler handler = MeshInternal.get().projectVersionPurgeHandler();
 		Project project = db.tx(() -> getProject());
-		return handler.purgeVersions(project)
+		Optional<ZonedDateTime> maxAge = db.tx(() -> getMaxAge());
+		return handler.purgeVersions(project, maxAge)
 			.doOnComplete(() -> {
 				db.tx(() -> {
 					setStopTimestamp();

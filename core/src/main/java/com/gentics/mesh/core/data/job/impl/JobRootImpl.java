@@ -9,9 +9,11 @@ import static com.gentics.mesh.core.rest.job.JobStatus.QUEUED;
 import static com.gentics.mesh.core.rest.job.JobStatus.UNKNOWN;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Stack;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -158,13 +160,16 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 	
 	@Override
-	public Job enqueueVersionPurge(User user, Project project) {
+	public Job enqueueVersionPurge(User user, Project project, Optional<ZonedDateTime> since) {
 		VersionPurgeJobImpl job = getGraph().addFramedVertex(VersionPurgeJobImpl.class);
 		//TODO why is user omitted?
 		//job.setCreated(user);
 		job.setType(JobType.versionpurge);
 		job.setStatus(QUEUED);
 		job.setProject(project);
+		if (since.isPresent()) {
+			job.setMaxAge(since.get());
+		}
 		addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued project version purge job {" + job.getUuid() + "} for project {" + project.getName() + "}");

@@ -348,9 +348,9 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> purgeProject(String uuid) {
+	public MeshRequest<GenericMessageResponse> purgeProject(String uuid, ParameterProvider... parameters) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return prepareRequest(POST, "/projects/" + uuid + "/maintenance/purge", GenericMessageResponse.class);
+		return prepareRequest(POST, "/projects/" + uuid + "/maintenance/purge" + getQuery(parameters), GenericMessageResponse.class);
 	}
 
 	@Override

@@ -2,8 +2,10 @@ package com.gentics.mesh.core.project.maintenance;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 
+import java.time.ZonedDateTime;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -15,6 +17,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.util.DateUtils;
 import com.google.common.collect.Lists;
 import com.syncleus.ferma.tx.Tx;
 
@@ -38,25 +41,33 @@ public class ProjectVersionPurgeHandler {
 		return 10L;
 	}
 
-	public Completable purgeVersions(Project project) {
+	/**
+	 * Purge the versions of all nodes in the project.
+	 * 
+	 * @param project
+	 * @param maxAge
+	 *            Limit the purge operation to versions which exceed the max age.
+	 * @return
+	 */
+	public Completable purgeVersions(Project project, Optional<ZonedDateTime> maxAge) {
 		return Completable.fromAction(() -> {
 			db.tx(tx -> {
 				NodeRoot nodeRoot = project.getNodeRoot();
 				Iterator<? extends Node> it = nodeRoot.findAll().iterator();
 				while (it.hasNext()) {
 					Node node = it.next();
-					purgeNode(tx, node);
+					purgeNode(tx, node, maxAge);
 				}
 				return null;
 			});
 		});
 	}
 
-	private void purgeNode(Tx tx, Node node) {
+	private void purgeNode(Tx tx, Node node, Optional<ZonedDateTime> maxAge) {
 		Iterable<? extends NodeGraphFieldContainer> initials = node.getGraphFieldContainersIt(ContainerType.INITIAL);
 		for (NodeGraphFieldContainer initial : initials) {
 			Long counter = 0L;
-			purgeVersion(tx, counter, null, initial, initial, false);
+			purgeVersion(tx, counter, null, initial, initial, false, maxAge);
 		}
 	}
 
@@ -73,12 +84,13 @@ public class ProjectVersionPurgeHandler {
 	 *            Current version to be checked for removal
 	 * @param previousRemoved
 	 *            Flag which indicated whether the previous version has been removed
+	 * @param maxAge
 	 */
 	private void purgeVersion(Tx tx, Long txCounter, BulkActionContext bac, NodeGraphFieldContainer lastRemaining, NodeGraphFieldContainer version,
-		boolean previousRemoved) {
+		boolean previousRemoved, Optional<ZonedDateTime> maxAge) {
 		List<? extends NodeGraphFieldContainer> nextVersions = Lists.newArrayList(version.getNextVersions());
 
-		if (isPurgeable(version)) {
+		if (isPurgeable(version, maxAge)) {
 			log.info("Purging container " + version.getUuid() + "@" + version.getVersion());
 			// Delete this version - This will also take care of removing the version references
 			// version.delete(bac);
@@ -105,12 +117,24 @@ public class ProjectVersionPurgeHandler {
 
 		// Continue with next versions
 		for (NodeGraphFieldContainer next : nextVersions) {
-			purgeVersion(tx, txCounter, bac, lastRemaining, next, previousRemoved);
+			purgeVersion(tx, txCounter, bac, lastRemaining, next, previousRemoved, maxAge);
 		}
 
 	}
 
-	private boolean isPurgeable(NodeGraphFieldContainer version) {
+	private boolean isPurgeable(NodeGraphFieldContainer version, Optional<ZonedDateTime> maxAge) {
+		// Check whether the version is older than the max age
+		if (maxAge.isPresent()) {
+			Long editTs = version.getLastEditedTimestamp();
+			ZonedDateTime editDate = DateUtils.toZonedDateTime(editTs);
+			ZonedDateTime maxDate = maxAge.get();
+			if (editDate.isAfter(maxDate)) {
+				log.info("Version {" + version.getUuid() + "}@{" + version.getVersion() + "} is not purgable since it was edited {" + editDate
+					+ "} which is newer than {" + maxDate + "}");
+				return false;
+			}
+		}
+
 		// The container is purgeable if no edge (publish, draft, initial) exists to its node.
 		return !version.inE(HAS_FIELD_CONTAINER).hasNext();
 	}

@@ -94,8 +94,10 @@ public interface ProjectClientMethods {
 
 	/**
 	 * Invoke a version purge on the project to get rid of all versions across all nodes and branches of this project.
+	 * 
 	 * @param uuid
+	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> purgeProject(String uuid);
+	MeshRequest<GenericMessageResponse> purgeProject(String uuid, ParameterProvider... parameters);
 }

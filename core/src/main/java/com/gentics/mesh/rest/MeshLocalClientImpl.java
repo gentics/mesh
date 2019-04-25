@@ -447,7 +447,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> purgeProject(String uuid) {
+	public MeshRequest<GenericMessageResponse> purgeProject(String uuid, ParameterProvider... parameters) {
 		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
 		projectCrudHandler.handlePurge(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());

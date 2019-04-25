@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.job;
 
+import java.time.ZonedDateTime;
+import java.util.Optional;
+
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
@@ -61,9 +64,10 @@ public interface JobRoot extends RootVertex<Job> {
 	 * 
 	 * @param user
 	 * @param project
+	 * @param since
 	 * @return
 	 */
-	Job enqueueVersionPurge(User user, Project project);
+	Job enqueueVersionPurge(User user, Project project, Optional<ZonedDateTime> since);
 
 	/**
 	 * Process all remaining jobs.

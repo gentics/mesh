@@ -5,6 +5,9 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.time.ZonedDateTime;
+import java.util.Optional;
+
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -14,12 +17,11 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
-import com.gentics.mesh.core.endpoint.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.parameter.ProjectPurgeParameters;
 
 /**
  * Handler for project specific requests.
@@ -63,13 +65,16 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 	public void handlePurge(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
+		ProjectPurgeParameters purgeParams = ac.getProjectPurgeParameters();
+		Optional<ZonedDateTime> since = purgeParams.getSinceDate();
+
 		utils.syncTx(ac, (tx) -> {
 			RootVertex<Project> root = getRootVertex(ac);
 			MeshAuthUser user = ac.getUser();
 			// TODO which perm to use? Admin perm?
 			Project project = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
 			db.tx(() -> {
-				Job job = boot.jobRoot().enqueueVersionPurge(user, project);
+				Job job = boot.jobRoot().enqueueVersionPurge(user, project, since);
 			});
 			MeshEvent.triggerJobWorker();
 

@@ -3,6 +3,8 @@ package com.gentics.mesh.core.endpoint.project;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_VERSION_PURGE_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_VERSION_PURGE_START;
 import static com.gentics.mesh.example.ExampleUuids.PROJECT_DEMO_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
@@ -18,7 +20,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.parameter.ProjectPurgeParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.ProjectPurgeParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
@@ -148,9 +152,9 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 		endpoint.method(POST);
 		endpoint.description("Invoke a version purge of the project.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, "Project was purged.");
-		//TODO handle event
-		//endpoint.events(PROJECT_PURGED);
+		endpoint.addQueryParameters(ProjectPurgeParametersImpl.class);
+		endpoint.exampleResponse(OK, "Project versions purge job added.");
+		endpoint.events(PROJECT_VERSION_PURGE_FINISHED, PROJECT_VERSION_PURGE_START);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("projectUuid");

@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
@@ -45,7 +46,17 @@ public final class DateUtils {
 	 * @return
 	 */
 	public static String toISO8601(long timeInMs) {
-		return Instant.ofEpochSecond(timeInMs / 1000).atZone(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
+		return toZonedDateTime(timeInMs).format(DateTimeFormatter.ISO_INSTANT);
+	}
+
+	/**
+	 * Convert the provided unixtimestamp (miliseconds since midnight, January 1, 1970 UTC) to zoned date time
+	 * 
+	 * @param timeInMs
+	 * @return
+	 */
+	public static ZonedDateTime toZonedDateTime(long timeInMs) {
+		return Instant.ofEpochSecond(timeInMs / 1000).atZone(ZoneOffset.UTC);
 	}
 
 	public static Long fromISO8601(String dateString) {
