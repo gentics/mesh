@@ -7,6 +7,9 @@ import com.gentics.mesh.json.JsonUtil;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 
+/**
+ * A mesh event model contains the information which is included in the event body payload.  
+ */
 public interface MeshEventModel extends RestModel {
 
 	/**

@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.rest.event;
 
+/**
+ * A element event is an event which references a mesh element via uuid and name.
+ *
+ */
 public interface MeshElementEventModel extends MeshEventModel {
 
 	/**
