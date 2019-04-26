@@ -23,7 +23,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import joptsimple.internal.Strings;
 import net.lingala.zip4j.exception.ZipException;
 
 import javax.inject.Inject;
@@ -436,7 +435,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public Completable deleteIndex(boolean failOnMissingIndex, String... indexNames) {
 		String[] fullIndexNames = Arrays.stream(indexNames).map(i -> installationPrefix() + i).toArray(String[]::new);
-		String indices = Strings.join(fullIndexNames, ",");
+		String indices = String.join(",", fullIndexNames);
 		long start = System.currentTimeMillis();
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting indices {" + indices + "}");

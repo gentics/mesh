@@ -3,6 +3,7 @@ package com.gentics.mesh.search.verticle.eventhandler;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.DropIndexRequest;
@@ -95,9 +96,8 @@ public class SchemaMigrationEventHandler implements EventHandler {
 	private Transactional<SchemaContainerVersion> getNewSchemaVersion(BranchSchemaAssignEventModel model) {
 		return helper.getDb().transactional(tx -> {
 			SchemaReference schema = model.getSchema();
-			return helper.getBoot().schemaContainerRoot()
-				.findByUuid(schema.getUuid())
-				.findVersionByUuid(schema.getVersionUuid());
+			SchemaContainer container = helper.getBoot().schemaContainerRoot().findByUuid(schema.getUuid());
+			return container.findVersionByUuid(schema.getVersionUuid());
 		});
 	}
 

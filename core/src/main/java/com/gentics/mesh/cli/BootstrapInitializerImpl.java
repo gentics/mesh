@@ -424,11 +424,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 * @throws Exception
 	 */
 	private void handleLocalData(boolean forceIndexSync, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
-		// Invoke reindex as requested
-		if (forceIndexSync && configuration.getSearchOptions().getUrl() != null) {
-			syncIndex();
-		}
-
 		// Load the verticles
 		List<String> initialProjects = db.tx(() -> meshRoot().getProjectRoot().findAll().stream()
 			.map(Project::getName)
@@ -437,6 +432,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		loader.get().loadVerticles(initialProjects);
 		if (verticleLoader != null) {
 			verticleLoader.apply(Mesh.vertx());
+		}
+
+		// Invoke reindex as requested
+		if (forceIndexSync && configuration.getSearchOptions().getUrl() != null) {
+			syncIndex();
 		}
 
 		// Handle admin password reset
