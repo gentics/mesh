@@ -41,9 +41,11 @@
 	<logger name="com.gentics.mesh.core.binary.impl" level="DEBUG" />
 	 -->
 	<!-- <logger name="com.gentics.mesh.core.data.search.impl.SearchQueueBatchImpl" level="DEBUG" /> -->
+	<!-- 
 	<logger name="com.gentics.mesh.search.index" level="DEBUG" />
 	<logger name="com.gentics.mesh.event.impl.EventQueueBatchImpl" level="TRACE" />
 	<logger name="com.gentics.mesh.search.verticle" level="TRACE" />
+	 -->
 	<root level="INFO">
 		<appender-ref ref="STDOUT"/>
 	</root>
