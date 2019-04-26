@@ -253,6 +253,14 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
+	public MeshRequest<TagResponse> createTag(String projectName, String tagFamilyUuid, String uuid, TagCreateRequest tagCreateRequest) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(tagCreateRequest, "tagCreateRequest must not be null");
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/tags/" + uuid, TagResponse.class,
+			tagCreateRequest);
+	}
+
+	@Override
 	public MeshRequest<EmptyResponse> deleteTag(String projectName, String tagFamilyUuid, String uuid) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(uuid, "uuid must not be null");
@@ -414,6 +422,15 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
+	public MeshRequest<TagFamilyResponse> createTagFamily(String projectName, String tagFamilyUuid, TagFamilyCreateRequest tagFamilyCreateRequest) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");
+		Objects.requireNonNull(tagFamilyCreateRequest, "tagFamilyUpdateRequest must not be null");
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/tagFamilies/" + tagFamilyUuid, TagFamilyResponse.class,
+			tagFamilyCreateRequest);
+	}
+
+	@Override
 	public MeshRequest<GroupResponse> findGroupByUuid(String uuid, ParameterProvider... parameters) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		return prepareRequest(GET, "/groups/" + uuid + getQuery(parameters), GroupResponse.class);
@@ -538,8 +555,8 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<UserResponse> me() {
-		return prepareRequest(GET, "/auth/me", UserResponse.class);
+	public MeshRequest<UserResponse> me(ParameterProvider... parameters) {
+		return prepareRequest(GET, "/auth/me" + getQuery(parameters), UserResponse.class);
 	}
 
 	@Override

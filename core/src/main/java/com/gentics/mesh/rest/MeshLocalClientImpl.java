@@ -356,6 +356,15 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<TagResponse> createTag(String projectName, String tagFamilyUuid, String uuid, TagCreateRequest request) {
+		LocalActionContextImpl<TagResponse> ac = createContext(TagResponse.class);
+		ac.setProject(projectName);
+		ac.setPayloadObject(request);
+		tagCrudHandler.handleUpdate(ac, tagFamilyUuid, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
 	public MeshRequest<EmptyResponse> deleteTag(String projectName, String tagFamilyUuid, String uuid) {
 		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class);
 		ac.setProject(projectName);
@@ -514,6 +523,15 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<TagFamilyResponse> updateTagFamily(String projectName, String tagFamilyUuid, TagFamilyUpdateRequest request) {
+		LocalActionContextImpl<TagFamilyResponse> ac = createContext(TagFamilyResponse.class);
+		ac.setPayloadObject(request);
+		ac.setProject(projectName);
+		tagFamilyCrudHandler.handleUpdate(ac, tagFamilyUuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<TagFamilyResponse> createTagFamily(String projectName, String tagFamilyUuid, TagFamilyCreateRequest request) {
 		LocalActionContextImpl<TagFamilyResponse> ac = createContext(TagFamilyResponse.class);
 		ac.setPayloadObject(request);
 		ac.setProject(projectName);
@@ -847,8 +865,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<UserResponse> me() {
-		LocalActionContextImpl<UserResponse> ac = createContext(UserResponse.class);
+	public MeshRequest<UserResponse> me(ParameterProvider... parameters) {
+		LocalActionContextImpl<UserResponse> ac = createContext(UserResponse.class, parameters);
 		authRestHandler.handleMe(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
