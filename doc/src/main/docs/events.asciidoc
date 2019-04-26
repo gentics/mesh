@@ -2,17 +2,33 @@
 title: Events
 ---
 
+:toc:
 :icons: font
 :source-highlighter: prettify
 
 In Gentics Mesh events can be used to exchange information in between clients and to inform clients about changes in the CMS.
 
-Typical usecases for event handling:
+Typical use cases for event handling:
 
 * Exchange data in between client applications (e.g. Chat)
 * Real time reload if data via `mesh.node.updated` changes.
 * Client-Side cache purging if data is updated, created, deleted.
-* Hooking external hardware sensors into your frontend.
+* Hooking external hardware sensors into your front-end.
+
+== Intro
+
+Events in Gentics Mesh can be triggered by various action. Updating a user for example will trigger the `mesh.user.updated` event. Events for specific actions can be received by registering on the event address (e.g. `mesh.user.updated` or `mesh.user.deleted`).
+
+A websocket endpoint is used to deliver event messages to clients which register on the event addresses.
+
+
+Typical workflow:
+
+* Authenticate HTTP client
+* Connect client to websocket
+* Send message on websocket to register on specific event addresses
+* Receive events messages
+* Regularly send link:#ping[ping] messages.
 
 == Eventbus Bridge & Websocket
 
@@ -20,24 +36,95 @@ The ```/api/v1/eventbus``` endpoint allows clients to access the eventbus. This 
 
 The endpoint is https://github.com/sockjs[SockJS] compliant. It is also possible to access the websocket directly via: ```/api/v1/eventbus/websocket```.
 
-== Events
+Javascript projects can use the link:https://www.npmjs.com/package/vertx3-eventbus-client[vertx3-eventbus-client] library to connect to the eventbus bridge.
 
-The following list contains all Events which Gentics Mesh exposes.
+== Message Types
+
+=== Registering
+
+Once the websocket has been opened you can send a text frame to Gentics Mesh that contains the information to which address you want to register to. Once registered the client will receive the published messaged on that address.
+
+[source,json]
+----
+{ 
+  "type": "register",
+  "address": "mesh.user.updated"
+}
+----
+
+=== Unregistering
+
+If you want to unregister for specific events you can send a message of type `unregister`.
+
+[source,json]
+----
+{ 
+  "type": "unregister",
+  "address": "mesh.user.updated"
+}
+----
+
+=== Publishing
+
+You can publish a message which will be received by all recipients which has registered on to the used address. The published message will be delivered to each of the recipients.
+
+[source,json]
+----
+{ 
+  "type": "publish",
+  "address": "custom.event",
+  "body": "someText"
+}
+----
+
+=== Sending
+
+Sending a message is different from publishing. When sending a message it will only be received by _one_ randomly selected recipient.
+
+[source,json]
+----
+{ 
+  "type": "publish",
+  "address": "custom.event",
+  "body": "someText"
+}
+----
+
+[[ping]]
+=== Ping
+
+The eventbus bridge requires the client to send a regular `ping` message. The timeout for a ping message is currently set to `10` seconds. The websocket will automatically be terminated if no ping message has been received in this interval.
+
+WARNING: Handling the ping message is essential. The eventbus bridge will not work properly without handling ping messages.
+
+[source,json]
+----
+{ 
+  "type": "ping"
+}
+----
+
+
+== Addresses
+
+The following list contains all event addresses with examples which Gentics Mesh exposes.
 
 include::content/docs/examples/tables/MeshEvent.adoc-include[]
 
 [[customevents]]
-=== Custom Events
+== Custom Events
 
 It is also possible to register and send custom events. The address of those events must start with `custom.`.
 
 Custom events can be used to exchange events in between connected clients.
 
+== Examples
+
 [[iot]]
 === IoT Example
 
 The eventbus provides a great way to utilize data of your IoT devices in your frontend application.
-The following example shows how the link:https://www.arduino.cc/[Arduino] compatibile link:https://de.wikipedia.org/wiki/ESP8266[ESP8266] WIFI enabled microcontroller can utilize the Gentics Mesh eventbus.
+The following example shows how the link:https://www.arduino.cc/[Arduino] compatible link:https://de.wikipedia.org/wiki/ESP8266[ESP8266] WIFI enabled microcontroller can utilize the Gentics Mesh eventbus.
 
 The shown sketch utilizes the link:https://github.com/Links2004/arduinoWebSockets[arduinoWebSockets] library.
 
@@ -103,3 +190,6 @@ void loop() {
 
 In this example the Pin 13 (D7) on the ESP8266 will be used to trigger an event.
 
+== Limitations
+
+NOTE: Gentics Mesh does currently not support Webhooks to register to events.

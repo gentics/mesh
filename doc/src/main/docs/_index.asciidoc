@@ -337,7 +337,7 @@ ul.doc-toc h2 {
                                 <a href="events">Events</a>
                                 <ul>
                                     <li>
-                                        <a href="events#_events">List</a>
+                                        <a href="events#_addresses">Addresses</a>
                                     </li>
                                     <li>
                                         <a href="events#customevents">Custom Events</a>
