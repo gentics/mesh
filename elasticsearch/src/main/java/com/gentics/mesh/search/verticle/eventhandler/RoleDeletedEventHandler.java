@@ -6,7 +6,6 @@ import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.SearchClient;
 import com.gentics.mesh.search.verticle.MessageEvent;
-import com.gentics.mesh.search.verticle.entity.MeshEntities;
 import io.reactivex.Flowable;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;

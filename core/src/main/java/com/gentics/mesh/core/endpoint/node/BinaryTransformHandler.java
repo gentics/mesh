@@ -238,6 +238,10 @@ public class BinaryTransformHandler extends AbstractHandler {
 			// TODO should we rename the image, if the extension is wrong?
 			field.getBinary().setImageHeight(result.getImageInfo().getHeight());
 			field.getBinary().setImageWidth(result.getImageInfo().getWidth());
+			// If the binary field is the segment field, we need to update the webroot info in the node
+			if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
+				newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
+			}
 			String branchUuid = node.getProject().getBranchRoot().getLatestBranch().getUuid();
 			batch.add(newDraftVersion.onCreated(branchUuid, DRAFT));
 			return node.transformToRestSync(ac, 0);

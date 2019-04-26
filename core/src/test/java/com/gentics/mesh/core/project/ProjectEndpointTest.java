@@ -306,7 +306,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			// Create a new project
 			ProjectResponse restProject = call(() -> client().createProject(request));
 			assertThat(restProject).matches(request);
-			assertThat(restProject.getPermissions()).hasPerm(Permission.values());
+			assertThat(restProject.getPermissions()).hasPerm(Permission.basicPermissions());
 
 			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 
@@ -454,7 +454,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			ProjectResponse response = call(() -> client().findProjectByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
 			assertNotNull(response.getRolePerms());
-			assertThat(response.getRolePerms()).hasPerm(Permission.values());
+			assertThat(response.getRolePerms()).hasPerm(Permission.basicPermissions());
 		}
 	}
 
@@ -765,6 +765,13 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		Observable.range(0, nJobs)
 			.flatMapCompletable(i -> client().findProjectByUuid(projectUuid()).toCompletable())
 			.blockingAwait();
+	}
+
+	@Test
+	@Override
+	public void testPermissionResponse() {
+		ProjectResponse project = client().findProjects().blockingGet().getData().get(0);
+		assertThat(project.getPermissions()).hasNoPublishPermsSet();
 	}
 
 	@Test

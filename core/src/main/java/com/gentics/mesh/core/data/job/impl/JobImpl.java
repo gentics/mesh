@@ -196,7 +196,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public void setBranch(Branch branch) {
-		setUniqueLinkOutTo(branch, HAS_BRANCH);
+		setSingleLinkOutTo(branch, HAS_BRANCH);
 	}
 
 	@Override
@@ -206,7 +206,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public void setFromSchemaVersion(SchemaContainerVersion version) {
-		setUniqueLinkOutTo(version, HAS_FROM_VERSION);
+		setSingleLinkOutTo(version, HAS_FROM_VERSION);
 	}
 
 	@Override
@@ -216,7 +216,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public void setToSchemaVersion(SchemaContainerVersion version) {
-		setUniqueLinkOutTo(version, HAS_TO_VERSION);
+		setSingleLinkOutTo(version, HAS_TO_VERSION);
 	}
 
 	@Override
@@ -226,7 +226,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public void setFromMicroschemaVersion(MicroschemaContainerVersion fromVersion) {
-		setUniqueLinkOutTo(fromVersion, HAS_FROM_VERSION);
+		setSingleLinkOutTo(fromVersion, HAS_FROM_VERSION);
 	}
 
 	@Override
@@ -236,7 +236,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public void setToMicroschemaVersion(MicroschemaContainerVersion toVersion) {
-		setUniqueLinkOutTo(toVersion, HAS_TO_VERSION);
+		setSingleLinkOutTo(toVersion, HAS_TO_VERSION);
 	}
 
 	@Override

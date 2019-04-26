@@ -11,9 +11,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
-import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
-import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
@@ -81,8 +79,8 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
-
 import io.vertx.core.json.JsonObject;
+
 @MeshTestSetting(elasticsearch = TRACKING, testSize = PROJECT_AND_NODE, startServer = true)
 public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
@@ -343,7 +341,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String userUuid = tx(() -> user().getUuid());
 		UserPermissionResponse response = call(() -> client().readUserPermissions(userUuid, pathToElement));
 		assertNotNull(response);
-		assertThat(response).hasPerm(Permission.values());
+		assertThat(response).hasPerm(Permission.basicPermissions());
 
 		try (Tx tx = tx()) {
 			// Revoke single permission and check again
@@ -353,14 +351,14 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		}
 		UserPermissionResponse permissionResponse = call(() -> client().readUserPermissions(userUuid, pathToElement));
 		assertNotNull(permissionResponse);
-		assertThat(permissionResponse).hasPerm(READ, CREATE, DELETE, PUBLISH, READ_PUBLISHED);
+		assertThat(permissionResponse).hasPerm(READ, CREATE, DELETE);
 	}
 
 	@Test
 	public void testReadByUuidWithRolePerms() {
 		UserResponse userResponse = call(() -> client().findUserByUuid(userUuid(), new RolePermissionParametersImpl().setRoleUuid(roleUuid())));
 		assertNotNull(userResponse.getRolePerms());
-		assertThat(userResponse.getRolePerms()).hasPerm(READ, READ_PUBLISHED, PUBLISH, CREATE, UPDATE, DELETE);
+		assertThat(userResponse.getRolePerms()).hasPerm(READ, CREATE, UPDATE, DELETE);
 	}
 
 	@Test
@@ -1171,6 +1169,13 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String uuid = projectUuid();
 
 		call(() -> client().createUser(uuid, request), INTERNAL_SERVER_ERROR, "error_internal");
+	}
+
+	@Test
+	@Override
+	public void testPermissionResponse() {
+		UserResponse user = client().findUsers().blockingGet().getData().get(0);
+		assertThat(user.getPermissions()).hasNoPublishPermsSet();
 	}
 
 	@Test

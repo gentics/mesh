@@ -50,4 +50,7 @@ public enum Permission {
 		return null;
 	}
 
+	public static Permission[] basicPermissions() {
+		return new Permission[] {CREATE, READ, UPDATE, DELETE};
+	}
 }

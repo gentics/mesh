@@ -24,6 +24,8 @@ public interface CrudEndpointTestCases {
 
 	void testReadMultiple() throws Exception;
 
+	void testPermissionResponse();
+
 	// Update
 	void testUpdate() throws Exception;
 

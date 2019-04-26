@@ -248,7 +248,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			MicroschemaResponse microschema = call(
 				() -> client().findMicroschemaByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
 			assertNotNull(microschema.getRolePerms());
-			assertThat(microschema.getRolePerms()).hasPerm(Permission.values());
+			assertThat(microschema.getRolePerms()).hasPerm(Permission.basicPermissions());
 		}
 	}
 
@@ -466,4 +466,19 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		}
 	}
 
+	@Test
+	@Override
+	public void testPermissionResponse() {
+		MicroschemaResponse microschema = client().findMicroschemas().blockingGet().getData().get(0);
+		assertThat(microschema.getPermissions()).hasNoPublishPermsSet();
+	}
+
+	@Test
+	public void testConflictingNameWithSchema() throws InterruptedException {
+		MicroschemaCreateRequest microSchemaRequest = new MicroschemaCreateRequest().setName("test");
+		SchemaCreateRequest schemaRequest = new SchemaCreateRequest().setName("test");
+
+		client().createSchema(schemaRequest).blockingAwait();
+		call(() -> client().createMicroschema(microSchemaRequest), CONFLICT, "schema_conflicting_name", "test");
+	}
 }

@@ -794,4 +794,9 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 */
 	NodeReference transformToMinimalReference();
 
+	@Override
+	default boolean hasPublishPermissions() {
+		return true;
+	}
+
 }

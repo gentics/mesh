@@ -48,6 +48,7 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
+import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
@@ -631,4 +632,11 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 	}
 
+	@Test
+	@Override
+	public void testPermissionResponse() {
+		TagFamilyResponse tagfamily = client().findTagFamilies(PROJECT_NAME).blockingGet().getData().get(0);
+		TagResponse tag = client().findTags(PROJECT_NAME, tagfamily.getUuid()).blockingGet().getData().get(0);
+		assertThat(tag.getPermissions()).hasNoPublishPermsSet();
+	}
 }

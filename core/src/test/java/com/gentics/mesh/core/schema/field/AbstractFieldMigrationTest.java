@@ -970,6 +970,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		for (FieldSchema field : fields) {
 			schema.addField(field);
 		}
+		schema.setContainer(false);
 		// schema.setDisplayField("name");
 		// schema.setSegmentField("name");
 		schema.validate();

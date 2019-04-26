@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.schema;
 
-import java.util.List;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;

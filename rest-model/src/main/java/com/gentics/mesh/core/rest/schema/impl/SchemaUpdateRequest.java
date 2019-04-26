@@ -27,7 +27,7 @@ public class SchemaUpdateRequest implements SchemaModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether nodes which use this schema store additional child nodes.")
-	private boolean container = false;
+	private Boolean container;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Version of the schema.")
@@ -105,12 +105,12 @@ public class SchemaUpdateRequest implements SchemaModel {
 	}
 
 	@Override
-	public boolean isContainer() {
+	public Boolean getContainer() {
 		return container;
 	}
 
 	@Override
-	public SchemaUpdateRequest setContainer(boolean flag) {
+	public SchemaUpdateRequest setContainer(Boolean flag) {
 		this.container = flag;
 		return this;
 	}

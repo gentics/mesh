@@ -20,11 +20,14 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldMap;
 import com.syncleus.ferma.EdgeFrame;
+import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.annotations.GraphElement;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.Traversal;
 import com.syncleus.ferma.traversals.TraversalFunction;
 import com.syncleus.ferma.traversals.VertexTraversal;
+import com.syncleus.ferma.tx.Tx;
+import com.tinkerpop.blueprints.Edge;
 
 /**
  * @see GraphFieldContainerEdge
@@ -172,5 +175,21 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 			return argument.traversal().has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag);
 		}
 	}
+
+	/**
+	 * Check whether the node has a content (NGFC) for the branch and given type (Draft/Published/Initial).
+	 * 
+	 * @param nodeId     Object id of the node
+	 * @param branchUuid
+	 * @param code
+	 * @return
+	 */
+	public static boolean matchesBranchAndType(Object nodeId, String branchUuid, String code) {
+		FramedGraph graph = Tx.getActive().getGraph();
+		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
+				MeshInternal.get().database().createComposedIndexKey(nodeId, branchUuid, code));
+		return edges.iterator().hasNext();
+	}
+
 
 }

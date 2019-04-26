@@ -90,7 +90,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			TagFamilyResponse response = call(() -> client().findTagFamilyByUuid(PROJECT_NAME, uuid, new RolePermissionParametersImpl().setRoleUuid(
 				role().getUuid())));
 			assertNotNull("The response did not contain the expected role permission field value", response.getRolePerms());
-			assertThat(response.getRolePerms()).hasPerm(Permission.values());
+			assertThat(response.getRolePerms()).hasPerm(Permission.basicPermissions());
 		}
 
 	}
@@ -560,4 +560,10 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		}
 	}
 
+	@Test
+	@Override
+	public void testPermissionResponse() {
+		TagFamilyResponse family = client().findTagFamilies(PROJECT_NAME).blockingGet().getData().get(0);
+		assertThat(family.getPermissions()).hasNoPublishPermsSet();
+	}
 }

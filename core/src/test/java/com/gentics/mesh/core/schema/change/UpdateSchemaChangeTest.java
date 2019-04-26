@@ -156,7 +156,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			Schema updatedSchema = mutator.apply(version);
 			assertEquals("The display field name was not updated", "newDisplayField", updatedSchema.getDisplayField());
 			assertEquals("The segment field name was not updated", "newSegmentField", updatedSchema.getSegmentField());
-			assertTrue("The schema container flag was not updated", updatedSchema.isContainer());
+			assertTrue("The schema container flag was not updated", updatedSchema.getContainer());
 		}
 	}
 

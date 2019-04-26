@@ -1505,6 +1505,11 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<JobResponse> processJob(String uuid) {
+		return null;
+	}
+
+	@Override
 	public MeshRequest<GenericMessageResponse> invokeJobProcessing() {
 		return null;
 	}

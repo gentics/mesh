@@ -49,6 +49,7 @@ import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
+
 import io.reactivex.Observable;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
@@ -524,6 +525,13 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertThat(response).isNotNull().hasName(info.getValue()).hasUuid(info.getKey()).isActive().hasPathPrefix("");
 		}
 
+	}
+
+	@Test
+	@Override
+	public void testPermissionResponse() {
+		BranchResponse branch = client().findBranches(PROJECT_NAME).blockingGet().getData().get(0);
+		assertThat(branch.getPermissions()).hasNoPublishPermsSet();
 	}
 
 	@Test

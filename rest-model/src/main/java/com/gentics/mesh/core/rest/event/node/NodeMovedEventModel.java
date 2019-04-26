@@ -2,7 +2,6 @@ package com.gentics.mesh.core.rest.event.node;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.gentics.mesh.core.rest.event.AbstractMeshEventModel;
 import com.gentics.mesh.core.rest.user.NodeReference;
 
 public class NodeMovedEventModel extends NodeMeshEventModel {

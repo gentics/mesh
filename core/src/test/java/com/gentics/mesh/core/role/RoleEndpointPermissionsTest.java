@@ -248,10 +248,10 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 		String pathToElement = PROJECT_NAME + "/tagFamilies/" + tx(() -> tagFamily("colors").getUuid());
 		RolePermissionResponse response = call(() -> client().readRolePermissions(roleUuid(), pathToElement));
-		assertThat(response).hasPerm(Permission.values());
+		assertThat(response).hasPerm(Permission.basicPermissions());
 
 		response = call(() -> client().readRolePermissions(roleUuid(), "/" + PROJECT_NAME));
-		assertThat(response).hasPerm(Permission.values());
+		assertThat(response).hasPerm(Permission.basicPermissions());
 
 		tx(() -> role().revokePermissions(project(), DELETE_PERM));
 
@@ -275,7 +275,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		String pathToElement = tx(() -> "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid());
 		RolePermissionResponse response = call(() -> client().readRolePermissions(roleUuid(), pathToElement));
 		assertNotNull(response);
-		assertThat(response).hasPerm(Permission.values());
+		assertThat(response).hasPerm(Permission.basicPermissions());
 	}
 
 	@Test

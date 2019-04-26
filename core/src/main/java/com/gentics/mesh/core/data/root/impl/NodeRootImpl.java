@@ -52,7 +52,6 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.syncleus.ferma.tx.Tx;
@@ -111,23 +110,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		String branchUuid = branch.getUuid();
 
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, perm, (item) -> {
-			return matchesBranchAndType(item.id(), branchUuid, type.getCode());
+			return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.id(), branchUuid, type.getCode());
 		}, true);
-	}
-
-	/**
-	 * Check whether the node has a field for the branch and given type.
-	 * 
-	 * @param nodeId     Object id of the node
-	 * @param branchUuid
-	 * @param code
-	 * @return
-	 */
-	private boolean matchesBranchAndType(Object nodeId, String branchUuid, String code) {
-		FramedGraph graph = getGraph();
-		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
-				database().createComposedIndexKey(nodeId, branchUuid, code));
-		return edges.iterator().hasNext();
 	}
 
 	@Override
@@ -144,7 +128,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			.map(edge -> edge.getVertex(Direction.IN))
 			.filter(item -> {
 				// Check whether the node has at least a draft in the selected branch - Otherwise the node should be skipped
-				return matchesBranchAndType(item.getId(), branchUuid, DRAFT.getCode());
+				return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, DRAFT.getCode());
 			})
 			.filter(item -> {
 				boolean hasRead = user.hasPermissionForId(item.getId(), READ_PERM);
@@ -152,7 +136,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 					return true;
 				} else {
 					// Check whether the node is published. In this case we need to check the read publish perm.
-					boolean isPublishedForBranch = matchesBranchAndType(item.getId(), branchUuid, PUBLISHED.getCode());
+					boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED.getCode());
 					if (isPublishedForBranch) {
 						return user.hasPermissionForId(item.getId(), READ_PUBLISHED_PERM);
 					}

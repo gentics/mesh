@@ -1204,6 +1204,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		schemaA.addField(FieldUtil.createStringFieldSchema("name"));
 		schemaA.setDisplayField("name");
 		schemaA.setSegmentField("name");
+		schemaA.setContainer(false);
 		schemaA.validate();
 		versionA.setName("migratedSchema");
 		versionA.setSchema(schemaA);
@@ -1222,6 +1223,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		schemaB.addField(FieldUtil.createStringFieldSchema("name"));
 		schemaB.setDisplayField("name");
 		schemaB.setSegmentField("name");
+		schemaB.setContainer(false);
 		schemaB.validate();
 		versionB.setName("migratedSchema");
 		versionB.setSchema(schemaB);

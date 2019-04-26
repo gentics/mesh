@@ -32,7 +32,6 @@ import static java.lang.System.currentTimeMillis;
 import static java.lang.System.out;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -51,6 +50,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
+import io.reactivex.Observable;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
@@ -88,7 +89,6 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
@@ -96,7 +96,6 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
 
-import io.reactivex.Observable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -1604,6 +1603,13 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			.blockingGet();
 
 		assertThat(node).hasUuid(uuid);
+	}
+
+	@Test
+	@Override
+	public void testPermissionResponse() {
+		NodeResponse node = client().findNodes(PROJECT_NAME).blockingGet().getData().get(0);
+		assertThat(node.getPermissions()).hasPublishPermsSet();
 	}
 
 	// Update

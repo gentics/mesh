@@ -86,6 +86,7 @@ import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Observable;
 
+
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
@@ -122,6 +123,31 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			// assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
 			// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
 		}
+	}
+
+	@Test
+	public void testCreateWithoutContainerFlag() {
+		SchemaCreateRequest createRequest = FieldUtil.createMinimalValidSchemaCreateRequest();
+		createRequest.setContainer(null);
+		SchemaResponse schema = call(() -> client().createSchema(createRequest));
+		assertFalse("The flag should be set to false", schema.getContainer());
+	}
+
+	@Test
+	public void testUpdateWithoutContainerFlag() {
+		// 1. Create schema
+		SchemaCreateRequest createRequest = FieldUtil.createMinimalValidSchemaCreateRequest();
+		createRequest.setContainer(true);
+		SchemaResponse schema = call(() -> client().createSchema(createRequest));
+		assertTrue("The flag should be set to true", schema.getContainer());
+
+		// 2. Update the schema
+		SchemaUpdateRequest updateRequest = schema.toUpdateRequest();
+		updateRequest.setContainer(null);
+		call(() -> client().updateSchema(schema.getUuid(), updateRequest));
+
+		SchemaResponse schema2 = call(() -> client().findSchemaByUuid(schema.getUuid()));
+		assertTrue("The schema container flag should still be set to true", schema2.getContainer());
 	}
 
 	@Test
@@ -315,7 +341,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		SchemaResponse schema = call(() -> client().findSchemaByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(db().tx(() -> role()
 			.getUuid()))));
 		assertNotNull(schema.getRolePerms());
-		assertThat(schema.getRolePerms()).hasPerm(Permission.values());
+		assertThat(schema.getRolePerms()).hasPerm(Permission.basicPermissions());
 	}
 
 	@Test
@@ -683,4 +709,19 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		call(() -> client().updateSchema(schemaUuid, request), FORBIDDEN, "error_missing_perm", schemaUuid, UPDATE_PERM.getRestPerm().getName());
 	}
 
+	@Test
+	@Override
+	public void testPermissionResponse() {
+		SchemaResponse schema = client().findSchemas().blockingGet().getData().get(0);
+		assertThat(schema.getPermissions()).hasNoPublishPermsSet();
+	}
+
+	@Test
+	public void testConflictingNameWithMicroschema() throws InterruptedException {
+		MicroschemaCreateRequest microSchemaRequest = new MicroschemaCreateRequest().setName("test");
+		SchemaCreateRequest schemaRequest = new SchemaCreateRequest().setName("test");
+
+		client().createMicroschema(microSchemaRequest).blockingAwait();
+		call(() -> client().createSchema(schemaRequest), CONFLICT,"microschema_conflicting_name", "test");
+	}
 }

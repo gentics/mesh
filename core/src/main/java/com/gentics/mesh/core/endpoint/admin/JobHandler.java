@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.endpoint.admin;
 
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.UNKNOWN;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -10,7 +12,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.rest.MeshEvent;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -20,6 +21,8 @@ import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
@@ -130,7 +133,28 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 			}
 			JobRoot root = boot.jobRoot();
 			Job job = root.loadObjectByUuidNoPerm(uuid, true);
-			job.resetJob();
+			db.tx(() -> {
+				job.resetJob();
+			});
+			return job.transformToRestSync(ac, 0);
+		}, (model) -> ac.send(model, OK));
+	}
+
+	public void handleProcess(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
+		utils.syncTx(ac, (tx) -> {
+			if (!ac.getUser().hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			JobRoot root = boot.jobRoot();
+			Job job = root.loadObjectByUuidNoPerm(uuid, true);
+			db.tx(() -> {
+				MigrationStatus status = job.getStatus();
+				if (status == FAILED || status == UNKNOWN) {
+					job.resetJob();
+				}
+			});
+			MeshEvent.triggerJobWorker();
 			return job.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
 	}

@@ -2,7 +2,6 @@ package com.gentics.mesh.search.verticle.eventhandler;
 
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -10,8 +9,6 @@ import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
 import io.reactivex.Flowable;
-import sun.font.CreatedFontTracker;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Arrays;

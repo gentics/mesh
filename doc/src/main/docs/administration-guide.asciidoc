@@ -12,12 +12,12 @@ title: Administration Guide
 [options="header"]
 |======
 | Component                                                    | Type                 | Version
-| http://orientdb.com/[OrientDB]                               | Graph Database       | 2.2.x
+| https://orientdb.com/[OrientDB]                              | Graph Database       | 3.0.x
 | https://github.com/Syncleus/Ferma[Ferma]                     | OGM                  | 2.4.x
 | https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine        | 6.1.x
 | http://vertx.io/[Vert.x]                                     | Core Framework       | 3.5.x
-| https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid  | 3.5.x
-| https://google.github.io/dagger/[Dagger 2]                   | Dependency Injection | 2.6.x
+| https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid  | 3.10.x
+| https://google.github.io/dagger/[Dagger 2]                   | Dependency Injection | 2.11.x
 |======
 
 TIP: You can find the components' current version numbers by querying the Gentics Mesh demo instance https://demo.getmesh.io/api/v1/ or your local instance http://localhost:8080/api/v1/.
@@ -381,6 +381,13 @@ The `repaired` property will be set to true if the inconsistency could be fixed.
 include::content/docs/api/response/api/v1/admin/consistency/repair/200/example.json[]
 ----
 
+== Filesystem support
+
+The filesystem https://en.wikipedia.org/wiki/ZFS[ZFS] (ZFS on Linux) does currently not support Direct IO on Linux. 
+
+When using ZFS it is thus required to turn off direct IO usage of OrientDB. Please use the    `-Dstorage.wal.allowDirectIO=false` setting in this case.
+
+NOTE: The direct IO support will be included in ZFS 0.8
 
 == License
 

@@ -33,6 +33,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RoleRoot;
@@ -51,9 +52,8 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
-import com.syncleus.ferma.tx.Tx;
-
 import io.reactivex.Single;
+
 @MeshTestSetting(elasticsearch = TRACKING, testSize = PROJECT, startServer = true)
 public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
@@ -215,7 +215,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadByUuidWithRolePerms() {
 		RoleResponse restRole = call(() -> client().findRoleByUuid(roleUuid(), new RolePermissionParametersImpl().setRoleUuid(roleUuid())));
 		assertNotNull(restRole.getRolePerms());
-		assertThat(restRole.getRolePerms()).hasPerm(Permission.values());
+		assertThat(restRole.getRolePerms()).hasPerm(Permission.basicPermissions());
 	}
 
 	@Test
@@ -535,4 +535,10 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		awaitConcurrentRequests(nJobs, i -> client().findRoleByUuid(uuid));
 	}
 
+	@Test
+	@Override
+	public void testPermissionResponse() {
+		RoleResponse role = client().findRoles().blockingGet().getData().get(0);
+		assertThat(role.getPermissions()).hasNoPublishPermsSet();
+	}
 }

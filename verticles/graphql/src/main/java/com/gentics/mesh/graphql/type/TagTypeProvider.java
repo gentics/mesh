@@ -1,6 +1,7 @@
 package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.TagFamilyTypeProvider.TAG_FAMILY_TYPE_NAME;
 import static graphql.Scalars.GraphQLString;
@@ -8,18 +9,14 @@ import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.page.impl.WrappedPageImpl;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import graphql.schema.GraphQLObjectType;
@@ -71,15 +68,17 @@ public class TagTypeProvider extends AbstractTypeProvider {
 				.dataFetcher((env) -> {
 					GraphQLContext gc = env.getContext();
 					Tag tag = env.getSource();
-					TransformablePage<? extends Node> nodes = tag.findTaggedNodes(gc.getUser(), gc.getBranch(), null, null, getPagingInfo(env));
+					
 					List<String> languageTags = getLanguageArgument(env);
 
-					// Transform the found nodes into contents
-					List<NodeContent> contents = nodes.getWrappedList().stream().map(node -> {
-						NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
-						return new NodeContent(node, container, languageTags);
-					}).collect(Collectors.toList());
-					return new WrappedPageImpl<NodeContent>(contents, nodes);
+					Stream<NodeContent> contents = tag.findTaggedNodes(gc, READ_PUBLISHED_PERM).stream()
+						// Now lets try to load the containers for those found nodes - apply the language fallback
+						.map(node -> new NodeContent(node, node.findVersion(gc, languageTags), languageTags))
+						// Filter nodes without a container
+						.filter(content -> content.getContainer() != null);
+
+					return applyNodeFilter(env, contents);
+
 				}));
 
 		return tagType.build();

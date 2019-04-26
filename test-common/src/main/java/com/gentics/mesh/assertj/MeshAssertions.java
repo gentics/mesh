@@ -6,6 +6,7 @@ import org.assertj.core.api.Assertions;
 
 import com.gentics.mesh.assertj.impl.BranchAssert;
 import com.gentics.mesh.assertj.impl.BranchResponseAssert;
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.assertj.impl.BufferedImageAssert;
 import com.gentics.mesh.assertj.impl.DummySearchProviderAssert;
 import com.gentics.mesh.assertj.impl.FieldMapAssert;
@@ -17,8 +18,10 @@ import com.gentics.mesh.assertj.impl.JobListResponseAssert;
 import com.gentics.mesh.assertj.impl.JsonArrayAssert;
 import com.gentics.mesh.assertj.impl.JsonObjectAssert;
 import com.gentics.mesh.assertj.impl.LanguageAssert;
+
 import com.gentics.mesh.assertj.impl.MeshElementEventModelAssert;
 import com.gentics.mesh.assertj.impl.MeshEventModelAssert;
+import com.gentics.mesh.assertj.impl.MeshRestClientMessageExceptionAssert;
 import com.gentics.mesh.assertj.impl.MicronodeAssert;
 import com.gentics.mesh.assertj.impl.MicronodeResponseAssert;
 import com.gentics.mesh.assertj.impl.NavigationResponseAssert;
@@ -75,9 +78,8 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.rest.client.MeshWebrootResponse;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.search.TrackingSearchProvider;
-
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -233,5 +235,9 @@ public class MeshAssertions extends Assertions {
 
 	public static LanguageAssert assertThat(Language actual) {
 		return new LanguageAssert(actual);
+	}
+
+	public static MeshRestClientMessageExceptionAssert assertThat(MeshRestClientMessageException actual) {
+		return new MeshRestClientMessageExceptionAssert(actual);
 	}
 }

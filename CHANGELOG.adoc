@@ -96,12 +96,34 @@ icon:plus[] Thread Usage: The overall request handling has been refactored to re
 
 icon:plus[] Performance: The overall read performance has been improved. The memory usage has been reduced.
 
+[[v0.31.5]]
+== 0.31.5 (TBD)
+
+icon:check[] REST: The `publish` and `readPublished` permissions are now only shown for nodes.
+
+icon:check[] Core: Creation of schemas with the same name of an existing microschema or vice versa is not allowed anymore. Doing so caused conflicts in GraphQL. link:https://github.com/gentics/mesh/issues/597[#597]
+
+icon:check[] Core: A bug in the image transform endpoint has been fixed. Previously nodes which were updated using that endpoint could not be found via webroot anymore. link:https://github.com/gentics/mesh/issues/599[#599]
+
+icon:plus[] Job: The endpoint `POST /api/v1/admin/jobs/:jobUuid/process` has been added. It can be used to trigger job processing. The endpoint will also automatically reset a failed job to be queued again. The endpoints `DELETE /api/v1/admin/jobs/:jobUuid/error` and `POST /api/v1/admin/processJobs` will be removed in a future release. link:https://github.com/gentics/mesh/issues/171[#171]
+
+icon:check[] Plugins: A `NullPointerException` has been fixed which has happened when accessing `rc.user().principal()` within a plugin. link:https://github.com/gentics/mesh/issues/516[#516]
+
+icon:check[] REST: Creating a schema with a micronode field and the allow option set to `[]` will now allow micronodes of all microschemas.
+
 [[v0.31.4]]
-== 0.31.4 (TBD)
+== 0.31.4 (11.04.2019)
+
+icon:check[] Schema: The `container` flag in the schema update request is now optional. Omitting the value will no longer cause Gentics Mesh to use the default value `false`. Subsequently the java request model was altered. The `Schema#isContainer` method was replaced with `Schema#getContainer`. Older REST client versions which by default always specified the container flag are still compatible with this change. link:https://github.com/gentics/mesh/issues/165[#165]
+
+icon:check[] GraphQL: The permission check for the `nodes` field of the type `Tag` has been fixed. Previously loading tagged nodes for a tag did not return the expected result. The `published` permission for published nodes was not checked correctly. This has been fixed now.
 
 icon:plus[] Logging:  The default `logback.xml` file has been updated to include automatic scan of the logging configuration. This change will not be applied to existing configurations.
 
 icon:check[] Schema: It is now possible to reset the `allow` property of string fields. Setting the `allow` to empty array will now no longer restrict the values. Instead it will revert back to the original behaviour and allow all values.
+
+icon:check[] UI: Fixed a bug that caused the node list to jump to the first page on various actions. link:https://github.com/gentics/mesh-ui/issues/195[#195]
+
 
 [[v0.31.3]]
 == 0.31.3 (28.03.2019)
