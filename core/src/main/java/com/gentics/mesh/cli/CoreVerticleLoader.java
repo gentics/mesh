@@ -17,6 +17,7 @@ import com.gentics.mesh.monitor.MonitoringServerVerticle;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
+
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.vertx.core.AbstractVerticle;
@@ -71,11 +72,14 @@ public class CoreVerticleLoader {
 
 	/**
 	 * Load verticles that are configured within the mesh configuration.
+	 * @param initialProjects
 	 */
-	public void loadVerticles() {
+	public void loadVerticles(List<String> initialProjects) {
 		defaultConfig = new JsonObject();
 		defaultConfig.put("port", meshOptions.getHttpServerOptions().getPort());
 		defaultConfig.put("host", meshOptions.getHttpServerOptions().getHost());
+		defaultConfig.put("initialProjects", initialProjects);
+
 		for (Provider<? extends AbstractVerticle> verticle : getMandatoryVerticleClasses()) {
 			try {
 				for (int i = 0; i < DEFAULT_VERTICLE_DEPLOYMENTS; i++) {
