@@ -1,21 +1,11 @@
 package com.gentics.mesh.cli;
 
-import static com.gentics.mesh.util.DeploymentUtil.deployAndWait;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.monitor.MonitoringServerVerticle;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.search.verticle.ElasticsearchSyncVerticle;
-
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.vertx.core.AbstractVerticle;
@@ -23,6 +13,14 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Singleton;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.gentics.mesh.util.DeploymentUtil.deployAndWait;
 
 /**
  * Central loader for core verticles. Needed verticles will be listed and deployed here.
@@ -63,11 +61,14 @@ public class CoreVerticleLoader {
 
 	/**
 	 * Load verticles that are configured within the mesh configuration.
+	 * @param initialProjects
 	 */
-	public void loadVerticles() {
+	public void loadVerticles(List<String> initialProjects) {
 		JsonObject defaultConfig = new JsonObject();
 		defaultConfig.put("port", meshOptions.getHttpServerOptions().getPort());
 		defaultConfig.put("host", meshOptions.getHttpServerOptions().getHost());
+		defaultConfig.put("initialProjects", initialProjects);
+
 		for (Provider<? extends AbstractVerticle> verticle : getMandatoryVerticleClasses()) {
 			try {
 				for (int i = 0; i < DEFAULT_VERTICLE_DEPLOYMENTS; i++) {
