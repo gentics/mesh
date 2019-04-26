@@ -10,6 +10,7 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -53,8 +54,6 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
-import com.syncleus.ferma.tx.Tx;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
@@ -85,8 +84,6 @@ public class DemoDataProvider {
 	private Map<String, GroupResponse> groups = new HashMap<>();
 
 	private BootstrapInitializer boot;
-
-	private JsonObject mappingData;
 
 	@Inject
 	public DemoDataProvider(Database database, MeshLocalClientImpl client, BootstrapInitializer boot) {
@@ -469,9 +466,8 @@ public class DemoDataProvider {
 			if (ins != null) {
 				IOUtils.copy(ins, writer, Charsets.UTF_8.name());
 				SchemaCreateRequest schema = JsonUtil.readValue(writer.toString(), SchemaCreateRequest.class);
-				SchemaResponse schemaResponse = call(() -> client.createSchema(schema));
+				SchemaResponse schemaResponse = call(() -> client.createSchema(uuid, schema));
 				schemas.put(schemaName, schemaResponse);
-				uuidMapping.put(schemaResponse.getUuid(), uuid);
 			}
 
 			// Assign all schemas to all projects
