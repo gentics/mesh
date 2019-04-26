@@ -27,6 +27,7 @@ public class ElasticSearchOptions implements Option {
 	public static final int DEFAULT_BULK_DEBOUNCE_TIME = 2000;
 	public static final int DEFAULT_IDLE_DEBOUNCE_TIME = 100;
 	public static final int DEFAULT_RETRY_INTERVAL = 5000;
+	public static final boolean DEFAULT_WAIT_FOR_IDLE = true;
 
 	public static final String DEFAULT_PREFIX = "mesh-";
 
@@ -42,6 +43,7 @@ public class ElasticSearchOptions implements Option {
 	public static final String MESH_ELASTICSEARCH_BULK_DEBOUNCE_TIME_ENV = "MESH_ELASTICSEARCH_BULK_DEBOUNCE_TIME";
 	public static final String MESH_ELASTICSEARCH_IDLE_DEBOUNCE_TIME_ENV = "MESH_ELASTICSEARCH_IDLE_DEBOUNCE_TIME";
 	public static final String MESH_ELASTICSEARCH_RETRY_INTERVAL_ENV = "MESH_ELASTICSEARCH_RETRY_INTERVAL";
+	public static final String MESH_ELASTICSEARCH_WAIT_FOR_IDLE_ENV = "MESH_ELASTICSEARCH_WAIT_FOR_IDLE";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Elasticsearch connection url to be used. Set this setting to null will disable the Elasticsearch support.")
@@ -101,6 +103,12 @@ public class ElasticSearchOptions implements Option {
 		+ DEFAULT_RETRY_INTERVAL)
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_RETRY_INTERVAL_ENV, description = "Override the retry interval.")
 	private int retryInterval = DEFAULT_RETRY_INTERVAL;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("If true, search endpoints wait for elasticsearch to be idle before sending a response. Default: "
+		+ DEFAULT_WAIT_FOR_IDLE)
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_WAIT_FOR_IDLE_ENV, description = "Override the search idle wait flag.")
+	private boolean waitForIdle = DEFAULT_WAIT_FOR_IDLE;
 
 	public ElasticSearchOptions() {
 
@@ -228,6 +236,15 @@ public class ElasticSearchOptions implements Option {
 
 	public ElasticSearchOptions setRetryInterval(int retryInterval) {
 		this.retryInterval = retryInterval;
+		return this;
+	}
+
+	public boolean isWaitForIdle() {
+		return waitForIdle;
+	}
+
+	public ElasticSearchOptions setWaitForIdle(boolean waitForIdle) {
+		this.waitForIdle = waitForIdle;
 		return this;
 	}
 }

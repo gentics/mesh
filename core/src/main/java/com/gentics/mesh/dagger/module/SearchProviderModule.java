@@ -20,9 +20,13 @@ public class SearchProviderModule {
 
 	@Provides
 	@Singleton
-	public static SearchProvider searchProvider(@Nullable SearchProviderType type, ElasticSearchProvider elasticsearchProvider) {
+	public static SearchProvider searchProvider(@Nullable SearchProviderType type, MeshOptions options, ElasticSearchProvider elasticsearchProvider) {
 		if (type == null) {
-			return elasticsearchProvider;
+			if (options.getSearchOptions().getUrl() == null) {
+				return new DevNullSearchProvider();
+			} else {
+				return elasticsearchProvider;
+			}
 		}
 		switch (type) {
 			case NULL:

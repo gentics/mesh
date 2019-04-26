@@ -1,15 +1,5 @@
 package com.gentics.mesh.core.rest;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchMeshEventModel;
@@ -31,11 +21,20 @@ import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
-
 import io.reactivex.Completable;
 import io.reactivex.functions.Action;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.MessageConsumer;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Central list of used eventbus addresses.
@@ -496,12 +495,23 @@ public enum MeshEvent {
 		null,
 		"Emitted when the search interation process has been working and is now in idle."),
 
+	IS_SEARCH_IDLE("mesh.search.process.isidle",
+		null,
+		"When emitted, this event will be answered with the current idle status."),
+
 	/**
 	 * Event that will cause all pending Elasticsearch requests to be sent.
 	 */
 	SEARCH_FLUSH_REQUEST("mesh.search.flush.request",
 		null,
 		"Event which will cause all pending Elasticsearch requests to be sent."),
+
+	/**
+	 * Event that will cause all pending Elasticsearch requests to be sent.
+	 */
+	SEARCH_REFRESH_REQUEST("mesh.search.refresh.request",
+		null,
+		"Event which will cause all search indices to be refreshed, so that changes can be queried."),
 
 	// Backup & Restore Events
 
@@ -561,6 +571,7 @@ public enum MeshEvent {
 	PLUGIN_UNDEPLOYED("mesh.plugin.undeployed",
 		null,
 		"Emitted once a plugin has been undeployed.");
+
 
 	public final String address;
 	public final Class<? extends MeshEventModel> bodyModel;

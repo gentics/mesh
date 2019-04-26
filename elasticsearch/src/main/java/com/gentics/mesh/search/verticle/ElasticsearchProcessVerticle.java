@@ -13,6 +13,7 @@ import io.reactivex.BackpressureStrategy;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.exceptions.MissingBackpressureException;
 import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.PublishSubject;
@@ -23,6 +24,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
 
 import javax.inject.Inject;
@@ -35,7 +37,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_REQUEST;
+import static com.gentics.mesh.core.rest.MeshEvent.IS_SEARCH_IDLE;
 import static com.gentics.mesh.core.rest.MeshEvent.SEARCH_FLUSH_REQUEST;
+import static com.gentics.mesh.core.rest.MeshEvent.SEARCH_REFRESH_REQUEST;
 import static com.gentics.mesh.search.verticle.eventhandler.RxUtil.retryWithDelay;
 
 /**
@@ -104,7 +108,17 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			}))
 			.map((Function<io.vertx.core.eventbus.MessageConsumer<JsonObject>, MessageConsumer<JsonObject>>) MessageConsumer::new)
 			.collect(Collectors.toList());
+
+		vertxHandlers.add(replyingEventHandler(IS_SEARCH_IDLE, Single.fromCallable(idleChecker::isIdle)));
+		vertxHandlers.add(replyingEventHandler(SEARCH_REFRESH_REQUEST, refresh().andThen(Single.just(true))));
+
 		log.trace("Done Initializing Elasticsearch process verticle");
+	}
+
+	public MessageConsumer<JsonObject> replyingEventHandler(MeshEvent event, Single<?> response) {
+		return new Vertx(vertx).eventBus().localConsumer(event.address, message ->
+			response.subscribe(value -> message.reply(value))
+		);
 	}
 
 	/**
