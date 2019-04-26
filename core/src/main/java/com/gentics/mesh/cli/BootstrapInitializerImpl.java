@@ -78,7 +78,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.naming.InvalidNameException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -175,16 +174,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Inject
 	public BootstrapInitializerImpl() {
 		clearReferences();
-	}
-
-	@Override
-	public void initProjects() throws InvalidNameException {
-		for (Project project : meshRoot().getProjectRoot().findAll()) {
-			RouterStorage.addProject(project.getName());
-			if (log.isDebugEnabled()) {
-				log.debug("Initalized project {" + project.getName() + "}");
-			}
-		}
 	}
 
 	/**
