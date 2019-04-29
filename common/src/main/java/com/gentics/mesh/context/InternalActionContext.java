@@ -1,20 +1,20 @@
 package com.gentics.mesh.context;
 
-import java.util.Set;
-
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.parameter.ParameterProviderContext;
-
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
+
+import java.util.Set;
 
 /**
  * A internal action context exposes various internal method which an API action context would normally not dare to expose.
@@ -152,4 +152,12 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	 * @param model
 	 */
 	void setBody(Object model);
+
+	/**
+	 * Return the requested API version.
+	 * @return
+	 */
+	default int getVersion() {
+		return get(VersionHandler.VERSION_CONTEXT_KEY);
+	}
 }

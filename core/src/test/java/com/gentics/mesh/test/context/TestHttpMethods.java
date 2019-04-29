@@ -1,12 +1,7 @@
 package com.gentics.mesh.test.context;
 
-import java.io.IOException;
-import java.util.Map.Entry;
-
-import javax.validation.constraints.NotNull;
-
+import com.gentics.mesh.core.data.i18n.I18NUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
-
 import io.vertx.core.json.JsonObject;
 import okhttp3.Call;
 import okhttp3.HttpUrl;
@@ -14,6 +9,13 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+
+import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.util.Locale;
+import java.util.Map.Entry;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Interface for HTTP-Methods in Test-Classes to test requests/responses which are not covered/allowed via the API.
@@ -48,8 +50,17 @@ public interface TestHttpMethods extends TestHelperMethods {
 		return httpGet(path, token, params).execute().body().string();
 	}
 
+	default JsonObject httpGetNowJson(String path, ParameterProvider... params) throws IOException {
+		return new JsonObject(httpGetNow(path, params));
+	}
+
 	default JsonObject httpGetNowJson(String path, String token, ParameterProvider... params) throws IOException {
 		return new JsonObject(httpGetNow(path, token, params));
+	}
+
+	default void assertFailure(JsonObject response, String i18nKey, String... params) {
+		String message = I18NUtil.get(Locale.ENGLISH, i18nKey, params);
+		assertEquals(message, response.getString("message"));
 	}
 
 	default Call httpGet(@NotNull String path, ParameterProvider... params) {
