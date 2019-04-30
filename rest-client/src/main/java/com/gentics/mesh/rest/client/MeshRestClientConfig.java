@@ -53,7 +53,7 @@ public class MeshRestClientConfig {
 
 	public static class Builder {
 		private String host;
-		private String basePath = "/api/v1";
+		private String basePath = "/api/v2";
 		private int port = 8080;
 		private boolean ssl = false;
 		private Duration websocketReconnectInterval = Duration.ofSeconds(5);
