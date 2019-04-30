@@ -1,15 +1,5 @@
 package com.gentics.mesh.test.context;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.io.FileUtils;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-import org.testcontainers.containers.wait.Wait;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.cache.PermissionStore;
@@ -27,6 +17,7 @@ import com.gentics.mesh.etc.config.OAuth2ServerConfig;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.TrackingSearchProvider;
@@ -37,10 +28,23 @@ import com.gentics.mesh.test.docker.KeycloakContainer;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
-
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.io.FileUtils;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
+import org.testcontainers.containers.wait.Wait;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.IntStream;
+
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
 
 public class MeshTestContext extends TestWatcher {
 
@@ -67,7 +71,8 @@ public class MeshTestContext extends TestWatcher {
 	protected int port;
 	protected int monitoringPort;
 
-	private MeshRestClient client;
+	// Maps api version to client
+	private final Map<String, MeshRestClient> clients = new HashMap<>();
 
 	private MonitoringRestClient monitoringClient;
 
@@ -173,9 +178,19 @@ public class MeshTestContext extends TestWatcher {
 		// Setup the rest client
 		try (Tx tx = db().tx()) {
 			boolean ssl = settings.ssl();
-			client = MeshRestClient.create("localhost", port, ssl);
-			client.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
-			client.login().blockingGet();
+			MeshRestClientConfig.Builder config = new MeshRestClientConfig.Builder()
+				.setHost("localhost")
+				.setPort(port)
+				.setSsl(ssl);
+			MeshRestClient defaultClient = MeshRestClient.create(config.build());
+			defaultClient.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
+			defaultClient.login().blockingGet();
+			clients.put("v" + CURRENT_API_VERSION, defaultClient);
+			IntStream.range(1, CURRENT_API_VERSION).forEach(version -> {
+				MeshRestClient oldClient = MeshRestClient.create(config.setBasePath("/api/v" + version).build());
+				oldClient.setAuthenticationProvider(defaultClient.getAuthentication());
+				clients.put("v" + version, oldClient);
+			});
 		}
 		log.info("Using monitoring port: " + monitoringPort);
 		monitoringClient = MonitoringRestClient.create("localhost", monitoringPort);
@@ -215,14 +230,16 @@ public class MeshTestContext extends TestWatcher {
 	}
 
 	private void closeClient() throws Exception {
-		if (client != null) {
-			try {
-				client.close();
-			} catch (IllegalStateException e) {
-				// Ignored
-				e.printStackTrace();
+		clients.values().forEach(client -> {
+			if (client != null) {
+				try {
+					client.close();
+				} catch (IllegalStateException e) {
+					// Ignored
+					e.printStackTrace();
+				}
 			}
-		}
+		});
 	}
 
 	/**
@@ -422,7 +439,11 @@ public class MeshTestContext extends TestWatcher {
 	}
 
 	public MeshRestClient getClient() {
-		return client;
+		return getClient("v" + CURRENT_API_VERSION);
+	}
+
+	public MeshRestClient getClient(String version) {
+		return clients.get(version);
 	}
 
 	public static KeycloakContainer getKeycloak() {
