@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.gentics.mesh.graphql.type.field.NodeFieldTypeProvider.nodeTypeName;
+import static com.gentics.mesh.graphql.type.NodeTypeProvider.nodeTypeName;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLInterfaceType.newInterface;

@@ -158,7 +158,7 @@ public class WebRootLinkReplacer {
 			case MEDIUM:
 				return "/" + projectName + "/error/404";
 			case FULL:
-				return VersionHandler.baseRoute(ac.getVersion()) + "/" + projectName + "/webroot/error/404";
+				return VersionHandler.baseRoute(ac.getApiVersion()) + "/" + projectName + "/webroot/error/404";
 			default:
 				throw error(BAD_REQUEST, "Cannot render link with type " + type);
 			}
@@ -229,7 +229,7 @@ public class WebRootLinkReplacer {
 		case MEDIUM:
 			return "/" + node.getProject().getName() + path;
 		case FULL:
-			return VersionHandler.baseRoute(ac.getVersion()) + "/" + node.getProject().getName() + "/webroot" + path + branchQueryParameter(theirProject.getBranchRoot().findByUuid(branchUuid));
+			return VersionHandler.baseRoute(ac.getApiVersion()) + "/" + node.getProject().getName() + "/webroot" + path + branchQueryParameter(theirProject.getBranchRoot().findByUuid(branchUuid));
 		default:
 			throw error(BAD_REQUEST, "Cannot render link with type " + type);
 		}

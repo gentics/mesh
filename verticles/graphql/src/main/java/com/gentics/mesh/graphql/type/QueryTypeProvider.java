@@ -20,7 +20,6 @@ import com.gentics.mesh.graphql.filter.RoleFilter;
 import com.gentics.mesh.graphql.filter.UserFilter;
 import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
 import com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider;
-import com.gentics.mesh.graphql.type.field.NodeFieldTypeProvider;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.search.index.group.GroupSearchHandler;
 import com.gentics.mesh.search.index.project.ProjectSearchHandler;
@@ -96,9 +95,6 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 	@Inject
 	public InterfaceTypeProvider interfaceTypeProvider;
-
-	@Inject
-	public NodeFieldTypeProvider nodeFieldTypeProvider;
 
 	@Inject
 	public MicronodeFieldTypeProvider micronodeFieldTypeProvider;
@@ -570,7 +566,10 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 		additionalTypes.add(createLinkEnumType());
 
-		additionalTypes.addAll(nodeFieldTypeProvider.generateSchemaFieldTypes(context));
+		if (context.getApiVersion() >= 2) {
+			// In v1 this is included in the union type
+			additionalTypes.addAll(nodeTypeProvider.generateSchemaFieldTypes(context).forVersion(context));
+		}
 		additionalTypes.addAll(micronodeFieldTypeProvider.generateMicroschemaFieldTypes(context));
 
 		GraphQLSchema schema = builder.query(getRootType(context)).additionalTypes(additionalTypes).build();
