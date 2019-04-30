@@ -532,7 +532,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		additionalTypes.add(nodeTypeProvider.createType(context).forVersion(context));
 		additionalTypes.add(newPageType(NODE_PAGE_TYPE_NAME, NODE_TYPE_NAME));
 
-		additionalTypes.add(micronodeFieldTypeProvider.createType(context));
+		additionalTypes.add(micronodeFieldTypeProvider.createType(context).forVersion(context));
 
 		additionalTypes.add(projectTypeProvider.createType(project));
 		additionalTypes.add(newPageType(PROJECT_PAGE_TYPE_NAME, PROJECT_TYPE_NAME));
@@ -566,11 +566,12 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 		additionalTypes.add(createLinkEnumType());
 
+		// TODO Review: Discuss better way of handling this
 		if (context.getApiVersion() >= 2) {
 			// In v1 this is included in the union type
 			additionalTypes.addAll(nodeTypeProvider.generateSchemaFieldTypes(context).forVersion(context));
+			additionalTypes.addAll(micronodeFieldTypeProvider.generateMicroschemaFieldTypes(context).forVersion(context));
 		}
-		additionalTypes.addAll(micronodeFieldTypeProvider.generateMicroschemaFieldTypes(context));
 
 		GraphQLSchema schema = builder.query(getRootType(context)).additionalTypes(additionalTypes).build();
 		return schema;
