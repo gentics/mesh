@@ -529,7 +529,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		additionalTypes.add(microschemaTypeProvider.createType());
 		additionalTypes.add(newPageType(MICROSCHEMA_PAGE_TYPE_NAME, MICROSCHEMA_TYPE_NAME));
 
-		additionalTypes.add(nodeTypeProvider.createType(context));
+		additionalTypes.add(nodeTypeProvider.createType(context).forVersion(context));
 		additionalTypes.add(newPageType(NODE_PAGE_TYPE_NAME, NODE_TYPE_NAME));
 
 		additionalTypes.add(micronodeFieldTypeProvider.createType(context));

@@ -31,6 +31,7 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInterfaceType;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
 import graphql.schema.GraphQLUnionType;
 
@@ -171,24 +172,33 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		}).collect(Collectors.toList());
 	}
 
-	public GraphQLInterfaceType createType(GraphQLContext context) {
-		Project project = context.getProject();
-		GraphQLInterfaceType.Builder nodeType = newInterface();
+	public Versioned<GraphQLType> createType(GraphQLContext context) {
+		return Versioned.<GraphQLType>newVersioned(() -> {
+			GraphQLObjectType.Builder nodeType = newObject();
+			nodeType.name(NODE_TYPE_NAME);
+			nodeType.description(
+				"A Node is the basic building block for contents. Nodes can contain multiple language specific contents. These contents contain the fields with the actual content.");
+			interfaceTypeProvider.addCommonFields(nodeType, true);
+			nodeType.fields(createNodeInterfaceFields(context).forVersion(context));
+			return nodeType.build();
+		}).since(2, () -> {
+			GraphQLInterfaceType.Builder nodeType = newInterface();
 
-		nodeType.name(NODE_TYPE_NAME);
-		nodeType.description(
-			"A Node is the basic building block for contents. Nodes can contain multiple language specific contents. These contents contain the fields with the actual content.");
-		interfaceTypeProvider.addCommonFields(nodeType, true);
+			nodeType.name(NODE_TYPE_NAME);
+			nodeType.description(
+				"A Node is the basic building block for contents. Nodes can contain multiple language specific contents. These contents contain the fields with the actual content.");
+			interfaceTypeProvider.addCommonFields(nodeType, true);
 
-		nodeType.typeResolver(env -> {
-			NodeContent content = env.getObject();
-			String schemaName = content.getNode().getSchemaContainer().getName();
-			return env.getSchema().getObjectType(schemaName);
-		});
+			nodeType.typeResolver(env -> {
+				NodeContent content = env.getObject();
+				String schemaName = content.getNode().getSchemaContainer().getName();
+				return env.getSchema().getObjectType(schemaName);
+			});
 
-		nodeType.fields(createNodeInterfaceFields(context).forVersion(context));
+			nodeType.fields(createNodeInterfaceFields(context).forVersion(context));
 
-		return nodeType.build();
+			return nodeType.build();
+		}).build();
 	}
 
 	public Versioned<List<GraphQLFieldDefinition>> createNodeInterfaceFields(GraphQLContext context) {

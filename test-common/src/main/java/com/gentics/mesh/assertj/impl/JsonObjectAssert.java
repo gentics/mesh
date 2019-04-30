@@ -1,23 +1,23 @@
 package com.gentics.mesh.assertj.impl;
 
+import com.gentics.mesh.util.DateUtils;
+import com.gentics.mesh.util.UUIDUtil;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
+import io.vertx.core.json.JsonObject;
+import org.assertj.core.api.AbstractAssert;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Optional;
+import java.util.Scanner;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Scanner;
-
-import org.assertj.core.api.AbstractAssert;
-
-import com.gentics.mesh.util.DateUtils;
-import com.gentics.mesh.util.UUIDUtil;
-import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.PathNotFoundException;
-
-import io.vertx.core.json.JsonObject;
 
 public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObject> {
 	/**
@@ -83,7 +83,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 
 	/**
 	 * Assert that the JSON object complies to the assertions which are stored in the comments of the GraphQL query with the given name.
-	 * 
+	 *
 	 * @param name
 	 * @return
 	 * @throws IOException
@@ -94,6 +94,20 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		if (ins == null) {
 			fail("Could not find query file {" + path + "}");
 		}
+		return compliesToAssertions(ins);
+	}
+
+	public @NotNull JsonObjectAssert compliesToAssertions(String name, String version) {
+		InputStream ins = Optional.ofNullable(getClass().getResourceAsStream("/graphql/" + name + "." + version))
+			.orElseGet(() -> getClass().getResourceAsStream("/graphql/" + name));
+		if (ins == null) {
+			fail("Could not find query file {" + name + "}");
+		}
+		return compliesToAssertions(ins);
+	}
+
+	@NotNull
+	private JsonObjectAssert compliesToAssertions(InputStream ins) {
 		Scanner scanner = new Scanner(ins);
 		try {
 			int lineNr = 1;
@@ -142,7 +156,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 
 	/**
 	 * Assert that the path is not present in the JSON object.
-	 * 
+	 *
 	 * @param path
 	 * @param msg
 	 * @return Fluent API
@@ -160,7 +174,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 
 	/**
 	 * Assert that the string value which is present at the given path matches the pattern of a uuid.
-	 * 
+	 *
 	 * @param path
 	 * @return Fluent API
 	 */
