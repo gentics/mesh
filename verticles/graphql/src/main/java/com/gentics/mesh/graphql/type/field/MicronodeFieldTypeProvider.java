@@ -30,6 +30,7 @@ import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -116,7 +117,10 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 
 	public Versioned<List<GraphQLObjectType>> generateMicroschemaFieldTypes(GraphQLContext context) {
 		return Versioned.newVersioned(() -> {
+			Consumer<GraphQLFieldDefinition.Builder> addDeprecation = builder ->
+				builder.deprecate("Usage of fields in micronodes has changed in /api/v2. See https://github.com/gentics/mesh/issues/317");
 			Project project = context.getProject();
+
 			List<GraphQLObjectType> schemaTypes = new ArrayList<>();
 			for (MicroschemaContainer container : project.getMicroschemaContainerRoot().findAll()) {
 				MicroschemaContainerVersion version = container.getLatestVersion();
@@ -129,26 +133,26 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 					FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 					switch (type) {
 						case STRING:
-							microschemaType.field(fields.get().createStringDef(fieldSchema));
+							microschemaType.field(fields.get().createStringDef(fieldSchema).transform(addDeprecation));
 							break;
 						case HTML:
-							microschemaType.field(fields.get().createHtmlDef(fieldSchema));
+							microschemaType.field(fields.get().createHtmlDef(fieldSchema).transform(addDeprecation));
 							break;
 						case NUMBER:
-							microschemaType.field(fields.get().createNumberDef(fieldSchema));
+							microschemaType.field(fields.get().createNumberDef(fieldSchema).transform(addDeprecation));
 							break;
 						case DATE:
-							microschemaType.field(fields.get().createDateDef(fieldSchema));
+							microschemaType.field(fields.get().createDateDef(fieldSchema).transform(addDeprecation));
 							break;
 						case BOOLEAN:
-							microschemaType.field(fields.get().createBooleanDef(fieldSchema));
+							microschemaType.field(fields.get().createBooleanDef(fieldSchema).transform(addDeprecation));
 							break;
 						case NODE:
-							microschemaType.field(fields.get().createNodeDef(fieldSchema));
+							microschemaType.field(fields.get().createNodeDef(fieldSchema).transform(addDeprecation));
 							break;
 						case LIST:
 							ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
-							microschemaType.field(fields.get().createListDef(context, listFieldSchema));
+							microschemaType.field(fields.get().createListDef(context, listFieldSchema).transform(addDeprecation));
 							break;
 						default:
 							log.error("Micronode field type {" + type + "} is not supported.");
@@ -174,7 +178,7 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 				microschemaType.name(microschemaName);
 				microschemaType.description(microschema.getDescription());
 
-				GraphQLFieldDefinition.Builder fieldsField = GraphQLFieldDefinition.newFieldDefinition();
+				GraphQLFieldDefinition.Builder fieldsField = newFieldDefinition();
 				Builder fieldsType = newObject();
 				fieldsType.name(nodeTypeName(microschemaName));
 				fieldsField.dataFetcher(micronodeFetcher(Function.identity()));

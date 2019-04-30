@@ -51,6 +51,10 @@ public class MeshRestClientConfig {
 			getBasePath();
 	}
 
+	public static Builder newConfig() {
+		return new Builder();
+	}
+
 	public static class Builder {
 		private String host;
 		private String basePath = "/api/v2";

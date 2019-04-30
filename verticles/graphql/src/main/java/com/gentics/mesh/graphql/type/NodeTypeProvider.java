@@ -448,7 +448,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.name("fields")
 				.description("Contains the fields of the content.")
 				.type(createFieldsUnionType(context).forVersion(context))
-				.deprecate("Usage of fields has changed in v2. See https://github.com/gentics/mesh/issues/428")
+				.deprecate("Usage of fields has changed in /api/v2. See https://github.com/gentics/mesh/issues/428")
 				.dataFetcher(env -> {
 				// The fields can be accessed via the container so we can directly pass it along.
 				NodeContent content = env.getSource();
