@@ -2,6 +2,7 @@ package com.gentics.mesh.etc;
 
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.router.RouterStorage;
 import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.http.HttpMethod;
@@ -13,6 +14,8 @@ import io.vertx.ext.web.impl.RouteImpl;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.util.stream.Stream;
+
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -23,7 +26,7 @@ public class RouterStorageTest {
 		MeshAuthChain chain = Mockito.mock(MeshAuthChain.class);
 		RouterStorage storage = new RouterStorage(null, chain, null, null, null, () -> {
 			return Mockito.mock(Database.class);
-		}, null);
+		}, mockVersionhandler());
 
 		RoutingContext rc = mock(RoutingContext.class);
 		Route currentRoute = mock(RouteImpl.class);
@@ -39,5 +42,14 @@ public class RouterStorageTest {
 		when(rc.normalisedPath()).thenReturn("/blub");
 		when(rc.queryParams()).thenReturn(new CaseInsensitiveHeaders());
 		storage.root().getRouter().handleFailure(rc);
+	}
+
+	private VersionHandler mockVersionhandler() {
+		VersionHandler versionHandler = mock(VersionHandler.class);
+		when(versionHandler.generateVersionMountpoints()).then(ignore -> Stream.of(
+			"/api/v1",
+			"/api/v2"
+		));
+		return versionHandler;
 	}
 }

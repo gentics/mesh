@@ -158,6 +158,6 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	 * @return
 	 */
 	default int getApiVersion() {
-		return get(VersionHandler.VERSION_CONTEXT_KEY);
+		return get(VersionHandler.API_VERSION_CONTEXT_KEY);
 	}
 }

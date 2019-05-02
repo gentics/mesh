@@ -1,36 +1,36 @@
 package com.gentics.mesh.core.node;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-
-import com.gentics.mesh.core.rest.node.FieldMapImpl;
-import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.core.rest.user.NodeReference;
-import org.junit.Test;
-
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
+import org.junit.Test;
+
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeMoveEndpointTest extends AbstractMeshTest {
@@ -149,9 +149,9 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			request.setLanguage("en");
 			NodeResponse nodeResponse = call(
 					() -> client().createNode(PROJECT_NAME, request, new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
-			assertEquals("The node has no segmentfield value and thus a 404 path should be returned.", "/api/v1/dummy/webroot/error/404",
+			assertEquals("The node has no segmentfield value and thus a 404 path should be returned.", CURRENT_API_BASE_PATH + "/dummy/webroot/error/404",
 					nodeResponse.getPath());
-			assertEquals("The node has no segmentfield value and thus a 404 path should be returned.", "/api/v1/dummy/webroot/error/404",
+			assertEquals("The node has no segmentfield value and thus a 404 path should be returned.", CURRENT_API_BASE_PATH + "/dummy/webroot/error/404",
 					nodeResponse.getLanguagePaths().get("en"));
 
 			// 4. Now move the node to folder 2014

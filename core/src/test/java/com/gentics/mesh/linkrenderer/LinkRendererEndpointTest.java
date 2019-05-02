@@ -1,23 +1,21 @@
 package com.gentics.mesh.linkrenderer;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.Arrays;
-
-import org.junit.Test;
-
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
-
+import com.syncleus.ferma.tx.Tx;
 import io.vertx.core.json.JsonObject;
+import org.junit.Test;
 
-import static com.gentics.mesh.test.TestSize.FULL;
+import java.util.Arrays;
+
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Test cases for link rendering using the Utility Verticle
@@ -65,7 +63,7 @@ public class LinkRendererEndpointTest extends AbstractMeshTest {
 	public void testLinkReplacerTypeFull() {
 		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
-			testSimpleLink(newsNode, LinkType.FULL, "/api/v1/dummy/webroot/News/News%20Overview.en.html");
+			testSimpleLink(newsNode, LinkType.FULL, CURRENT_API_BASE_PATH + "/dummy/webroot/News/News%20Overview.en.html");
 		}
 	}
 
@@ -81,9 +79,9 @@ public class LinkRendererEndpointTest extends AbstractMeshTest {
 					.put("doublequotes", "prefix {{mesh.link(\"" + newsNode.getUuid() + "\")}} postfix")
 					.put("noquotes", "prefix {{mesh.link(" + newsNode.getUuid() + ")}} postfix");
 
-			JsonObject expected = new JsonObject().put("quotes", "prefix /api/v1/dummy/webroot/News/News%20Overview.en.html postfix")
-					.put("doublequotes", "prefix /api/v1/dummy/webroot/News/News%20Overview.en.html postfix")
-					.put("noquotes", "prefix /api/v1/dummy/webroot/News/News%20Overview.en.html postfix");
+			JsonObject expected = new JsonObject().put("quotes", "prefix " + CURRENT_API_BASE_PATH + "/dummy/webroot/News/News%20Overview.en.html postfix")
+					.put("doublequotes", "prefix " + CURRENT_API_BASE_PATH + "/dummy/webroot/News/News%20Overview.en.html postfix")
+					.put("noquotes", "prefix " + CURRENT_API_BASE_PATH + "/dummy/webroot/News/News%20Overview.en.html postfix");
 
 			JsonObject resultObject = new JsonObject(renderContent(jsonObject.encode(), LinkType.FULL));
 
@@ -99,7 +97,7 @@ public class LinkRendererEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testInvalidLink() {
 		try (Tx tx = tx()) {
-			testRenderContent("{{mesh.link('" + UUIDUtil.randomUUID() + "')}}", LinkType.FULL, "/api/v1/project/webroot/error/404");
+			testRenderContent("{{mesh.link('" + UUIDUtil.randomUUID() + "')}}", LinkType.FULL, CURRENT_API_BASE_PATH + "/project/webroot/error/404");
 		}
 	}
 

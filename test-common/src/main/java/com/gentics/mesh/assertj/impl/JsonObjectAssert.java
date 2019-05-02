@@ -10,9 +10,16 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -24,6 +31,10 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 	 * Key to check
 	 */
 	protected String key;
+
+	private static Map<String, String> staticVariables = Stream.of(
+		new SimpleImmutableEntry<>("CURRENT_API_BASE_PATH", CURRENT_API_BASE_PATH)
+	).collect(Collectors.toMap(SimpleImmutableEntry::getKey, SimpleImmutableEntry::getValue));
 
 	public JsonObjectAssert(JsonObject actual) {
 		super(actual, JsonObjectAssert.class);
@@ -150,8 +161,19 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		} else if ("<is-undefined>".equals(value)) {
 			pathIsUndefined(path, msg);
 		} else {
-			has(path, value, msg);
+			has(path, replaceVariables(value), msg);
 		}
+	}
+
+	private String replaceVariables(String value) {
+		Pattern pattern = Pattern.compile("%(.*)%");
+		Matcher matcher = pattern.matcher(value);
+		while (matcher.find()) {
+			String varname = matcher.group(1);
+			value = matcher.replaceFirst(staticVariables.get(varname));
+			matcher = pattern.matcher(value);
+		}
+		return value;
 	}
 
 	/**

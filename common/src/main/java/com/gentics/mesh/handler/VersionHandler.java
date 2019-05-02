@@ -17,8 +17,9 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 @Singleton
 public class VersionHandler implements Handler<RoutingContext> {
 	public static final int CURRENT_API_VERSION = 2;
-	public static final String VERSION_CONTEXT_KEY = "apiversion";
-	public static final String API_MOUNTPOINT = String.format("/api/:%s/*", VERSION_CONTEXT_KEY);
+	public static final String CURRENT_API_BASE_PATH = "/api/v" + CURRENT_API_VERSION;
+	public static final String API_VERSION_CONTEXT_KEY = "apiversion";
+	public static final String API_MOUNTPOINT = String.format("/api/:%s/*", API_VERSION_CONTEXT_KEY);
 
 	private static final Pattern versionRegex = Pattern.compile("^v(\\d+)$");
 
@@ -28,12 +29,12 @@ public class VersionHandler implements Handler<RoutingContext> {
 	@Override
 	public void handle(RoutingContext event) {
 		int version = parseVersion(event);
-		event.put(VERSION_CONTEXT_KEY, version);
+		event.put(API_VERSION_CONTEXT_KEY, version);
 		event.next();
 	}
 
 	private int parseVersion(RoutingContext event) {
-		String strVersion = event.pathParam(VERSION_CONTEXT_KEY);
+		String strVersion = event.pathParam(API_VERSION_CONTEXT_KEY);
 		Matcher matcher = versionRegex.matcher(strVersion);
 		matcher.find();
 		try {
