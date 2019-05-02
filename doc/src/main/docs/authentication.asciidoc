@@ -191,6 +191,14 @@ security:
 
 WARNING: Recreating a previously deleted ```anonymous``` user would automatically re-enable the feature if the configuration setting ```enableAnonymousAccess``` is set to ```true```.
 
+=== Forcing user to change password
+
+Since Gentics Mesh `0.31.5` it is possible to force a user to change their password on their next login.
+This is useful in situations when you want to create a user for someone else but want the user to set their password for themselves.
+
+To do so, link:/docs/api#users__post[create] or link:/docs/api#users__userUuid__post[update] a user and make sure to set the `forcedPasswordChange` flag to `true`.
+Now, when the user tries to login in regularly they will receive an error message with status code `400` telling them to provide a new password in the login request.
+The user has to additionally set the `newPassword` property when sending the link:/docs/api#auth_login_post[login request]. Then the password is changed and the user is logged in.
 
 == OAuth2
 

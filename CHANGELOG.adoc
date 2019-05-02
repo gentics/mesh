@@ -40,6 +40,8 @@ icon:check[] Plugins: A `NullPointerException` has been fixed which has happened
 
 icon:check[] REST: Creating a schema with a micronode field and the allow option set to `[]` will now allow micronodes of all microschemas.
 
+icon:plus[] REST: It is now possible to set a flag that forces a user to change their password on the next login. Take a look at link:{{< relref "authentication.asciidoc" >}}#_forcing_user_to_change_password[the documentation] for more information.
+
 [[v0.31.4]]
 == 0.31.4 (11.04.2019)
 
