@@ -149,6 +149,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Set the password hash.
+	 * This will also set {@link #setForcedPasswordChange(boolean)} to false.
 	 *
 	 * @param hash
 	 *            Password hash
@@ -160,6 +161,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Set the plaintext password. Internally the password string will be hashed and the password hash will be set.
+	 * This will also set {@link #setForcedPasswordChange(boolean)} to false.
 	 *
 	 * @param password
 	 * @return Fluent API
@@ -432,11 +434,12 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @return
 	 */
 	default boolean isResetTokenValid(String token, int maxTokenAgeMins) {
-		if (token == null) {
+		Long resetTokenIssueTimestamp = getResetTokenIssueTimestamp();
+		if (token == null || resetTokenIssueTimestamp == null) {
 			return false;
 		}
 		long maxTokenAge = 1000 * 60 * maxTokenAgeMins;
-		long tokenAge = System.currentTimeMillis() - getResetTokenIssueTimestamp();
+		long tokenAge = System.currentTimeMillis() - resetTokenIssueTimestamp;
 		boolean isExpired = tokenAge > maxTokenAge;
 		boolean isTokenMatch = token.equals(getResetToken());
 

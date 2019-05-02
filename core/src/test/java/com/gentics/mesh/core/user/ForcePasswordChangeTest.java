@@ -3,6 +3,7 @@ package com.gentics.mesh.core.user;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import io.reactivex.Single;
@@ -17,15 +18,19 @@ import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT_AND_NODE, startServer = true)
 public class ForcePasswordChangeTest extends AbstractMeshTest {
 
+	public static final String USERNAME = "joe1";
+	public static final String PASSWORD = "test123";
+	public static final String NEW_PASSWORD = "newpw";
+
 	@Test
 	public void testForcePasswordChange() {
 		assertThat(getUser()).doesNotHaveToChangePassword();
 		forcePasswordChange();
 		assertThat(getUser()).hasToChangePassword();
 		call(client().login(), BAD_REQUEST, "auth_login_password_change_required");
-		login("joe1", "test123", "newpw");
+		login(PASSWORD, NEW_PASSWORD);
 		assertThat(getUser()).doesNotHaveToChangePassword();
-		login("joe1", "newpw");
+		login(NEW_PASSWORD);
 	}
 
 	@Test
@@ -37,11 +42,11 @@ public class ForcePasswordChangeTest extends AbstractMeshTest {
 		assertThat(getUser()).isAnonymous();
 		call(client().login(), BAD_REQUEST, "auth_login_password_change_required");
 		assertThat(getUser()).isAnonymous();
-		login("joe1", "test123", "newpw");
+		login(PASSWORD, NEW_PASSWORD);
 		assertThat(getUser())
 			.doesNotHaveToChangePassword()
-			.hasName("joe1");
-		login("joe1", "newpw");
+			.hasName(USERNAME);
+		login(NEW_PASSWORD);
 	}
 
 	/**
@@ -51,22 +56,50 @@ public class ForcePasswordChangeTest extends AbstractMeshTest {
 	@Test
 	public void testPasswordChangeWithoutFlag() {
 		assertThat(getUser()).doesNotHaveToChangePassword();
-		login("joe1", "test123", "newpw");
-		call(loginSingle("joe1", "newpw"), UNAUTHORIZED, "auth_login_failed");
-		login("joe1", "test123");
+		login(PASSWORD, NEW_PASSWORD);
+		call(loginSingle(NEW_PASSWORD), UNAUTHORIZED, "auth_login_failed");
+		login(PASSWORD);
 	}
 
-	private void login(String username, String password) {
-		loginSingle(username, password).blockingGet();
+	@Test
+	public void testWithResetToken() {
+		forcePasswordChange();
+		String resetToken = createResetToken();
+		UserResponse user = getUser();
+		client().logout();
+		assertThat(getUser()).isAnonymous();
+
+		updateUserPassword(user, resetToken);
+
+		assertThat(getUser()).isAnonymous();
+		login(NEW_PASSWORD);
+
+		assertThat(getUser())
+			.doesNotHaveToChangePassword()
+			.hasName(USERNAME);
 	}
 
-	private Single<GenericMessageResponse> loginSingle(String username, String password) {
-		client().setLogin(username, password);
+	private void updateUserPassword(UserResponse user, String resetToken) {
+		UserUpdateRequest request = new UserUpdateRequest();
+		request.setPassword(NEW_PASSWORD);
+		client().updateUser(user.getUuid(), request, new UserParametersImpl().setToken(resetToken)).blockingAwait();
+	}
+
+	private String createResetToken() {
+		return client().getUserResetToken(getUser().getUuid()).blockingGet().getToken();
+	}
+
+	private void login(String password) {
+		loginSingle(password).blockingGet();
+	}
+
+	private Single<GenericMessageResponse> loginSingle(String password) {
+		client().setLogin(USERNAME, password);
 		return client().login();
 	}
 
-	private void login(String username, String password, String newPassword) {
-		client().setLogin(username, password, newPassword);
+	private void login(String password, String newPassword) {
+		client().setLogin(USERNAME, password, newPassword);
 		client().login().blockingGet();
 	}
 

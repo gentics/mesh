@@ -188,7 +188,6 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 					} else {
 						if (forcedPasswordChange) {
 							user.setPassword(newPassword);
-							user.setForcedPasswordChange(false);
 							tx.success();
 						}
 						resultHandler.handle(Future.succeededFuture(new AuthenticationResult(user)));
