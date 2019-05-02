@@ -1,14 +1,5 @@
 package com.gentics.mesh.rest;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.impl.LocalActionContextImpl;
@@ -112,7 +103,6 @@ import com.gentics.mesh.rest.client.MeshWebsocket;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
 import com.gentics.mesh.search.index.AdminIndexHandler;
 import com.gentics.mesh.util.UUIDUtil;
-
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
@@ -120,6 +110,14 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.ext.web.FileUpload;
 import org.apache.commons.io.IOUtils;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Local client implementation. This client will invoke endpoint handlers instead of sending http rest requests. Please note that is implementation is not very
@@ -1160,6 +1158,11 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	@Override
 	public MeshRestClient setLogin(String username, String password) {
 		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRestClient setLogin(String username, String password, String newPassword) {
 		return null;
 	}
 

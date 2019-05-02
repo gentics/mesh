@@ -1,16 +1,5 @@
 package com.gentics.mesh.auth.provider;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.AuthenticationResult;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -20,7 +9,6 @@ import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.tx.Tx;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -33,6 +21,17 @@ import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.jwt.JWTOptions;
 import io.vertx.ext.web.Cookie;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 
 /**
  * Central mesh authentication provider which will handle JWT.
@@ -108,7 +107,8 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 		} else {
 			String username = authInfo.getString("username");
 			String password = authInfo.getString("password");
-			authenticate(username, password, resultHandler);
+			String newPassword = authInfo.getString("newPassword");
+			authenticate(username, password, newPassword, resultHandler);
 		}
 	}
 
@@ -133,8 +133,8 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	 * @param resultHandler
 	 *            Handler to be invoked with the created JWToken
 	 */
-	public void generateToken(String username, String password, Handler<AsyncResult<String>> resultHandler) {
-		authenticate(username, password, rh -> {
+	public void generateToken(String username, String password, String newPassword, Handler<AsyncResult<String>> resultHandler) {
+		authenticate(username, password, newPassword, rh -> {
 			if (rh.failed()) {
 				resultHandler.handle(Future.failedFuture(rh.cause()));
 			} else {
@@ -163,7 +163,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	 * @param resultHandler
 	 *            Handler which will be invoked which will return the authenticated user or fail if the credentials do not match or the user could not be found
 	 */
-	private void authenticate(String username, String password, Handler<AsyncResult<AuthenticationResult>> resultHandler) {
+	private void authenticate(String username, String password, String newPassword, Handler<AsyncResult<AuthenticationResult>> resultHandler) {
 		try (Tx tx = db.tx()) {
 			MeshAuthUser user = boot.userRoot().findMeshAuthUserByUsername(username);
 			if (user != null) {
@@ -174,7 +174,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 					if (log.isDebugEnabled()) {
 						log.debug("The account password hash or token password string are invalid.");
 					}
-					resultHandler.handle(Future.failedFuture("Invalid credentials!"));
+					resultHandler.handle(Future.failedFuture(error(UNAUTHORIZED, "auth_login_failed")));
 				} else {
 					if (log.isDebugEnabled()) {
 						log.debug("Validating password using the bcrypt password encoder");
@@ -182,16 +182,26 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 					hashMatches = passwordEncoder.matches(password, accountPasswordHash);
 				}
 				if (hashMatches) {
-					resultHandler.handle(Future.succeededFuture(new AuthenticationResult(user)));
+					boolean forcedPasswordChange = user.isForcedPasswordChange();
+					if (newPassword == null && forcedPasswordChange) {
+						resultHandler.handle(Future.failedFuture(error(BAD_REQUEST, "auth_login_password_change_required")));
+					} else {
+						if (forcedPasswordChange) {
+							user.setPassword(newPassword);
+							user.setForcedPasswordChange(false);
+							tx.success();
+						}
+						resultHandler.handle(Future.succeededFuture(new AuthenticationResult(user)));
+					}
 				} else {
-					resultHandler.handle(Future.failedFuture("Invalid credentials!"));
+					resultHandler.handle(Future.failedFuture(error(UNAUTHORIZED, "auth_login_failed")));
 				}
 			} else {
 				if (log.isDebugEnabled()) {
 					log.debug("Could not load user with username {" + username + "}.");
 				}
 				// TODO Don't let the user know that we know that he did not exist?
-				resultHandler.handle(Future.failedFuture("Invalid credentials!"));
+				resultHandler.handle(Future.failedFuture(error(UNAUTHORIZED, "auth_login_failed")));
 			}
 		}
 
@@ -290,10 +300,10 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	 * @param password
 	 *            Password
 	 */
-	public void login(InternalActionContext ac, String username, String password) {
-		generateToken(username, password, rh -> {
+	public void login(InternalActionContext ac, String username, String password, String newPassword) {
+		generateToken(username, password, newPassword, rh -> {
 			if (rh.failed()) {
-				throw error(UNAUTHORIZED, "auth_login_failed", rh.cause());
+				throw (RuntimeException) rh.cause();
 			} else {
 				ac.addCookie(Cookie.cookie(MeshJWTAuthProvider.TOKEN_COOKIE_KEY, rh.result())
 					.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));

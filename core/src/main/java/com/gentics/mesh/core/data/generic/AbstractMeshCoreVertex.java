@@ -1,10 +1,5 @@
 package com.gentics.mesh.core.data.generic;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-import java.util.Set;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
@@ -22,10 +17,14 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.value.FieldsSet;
-
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import java.util.Set;
+
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * Abstract class for mesh core vertices that includes methods which are commonly used when transforming the vertices into REST POJO's.
@@ -111,7 +110,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	}
 
 	/**
-	 * Compare both string values in order to determine whether the graph value should be updated.
+	 * Compare both values in order to determine whether the graph value should be updated.
 	 * 
 	 * @param restValue
 	 *            Rest model string value
@@ -119,7 +118,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	 *            Graph string value
 	 * @return true if restValue is not null and the restValue is not equal to the graph value. Otherwise false.
 	 */
-	protected boolean shouldUpdate(String restValue, String graphValue) {
+	protected <T> boolean shouldUpdate(T restValue, T graphValue) {
 		return restValue != null && !restValue.equals(graphValue);
 	}
 

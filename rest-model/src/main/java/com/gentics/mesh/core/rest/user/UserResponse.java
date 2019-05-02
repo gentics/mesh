@@ -1,14 +1,14 @@
 package com.gentics.mesh.core.rest.user;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * POJO for user response model.
@@ -46,6 +46,10 @@ public class UserResponse extends AbstractGenericRestResponse {
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of group references to which the user belongs.")
 	private List<GroupReference> groups = new ArrayList<>();
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("When true, the user needs to change their password on the next login.")
+	private Boolean forcedPasswordChange;
 
 	public UserResponse() {
 	}
@@ -248,4 +252,23 @@ public class UserResponse extends AbstractGenericRestResponse {
 		return this;
 	}
 
+	/**
+	 * Return true if the user needs to change their password on next login.
+	 *
+	 * @return
+	 */
+	public Boolean getForcedPasswordChange() {
+		return forcedPasswordChange;
+	}
+
+	/**
+	 * Set whether the user needs to change their password on next login.
+	 *
+	 * @param forcedPasswordChange
+	 * @return Fluent API
+	 */
+	public UserResponse setForcedPasswordChange(Boolean forcedPasswordChange) {
+		this.forcedPasswordChange = forcedPasswordChange;
+		return this;
+	}
 }

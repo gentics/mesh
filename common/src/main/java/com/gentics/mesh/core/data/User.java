@@ -1,12 +1,5 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.MeshEvent.USER_CREATED;
-import static com.gentics.mesh.MeshEvent.USER_DELETED;
-import static com.gentics.mesh.MeshEvent.USER_UPDATED;
-
-import java.util.Objects;
-import java.util.Set;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.Node;
@@ -18,6 +11,13 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.DateUtils;
+
+import java.util.Objects;
+import java.util.Set;
+
+import static com.gentics.mesh.MeshEvent.USER_CREATED;
+import static com.gentics.mesh.MeshEvent.USER_DELETED;
+import static com.gentics.mesh.MeshEvent.USER_UPDATED;
 
 /**
  * The User Domain Model interface.
@@ -384,6 +384,19 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	String getResetToken();
 
 	/**
+	 * Return true if the user needs to change their password on next login.
+	 * @return
+	 */
+	boolean isForcedPasswordChange();
+
+	/**
+	 * Set whether the user needs to change their password on next login.
+	 * @param force
+	 * @return
+	 */
+	User setForcedPasswordChange(boolean force);
+
+	/**
 	 * Return the timestamp on which the token code was issued.
 	 *
 	 * @return
@@ -394,7 +407,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * Set the token code issue timestamp. This is used to influence the token expire moment.
 	 *
 	 * @param timestamp
-	 * @return
+	 * @return Fluent API
 	 */
 	User setResetTokenIssueTimestamp(Long timestamp);
 

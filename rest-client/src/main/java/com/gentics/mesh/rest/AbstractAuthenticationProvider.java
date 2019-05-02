@@ -4,11 +4,18 @@ public abstract class AbstractAuthenticationProvider implements MeshRestClientAu
 
 	private String username;
 	private String password;
+	private String newPassword;
 
 	@Override
 	public void setLogin(String username, String password) {
 		this.username = username;
 		this.password = password;
+	}
+
+	@Override
+	public void setLogin(String username, String password, String newPassword) {
+		setLogin(username, password);
+		this.newPassword = newPassword;
 	}
 
 	public String getPassword() {
@@ -27,4 +34,12 @@ public abstract class AbstractAuthenticationProvider implements MeshRestClientAu
 		this.username = username;
 	}
 
+	public String getNewPassword() {
+		return newPassword;
+	}
+
+	public AbstractAuthenticationProvider setNewPassword(String newPassword) {
+		this.newPassword = newPassword;
+		return this;
+	}
 }
