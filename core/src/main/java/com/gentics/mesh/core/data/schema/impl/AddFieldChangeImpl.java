@@ -63,7 +63,11 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 
 	@Override
 	public String[] getAllowProp() {
-		return Stream.of(getRestProperty(ALLOW_KEY))
+		Object[] prop = getRestProperty(ALLOW_KEY);
+		if (prop == null) {
+			return null;
+		}
+		return Stream.of(prop)
 			.map(item -> (String) item)
 			.toArray(String[]::new);
 	}
