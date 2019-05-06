@@ -1,0 +1,123 @@
+---
+title: Mesh Hugo Guide
+---
+
+:icons: font
+:source-highlighter: prettify
+:toc:
+
+== Intro
+
+In this guide you will learn how to use Gentics Mesh in combination with https://gohugo.io/[Hugo].
+
+The site we are building is very basic and only consists of three different views which form a vehicle inventory.
+
+image:../app-overview.png[Hugo Site, role="img-responsive"]
+
+The *welcome page* contains just a basic intro text and navigation. The *category overview* pages display lists entries of the category. The last page is the *vehicle detail page* which shows detailed information about the selected vehicle in the inventory.
+
+== Building Blocks / Domain Model
+
+In our site  we use a few different data elements.
+
+Each `Vehicle` has a `name`, `description`, `SKU`, `price`, `weight`, `stockLevel` and `image` field. Each `Category` with a `name` field can list multiple `Vehicles`.
+
+== Step 1 - Content
+
+
+Next we will add our content to Gentics Mesh. For this we need to create a new *project*, link the created *schemas* to it. Finally we create some *contents*.
+
+=== Project
+
+Open the admin menu and create a new project called `demo`.
+
+The previously created schemas `category`,`vehicle`, `vehicleImage` must be linked to the project.
+
+image:../project.png[Project setup, role="img-responsive"]
+
+=== Content
+
+Close the admin area and open the Demo project.
+
+==== Images folder
+
+Create a new folder called `images`.
+
+image:../images-folder.png[Images folder, role="img-responsive"]
+
+==== Aircrafts category
+
+Next we create the `Aircrafts` category node. Make sure to use the `category` schema type.
+
+image:../aircrafts-category.png[Aircrafts category, role="img-responsive"]
+
+==== Space Shuttle image
+
+Open the `Images` folder and create a new `VehicleImage` node. You can link:../sts.jpg[download the space shuttle image].
+
+image:../sts-vehicleimage.png[STS VehicleImage, role="img-responsive"]
+
+==== Space Shuttle vehicle
+
+Now it is time to create our vehicle. Open the Aircraft category and create a new `vehicle` node.
+
+image:../sts-vehicle.png[STS Vehicle, role="img-responsive"]
+
+=== Permissions
+
+Before we can read our data via GraphQL we need to assign the read permission to the newly created project. We need to apply the read permission *recusively* so that it will be applied to all created nodes. Otherwise we would need to deal with authentication in our frontend app. 
+
+By default all unauthenticated requests to Gentics Mesh will fall back to use the `anonymous user` and the assigned `anonymous role`. This is very useful if you just want to serve data publicly without any authentication. This mechanism can of course be turned off in the `mesh.yml` file.
+
+image:../role-permissions.png[Role Permissions, role="img-responsive"]
+
+Additionally we also need to grant read permission on the `demo` project itself.
+
+image:../role-permissions2.png[Role Project Permissions, role="img-responsive"]
+
+
+
+== Step 2 - Export
+
+Now that we have setup or model and contents we can export these in a format that Hugo supports.
+
+The https://github.com/gentics/mesh-hugo-exporter[mesh-hugo-exporter] will be used to load the contents from Gentics Mesh and export them to markdown files which contain the parameters of the content.
+
+
+First download the latest version of the Mesh Hugo Exporter from https://github.com/gentics/mesh-hugo-exporter/releases
+
+Now we can run the exporter which will connect to Gentics Mesh and load the contents.
+
+`java -jar mesh-hugo-exporter-1.0.0.jar -c -p demo -url http://localhost:8080`
+
+Alternatively you can also use the Gentics Mesh Demo server to load the contents.
+
+`java -jar mesh-hugo-exporter-1.0.0.jar -c -p demo -url https://demo.getmesh.io`
+
+The exported content markdown files show now look like this:
+
+```
+---
+path: "/aircrafts/space-shuttle"
+lang: "en"
+version: "1.0"
+displayField: "name"
+edited: "2019-04-11T12:47:20Z"
+created: "2019-04-11T12:47:20Z"
+tags: ["Black","White","Hydrogen"]
+fields_slug: "space-shuttle"
+fields_name: "Space Shuttle"
+fields_weight: 22700
+fields_SKU: 9
+fields_price: 1.92E11
+fields_stocklevel: 0
+fields_description: "The Space Shuttle was a partially reusable low Earth orbital spacecraft system operated by the U.S. National Aeronautics and Space Administration (NASA)."
+fields_vehicleImage: "/images/sts.jpg"
+---
+```
+
+
+== Step 3 - Rendering
+
+Now we can run Hugo to render our page.
+
