@@ -52,6 +52,7 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Observable;
@@ -163,13 +164,15 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			tx.success();
 		}
 		call(() -> client().createMicroschema(request), FORBIDDEN, "error_missing_perm", microschemaRootUuid, CREATE_PERM.getRestPerm().getName());
-
 	}
 
 	@Test
 	@Override
-	@Ignore("Not yet implemented")
 	public void testCreateWithUuid() throws Exception {
+		MicroschemaCreateRequest microschema = FieldUtil.createMinimalValidMicroschemaCreateRequest();
+		String uuid = UUIDUtil.randomUUID();
+		MicroschemaResponse resp = call(() -> client().createMicroschema(uuid, microschema));
+		assertEquals("The created microschema did not contain the expected uuid.", uuid, resp.getUuid());
 	}
 
 	@Test
