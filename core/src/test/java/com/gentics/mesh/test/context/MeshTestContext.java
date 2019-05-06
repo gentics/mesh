@@ -286,6 +286,9 @@ public class MeshTestContext extends TestWatcher {
 			meshOptions.getClusterOptions().setClusterName("cluster" + System.currentTimeMillis());
 		}
 
+		// Monitoring
+		meshOptions.getMonitoringOptions().setEnabled(settings.monitoring());
+
 		// Setup the keystore
 		File keystoreFile = new File("target", "keystore_" + UUIDUtil.randomUUID() + ".jceks");
 		keystoreFile.deleteOnExit();

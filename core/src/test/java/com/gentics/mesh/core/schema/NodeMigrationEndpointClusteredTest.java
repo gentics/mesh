@@ -4,7 +4,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, inMemoryDB = false, testSize = FULL, startServer = true, clusterMode = true)
+@MeshTestSetting(useElasticsearch = false, inMemoryDB = false, testSize = FULL, startServer = true, clusterMode = true, monitoring = false)
 public class NodeMigrationEndpointClusteredTest extends NodeMigrationEndpointTest {
 
 }
