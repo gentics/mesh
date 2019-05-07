@@ -26,7 +26,7 @@ title: Changelog
 
 
 [[v0.31.5]]
-== 0.31.5 (TBD)
+== 0.31.5 (07.05.2019)
 
 icon:check[] REST: The `publish` and `readPublished` permissions are now only shown for nodes.
 
@@ -42,6 +42,8 @@ icon:check[] REST: Creating a schema with a micronode field and the allow option
 
 icon:check[] Core: Fixed a bug that caused an internal server error when applying changes to a microschema. link:https://github.com/gentics/mesh/issues/591[#591]
 
+
+icon:check[] UI: Fixed validation issues in microschema lists when updating nodes. Previously validation issues would not be detected by the UI and the node update would fail. link:https://github.com/gentics/mesh-ui/pull/202[#202]
 
 [[v0.31.4]]
 == 0.31.4 (11.04.2019)
