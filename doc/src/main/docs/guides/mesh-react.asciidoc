@@ -665,7 +665,7 @@ import { getNavigation, usePromise } from './api';
 const navResponse = usePromise(() => getNavigation(), []);
 ----
 
-==  Conclusion
+== Conclusion
 
 Your app should now be able to load the content from Gentics Mesh. New categories and vehicles will now directly show up in you app. You can now for example alter the schema and add extra fields which can later on be used in your app.
 

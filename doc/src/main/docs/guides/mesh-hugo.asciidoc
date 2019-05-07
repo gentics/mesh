@@ -24,7 +24,6 @@ Each `Vehicle` has a `name`, `description`, `SKU`, `price`, `weight`, `stockLeve
 
 == Step 1 - Content
 
-
 Next we will add our content to Gentics Mesh. For this we need to create a new *project*, link the created *schemas* to it. Finally we create some *contents*.
 
 === Project
@@ -81,18 +80,18 @@ image:../role-permissions2.png[Role Project Permissions, role="img-responsive"]
 
 Now that we have setup or model and contents we can export these in a format that Hugo supports.
 
-The https://github.com/gentics/mesh-hugo-exporter[mesh-hugo-exporter] will be used to load the contents from Gentics Mesh and export them to markdown files which contain the parameters of the content.
+The https://github.com/gentics/mesh2hugo[mesh2hugo] will be used to load the contents from Gentics Mesh and export them to markdown files which contain the parameters of the content.
 
 
-First download the latest version of the Mesh Hugo Exporter from https://github.com/gentics/mesh-hugo-exporter/releases
+First download the latest version of the Mesh Hugo Exporter from https://github.com/gentics/mesh2hugo/releases
 
 Now we can run the exporter which will connect to Gentics Mesh and load the contents.
 
-`java -jar mesh-hugo-exporter-1.0.0.jar -c -p demo -url http://localhost:8080`
+`java -jar mesh2hugo-1.0.0.jar -c -p demo -url http://localhost:8080`
 
 Alternatively you can also use the Gentics Mesh Demo server to load the contents.
 
-`java -jar mesh-hugo-exporter-1.0.0.jar -c -p demo -url https://demo.getmesh.io`
+`java -jar mesh2hugo-1.0.0.jar -c -p demo -url https://demo.getmesh.io`
 
 The exported content markdown files show now look like this:
 
@@ -116,8 +115,68 @@ fields_vehicleImage: "/images/sts.jpg"
 ---
 ```
 
+== Step 3 - Theme
 
-== Step 3 - Rendering
+The example project and theme can be found https://github.com/gentics/mesh2hugo/tree/master/example[in the mesh2hugo project].
 
-Now we can run Hugo to render our page.
+The template for the single view renders the vehicle detail page. The mesh fields can be accessed via the `{{.Params.fields_name}}` parameters.
+
+```
+{{ define "content" }}
+<div class="product-detail">
+  <h1>{{.Params.fields_name}}</h1>
+  <div class="row">
+    <div class="col-md-6">
+      <form>
+        <div class="form-group">
+          <label htmlFor="name">Name</label>
+          <input class="form-control" id="name" name="name" placeholder="Name" value={{.Params.fields_name}} />
+        </div>
+
+        <div class="form-group">
+          <label htmlFor="description">Description</label>
+          <div>{{ .Params.fields_description }}</div>
+        </div>
+
+        <div class="form-group">
+          <label htmlFor="sku">SKU</label>
+          <input class="form-control" id="sku" name="SKU" placeholder="SKU" value={{ .Params.fields_SKU }} type="number" />
+        </div>
+
+        <div class="row">
+          <div class="col-sm-4 form-group">
+            <label htmlFor="price">Price</label>
+            <input class="form-control" id="price" min="0" name="price" step="0.01" type="number" value={{ .Params.fields_price}} />
+          </div>
+          <div class="col-sm-4 form-group">
+            <label htmlFor="weight">Weight</label>
+            <input class="form-control" id="weight" min="0" name="weight" type="number" value={{ int .Params.fields_weight}} />
+          </div>
+          <div class="col-sm-4 form-group">
+            <label htmlFor="stocklevel">Stock Level</label>
+            <input class="form-control" id="stocklevel" min="0" name="stocklevel" type="number" value={{ .Params.fields_stocklevel}} />
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="col-md-6">
+      <img class="img-thumbnail" src="{{.Params.fields_vehicleImage}}" alt="" />
+    </div>
+  </div>
+</div>
+{{end}}
+```
+
+
+== Step 4 - Rendering
+
+Now we can run Hugo to render our page and access it via `http://localhost:1313`
+
+```
+hugo server
+```
+
+== Conclusion
+
+You should now be able to create custom themes and load the content from Gentics Mesh. New vehicles can be added at any time. Invoking the exporter again will create the needed files and the preview server will reload the data.
 
