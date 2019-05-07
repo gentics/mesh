@@ -1,18 +1,5 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-import java.util.Iterator;
-
-import org.apache.commons.lang.NotImplementedException;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -35,6 +22,18 @@ import com.gentics.mesh.json.JsonUtil;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
+import org.apache.commons.lang.NotImplementedException;
+
+import java.util.Iterator;
+
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * @see UserRoot
@@ -170,6 +169,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		user.setLastname(requestModel.getLastname());
 		user.setEmailAddress(requestModel.getEmailAddress());
 		user.setPasswordHash(MeshInternal.get().passwordEncoder().encode(requestModel.getPassword()));
+		user.setForcedPasswordChange(requestModel.getForcedPasswordChange());
 
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, user);
 		ExpandableNode reference = requestModel.getNodeReference();

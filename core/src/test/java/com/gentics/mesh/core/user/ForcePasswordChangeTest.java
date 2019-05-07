@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.user;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
@@ -19,6 +20,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 public class ForcePasswordChangeTest extends AbstractMeshTest {
 
 	public static final String USERNAME = "joe1";
+	public static final String NEW_USERNAME = "john";
+
+	public static final String TEMP_PASSWORD = "temppassword";
 	public static final String PASSWORD = "test123";
 	public static final String NEW_PASSWORD = "newpw";
 
@@ -32,6 +36,23 @@ public class ForcePasswordChangeTest extends AbstractMeshTest {
 		assertThat(getUser()).doesNotHaveToChangePassword();
 		login(NEW_PASSWORD);
 	}
+
+	@Test
+	public void testForcePasswordChangeNewUser() {
+		UserResponse newUser = createUserWithForcedPasswordChange();
+		assertThat(newUser)
+			.hasToChangePassword()
+			.hasName(NEW_USERNAME);
+
+		client().logout();
+		client().setLogin(NEW_USERNAME, PASSWORD);
+		call(client().login(), UNAUTHORIZED, "auth_login_failed");
+
+		loginWithUser(NEW_USERNAME, TEMP_PASSWORD, NEW_PASSWORD);
+		assertThat(getUser()).doesNotHaveToChangePassword();
+		loginWithUser(NEW_USERNAME, NEW_PASSWORD);
+	}
+
 
 	@Test
 	public void testForcePasswordChangeWithLogout() {
@@ -89,17 +110,26 @@ public class ForcePasswordChangeTest extends AbstractMeshTest {
 		return client().getUserResetToken(getUser().getUuid()).blockingGet().getToken();
 	}
 
-	private void login(String password) {
-		loginSingle(password).blockingGet();
-	}
-
 	private Single<GenericMessageResponse> loginSingle(String password) {
 		client().setLogin(USERNAME, password);
 		return client().login();
 	}
 
+	private void login(String password) {
+		loginSingle(password).blockingGet();
+	}
+
 	private void login(String password, String newPassword) {
-		client().setLogin(USERNAME, password, newPassword);
+		loginWithUser(USERNAME, password, newPassword);
+	}
+
+	private void loginWithUser(String username, String password) {
+		client().setLogin(username, password);
+		client().login().blockingGet();
+	}
+
+	private void loginWithUser(String username, String password, String newPassword) {
+		client().setLogin(username, password, newPassword);
 		client().login().blockingGet();
 	}
 
@@ -114,5 +144,11 @@ public class ForcePasswordChangeTest extends AbstractMeshTest {
 		return client().me().blockingGet();
 	}
 
-
+	private UserResponse createUserWithForcedPasswordChange() {
+		UserCreateRequest request = new UserCreateRequest();
+		request.setUsername(NEW_USERNAME);
+		request.setPassword(TEMP_PASSWORD);
+		request.setForcedPasswordChange(true);
+		return client().createUser(request).blockingGet();
+	}
 }
