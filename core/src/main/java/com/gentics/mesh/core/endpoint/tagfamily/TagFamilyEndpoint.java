@@ -81,9 +81,6 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		}
 	}
 
-	// TODO fetch project specific tag
-	// TODO update other fields as well?
-	// TODO Update user information
 	private void addTagUpdateHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:tagFamilyUuid/tags/:tagUuid");
@@ -92,7 +89,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.description("Update the specified tag");
+		endpoint.description("Update the specified tag. The tag is created if no tag with the specified uuid could be found.");
 		endpoint.exampleRequest(tagExamples.createTagUpdateRequest("Red"));
 		endpoint.exampleResponse(OK, tagExamples.createTagResponse1("Red"), "Updated tag.");
 		endpoint.events(TAG_UPDATED, TAG_CREATED);
@@ -105,9 +102,6 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 
 	}
 
-	// TODO load project specific root tag
-	// TODO handle creator
-	// TODO maybe projects should not be a set?
 	private void addTagCreateHandler() {
 		InternalEndpointRoute createTag = createRoute();
 		createTag.description("Create a new tag within the tag family.");
@@ -123,7 +117,6 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		});
 	}
 
-	// TODO filtering, sorting
 	private void addTagReadHandler() {
 		InternalEndpointRoute readOne = createRoute();
 		readOne.path("/:tagFamilyUuid/tags/:tagUuid");
@@ -259,7 +252,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.path("/:tagFamilyUuid");
 		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
 		endpoint.method(POST);
-		endpoint.description("Update the tag family with the given uuid.");
+		endpoint.description("Update the tag family with the given uuid. The tag family will be created if it can't be found for the given uuid.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(tagFamilyExamples.getTagFamilyUpdateRequest("Nicer colors"));

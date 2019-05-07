@@ -39,6 +39,7 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
+import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
 
@@ -67,6 +68,28 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	@Override
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
+
+		/**
+		 * The following code delegates the call to the handleUpdate method is very hacky at best.
+		 * It would be better to move the whole update code into the SchemaContainerImpl#update 
+		 * method and use the regular handlerUtilities. (similar to all other calls)
+		 * The current code however does not return a SchemaResponse for update requests. 
+		 * Instead a message will be returned. Changing this behaviour would cause a breaking change. (Changed response model).
+		 */
+		boolean delegateToCreate = db.tx(() -> {
+			RootVertex<SchemaContainer> root = getRootVertex(ac);
+			if (!UUIDUtil.isUUID(uuid)) {
+				return false;
+			}
+			SchemaContainer schemaContainer = root.findByUuid(uuid);
+			return schemaContainer == null;
+		});
+
+		// Delegate to handle update which will create the schema
+		if (delegateToCreate) {
+			super.handleUpdate(ac, uuid);
+			return;
+		}
 
 		utils.syncTx(ac, tx1 -> {
 

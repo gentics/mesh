@@ -33,6 +33,7 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
+import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
 
@@ -57,6 +58,29 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	@Override
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
+
+
+		/**
+		 * The following code delegates the call to the handleUpdate method is very hacky at best.
+		 * It would be better to move the whole update code into the MicroschemaContainerImpl#update 
+		 * method and use the regular handlerUtilities. (similar to all other calls)
+		 * The current code however does not return a MicroschemaResponse for update requests. 
+		 * Instead a message will be returned. Changing this behaviour would cause a breaking change. (Changed response model).
+		 */
+		boolean delegateToCreate = db.tx(() -> {
+			RootVertex<MicroschemaContainer> root = getRootVertex(ac);
+			if (!UUIDUtil.isUUID(uuid)) {
+				return false;
+			}
+			MicroschemaContainer microschemaContainer = root.findByUuid(uuid);
+			return microschemaContainer == null;
+		});
+
+		// Delegate to handle update which will create the microschema
+		if (delegateToCreate) {
+			super.handleUpdate(ac, uuid);
+			return;
+		}
 
 		utils.syncTx(ac, (tx) -> {
 

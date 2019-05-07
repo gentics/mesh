@@ -467,12 +467,12 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Test
 	@Override
 	public void testCreateWithUuid() throws Exception {
-		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
+		TagCreateRequest tagUpdateRequest = new TagCreateRequest();
 		tagUpdateRequest.setName("SomeName");
 		String parentTagFamilyUuid = tx(() -> tagFamily("colors").getUuid());
 		String uuid = UUIDUtil.randomUUID();
 
-		TagResponse response = call(() -> client().updateTag(PROJECT_NAME, parentTagFamilyUuid, uuid, tagUpdateRequest));
+		TagResponse response = call(() -> client().createTag(PROJECT_NAME, parentTagFamilyUuid, uuid, tagUpdateRequest));
 		assertThat(response).hasName("SomeName").hasUuid(uuid);
 	}
 

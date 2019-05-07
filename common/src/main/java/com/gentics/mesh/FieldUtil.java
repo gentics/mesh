@@ -2,6 +2,7 @@ package com.gentics.mesh;
 
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
@@ -104,6 +105,18 @@ public final class FieldUtil {
 	 */
 	public static MicroschemaUpdateRequest createMinimalValidMicroschemaUpdateRequest() {
 		MicroschemaUpdateRequest schema = new MicroschemaUpdateRequest();
+		schema.setName("test");
+		schema.validate();
+		return schema;
+	}
+
+	/**
+	 * Create minimal create request.
+	 * 
+	 * @return
+	 */
+	public static MicroschemaCreateRequest createMinimalValidMicroschemaCreateRequest() {
+		MicroschemaCreateRequest schema = new MicroschemaCreateRequest();
 		schema.setName("test");
 		schema.validate();
 		return schema;

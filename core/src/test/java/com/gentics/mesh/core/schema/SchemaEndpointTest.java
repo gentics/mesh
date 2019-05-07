@@ -82,10 +82,10 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Observable;
-
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -164,8 +164,11 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	@Override
-	@Ignore("Not yet implemented")
 	public void testCreateWithUuid() throws Exception {
+		SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
+		String uuid = UUIDUtil.randomUUID();
+		SchemaResponse resp = call(() -> client().createSchema(uuid, schema));
+		assertEquals("The created schema did not contain the expected uuid.", uuid, resp.getUuid());
 	}
 
 	@Test
@@ -722,6 +725,6 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		SchemaCreateRequest schemaRequest = new SchemaCreateRequest().setName("test");
 
 		client().createMicroschema(microSchemaRequest).blockingAwait();
-		call(() -> client().createSchema(schemaRequest), CONFLICT,"microschema_conflicting_name", "test");
+		call(() -> client().createSchema(schemaRequest), CONFLICT, "microschema_conflicting_name", "test");
 	}
 }

@@ -10,6 +10,7 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -53,8 +54,6 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
-import com.syncleus.ferma.tx.Tx;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
@@ -84,11 +83,7 @@ public class DemoDataProvider {
 	private Map<String, RoleResponse> roles = new HashMap<>();
 	private Map<String, GroupResponse> groups = new HashMap<>();
 
-	private Map<String, String> uuidMapping = new HashMap<>();
-
 	private BootstrapInitializer boot;
-
-	private JsonObject mappingData;
 
 	@Inject
 	public DemoDataProvider(Database database, MeshLocalClientImpl client, BootstrapInitializer boot) {
@@ -98,8 +93,6 @@ public class DemoDataProvider {
 	}
 
 	public void setup(boolean syncIndex) throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
-		mappingData = loadJson("uuid-mapping");
-
 		MeshAuthUser user = db.tx(() -> {
 			return MeshInternal.get().boot().meshRoot().getUserRoot().findMeshAuthUserByUsername("admin");
 		});
@@ -122,8 +115,6 @@ public class DemoDataProvider {
 		addWebclientPermissions();
 		addAnonymousPermissions();
 
-		// Update the uuids and index all contents.
-		updateUuids();
 		if (syncIndex) {
 			invokeFullIndex();
 		}
@@ -135,23 +126,6 @@ public class DemoDataProvider {
 	 */
 	public void invokeFullIndex() {
 		boot.syncIndex();
-	}
-
-	/**
-	 * We currently can't specify the uuid during element creation. Thus we need to update it afterwards.
-	 */
-	private void updateUuids() {
-		try (Tx tx = db.tx()) {
-			for (Vertex v : tx.getGraph().getVertices()) {
-				String uuid = v.getProperty("uuid");
-				String mapping = uuidMapping.get(uuid);
-				if (mapping != null) {
-					v.setProperty("uuid", mapping);
-					uuidMapping.remove(mapping);
-				}
-			}
-			tx.success();
-		}
 	}
 
 	/**
@@ -290,19 +264,16 @@ public class DemoDataProvider {
 		GroupListResponse groupsResponse = client.findGroups().blockingGet();
 		for (GroupResponse group : groupsResponse.getData()) {
 			groups.put(group.getName(), group);
-			uuidMapping.put(group.getUuid(), mappingData.getString("group/" + group.getName()));
 		}
 
 		UserListResponse usersResponse = client.findUsers().blockingGet();
 		for (UserResponse user : usersResponse.getData()) {
 			users.put(user.getUsername(), user);
-			uuidMapping.put(user.getUuid(), mappingData.getString("user/" + user.getUsername()));
 		}
 
 		RoleListResponse rolesResponse = client.findRoles().blockingGet();
 		for (RoleResponse role : rolesResponse.getData()) {
 			roles.put(role.getName(), role);
-			uuidMapping.put(role.getUuid(), mappingData.getString("role/" + role.getName()));
 		}
 
 		SchemaListResponse schemasResponse = client.findSchemas().blockingGet();
@@ -436,9 +407,8 @@ public class DemoDataProvider {
 			// TODO determine project of tag family automatically or use json field to assign it
 			TagCreateRequest createRequest = new TagCreateRequest();
 			createRequest.setName(name);
-			TagResponse result = call(() -> client.createTag(PROJECT_NAME, tagFamily.getUuid(), createRequest));
+			TagResponse result = call(() -> client.createTag(PROJECT_NAME, tagFamily.getUuid(), uuid, createRequest));
 			tags.put(name, result);
-			uuidMapping.put(result.getUuid(), uuid);
 		}
 	}
 
@@ -477,9 +447,8 @@ public class DemoDataProvider {
 			log.info("Creating tagfamily {" + name + "} for project {" + projectName + "}");
 			TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 			request.setName(name);
-			TagFamilyResponse result = call(() -> client.createTagFamily(PROJECT_NAME, request));
+			TagFamilyResponse result = call(() -> client.createTagFamily(PROJECT_NAME, uuid, request));
 			tagFamilies.put(name, result);
-			uuidMapping.put(result.getUuid(), uuid);
 		}
 	}
 
@@ -497,9 +466,8 @@ public class DemoDataProvider {
 			if (ins != null) {
 				IOUtils.copy(ins, writer, Charsets.UTF_8.name());
 				SchemaCreateRequest schema = JsonUtil.readValue(writer.toString(), SchemaCreateRequest.class);
-				SchemaResponse schemaResponse = call(() -> client.createSchema(schema));
+				SchemaResponse schemaResponse = call(() -> client.createSchema(uuid, schema));
 				schemas.put(schemaName, schemaResponse);
-				uuidMapping.put(schemaResponse.getUuid(), uuid);
 			}
 
 			// Assign all schemas to all projects
