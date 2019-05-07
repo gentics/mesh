@@ -14,12 +14,15 @@ import java.util.stream.Stream;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 
+/**
+ * Puts the requested API version in the routing context with the key {@link #API_VERSION_CONTEXT_KEY}
+ */
 @Singleton
 public class VersionHandler implements Handler<RoutingContext> {
 	public static final int CURRENT_API_VERSION = 2;
 	public static final String CURRENT_API_BASE_PATH = "/api/v" + CURRENT_API_VERSION;
 	public static final String API_VERSION_CONTEXT_KEY = "apiversion";
-	public static final String API_MOUNTPOINT = String.format("/api/:%s/*", API_VERSION_CONTEXT_KEY);
+	public static final String API_MOUNTPOINT = "/api/:apiversion/*";
 
 	private static final Pattern versionRegex = Pattern.compile("^v(\\d+)$");
 
@@ -28,8 +31,7 @@ public class VersionHandler implements Handler<RoutingContext> {
 
 	@Override
 	public void handle(RoutingContext event) {
-		int version = parseVersion(event);
-		event.put(API_VERSION_CONTEXT_KEY, version);
+		event.put(API_VERSION_CONTEXT_KEY, parseVersion(event));
 		event.next();
 	}
 
@@ -52,10 +54,21 @@ public class VersionHandler implements Handler<RoutingContext> {
 		return error(HttpResponseStatus.NOT_FOUND, "error_version_not_found", strVersion, "v" + CURRENT_API_VERSION);
 	}
 
+	/**
+	 * Creates the start of a route for specific version.
+	 * Example: /api/v2
+	 * @param version
+	 * @return
+	 */
 	public static String baseRoute(int version) {
 		return "/api/v" + version;
 	}
 
+	/**
+	 * A stream that generates all available baseRoutes.
+	 * Example: ["/api/v1", "/api/v2"]
+	 * @return
+	 */
 	public Stream<String> generateVersionMountpoints() {
 		return IntStream.rangeClosed(1, CURRENT_API_VERSION)
 			.mapToObj(VersionHandler::baseRoute);

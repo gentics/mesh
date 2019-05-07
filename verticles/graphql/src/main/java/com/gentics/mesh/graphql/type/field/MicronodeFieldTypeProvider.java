@@ -56,7 +56,8 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 	}
 
 	public Versioned<GraphQLType> createType(GraphQLContext context) {
-		return Versioned.<GraphQLType>newVersioned(() -> {
+		return Versioned.<GraphQLType>
+		since(1, () -> {
 			List<GraphQLObjectType> types = generateMicroschemaFieldTypes(context).forVersion(context);
 			// No microschemas have been found - We need to add a dummy type in order to keep the type system working
 			if (types.isEmpty()) {
@@ -116,7 +117,8 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 	}
 
 	public Versioned<List<GraphQLObjectType>> generateMicroschemaFieldTypes(GraphQLContext context) {
-		return Versioned.newVersioned(() -> {
+		return Versioned
+		.since(1, () -> {
 			Consumer<GraphQLFieldDefinition.Builder> addDeprecation = builder ->
 				builder.deprecate("Usage of fields in micronodes has changed in /api/v2. See https://github.com/gentics/mesh/issues/317");
 			Project project = context.getProject();

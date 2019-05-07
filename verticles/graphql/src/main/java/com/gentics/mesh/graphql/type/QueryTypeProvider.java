@@ -20,6 +20,7 @@ import com.gentics.mesh.graphql.filter.RoleFilter;
 import com.gentics.mesh.graphql.filter.UserFilter;
 import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
 import com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider;
+import com.gentics.mesh.handler.Versioned;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.search.index.group.GroupSearchHandler;
 import com.gentics.mesh.search.index.project.ProjectSearchHandler;
@@ -566,12 +567,10 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 		additionalTypes.add(createLinkEnumType());
 
-		// TODO Review: Discuss better way of handling this
-		if (context.getApiVersion() >= 2) {
-			// In v1 this is included in the union type
+		Versioned.doSince(2, context, () -> {
 			additionalTypes.addAll(nodeTypeProvider.generateSchemaFieldTypes(context).forVersion(context));
 			additionalTypes.addAll(micronodeFieldTypeProvider.generateMicroschemaFieldTypes(context).forVersion(context));
-		}
+		});
 
 		GraphQLSchema schema = builder.query(getRootType(context)).additionalTypes(additionalTypes).build();
 		return schema;

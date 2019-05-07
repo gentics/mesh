@@ -173,7 +173,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	}
 
 	public Versioned<GraphQLType> createType(GraphQLContext context) {
-		return Versioned.<GraphQLType>newVersioned(() -> {
+		return Versioned.<GraphQLType>
+		since(1, () -> {
 			GraphQLObjectType.Builder nodeType = newObject();
 			nodeType.name(NODE_TYPE_NAME);
 			nodeType.description(
@@ -458,7 +459,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			return withNodeFields;
 		};
 
-		return Versioned.newVersioned(withNodeFieldsSupplier)
+		return Versioned
+			.since(1, withNodeFieldsSupplier)
 			.since(2, baseFields)
 			.build();
 	}
@@ -525,7 +527,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				return null;
 			}).build();
 
-		return Versioned.newVersionedFor(1, fieldType).build();
+		return Versioned.forVersion(1, fieldType).build();
 	}
 
 	/**
@@ -535,7 +537,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public Versioned<List<GraphQLObjectType>> generateSchemaFieldTypes(GraphQLContext context) {
-		return Versioned.newVersionedFor(1, () -> generateSchemaFieldTypesV1(context))
+		return Versioned
+			.forVersion(1, () -> generateSchemaFieldTypesV1(context))
 			.since(2, () -> generateSchemaFieldTypesV2(context))
 			.build();
 	}
