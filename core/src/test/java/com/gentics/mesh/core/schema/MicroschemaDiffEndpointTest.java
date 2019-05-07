@@ -1,17 +1,5 @@
 package com.gentics.mesh.core.schema;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.ADDFIELD;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEMICROSCHEMA;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
-
-import org.junit.Test;
-
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -23,6 +11,16 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
+import org.junit.Test;
+
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.ADDFIELD;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEMICROSCHEMA;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.junit.Assert.assertNotNull;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
@@ -75,21 +73,35 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddField() {
-		try (Tx tx = tx()) {
-			MicroschemaContainer microschema = microschemaContainer("vcard");
-			Microschema request = getMicroschema();
-			StringFieldSchema stringField = FieldUtil.createStringFieldSchema("someField");
-			stringField.setAllowedValues("one", "two");
-			request.addField(stringField);
-			SchemaChangesListModel changes = call(() ->
+		String uuid = tx(() -> microschemaContainer("vcard").getUuid());
+		Microschema request = getMicroschema();
+		StringFieldSchema stringField = FieldUtil.createStringFieldSchema("someField");
+		stringField.setAllowedValues("one", "two");
+		request.addField(stringField);
+		SchemaChangesListModel changes = call(() -> client().diffMicroschema(uuid, request));
+		assertNotNull(changes);
+		assertThat(changes.getChanges()).hasSize(2);
+		assertThat(changes.getChanges().get(0)).is(ADDFIELD).forField("someField");
+		assertThat(changes.getChanges().get(1)).is(UPDATEMICROSCHEMA).hasProperty("order",
+				new String[] { "firstName", "lastName", "address", "postcode", "someField" });
+		call(() -> client().applyChangesToMicroschema(uuid, changes));
+	}
 
-			client().diffMicroschema(microschema.getUuid(), request));
-			assertNotNull(changes);
-			assertThat(changes.getChanges()).hasSize(2);
-			assertThat(changes.getChanges().get(0)).is(ADDFIELD).forField("someField");
-			assertThat(changes.getChanges().get(1)).is(UPDATEMICROSCHEMA).hasProperty("order",
-					new String[] { "firstName", "lastName", "address", "postcode", "someField" });
-		}
+	@Test
+	public void testApplyChanges() {
+		String uuid = tx(() -> microschemaContainer("vcard").getUuid());
+
+		Microschema request = getMicroschema();
+		StringFieldSchema stringField = FieldUtil
+			.createStringFieldSchema("someField");
+		stringField.setAllowedValues("one", "two");
+		request.addField(stringField);
+
+		// 1. Diff the schema
+		SchemaChangesListModel changes = call(() -> client().diffMicroschema(uuid, request));
+
+		// 2. Apply the changes
+		call(() -> client().applyChangesToMicroschema(uuid, changes));
 	}
 
 	@Test
