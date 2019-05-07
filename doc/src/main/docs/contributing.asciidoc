@@ -80,7 +80,7 @@ The main components which are used to build Gentics Mesh are:
 |======
 | Component | Usage
 | http://vertx.io[Vert.x]                       | Provides HTTP server, Authentication, Upload handling, Eventbus and request routing.
-| http://orientdb.com/[OrientDB]                | Embedded Graph Database       
+| https://orientdb.com/[OrientDB]               | Embedded Graph Database
 | https://github.com/Syncleus/Ferma[Ferma]      | OGM which forms an access layer ontop of the Graph Database.
 | https://google.github.io/dagger/[Dagger 2]    | Dependency injection library
 | https://github.com/ReactiveX/RxJava[RxJava2]  | Library which is used to composing asynchronous requests/processes.

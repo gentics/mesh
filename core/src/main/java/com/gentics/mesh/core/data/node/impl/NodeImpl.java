@@ -737,7 +737,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
 		} else {
 			Schema schema = fieldContainer.getSchemaContainerVersion().getSchema();
-			restNode.setContainer(schema.isContainer());
+			restNode.setContainer(schema.getContainer());
 			restNode.setDisplayField(schema.getDisplayField());
 			restNode.setDisplayName(getDisplayName(ac));
 
@@ -921,7 +921,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 		return MeshInternal.get().database().asyncTx(() -> {
 			// TODO assure that the schema version is correct
-			if (!getSchemaContainer().getLatestVersion().getSchema().isContainer()) {
+			if (!getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
 				throw error(BAD_REQUEST, "navigation_error_no_container");
 			}
 			String etagKey = buildNavigationEtagKey(ac, this, parameters.getMaxDepth(), 0, ac.getBranch(getProject()).getUuid(), forVersion(ac
@@ -966,7 +966,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			return builder.toString();
 		}
 		for (Node child : nodes) {
-			if (child.getSchemaContainer().getLatestVersion().getSchema().isContainer()) {
+			if (child.getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
 				builder.append(buildNavigationEtagKey(ac, child, maxDepth, level + 1, branchUuid, type));
 			} else if (parameters.isIncludeAll()) {
 				builder.append(buildNavigationEtagKey(ac, child, maxDepth, level, branchUuid, type));
@@ -1019,7 +1019,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		for (Node child : nodes) {
 			// TODO assure that the schema version is correct?
 			// TODO also allow navigations over containers
-			if (child.getSchemaContainer().getLatestVersion().getSchema().isContainer()) {
+			if (child.getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
 				NavigationElement childElement = new NavigationElement();
 				// We found at least one child so lets create the array
 				if (currentElement.getChildren() == null) {
@@ -1710,7 +1710,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			parent = parent.getParentNode(branchUuid);
 		}
 
-		if (!targetNode.getSchemaContainer().getLatestVersion().getSchema().isContainer()) {
+		if (!targetNode.getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
 			throw error(BAD_REQUEST, "node_move_error_targetnode_is_no_folder");
 		}
 

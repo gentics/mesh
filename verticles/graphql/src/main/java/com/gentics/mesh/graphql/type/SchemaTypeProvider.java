@@ -70,7 +70,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 
 		schemaType.field(newFieldDefinition().name("isContainer").type(GraphQLBoolean).dataFetcher((env) -> {
 			SchemaModel model = loadModelWithFallback(env);
-			return model != null ? model.isContainer() : null;
+			return model != null ? model.getContainer() : null;
 		}));
 
 		schemaType.field(newFieldDefinition().name("displayField").type(GraphQLString).dataFetcher((env) -> {

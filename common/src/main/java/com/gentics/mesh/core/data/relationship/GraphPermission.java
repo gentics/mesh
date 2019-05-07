@@ -1,14 +1,14 @@
 package com.gentics.mesh.core.data.relationship;
 
+import com.gentics.mesh.core.rest.common.Permission;
+import com.gentics.mesh.graphdb.spi.Database;
+
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-
-import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.graphdb.spi.Database;
 
 /**
  * Internal enum which provides labels for graph permission edges that are created between the target element and a role.
@@ -100,5 +100,9 @@ public enum GraphPermission {
 	@Override
 	public String toString() {
 		return label;
+	}
+
+	public static GraphPermission[] basicPermissions() {
+		return new GraphPermission[] { CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM };
 	}
 }

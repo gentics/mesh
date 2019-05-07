@@ -92,13 +92,13 @@
                 "required" : {
                   "type" : "boolean"
                 },
-                "elasticsearch" : {
-                  "type" : "object",
-                  "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                },
                 "label" : {
                   "type" : "string",
                   "description" : "Label of the field."
+                },
+                "elasticsearch" : {
+                  "type" : "object",
+                  "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
                 },
                 "name" : {
                   "type" : "string",
@@ -140,12 +140,10 @@
               },
               "publish" : {
                 "type" : "boolean",
-                "required" : true,
                 "description" : "Flag which indicates whether the publish permission is granted."
               },
               "readPublished" : {
                 "type" : "boolean",
-                "required" : true,
                 "description" : "Flag which indicates whether the read published permission is granted."
               }
             }

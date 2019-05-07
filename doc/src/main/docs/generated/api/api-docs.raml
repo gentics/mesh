@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "0.31.4"
+version: "0.31.5"
 baseUri: "http://localhost:8080/api/v1"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -61,9 +61,9 @@ mediaType: application/json
                                 | nodeReference | false | object | Optional node reference of the user. Users can directly reference a single node. This can be used to store additional data that is user related. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | rolesHash | true | string | Hashsum of user roles which can be used for user permission caching. |
@@ -343,9 +343,9 @@ mediaType: application/json
                                 | nodeReference | false | object | Optional node reference of the user. Users can directly reference a single node. This can be used to store additional data that is user related. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | rolesHash | true | string | Hashsum of user roles which can be used for user permission caching. |
@@ -457,9 +457,9 @@ mediaType: application/json
                                 | nodeReference | false | object | Optional node reference of the user. Users can directly reference a single node. This can be used to store additional data that is user related. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | rolesHash | true | string | Hashsum of user roles which can be used for user permission caching. |
@@ -541,9 +541,9 @@ mediaType: application/json
                                 |----------|-----------|------|-------------|
                                 | create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | update | true | boolean | Flag which indicates whether the update permission is granted. |
                             example: |
                                 {
@@ -652,9 +652,9 @@ mediaType: application/json
                                 | name | true | string | Name of the role. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | uuid | true | string | Uuid of the element |
@@ -814,9 +814,9 @@ mediaType: application/json
                                 | name | true | string | Name of the role. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | uuid | true | string | Uuid of the element |
@@ -874,9 +874,9 @@ mediaType: application/json
                                 | name | true | string | Name of the role. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | uuid | true | string | Uuid of the element |
@@ -977,9 +977,9 @@ mediaType: application/json
                                 |----------|-----------|------|-------------|
                                 | create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | update | true | boolean | Flag which indicates whether the update permission is granted. |
                             example: |
                                 {
@@ -1021,9 +1021,9 @@ mediaType: application/json
                                 | name | true | string | Name of the group |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | roles | true | array | List of role references |
@@ -1189,9 +1189,9 @@ mediaType: application/json
                                 | name | true | string | Name of the group |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | roles | true | array | List of role references |
@@ -1252,9 +1252,9 @@ mediaType: application/json
                                 | name | true | string | Name of the group |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | roles | true | array | List of role references |
@@ -1434,9 +1434,9 @@ mediaType: application/json
                                 | name | true | string | Name of the group |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | roles | true | array | List of role references |
@@ -1641,9 +1641,9 @@ mediaType: application/json
                                 | name | true | string | Name of the group |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | roles | true | array | List of role references |
@@ -1723,9 +1723,9 @@ mediaType: application/json
                                 | name | true | string | The name of the project. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | rootNode | true | object | The project root node. All futher nodes are children of this node. |
@@ -1891,9 +1891,9 @@ mediaType: application/json
                                 | name | true | string | The name of the project. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | rootNode | true | object | The project root node. All futher nodes are children of this node. |
@@ -1953,9 +1953,9 @@ mediaType: application/json
                                 | name | true | string | The name of the project. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | rootNode | true | object | The project root node. All futher nodes are children of this node. |
@@ -2199,9 +2199,9 @@ mediaType: application/json
                                 | name | true | string | Name of the schema. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | segmentField | false | string | Name of the segment field. This field is used to construct the webroot path to the node. |
@@ -2317,9 +2317,9 @@ mediaType: application/json
                                 | name | true | string | Name of the schema. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | segmentField | false | string | Name of the segment field. This field is used to construct the webroot path to the node. |
@@ -2415,7 +2415,6 @@ mediaType: application/json
                         | version | false | string | Version of the schema. |
                     example: |
                         {
-                          "container" : false,
                           "description" : "New description",
                           "name" : "extended-content",
                           "fields" : [ ]
@@ -2440,9 +2439,9 @@ mediaType: application/json
                                 | name | true | string | Name of the schema. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | segmentField | false | string | Name of the segment field. This field is used to construct the webroot path to the node. |
@@ -2608,9 +2607,9 @@ mediaType: application/json
                         | name | true | string | Name of the schema. |
                         | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                         | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                        | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                        | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                         | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                        | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                        | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                         | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                         | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                         | segmentField | false | string | Name of the segment field. This field is used to construct the webroot path to the node. |
@@ -2769,9 +2768,9 @@ mediaType: application/json
                                 | name | true | string | Name of the microschema |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | uuid | true | string | Uuid of the element |
@@ -2929,9 +2928,9 @@ mediaType: application/json
                                 | name | true | string | Name of the microschema |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | uuid | true | string | Uuid of the element |
@@ -3398,6 +3397,17 @@ mediaType: application/json
                 example: afacd93df77a44a2acd93df77a54a27b
         delete: 
             description: Deletes error state from the job. This will make it possible to execute the job once again.
+    /jobs/{jobUuid}/process: 
+        uriParameters: 
+            jobUuid: 
+                displayName: jobUuid
+                description: Uuid of the job.
+                type: string
+                required: true
+                repeat: false
+                example: afacd93df77a44a2acd93df77a54a27b
+        post: 
+            description: Process the job. Failed jobs will be automatically reset and put in queued state.
     /plugins: 
         post: 
             description: Deploys the plugin using the provided deployment information.
@@ -5173,7 +5183,6 @@ mediaType: application/json
                         | version | false | string | Version of the schema. |
                     example: |
                         {
-                          "container" : false,
                           "description" : "New description",
                           "name" : "extended-content",
                           "fields" : [ ]
@@ -5473,9 +5482,9 @@ mediaType: application/json
                                 | nodeReference | false | object | Optional node reference of the user. Users can directly reference a single node. This can be used to store additional data that is user related. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | rolesHash | true | string | Hashsum of user roles which can be used for user permission caching. |
@@ -5552,7 +5561,7 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "0.31.4",
+                                  "meshVersion" : "0.31.5",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
@@ -5593,9 +5602,9 @@ mediaType: application/json
                                 | name | true | string | The name of the project. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | rootNode | true | object | The project root node. All futher nodes are children of this node. |
@@ -5683,9 +5692,9 @@ mediaType: application/json
                                 | path | false | string | Webroot path to the node content. Will only be provided if the resolveLinks query parameter has been set accordingly. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | project | true | object | Reference to the project of the node. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
@@ -6223,9 +6232,9 @@ mediaType: application/json
                                 | path | false | string | Webroot path to the node content. Will only be provided if the resolveLinks query parameter has been set accordingly. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | project | true | object | Reference to the project of the node. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
@@ -6481,9 +6490,9 @@ mediaType: application/json
                                 | path | false | string | Webroot path to the node content. Will only be provided if the resolveLinks query parameter has been set accordingly. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | project | true | object | Reference to the project of the node. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
@@ -6676,9 +6685,9 @@ mediaType: application/json
                                 | path | false | string | Webroot path to the node content. Will only be provided if the resolveLinks query parameter has been set accordingly. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | project | true | object | Reference to the project of the node. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
@@ -6977,9 +6986,9 @@ mediaType: application/json
                                 | path | false | string | Webroot path to the node content. Will only be provided if the resolveLinks query parameter has been set accordingly. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | project | true | object | Reference to the project of the node. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
@@ -8130,9 +8139,9 @@ mediaType: application/json
                                 | path | false | string | Webroot path to the node content. Will only be provided if the resolveLinks query parameter has been set accordingly. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | project | true | object | Reference to the project of the node. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
@@ -8315,9 +8324,9 @@ mediaType: application/json
                                 | name | false | string | Name of the tag family. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | uuid | true | string | Uuid of the element |
@@ -8371,9 +8380,9 @@ mediaType: application/json
                                 | name | false | string | Name of the tag family. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | uuid | true | string | Uuid of the element |
@@ -8428,9 +8437,9 @@ mediaType: application/json
                                 | name | false | string | Name of the tag family. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | uuid | true | string | Uuid of the element |
@@ -8499,9 +8508,9 @@ mediaType: application/json
                                 | name | true | string | Name of the tag. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | tagFamily | true | object | Reference to the tag family to which the tag belongs. |
@@ -8671,9 +8680,9 @@ mediaType: application/json
                                 | name | true | string | Name of the tag. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | tagFamily | true | object | Reference to the tag family to which the tag belongs. |
@@ -8734,9 +8743,9 @@ mediaType: application/json
                                 | name | true | string | Name of the tag. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | tagFamily | true | object | Reference to the tag family to which the tag belongs. |
@@ -9538,9 +9547,9 @@ mediaType: application/json
                                 | path | false | string | Webroot path to the node content. Will only be provided if the resolveLinks query parameter has been set accordingly. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | project | true | object | Reference to the project of the node. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
@@ -9639,9 +9648,9 @@ mediaType: application/json
                                 | path | false | string | Webroot path to the node content. Will only be provided if the resolveLinks query parameter has been set accordingly. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | project | true | object | Reference to the project of the node. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
@@ -9773,9 +9782,9 @@ mediaType: application/json
                                 | pathPrefix | true | string | Optional path prefix for webroot path and rendered links. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | ssl | false | boolean | SSL flag of the branch which will be used to generate links across multiple projects. |
@@ -9997,9 +10006,9 @@ mediaType: application/json
                                 | pathPrefix | true | string | Optional path prefix for webroot path and rendered links. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | ssl | false | boolean | SSL flag of the branch which will be used to generate links across multiple projects. |
@@ -10088,9 +10097,9 @@ mediaType: application/json
                                 | pathPrefix | true | string | Optional path prefix for webroot path and rendered links. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | ssl | false | boolean | SSL flag of the branch which will be used to generate links across multiple projects. |
@@ -10173,9 +10182,9 @@ mediaType: application/json
                                 | pathPrefix | true | string | Optional path prefix for webroot path and rendered links. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | ssl | false | boolean | SSL flag of the branch which will be used to generate links across multiple projects. |
@@ -10682,9 +10691,9 @@ mediaType: application/json
                                 | pathPrefix | true | string | Optional path prefix for webroot path and rendered links. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | ssl | false | boolean | SSL flag of the branch which will be used to generate links across multiple projects. |
@@ -11356,9 +11365,9 @@ mediaType: application/json
                                 | name | true | string | Name of the schema. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | segmentField | false | string | Name of the segment field. This field is used to construct the webroot path to the node. |
@@ -11445,9 +11454,9 @@ mediaType: application/json
                                 | name | true | string | Name of the schema. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | segmentField | false | string | Name of the segment field. This field is used to construct the webroot path to the node. |
@@ -11620,9 +11629,9 @@ mediaType: application/json
                                 | name | true | string | Name of the microschema |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
-                                | permissions.publish | true | boolean | Flag which indicates whether the publish permission is granted. |
+                                | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
                                 | permissions.read | true | boolean | Flag which indicates whether the read permission is granted. |
-                                | permissions.readPublished | true | boolean | Flag which indicates whether the read published permission is granted. |
+                                | permissions.readPublished | false | boolean | Flag which indicates whether the read published permission is granted. |
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | uuid | true | string | Uuid of the element |

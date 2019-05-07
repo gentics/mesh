@@ -1,35 +1,5 @@
 package com.gentics.mesh.test.context;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.util.TestUtils.sleep;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.management.ManagementFactory;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
-
-import org.apache.commons.io.IOUtils;
-import org.junit.After;
-import org.junit.ClassRule;
-import org.junit.Rule;
-
 import com.gentics.mesh.MeshEvent;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.cli.CoreVerticleLoader;
@@ -53,13 +23,11 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.router.ProjectsRouter;
-import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
-
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.functions.Action;
@@ -69,6 +37,35 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import io.vertx.ext.web.RoutingContext;
 import okhttp3.OkHttpClient;
+import org.apache.commons.io.IOUtils;
+import org.junit.After;
+import org.junit.ClassRule;
+import org.junit.Rule;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.management.ManagementFactory;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.util.TestUtils.sleep;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMethods {
 
@@ -569,8 +566,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	protected Completable startRestVerticle() {
 		return Completable.fromAction(() -> {
 			CoreVerticleLoader loader = ((BootstrapInitializerImpl) boot()).loader.get();
-			loader.loadVerticles();
-			RouterStorage.addProject(TestDataProvider.PROJECT_NAME);
+			loader.loadVerticles(Collections.singletonList(PROJECT_NAME));
 		});
 	}
 

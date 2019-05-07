@@ -1,34 +1,5 @@
 package com.gentics.mesh.cli;
 
-import static com.gentics.mesh.MeshEvent.STARTUP;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static java.util.concurrent.TimeUnit.SECONDS;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.naming.InvalidNameException;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -94,7 +65,6 @@ import com.hazelcast.core.HazelcastInstance;
 import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
-
 import dagger.Lazy;
 import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
@@ -103,6 +73,33 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.dropwizard.DropwizardMetricsOptions;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
+import static com.gentics.mesh.MeshEvent.STARTUP;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * @see BootstrapInitializer
@@ -177,16 +174,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Inject
 	public BootstrapInitializerImpl() {
 		clearReferences();
-	}
-
-	@Override
-	public void initProjects() throws InvalidNameException {
-		for (Project project : meshRoot().getProjectRoot().findAll()) {
-			RouterStorage.addProject(project.getName());
-			if (log.isDebugEnabled()) {
-				log.debug("Initalized project {" + project.getName() + "}");
-			}
-		}
 	}
 
 	/**
@@ -442,7 +429,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		// Load the verticles
-		loader.get().loadVerticles();
+		List<String> initialProjects = db.tx(() -> meshRoot().getProjectRoot().findAll().stream()
+			.map(Project::getName)
+			.collect(Collectors.toList()));
+
+		loader.get().loadVerticles(initialProjects);
 		if (verticleLoader != null) {
 			verticleLoader.apply(Mesh.vertx());
 		}
@@ -458,10 +449,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				tx.success();
 			}
 		}
-		// Initialise routes for existing projects
-		try (Tx tx = db.tx()) {
-			initProjects();
-		}
+
 		registerEventHandlers();
 
 	}

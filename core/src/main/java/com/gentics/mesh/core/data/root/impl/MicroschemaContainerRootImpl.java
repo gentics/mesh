@@ -1,19 +1,9 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-import org.apache.commons.lang.NotImplementedException;
-
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
@@ -22,12 +12,23 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import org.apache.commons.lang.NotImplementedException;
+
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * @see MicroschemaContainerRoot
@@ -65,9 +66,14 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		microschema.validate();
 
 		String name = microschema.getName();
-		MicroschemaContainer conflictingSchema = findByName(name);
+		MicroschemaContainer conflictingMicroSchema = findByName(name);
+		if (conflictingMicroSchema != null) {
+			throw conflict(conflictingMicroSchema.getUuid(), name, "microschema_conflicting_name", name);
+		}
+
+		SchemaContainer conflictingSchema = MeshInternal.get().boot().schemaContainerRoot().findByName(name);
 		if (conflictingSchema != null) {
-			throw conflict(conflictingSchema.getUuid(), name, "microschema_conflicting_name", name);
+			throw conflict(conflictingSchema.getUuid(), name, "schema_conflicting_name", name);
 		}
 
 		MicroschemaContainer container = getGraph().addFramedVertex(MicroschemaContainerImpl.class);

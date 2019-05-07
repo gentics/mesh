@@ -1,5 +1,19 @@
 package com.gentics.mesh.test;
 
+import com.gentics.mesh.core.data.i18n.I18NUtil;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
+import com.gentics.mesh.rest.client.impl.EmptyResponse;
+import com.gentics.mesh.test.context.ClientHandler;
+import com.gentics.mesh.util.ETag;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.reactivex.Observable;
+
+import java.util.Locale;
+import java.util.function.Function;
+
 import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.http.HttpConstants.IF_NONE_MATCH;
 import static org.junit.Assert.assertEquals;
@@ -9,20 +23,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import java.util.Locale;
-import java.util.function.Function;
-import com.gentics.mesh.core.data.i18n.I18NUtil;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.rest.client.MeshRequest;
-import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.rest.client.MeshRestClientMessageException;
-import com.gentics.mesh.rest.client.impl.EmptyResponse;
-import com.gentics.mesh.test.context.ClientHandler;
-import com.gentics.mesh.util.ETag;
-
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.reactivex.Observable;
 
 public final class ClientHelper {
 
@@ -177,11 +177,13 @@ public final class ClientHelper {
 			MeshRestClientMessageException exception = ((MeshRestClientMessageException) e);
 			assertEquals("The status code of the nested exception did not match the expected value.", status.code(), exception.getStatusCode());
 
-			GenericMessageResponse msg = exception.getResponseMessage();
-			if (msg != null) {
-				assertEquals(message, msg.getMessage());
-			} else {
-				assertEquals(message, exception.getMessage());
+			if (message != null) {
+				GenericMessageResponse msg = exception.getResponseMessage();
+				if (msg != null) {
+					assertEquals(message, msg.getMessage());
+				} else {
+					assertEquals(message, exception.getMessage());
+				}
 			}
 		} else {
 			e.printStackTrace();
