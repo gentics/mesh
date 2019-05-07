@@ -141,7 +141,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 				User user = rh.result().getUser();
 				String uuid;
 				if (user instanceof MeshAuthUser) {
-					uuid = ((MeshAuthUser) user).getUuid();
+					uuid = db.tx(((MeshAuthUser) user)::getUuid);
 				} else {
 					uuid = user.principal().getString("uuid");
 				}
@@ -164,10 +164,9 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	 *            Handler which will be invoked which will return the authenticated user or fail if the credentials do not match or the user could not be found
 	 */
 	private void authenticate(String username, String password, String newPassword, Handler<AsyncResult<AuthenticationResult>> resultHandler) {
-		try (Tx tx = db.tx()) {
-			MeshAuthUser user = boot.userRoot().findMeshAuthUserByUsername(username);
+			MeshAuthUser user = db.tx(() -> boot.userRoot().findMeshAuthUserByUsername(username));
 			if (user != null) {
-				String accountPasswordHash = user.getPasswordHash();
+				String accountPasswordHash = db.tx(user::getPasswordHash);
 				// TODO check if user is enabled
 				boolean hashMatches = false;
 				if (StringUtils.isEmpty(accountPasswordHash) && password != null) {
@@ -175,6 +174,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 						log.debug("The account password hash or token password string are invalid.");
 					}
 					resultHandler.handle(Future.failedFuture(error(UNAUTHORIZED, "auth_login_failed")));
+					return;
 				} else {
 					if (log.isDebugEnabled()) {
 						log.debug("Validating password using the bcrypt password encoder");
@@ -182,18 +182,20 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 					hashMatches = passwordEncoder.matches(password, accountPasswordHash);
 				}
 				if (hashMatches) {
-					boolean forcedPasswordChange = user.isForcedPasswordChange();
+					boolean forcedPasswordChange = db.tx(user::isForcedPasswordChange);
 					if (newPassword == null && forcedPasswordChange) {
 						resultHandler.handle(Future.failedFuture(error(BAD_REQUEST, "auth_login_password_change_required")));
+						return;
 					} else {
 						if (forcedPasswordChange) {
-							user.setPassword(newPassword);
-							tx.success();
+							db.tx(() -> user.setPassword(newPassword));
 						}
 						resultHandler.handle(Future.succeededFuture(new AuthenticationResult(user)));
+						return;
 					}
 				} else {
 					resultHandler.handle(Future.failedFuture(error(UNAUTHORIZED, "auth_login_failed")));
+					return;
 				}
 			} else {
 				if (log.isDebugEnabled()) {
@@ -201,9 +203,8 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 				}
 				// TODO Don't let the user know that we know that he did not exist?
 				resultHandler.handle(Future.failedFuture(error(UNAUTHORIZED, "auth_login_failed")));
+				return;
 			}
-		}
-
 	}
 
 	/**
@@ -216,7 +217,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	public String generateToken(User user) {
 		if (user instanceof MeshAuthUser) {
 			AuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions();
-			JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, ((MeshAuthUser) user).getUuid());
+			JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, db.tx(((MeshAuthUser) user)::getUuid));
 			JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm())
 				.setExpiresInSeconds(options.getTokenExpirationTime());
 			return jwtProvider.generateToken(tokenData, jwtOptions);
