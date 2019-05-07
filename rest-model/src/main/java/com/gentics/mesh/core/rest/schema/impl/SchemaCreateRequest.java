@@ -26,7 +26,7 @@ public class SchemaCreateRequest implements Schema {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether nodes which use this schema store additional child nodes.")
-	private boolean container = false;
+	private Boolean container = false;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Description of the schema")
@@ -100,12 +100,12 @@ public class SchemaCreateRequest implements Schema {
 	}
 
 	@Override
-	public boolean isContainer() {
+	public Boolean getContainer() {
 		return container;
 	}
 
 	@Override
-	public SchemaCreateRequest setContainer(boolean flag) {
+	public SchemaCreateRequest setContainer(Boolean flag) {
 		this.container = flag;
 		return this;
 	}

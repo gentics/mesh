@@ -51,7 +51,7 @@ public class SchemaFilter extends MainFilter<SchemaContainer> {
 	protected List<FilterField<SchemaContainer, ?>> getFilters() {
 		List<FilterField<SchemaContainer, ?>> filters = new ArrayList<>();
 		filters.add(FilterField.create("is", "Filters by schema", schemaEnum(), uuid -> schema -> schema.getUuid().equals(uuid)));
-		filters.add(new MappedFilter<>("isContainer", "Filters by schema container flag", BooleanFilter.filter(), schema -> getLatestVersion(schema).isContainer()));
+		filters.add(new MappedFilter<>("isContainer", "Filters by schema container flag", BooleanFilter.filter(), schema -> getLatestVersion(schema).getContainer()));
 		filters.add(CommonFields.nameFilter());
 		filters.add(CommonFields.uuidFilter());
 		filters.addAll(CommonFields.userTrackingFilter());

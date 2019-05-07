@@ -286,7 +286,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					return null;
 				}
 				Node node = content.getNode();
-				return node.getSchemaContainer().getLatestVersion().getSchema().isContainer();
+				return node.getSchemaContainer().getLatestVersion().getSchema().getContainer();
 			}));
 
 		// Content specific fields

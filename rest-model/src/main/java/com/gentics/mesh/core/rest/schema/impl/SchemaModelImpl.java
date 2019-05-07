@@ -27,7 +27,7 @@ public class SchemaModelImpl implements SchemaModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether nodes which use this schema store additional child nodes.")
-	private boolean container = false;
+	private Boolean container;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Additional elasticsearch index configuration. This can be used to setup custom analyzers and filters.")
@@ -132,12 +132,12 @@ public class SchemaModelImpl implements SchemaModel {
 	}
 
 	@Override
-	public boolean isContainer() {
+	public Boolean getContainer() {
 		return container;
 	}
 
 	@Override
-	public SchemaModelImpl setContainer(boolean flag) {
+	public SchemaModelImpl setContainer(Boolean flag) {
 		this.container = flag;
 		return this;
 	}

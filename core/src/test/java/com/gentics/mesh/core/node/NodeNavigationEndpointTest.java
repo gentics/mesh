@@ -102,7 +102,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	public void testReadNoContainerNode() {
 		try (Tx tx = tx()) {
 			Node node = content();
-			assertFalse("The node must not be a container.", node.getSchemaContainer().getLatestVersion().getSchema().isContainer());
+			assertFalse("The node must not be a container.", node.getSchemaContainer().getLatestVersion().getSchema().getContainer());
 			call(() -> client().loadNavigation(PROJECT_NAME, node.getUuid(), new NavigationParametersImpl().setMaxDepth(1),
 					new VersioningParametersImpl().draft()), BAD_REQUEST, "navigation_error_no_container");
 		}

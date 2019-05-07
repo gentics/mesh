@@ -1,10 +1,5 @@
 package com.gentics.mesh.cli;
 
-import java.io.IOException;
-import java.util.Collection;
-
-import javax.naming.InvalidNameException;
-
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
@@ -25,8 +20,10 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
-
 import io.vertx.core.Vertx;
+
+import java.io.IOException;
+import java.util.Collection;
 
 /**
  * The bootstrap initialiser takes care of creating all mandatory graph elements for mesh. This includes the creation of MeshRoot, ProjectRoot, NodeRoot,
@@ -239,12 +236,5 @@ public interface BootstrapInitializer {
 	 * Register the eventbus event handlers.
 	 */
 	void registerEventHandlers();
-
-	/**
-	 * The projects share various subrouters. This method will add the subrouters for all registered projects.
-	 * 
-	 * @throws InvalidNameException
-	 */
-	void initProjects() throws InvalidNameException;
 
 }

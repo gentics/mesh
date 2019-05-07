@@ -304,6 +304,9 @@ ul.doc-toc h2 {
                             <li>
                                 <a href="guides/mesh-react">React Guide</a>
                             </li>
+                            <li>
+                                <a href="guides/mesh-hugo">Hugo Guide</a>
+                            </li>
                         </ul>
                     </li>
 

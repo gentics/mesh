@@ -11,20 +11,20 @@ Gentics Mesh is an Open Source API-first CMS for developers. All contents can be
 ### [Docker](https://getmesh.io/docs/administration-guide/#_run_with_docker)
 
 ```bash
-docker run -p 8080:8080 gentics/mesh-demo:0.27.0
+docker run -p 8080:8080 gentics/mesh-demo:0.31.4
 ```
 
 ### [CLI](https://getmesh.io/docs/cli)
 
 ```bash
 npm install mesh-cli -g
-mesh docker start -t 0.27.0 -p 8080
+mesh docker start -t 0.31.4 -p 8080
 ```
 
 ### [Java](https://getmesh.io/docs/administration-guide/#_run_with_jar_file)
 
 ```bash
-java -jar mesh-demo-0.27.0.jar
+java -jar mesh-demo-0.31.4.jar
 ```
 
 ## Demo
@@ -84,14 +84,16 @@ https://demo.getmesh.io/demo
 
 ## Features
 
+* GraphQL API
+* Content events via websocket
 * Document level permissions
 * Versioned content
 * Webroot API for easy integration with modern routing frameworks
 * Search API powered by Elasticsearch
-* GraphQL API
 * Image API
 * Tagging API
 * Cluster support
+* Monitoring support
 * Graph database at its core
 * Docker support
 * Kubernetes support

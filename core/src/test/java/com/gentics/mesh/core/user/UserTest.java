@@ -14,8 +14,8 @@ import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -47,6 +47,7 @@ import com.gentics.mesh.test.util.TestUtils;
 import com.google.common.collect.Iterables;
 import com.syncleus.ferma.tx.Tx;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
@@ -71,6 +72,34 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertEquals(user.getFirstname(), reference.getFirstName());
 			assertEquals(user.getLastname(), reference.getLastName());
 		}
+	}
+
+	@Test
+	public void testLoadPrincipalWithoutTx() {
+		MeshAuthUser user = tx(() -> getRequestUser());
+
+		JsonObject json = user.principal();
+		assertNotNull(json);
+		assertEquals(userUuid(), json.getString("uuid"));
+		assertEquals(tx(() -> user.getEmailAddress()), json.getString("emailAddress"));
+		assertEquals(tx(() -> user.getLastname()), json.getString("lastname"));
+		assertEquals(tx(() -> user.getFirstname()), json.getString("firstname"));
+		assertEquals(tx(() -> user.getUsername()), json.getString("username"));
+
+		JsonArray roles = json.getJsonArray("roles");
+		for (int i = 0; i < roles.size(); i++) {
+			JsonObject role = roles.getJsonObject(i);
+			assertNotNull(role.getString("uuid"));
+			assertNotNull(role.getString("name"));
+		}
+		assertEquals("The principal should contain two roles.", 1, roles.size());
+		JsonArray groups = json.getJsonArray("groups");
+		for (int i = 0; i < roles.size(); i++) {
+			JsonObject group = groups.getJsonObject(i);
+			assertNotNull(group.getString("uuid"));
+			assertNotNull(group.getString("name"));
+		}
+		assertEquals("The principal should contain two groups.", 1, groups.size());
 	}
 
 	@Test

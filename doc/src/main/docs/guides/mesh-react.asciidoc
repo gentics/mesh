@@ -14,7 +14,13 @@ The application we will use is very basic and only consists of three different v
 
 image:../app-overview.png[React App Vehicle Page, role="img-responsive"]
 
-The *welcome page* contains just a basic intro text and the navigation. The *category overview* page displays a list entries of the category. Initially we only display static contents and thus only the aircrafts category is displayed which contains a single vehicle. The last page provides the *vehicle view* of the selected vehicle.
+The *welcome page* contains just a basic intro text and the navigation. The *category overview* page displays a list entries of the category. Initially we only display hardcoded contents and thus only the aircrafts category is displayed which contains a single vehicle. The last page provides the *vehicle view* of the selected vehicle.
+
+Next Steps:
+
+* We will prepare the frontend app and set the views up.
+* Get Gentics Mesh ready and create our schemas.
+* Add contents and update the app to load JSON from the server.
 
 == Building Blocks / Domain Model
 
@@ -22,7 +28,7 @@ In our app we use a few different data elements.
 
 Each `Vehicle` has a `name`, `description`, `SKU`, `price`, `weight`, `stockLevel` and `image` field. Each `Category` with a `name` field can list multiple `Vehicles`.
 
-== Step 1 - A Static App
+== Step 1 - Frontend App
 
 The `guide-step-1` branch of the https://github.com/gentics/mesh-react-example[mesh-react-example] repository contains the example react app. The app was created using `create-react-app`. Bootstrap and `react-router-dom` were added along with the basic components and css which are needed for the views.
 
@@ -36,16 +42,16 @@ Initially the content in the example is hard coded and not dynamic. The connecti
 
 Sources:
 
-* App.jsx - Setup of `react-router-dom` and rendering of navigation and content area.
-* Category.jsx - Renders the vehicle overview which contains teasers for each vehicle in the category.
-* Content.jsx - Handles the routing between category overview and vehicle detail view.
-* Navigation.jsx - Renders the navigation which consists of all categories.
-* Vehicle.jsx - Renders the detail view of a vehicle.
-* WelcomeScreen.jsx - Renders the welcome screen content.
+* `App.jsx` - Setup of `react-router-dom` and rendering of navigation and content area.
+* `Category.jsx` - Renders the vehicle overview which contains teasers for each vehicle in the category.
+* `Content.jsx` - Handles the routing between category overview and vehicle detail view.
+* `Navigation.jsx` - Renders the navigation which consists of all categories.
+* `Vehicle.jsx` - Renders the detail view of a vehicle.
+* `WelcomeScreen.jsx` - Renders the welcome screen content.
 
 === Routing
 
-The `Content.jsx` handles the dynamic routing. For paths other than `/` it will render the `WebrootContent` component. This component examines the current `location.pathname` to either render a `Vehicle` or a `Category` component. The static content data for each case is passed along.
+The `Content.jsx` handles the dynamic routing. For paths other than `/` it will render the `WebrootContent` component. This component examines the current `location.pathname` to either render a `Vehicle` or a `Category` component. The content JSON data for each case is passed along.
 
 === Navigation
 
@@ -117,7 +123,7 @@ The `Category.jsx` iterates over all children of the category to render the list
 
 === Vehicle View
 
-The `Vehicle.jsx` will use the static JSON data which was entered in the `Content.jsx` to render the detail view.
+The `Vehicle.jsx` will use the hardcoded JSON data which was entered in the `Content.jsx` to render the detail view.
 At this stage only the Space Shuttle will be listed in the Aircraft category.
 
 [source,json]
@@ -438,8 +444,7 @@ query Navigation {
 
 Now that we have added our content and know how to fetch the data we can update the React app to utilize the GraphQL API to load the contents.
 
-TIP: You can also directly checkout the updated sources from the `guide-step-2` branch.
-
+TIP: You can also directly checkout the updated sources from the `guide-step-2` branch which contain all needed changes.
 
 === API
 
@@ -562,6 +567,21 @@ function post(path, data) {
 }
 ----
 
+=== React Proxy
+
+React scripts provide a great way to add API server to our development app by link:https://facebook.github.io/create-react-app/docs/proxying-api-requests-in-development[proxying API request].
+
+We just need to add the `proxy` field to our `package.json` file. This way the Gentics Mesh API will also be exposed in the React App development server.
+
+.package.json
+[source,js]
+----
+…
+"proxy": "http://localhost:8080"
+…
+----
+
+TIP: In production we could either use an link:https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/[nginx proxy] or use link:https://getmesh.io/docs/references/#_cors[CORS] to utilize a different domain for our Gentics Mesh server.
 
 === Content
 
@@ -645,9 +665,18 @@ import { getNavigation, usePromise } from './api';
 const navResponse = usePromise(() => getNavigation(), []);
 ----
 
-==  Conclusion
+== Conclusion
 
-Your app should now be able to load the content from Gentics Mesh. New categories and vehicles will now directly show up in you app.
+Your app should now be able to load the content from Gentics Mesh. New categories and vehicles will now directly show up in you app. You can now for example alter the schema and add extra fields which can later on be used in your app.
 
+
+More guides will follow in the future which will cover:
+
+* In depth content modelling
+* Authentication handling with Login, registration and password reset
+* Adding a custom search which uses Elasticsearch queries to filter and sort by
+* Staging content deployments and restructuring contents using branches
+* Event handling via websocket
+* Permission handling
 
 

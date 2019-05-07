@@ -1,27 +1,12 @@
 package com.gentics.mesh.core.endpoint.admin;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.rest.Messages.message;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
-import static java.util.Comparator.comparing;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
@@ -31,12 +16,27 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.SearchProvider;
 import com.syncleus.ferma.tx.Tx;
-
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.naming.InvalidNameException;
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.rest.Messages.message;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
+import static java.util.Comparator.comparing;
 
 /**
  * Handler for admin request methods.
@@ -136,11 +136,26 @@ public class AdminHandler extends AbstractHandler {
 			PermissionStore.invalidate(false);
 		}).andThen(db.asyncTx(() -> {
 			// Update the routes by loading the projects
-			boot.initProjects();
+			initProjects();
 			Mesh.mesh().setStatus(oldStatus);
 			return Single.just(message(ac, "restore_finished"));
 		})).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
+
+	/**
+	 * The projects share various subrouters. This method will add the subrouters for all registered projects.
+	 *
+	 * @throws InvalidNameException
+	 */
+	private void initProjects() throws InvalidNameException {
+		for (Project project : boot.meshRoot().getProjectRoot().findAll()) {
+			RouterStorage.addProject(project.getName());
+			if (log.isDebugEnabled()) {
+				log.debug("Initalized project {" + project.getName() + "}");
+			}
+		}
+	}
+
 
 	/**
 	 * Handle graph export action.
