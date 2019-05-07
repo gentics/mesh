@@ -654,7 +654,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		for (Group group : getGroups()) {
 			keyBuilder.append(group.getUuid());
 		}
-		keyBuilder.append("-").append(isForcedPasswordChange());
 
 		return ETag.hash(keyBuilder);
 	}
