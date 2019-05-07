@@ -13,6 +13,7 @@ import javax.imageio.ImageIO;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 
+import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -86,7 +87,7 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 
 	@Override
 	public Single<ImageInfo> readImageInfo(String file) {
-		return vertx.rxExecuteBlocking(bh -> {
+		Maybe<ImageInfo> result = vertx.rxExecuteBlocking(bh -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Reading image information from stream");
 			}
@@ -102,6 +103,7 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 				bh.fail(e);
 			}
 		});
+		return result.toSingle();
 	}
 
 	/**

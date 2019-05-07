@@ -79,4 +79,10 @@ public @interface MeshTestSetting {
 	 * @return
 	 */
 	boolean ssl() default false;
+
+	/**
+	 * Flag which indicates whether the monitoring feature should be enabled.
+	 * @return
+	 */
+	boolean monitoring() default true;
 }

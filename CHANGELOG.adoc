@@ -25,6 +25,11 @@ title: Changelog
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 
+[[v0.32.0]]
+== 0.32.0 (TBD)
+
+icon:plus[] Core: The core Vert.x library was updated to version 3.7.0
+
 [[v0.31.4]]
 == 0.31.4 (11.04.2019)
 
