@@ -7,6 +7,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_MODIFIED;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.mail.internet.MimeUtility;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -28,6 +29,8 @@ import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.ext.web.RoutingContext;
+
+import java.io.UnsupportedEncodingException;
 
 /**
  * Handler which will accept {@link BinaryGraphField} elements and return the binary data using the given context.
@@ -101,9 +104,11 @@ public class BinaryFieldResponseHandler {
 		}
 
 		response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
-		// TODO encode filename?
+
+		String encodedFileName = getEncodedFileName(fileName);
+
 		// TODO images and pdf files should be shown in inline format
-		response.putHeader("content-disposition", "attachment; filename=" + fileName);
+		response.putHeader("content-disposition", "attachment; filename=\"" + encodedFileName + '"');
 
 		// Set to IDENTITY to avoid gzip compression
 		response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
@@ -148,12 +153,21 @@ public class BinaryFieldResponseHandler {
 				// Set to IDENTITY to avoid gzip compression
 				response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
 
-				// TODO encode filename?
-				response.putHeader("content-disposition", "inline; filename=" + fileName);
+				String encodedFileName = getEncodedFileName(fileName);
+
+				response.putHeader("content-disposition", "inline; filename=\"" + encodedFileName + '"');
 				return fileWithProps.getFile();
 			}).flatMap(RxUtil::toBufferFlow);
 		resizedData.subscribe(response::write, rc::fail, response::end);
 
+	}
+
+	private String getEncodedFileName(String fileName) {
+		try {
+			return MimeUtility.encodeText(fileName, "UTF-8", "Q");
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 }
