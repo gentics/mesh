@@ -119,7 +119,7 @@ mediaType: application/json
                     description: |
                         The _role_ query parameter take a UUID of a role and may be used to add permission information to the response via the _rolePerm_ property which lists the permissions for the specified role on the element.
                         This may be useful when you are logged in as admin but you want to retrieve the editor role permissions on a given node.
-                        Endpoint: */api/v1/:projectName/nodes?role=:roleUuid*
+                        Endpoint: */api/v2/:projectName/nodes?role=:roleUuid*
                     type: string
                     required: false
                     repeat: false
@@ -401,7 +401,7 @@ mediaType: application/json
                     description: |
                         The _role_ query parameter take a UUID of a role and may be used to add permission information to the response via the _rolePerm_ property which lists the permissions for the specified role on the element.
                         This may be useful when you are logged in as admin but you want to retrieve the editor role permissions on a given node.
-                        Endpoint: */api/v1/:projectName/nodes?role=:roleUuid*
+                        Endpoint: */api/v2/:projectName/nodes?role=:roleUuid*
                     type: string
                     required: false
                     repeat: false
@@ -1077,7 +1077,7 @@ mediaType: application/json
                     description: |
                         The _role_ query parameter take a UUID of a role and may be used to add permission information to the response via the _rolePerm_ property which lists the permissions for the specified role on the element.
                         This may be useful when you are logged in as admin but you want to retrieve the editor role permissions on a given node.
-                        Endpoint: */api/v1/:projectName/nodes?role=:roleUuid*
+                        Endpoint: */api/v2/:projectName/nodes?role=:roleUuid*
                     type: string
                     required: false
                     repeat: false
@@ -1169,7 +1169,7 @@ mediaType: application/json
                     description: |
                         The _role_ query parameter take a UUID of a role and may be used to add permission information to the response via the _rolePerm_ property which lists the permissions for the specified role on the element.
                         This may be useful when you are logged in as admin but you want to retrieve the editor role permissions on a given node.
-                        Endpoint: */api/v1/:projectName/nodes?role=:roleUuid*
+                        Endpoint: */api/v2/:projectName/nodes?role=:roleUuid*
                     type: string
                     required: false
                     repeat: false
@@ -1322,7 +1322,7 @@ mediaType: application/json
                     description: |
                         The _role_ query parameter take a UUID of a role and may be used to add permission information to the response via the _rolePerm_ property which lists the permissions for the specified role on the element.
                         This may be useful when you are logged in as admin but you want to retrieve the editor role permissions on a given node.
-                        Endpoint: */api/v1/:projectName/nodes?role=:roleUuid*
+                        Endpoint: */api/v2/:projectName/nodes?role=:roleUuid*
                     type: string
                     required: false
                     repeat: false
@@ -1778,7 +1778,7 @@ mediaType: application/json
                     description: |
                         The _role_ query parameter take a UUID of a role and may be used to add permission information to the response via the _rolePerm_ property which lists the permissions for the specified role on the element.
                         This may be useful when you are logged in as admin but you want to retrieve the editor role permissions on a given node.
-                        Endpoint: */api/v1/:projectName/nodes?role=:roleUuid*
+                        Endpoint: */api/v2/:projectName/nodes?role=:roleUuid*
                     type: string
                     required: false
                     repeat: false
@@ -1871,7 +1871,7 @@ mediaType: application/json
                     description: |
                         The _role_ query parameter take a UUID of a role and may be used to add permission information to the response via the _rolePerm_ property which lists the permissions for the specified role on the element.
                         This may be useful when you are logged in as admin but you want to retrieve the editor role permissions on a given node.
-                        Endpoint: */api/v1/:projectName/nodes?role=:roleUuid*
+                        Endpoint: */api/v2/:projectName/nodes?role=:roleUuid*
                     type: string
                     required: false
                     repeat: false
@@ -3843,8 +3843,8 @@ mediaType: application/json
                                       }
                                     },
                                     "languagePaths" : {
-                                      "de" : "/api/v1/yourProject/webroot/Bilder",
-                                      "en" : "/api/v1/yourProject/webroot/Images"
+                                      "de" : "/api/v2/yourProject/webroot/Bilder",
+                                      "en" : "/api/v2/yourProject/webroot/Images"
                                     },
                                     "parentNode" : {
                                       "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
@@ -3941,7 +3941,7 @@ mediaType: application/json
                                         }
                                       } ]
                                     },
-                                    "path" : "/api/v1/yourProject/webroot/Images",
+                                    "path" : "/api/v2/yourProject/webroot/Images",
                                     "breadcrumb" : [ {
                                       "uuid" : "adaf48da8c124049af48da8c12a0493e",
                                       "displayName" : "news",
@@ -4900,7 +4900,7 @@ mediaType: application/json
                     example: Some text before {{mesh.link("adaf48da8c124049af48da8c12a0493e", "en")}} and after.
             responses: 
                 "200": 
-                    description: Some text before /api/v1/dummy/webroot/flower.jpg and after
+                    description: Some text before /api/v2/dummy/webroot/flower.jpg and after
     /validateMicroschema: 
         post: 
             description: Validate the posted microschema and report errors.
@@ -5726,8 +5726,8 @@ mediaType: application/json
                                     }
                                   },
                                   "languagePaths" : {
-                                    "de" : "/api/v1/yourProject/webroot/Bilder",
-                                    "en" : "/api/v1/yourProject/webroot/Images"
+                                    "de" : "/api/v2/yourProject/webroot/Bilder",
+                                    "en" : "/api/v2/yourProject/webroot/Images"
                                   },
                                   "parentNode" : {
                                     "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
@@ -5824,7 +5824,7 @@ mediaType: application/json
                                       }
                                     } ]
                                   },
-                                  "path" : "/api/v1/yourProject/webroot/Images",
+                                  "path" : "/api/v2/yourProject/webroot/Images",
                                   "breadcrumb" : [ {
                                     "uuid" : "adaf48da8c124049af48da8c12a0493e",
                                     "displayName" : "news",
@@ -5850,7 +5850,7 @@ mediaType: application/json
                     description: |
                         The _role_ query parameter take a UUID of a role and may be used to add permission information to the response via the _rolePerm_ property which lists the permissions for the specified role on the element.
                         This may be useful when you are logged in as admin but you want to retrieve the editor role permissions on a given node.
-                        Endpoint: */api/v1/:projectName/nodes?role=:roleUuid*
+                        Endpoint: */api/v2/:projectName/nodes?role=:roleUuid*
                     type: string
                     required: false
                     repeat: false
@@ -5943,8 +5943,8 @@ mediaType: application/json
                                       }
                                     },
                                     "languagePaths" : {
-                                      "de" : "/api/v1/yourProject/webroot/Bilder",
-                                      "en" : "/api/v1/yourProject/webroot/Images"
+                                      "de" : "/api/v2/yourProject/webroot/Bilder",
+                                      "en" : "/api/v2/yourProject/webroot/Images"
                                     },
                                     "parentNode" : {
                                       "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
@@ -6041,7 +6041,7 @@ mediaType: application/json
                                         }
                                       } ]
                                     },
-                                    "path" : "/api/v1/yourProject/webroot/Images",
+                                    "path" : "/api/v2/yourProject/webroot/Images",
                                     "breadcrumb" : [ {
                                       "uuid" : "adaf48da8c124049af48da8c12a0493e",
                                       "displayName" : "news",
@@ -6148,7 +6148,7 @@ mediaType: application/json
                     description: |
                         The _role_ query parameter take a UUID of a role and may be used to add permission information to the response via the _rolePerm_ property which lists the permissions for the specified role on the element.
                         This may be useful when you are logged in as admin but you want to retrieve the editor role permissions on a given node.
-                        Endpoint: */api/v1/:projectName/nodes?role=:roleUuid*
+                        Endpoint: */api/v2/:projectName/nodes?role=:roleUuid*
                     type: string
                     required: false
                     repeat: false
@@ -6266,8 +6266,8 @@ mediaType: application/json
                                     }
                                   },
                                   "languagePaths" : {
-                                    "de" : "/api/v1/yourProject/webroot/Bilder",
-                                    "en" : "/api/v1/yourProject/webroot/Images"
+                                    "de" : "/api/v2/yourProject/webroot/Bilder",
+                                    "en" : "/api/v2/yourProject/webroot/Images"
                                   },
                                   "parentNode" : {
                                     "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
@@ -6364,7 +6364,7 @@ mediaType: application/json
                                       }
                                     } ]
                                   },
-                                  "path" : "/api/v1/yourProject/webroot/Images",
+                                  "path" : "/api/v2/yourProject/webroot/Images",
                                   "breadcrumb" : [ {
                                     "uuid" : "adaf48da8c124049af48da8c12a0493e",
                                     "displayName" : "news",
@@ -6719,8 +6719,8 @@ mediaType: application/json
                                     }
                                   },
                                   "languagePaths" : {
-                                    "de" : "/api/v1/yourProject/webroot/Bilder",
-                                    "en" : "/api/v1/yourProject/webroot/Images"
+                                    "de" : "/api/v2/yourProject/webroot/Bilder",
+                                    "en" : "/api/v2/yourProject/webroot/Images"
                                   },
                                   "parentNode" : {
                                     "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
@@ -6817,7 +6817,7 @@ mediaType: application/json
                                       }
                                     } ]
                                   },
-                                  "path" : "/api/v1/yourProject/webroot/Images",
+                                  "path" : "/api/v2/yourProject/webroot/Images",
                                   "breadcrumb" : [ {
                                     "uuid" : "adaf48da8c124049af48da8c12a0493e",
                                     "displayName" : "news",
@@ -7020,8 +7020,8 @@ mediaType: application/json
                                     }
                                   },
                                   "languagePaths" : {
-                                    "de" : "/api/v1/yourProject/webroot/Bilder",
-                                    "en" : "/api/v1/yourProject/webroot/Images"
+                                    "de" : "/api/v2/yourProject/webroot/Bilder",
+                                    "en" : "/api/v2/yourProject/webroot/Images"
                                   },
                                   "parentNode" : {
                                     "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
@@ -7118,7 +7118,7 @@ mediaType: application/json
                                       }
                                     } ]
                                   },
-                                  "path" : "/api/v1/yourProject/webroot/Images",
+                                  "path" : "/api/v2/yourProject/webroot/Images",
                                   "breadcrumb" : [ {
                                     "uuid" : "adaf48da8c124049af48da8c12a0493e",
                                     "displayName" : "news",
@@ -7251,8 +7251,8 @@ mediaType: application/json
                                       }
                                     },
                                     "languagePaths" : {
-                                      "de" : "/api/v1/yourProject/webroot/Bilder",
-                                      "en" : "/api/v1/yourProject/webroot/Images"
+                                      "de" : "/api/v2/yourProject/webroot/Bilder",
+                                      "en" : "/api/v2/yourProject/webroot/Images"
                                     },
                                     "parentNode" : {
                                       "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
@@ -7349,7 +7349,7 @@ mediaType: application/json
                                         }
                                       } ]
                                     },
-                                    "path" : "/api/v1/yourProject/webroot/Images",
+                                    "path" : "/api/v2/yourProject/webroot/Images",
                                     "breadcrumb" : [ {
                                       "uuid" : "adaf48da8c124049af48da8c12a0493e",
                                       "displayName" : "news",
@@ -8851,8 +8851,8 @@ mediaType: application/json
                                       }
                                     },
                                     "languagePaths" : {
-                                      "de" : "/api/v1/yourProject/webroot/Bilder",
-                                      "en" : "/api/v1/yourProject/webroot/Images"
+                                      "de" : "/api/v2/yourProject/webroot/Bilder",
+                                      "en" : "/api/v2/yourProject/webroot/Images"
                                     },
                                     "parentNode" : {
                                       "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
@@ -8949,7 +8949,7 @@ mediaType: application/json
                                         }
                                       } ]
                                     },
-                                    "path" : "/api/v1/yourProject/webroot/Images",
+                                    "path" : "/api/v2/yourProject/webroot/Images",
                                     "breadcrumb" : [ {
                                       "uuid" : "adaf48da8c124049af48da8c12a0493e",
                                       "displayName" : "news",
@@ -9114,8 +9114,8 @@ mediaType: application/json
                                       }
                                     },
                                     "languagePaths" : {
-                                      "de" : "/api/v1/yourProject/webroot/Bilder",
-                                      "en" : "/api/v1/yourProject/webroot/Images"
+                                      "de" : "/api/v2/yourProject/webroot/Bilder",
+                                      "en" : "/api/v2/yourProject/webroot/Images"
                                     },
                                     "parentNode" : {
                                       "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
@@ -9212,7 +9212,7 @@ mediaType: application/json
                                         }
                                       } ]
                                     },
-                                    "path" : "/api/v1/yourProject/webroot/Images",
+                                    "path" : "/api/v2/yourProject/webroot/Images",
                                     "breadcrumb" : [ {
                                       "uuid" : "adaf48da8c124049af48da8c12a0493e",
                                       "displayName" : "news",
@@ -9265,8 +9265,8 @@ mediaType: application/json
                                         }
                                       },
                                       "languagePaths" : {
-                                        "de" : "/api/v1/yourProject/webroot/Bilder",
-                                        "en" : "/api/v1/yourProject/webroot/Images"
+                                        "de" : "/api/v2/yourProject/webroot/Bilder",
+                                        "en" : "/api/v2/yourProject/webroot/Images"
                                       },
                                       "parentNode" : {
                                         "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
@@ -9363,7 +9363,7 @@ mediaType: application/json
                                           }
                                         } ]
                                       },
-                                      "path" : "/api/v1/yourProject/webroot/Images",
+                                      "path" : "/api/v2/yourProject/webroot/Images",
                                       "breadcrumb" : [ {
                                         "uuid" : "adaf48da8c124049af48da8c12a0493e",
                                         "displayName" : "news",
@@ -10831,8 +10831,8 @@ mediaType: application/json
                                       }
                                     },
                                     "languagePaths" : {
-                                      "de" : "/api/v1/yourProject/webroot/Bilder",
-                                      "en" : "/api/v1/yourProject/webroot/Images"
+                                      "de" : "/api/v2/yourProject/webroot/Bilder",
+                                      "en" : "/api/v2/yourProject/webroot/Images"
                                     },
                                     "parentNode" : {
                                       "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
@@ -10929,7 +10929,7 @@ mediaType: application/json
                                         }
                                       } ]
                                     },
-                                    "path" : "/api/v1/yourProject/webroot/Images",
+                                    "path" : "/api/v2/yourProject/webroot/Images",
                                     "breadcrumb" : [ {
                                       "uuid" : "adaf48da8c124049af48da8c12a0493e",
                                       "displayName" : "news",

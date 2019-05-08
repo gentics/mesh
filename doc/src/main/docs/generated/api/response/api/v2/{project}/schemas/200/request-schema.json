@@ -110,17 +110,6 @@
               "type" : "object",
               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
               "properties" : {
-                "required" : {
-                  "type" : "boolean"
-                },
-                "label" : {
-                  "type" : "string",
-                  "description" : "Label of the field."
-                },
-                "elasticsearch" : {
-                  "type" : "object",
-                  "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                },
                 "name" : {
                   "type" : "string",
                   "required" : true,
@@ -130,6 +119,17 @@
                   "type" : "string",
                   "required" : true,
                   "description" : "Type of the field."
+                },
+                "elasticsearch" : {
+                  "type" : "object",
+                  "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                },
+                "label" : {
+                  "type" : "string",
+                  "description" : "Label of the field."
+                },
+                "required" : {
+                  "type" : "boolean"
                 }
               }
             }

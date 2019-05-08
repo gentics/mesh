@@ -82,10 +82,10 @@
 <image overflow="visible" width="1200" height="1004" xlink:href="../../../../../Users/Juergen/Downloads/screenshot-localhost-8080 2017-05-30 22-29-26.png"  transform="matrix(0.3487 0 0 0.3503 760.7012 244.5)">
 </image>
 <text transform="matrix(1 0 0 1 38.5361 182.5874)" fill="#FFFFFF" font-family="'UniversLTStd-Bold'" font-size="23.3359">API end point</text>
-<text transform="matrix(1 0 0 1 38.5361 210.5903)" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="19">api/v1/:projectName/navroot/:path</text>
+<text transform="matrix(1 0 0 1 38.5361 210.5903)" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="19">/api/v2/:projectName/navroot/:path</text>
 <g>
 	<path opacity="0.6" fill="#80CBEE" d="M537.808,273.5h-27.094c-0.208,0-0.376,0.896-0.376,2.004v27.594
 		c0,1.108,0.168,2.006,0.376,2.006h27.094c0.208,0,0.376-0.897,0.376-2.006v-27.594C538.185,274.396,538.016,273.5,537.808,273.5"/>
-	<text transform="matrix(1 0 0 1 265.6655 296.1758)" fill="#FFFFFF" font-family="'Courier'" font-size="20">/api/v1/demo/navroot / ?maxDepth=1</text>
+	<text transform="matrix(1 0 0 1 265.6655 296.1758)" fill="#FFFFFF" font-family="'Courier'" font-size="20">/api/v2/demo/navroot / ?maxDepth=1</text>
 </g>
 </svg>

@@ -25,7 +25,7 @@ public class APIRouter {
 	private final Router router;
 
 	/**
-	 * API routers are routers that are responsible for dealing with routes that are no project routes. E.g: /api/v1/admin, /api/v1
+	 * API routers are routers that are responsible for dealing with routes that are no project routes. E.g: :apibase:/admin, /api/v2
 	 */
 	private Map<String, Router> apiRouters = new HashMap<>();
 

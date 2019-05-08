@@ -137,8 +137,6 @@ public class MeshRestClientConfig {
 		/**
 		 * Sets the base uri that is prepended to all paths when making requests to mesh.
 		 *
-		 * <p>Default: "/api/v1"</p>
-		 *
 		 * @param basePath
 		 * @return
 		 */

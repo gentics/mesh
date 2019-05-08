@@ -31,8 +31,8 @@
       }
     },
     "languagePaths" : {
-      "de" : "/api/v1/yourProject/webroot/Bilder",
-      "en" : "/api/v1/yourProject/webroot/Images"
+      "de" : "/api/v2/yourProject/webroot/Bilder",
+      "en" : "/api/v2/yourProject/webroot/Images"
     },
     "parentNode" : {
       "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
@@ -129,7 +129,7 @@
         }
       } ]
     },
-    "path" : "/api/v1/yourProject/webroot/Images",
+    "path" : "/api/v2/yourProject/webroot/Images",
     "breadcrumb" : [ {
       "uuid" : "adaf48da8c124049af48da8c12a0493e",
       "displayName" : "news",
