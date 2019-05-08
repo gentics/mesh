@@ -86,7 +86,7 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	}
 
 	@Override
-	public Single<ImageInfo> readImageInfo(String file) {
+	public Single<ImageInfo> readImageInfo(String path) {
 		Maybe<ImageInfo> result = vertx.rxExecuteBlocking(bh -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Reading image information from stream");
