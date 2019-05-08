@@ -198,28 +198,6 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		});
 	}
 
-	@Test
-	@Override
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEBINARY, FILL, FETCH,
-				"function migrate(node, fieldname, convert) {node.fields[fieldname].fileName = 'bla' + node.fields[fieldname].fileName; return node;}",
-				(container, name) -> {
-					BinaryGraphField newField = container.getBinary(name);
-					assertThat(newField).as(NEWFIELD).isNotNull();
-					assertThat(newField.getFileName()).as(NEWFIELDVALUE).isEqualTo("bla" + FILENAME);
-					assertThat(newField.getMimeType()).as(NEWFIELDVALUE).isEqualTo(MIMETYPE);
-					assertThat(newField.getBinary().getSHA512Sum()).as(NEWFIELDVALUE).isEqualTo(hash);
-					Buffer contents = RxUtil.readEntireData(container.getBinary(name).getBinary().getStream()).blockingGet();
-					assertThat(contents.toString()).as(NEWFIELDVALUE).isEqualTo(FILECONTENTS);
-				});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATEBINARY, FILL, INVALIDSCRIPT);
-	}
-
 	@Override
 	@Test(expected = ClassNotFoundException.class)
 	public void testSystemExit() throws Throwable {

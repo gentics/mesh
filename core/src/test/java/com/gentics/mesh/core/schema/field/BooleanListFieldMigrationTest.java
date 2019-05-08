@@ -175,23 +175,6 @@ public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest im
 	}
 
 	@Override
-	@Test
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEBOOLEANLIST, FILL, FETCH,
-				"function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
-					BooleanGraphFieldList field = container.getBooleanList(name);
-					assertThat(field).as(NEWFIELD).isNotNull();
-					assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(false, true);
-				});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATEBOOLEANLIST, FILL, INVALIDSCRIPT);
-	}
-
-	@Override
 	@Test(expected = ClassNotFoundException.class)
 	public void testSystemExit() throws Throwable {
 		try (Tx tx = tx()) {

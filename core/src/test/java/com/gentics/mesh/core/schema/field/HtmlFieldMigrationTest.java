@@ -267,23 +267,6 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 				});
 	}
 
-	@Test
-	@Override
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEHTML, FILLTEXT, FETCH,
-				"function migrate(node, fieldname) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}",
-				(container, name) -> {
-					assertThat(container.getHtml(name)).as(NEWFIELD).isNotNull();
-					assertThat(container.getHtml(name).getHTML()).as(NEWFIELDVALUE).isEqualTo("modified <b>HTML</b> content");
-				});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATEHTML, FILLTEXT, INVALIDSCRIPT);
-	}
-
 	@Override
 	@Test(expected = ClassNotFoundException.class)
 	public void testSystemExit() throws Throwable {

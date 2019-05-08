@@ -193,22 +193,6 @@ public class NumberFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	}
 
 	@Override
-	@Test
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATENUMBER, FILL, FETCH,
-				"function migrate(node, fieldname) {node.fields[fieldname] = node.fields[fieldname] * 12; return node;}", (container, name) -> {
-					assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
-					assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo((int) (NUMBERVALUE * 12));
-				});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATENUMBER, FILL, INVALIDSCRIPT);
-	}
-
-	@Override
 	@Test(expected = ClassNotFoundException.class)
 	public void testSystemExit() throws Throwable {
 		invalidMigrationScript(CREATENUMBER, FILL, KILLERSCRIPT);

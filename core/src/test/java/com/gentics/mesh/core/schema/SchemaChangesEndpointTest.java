@@ -107,46 +107,6 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	@Test
-	public void testBlockingMigrationStatus() throws InterruptedException, IOException {
-		SchemaContainer container = schemaContainer("content");
-		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-
-		try (Tx tx = tx()) {
-			assertNull("The schema should not yet have any changes", container.getLatestVersion().getNextChange());
-
-			SchemaChangeModel change = SchemaChangeModel.createChangeFieldTypeChange("content", "boolean");
-
-			// Update a single node field in order to trigger a single blocking
-			// migration script
-			content().getLatestDraftFieldContainer(english()).getHtml("content").setHtml("triggerWait");
-
-			String blockingScript = IOUtils.toString(getClass().getResourceAsStream("/testscripts/longMigrate.js"));
-			change.setMigrationScript(blockingScript);
-			listOfChanges.getChanges().add(change);
-			tx.success();
-		}
-
-		try (Tx tx = tx()) {
-			// Assert that all jobs have been completed
-			JobListResponse migrationStatus = call(() -> client().findJobs());
-			assertThat(migrationStatus).listsAll(COMPLETED);
-
-			GenericMessageResponse status = call(() -> client().applyChangesToSchema(container.getUuid(), listOfChanges));
-			assertThat(status).matches("schema_changes_applied", "content");
-
-			SchemaResponse schema = call(() -> client().findSchemaByUuid(container.getUuid()));
-			assertEquals("2.0", schema.getVersion());
-
-			// Trigger migration
-			waitForJobs(() -> {
-				call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, project().getLatestBranch().getUuid(),
-						new SchemaReferenceImpl().setName("content").setVersion(schema.getVersion())));
-			}, COMPLETED, 1);
-		}
-
-	}
-
-	@Test
 	public void testUpdateWithConflictingName() {
 		try (Tx tx = tx()) {
 			String name = "folder";

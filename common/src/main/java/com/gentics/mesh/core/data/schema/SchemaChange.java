@@ -3,8 +3,12 @@ package com.gentics.mesh.core.data.schema;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -96,41 +100,9 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 	SchemaChange<T> setNextSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> containerVersion);
 
 	/**
-	 * Get the migration script for the change. May either be a custom script or an automatically created
-	 * 
-	 * @return migration script
-	 * @throws IOException
-	 */
-	String getMigrationScript() throws IOException;
-
-	/**
-	 * Get the migration script context
-	 * 
-	 * @return context
-	 */
-	List<Tuple<String, Object>> getMigrationScriptContext();
-
-	/**
-	 * Get the automatic migration script (may be null)
-	 * 
-	 * @return automatic migration script
-	 * @throws IOException
-	 */
-	String getAutoMigrationScript() throws IOException;
-
-	/**
-	 * Set a custom migration script. If this is set to null, the automatically created migration script will be used instead
 	 *
-	 * @param migrationScript
-	 *            migration script
-	 * @return fluent API
-	 */
-	SchemaChange<T> setCustomMigrationScript(String migrationScript);
-
-	/**
-	 * 
 	 * Apply the current change on the field schema container (eg. {@link Schema} or {@link Microschema}).
-	 * 
+	 *
 	 * @param container
 	 *            Field container to be modified
 	 * @return Modified schema
@@ -138,15 +110,20 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 	<R extends FieldSchemaContainer> R apply(R container);
 
 	/**
+	 * Apply the current change on the field container.
+	 */
+	void apply(GraphFieldContainer oldContent, GraphFieldContainer newContent);
+
+	/**
 	 * Set the change specific properties by examining the rest change model.
-	 * 
+	 *
 	 * @param restChange
 	 */
 	void updateFromRest(SchemaChangeModel restChange);
 
 	/**
 	 * Transform the graph model into the rest representation.
-	 * 
+	 *
 	 * @return
 	 * @throws IOException
 	 */
@@ -154,7 +131,7 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 
 	/**
 	 * Set a REST specific property.
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -162,7 +139,7 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 
 	/**
 	 * Return a REST specific property.
-	 * 
+	 *
 	 * @param key
 	 * @return
 	 */
@@ -170,23 +147,22 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 
 	/**
 	 * Return REST field specific properties.
-	 * 
+	 *
 	 * @return
 	 */
 	<R> Map<String, R> getRestProperties();
 
 	/**
 	 * Return the index options for this change. This can either hold index or field specific options.
-	 * 
+	 *
 	 * @return
 	 */
 	JsonObject getIndexOptions();
 
 	/**
 	 * Set the index options for the schema / field.
-	 * 
+	 *
 	 * @param options
 	 */
 	void setIndexOptions(JsonObject options);
-
 }

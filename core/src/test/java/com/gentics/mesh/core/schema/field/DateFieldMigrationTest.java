@@ -172,22 +172,6 @@ public class DateFieldMigrationTest extends AbstractFieldMigrationTest implement
 		});
 	}
 
-	@Test
-	@Override
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEDATE, FILL, FETCH,
-				"function migrate(node, fieldname) {node.fields[fieldname] = new Date(new Date(node.fields[fieldname]).getTime() + 864000).toISOString(); return node;}", (container, name) -> {
-					assertThat(container.getDate(name)).as(NEWFIELD).isNotNull();
-					assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(DATEVALUE + 864000L);
-				});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATEDATE, FILL, INVALIDSCRIPT);
-	}
-
 	@Override
 	@Test(expected = ClassNotFoundException.class)
 	public void testSystemExit() throws Throwable {

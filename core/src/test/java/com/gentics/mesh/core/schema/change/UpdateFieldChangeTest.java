@@ -71,19 +71,6 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 
 	@Test
 	@Override
-	public void testGetMigrationScript() throws IOException {
-		try (Tx tx = tx()) {
-			UpdateFieldChange change = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
-			assertNull("Update field changes have no auto migation script.", change.getAutoMigrationScript());
-
-			assertNull("Intitially no migration script should be set.", change.getMigrationScript());
-			change.setCustomMigrationScript("test");
-			assertEquals("The custom migration script was not changed.", "test", change.getMigrationScript());
-		}
-	}
-
-	@Test
-	@Override
 	public void testTransformToRest() throws IOException {
 		try (Tx tx = tx()) {
 			UpdateFieldChange change = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);

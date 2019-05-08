@@ -190,23 +190,6 @@ public class DateListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	}
 
 	@Override
-	@Test
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEDATELIST, FILL, FETCH,
-				"function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
-					DateGraphFieldList field = container.getDateList(name);
-					assertThat(field).as(NEWFIELD).isNotNull();
-					assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(OTHERDATEVALUE, DATEVALUE);
-				});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATEDATELIST, FILL, INVALIDSCRIPT);
-	}
-
-	@Override
 	@Test(expected = ClassNotFoundException.class)
 	public void testSystemExit() throws Throwable {
 		invalidMigrationScript(CREATEDATELIST, FILL, KILLERSCRIPT);

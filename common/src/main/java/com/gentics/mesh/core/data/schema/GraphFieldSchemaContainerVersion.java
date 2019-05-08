@@ -1,6 +1,9 @@
 package com.gentics.mesh.core.data.schema;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -12,6 +15,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.VersionUtil;
 
 /**
@@ -75,6 +79,13 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 * @return Can be null if no further changes exist
 	 */
 	SchemaChange<?> getNextChange();
+
+	default Stream<SchemaChange<FieldSchemaContainer>> getChanges() {
+		return StreamUtil.untilNull(
+			() -> (SchemaChange<FieldSchemaContainer>)getNextChange(),
+			change -> (SchemaChange<FieldSchemaContainer>)change.getNextChange()
+		);
+	}
 
 	/**
 	 * Set the next change for the schema. The next change is the first change in the chain of changes that lead to the new schema version.

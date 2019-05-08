@@ -245,28 +245,6 @@ public class BooleanFieldMigrationTest extends AbstractFieldMigrationTest implem
 		});
 	}
 
-	@Test
-	@Override
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEBOOLEAN, FILLTRUE, FETCH,
-				"function migrate(node, fieldname) {node.fields[fieldname] = !node.fields[fieldname]; return node;}", (container, name) -> {
-					assertThat(container.getBoolean(name)).as(NEWFIELD).isNotNull();
-					assertThat(container.getBoolean(name).getBoolean()).as(NEWFIELDVALUE).isEqualTo(false);
-				});
-
-		customMigrationScript(CREATEBOOLEAN, FILLFALSE, FETCH,
-				"function migrate(node, fieldname) {node.fields[fieldname] = !node.fields[fieldname]; return node;}", (container, name) -> {
-					assertThat(container.getBoolean(name)).as(NEWFIELD).isNotNull();
-					assertThat(container.getBoolean(name).getBoolean()).as(NEWFIELDVALUE).isEqualTo(true);
-				});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATEBOOLEAN, FILLTRUE, INVALIDSCRIPT);
-	}
-
 	@Override
 	@Test(expected = ClassNotFoundException.class)
 	public void testSystemExit() throws Throwable {

@@ -8,8 +8,10 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.TY
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.AddFieldChange;
+import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -153,6 +155,12 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 		}
 		container.addField(field, position);
 		return container;
+	}
+
+
+	@Override
+	public void apply(GraphFieldContainer oldContent, GraphFieldContainer newContent) {
+
 	}
 
 	@Override

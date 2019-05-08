@@ -77,32 +77,6 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	}
 
 	@Override
-	public String getMigrationScript() throws IOException {
-		String migrationScript = getProperty(MIGRATION_SCRIPT_PROPERTY_KEY);
-		if (migrationScript == null) {
-			migrationScript = getAutoMigrationScript();
-		}
-
-		return migrationScript;
-	}
-
-	@Override
-	public SchemaChange<T> setCustomMigrationScript(String migrationScript) {
-		property(MIGRATION_SCRIPT_PROPERTY_KEY, migrationScript);
-		return this;
-	}
-
-	@Override
-	public String getAutoMigrationScript() throws IOException {
-		return null; // Default value for changes that don't have a script
-	}
-
-	@Override
-	public List<Tuple<String, Object>> getMigrationScriptContext() {
-		return null; // Default value for changes that don't have a script
-	}
-
-	@Override
 	public void setRestProperty(String key, Object value) {
 		if (value instanceof List) {
 			value = ((List) value).toArray();
@@ -145,10 +119,6 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 
 	@Override
 	public void updateFromRest(SchemaChangeModel restChange) {
-		String migrationScript = restChange.getMigrationScript();
-		if (migrationScript != null) {
-			setCustomMigrationScript(migrationScript);
-		}
 		for (String key : restChange.getProperties().keySet()) {
 			setRestProperty(key, restChange.getProperties().get(key));
 		}
@@ -165,7 +135,6 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 		}
 		model.setOperation(getOperation());
 		model.setUuid(getUuid());
-		model.setMigrationScript(getMigrationScript());
 		return model;
 	}
 

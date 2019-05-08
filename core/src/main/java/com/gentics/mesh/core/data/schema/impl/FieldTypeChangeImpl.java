@@ -10,8 +10,21 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.schema.FieldTypeChange;
+import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -130,9 +143,43 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 	}
 
 	@Override
-	public String getAutoMigrationScript() throws IOException {
-		return OPERATION.getAutoMigrationScript(Arrays.asList(SchemaChangeModel.TYPE_KEY, SchemaChangeModel.LIST_TYPE_KEY).stream()
-			.filter(key -> getRestProperty(key) != null).collect(Collectors.toMap(key -> key, key -> getRestProperty(key))));
+	public void apply(GraphFieldContainer oldContent, GraphFieldContainer newContent) {
+		String newType = getType();
+
+		switch (newType) {
+			case "boolean":
+				break;
+			case "number":
+				break;
+			case "date":
+				break;
+			case "html":
+				break;
+			case "string":
+				changeToString(oldContent, newContent);
+				break;
+			case "list":
+				break;
+			case "micronode":
+				break;
+			case "node":
+				break;
+			default:
+				throw error(BAD_REQUEST, "Unknown type {" + newType + "} for change " + getUuid());
+		}
+	}
+
+	private void changeToString(GraphFieldContainer oldContent, GraphFieldContainer newContent) {
+		String fieldName = getFieldName();
+		FieldSchema fieldSchema = oldContent.getSchemaContainerVersion().getSchema().getField(fieldName);
+		switch (fieldSchema.getType()) {
+			case "number":
+				newContent.createString(fieldName).setString(
+					oldContent.getNumber(fieldName).getNumber().toString()
+				);
+				break;
+		}
+		oldContent.getField(fieldSchema).removeField(newContent);
 	}
 
 	@Override

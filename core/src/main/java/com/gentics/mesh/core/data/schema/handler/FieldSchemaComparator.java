@@ -22,14 +22,9 @@ public class FieldSchemaComparator {
 	public SchemaChangeModel compare(FieldSchema fieldSchemaA, FieldSchema fieldSchemaB) {
 		if (fieldSchemaA != null && fieldSchemaB != null) {
 			SchemaChangeModel change = fieldSchemaA.compareTo(fieldSchemaB);
-			// Only load the migration script if a change has been detected
-			if (change.getOperation() != EMPTY) {
-				change.loadMigrationScript();
-			}
 			return change;
 		} else if (fieldSchemaA != null && fieldSchemaB == null) {
 			SchemaChangeModel change = SchemaChangeModel.createRemoveFieldChange(fieldSchemaA.getName());
-			change.loadMigrationScript();
 			return change;
 		} else if (fieldSchemaA == null && fieldSchemaB != null) {
 			return SchemaChangeModel.createAddFieldChange(fieldSchemaB.getName(), fieldSchemaB.getType(),

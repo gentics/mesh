@@ -64,25 +64,10 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 	public void testUpdateFromRest() throws IOException {
 		try (Tx tx = tx()) {
 			SchemaChangeModel model = new SchemaChangeModel();
-			model.setMigrationScript("test");
 			model.setProperty(SchemaChangeModel.FIELD_NAME_KEY, "someField");
 			RemoveFieldChange change = tx.getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 			change.updateFromRest(model);
-			assertEquals("test", change.getMigrationScript());
 			assertEquals("someField", change.getFieldName());
-		}
-	}
-
-	@Test
-	@Override
-	public void testGetMigrationScript() throws IOException {
-		try (Tx tx = tx()) {
-			RemoveFieldChange change = tx.getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
-			assertNotNull("Remove Type changes have a auto migation script.", change.getAutoMigrationScript());
-
-			assertNotNull("Intitially the default migration script should be set.", change.getMigrationScript());
-			change.setCustomMigrationScript("test");
-			assertEquals("The custom migration script was not changed.", "test", change.getMigrationScript());
 		}
 	}
 
@@ -92,11 +77,9 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			RemoveFieldChange change = tx.getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 			assertEquals(RemoveFieldChange.OPERATION, change.transformToRest().getOperation());
-			change.setCustomMigrationScript("test");
 			change.setFieldName("test2");
 
 			SchemaChangeModel model = change.transformToRest();
-			assertEquals("test", model.getMigrationScript());
 			assertEquals("test2", model.getProperty(SchemaChangeModel.FIELD_NAME_KEY));
 		}
 	}

@@ -215,23 +215,6 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest imp
 	}
 
 	@Override
-	@Test
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATESTRINGLIST, FILLTEXT, FETCH,
-				"function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
-					StringGraphFieldList field = container.getStringList(name);
-					assertThat(field).as(NEWFIELD).isNotNull();
-					assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(TEXT3, TEXT2, TEXT1);
-				});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATESTRINGLIST, FILLTEXT, INVALIDSCRIPT);
-	}
-
-	@Override
 	@Test(expected = ClassNotFoundException.class)
 	public void testSystemExit() throws Throwable {
 		invalidMigrationScript(CREATESTRINGLIST, FILLTEXT, KILLERSCRIPT);

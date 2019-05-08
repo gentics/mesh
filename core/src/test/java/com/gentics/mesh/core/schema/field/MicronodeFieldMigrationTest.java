@@ -174,26 +174,6 @@ public class MicronodeFieldMigrationTest extends AbstractFieldMigrationTest {
 	}
 
 	@Override
-	@Test
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEMICRONODE, FILL, FETCH,
-				"function migrate(node, fieldname, convert) {node.fields[fieldname].fields['firstName'] = 'Dagobert'; return node;}",
-				(container, name) -> {
-					MicronodeGraphField field = container.getMicronode(name);
-					assertThat(field).as(NEWFIELD).isNotNull();
-					Micronode micronode = field.getMicronode();
-					assertThat(micronode).as(NEWFIELDVALUE).isNotNull();
-					assertThat(micronode).as(NEWFIELDVALUE).containsStringField("firstName", "Dagobert").containsStringField("lastName", "Duck");
-				});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATEMICRONODE, FILL, INVALIDSCRIPT);
-	}
-
-	@Override
 	@Test(expected = ClassNotFoundException.class)
 	public void testSystemExit() throws Throwable {
 		invalidMigrationScript(CREATEMICRONODE, FILL, KILLERSCRIPT);

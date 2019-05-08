@@ -25,13 +25,7 @@ public abstract class AbstractSchemaFieldChange extends AbstractSchemaChange<Fie
 	}
 
 	@Override
-	public List<Tuple<String, Object>> getMigrationScriptContext() {
-		return Arrays.asList(Tuple.tuple("fieldname", getFieldName()));
-	}
-
-	@Override
 	public void updateFromRest(SchemaChangeModel model) {
-		setCustomMigrationScript(model.getMigrationScript());
 		for (Map.Entry<String, Object> entry : model.getProperties().entrySet()) {
 			Object value = entry.getValue();
 			String key = entry.getKey();

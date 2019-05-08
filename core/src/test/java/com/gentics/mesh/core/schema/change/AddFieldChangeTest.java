@@ -31,8 +31,6 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	public void testFields() throws IOException {
 		try (Tx tx = tx()) {
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
-			change.setCustomMigrationScript("1234");
-			assertEquals("1234", change.getMigrationScript());
 
 			change.setFieldName("fieldName");
 			assertEquals("fieldName", change.getFieldName());
@@ -370,7 +368,6 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	public void testUpdateFromRest() {
 		try (Tx tx = tx()) {
 			SchemaChangeModel model = SchemaChangeModel.createAddFieldChange("testField", "html", "test123");
-			model.setMigrationScript("custom");
 
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.updateFromRest(model);
@@ -395,19 +392,6 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 			assertEquals(change.getFieldName(), model.getProperty(SchemaChangeModel.FIELD_NAME_KEY));
 			assertEquals("The generic rest property from the change should have been set for the rest model.", "test",
 					change.getRestProperty("someProperty"));
-		}
-	}
-
-	@Test
-	@Override
-	public void testGetMigrationScript() throws IOException {
-		try (Tx tx = tx()) {
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
-			assertNull("Add field changes have no auto migation script.", change.getAutoMigrationScript());
-
-			assertNull("Intitially no migration script should be set.", change.getMigrationScript());
-			change.setCustomMigrationScript("test");
-			assertEquals("The custom migration script was not changed.", "test", change.getMigrationScript());
 		}
 	}
 }

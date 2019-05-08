@@ -162,7 +162,6 @@ public class MigrationFailureRecoveryTest extends AbstractMeshTest {
 		SchemaChangesListModel request = new SchemaChangesListModel();
 		SchemaChangeModel operation = new SchemaChangeModel();
 		request.getChanges().add(operation);
-		operation.setMigrationScript("invalidJavascript");
 		operation.setOperation(SchemaChangeOperation.ADDFIELD);
 		operation.setProperty("field", "someField");
 		operation.setProperty("type", "number");

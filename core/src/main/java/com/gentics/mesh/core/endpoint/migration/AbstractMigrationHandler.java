@@ -5,10 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
-import javax.script.ScriptEngine;
+
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.node.handler.TypeConverter;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.data.schema.SchemaChange;
@@ -20,9 +19,7 @@ import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.metric.MetricsService;
-import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -59,22 +56,13 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 *
 	 * @param fromVersion
 	 *            Container which contains the expected migration changes
-	 * @param migrationScripts
-	 *            List of migration scripts (will be modified)
 	 * @param touchedFields
 	 *            Set of touched fields (will be modified)
 	 * @throws IOException
 	 */
-	protected void prepareMigration(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion,
-			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Set<String> touchedFields) throws IOException {
+	protected void prepareMigration(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, Set<String> touchedFields) throws IOException {
 		SchemaChange<?> change = fromVersion.getNextChange();
 		while (change != null) {
-			String migrationScript = change.getMigrationScript();
-			if (migrationScript != null) {
-				migrationScript = migrationScript + "\nnode = JSON.stringify(migrate(JSON.parse(node), fieldname, convert));";
-				migrationScripts.add(Tuple.tuple(migrationScript, change.getMigrationScriptContext()));
-			}
-
 			// if either the type changes or the field is removed, the field is
 			// "touched"
 			if (change instanceof FieldTypeChangeImpl) {
@@ -92,57 +80,27 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 * 
 	 * @param ac
 	 *            context
-	 * @param container
-	 *            container to migrate
-	 * @param restModel
+	 * @param fromVersion
 	 *            rest model of the container
 	 * @param newVersion
 	 *            new schema version
 	 * @param touchedFields
 	 *            set of touched fields
-	 * @param migrationScripts
-	 *            list of migration scripts
-	 * @param clazz
 	 * @throws Exception
 	 */
-	protected <T extends FieldContainer> void migrate(NodeMigrationActionContextImpl ac, GraphFieldContainer container, RestModel restModel,
-			GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> newVersion, Set<String> touchedFields,
-			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Class<T> clazz) throws Exception {
+	protected void migrate(NodeMigrationActionContextImpl ac, GraphFieldContainer oldContent, RestModel newContent,
+		   	GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion,
+			GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> newVersion, Set<String> touchedFields) throws Exception {
 
-		// Remove all touched fields (if necessary, they will be readded later)
-		container.getFields().stream().filter(f -> touchedFields.contains(f.getFieldKey())).forEach(f -> f.removeField(container));
+		newContent.setSchemaContainerVersion(newVersion);
 
-		String nodeJson = restModel.toJson();
+		transformFields(fromVersion, oldContent, newContent);
+	}
 
-		for (Tuple<String, List<Tuple<String, Object>>> scriptEntry : migrationScripts) {
-			String script = scriptEntry.v1();
-			List<Tuple<String, Object>> context = scriptEntry.v2();
-			ScriptEngine engine = factory.getScriptEngine(new Sandbox());
-
-			engine.put("node", nodeJson);
-			engine.put("convert", new TypeConverter());
-			if (context != null) {
-				for (Tuple<String, Object> ctxEntry : context) {
-					engine.put(ctxEntry.v1(), ctxEntry.v2());
-				}
-			}
-			engine.eval(script);
-
-			Object transformedNodeModel = engine.get("node");
-
-			if (transformedNodeModel == null) {
-				throw new Exception("Transformed node model not found after handling migration scripts");
-			}
-
-			nodeJson = transformedNodeModel.toString();
-		}
-
-		// Transform the result back to the Rest Model
-		T transformedRestModel = JsonUtil.readValue(nodeJson, clazz);
-
-		container.setSchemaContainerVersion(newVersion);
-		container.updateFieldsFromRest(ac, transformedRestModel.getFields());
-
+	private void transformRestModel(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion,
+									GraphFieldContainer oldContent,
+									RestModel newContent) {
+		fromVersion.getChanges().forEach(change -> change.apply(oldContent, newContent));
 	}
 
 	@ParametersAreNonnullByDefault

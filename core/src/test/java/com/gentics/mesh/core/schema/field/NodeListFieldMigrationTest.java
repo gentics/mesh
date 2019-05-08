@@ -178,22 +178,6 @@ public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest imple
 		});
 	}
 
-	@Test
-	@Override
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATENODELIST, FILL, FETCH, "function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
-			NodeGraphFieldList field = container.getNodeList(name);
-			assertThat(field).as(NEWFIELD).isNotNull();
-			assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(folder("news"), folder("2015"));
-		});
-	}
-
-	@Override
-	@Test(expected=ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATENODELIST, FILL, INVALIDSCRIPT);
-	}
-
 	@Override
 	@Test(expected=ClassNotFoundException.class)
 	public void testSystemExit() throws Throwable {

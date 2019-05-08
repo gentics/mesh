@@ -169,23 +169,6 @@ public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implement
 		});
 	}
 
-	@Test
-	@Override
-	public void testCustomMigrationScript() throws Exception {
-		String uuid = db().tx(() -> folder("news").getUuid());
-		customMigrationScript(CREATENODE, FILL, FETCH,
-				"function migrate(node, fieldname) {node.fields[fieldname].uuid = '" + uuid + "'; return node;}", (container, name) -> {
-					assertThat(container.getNode(name)).as(NEWFIELD).isNotNull();
-					assertThat(container.getNode(name).getNode()).as(NEWFIELDVALUE).isEqualTo(folder("news"));
-				});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATENODE, FILL, INVALIDSCRIPT);
-	}
-
 	@Override
 	@Test(expected = ClassNotFoundException.class)
 	public void testSystemExit() throws Throwable {

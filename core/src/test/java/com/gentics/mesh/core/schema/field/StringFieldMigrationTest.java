@@ -257,24 +257,6 @@ public class StringFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		});
 	}
 
-	@Test
-	@Override
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATESTRING, FILLTEXT, FETCH,
-				"function migrate(node, fieldname) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}",
-				(container, name) -> {
-					assertThat(container.getString(name)).as(NEWFIELD).isNotNull();
-					assertThat(container.getString(name).getString()).as(NEWFIELDVALUE)
-							.isEqualTo("modified <b>HTML</b> content");
-				});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATESTRING, FILLTEXT, INVALIDSCRIPT);
-	}
-
 	@Override
 	@Test(expected = ClassNotFoundException.class)
 	public void testSystemExit() throws Throwable {

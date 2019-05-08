@@ -12,8 +12,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
+import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -144,4 +146,8 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 		getElement().remove();
 	}
 
+	@Override
+	public void apply(GraphFieldContainer oldContent, GraphFieldContainer newContent) {
+
+	}
 }

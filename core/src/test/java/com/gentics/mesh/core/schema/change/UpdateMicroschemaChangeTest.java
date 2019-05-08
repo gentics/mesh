@@ -74,28 +74,13 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 
 	@Test
 	@Override
-	public void testGetMigrationScript() throws IOException {
-		try (Tx tx = tx()) {
-			UpdateMicroschemaChange change = tx.getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
-			assertNull("Update microschema changes have a auto migation script.", change.getAutoMigrationScript());
-
-			assertNull("Intitially no migration script should be set.", change.getMigrationScript());
-			change.setCustomMigrationScript("test");
-			assertEquals("The custom migration script was not changed.", "test", change.getMigrationScript());
-		}
-	}
-
-	@Test
-	@Override
 	public void testTransformToRest() throws IOException {
 		try (Tx tx = tx()) {
 			UpdateMicroschemaChange change = tx.getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
-			change.setCustomMigrationScript("testScript");
 			change.setName("vcard");
 
 			SchemaChangeModel model = change.transformToRest();
 			assertEquals("vcard", model.getProperty(SchemaChangeModel.NAME_KEY));
-			assertEquals("testScript", model.getMigrationScript());
 		}
 	}
 

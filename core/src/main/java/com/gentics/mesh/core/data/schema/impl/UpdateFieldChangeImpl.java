@@ -9,8 +9,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.UpdateFieldChange;
+import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -72,6 +74,11 @@ public class UpdateFieldChangeImpl extends AbstractSchemaFieldChange implements 
 			restChange.setProperty(ELASTICSEARCH_KEY, "{}");
 		}
 		super.updateFromRest(restChange);
+	}
+
+	@Override
+	public void apply(GraphFieldContainer oldContent, GraphFieldContainer newContent) {
+
 	}
 
 	@Override
