@@ -1,5 +1,21 @@
 package com.gentics.mesh.test.context;
 
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.IntStream;
+
+import org.apache.commons.io.FileUtils;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
+import org.testcontainers.containers.wait.Wait;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.cache.PermissionStore;
@@ -18,6 +34,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
+import com.gentics.mesh.rest.monitoring.MonitoringClientConfig;
 import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.TrackingSearchProvider;
@@ -28,23 +45,10 @@ import com.gentics.mesh.test.docker.KeycloakContainer;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.io.FileUtils;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-import org.testcontainers.containers.wait.Wait;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.IntStream;
-
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
 
 public class MeshTestContext extends TestWatcher {
 
@@ -181,7 +185,9 @@ public class MeshTestContext extends TestWatcher {
 			MeshRestClientConfig.Builder config = new MeshRestClientConfig.Builder()
 				.setHost("localhost")
 				.setPort(port)
+				.setBasePath(CURRENT_API_BASE_PATH)
 				.setSsl(ssl);
+
 			MeshRestClient defaultClient = MeshRestClient.create(config.build());
 			defaultClient.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
 			defaultClient.login().blockingGet();
@@ -193,7 +199,13 @@ public class MeshTestContext extends TestWatcher {
 			});
 		}
 		log.info("Using monitoring port: " + monitoringPort);
-		monitoringClient = MonitoringRestClient.create("localhost", monitoringPort);
+		MonitoringClientConfig monitoringClientConfig = new MonitoringClientConfig.Builder()
+			.setBasePath(CURRENT_API_BASE_PATH)
+			.setHost("localhost")
+			.setPort(monitoringPort)
+			.build();
+
+		monitoringClient = MonitoringRestClient.create(monitoringClientConfig);
 		if (trackingSearchProvider != null) {
 			trackingSearchProvider.clear().blockingAwait();
 		}
