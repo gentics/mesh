@@ -25,9 +25,7 @@ title: Changelog
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 [[v0.32.0]]
-== 0.32.0 (TBD)
-
-icon:plus[] Core: The core Vert.x library was updated to version 3.7.0
+== 0.32.0 (08.05.2019)
 
 icon:bullhorn[] Event Handling
 
@@ -95,6 +93,7 @@ icon:plus[] Permissions: Setting permissions recursively is now done more effici
 
 icon:plus[] Thread Usage: The overall request handling has been refactored to reduce situations in which the event-loop threads could be blocked. The request handling code has been unified.
 
+icon:plus[] Core: The core Vert.x library was updated to version 3.7.0
 
 icon:plus[] Performance: The overall read performance has been improved. The memory usage has been reduced.
 

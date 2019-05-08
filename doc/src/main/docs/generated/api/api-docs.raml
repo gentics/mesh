@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "0.31.5-SNAPSHOT"
+version: "0.31.6-SNAPSHOT"
 baseUri: "http://localhost:8080/api/v1"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -5678,13 +5678,13 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "0.31.5-SNAPSHOT",
+                                  "meshVersion" : "0.31.6-SNAPSHOT",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
                                   "searchVendor" : "elasticsearch",
                                   "searchVersion" : "2.4.3",
-                                  "vertxVersion" : "3.5.4"
+                                  "vertxVersion" : "3.7.0"
                                 }
     /raml: 
         get: 
@@ -8528,7 +8528,7 @@ mediaType: application/json
                                   }
                                 }
         post: 
-            description: Update the tag family with the given uuid.
+            description: Update the tag family with the given uuid. The tag family will be created if it can't be found for the given uuid.
             body: 
                 application/json: 
                     schema: |
@@ -8834,7 +8834,7 @@ mediaType: application/json
                                   }
                                 }
         post: 
-            description: Update the specified tag
+            description: Update the specified tag. The tag is created if no tag with the specified uuid could be found.
             body: 
                 application/json: 
                     schema: |
