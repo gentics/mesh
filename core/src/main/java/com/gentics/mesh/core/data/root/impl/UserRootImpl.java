@@ -169,7 +169,10 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		user.setLastname(requestModel.getLastname());
 		user.setEmailAddress(requestModel.getEmailAddress());
 		user.setPasswordHash(MeshInternal.get().passwordEncoder().encode(requestModel.getPassword()));
-		user.setForcedPasswordChange(requestModel.getForcedPasswordChange());
+		Boolean forcedPasswordChange = requestModel.getForcedPasswordChange();
+		if (forcedPasswordChange != null) {
+			user.setForcedPasswordChange(forcedPasswordChange);
+		}
 
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, user);
 		ExpandableNode reference = requestModel.getNodeReference();
