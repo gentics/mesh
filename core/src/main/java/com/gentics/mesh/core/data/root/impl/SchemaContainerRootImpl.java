@@ -14,12 +14,12 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import io.vertx.core.logging.Logger;
@@ -62,20 +62,25 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public void addSchemaContainer(User user, SchemaContainer schema) {
+	public void addSchemaContainer(User user, SchemaContainer schema, EventQueueBatch batch) {
 		addItem(schema);
 	}
 
 	@Override
-	public void removeSchemaContainer(SchemaContainer schemaContainer) {
+	public void removeSchemaContainer(SchemaContainer schemaContainer, EventQueueBatch batch) {
 		removeItem(schemaContainer);
 	}
 
 	@Override
 	public SchemaContainer create(SchemaModel schema, User creator, String uuid) {
+		return create(schema, creator, uuid, true);
+	}
+
+	@Override
+	public SchemaContainer create(SchemaModel schema, User creator, String uuid, boolean validate) {
 		// TODO FIXME - We need to skip the validation check if the instance is creating a clustered instance because vert.x is not yet ready.
 		// https://github.com/gentics/mesh/issues/210
-		if (Mesh.vertx() != null) {
+		if (validate && Mesh.vertx() != null) {
 			validateSchema(schema);
 		}
 
@@ -105,7 +110,8 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		container.setCreated(creator);
 		container.setName(schema.getName());
 
-		addSchemaContainer(creator, container);
+		EventQueueBatch batch = EventQueueBatch.create();
+		addSchemaContainer(creator, container, batch);
 		return container;
 	}
 
@@ -142,7 +148,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public SchemaContainer create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
+	public SchemaContainer create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
 		SchemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
 		requestModel.validate();
@@ -152,7 +158,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		}
 		SchemaContainer container = create(requestModel, requestUser, uuid);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
-		batch.store(container, true);
+		batch.add(container.onCreated());
 		return container;
 
 	}

@@ -1,13 +1,52 @@
 package com.gentics.mesh.core.tag;
 
-import com.gentics.mesh.core.data.ContainerType;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.validateDeletion;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
+import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.junit.Ignore;
+import org.junit.Test;
+
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
+import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
@@ -21,39 +60,8 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
-import org.junit.Ignore;
-import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.common.Permission.CREATE;
-import static com.gentics.mesh.core.rest.common.Permission.DELETE;
-import static com.gentics.mesh.core.rest.common.Permission.READ;
-import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.ClientHelper.validateDeletion;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
-import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@Test
@@ -75,7 +83,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			assertNull(restResponse.getMetainfo().getPerPage());
 			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 			assertEquals("The response did not contain the correct amount of items. We only have nine basic tags in the test data.", nBasicTags,
-					restResponse.getData().size());
+				restResponse.getData().size());
 
 			final long perPage = 4;
 			// Extra Tags + permitted tag
@@ -85,7 +93,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			for (int page = 1; page <= totalPages; page++) {
 				final int currentPage = page;
 				TagListResponse tagPage = call(() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(currentPage,
-						perPage)));
+					perPage)));
 				restResponse = tagPage;
 				long expectedItemsCount = perPage;
 				// The last page should only list 5 items
@@ -95,9 +103,9 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 				assertEquals("The expected item count for page {" + page + "} does not match", expectedItemsCount, restResponse.getData().size());
 				assertEquals(perPage, restResponse.getMetainfo().getPerPage().longValue());
 				assertEquals("We requested page {" + page + "} but got a metainfo with a different page back.", page, restResponse.getMetainfo()
-						.getCurrentPage());
+					.getCurrentPage());
 				assertEquals("The amount of total pages did not match the expected value. There are {" + totalTags + "} tags and {" + perPage
-						+ "} tags per page", totalPages, restResponse.getMetainfo().getPageCount());
+					+ "} tags per page", totalPages, restResponse.getMetainfo().getPageCount());
 				assertEquals("The total tag count does not match.", totalTags, restResponse.getMetainfo().getTotalCount());
 
 				allTags.addAll(restResponse.getData());
@@ -106,22 +114,22 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 			// Verify that the no_perm_tag is not part of the response
 			List<TagResponse> filteredUserList = allTags.parallelStream().filter(restTag -> restTag.getUuid().equals(noPermTagUUID)).collect(
-					Collectors.toList());
+				Collectors.toList());
 			assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
 			call(() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(-1, perPage)), BAD_REQUEST,
-					"error_page_parameter_must_be_positive", "-1");
+				"error_page_parameter_must_be_positive", "-1");
 
 			call(() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(0, perPage)), BAD_REQUEST,
-					"error_page_parameter_must_be_positive", "0");
+				"error_page_parameter_must_be_positive", "0");
 
 			call(() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(1, -1L)), BAD_REQUEST,
-					"error_pagesize_parameter", "-1");
+				"error_pagesize_parameter", "-1");
 
 			long currentPerPage = 25L;
 			totalPages = (int) Math.ceil(totalTags / (double) currentPerPage);
 			TagListResponse tagList = call(() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(4242,
-					currentPerPage)));
+				currentPerPage)));
 			assertEquals(0, tagList.getData().size());
 			assertEquals(4242, tagList.getMetainfo().getCurrentPage());
 			assertEquals(currentPerPage, tagList.getMetainfo().getPerPage().longValue());
@@ -160,7 +168,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			TagResponse response = call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), uuid, new RolePermissionParametersImpl()
-					.setRoleUuid(role().getUuid())));
+				.setRoleUuid(role().getUuid())));
 			assertThat(response.getRolePerms()).as("Role perms").hasPerm(CREATE, READ, UPDATE, DELETE);
 		}
 	}
@@ -179,12 +187,15 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			tx.success();
 		}
 
-		call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamilyUuid, uuid), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
+		call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamilyUuid, uuid), FORBIDDEN, "error_missing_perm", uuid,
+			READ_PERM.getRestPerm().getName());
 	}
 
 	@Test
 	@Override
 	public void testUpdate() throws Exception {
+		final String newName = "new Name";
+
 		Tag tag = tag("vehicle");
 		String tagUuid = tx(() -> tag.getUuid());
 
@@ -206,7 +217,6 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			assertEquals(tagName, restName);
 
 			// 2. Update the tag
-			final String newName = "new Name";
 			tagUpdateRequest.setName(newName);
 			assertEquals(newName, tagUpdateRequest.getName());
 
@@ -216,10 +226,20 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			tx.success();
 		}
 
+		expect(TAG_UPDATED).match(1, TagMeshEventModel.class, event -> {
+			assertThat(event).hasName(newName).hasUuid(tagUuid).hasTagFamily("basic", parentTagFamilyUuid);
+		});
+
 		TagResponse tag2 = call(() -> client().updateTag(PROJECT_NAME, parentTagFamilyUuid, tagUuid, tagUpdateRequest));
+
+		awaitEvents();
+		waitForSearchIdleEvent();
+
+		assertThat(trackingSearchProvider()).hasStore(Tag.composeIndexName(projectUuid()), Tag.composeDocumentId(tag2.getUuid()));
+		assertThat(trackingSearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid()), TagFamily.composeDocumentId(parentTagFamilyUuid));
+
 		try (Tx tx = tx()) {
 			assertThat(tag2).matches(tag);
-			assertThat(trackingSearchProvider()).hasStore(Tag.composeIndexName(project().getUuid()), Tag.composeDocumentId(tag2.getUuid()));
 			// Assert that all nodes which previously referenced the tag were updated in the index
 			String projectUuid = project().getUuid();
 			String branchUuid = project().getLatestBranch().getUuid();
@@ -227,14 +247,14 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 				String schemaContainerVersionUuid = node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid();
 				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
 					assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid,
-							schemaContainerVersionUuid, type), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
+						schemaContainerVersionUuid, type), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
 					assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid,
-							schemaContainerVersionUuid, type), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "de"));
+						schemaContainerVersionUuid, type), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "de"));
 				}
 			}
 			assertThat(trackingSearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid), TagFamily.composeDocumentId(parentTagFamily
-					.getUuid()));
-			assertThat(trackingSearchProvider()).hasEvents(2 + (nodes.size() * 4), 0, 0, 0);
+				.getUuid()));
+			assertThat(trackingSearchProvider()).hasEvents(2 + (nodes.size() * 4), 0, 0, 0, 0);
 
 			// 4. read the tag again and verify that it was changed
 			TagResponse reloadedTag = call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid));
@@ -295,7 +315,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			// Create an tag update request
 			TagUpdateRequest request = new TagUpdateRequest();
 			request.setName("new Name");
-			call(() -> client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, request), FORBIDDEN, "error_missing_perm", tagUuid, UPDATE_PERM.getRestPerm().getName());
+			call(() -> client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, request), FORBIDDEN, "error_missing_perm", tagUuid,
+				UPDATE_PERM.getRestPerm().getName());
 
 			// read the tag again and verify that it was not changed
 			TagResponse loadedTag = client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid).blockingGet();
@@ -307,29 +328,48 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		String projectUuid = db().tx(() -> project().getUuid());
-		String branchUuid = db().tx(() -> project().getLatestBranch().getUuid());
+		final String projectUuid = db().tx(() -> project().getUuid());
+		final String branchUuid = db().tx(() -> project().getLatestBranch().getUuid());
+		final Tag tag = tag("vehicle");
+		final TagFamily parentTagFamily = tagFamily("basic");
+		final String parentTagFamilyUuid = tx(() -> parentTagFamily.getUuid());
+		final String tagUuid = tx(() -> tag.getUuid());
+
+		expect(TAG_DELETED).match(1, TagMeshEventModel.class, event -> {
+			assertThat(event)
+				.hasName("Vehicle")
+				.hasUuid(tagUuid)
+				.hasTagFamily("basic", parentTagFamilyUuid);
+		}).one();
+
+		tx(() -> {
+			tag.getNodes(initialBranch()).forEach(n -> {
+				String uuid = n.getUuid();
+				expect(NODE_UNTAGGED).match(1, NodeTaggedEventModel.class, event -> {
+					assertEquals(uuid, event.getNode().getUuid());
+					assertEquals(tagUuid, event.getTag().getUuid());
+				});
+			});
+		});
+
+		List<? extends Node> nodes = tx(() -> tag.getNodes(project().getLatestBranch()).list());
+		call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid));
+
+		awaitEvents();
+		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
-			Tag tag = tag("vehicle");
-			TagFamily parentTagFamily = tagFamily("basic");
-
-			List<? extends Node> nodes = tag.getNodes(project().getLatestBranch()).list();
-
-			String uuid = tag.getUuid();
-			call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid));
-
-			assertThat(trackingSearchProvider()).hasDelete(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(uuid));
+			assertThat(trackingSearchProvider()).hasDelete(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(tagUuid));
 			// Assert that all nodes which previously referenced the tag were updated in the index
 			for (Node node : nodes) {
 				String schemaContainerVersionUuid = node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid();
 				assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid,
-						schemaContainerVersionUuid, ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
+					schemaContainerVersionUuid, ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
 			}
-			assertThat(trackingSearchProvider()).hasEvents(4, 1, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(4, 0, 1, 0, 0);
 
-			tag = boot().tagRoot().findByUuid(uuid);
-			assertNull("The tag should have been deleted", tag);
+			Tag reloadedTag = boot().tagRoot().findByUuid(tagUuid);
+			assertNull("The tag should have been deleted", reloadedTag);
 
 			Project project = boot().projectRoot().findByName(PROJECT_NAME);
 			assertNotNull(project);
@@ -349,7 +389,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			Tag tag = tag("vehicle");
 			uuid = tag.getUuid();
 			TagFamily parentTagFamily = tagFamily("basic");
-			call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid), FORBIDDEN, "error_missing_perm", uuid, DELETE_PERM.getRestPerm().getName());
+			call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid), FORBIDDEN, "error_missing_perm", uuid,
+				DELETE_PERM.getRestPerm().getName());
 		}
 
 		try (Tx tx = tx()) {
@@ -376,17 +417,28 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 	@Test
 	@Override
-	public void testCreate() {
+	public void testCreate() throws Exception {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
 		tagCreateRequest.setName("SomeName");
 		String parentTagFamilyUuid = db().tx(() -> tagFamily("colors").getUuid());
 		String projectUuid = db().tx(() -> project().getUuid());
 
-		trackingSearchProvider().clear().blockingAwait();
+		expect(TAG_CREATED).match(1, TagMeshEventModel.class, event -> {
+			assertThat(event)
+				.hasName("SomeName")
+				.uuidNotNull()
+				.hasTagFamily("colors", parentTagFamilyUuid);
+		});
+
 		TagResponse response = call(() -> client().createTag(PROJECT_NAME, parentTagFamilyUuid, tagCreateRequest));
 		assertEquals("SomeName", response.getName());
+
+		awaitEvents();
+		waitForSearchIdleEvent();
+
 		assertThat(trackingSearchProvider()).hasStore(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(response.getUuid()));
-		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid), TagFamily.composeDocumentId(parentTagFamilyUuid));
+		assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0, 0);
 		try (Tx tx = tx()) {
 			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.", meshRoot().getTagRoot().findByUuid(response.getUuid()));
 		}
@@ -408,18 +460,19 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			role().revokePermissions(tagFamily("colors"), CREATE_PERM);
 			tx.success();
 		}
-		call(() -> client().createTag(PROJECT_NAME, parentTagFamilyUuid, tagCreateRequest), FORBIDDEN, "error_missing_perm", tagRootUuid, CREATE_PERM.getRestPerm().getName());
+		call(() -> client().createTag(PROJECT_NAME, parentTagFamilyUuid, tagCreateRequest), FORBIDDEN, "error_missing_perm", tagRootUuid,
+			CREATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
 	@Override
 	public void testCreateWithUuid() throws Exception {
-		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
+		TagCreateRequest tagUpdateRequest = new TagCreateRequest();
 		tagUpdateRequest.setName("SomeName");
 		String parentTagFamilyUuid = tx(() -> tagFamily("colors").getUuid());
 		String uuid = UUIDUtil.randomUUID();
 
-		TagResponse response = call(() -> client().updateTag(PROJECT_NAME, parentTagFamilyUuid, uuid, tagUpdateRequest));
+		TagResponse response = call(() -> client().createTag(PROJECT_NAME, parentTagFamilyUuid, uuid, tagUpdateRequest));
 		assertThat(response).hasName("SomeName").hasUuid(uuid);
 	}
 
@@ -448,7 +501,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			tagFamilyName = tagFamily.getName();
 			// tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 			call(() -> client().createTag(PROJECT_NAME, parentTagFamily.getUuid(), tagCreateRequest), CONFLICT,
-					"tag_create_tag_with_same_name_already_exists", "red", tagFamilyName);
+				"tag_create_tag_with_same_name_already_exists", "red", tagFamilyName);
 		}
 	}
 
@@ -562,7 +615,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			tx.success();
 		}
 
-		call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamilyUuid, uuid), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
+		call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamilyUuid, uuid), FORBIDDEN, "error_missing_perm", uuid,
+			READ_PERM.getRestPerm().getName());
 
 	}
 

@@ -1,0 +1,30 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| cause
+| true
+| object
+| Some events will be caused by another action. This object contains information about the cause of the event.
+
+| group
+| true
+| object
+| Reference to the group.
+
+| origin
+| true
+| string
+| Name of the mesh node from which the event originates.
+
+| role
+| true
+| object
+| Reference to the role that was assigned/unassigned from/to the group.
+
+|======

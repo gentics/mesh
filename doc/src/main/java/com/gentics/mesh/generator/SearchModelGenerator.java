@@ -1,5 +1,6 @@
 package com.gentics.mesh.generator;
 
+import static com.gentics.mesh.dagger.SearchProviderType.TRACKING;
 import static com.gentics.mesh.example.ExampleUuids.UUID_1;
 import static com.gentics.mesh.mock.TestMocks.mockGroup;
 import static com.gentics.mesh.mock.TestMocks.mockMicroschemaContainer;
@@ -25,7 +26,6 @@ import org.mockito.Mockito;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -36,6 +36,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.DaggerMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -112,8 +113,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		System.out.println("Writing files to  {" + outputFolder.getAbsolutePath() + "}");
 		// outputDir.mkdirs();
 
-		System.setProperty("mesh.test", "true");
-		meshDagger = DaggerMeshComponent.builder().configuration(new MeshOptions()).build();
+		meshDagger = DaggerMeshComponent.builder().configuration(new MeshOptions()).searchProviderType(TRACKING).build();
 		provider = (TrackingSearchProvider) meshDagger.searchProvider();
 
 		try {
@@ -144,7 +144,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 		NodeIndexHandler nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
 		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), UUID_1, ContainerType.PUBLISHED).toCompletable()
-				.blockingAwait();
+			.blockingAwait();
 		writeStoreEvent("node.search");
 	}
 

@@ -22,20 +22,20 @@ import org.junit.Test;
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -43,7 +43,7 @@ import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.DeploymentOptions;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 	@Before
@@ -56,6 +56,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartBranchMigration() throws Throwable {
+		EventQueueBatch batch = EventQueueBatch.create();
 		Branch newBranch;
 		List<? extends Node> nodes;
 		List<? extends Node> published;
@@ -81,7 +82,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 		});
 
 		try (Tx tx = tx()) {
-			newBranch = project.getBranchRoot().create("newbranch", user());
+			newBranch = project.getBranchRoot().create("newbranch", user(), batch);
 			assertThat(newBranch.isMigrated()).as("Branch migration status").isEqualTo(false);
 			tx.success();
 		}
@@ -134,11 +135,8 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartAgain() throws Throwable {
-		Branch newBranch;
-		try (Tx tx = tx()) {
-			newBranch = project().getBranchRoot().create("newbranch", user());
-			tx.success();
-		}
+		EventQueueBatch batch = EventQueueBatch.create();
+		Branch newBranch = tx(() -> project().getBranchRoot().create("newbranch", user(), batch));
 		String jobUuidA = requestBranchMigration(newBranch);
 		triggerAndWaitForJob(jobUuidA, COMPLETED);
 
@@ -152,15 +150,10 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartOrder() throws Throwable {
-
-		Branch newBranch;
-		Branch newestBranch;
-		try (Tx tx = tx()) {
-			Project project = project();
-			newBranch = project.getBranchRoot().create("newbranch", user());
-			newestBranch = project.getBranchRoot().create("newestbranch", user());
-			tx.success();
-		}
+		Project project = project();
+		EventQueueBatch batch = EventQueueBatch.create();
+		Branch newBranch = tx(() -> project.getBranchRoot().create("newbranch", user(), batch));
+		Branch newestBranch = tx(() -> project.getBranchRoot().create("newestbranch", user(), batch));
 
 		try (Tx tx = tx()) {
 			triggerAndWaitForJob(requestBranchMigration(newestBranch), FAILED);
@@ -206,10 +199,10 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testBigData() throws Throwable {
-
+		EventQueueBatch batch = EventQueueBatch.create();
 		MetricRegistry metrics = new MetricRegistry();
 		Meter createdNode = metrics.meter("Create Node");
-		Timer migrationTimer = metrics.timer("Migration");
+		metrics.timer("Migration");
 		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
 		createNode(baseNodeUuid);
 
@@ -238,7 +231,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 				future.get();
 			}
 
-			newBranch = project().getBranchRoot().create("newbranch", user());
+			newBranch = project().getBranchRoot().create("newbranch", user(), batch);
 			tx.success();
 		}
 

@@ -4,16 +4,17 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 
-import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = true, startServer = true, testSize = FULL)
+import io.vertx.core.json.JsonObject;
+@MeshTestSetting(elasticsearch = CONTAINER, startServer = true, testSize = FULL)
 public class TagRawSearchEndpointTest extends AbstractMeshTest {
 
 	@Test
@@ -21,6 +22,8 @@ public class TagRawSearchEndpointTest extends AbstractMeshTest {
 
 		String tagName = "newtag";
 		TagResponse tag = createTag(PROJECT_NAME, tx(() -> tagFamily("colors").getUuid()), tagName);
+
+		waitForSearchIdleEvent();
 
 		String query = getSimpleTermQuery("name.raw", tagName);
 		JsonObject response = new JsonObject(call(() -> client().searchTagsRaw(query)).toString());

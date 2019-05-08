@@ -1,13 +1,9 @@
 package com.gentics.mesh.rest.client.impl;
 
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
-import io.reactivex.Flowable;
 import okhttp3.Response;
 
 import java.io.InputStream;
-import java.util.function.Supplier;
-
-import static com.gentics.mesh.rest.client.impl.Util.lazily;
 
 public class OkHttpBinaryResponse implements MeshBinaryResponse {
 	private final Response response;

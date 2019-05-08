@@ -1,15 +1,16 @@
 package com.gentics.mesh.search;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Set;
-
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
-
+import com.gentics.mesh.core.data.search.request.Bulkable;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * A search provider is a service this enables storage and retrieval of indexed documents.
@@ -100,11 +101,29 @@ public interface SearchProvider {
 
 	/**
 	 * Process the bulk request.
+	 *
+	 * @param actions
+	 * @return
+	 */
+	Completable processBulk(String actions);
+
+	/**
+	 * Process the bulk request.
 	 * 
 	 * @param entries
 	 * @return
 	 */
-	Completable processBulk(List<? extends BulkEntry> entries);
+	@Deprecated
+	Completable processBulkOld(List<? extends BulkEntry> entries);
+
+
+	/**
+	 * Process the bulk request.
+	 *
+	 * @param entries
+	 * @return
+	 */
+	Completable processBulk(Collection<? extends Bulkable> entries);
 
 	/**
 	 * Get the given document.
@@ -231,7 +250,7 @@ public interface SearchProvider {
 	 * 
 	 * @return
 	 */
-	boolean hasIngestPipelinePlugin();
+	Single<Boolean> hasIngestPipelinePlugin();
 
 	/**
 	 * Return the specific prefix for this installation. Indices and pipelines will make use of this prefix so that multiple mesh instances can use the same

@@ -48,6 +48,8 @@ NOTE: It is not possible to search for specific individual versions. Instead onl
 NOTE: The stored documents within the Elasticsearch indices do not contain all properties which are otherwise available via REST. 
 Only directly accessible values which have minimal dependencies to other elements are stored in order to keep the update effort manageable.
 
+NOTE: Unlike Mesh, Elasticsearch does not allow an unbounded page size in the search result. The default value for the `perPage` parameter is `10`.
+
 == Configuration
 
 The Elasticsearch connection can be configured within the `mesh.yml` configuration file.
@@ -105,6 +107,11 @@ We currently run and test against Elasticsearch version 6.1.2. Other versions ha
 == REST endpoints
 
 Search requests are handled by the ```/api/v1/search``` or ```/api/v1/:projectName/search``` endpoints.
+
+If you want the search endpoints to wait until Elasticsearch has processed all pending changes to the index, you can set the query parameter `?wait=true`.
+The default value can be configured in the link:{{< relref "administration-guide.asciidoc" >}}#_search_options[search options].
+
+NOTE: If no query parameter and no configuration was provided, the wait parameter defaults to `true` to not break any existing implementations. In the future this will change to `false`.
 
 == Examples / Queries
 

@@ -23,13 +23,14 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = true)
 public class JobEndpointTest extends AbstractMeshTest {
 
 	@Test
@@ -207,7 +208,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		// Change the job so that it will no longer fail
 		tx(()-> {
-			Branch branch = project().getBranchRoot().create("testBranch", user(), null, true, initialBranch());
+			Branch branch = project().getBranchRoot().create("testBranch", user(), null, true, initialBranch(), EventQueueBatch.create());
 			job.setBranch(branch);
 		});
 

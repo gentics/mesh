@@ -1,7 +1,10 @@
 package com.gentics.mesh.core.binary;
 
+import java.util.function.Consumer;
+
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 
+import io.reactivex.Maybe;
 import io.vertx.ext.web.FileUpload;
 
 /**
@@ -19,11 +22,11 @@ public interface BinaryDataProcessor {
 	boolean accepts(String contentType);
 
 	/**
-	 * Process the binary data and store the found meta data in the binary field.
+	 * Process the binary data and return a consumer for the binary field.
 	 * 
 	 * @param upload
-	 * @param field
+	 * @return Modifier for the binary graph field.
 	 */
-	void process(FileUpload upload, BinaryGraphField field);
+	Maybe<Consumer<BinaryGraphField>> process(FileUpload upload);
 
 }

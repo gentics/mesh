@@ -27,7 +27,7 @@ import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.exceptions.CompositeException;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class JobTest extends AbstractMeshTest {
 
 	@Test

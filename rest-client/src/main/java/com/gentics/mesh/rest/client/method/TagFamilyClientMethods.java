@@ -67,6 +67,18 @@ public interface TagFamilyClientMethods {
 	MeshRequest<TagFamilyResponse> updateTagFamily(String projectName, String tagFamilyUuid, TagFamilyUpdateRequest request);
 
 	/**
+	 * Create the tag family with the given uuid.
+	 * 
+	 * @param projectName
+	 * @param tagFamilyUuid
+	 *            Uuid of the tag family
+	 * @param request
+	 *            Create request
+	 * @return
+	 */
+	MeshRequest<TagFamilyResponse> createTagFamily(String projectName, String tagFamilyUuid, TagFamilyCreateRequest request);
+
+	/**
 	 * Load multiple tag families.
 	 * 
 	 * @param projectName

@@ -35,6 +35,9 @@
             "version" : {
               "type" : "string"
             },
+            "versionUuid" : {
+              "type" : "string"
+            },
             "uuid" : {
               "type" : "string"
             },

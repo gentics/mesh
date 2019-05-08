@@ -69,7 +69,7 @@ public class MonitoringServerEndpointTest extends AbstractMeshTest {
 		MeshServerInfoModel info = call(() -> monClient().versions());
 		assertEquals(Mesh.getPlainVersion(), info.getMeshVersion());
 		assertEquals("orientdb", info.getDatabaseVendor());
-		assertEquals("dummy", info.getSearchVendor());
+		assertEquals("dev-null", info.getSearchVendor());
 		assertEquals(VersionCommand.getVersion(), info.getVertxVersion());
 		assertEquals(Mesh.mesh().getOptions().getNodeName(), info.getMeshNodeName());
 		assertEquals("The database version did not match.", OConstants.getVersion(), info.getDatabaseVersion());

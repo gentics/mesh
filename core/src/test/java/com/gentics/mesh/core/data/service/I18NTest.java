@@ -13,7 +13,7 @@ import com.gentics.mesh.core.data.i18n.I18NUtil;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class I18NTest extends AbstractMeshTest {
 
 	@Test

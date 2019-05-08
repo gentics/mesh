@@ -1,13 +1,7 @@
 package com.gentics.mesh.search;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.search.IndexHandler;
+import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
@@ -17,6 +11,11 @@ import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Central location for all search index handlers.
@@ -62,17 +61,17 @@ public class IndexHandlerRegistry {
 	 * @return
 	 */
 	public List<IndexHandler<?>> getHandlers() {
-		List<IndexHandler<?>> allIndexHandlers = new ArrayList<>();
-		allIndexHandlers.add(nodeIndexHandler);
-		allIndexHandlers.add(userIndexHandler);
-		allIndexHandlers.add(groupIndexHandler);
-		allIndexHandlers.add(roleIndexHandler);
-		allIndexHandlers.add(projectIndexHandler);
-		allIndexHandlers.add(tagFamilyIndexHandler);
-		allIndexHandlers.add(tagIndexHandler);
-		allIndexHandlers.add(schemaContainerIndexHandler);
-		allIndexHandlers.add(microschemaContainerIndexHandler);
-		return allIndexHandlers;
+		return Arrays.asList(
+			nodeIndexHandler,
+			userIndexHandler,
+			groupIndexHandler,
+			roleIndexHandler,
+			projectIndexHandler,
+			tagFamilyIndexHandler,
+			tagIndexHandler,
+			schemaContainerIndexHandler,
+			microschemaContainerIndexHandler
+		);
 	}
 
 	/**
@@ -81,7 +80,7 @@ public class IndexHandlerRegistry {
 	 * @param element
 	 * @return
 	 */
-	public IndexHandler<?> getForClass(IndexableElement element) {
+	public IndexHandler<?> getForClass(MeshElement element) {
 		Class<?> clazzOfElement = element.getClass();
 		return getForClass(clazzOfElement);
 	}

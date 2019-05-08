@@ -1,5 +1,51 @@
 package com.gentics.mesh.core.user;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.User.composeIndexName;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.validateDeletion;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
+import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
+import static io.vertx.core.http.HttpHeaders.HOST;
+import static io.vertx.core.http.HttpHeaders.LOCATION;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Ignore;
+import org.junit.Test;
+
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.Group;
@@ -11,6 +57,7 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
@@ -33,48 +80,8 @@ import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 import io.vertx.core.json.JsonObject;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Ignore;
-import org.junit.Test;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.User.composeIndexName;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.common.Permission.CREATE;
-import static com.gentics.mesh.core.rest.common.Permission.DELETE;
-import static com.gentics.mesh.core.rest.common.Permission.READ;
-import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.ClientHelper.validateDeletion;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
-import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
-import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
-import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
-import static io.vertx.core.http.HttpHeaders.HOST;
-import static io.vertx.core.http.HttpHeaders.LOCATION;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = PROJECT_AND_NODE, startServer = true)
 public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@Test
@@ -510,28 +517,37 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testUpdate() throws Exception {
 		String oldName = tx(() -> user().getUsername());
+		String newName = "dummy_user_changed";
 		String uuid = tx(() -> user().getUuid());
 
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setEmailAddress("t.stark@stark-industries.com");
 		updateRequest.setFirstname("Tony Awesome");
 		updateRequest.setLastname("Epic Stark");
-		updateRequest.setUsername("dummy_user_changed");
+		updateRequest.setUsername(newName);
+
+		expect(USER_UPDATED).match(1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName(newName).hasUuid(uuid);
+		}).total(1);
+
 		UserResponse restUser = call(() -> client().updateUser(uuid, updateRequest));
 
+		awaitEvents();
+		waitForSearchIdleEvent();
+
 		assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), uuid);
-		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		trackingSearchProvider().clear().blockingAwait();
 
 		try (Tx tx = tx()) {
 			assertThat(restUser).matches(updateRequest);
 			assertNull("The user node should have been updated and thus no user should be found.", boot().userRoot().findByUsername(oldName));
-			User reloadedUser = boot().userRoot().findByUsername("dummy_user_changed");
+			User reloadedUser = boot().userRoot().findByUsername(newName);
 			assertNotNull(reloadedUser);
 			assertEquals("Epic Stark", reloadedUser.getLastname());
 			assertEquals("Tony Awesome", reloadedUser.getFirstname());
 			assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
-			assertEquals("dummy_user_changed", reloadedUser.getUsername());
+			assertEquals(newName, reloadedUser.getUsername());
 		}
 	}
 
@@ -627,6 +643,27 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		updateRequest.setNodeReference(userNodeReference);
 
 		call(() -> client().updateUser(userUuid, updateRequest), BAD_REQUEST, "user_incomplete_node_reference");
+	}
+
+	@Test
+	public void testCreateUser() throws Exception {
+		UserCreateRequest newUser = new UserCreateRequest();
+		newUser.setUsername("new_user");
+		newUser.setGroupUuid(groupUuid());
+		newUser.setPassword("test1234");
+
+		expect(USER_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName("new_user").uuidNotNull();
+		});
+
+		UserResponse response = call(() -> client().createUser(newUser));
+
+		awaitEvents();
+
+		assertEquals("new_user", response.getUsername());
+		assertNotNull(response.getUuid());
+		assertThat(response.getGroups()).hasSize(1);
+		assertEquals(groupUuid(), response.getGroups().get(0).getUuid());
 	}
 
 	@Test
@@ -1202,7 +1239,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			trackingSearchProvider().clear().blockingAwait();
+			waitForSearchIdleEvent();
+			trackingSearchProvider().reset();
 			UserCreateRequest newUser = new UserCreateRequest();
 			newUser.setEmailAddress("n.user@spam.gentics.com");
 			newUser.setFirstname("Joe");
@@ -1212,14 +1250,23 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			newUser.setGroupUuid(group().getUuid());
 
 			UserResponse restUser = call(() -> client().createUser(newUser));
+			waitForSearchIdleEvent();
+
 			assertThat(trackingSearchProvider()).hasStore(composeIndexName(), restUser.getUuid());
-			assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0);
-			trackingSearchProvider().clear();
+			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
+			trackingSearchProvider().reset();
 
 			assertTrue(restUser.getEnabled());
 			String uuid = restUser.getUuid();
 
-			client().deleteUser(uuid).blockingAwait();
+			expect(USER_DELETED).match(1, MeshElementEventModelImpl.class, event -> {
+				assertThat(event).hasName("new_user").hasUuid(uuid);
+			});
+
+			call(() -> client().deleteUser(uuid));
+
+			awaitEvents();
+			waitForSearchIdleEvent();
 
 			try (Tx tx2 = tx()) {
 				User loadedUser = boot().userRoot().findByUuid(uuid);
@@ -1230,7 +1277,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			call(() -> client().findUserByUuid(uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);
 
 			assertThat(trackingSearchProvider()).hasDelete(composeIndexName(), uuid);
-			assertThat(trackingSearchProvider()).hasEvents(0, 1, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(0, 0, 1, 0, 0);
 		}
 
 	}

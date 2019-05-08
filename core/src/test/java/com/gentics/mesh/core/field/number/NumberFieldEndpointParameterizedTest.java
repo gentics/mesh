@@ -23,7 +23,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
 @RunWith(Parameterized.class)
-@MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class NumberFieldEndpointParameterizedTest extends AbstractNumberFieldEndpointTest {
 
 	@Parameterized.Parameters(name = "{index}: {1}")

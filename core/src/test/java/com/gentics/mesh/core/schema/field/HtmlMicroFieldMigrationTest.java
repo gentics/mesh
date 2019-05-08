@@ -1,14 +1,16 @@
 package com.gentics.mesh.core.schema.field;
 
 import org.junit.Ignore;
+
 import org.junit.Test;
 
 import com.gentics.mesh.core.schema.field.AbstractFieldMigrationTest.MicroschemaTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 
 @MicroschemaTest
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = false)
 public class HtmlMicroFieldMigrationTest extends HtmlFieldMigrationTest {
 
 	@Override

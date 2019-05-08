@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
@@ -15,7 +13,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -30,12 +27,13 @@ import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 
 /**
@@ -51,15 +49,15 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 
 	@Override
 	public Project getProject() {
-		return in(HAS_BRANCH_ROOT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
+		return in(HAS_BRANCH_ROOT).nextOrDefaultExplicit(ProjectImpl.class, null);
 	}
 
 	@Override
-	public Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch) {
-		return create(name, creator, uuid, setLatest, baseBranch, true);
+	public Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch, EventQueueBatch batch) {
+		return create(name, creator, uuid, setLatest, baseBranch, true, batch);
 	}
 
-	private Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch, boolean assignSchemas) {
+	private Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch, boolean assignSchemas, EventQueueBatch batch) {
 		Branch branch = getGraph().addFramedVertex(BranchImpl.class);
 		if (uuid != null) {
 			branch.setUuid(uuid);
@@ -87,7 +85,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		creator.addCRUDPermissionOnRole(getProject(), UPDATE_PERM, branch);
 
 		if (assignSchemas) {
-			assignSchemas(creator, baseBranch, branch, false);
+			assignSchemas(creator, baseBranch, branch, false, batch);
 		}
 
 		return branch;
@@ -109,7 +107,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	}
 
 	@Override
-	public Branch create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
+	public Branch create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		Database db = MeshInternal.get().database();
 
 		BranchCreateRequest request = ac.fromJson(BranchCreateRequest.class);
@@ -144,7 +142,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 			baseBranch = getLatestBranch();
 		}
 
-		Branch branch = create(request.getName(), requestUser, uuid, request.isLatest(), baseBranch, false);
+		Branch branch = create(request.getName(), requestUser, uuid, request.isLatest(), baseBranch, false, batch);
 		if (!isEmpty(request.getHostname())) {
 			branch.setHostname(request.getHostname());
 		}
@@ -156,12 +154,9 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		}
 		User creator = branch.getCreator();
 		MeshInternal.get().boot().jobRoot().enqueueBranchMigration(creator, branch);
-		assignSchemas(creator, baseBranch, branch, true);
-		// A new branch was created - We also need to create new indices for the nodes within the branch
-		for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
-			batch.addNodeIndex(project, branch, version, DRAFT);
-			batch.addNodeIndex(project, branch, version, PUBLISHED);
-		}
+		assignSchemas(creator, baseBranch, branch, true, batch);
+
+		batch.add(branch.onCreated());
 
 		return branch;
 	}
@@ -173,29 +168,30 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	 * @param creator The creator of the branch
 	 * @param baseBranch The branch which the new branch is based on
 	 * @param newBranch The newly created branch
+	 * @param batch
 	 */
-	private void assignSchemas(User creator, Branch baseBranch, Branch newBranch, boolean migrate) {
+	private void assignSchemas(User creator, Branch baseBranch, Branch newBranch, boolean migrate, EventQueueBatch batch) {
 		// Assign the same schema versions as the base branch, so that a migration can be started
 		if (baseBranch != null && migrate) {
 			for (SchemaContainerVersion schemaContainerVersion : baseBranch.findActiveSchemaVersions()) {
-				newBranch.assignSchemaVersion(creator, schemaContainerVersion);
+				newBranch.assignSchemaVersion(creator, schemaContainerVersion, batch);
 			}
 		}
 
 		// assign the newest schema versions of all project schemas to the branch
 		for (SchemaContainer schemaContainer : getProject().getSchemaContainerRoot().findAll()) {
-			newBranch.assignSchemaVersion(newBranch.getCreator(), schemaContainer.getLatestVersion());
+			newBranch.assignSchemaVersion(newBranch.getCreator(), schemaContainer.getLatestVersion(), batch);
 		}
 
 		// ... same for microschemas
 		if (baseBranch != null && migrate) {
 			for (MicroschemaContainerVersion microschemaContainerVersion : baseBranch.findActiveMicroschemaVersions()) {
-				newBranch.assignMicroschemaVersion(creator, microschemaContainerVersion);
+				newBranch.assignMicroschemaVersion(creator, microschemaContainerVersion, batch);
 			}
 		}
 
 		for (MicroschemaContainer microschemaContainer : getProject().getMicroschemaContainerRoot().findAll()) {
-			newBranch.assignMicroschemaVersion(newBranch.getCreator(), microschemaContainer.getLatestVersion());
+			newBranch.assignMicroschemaVersion(newBranch.getCreator(), microschemaContainer.getLatestVersion(), batch);
 		}
 	}
 

@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.verticle.job;
 
-import static com.gentics.mesh.MeshEvent.JOB_WORKER_ADDRESS;
+import static com.gentics.mesh.core.rest.MeshEvent.JOB_WORKER_ADDRESS;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

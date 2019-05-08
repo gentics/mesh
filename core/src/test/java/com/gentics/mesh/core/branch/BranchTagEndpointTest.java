@@ -3,13 +3,17 @@ package com.gentics.mesh.core.branch;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_TAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UNTAGGED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -18,7 +22,10 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.event.branch.BranchTaggedEventModel;
+import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -27,8 +34,9 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class BranchTagEndpointTest extends AbstractMeshTest {
+
 	@Test
 	public void testAddTagToBranch() throws Exception {
 		Tag tag = tag("red");
@@ -40,7 +48,25 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			assertFalse(branch.getTags().contains(tag));
 		}
 
+		expect(BRANCH_TAGGED).match(1, BranchTaggedEventModel.class, event -> {
+			BranchReference branchRef = event.getBranch();
+			assertNotNull(branchRef);
+			assertEquals(PROJECT_NAME, branchRef.getName());
+			assertEquals(initialBranchUuid(), branchRef.getUuid());
+
+			TagReference tagRef = event.getTag();
+			assertNotNull(tagRef);
+			assertEquals("The tag name in the event did not match.", "red", tagRef.getName());
+			assertEquals("The tag uuid in the event did not match.", tagUuid, tagRef.getUuid());
+
+			ProjectReference projectRef = event.getProject();
+			assertNotNull(projectRef);
+			assertEquals(PROJECT_NAME, projectRef.getName());
+			assertEquals(projectUuid(), projectRef.getUuid());
+		});
+
 		BranchResponse branchResponse = call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, tagUuid));
+		awaitEvents();
 
 		try (Tx tx = tx()) {
 			assertThat(branchResponse).contains(tag);
@@ -61,7 +87,8 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, tagUuid), FORBIDDEN, "error_missing_perm", branchUuid, UPDATE_PERM.getRestPerm().getName());
+		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, tagUuid), FORBIDDEN, "error_missing_perm", branchUuid,
+			UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
 			assertFalse(branch.getTags().contains(tag));
@@ -81,7 +108,8 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, tagUuid), FORBIDDEN, "error_missing_perm", tagUuid, READ_PERM.getRestPerm().getName());
+		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, tagUuid), FORBIDDEN, "error_missing_perm", tagUuid,
+			READ_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
 			assertFalse(branch.getTags().contains(tag));
@@ -116,10 +144,30 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			assertTrue(branch.getTags().contains(tag));
 		}
 
+		expect(BRANCH_UNTAGGED).match(1, BranchTaggedEventModel.class, event -> {
+			BranchReference branchRef = event.getBranch();
+			assertNotNull(branchRef);
+			assertEquals(PROJECT_NAME, branchRef.getName());
+			assertEquals(initialBranchUuid(), branchRef.getUuid());
+
+			TagReference tagRef = event.getTag();
+			assertNotNull(tagRef);
+			assertEquals("The tag name in the event did not match.", "red", tagRef.getName());
+			assertEquals("The tag uuid in the event did not match.", tagUuid, tagRef.getUuid());
+
+			ProjectReference projectRef = event.getProject();
+			assertNotNull(projectRef);
+			assertEquals(PROJECT_NAME, projectRef.getName());
+			assertEquals(projectUuid(), projectRef.getUuid());
+		});
 		call(() -> client().removeTagFromBranch(PROJECT_NAME, branchUuid, tagUuid));
+		// Test idempotency
+		call(() -> client().removeTagFromBranch(PROJECT_NAME, branchUuid, tagUuid));
+		awaitEvents();
 		try (Tx tx = tx()) {
 			assertFalse(branch.getTags().contains(tag));
 		}
+
 	}
 
 	@Test
@@ -136,7 +184,8 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, tagUuid), FORBIDDEN, "error_missing_perm", branchUuid, UPDATE_PERM.getRestPerm().getName());
+		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, tagUuid), FORBIDDEN, "error_missing_perm", branchUuid,
+			UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
 			assertTrue(branch.getTags().contains(tag));
@@ -157,7 +206,8 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, tagUuid), FORBIDDEN, "error_missing_perm", tagUuid, READ_PERM.getRestPerm().getName());
+		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, tagUuid), FORBIDDEN, "error_missing_perm", tagUuid,
+			READ_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
 			assertTrue(branch.getTags().contains(tag));
@@ -234,7 +284,8 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		call(() -> client().findTagsForBranch(PROJECT_NAME, branchUuid), FORBIDDEN, "error_missing_perm", branchUuid, READ_PERM.getRestPerm().getName());
+		call(() -> client().findTagsForBranch(PROJECT_NAME, branchUuid), FORBIDDEN, "error_missing_perm", branchUuid,
+			READ_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -246,7 +297,8 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 	public void testReadNoTags() throws Exception {
 		Branch branch = tx(() -> project().getLatestBranch());
 		String branchUuid = tx(() -> branch.getUuid());
-		BranchResponse response = call(() -> client().findBranchByUuid(PROJECT_NAME, branchUuid, new GenericParametersImpl().setFields("uuid", "name")));
+		BranchResponse response = call(
+			() -> client().findBranchByUuid(PROJECT_NAME, branchUuid, new GenericParametersImpl().setFields("uuid", "name")));
 		assertThat(response.getTags()).as("Tags").isNull();
 	}
 
@@ -254,7 +306,8 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 	public void testReadWithTags() throws Exception {
 		Branch branch = tx(() -> project().getLatestBranch());
 		String branchUuid = tx(() -> branch.getUuid());
-		BranchResponse response = call(() -> client().findBranchByUuid(PROJECT_NAME, branchUuid, new GenericParametersImpl().setFields("uuid", "name", "tags")));
+		BranchResponse response = call(
+			() -> client().findBranchByUuid(PROJECT_NAME, branchUuid, new GenericParametersImpl().setFields("uuid", "name", "tags")));
 		assertThat(response.getTags()).as("Tags").isNotNull();
 	}
 
@@ -267,7 +320,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		String branchUuid = tx(() -> branch.getUuid());
 
 		TagListResponse tagListResponse = call(
-				() -> client().updateTagsForBranch(PROJECT_NAME, branchUuid, new TagListUpdateRequest().setTags(Arrays.asList(ref(red), ref(car)))));
+			() -> client().updateTagsForBranch(PROJECT_NAME, branchUuid, new TagListUpdateRequest().setTags(Arrays.asList(ref(red), ref(car)))));
 		assertThat(tagListResponse).containsExactly("red", "Car");
 
 		try (Tx tx = tx()) {
@@ -275,7 +328,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		}
 
 		tagListResponse = call(
-				() -> client().updateTagsForBranch(PROJECT_NAME, branchUuid, new TagListUpdateRequest().setTags(Arrays.asList(ref(blue), ref(car)))));
+			() -> client().updateTagsForBranch(PROJECT_NAME, branchUuid, new TagListUpdateRequest().setTags(Arrays.asList(ref(blue), ref(car)))));
 		assertThat(tagListResponse).containsExactly("blue", "Car");
 
 		try (Tx tx = tx()) {
@@ -298,15 +351,16 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		}
 
 		TagListResponse tagListResponse = call(
-				() -> client().updateTagsForBranch(PROJECT_NAME, branchUuid, new TagListUpdateRequest().setTags(Arrays.asList(ref(red), ref(car)))));
+			() -> client().updateTagsForBranch(PROJECT_NAME, branchUuid, new TagListUpdateRequest().setTags(Arrays.asList(ref(red), ref(car)))));
 		assertThat(tagListResponse).containsExactly("red", "Car");
 
 		try (Tx tx = tx()) {
 			assertThat(branch).isOnlyTagged("red", "Car");
 		}
 
-		call(() -> client().updateTagsForBranch(PROJECT_NAME, branchUuid, new TagListUpdateRequest().setTags(Arrays.asList(ref(blue), ref(car)))), FORBIDDEN,
-				"error_missing_perm", blueUuid, READ_PERM.getRestPerm().getName());
+		call(() -> client().updateTagsForBranch(PROJECT_NAME, branchUuid, new TagListUpdateRequest().setTags(Arrays.asList(ref(blue), ref(car)))),
+			FORBIDDEN,
+			"error_missing_perm", blueUuid, READ_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
 			assertThat(branch).isOnlyTagged("red", "Car");
@@ -322,7 +376,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		String branchUuid = tx(() -> branch.getUuid());
 
 		TagListResponse tagListResponse = call(
-				() -> client().updateTagsForBranch(PROJECT_NAME, branchUuid, new TagListUpdateRequest().setTags(Arrays.asList(ref(red), ref(car)))));
+			() -> client().updateTagsForBranch(PROJECT_NAME, branchUuid, new TagListUpdateRequest().setTags(Arrays.asList(ref(red), ref(car)))));
 		assertThat(tagListResponse).containsExactly("red", "Car");
 
 		try (Tx tx = tx()) {
@@ -334,8 +388,9 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		call(() -> client().updateTagsForBranch(PROJECT_NAME, branchUuid, new TagListUpdateRequest().setTags(Arrays.asList(ref(blue), ref(car)))), FORBIDDEN,
-				"error_missing_perm", branchUuid, UPDATE_PERM.getRestPerm().getName());
+		call(() -> client().updateTagsForBranch(PROJECT_NAME, branchUuid, new TagListUpdateRequest().setTags(Arrays.asList(ref(blue), ref(car)))),
+			FORBIDDEN,
+			"error_missing_perm", branchUuid, UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
 			assertThat(branch).isOnlyTagged("red", "Car");
@@ -347,8 +402,9 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		Tag red = tag("red");
 		Tag car = tag("car");
 
-		call(() -> client().updateTagsForBranch(PROJECT_NAME, "bogus", new TagListUpdateRequest().setTags(Arrays.asList(ref(red), ref(car)))), NOT_FOUND,
-				"object_not_found_for_uuid", "bogus");
+		call(() -> client().updateTagsForBranch(PROJECT_NAME, "bogus", new TagListUpdateRequest().setTags(Arrays.asList(ref(red), ref(car)))),
+			NOT_FOUND,
+			"object_not_found_for_uuid", "bogus");
 	}
 
 	@Test
@@ -357,14 +413,18 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		Branch branch = tx(() -> project().getLatestBranch());
 		String branchUuid = tx(() -> branch.getUuid());
 
-		call(() -> client().updateTagsForBranch(PROJECT_NAME, branchUuid, new TagListUpdateRequest().setTags(Arrays.asList(ref(red), ref("bogus", "colors")))),
-				NOT_FOUND, "tag_not_found", "bogus");
+		call(
+			() -> client().updateTagsForBranch(PROJECT_NAME, branchUuid,
+				new TagListUpdateRequest().setTags(Arrays.asList(ref(red), ref("bogus", "colors")))),
+			NOT_FOUND, "tag_not_found", "bogus");
 
 	}
 
 	/**
 	 * Create a tag reference to the tag (using the uuid)
-	 * @param tag tag
+	 * 
+	 * @param tag
+	 *            tag
 	 * @return tag reference
 	 */
 	protected TagReference ref(Tag tag) {
@@ -373,8 +433,11 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 	/**
 	 * Create a tag reference to the tagfamily and tag uuid
-	 * @param uuid tag uuid
-	 * @param tagFamilyName name of the tag family
+	 * 
+	 * @param uuid
+	 *            tag uuid
+	 * @param tagFamilyName
+	 *            name of the tag family
 	 * @return tag reference
 	 */
 	protected TagReference ref(String uuid, String tagFamilyName) {

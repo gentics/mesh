@@ -4,10 +4,10 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.junit.Assert.assertNotNull;
 
-import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -15,7 +15,8 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = true, startServer = true, testSize = FULL)
+import io.vertx.core.json.JsonObject;
+@MeshTestSetting(elasticsearch = CONTAINER, startServer = true, testSize = FULL)
 public class ProjectTagFamilyRawSearchEndpointTest extends AbstractMeshTest {
 
 	@Test
@@ -27,6 +28,8 @@ public class ProjectTagFamilyRawSearchEndpointTest extends AbstractMeshTest {
 		String tagFamilyName = "newtagfamily";
 		createTagFamily(project.getName(), tagFamilyName);
 		TagFamilyResponse tagFamily2 = createTagFamily(PROJECT_NAME, tagFamilyName);
+
+		waitForSearchIdleEvent();
 
 		String query = getSimpleTermQuery("name.raw", tagFamilyName);
 		JsonObject response = new JsonObject(call(() -> client().searchTagFamiliesRaw(PROJECT_NAME, query)).toString());
