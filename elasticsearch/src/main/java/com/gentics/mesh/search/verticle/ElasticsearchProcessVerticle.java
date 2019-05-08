@@ -41,6 +41,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.IS_SEARCH_IDLE;
 import static com.gentics.mesh.core.rest.MeshEvent.SEARCH_FLUSH_REQUEST;
 import static com.gentics.mesh.core.rest.MeshEvent.SEARCH_REFRESH_REQUEST;
 import static com.gentics.mesh.search.verticle.eventhandler.RxUtil.retryWithDelay;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.logElasticSearchError;
 
 /**
  * <p>Listens to events that require a change in elasticsearch.</p>
@@ -247,7 +248,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 				log.trace("Sending request to Elasticsearch:\n" + request);
 			})
 			.doOnComplete(() -> log.trace("Request completed:\n" + request))
-			.doOnError(err -> log.error("Error after sending request to Elasticsearch", err))
+			.doOnError(err -> logElasticSearchError(err, () -> log.error("Error after sending request to Elasticsearch", err)))
 			.andThen(Flowable.just(request))
 			.onErrorResumeNext(this::syncIndices)
 			.onErrorResumeNext(ignoreElasticsearchErrors(request))
@@ -305,11 +306,11 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 					}
 					idleChecker.addAndGetRequests(request.requestCount());
 				})
-				.doOnError(err -> log.error("Error while transforming event", err))
+				.retryWhen(retryWithDelay(Duration.ofMillis(options.getRetryInterval())))
 				.doOnComplete(() -> log.trace("Done transforming event {}. Transformations pending: {}", messageEvent.event, idleChecker.getTransformations()))
 				.doOnTerminate(idleChecker::decrementAndGetTransformations);
 		} catch (Exception e) {
-			// TODO Error handling
+			// For safety to keep the verticle always running
 			e.printStackTrace();
 			return Flowable.empty();
 		}

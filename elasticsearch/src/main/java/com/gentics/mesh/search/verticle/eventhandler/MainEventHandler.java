@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static com.gentics.mesh.search.verticle.eventhandler.EventHandler.forEvent;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.logElasticSearchError;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toMultiMap;
 
 /**
@@ -145,10 +146,9 @@ public class MainEventHandler implements EventHandler {
 	public Flowable<? extends SearchRequest> handle(MessageEvent messageEvent) {
 		return Flowable.fromIterable(handlers.get(messageEvent.event))
 			.flatMap(handler -> handler.handle(messageEvent), 1)
-			.onErrorResumeNext(err -> {
+			.doOnError(err -> {
 				String body = messageEvent.message == null ? null : messageEvent.message.toJson();
-				log.error("Error while handling event {} with body {}", messageEvent.event, body, err);
-				return Flowable.empty();
+				logElasticSearchError(err, () -> log.error("Error while handling event {} with body {}", messageEvent.event, body, err));
 			});
 	}
 

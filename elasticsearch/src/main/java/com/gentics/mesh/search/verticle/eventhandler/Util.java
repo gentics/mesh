@@ -8,6 +8,7 @@ import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -138,5 +139,19 @@ public final class Util {
 	public static Flowable<SearchRequest> toRequests(Map<String, IndexInfo> map) {
 		return Flowable.fromIterable(map.values())
 			.map(CreateIndexRequest::new);
+	}
+
+	/**
+	 * Logs known elasticsearch errors in a more user friendly way. If the exception is unknown, the {@code otherwise}
+	 * argument will be executed.
+	 * @param error
+	 * @param otherwise
+	 */
+	public static void logElasticSearchError(Throwable error, Runnable otherwise) {
+		if (error instanceof ConnectException) {
+			log.error("Could not connect to Elasticsearch. Maybe it is still starting?");
+		} else {
+			otherwise.run();
+		}
 	}
 }
