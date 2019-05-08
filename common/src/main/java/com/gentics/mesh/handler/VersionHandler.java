@@ -1,5 +1,6 @@
 package com.gentics.mesh.handler;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
@@ -69,8 +70,18 @@ public class VersionHandler implements Handler<RoutingContext> {
 	 * Example: ["/api/v1", "/api/v2"]
 	 * @return
 	 */
-	public Stream<String> generateVersionMountpoints() {
+	public static Stream<String> generateVersionMountpoints() {
 		return IntStream.rangeClosed(1, CURRENT_API_VERSION)
 			.mapToObj(VersionHandler::baseRoute);
+	}
+
+	/**
+	 * Return the basepath for the given action context.
+	 * 
+	 * @param ac
+	 * @return API Basepath
+	 */
+	public static String baseRoute(InternalActionContext ac) {
+		return baseRoute(ac.getApiVersion());
 	}
 }

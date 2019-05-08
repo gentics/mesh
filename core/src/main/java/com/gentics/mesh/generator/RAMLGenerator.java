@@ -66,6 +66,8 @@ public class RAMLGenerator extends AbstractGenerator {
 
 	private static final Logger log = LoggerFactory.getLogger(RAMLGenerator.class);
 
+	private static final String API_VERSION = "2";
+
 	private Raml raml = new Raml();
 
 	/**
@@ -107,7 +109,7 @@ public class RAMLGenerator extends AbstractGenerator {
 		log.info("Starting RAML generation...");
 		raml.setTitle("Gentics Mesh REST API");
 		raml.setVersion(MeshVersion.getBuildInfo().getVersion());
-		raml.setBaseUri("http://localhost:8080/api/v1");
+		raml.setBaseUri("http://localhost:8080/api/v" + API_VERSION);
 		raml.getProtocols().add(Protocol.HTTP);
 		raml.getProtocols().add(Protocol.HTTPS);
 		raml.setMediaType("application/json");
@@ -147,9 +149,9 @@ public class RAMLGenerator extends AbstractGenerator {
 		}
 		for (InternalEndpointRoute endpoint : verticle.getEndpoints().stream().sorted().collect(Collectors.toList())) {
 
-			String fullPath = "api/v1" + basePath + "/" + verticle.getBasePath() + endpoint.getRamlPath();
+			String fullPath = "api/v" + API_VERSION + basePath + "/" + verticle.getBasePath() + endpoint.getRamlPath();
 			if (isEmpty(verticle.getBasePath())) {
-				fullPath = "api/v1" + basePath + endpoint.getRamlPath();
+				fullPath = "api/v" + API_VERSION + basePath + endpoint.getRamlPath();
 			}
 			Action action = new Action();
 			action.setIs(Arrays.asList(endpoint.getTraits()));

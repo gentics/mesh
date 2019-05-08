@@ -17,7 +17,7 @@ import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
 /**
- * Endpoint for /api/v1/PROJECTNAME/microschemas
+ * Endpoint for :apiBase:/PROJECTNAME/microschemas
  */
 public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 

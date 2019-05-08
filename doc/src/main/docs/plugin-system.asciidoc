@@ -2,10 +2,7 @@
 title: Plugin System
 ---
 
-:icons: font
-:source-highlighter: prettify
-:toc:
-
+include::content/docs/variables.adoc-include[]
 
 The Gentics Mesh plugin system allows you to write and deploy custom plugins which can enrich the existing REST API.
 
@@ -54,23 +51,23 @@ Any plugin `jar` file which was found in the configured `plugins` folder will au
 
 ==== Deployment via REST API
 
-Plugins can be managed via the `/api/v1/admin/plugins` endpoint. It is possible to deploy, undeploy and read plugin information.
+Plugins can be managed via the `{apiLatest}/admin/plugins` endpoint. It is possible to deploy, undeploy and read plugin information.
 
-Plugin jar files which have been copied to the configured `plugins` folder can be deployed via the `POST /api/v1/admin/plugins` endpoint.
-
-[source,json]
-----
-include::content/docs/api/request/api/v1/admin/plugins/request-body.json[]
-----
-
-Any deployed plugin will get a deployment UUID and can be loaded via the `GET /api/v1/admin/plugins/:uuid`.
+Plugin jar files which have been copied to the configured `plugins` folder can be deployed via the `POST {apiLatest}/admin/plugins` endpoint.
 
 [source,json]
 ----
-include::content/docs/api/response/api/v1/admin/plugins/\{uuid\}/200/example.json[]
+include::content/docs/api/request{apiLatest}/admin/plugins/request-body.json[]
 ----
 
-You can undeploy a plugin via the `DELETE /api/v1/admin/plugins/:uuid` endpoint.
+Any deployed plugin will get a deployment UUID and can be loaded via the `GET {apiLatest}/admin/plugins/:uuid`.
+
+[source,json]
+----
+include::content/docs/api/response{apiLatest}/admin/plugins/\{uuid\}/200/example.json[]
+----
+
+You can undeploy a plugin via the `DELETE {apiLatest}/admin/plugins/:uuid` endpoint.
 
 
 ==== Programmatically deployment
@@ -147,15 +144,18 @@ link:https://vertx.io/docs/vertx-web/java/#_basic_vert_x_web_concepts[Vert.x rou
 
 There are two routers to which new endpoints can be added.
 
-* The globalRouter can be used to add endpoints to URLs like ```/api/v1/plugins/helloworld/```.
+* The globalRouter can be used to add endpoints to URLs like ```{apiLatest}/plugins/helloworld/```.
 
-* The projectRouter on the other hand can be used to add project specific endpoints like ```/api/v1/your-project/plugins/helloworld/```.
+* The projectRouter on the other hand can be used to add project specific endpoints like ```{apiLatest}/your-project/plugins/helloworld/```.
 
 NOTE: The registerEndpoints method will be invoked multiple times in order to register the routes on all Gentics Mesh REST verticles which will internally process the requests.
 
 Full sources:
 
-```java
+
+.HelloWorldPlugin.java
+[source,java,subs=attributes]
+----
 package com.gentics.mesh.plugin;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -195,13 +195,13 @@ public class HelloWorldPlugin extends AbstractPluginVerticle {
 		log.info("Registering routes for {" + getName() + "}");
 
 		// Route which demonstrates that the API can be directly extended
-		// Path: /api/v1/plugins/helloworld/hello
+		// Path: {apiLatest}/plugins/helloworld/hello
 		globalRouter.route("/hello").handler(rc -> {
 			rc.response().end("world");
 		});
 
 		// Route which demonstrates that plugins can also have project specific routes.
-		// Path: /api/v1/:projectName/plugins/helloworld/hello
+		// Path: {apiLatest}/:projectName/plugins/helloworld/hello
 		// It is possible to access the project information via the context project() method.
 		projectRouter.route("/hello").handler(rc -> {
 			PluginContext context = wrap(rc);
@@ -209,7 +209,7 @@ public class HelloWorldPlugin extends AbstractPluginVerticle {
 		});
 
 		// Route which will use the admin client to load the previously created project and return it.
-		// Path: /api/v1/plugins/helloworld/project
+		// Path: {apiLatest}/plugins/helloworld/project
 		globalRouter.route("/project").handler(rc -> {
 			PluginContext context = wrap(rc);
 			adminClient().findProjectByName(PROJECT_NAME).toSingle().subscribe(project -> {
@@ -218,7 +218,7 @@ public class HelloWorldPlugin extends AbstractPluginVerticle {
 		});
 		
 		// Route to serve static contents from the webroot resources folder of the plugin.
-		// Path: /api/v1/plugins/helloworld/static
+		// Path: {apiLatest}/plugins/helloworld/static
 		globalRouter.route("/static/*").handler(staticHandler);
 
 	}
@@ -237,7 +237,7 @@ public class HelloWorldPlugin extends AbstractPluginVerticle {
 	}
 
 }
-```
+----
 
 == Contributing
 

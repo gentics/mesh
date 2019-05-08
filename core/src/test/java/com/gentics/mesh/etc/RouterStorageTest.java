@@ -46,7 +46,7 @@ public class RouterStorageTest {
 
 	private VersionHandler mockVersionhandler() {
 		VersionHandler versionHandler = mock(VersionHandler.class);
-		when(versionHandler.generateVersionMountpoints()).then(ignore -> Stream.of(
+		when(VersionHandler.generateVersionMountpoints()).then(ignore -> Stream.of(
 			"/api/v1",
 			"/api/v2"
 		));

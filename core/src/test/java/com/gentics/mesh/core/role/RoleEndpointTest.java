@@ -158,7 +158,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Ignore("We can't test this using the rest client")
 	public void testCreateRoleWithBogusJson() throws Exception {
 		// String requestJson = "bogus text";
-		// String response = request(info, POST, "/api/v1/roles/", 400, "Bad Request", requestJson);
+		// String response = request(info, POST, CURRENT_API_BASE_PATH + "/roles/", 400, "Bad Request", requestJson);
 		// expectMessageResponse("error_parse_request_json_error", response);
 	}
 

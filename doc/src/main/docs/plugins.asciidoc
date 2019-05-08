@@ -2,9 +2,7 @@
 title: Plugins
 ---
 
-:icons: font
-:source-highlighter: prettify
-:toc:
+include::content/docs/variables.adoc-include[]
 
 == Free Plugins
 

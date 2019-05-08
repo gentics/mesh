@@ -2,9 +2,7 @@
 title: Deployment
 ---
 
-:icons: font
-:source-highlighter: prettify
-:toc:
+include::content/docs/variables.adoc-include[]
 
 Gentics Mesh can be deployed in various ways. This page contains various information and suggestions on different deployment platforms.
 

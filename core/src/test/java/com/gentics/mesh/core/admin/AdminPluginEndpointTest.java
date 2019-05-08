@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.admin;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.PROJECT;
@@ -26,6 +27,7 @@ import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.plugin.ClonePlugin;
 import com.gentics.mesh.plugin.ManifestInjectorPlugin;
@@ -117,8 +119,8 @@ public class AdminPluginEndpointTest extends AbstractMeshTest {
 		PluginResponse deployment = call(() -> client().deployPlugin(request));
 		assertTrue(UUIDUtil.isUUID(deployment.getUuid()));
 
-		assertEquals("world", httpGetNow("/api/v1/plugins/" + API_NAME + "/hello"));
-		assertEquals("world-project", httpGetNow("/api/v1/" + PROJECT_NAME + "/plugins/" + API_NAME + "/hello"));
+		assertEquals("world", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + API_NAME + "/hello"));
+		assertEquals("world-project", httpGetNow(CURRENT_API_BASE_PATH + "/" + PROJECT_NAME + "/plugins/" + API_NAME + "/hello"));
 
 		PluginListResponse list = call(() -> client().findPlugins());
 		assertEquals(1, list.getMetainfo().getTotalCount());
@@ -128,7 +130,7 @@ public class AdminPluginEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().undeployPlugin(deployment.getUuid()));
 
-		assertEquals(404, httpGet("/api/v1/plugins/" + API_NAME + "/hello").execute().code());
+		assertEquals(404, httpGet(CURRENT_API_BASE_PATH + "/plugins/" + API_NAME + "/hello").execute().code());
 
 	}
 
@@ -178,10 +180,10 @@ public class AdminPluginEndpointTest extends AbstractMeshTest {
 		request.setName(DEPLOYMENT2_NAME);
 		call(() -> client().deployPlugin(request));
 
-		assertEquals("world", httpGetNow("/api/v1/plugins/basic/hello"));
-		assertEquals("world2", httpGetNow("/api/v1/plugins/basic2/hello"));
-		assertEquals("content", httpGetNow("/api/v1/plugins/basic/static/file.txt"));
-		assertEquals("content2", httpGetNow("/api/v1/plugins/basic2/static/file.txt"));
+		assertEquals("world", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/basic/hello"));
+		assertEquals("world2", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/basic2/hello"));
+		assertEquals("content", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/basic/static/file.txt"));
+		assertEquals("content2", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/basic2/static/file.txt"));
 	}
 
 	@Test
@@ -242,7 +244,7 @@ public class AdminPluginEndpointTest extends AbstractMeshTest {
 		assertEquals(10, result.getMetainfo().getPageCount());
 		assertEquals(100, result.getMetainfo().getTotalCount());
 
-		assertEquals("world", httpGetNow("/api/v1/plugins/clone100/hello"));
+		assertEquals("world", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/clone100/hello"));
 
 	}
 

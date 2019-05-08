@@ -60,6 +60,7 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
+import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -349,7 +350,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return "/api/v1/projects/" + getUuid();
+		return VersionHandler.baseRoute(ac) + "/projects/" + getUuid();
 	}
 
 	@Override

@@ -20,6 +20,7 @@ import org.junit.runners.model.Statement;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.etc.config.OAuth2Options;
+import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestContext;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -74,7 +75,7 @@ public class OAuth2KeycloakTest extends AbstractMeshTest {
 		assertNotNull(tx(() -> boot().roleRoot().findByName("role2")));
 
 		// Invoke request without token
-		JsonObject meJson = new JsonObject(get("/api/v1/auth/me"));
+		JsonObject meJson = new JsonObject(get(VersionHandler.CURRENT_API_BASE_PATH + "/auth/me"));
 		assertEquals("anonymous", meJson.getString("username"));
 
 		client().setLogin("admin", "admin");

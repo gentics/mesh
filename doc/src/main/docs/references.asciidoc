@@ -2,9 +2,7 @@
 title: References
 ---
 
-:icons: font
-:source-highlighter: prettify
-:toc:
+include::content/docs/variables.adoc-include[]
 
 == REST API
 
@@ -51,37 +49,37 @@ We have set up a Gentics Mesh instance for demo purposes, that you can play with
 
 .List all projects. Well, it's just our demo project.
 [TIP]
-https://demo.getmesh.io/api/v1/projects
+https://demo.getmesh.io{apiLatest}/projects
 
 .Want to fetch all content items including media? With pretty URLs? Here you go
 [TIP]
-https://demo.getmesh.io/api/v1/demo/nodes/?resolveLinks=short
+https://demo.getmesh.io{apiLatest}/demo/nodes/?resolveLinks=short
 
 .OK, let's load a single content item.
 [TIP]
-https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0
+https://demo.getmesh.io{apiLatest}/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0
 
 .And now forget about UUIDs and do it with its corresponding WebRoot path
 [TIP]
-https://demo.getmesh.io/api/v1/demo/webroot/automobiles/ford-gt
+https://demo.getmesh.io{apiLatest}/demo/webroot/automobiles/ford-gt
 
 That's easy. Well, what about images?
 
 .That's the image node
 [TIP]
-https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6
+https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6
 
 .And that's the actual image
 [TIP]
-https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image
+https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image
 
 .Let's do some resizing
 [TIP]
-https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?width=400
+https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?width=400
 
 .And now again with a readable WebRoot path
 [TIP]
-https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?width=400
+https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?width=400
 
 TIP: The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
@@ -155,6 +153,6 @@ Here is a quick guide to import the API into link:https://www.getpostman.com/[Po
 
 * Once the Postman app is started go to "Import" > "Import from Link"
 * Input the URL to the `/raml` endpoint of your Mesh instance.
-* You can also try https://demo.getmesh.io/api/v1/raml to get it form our demo
+* You can also try https://demo.getmesh.io{apiLatest}/raml to get it form our demo
 
 TIP: Make use of the params and workspace parameters to maximize your productiviy. Check out the link:https://www.getpostman.com/docs/v6/postman/sending_api_requests/requests#url[Postman documentation about URL setup] for more.

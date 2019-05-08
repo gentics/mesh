@@ -60,6 +60,7 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.NodeParameters;
@@ -637,7 +638,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return "/api/v1/users/" + getUuid();
+		return VersionHandler.baseRoute(ac) + "/users/" + getUuid();
 	}
 
 	@Override

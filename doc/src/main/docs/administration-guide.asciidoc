@@ -2,10 +2,7 @@
 title: Administration Guide
 ---
 
-:icons: font
-:source-highlighter: prettify
-:toc:
-
+include::content/docs/variables.adoc-include[]
 
 == Software Stack
 
@@ -20,7 +17,7 @@ title: Administration Guide
 | https://google.github.io/dagger/[Dagger 2]                   | Dependency Injection | 2.11.x
 |======
 
-TIP: You can find the components' current version numbers by querying the Gentics Mesh demo instance https://demo.getmesh.io/api/v1/ or your local instance http://localhost:8080/api/v1/.
+TIP: You can find the components' current version numbers by querying the Gentics Mesh demo instance https://demo.getmesh.io{apiLatest}/ or your local instance http://localhost:8080{apiLatest}/.
 
 == Run with Docker
 
@@ -315,16 +312,16 @@ The following numbers serve the purpose to roughly estimate the memory requireme
 There are currently three components which can be included in a backup:
 
 * *Graph Database* - The graph database contains the main content of Gentics Mesh.
-    The DB can be backed up on demand via `/api/v1/admin/graphdb/backup` endpoint or via the OrientDB backup job using `automatic-backup.json`. 
+    The DB can be backed up on demand via `{apiLatest}/admin/graphdb/backup` endpoint or via the OrientDB backup job using `automatic-backup.json`. 
     This will automatically create a full backup. Note that both backup processes will block the application. 
     The graph database backup process will write a backup file to the configured backup location (see <<Storage Location>>).
 
 * *Binary files* - Binaries are currently stored in the filesystem and need to be backed up separately data/binaryFiles)
 
 * *Elasticsearch Index* - Optionally you can also backup the Elasticsearch index. 
-    The index can also be recreated anytime using the `POST /api/v1/search/sync` endpoint.
+    The index can also be recreated anytime using the `POST {apiLatest}/search/sync` endpoint.
 
-The ```POST /api/v1/admin/graphdb/restore``` endpoint can be used to restore created backups. 
+The ```POST {apiLatest}/admin/graphdb/restore``` endpoint can be used to restore created backups. 
 The endpoint will utilize the latest backup found in the backup directory.
 
 NOTE: Invoking the `backup`/`restore` endpoints will block all execution and request processing.
@@ -337,7 +334,7 @@ Take a look at our link:https://github.com/gentics/mesh-compose/tree/clustering#
 
 == Import & Export
 
-The `POST /api/v1/admin/graphdb/export` and `POST /api/v1/admin/graphdb/import` endpoints can be used to generate Graph Database export files which are gzipped json files. A large database can be exported and reimported again to reduce the sparse file size.
+The `POST {apiLatest}/admin/graphdb/export` and `POST {apiLatest}/admin/graphdb/import` endpoints can be used to generate Graph Database export files which are gzipped json files. A large database can be exported and reimported again to reduce the sparse file size.
 
 == link:{{< relref "changelog.asciidoc" >}}[Changelog]
 
@@ -350,7 +347,7 @@ A process is invoked which will check whether any automatic changes need to be a
 
 Downgrading is possible but not recommended. You can however downgrade your Gentics Mesh instance 
 if the database revision hash of the current database matches up with the revision which is required 
-by the version which is being started. You can check your current database revision via the `/api/v1` endpoint.
+by the version which is being started. You can check your current database revision via the `{apiLatest}` endpoint.
 
 [[database-revisions]]
 === Database Revisions
@@ -363,22 +360,22 @@ include::content/docs/examples/tables/mesh-db-revs.adoc-include[]
 
 == Database Consistency
 
-It is possible to verify the database integrity via the `GET /api/v1/admin/consistency/check` endpoint.
+It is possible to verify the database integrity via the `GET {apiLatest}/admin/consistency/check` endpoint.
 
 The response contains information about the found inconsistencies and whether they have a repair action.
 
 [source,json]
 ----
-include::content/docs/api/response/api/v1/admin/consistency/check/200/example.json[]
+include::content/docs/api/response{apiLatest}/admin/consistency/check/200/example.json[]
 ----
 
-The `POST /api/v1/admin/consistency/repair` endpoint can be used to invoke a check and repair of repairable inconsistencies.
+The `POST {apiLatest}/admin/consistency/repair` endpoint can be used to invoke a check and repair of repairable inconsistencies.
 
 The `repaired` property will be set to true if the inconsistency could be fixed.
 
 [source,json]
 ----
-include::content/docs/api/response/api/v1/admin/consistency/repair/200/example.json[]
+include::content/docs/api/response{apiLatest}/admin/consistency/repair/200/example.json[]
 ----
 
 == Filesystem support

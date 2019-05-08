@@ -1,0 +1,172 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:impl:SchemaResponse",
+  "properties" : {
+    "uuid" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Uuid of the element"
+    },
+    "creator" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReference",
+      "required" : true,
+      "description" : "User reference of the creator of the element.",
+      "properties" : {
+        "firstName" : {
+          "type" : "string",
+          "description" : "Firstname of the user"
+        },
+        "lastName" : {
+          "type" : "string",
+          "description" : "Lastname of the user"
+        },
+        "uuid" : {
+          "type" : "string",
+          "required" : true,
+          "description" : "Uuid of the user"
+        }
+      }
+    },
+    "created" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "ISO8601 formatted created date string."
+    },
+    "editor" : {
+      "type" : "object",
+      "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReference",
+      "description" : "User reference of the editor of the element."
+    },
+    "edited" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "ISO8601 formatted edited date string."
+    },
+    "displayField" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Name of the display field."
+    },
+    "segmentField" : {
+      "type" : "string",
+      "description" : "Name of the segment field. This field is used to construct the webroot path to the node."
+    },
+    "urlFields" : {
+      "type" : "array",
+      "description" : "Names of the fields which provide a compete url to the node. This property can be used to define custom urls for certain nodes. The webroot API will try to locate the node via it's segment field and via the specified url fields.",
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "container" : {
+      "type" : "boolean",
+      "required" : true,
+      "description" : "Flag which indicates whether nodes which use this schema store additional child nodes."
+    },
+    "version" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Version of the schema."
+    },
+    "description" : {
+      "type" : "string",
+      "description" : "Description of the schema."
+    },
+    "name" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Name of the schema."
+    },
+    "elasticsearch" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:vertx:core:json:JsonObject",
+      "description" : "Additional search index configuration. This can be used to setup custom analyzers and filters.",
+      "properties" : {
+        "map" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "type" : "any"
+          }
+        },
+        "empty" : {
+          "type" : "boolean"
+        }
+      }
+    },
+    "fields" : {
+      "type" : "array",
+      "required" : true,
+      "description" : "List of schema fields",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
+        "properties" : {
+          "required" : {
+            "type" : "boolean"
+          },
+          "label" : {
+            "type" : "string",
+            "description" : "Label of the field."
+          },
+          "elasticsearch" : {
+            "type" : "object",
+            "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+          },
+          "name" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Name of the field."
+          },
+          "type" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Type of the field."
+          }
+        }
+      }
+    },
+    "permissions" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfo",
+      "required" : true,
+      "properties" : {
+        "create" : {
+          "type" : "boolean",
+          "required" : true,
+          "description" : "Flag which indicates whether the create permission is granted."
+        },
+        "read" : {
+          "type" : "boolean",
+          "required" : true,
+          "description" : "Flag which indicates whether the read permission is granted."
+        },
+        "update" : {
+          "type" : "boolean",
+          "required" : true,
+          "description" : "Flag which indicates whether the update permission is granted."
+        },
+        "delete" : {
+          "type" : "boolean",
+          "required" : true,
+          "description" : "Flag which indicates whether the delete permission is granted."
+        },
+        "publish" : {
+          "type" : "boolean",
+          "required" : true,
+          "description" : "Flag which indicates whether the publish permission is granted."
+        },
+        "readPublished" : {
+          "type" : "boolean",
+          "required" : true,
+          "description" : "Flag which indicates whether the read published permission is granted."
+        }
+      }
+    },
+    "rolePerms" : {
+      "type" : "object",
+      "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfo",
+      "description" : "Permission information for provided role. This property will only be populated if a role query parameter has been specified."
+    }
+  }
+}

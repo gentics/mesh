@@ -2,10 +2,7 @@
 title: Elasticsearch
 ---
 
-:icons: font
-:source-highlighter: prettify
-:toc:
-
+include::content/docs/variables.adoc-include[]
 
 Elasticsearch is used in order to provide the main search functionality within Gentics Mesh.
 
@@ -104,14 +101,14 @@ We currently run and test against Elasticsearch version 6.1.2. Other versions ha
 [[endpoints]]
 == REST endpoints
 
-Search requests are handled by the ```/api/v1/search``` or ```/api/v1/:projectName/search``` endpoints.
+Search requests are handled by the ```{apiLatest}/search``` or ```{apiLatest}/:projectName/search``` endpoints.
 
 == Examples / Queries
 
 [[users]]
 === Users
 
-Endpoint: ```/api/v1/search/users```
+Endpoint: ```{apiLatest}/search/users```
 
 [source,json]
 ----
@@ -129,7 +126,7 @@ Endpoint: ```/api/v1/search/users```
 [[groups]]
 === Groups
 
-Endpoint: ```/api/v1/search/groups```
+Endpoint: ```{apiLatest}/search/groups```
 
 [source,json]
 ----
@@ -147,16 +144,16 @@ Endpoint: ```/api/v1/search/groups```
 [[roles]]
 === Roles
 
-Endpoint: ```/api/v1/search/roles```
+Endpoint: ```{apiLatest}/search/roles```
 
 [[nodes]]
 === Nodes
 
-Endpoint: ```/api/v1/search/nodes```
+Endpoint: ```{apiLatest}/search/nodes```
 
 ==== Search nodes by schema name
 
-Listed below is an example search query which can be posted to ```/api/v1/search/nodes``` in order to find all nodes across all projects which were created using the content schema.
+Listed below is an example search query which can be posted to ```{apiLatest}/search/nodes``` in order to find all nodes across all projects which were created using the content schema.
 The found nodes will be sorted ascending by creator.
 
 [source,json]
@@ -302,12 +299,12 @@ GPS information from images will automatically be extracted and added to the sea
 [[projects]]
 === Projects
 
-Endpoint: ```/api/v1/search/projects```
+Endpoint: ```{apiLatest}/search/projects```
 
 [[tags]]
 === Tags
 
-Endpoint: ```/api/v1/search/tags```
+Endpoint: ```{apiLatest}/search/tags```
 
 [source,json]
 ----
@@ -332,7 +329,7 @@ Endpoint: ```/api/v1/search/tags```
 [[tagfamilies]]
 === Tag Families
 
-Endpoint: ```/api/v1/search/tagFamilies```
+Endpoint: ```{apiLatest}/search/tagFamilies```
 
 
 [source,json]
@@ -354,12 +351,12 @@ Endpoint: ```/api/v1/search/tagFamilies```
 [[schemas]]
 === Schemas
 
-Endpoint: ```/api/v1/search/schemas```
+Endpoint: ```{apiLatest}/search/schemas```
 
 [[microschemas]]
 === Microschemas
 
-Endpoint: ```/api/v1/search/microschemas```
+Endpoint: ```{apiLatest}/search/microschemas```
 
 === Paging
 
@@ -367,7 +364,7 @@ The paging query parameters are `perPage` and `page` . It is important to note t
 
 === Raw search
 
-Additionally it is also possible to use the ```/api/v1/rawSearch``` or ```/api/v1/:projectName/rawSearch``` endpoints.
+Additionally it is also possible to use the ```{apiLatest}/rawSearch``` or ```{apiLatest}/:projectName/rawSearch``` endpoints.
 
 These endpoints will accept the same query but return a Elasticsearch multi search response instead of the typical Gentics Mesh list response.
 This is useful if you want to use for example the Elasticsearch highlighing and aggregation features.
@@ -375,11 +372,11 @@ The endpoint will automatically select the needed indices and modify the query i
 
 ==== Index Synchronization
 
-The ```POST /api/v1/search/sync``` endpoint can be used to invoke a manual sync of the search index.
+The ```POST {apiLatest}/search/sync``` endpoint can be used to invoke a manual sync of the search index.
 
 NOTE: The index sync operation will automatically be invoked when Mesh is being started and a unclean shutdown has been detected.
 
-You can also recreate all indices if needed via the ```POST /api/v1/search/clear``` endpoint.
+You can also recreate all indices if needed via the ```POST {apiLatest}/search/clear``` endpoint.
 
 NOTE: This operation will remove all indices which have been created by Mesh and rebuild them one at a time.
 

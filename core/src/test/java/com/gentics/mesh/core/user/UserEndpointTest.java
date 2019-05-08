@@ -12,6 +12,7 @@ import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -41,7 +42,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -98,7 +98,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testReadByUUIDRaw() throws IOException {
 		String uuid = userUuid();
-		JsonObject json = httpGetNowJson("/api/v1/users/" + uuid, client().getAuthentication().getToken(),
+		JsonObject json = httpGetNowJson(CURRENT_API_BASE_PATH + "/users/" + uuid, client().getAuthentication().getToken(),
 			new GenericParametersImpl().setFields("uuid"));
 		assertEquals(uuid, json.getString("uuid"));
 		assertFalse(json.containsKey("lastname"));
@@ -1190,7 +1190,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// String requestJson = "bogus text";
 		// Future<UserResponse> future =
 		// getClient().createUser(userCreateRequest)
-		// String response = request(info, HttpMethod.POST, "/api/v1/users/",
+		// String response = request(info, HttpMethod.POST, CURRENT_API_BASE_PATH + "/users/",
 		// 400, "Bad Request", requestJson);
 		// expectMessageResponse("error_parse_request_json_error", response);
 	}
@@ -1317,7 +1317,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Ignore("Not yet implemented")
 	public void testDeleteOwnUser() {
 
-		// String response = request(info, HttpMethod.DELETE, "/api/v1/users/" +
+		// String response = request(info, HttpMethod.DELETE, CURRENT_API_BASE_PATH + "/users/" +
 		// user.getUuid(), 403, "Forbidden");
 	}
 
@@ -1335,7 +1335,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getStatusCode());
 			String location = response.getHeader(LOCATION.toString()).orElse(null);
-			assertEquals("Location header value did not match", "http://localhost:" + port() + "/api/v1/users/" + user.getUuid(), location);
+			assertEquals("Location header value did not match", "http://localhost:" + port() + CURRENT_API_BASE_PATH + "/users/" + user.getUuid(), location);
 		}
 	}
 
@@ -1355,7 +1355,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getStatusCode());
 			String location = response.getHeader(LOCATION.toString()).orElse(null);
-			assertEquals("Location header value did not match", "http://jotschi.de:" + port() + "/api/v1/users/" + user.getUuid(), location);
+			assertEquals("Location header value did not match", "http://jotschi.de:" + port() + CURRENT_API_BASE_PATH + "/users/" + user.getUuid(), location);
 		}
 	}
 

@@ -105,6 +105,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldMap;
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.DeleteParameters;
@@ -2027,7 +2028,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return "/api/v1/" + encodeSegment(getProject().getName()) + "/nodes/" + getUuid();
+		return VersionHandler.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/nodes/" + getUuid();
 	}
 
 	@Override

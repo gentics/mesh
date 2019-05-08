@@ -56,6 +56,7 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.util.Tuple;
 
 public class NodeExamples extends AbstractExamples {
@@ -71,7 +72,7 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.setEdited(createNewTimestamp());
 		nodeResponse.setCreator(createUserReference());
 		nodeResponse.getTags().add(new TagReference().setName("red").setUuid(TAG_RED_UUID).setTagFamily("colors"));
-		nodeResponse.setPath("/api/v1/yourProject/webroot/Images");
+		nodeResponse.setPath(VersionHandler.CURRENT_API_BASE_PATH + "/yourProject/webroot/Images");
 		Map<String, PublishStatusModel> languageInfo = new HashMap<>();
 
 		languageInfo.put("de", new PublishStatusModel().setVersion("1.0").setPublished(true).setPublishDate(createOldTimestamp()).setPublisher(
@@ -81,8 +82,8 @@ public class NodeExamples extends AbstractExamples {
 
 		nodeResponse.setAvailableLanguages(languageInfo);
 		HashMap<String, String> languagePaths = new HashMap<>();
-		languagePaths.put("en", "/api/v1/yourProject/webroot/Images");
-		languagePaths.put("de", "/api/v1/yourProject/webroot/Bilder");
+		languagePaths.put("en", VersionHandler.CURRENT_API_BASE_PATH + "/yourProject/webroot/Images");
+		languagePaths.put("de", VersionHandler.CURRENT_API_BASE_PATH + "/yourProject/webroot/Bilder");
 		nodeResponse.setLanguagePaths(languagePaths);
 		nodeResponse.getChildrenInfo().put("blogpost", new NodeChildrenInfo().setCount(1).setSchemaUuid(UUID_2));
 		nodeResponse.getChildrenInfo().put("folder", new NodeChildrenInfo().setCount(5).setSchemaUuid(UUID_3));

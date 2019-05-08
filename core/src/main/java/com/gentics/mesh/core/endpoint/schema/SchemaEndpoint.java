@@ -23,7 +23,7 @@ import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 /**
- * Verticle for /api/v1/schemas endpoint
+ * Verticle for /api/v2/schemas endpoint
  */
 public class SchemaEndpoint extends AbstractInternalEndpoint {
 

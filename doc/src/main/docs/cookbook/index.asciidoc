@@ -2,9 +2,7 @@
 title: Gentics Mesh Cookbook
 ---
 
-:icons: font
-:source-highlighter: prettify
-:toc:
+include::content/docs/variables.adoc-include[]
 
 == Introduction
 
@@ -14,9 +12,9 @@ This document aims to provide you with suggestions and hints on how to deal with
 
 Handling contents is fairly easy. You can either identify and load content using the UUIDs or a regular web path. 
 
-By Path: https://demo.getmesh.io/api/v1/demo/webroot/yachts/indian-empress
+By Path: https://demo.getmesh.io{apiLatest}/demo/webroot/yachts/indian-empress
 
-By Uuid: https://demo.getmesh.io/api/v1/demo/nodes/079ae5d5467447b99ae5d5467447b934
+By Uuid: https://demo.getmesh.io{apiLatest}/demo/nodes/079ae5d5467447b99ae5d5467447b934
 
 You can either place the path or uuid to your content in a fragment `/demo#category/079ae5d5467447b99ae5d5467447b934` or in the regular web path `/demo/category/079ae5d5467447b99ae5d5467447b934`. Most modern single page application frameworks like angular or react support both variations.
 
@@ -26,14 +24,14 @@ If you choose to use a server side webframework like link:https://laravel.com/[L
 
 Images can be loaded similar to regular contents. It is possible to load them using the path or the uuid:
 
-TIP: By Path: https://demo.getmesh.io//api/v1/demo/webroot/images/ford-gt.jpg?w=500
+TIP: By Path: https://demo.getmesh.io/{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500
 
-image::https://demo.getmesh.io//api/v1/demo/webroot/images/ford-gt.jpg?w=500[Image By Path]
+image::https://demo.getmesh.io/{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500[Image By Path]
 
 
-TIP: By Uuid: https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=500
+TIP: By Uuid: https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=500
 
-image::https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=500[Image by Uuid]
+image::https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=500[Image by Uuid]
 
 == Placeholders
 
@@ -43,12 +41,12 @@ NOTE: You can use the `dominantColor`, `width` and `height` properties of the im
 
 You can use the focal point feature to mark the point of interest in your images. That information can be used to generate different size sets of your images. Different image sizes may be required by your responsive design. The focal point will be used by Gentics Mesh to crop the image in the desired way.
 
-image::https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=600&h=300&crop=fp&fpdebug=true[Image with FP]
+image::https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=600&h=300&crop=fp&fpdebug=true[Image with FP]
 
-image::https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=200&h=200&crop=fp&fpdebug=true[Image with FP]
+image::https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=200&h=200&crop=fp&fpdebug=true[Image with FP]
 
 
-image::https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=100&h=300&crop=fp&fpdebug=true[Image with FP]
+image::https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=100&h=300&crop=fp&fpdebug=true[Image with FP]
 
 == Binaries
 

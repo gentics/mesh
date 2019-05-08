@@ -1,5 +1,16 @@
 package com.gentics.mesh.core.schema;
 
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -11,19 +22,11 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+
 import io.vertx.core.json.JsonObject;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static org.junit.Assert.assertEquals;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class SchemaDiffEndpointElasticSearchTest extends AbstractMeshTest {
@@ -46,7 +49,7 @@ public class SchemaDiffEndpointElasticSearchTest extends AbstractMeshTest {
 	private List<SchemaChangeModel> getChanges(SchemaResponse original, String updated) throws IOException {
 		String body = httpClient().newCall(new Request.Builder()
 			.addHeader("Authorization", "Bearer " + client().getAuthentication().getToken())
-			.url(String.format("http://localhost:%d/api/v1/schemas/%s/diff", port(), original.getUuid()))
+			.url(String.format("http://localhost:%d/api/v%d/schemas/%s/diff", port(), CURRENT_API_VERSION, original.getUuid()))
 			.post(RequestBody.create(MediaType.parse("application/json"), updated))
 			.build()
 		).execute().body().string();

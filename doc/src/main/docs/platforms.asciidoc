@@ -2,10 +2,7 @@
 title: Platforms
 ---
 
-:icons: font
-:source-highlighter: prettify
-:toc:
-
+include::content/docs/variables.adoc-include[]
 
 == JavaScript
 

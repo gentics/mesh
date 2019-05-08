@@ -1,5 +1,6 @@
 package com.gentics.mesh.plugin;
 
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.junit.Assert.assertEquals;
@@ -88,9 +89,9 @@ public class PluginManagerTest extends AbstractMeshTest {
 			call(() -> client().createProject(request));
 		}
 
-		assertEquals("world", httpGetNow("/api/v1/plugins/" + NAME + "/hello"));
-		assertEquals("world-project", httpGetNow("/api/v1/test0/plugins/" + NAME + "/hello"));
-		assertEquals("world-project", httpGetNow("/api/v1/test1/plugins/" + NAME + "/hello"));
+		assertEquals("world", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + NAME + "/hello"));
+		assertEquals("world-project", httpGetNow(CURRENT_API_BASE_PATH + "/test0/plugins/" + NAME + "/hello"));
+		assertEquals("world-project", httpGetNow(CURRENT_API_BASE_PATH + "/test1/plugins/" + NAME + "/hello"));
 	}
 
 	@Test
@@ -122,7 +123,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 	public void testPluginAuth() throws IOException {
 		Plugin plugin = new ClientPlugin();
 		manager.deploy(plugin).blockingGet();
-		JsonObject json = new JsonObject(getJSONViaClient("/api/v1/plugins/client/user"));
+		JsonObject json = new JsonObject(getJSONViaClient(CURRENT_API_BASE_PATH + "/plugins/client/user"));
 		assertNotNull(json.getString("uuid"));
 	}
 
@@ -141,16 +142,16 @@ public class PluginManagerTest extends AbstractMeshTest {
 		request.setSchemaRef("folder");
 		call(() -> client().createProject(request));
 
-		UserResponse anonymous = JsonUtil.readValue(httpGetNow("/api/v1/plugins/client/me"), UserResponse.class);
+		UserResponse anonymous = JsonUtil.readValue(httpGetNow(CURRENT_API_BASE_PATH + "/plugins/client/me"), UserResponse.class);
 		assertEquals("The plugin should return the anonymous user since no api key was passed along", "anonymous", anonymous.getUsername());
 
-		UserResponse user = getViaClient(UserResponse.class, "/api/v1/plugins/client/me");
+		UserResponse user = getViaClient(UserResponse.class, CURRENT_API_BASE_PATH + "/plugins/client/me");
 		assertEquals("The plugin should return the authenticated response", "joe1", user.getUsername());
 
-		UserResponse admin = getViaClient(UserResponse.class, "/api/v1/plugins/client/admin");
+		UserResponse admin = getViaClient(UserResponse.class, CURRENT_API_BASE_PATH + "/plugins/client/admin");
 		assertEquals("The admin endpoint should return the response which was authenticated using the admin user", "admin", admin.getUsername());
 
-		ProjectResponse project = getViaClient(ProjectResponse.class, "/api/v1/testabc/plugins/client/project");
+		ProjectResponse project = getViaClient(ProjectResponse.class, CURRENT_API_BASE_PATH + "/testabc/plugins/client/project");
 		assertEquals("testabc", project.getName());
 	}
 
@@ -184,11 +185,11 @@ public class PluginManagerTest extends AbstractMeshTest {
 		call(() -> client().createProject(request));
 
 		String apiName = plugin.getManifest().getApiName();
-		PluginManifest manifest = JsonUtil.readValue(httpGetNow("/api/v1/plugins/" + apiName + "/manifest"), PluginManifest.class);
+		PluginManifest manifest = JsonUtil.readValue(httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + apiName + "/manifest"), PluginManifest.class);
 		assertEquals("Johannes Schüth", manifest.getAuthor());
 
-		assertEquals("world", httpGetNow("/api/v1/plugins/" + apiName + "/hello"));
-		assertEquals("project", httpGetNow("/api/v1/test/plugins/" + apiName + "/hello"));
+		assertEquals("world", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + apiName + "/hello"));
+		assertEquals("project", httpGetNow(CURRENT_API_BASE_PATH + "/test/plugins/" + apiName + "/hello"));
 	}
 
 	@Test

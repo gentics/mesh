@@ -2,9 +2,7 @@
 title: Clustering
 ---
 
-:icons: font
-:source-highlighter: prettify
-:toc:
+include::content/docs/variables.adoc-include[]
 
 == Basics
 
@@ -229,7 +227,7 @@ Yes. This can be done by starting a new cluster using a different `cluster.clust
 
 == Monitoring
 
-The `/api/v1/admin/cluster/status` endpoint can be used to retrieve information about the cluster topology and status of instances within the cluster.
+The `{apiLatest}/admin/cluster/status` endpoint can be used to retrieve information about the cluster topology and status of instances within the cluster.
 
 Additionally it is possible to access the JMX beans of OrientDB.
 

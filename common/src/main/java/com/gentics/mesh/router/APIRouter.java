@@ -34,10 +34,8 @@ public class APIRouter {
 	public APIRouter(RootRouter root) {
 		this.root = root;
 		this.router = Router.router(Mesh.vertx());
-		VersionHandler versionHandler = root.getStorage().versionHandler;
 
-		// TODO Review
-		versionHandler.generateVersionMountpoints()
+		VersionHandler.generateVersionMountpoints()
 			.forEach(mountPoint -> root.getRouter().mountSubRouter(mountPoint, router));
 
 		initHandlers(root.getStorage());
