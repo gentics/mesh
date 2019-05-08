@@ -29,7 +29,7 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	void setUser(MeshAuthUser user);
 
 	/**
-	 * Return the project that may be set when this action context is used for a project specific request (e.g.: /api/v1/dummy/nodes..)
+	 * Return the project that may be set when this action context is used for a project specific request (e.g.: /api/v2/dummy/nodes..)
 	 * 
 	 * @return
 	 */
