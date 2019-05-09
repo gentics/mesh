@@ -5,23 +5,20 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
-import java.text.DateFormat;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
-import org.joda.time.DateTime;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.parameter.impl.ProjectPurgeParametersImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
-import com.gentics.mesh.util.DateUtils;
 
 @MeshTestSetting(elasticsearch = NONE, testSize = TestSize.FULL, startServer = true)
 public class ProjectVersionPurgeEndpointTest extends AbstractMeshTest {
@@ -44,8 +41,8 @@ public class ProjectVersionPurgeEndpointTest extends AbstractMeshTest {
 		grantAdminRole();
 
 		String middle = null;
-		for (int i = 0; i < 6; i++) {
-			if (i == 3) {
+		for (int i = 0; i < 12; i++) {
+			if (i == 6) {
 				middle = Instant.now().atZone(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
 			}
 			NodeUpdateRequest request = new NodeUpdateRequest();
@@ -53,12 +50,22 @@ public class ProjectVersionPurgeEndpointTest extends AbstractMeshTest {
 			request.setLanguage("en");
 			request.getFields().put("slug", FieldUtil.createStringField("blub" + i));
 			call(() -> client().updateNode(projectName(), contentUuid(), request));
-			TestUtils.sleep(1000);
+
+			NodeUpdateRequest request2 = new NodeUpdateRequest();
+			request2.setVersion("draft");
+			request2.setLanguage("de");
+			request2.getFields().put("slug", FieldUtil.createStringField("blub_de" + i));
+			call(() -> client().updateNode(projectName(), contentUuid(), request2));
+			TestUtils.sleep(500);
 		}
 
+		System.out.println(middle);
 		final String middleDate = middle;
 		waitForLatestJob(() -> {
 			call(() -> client().purgeProject(projectUuid(), new ProjectPurgeParametersImpl().setSince(middleDate)));
 		}, COMPLETED);
+
+		NodeVersionsResponse versions = call(() -> client().listNodeVersions(projectName(), contentUuid()));
+		System.out.println(versions.toJson());
 	}
 }

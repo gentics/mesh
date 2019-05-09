@@ -37,6 +37,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
+import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.event.Assignment;
@@ -798,5 +799,12 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	default boolean hasPublishPermissions() {
 		return true;
 	}
+
+	/**
+	 * Transform the node information to a version list response.
+	 * @param ac
+	 * @return Versions response
+	 */
+	NodeVersionsResponse transformToNodeList(InternalActionContext ac);
 
 }

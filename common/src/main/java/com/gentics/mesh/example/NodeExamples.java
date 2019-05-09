@@ -53,6 +53,8 @@ import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
+import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
@@ -309,6 +311,19 @@ public class NodeExamples extends AbstractExamples {
 		binaryParameter.setType(ParamType.FILE);
 		parameters.put("binary", Arrays.asList(binaryParameter));
 		return parameters;
+	}
+
+	public NodeVersionsResponse createVersionsList() {
+		NodeVersionsResponse response = new NodeVersionsResponse();
+		List<VersionInfo> list = new ArrayList<>();
+		list.add(new VersionInfo().setCreated(createNewTimestamp()).setCreator(createUserReference()).setVersion("1.0"));
+		list.add(new VersionInfo().setCreated(createNewTimestamp()).setCreator(createUserReference()).setVersion("1.1"));
+		list.add(new VersionInfo().setCreated(createNewTimestamp()).setCreator(createUserReference()).setVersion("2.0"));
+		Map<String, List<VersionInfo>> versions = new HashMap<>();
+		versions.put("en", list);
+		versions.put("de", list);
+		response.setVersions(versions);
+		return response;
 	}
 
 }

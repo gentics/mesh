@@ -76,25 +76,25 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 
 			}
 		} else {
-			VersionNumber previousVersion = previous.getVersion();
-			if (previousVersion != null && version != null) {
-				if (!version.equals(previousVersion.nextDraft()) && !version.equals(previousVersion.nextPublished())) {
-					String nodeInfo = "unknown";
-					try {
-						Node node = container.getParentNode();
-						nodeInfo = node.getUuid();
-					} catch (Exception e) {
-						log.debug("Could not load node uuid", e);
-					}
-					result.addInconsistency(
-						String.format(
-							"GraphFieldContainer of Node {" + nodeInfo
-								+ "} has version %s which does not come after its previous GraphFieldContainer's version %s",
-							version,
-							previousVersion),
-						uuid, MEDIUM);
-				}
-			}
+//			VersionNumber previousVersion = previous.getVersion();
+//			if (previousVersion != null && version != null) {
+//				if (!version.equals(previousVersion.nextDraft()) && !version.equals(previousVersion.nextPublished())) {
+//					String nodeInfo = "unknown";
+//					try {
+//						Node node = container.getParentNode();
+//						nodeInfo = node.getUuid();
+//					} catch (Exception e) {
+//						log.debug("Could not load node uuid", e);
+//					}
+//					result.addInconsistency(
+//						String.format(
+//							"GraphFieldContainer of Node {" + nodeInfo
+//								+ "} has version %s which does not come after its previous GraphFieldContainer's version %s",
+//							version,
+//							previousVersion),
+//						uuid, MEDIUM);
+//				}
+//			}
 		}
 
 		// GFC must either have a next GFC, or must be the draft GFC for a Node

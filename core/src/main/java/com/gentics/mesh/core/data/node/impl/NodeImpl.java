@@ -112,6 +112,8 @@ import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
+import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
+import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -965,6 +967,29 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					forVersion(ac.getVersioningParameters().getVersion()));
 			}
 		});
+	}
+
+	@Override
+	public NodeVersionsResponse transformToNodeList(InternalActionContext ac) {
+		NodeVersionsResponse response = new NodeVersionsResponse();
+		// TODO sort by id
+		Map<String, List<VersionInfo>> versions = new HashMap<>();
+		getGraphFieldContainers(ac.getBranch(), ContainerType.INITIAL).forEach(c -> {
+			List<VersionInfo> list = versions.computeIfAbsent(c.getLanguageTag(), (e) -> {
+				return new ArrayList<VersionInfo>();
+			});
+			walkVersions(list, c);
+		});
+		response.setVersions(versions);
+		return response;
+	}
+
+	private void walkVersions(List<VersionInfo> versions, NodeGraphFieldContainer current) {
+		versions.add(current.transformToVersionInfo());
+		Iterable<? extends NodeGraphFieldContainer> nexts = current.getNextVersions();
+		for (NodeGraphFieldContainer next : nexts) {
+			walkVersions(versions, next);
+		}
 	}
 
 	/**

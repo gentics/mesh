@@ -38,6 +38,7 @@ import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -768,6 +769,17 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		Project project = node.getProject();
 		model.setProject(project.transformToReference());
 		return model;
+	}
+
+	@Override
+	public VersionInfo transformToVersionInfo() {
+		VersionInfo info = new VersionInfo();
+		info.setVersion(getVersion().getFullVersion());
+		info.setCreated(getLastEditedDate());
+		info.setCreator(getEditor().transformToReference());
+		info.setPublished(isPublished());
+		info.setDraft(isDraft());
+		return info;
 	}
 
 }

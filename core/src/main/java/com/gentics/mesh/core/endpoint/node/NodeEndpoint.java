@@ -98,6 +98,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		addLanguageHandlers();
 		addNavigationHandlers();
 		addPublishHandlers();
+		addVersioningHandlers();
 	}
 
 	public Resource getResource() {
@@ -123,6 +124,23 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			crudHandler.handleNavigation(ac, uuid);
+		});
+	}
+
+	private void addVersioningHandlers() {
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.path("/:nodeUuid/versions");
+		endpoint.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
+		endpoint.method(GET);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.description("Returns a list of versions.");
+		endpoint.displayName("Versions");
+		endpoint.exampleResponse(OK, nodeExamples.createVersionsList(), "Loaded navigation.");
+		endpoint.addQueryParameters(NodeParametersImpl.class);
+		endpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = ac.getParameter("nodeUuid");
+			crudHandler.handleListVersions(ac, uuid);
 		});
 	}
 

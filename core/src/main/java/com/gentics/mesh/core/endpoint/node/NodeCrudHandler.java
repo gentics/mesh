@@ -464,4 +464,21 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
+
+	/**
+	 * Handle the list versions request.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 */
+	public void handleListVersions(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
+
+		utils.syncTx(ac, (tx) -> {
+			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			return node.transformToNodeList(ac);
+		}, model -> {
+			ac.send(model, OK);
+		});		
+	}
 }

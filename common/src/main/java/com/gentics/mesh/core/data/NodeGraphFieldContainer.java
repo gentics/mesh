@@ -21,6 +21,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
@@ -464,5 +465,12 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @return
 	 */
 	NodeMeshEventModel onPublish(String branchUuid);
+
+	/**
+	 * Transform the container into a version info object.
+	 * 
+	 * @return
+	 */
+	VersionInfo transformToVersionInfo();
 
 }

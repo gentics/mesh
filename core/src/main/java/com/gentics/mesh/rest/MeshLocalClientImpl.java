@@ -62,6 +62,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
@@ -313,6 +314,11 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		ac.setProject(projectName);
 		nodeCrudHandler.handleMove(ac, nodeUuid, targetFolderUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<NodeVersionsResponse> listNodeVersions(String projectName, String nodeUuid, ParameterProvider... parameters) {
+		return null;
 	}
 
 	@Override
