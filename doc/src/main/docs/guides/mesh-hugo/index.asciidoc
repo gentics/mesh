@@ -1,5 +1,5 @@
 ---
-title: Mesh Hugo Guide
+title: Gentics Mesh Hugo Guide
 ---
 
 :icons: font

@@ -1,0 +1,132 @@
+---
+title: Gentics Mesh React - Event Handling
+---
+
+:icons: font
+:source-highlighter: prettify
+:toc:
+
+== Intro
+
+In this guide which is a followup guide to the link:{{< relref "mesh-react/index.asciidoc" >}}[React Basics Guide] you will learn how events can be used to invoke live-reload of contents.
+
+== Eventbus
+
+Gentics Mesh features an eventbus system which is used to handle all internal and public events. Events will for example be dispatched once a content gets updated, deleted or created. This eventbus is can be accessed in a link:https://github.com/sockjs/sockjs-client[SockJS] compliant way which also includes websockets. Once connected to the websocket you can subscribe to specific types of events.
+You can read more about the Event system in our link:{{< relref "events.asciidoc" >}}[Events documentation].
+
+
+We can use the eventbus bridge in our app to reload the components once new content has been added `mesh.node.created`, removed `mesh.node.deleted` and updated `mesh.node.updated`.
+
+image:../app-overview.png[React App Vehicle Page, role="img-responsive"]
+
+== App
+
+The following changes can be applied on the `guide-step-2` branch.
+
+The fully working example can be found in the `guide-step-3` branch of the link:https://github.com/gentics/mesh-react-example/tree/guide-step-3[mesh-react-example] repository.
+
+First we need to add the `vertx3-eventbus-client` which provides the connection to the websocket endpoint of Gentics Mesh.
+
+```
+npm install vertx3-eventbus-client
+```
+
+Next we create the `eventbus.js` file which contains the needed code to register callbacks and event subscription.
+
+.eventbus.js
+[source,javascript]
+----
+import EventBus from 'vertx3-eventbus-client';
+import { useEffect } from 'react';
+
+let eb = new EventBus("/api/v1/eventbus")
+eb.enableReconnect(true);
+
+let callbacks = [];
+
+eb.onopen = function () {
+    console.log("Connect eventbus");
+    registerEvent("mesh.node.updated", callbacks);
+    registerEvent("mesh.node.created", callbacks);
+    registerEvent("mesh.node.deleted", callbacks);
+}
+
+function registerEvent(eventName, callbacks) {
+    eb.registerHandler(eventName, function (error, message) {
+        callbacks.forEach(cb => cb());
+        console.log('Received a message: ' + JSON.stringify(message));
+    });
+}
+
+export default function useWebsocketBridge(callback) {
+    useEffect(() => {
+        callbacks.push(callback);
+        console.log("Mount");
+        return () => {
+            var index = callbacks.indexOf(callback);
+            if (index > -1) {
+                callbacks.splice(index, 1);
+            }
+            console.log("Unmount");
+        }
+    });
+}
+----
+
+The `useWebroot` method can't be used for React hooks. We need to create a async variant which invokes the same GraphQL query to load the content.
+
+.api.js
+[source,javascript]
+----
+export async function getNodeByPath(path) {
+  return graphQl(`
+  query Webroot($path: String) {
+    node(path: $path) {
+      schema {
+        name
+      }
+      ...category
+      ...product
+    }
+  }
+  ${categoryFragment}
+  ${productFragment}
+  `, {path}).then(response => response.node);
+}
+----
+
+Finally we need to alter the `Content.jsx` file. The `useWebsocketBridge` method will invoke the `setNodeResponse` method once one of the three events (update, delete, create) has been received. This will update the nodeResponse state and thus reload the NodeComponent with the updated data.
+
+.Content.jsx
+[source,javascript]
+----
+import React, { useState, useEffect } from 'react';
+import { getNodeByPath } from './api';
+import useWebsocketBridge from './eventbus';
+…
+
+…
+const WebrootContent = ({ location }) => {
+  
+  const [nodeResponse, setNodeResponse] = useState();
+  useWebsocketBridge(async () => { setNodeResponse(await getNodeByPath(location.pathname)) });
+
+  useEffect(() => {
+    getNodeByPath(location.pathname).then(setNodeResponse);  
+  }, [location.pathname]);
+
+  if (!nodeResponse) {
+    return null;
+  }
+  
+  const NodeComponent = NodeComponents[nodeResponse.schema.name];
+  return <NodeComponent node={nodeResponse} />
+}
+…
+----
+
+=== Testing
+
+Once you applied the changes you should be able to open the react app and in parallel use the Gentics Mesh UI to update the contents. The changes should directly be visible in the app.
+

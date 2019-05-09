@@ -299,7 +299,10 @@ ul.doc-toc h2 {
                         <h2>Guides</h2>
                         <ul>
                             <li>
-                                <a href="guides/mesh-react">React Guide</a>
+                                <a href="guides/mesh-react">React - Basics</a>
+                            </li>
+                            <li>
+                                <a href="guides/mesh-react-2">React - Event Handling</a>
                             </li>
                             <li>
                                 <a href="guides/mesh-hugo">Hugo Guide</a>
