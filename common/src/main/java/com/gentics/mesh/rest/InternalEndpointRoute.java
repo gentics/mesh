@@ -1,9 +1,13 @@
 package com.gentics.mesh.rest;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.parameter.ParameterProvider;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.ext.web.Route;
+import io.vertx.ext.web.RoutingContext;
 import org.codehaus.jettison.json.JSONObject;
 import org.raml.model.MimeType;
 import org.raml.model.Response;
@@ -11,14 +15,9 @@ import org.raml.model.parameter.FormParameter;
 import org.raml.model.parameter.QueryParameter;
 import org.raml.model.parameter.UriParameter;
 
-import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.parameter.ParameterProvider;
-
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.Handler;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.ext.web.Route;
-import io.vertx.ext.web.RoutingContext;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Simple wrapper for vert.x routes. The wrapper is commonly used to generate RAML descriptions for the route.
@@ -371,5 +370,13 @@ public interface InternalEndpointRoute extends Comparable<InternalEndpointRoute>
 	Map<Integer, Class<?>> getExampleResponseClasses();
 
 	Class<? extends RestModel> getExampleRequestClass();
+
+	/**
+	 * Set the events which are emitted by the action of the endpoint.
+	 * 
+	 * @param events
+	 * @return Fluent API
+	 */
+	InternalEndpointRoute events(MeshEvent... events);
 
 }

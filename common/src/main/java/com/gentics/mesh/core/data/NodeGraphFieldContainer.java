@@ -1,14 +1,5 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.INITIAL;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
@@ -17,11 +8,22 @@ import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.Errors;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
 /**
  * A node field container is an aggregation node that holds localized fields (e.g.: StringField, NodeField...)
@@ -104,7 +106,6 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 		id.append(languageTag);
 		return id.toString();
 	}
-
 
 	/**
 	 * Return the document id for the container.
@@ -420,5 +421,48 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @return
 	 */
 	Iterator<? extends GraphFieldContainerEdge> getContainerEdge(ContainerType type, String branchUuid);
+
+	/**
+	 * Create the specific delete event.
+	 * 
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	NodeMeshEventModel onDeleted(String branchUuid, ContainerType type);
+
+	/**
+	 * Create the specific create event.
+	 * 
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	NodeMeshEventModel onCreated(String branchUuid, ContainerType type);
+
+	/**
+	 * Create the specific update event.
+	 * 
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	NodeMeshEventModel onUpdated(String branchUuid, ContainerType type);
+
+	/**
+	 * Create the taken offline event.
+	 * 
+	 * @param branchUuid
+	 * @return
+	 */
+	NodeMeshEventModel onTakenOffline(String branchUuid);
+
+	/**
+	 * Create the publish event.
+	 * 
+	 * @param branchUuid
+	 * @return
+	 */
+	NodeMeshEventModel onPublish(String branchUuid);
 
 }

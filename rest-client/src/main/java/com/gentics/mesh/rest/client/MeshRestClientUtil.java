@@ -1,16 +1,17 @@
 package com.gentics.mesh.rest.client;
 
-import com.gentics.mesh.MeshEvent;
-import io.reactivex.Single;
-import io.reactivex.SingleTransformer;
-import io.reactivex.functions.Function;
-import io.reactivex.functions.Predicate;
-
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.gentics.mesh.core.rest.MeshEvent;
+
+import io.reactivex.Single;
+import io.reactivex.SingleTransformer;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 
 public final class MeshRestClientUtil {
 	private MeshRestClientUtil() {

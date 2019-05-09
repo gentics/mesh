@@ -31,6 +31,9 @@
           "jobUuid" : {
             "type" : "string",
             "description" : "Uuid of the migration job."
+          },
+          "versionUuid" : {
+            "type" : "string"
           }
         }
       }

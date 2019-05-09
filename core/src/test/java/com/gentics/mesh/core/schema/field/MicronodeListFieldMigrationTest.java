@@ -25,7 +25,7 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest {
 	private final DataProvider FILL = (container, name) -> {
 		MicronodeGraphFieldList field = container.createMicronodeFieldList(name);

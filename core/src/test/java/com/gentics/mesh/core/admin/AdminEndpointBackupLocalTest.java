@@ -1,23 +1,27 @@
 package com.gentics.mesh.core.admin;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-
-import java.io.IOException;
-
-import org.junit.Ignore;
-import org.junit.Test;
-
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import org.junit.Ignore;
+import org.junit.Test;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true, inMemoryDB = false)
+import java.io.IOException;
+
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_START;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_START;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+
+@MeshTestSetting(elasticsearch = NONE, testSize = FULL, startServer = true, inMemoryDB = false)
 public class AdminEndpointBackupLocalTest extends AbstractMeshTest {
 
 	@Test
@@ -27,7 +31,12 @@ public class AdminEndpointBackupLocalTest extends AbstractMeshTest {
 
 		assertFilesInDir(backupDir, 0);
 		grantAdminRole();
+
+		expect(GRAPH_BACKUP_START).one();
+		expect(GRAPH_BACKUP_FINISHED).one();
 		GenericMessageResponse message = call(() -> client().invokeBackup());
+		awaitEvents();
+
 		assertThat(message).matches("backup_finished");
 		assertFilesInDir(backupDir, 1);
 
@@ -39,7 +48,10 @@ public class AdminEndpointBackupLocalTest extends AbstractMeshTest {
 		String baseNodeUuid = projectResponse.getRootNode().getUuid();
 		call(() -> client().findNodeByUuid(NEW_PROJECT_NAME, baseNodeUuid));
 
+		expect(GRAPH_RESTORE_START).one();
+		expect(GRAPH_RESTORE_FINISHED).one();
 		message = call(() -> client().invokeRestore());
+		awaitEvents();
 		assertThat(message).matches("restore_finished");
 
 		call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));

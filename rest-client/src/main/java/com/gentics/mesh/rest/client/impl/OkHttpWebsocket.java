@@ -9,6 +9,8 @@ import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -28,6 +30,8 @@ import java.util.stream.Stream;
 import static com.gentics.mesh.rest.client.impl.Util.eventbusMessage;
 
 public class OkHttpWebsocket implements MeshWebsocket {
+	private static final Logger log = LoggerFactory.getLogger(OkHttpWebsocket.class);
+
 	private final OkHttpClient client;
 	private final MeshRestClientConfig config;
 
@@ -48,6 +52,7 @@ public class OkHttpWebsocket implements MeshWebsocket {
 
 		connect();
 		startPings();
+		errors.subscribe(err -> log.error("Error in Websocket", err));
 	}
 
 	private void connect() {

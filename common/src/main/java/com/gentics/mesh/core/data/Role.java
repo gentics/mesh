@@ -1,12 +1,6 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.MeshEvent.ROLE_CREATED;
-import static com.gentics.mesh.MeshEvent.ROLE_DELETED;
-import static com.gentics.mesh.MeshEvent.ROLE_UPDATED;
-
-import java.util.Objects;
-import java.util.Set;
-
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -15,17 +9,19 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
+import java.util.Objects;
+import java.util.Set;
+
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_UPDATED;
+
 /**
  * Graph domain model interface for a role.
  */
-public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableElement<RoleReference>, UserTrackingVertex, IndexableElement {
+public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableElement<RoleReference>, UserTrackingVertex {
 
-	/**
-	 * Type Value: {@value #TYPE}
-	 */
-	String TYPE = "role";
-
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, ROLE_CREATED.address, ROLE_UPDATED.address, ROLE_DELETED.address);
+	TypeInfo TYPE_INFO = new TypeInfo(ElementType.ROLE, ROLE_CREATED, ROLE_UPDATED, ROLE_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {
@@ -38,7 +34,7 @@ public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableE
 	 * @return
 	 */
 	static String composeIndexName() {
-		return TYPE.toLowerCase();
+		return "role";
 	}
 
 	/**

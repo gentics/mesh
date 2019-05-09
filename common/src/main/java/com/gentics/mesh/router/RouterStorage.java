@@ -1,23 +1,11 @@
 package com.gentics.mesh.router;
 
-import static com.gentics.mesh.MeshEvent.PROJECT_CREATED;
-import static com.gentics.mesh.MeshEvent.PROJECT_UPDATED;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.inject.Inject;
-import javax.naming.InvalidNameException;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.tx.Tx;
-
 import dagger.Lazy;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
@@ -28,6 +16,16 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
+
+import javax.inject.Inject;
+import javax.naming.InvalidNameException;
+import java.util.HashSet;
+import java.util.Set;
+
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 /**
  * Central storage for all Vert.x web request routers.

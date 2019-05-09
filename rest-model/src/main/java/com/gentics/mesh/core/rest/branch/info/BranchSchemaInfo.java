@@ -4,6 +4,8 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 
 public class BranchSchemaInfo extends AbstractBranchSchemaInfo<SchemaReference> implements SchemaReference {
 
+	private String versionUuid;
+
 	public BranchSchemaInfo() {
 	}
 
@@ -11,6 +13,7 @@ public class BranchSchemaInfo extends AbstractBranchSchemaInfo<SchemaReference> 
 		this.setUuid(reference.getUuid());
 		this.setName(reference.getName());
 		this.setVersion(reference.getVersion());
+		this.setVersionUuid(reference.getVersionUuid());
 	}
 
 	public BranchSchemaInfo setVersion(String version) {
@@ -27,6 +30,17 @@ public class BranchSchemaInfo extends AbstractBranchSchemaInfo<SchemaReference> 
 	@Override
 	public BranchSchemaInfo setName(String name) {
 		super.setName(name);
+		return this;
+	}
+
+	@Override
+	public String getVersionUuid() {
+		return versionUuid;
+	}
+
+	@Override
+	public BranchSchemaInfo setVersionUuid(String versionUuid) {
+		this.versionUuid = versionUuid;
 		return this;
 	}
 

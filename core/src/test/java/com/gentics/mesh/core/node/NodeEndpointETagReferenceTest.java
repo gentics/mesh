@@ -39,7 +39,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 @RunWith(VertxUnitRunner.class)
 public class NodeEndpointETagReferenceTest extends AbstractMeshTest {
 

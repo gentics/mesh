@@ -1,29 +1,35 @@
 package com.gentics.mesh.core.schema.change;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-
-import com.gentics.mesh.core.rest.schema.*;
-import org.junit.Test;
-
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.AddFieldChange;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.AddFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
+import com.gentics.mesh.core.rest.schema.DateFieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
+import org.junit.Test;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+import java.io.IOException;
+
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class AddFieldChangeTest extends AbstractChangeTest {
 
 	@Test

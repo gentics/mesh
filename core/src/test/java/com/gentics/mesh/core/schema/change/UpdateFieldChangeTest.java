@@ -23,7 +23,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 /**
  * Test {@link UpdateFieldChangeImpl} methods.
  */
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = false)
+@MeshTestSetting(testSize = PROJECT, startServer = false)
 public class UpdateFieldChangeTest extends AbstractChangeTest {
 
 	@Test

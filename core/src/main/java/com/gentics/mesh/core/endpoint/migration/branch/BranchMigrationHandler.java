@@ -1,12 +1,10 @@
 package com.gentics.mesh.core.endpoint.migration.branch;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.INITIAL;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,15 +12,16 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.context.BranchMigrationContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.endpoint.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
-import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
+import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
 
@@ -37,89 +36,59 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 	private static final Logger log = LoggerFactory.getLogger(BranchMigrationHandler.class);
 
 	@Inject
-	public BranchMigrationHandler(Database db, SearchQueue searchQueue, BinaryFieldHandler nodeFieldAPIHandler, MetricsService metrics) {
-		super(db, searchQueue, nodeFieldAPIHandler, metrics);
+	public BranchMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics) {
+		super(db, nodeFieldAPIHandler, metrics);
 	}
 
 	/**
 	 * Migrate all nodes from one branch to the other
 	 * 
-	 * @param newBranch
-	 *            new branch
+	 * @param context
 	 * @param status
 	 * @return
 	 */
-	public Completable migrateBranch(Branch newBranch, MigrationStatusHandler status) {
-		if (newBranch.isMigrated()) {
-			throw error(BAD_REQUEST, "Branch {" + newBranch.getName() + "} is already migrated");
-		}
+	public Completable migrateBranch(BranchMigrationContext context) {
+		context.validate();
+		return Completable.defer(() -> {
+			Branch oldBranch = context.getOldBranch();
+			Branch newBranch = context.getNewBranch();
+			BranchMigrationCause cause = context.getCause();
+			MigrationStatusHandler status = context.getStatus();
 
-		Branch oldBranch = newBranch.getPreviousBranch();
-		if (oldBranch == null) {
-			throw error(BAD_REQUEST, "Branch {" + newBranch.getName() + "} does not have previous branch");
-		}
-
-		if (!oldBranch.isMigrated()) {
-			throw error(BAD_REQUEST, "Cannot migrate nodes to branch {" + newBranch.getName() + "}, because previous branch {"
-				+ oldBranch.getName() + "} is not fully migrated yet.");
-		}
-
-		if (status != null) {
-			status.setStatus(RUNNING);
-			status.commit();
-		}
-
-		long count = 0;
-		// Iterate over all nodes of the project and migrate them to the new branch
-		Project project = oldBranch.getProject();
-		List<Exception> errorsDetected = new ArrayList<>();
-		SearchQueueBatch sqb = null;
-		for (Node node : project.getNodeRoot().findAll()) {
-			// Create a new SQB to handle the ES update
-			if (sqb == null) {
-				sqb = searchQueue.create();
-			}
-			migrateNode(node, sqb, oldBranch, newBranch, errorsDetected);
-			if (status != null) {
-				status.incCompleted();
-			}
-			if (count % 50 == 0) {
-				log.info("Migrated nodes: " + count);
+			db.tx(() -> {
 				if (status != null) {
+					status.setStatus(RUNNING);
 					status.commit();
 				}
-			}
-			count++;
-			if (count % 500 == 0) {
-				// Process the batch and reset it
-				log.info("Syncing batch with size: " + sqb.size());
-				sqb.processSync();
-				sqb = null;
-			}
-		}
-		if (sqb != null) {
-			log.info("Syncing last batch with size: " + sqb.size());
-			sqb.processSync();
-			sqb = null;
-		}
-
-		log.info("Migration of " + count + " node done..");
-		log.info("Encountered {" + errorsDetected.size() + "} errors during micronode migration.");
-
-		Completable result = Completable.complete();
-		if (!errorsDetected.isEmpty()) {
-			if (log.isDebugEnabled()) {
-				for (Exception error : errorsDetected) {
-					log.error("Encountered migration error.", error);
-				}
-			}
-			result = Completable.error(new CompositeException(errorsDetected));
-		} else {
-			db.tx(() -> {
-				newBranch.setMigrated(true);
 			});
-		}
-		return result;
+
+			List<? extends Node> nodes = db.tx(() -> {
+				Project project = oldBranch.getProject();
+				return project.getNodeRoot().findAll().list();
+			});
+
+			List<Exception> errorsDetected = new ArrayList<>();
+			// Iterate over all nodes of the project and migrate them to the new branch
+			migrateLoop(nodes, cause, status, (batch, node, errors) -> {
+				migrateNode(node, batch, oldBranch, newBranch, errorsDetected);
+			});
+
+			if (!errorsDetected.isEmpty()) {
+				log.info("Encountered {" + errorsDetected.size() + "} errors during micronode migration.");
+			}
+
+			// TODO prepare errors. They should be easy to understand and to grasp
+			Completable result = Completable.complete();
+			if (!errorsDetected.isEmpty()) {
+				if (log.isDebugEnabled()) {
+					for (Exception error : errorsDetected) {
+						log.error("Encountered migration error.", error);
+					}
+				}
+				result = Completable.error(new CompositeException(errorsDetected));
+			}
+			return result;
+		});
 
 	}
 
@@ -133,7 +102,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 	 * @param newBranc
 	 * @param errorsDetected
 	 */
-	private void migrateNode(Node node, SearchQueueBatch batch, Branch oldBranch, Branch newBranch, List<Exception> errorsDetected) {
+	private void migrateNode(Node node, EventQueueBatch batch, Branch oldBranch, Branch newBranch, List<Exception> errorsDetected) {
 		try {
 			db.tx((tx) -> {
 
@@ -164,8 +133,8 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 						draftEdge.setSegmentInfo(null);
 					}
 					draftEdge.setUrlFieldInfo(container.getUrlFieldValues());
+					batch.add(container.onUpdated(newBranch.getUuid(), DRAFT));
 				});
-				batch.store(node, newBranch.getUuid(), DRAFT, false);
 
 				node.getGraphFieldContainersIt(oldBranch, PUBLISHED).forEach(container -> {
 					GraphFieldContainerEdgeImpl publishEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
@@ -179,8 +148,8 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 						publishEdge.setSegmentInfo(null);
 					}
 					publishEdge.setUrlFieldInfo(container.getUrlFieldValues());
+					batch.add(container.onUpdated(newBranch.getUuid(), PUBLISHED));
 				});
-				batch.store(node, newBranch.getUuid(), PUBLISHED, false);
 
 				// migrate tags
 				node.getTags(oldBranch).forEach(tag -> node.addTag(tag, newBranch));

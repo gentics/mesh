@@ -1,13 +1,13 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -26,7 +26,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -44,15 +43,15 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.InvalidArgumentException;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.syncleus.ferma.tx.Tx;
@@ -247,7 +246,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @return
 	 */
 	// TODO use schema container version instead of container
-	private Node createNode(InternalActionContext ac, SchemaContainerVersion schemaVersion, SearchQueueBatch batch,
+	private Node createNode(InternalActionContext ac, SchemaContainerVersion schemaVersion, EventQueueBatch batch,
 			String uuid) {
 		Project project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
@@ -281,7 +280,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		}
 		NodeGraphFieldContainer container = node.createGraphFieldContainer(language.getLanguageTag(), branch, requestUser);
 		container.updateFieldsFromRest(ac, requestModel.getFields());
-		batch.store(node, branch.getUuid(), ContainerType.DRAFT, true);
+
+		batch.add(node.onCreated());
+		batch.add(container.onCreated(branch.getUuid(), DRAFT));
 
 		// Check for webroot input data consistency (PUT on webroot)
 		String webrootSegment = ac.get("WEBROOT_SEGMENT_NAME");
@@ -300,7 +301,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Node create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
+	public Node create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 
 		// Override any given version parameter. Creation is always scoped to drafts
 		ac.getVersioningParameters().setVersion("draft");
@@ -325,6 +326,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			SchemaContainer schemaByUuid = project.getSchemaContainerRoot().loadObjectByUuid(ac,
 					schemaInfo.getSchema().getUuid(), READ_PERM);
 			SchemaContainerVersion schemaVersion = branch.findLatestSchemaVersion(schemaByUuid);
+			if (schemaVersion == null) {
+				throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByUuid.getName(), branch.getName(), project.getName());
+			}
 			return createNode(ac, schemaVersion, batch, uuid);
 		}
 
@@ -337,6 +341,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				String schemaUuid = schemaByName.getUuid();
 				if (requestUser.hasPermission(schemaByName, READ_PERM)) {
 					SchemaContainerVersion schemaVersion = branch.findLatestSchemaVersion(schemaByName);
+					if (schemaVersion == null) {
+						throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByName.getName(), branch.getName(), project.getName());
+					}
 					return createNode(ac, schemaVersion, batch, uuid);
 				} else {
 					throw error(FORBIDDEN, "error_missing_perm", schemaUuid + "/" + schemaName, READ_PERM.getRestPerm().getName());
@@ -351,7 +358,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive,
+	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive,
 			Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (Node node : findAll()) {
@@ -360,7 +367,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				node.applyPermissions(batch, role, false, permissionsToGrant, permissionsToRevoke);
 			}
 		}
-		super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
+
+		applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke);
 	}
 
 }

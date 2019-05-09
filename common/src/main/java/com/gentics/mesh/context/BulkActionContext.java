@@ -1,8 +1,22 @@
 package com.gentics.mesh.context;
 
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.ElementType;
+import com.gentics.mesh.context.impl.BulkActionContextImpl;
+import com.gentics.mesh.core.rest.event.EventCauseAction;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
+import com.gentics.mesh.event.EventQueueBatch;
+import io.reactivex.Completable;
 
 public interface BulkActionContext {
+
+	/**
+	 * Create a new context.
+	 * 
+	 * @return
+	 */
+	static BulkActionContext create() {
+		return new BulkActionContextImpl();
+	}
 
 	/**
 	 * Increment the counter which tracks deleted elements.
@@ -29,13 +43,33 @@ public interface BulkActionContext {
 	 * 
 	 * @return
 	 */
-	SearchQueueBatch batch();
+	EventQueueBatch batch();
 
 	/**
-	 * Add a drop index entry to the batch.
+	 * Shortcut for {@link #batch()#add(MeshEventModel)}
 	 * 
-	 * @param composeIndexName
+	 * @param event
 	 */
-	void dropIndex(String composeIndexName);
+	default void add(MeshEventModel event) {
+		batch().add(event);
+	}
+
+	/**
+	 * Set the root cause of the action being invoked.
+	 * 
+	 * @param type
+	 * @param uuid
+	 * @param action
+	 */
+	default void setRootCause(ElementType type, String uuid, EventCauseAction action) {
+		batch().setCause(type, uuid, action);
+	}
+
+	/**
+	 * Add action which will be invoked once the context will be processed.
+	 * 
+	 * @param action
+	 */
+	void add(Completable action);
 
 }

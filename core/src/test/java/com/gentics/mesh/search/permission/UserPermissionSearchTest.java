@@ -1,6 +1,7 @@
 package com.gentics.mesh.search.permission;
 
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -16,7 +17,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = true, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class UserPermissionSearchTest extends AbstractMeshTest {
 
 	@Test
@@ -63,6 +64,7 @@ public class UserPermissionSearchTest extends AbstractMeshTest {
 	public void testIndexPermUpdate() throws Exception {
 		String username = "testuser42a";
 		UserResponse response = createUser(username);
+		waitForSearchIdleEvent();
 
 		String json = getESText("userWildcard.es");
 
@@ -73,6 +75,7 @@ public class UserPermissionSearchTest extends AbstractMeshTest {
 		RolePermissionRequest request = new RolePermissionRequest();
 		request.getPermissions().setRead(false);
 		call(() -> client().updateRolePermissions(roleUuid(), "/users/" + response.getUuid(), request));
+		waitForSearchIdleEvent();
 
 		list = call(() -> client().searchUsers(json));
 		assertEquals("The user should not be found since the requestor has no permission to see it", 0, list.getData().size());

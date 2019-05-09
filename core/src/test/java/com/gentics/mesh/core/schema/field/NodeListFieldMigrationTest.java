@@ -24,7 +24,7 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest implements NodeListFieldTestHelper {
 	private final DataProvider FILL = (container, name) -> {
 		NodeGraphFieldList field = container.createNodeList(name);

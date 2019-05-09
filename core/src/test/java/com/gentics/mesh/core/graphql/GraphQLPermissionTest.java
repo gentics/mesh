@@ -25,7 +25,7 @@ import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(useElasticsearch = false, testSize = TestSize.FULL, startServer = true)
+@MeshTestSetting(testSize = TestSize.FULL, startServer = true)
 @RunWith(Parameterized.class)
 public class GraphQLPermissionTest extends AbstractMeshTest {
 

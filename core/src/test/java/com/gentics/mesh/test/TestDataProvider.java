@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.mockito.Mockito;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -45,6 +46,7 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.MeshJsonException;
 import com.syncleus.ferma.tx.Tx;
@@ -90,6 +92,7 @@ public class TestDataProvider {
 	private Map<String, SchemaContainer> schemaContainers = new HashMap<>();
 	private Map<String, MicroschemaContainer> microschemaContainers = new HashMap<>();
 	private Map<String, TagFamily> tagFamilies = new HashMap<>();
+	private long contentCount = 0;
 	private Map<String, Node> folders = new HashMap<>();
 	private Map<String, Node> contents = new HashMap<>();
 	private Map<String, Tag> tags = new HashMap<>();
@@ -288,11 +291,14 @@ public class TestDataProvider {
 	public UserInfo createUserInfo(String username, String firstname, String lastname) {
 
 		String password = "test123";
+		String hashedPassword = "$2a$10$n/UeWGbY9c1FHFyCqlVsY.XvNYmZ7Jjgww99SF94q/B5nomYuquom";
+
 		log.debug("Creating user with username: " + username + " and password: " + password);
 
 		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
 		User user = root.getUserRoot().create(username, null);
-		user.setPassword(password);
+		// Precomputed hash since hashing takes some time and we want to keep out tests fast
+		user.setPasswordHash(hashedPassword);
 		user.setFirstname(firstname);
 		user.setLastname(lastname);
 		user.setEmailAddress(email);
@@ -328,11 +334,12 @@ public class TestDataProvider {
 		GroupRoot groupRoot = getMeshRoot().getGroupRoot();
 		RoleRoot roleRoot = getMeshRoot().getRoleRoot();
 
-		project = root.getProjectRoot().create(PROJECT_NAME, null, null, null, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion());
+		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
+		project = root.getProjectRoot().create(PROJECT_NAME, null, null, null, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion(), batch);
 		User jobUser = userInfo.getUser();
-		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("folder"));
-		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("content"));
-		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("binary_content"));
+		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("folder"), batch);
+		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("content"), batch);
+		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("binary_content"), batch);
 		projectUuid = project.getUuid();
 		branchUuid = project.getInitialBranch().getUuid();
 
@@ -361,6 +368,7 @@ public class TestDataProvider {
 		}
 		// Publish the project basenode
 		project.getBaseNode().publish(getEnglish(), getProject().getLatestBranch(), getUserInfo().getUser());
+		contentCount++;
 
 	}
 
@@ -440,9 +448,9 @@ public class TestDataProvider {
 		postcodeFieldSchema.setLabel("Post Code");
 		vcardMicroschema.addField(postcodeFieldSchema);
 
-		MicroschemaContainer vcardMicroschemaContainer = boot.microschemaContainerRoot().create(vcardMicroschema, userInfo.getUser());
+		MicroschemaContainer vcardMicroschemaContainer = boot.microschemaContainerRoot().create(vcardMicroschema, userInfo.getUser(), EventQueueBatch.create());
 		microschemaContainers.put(vcardMicroschemaContainer.getName(), vcardMicroschemaContainer);
-		project.getMicroschemaContainerRoot().addMicroschema(user(), vcardMicroschemaContainer);
+		project.getMicroschemaContainerRoot().addMicroschema(user(), vcardMicroschemaContainer, EventQueueBatch.create());
 	}
 
 	/**
@@ -468,9 +476,9 @@ public class TestDataProvider {
 		captionFieldSchema.setLabel("Caption");
 		captionedImageMicroschema.addField(captionFieldSchema);
 
-		MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(captionedImageMicroschema, userInfo.getUser());
+		MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(captionedImageMicroschema, userInfo.getUser(), EventQueueBatch.create());
 		microschemaContainers.put(captionedImageMicroschema.getName(), microschemaContainer);
-		project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer);
+		project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, EventQueueBatch.create());
 	}
 
 	public Node addFolder(Node rootNode, String englishName, String germanName) {
@@ -483,6 +491,7 @@ public class TestDataProvider {
 			germanContainer.createString("teaser").setString(germanName);
 			germanContainer.createString("slug").setString(germanName);
 			germanContainer.updateDisplayFieldValue();
+			contentCount++;
 			folderNode.publish(getGerman(), branch, getUserInfo().getUser());
 		}
 		if (englishName != null) {
@@ -491,6 +500,7 @@ public class TestDataProvider {
 			englishContainer.createString("name").setString(englishName);
 			englishContainer.createString("slug").setString(englishName);
 			englishContainer.updateDisplayFieldValue();
+			contentCount++;
 			folderNode.publish(getEnglish(), branch, getUserInfo().getUser());
 		}
 
@@ -529,6 +539,7 @@ public class TestDataProvider {
 			englishContainer.createString("slug").setString(name + ".en.html");
 			englishContainer.createHTML("content").setHtml(englishContent);
 			englishContainer.updateDisplayFieldValue();
+			contentCount++;
 			node.publish(getEnglish(), branch, getUserInfo().getUser());
 		}
 
@@ -540,6 +551,7 @@ public class TestDataProvider {
 			germanContainer.createString("slug").setString(name + ".de.html");
 			germanContainer.createHTML("content").setHtml(germanContent);
 			germanContainer.updateDisplayFieldValue();
+			contentCount++;
 			node.publish(getGerman(), branch, getUserInfo().getUser());
 		}
 
@@ -668,6 +680,10 @@ public class TestDataProvider {
 
 	public String branchUuid() {
 		return branchUuid;
+	}
+
+	public long getContentCount() {
+		return contentCount;
 	}
 
 }

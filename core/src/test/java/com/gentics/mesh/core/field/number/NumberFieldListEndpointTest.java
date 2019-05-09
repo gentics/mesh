@@ -29,7 +29,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Override

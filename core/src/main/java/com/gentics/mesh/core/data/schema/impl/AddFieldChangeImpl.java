@@ -26,6 +26,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ADD_FIELD_AFTER_KEY;
@@ -66,7 +67,13 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 
 	@Override
 	public String[] getAllowProp() {
-		return getRestProperty(ALLOW_KEY);
+		Object[] prop = getRestProperty(ALLOW_KEY);
+		if (prop == null) {
+			return null;
+		}
+		return Stream.of(prop)
+			.map(item -> (String) item)
+			.toArray(String[]::new);
 	}
 
 	@Override

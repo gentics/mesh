@@ -19,4 +19,16 @@ public interface SchemaReference extends NameUuidReference<SchemaReference> {
 	 */
 	SchemaReference setVersion(String version);
 
+	/**
+	 * Get the uuid of the schema version
+	 * @return
+	 */
+	String getVersionUuid();
+
+	/**
+	 * Set the uuid of the schema version
+	 * @param uuid
+	 * @return
+	 */
+	SchemaReference setVersionUuid(String uuid);
 }

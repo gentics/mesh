@@ -1,11 +1,5 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.MeshEvent.BRANCH_CREATED;
-import static com.gentics.mesh.MeshEvent.BRANCH_DELETED;
-import static com.gentics.mesh.MeshEvent.BRANCH_UPDATED;
-
-import java.util.List;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
@@ -17,10 +11,24 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
+import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
+import com.gentics.mesh.core.rest.event.branch.BranchTaggedEventModel;
+import com.gentics.mesh.core.rest.event.project.ProjectBranchEventModel;
+import com.gentics.mesh.event.Assignment;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
+
+import java.util.List;
+
+import static com.gentics.mesh.ElementType.BRANCH;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
 
 /**
  * The Branch domain model interface.
@@ -43,14 +51,9 @@ import com.gentics.mesh.parameter.PagingParameters;
  * 
  */
 public interface Branch
-	extends MeshCoreVertex<BranchResponse, Branch>, NamedElement, ReferenceableElement<BranchReference>, UserTrackingVertex, Taggable {
+	extends MeshCoreVertex<BranchResponse, Branch>, NamedElement, ReferenceableElement<BranchReference>, UserTrackingVertex, Taggable, ProjectElement {
 
-	/**
-	 * Type Value: {@value #TYPE}
-	 */
-	String TYPE = "branch";
-
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, BRANCH_CREATED.address, BRANCH_UPDATED.address, BRANCH_DELETED.address);
+	TypeInfo TYPE_INFO = new TypeInfo(BRANCH, BRANCH_CREATED, BRANCH_UPDATED, BRANCH_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {
@@ -191,9 +194,10 @@ public interface Branch
 	 * 
 	 * @param user
 	 * @param schemaContainerVersion
+	 * @param batch
 	 * @return Job which was created to trigger the migration or null if no job was created because the version has already been assigned before
 	 */
-	Job assignSchemaVersion(User user, SchemaContainerVersion schemaContainerVersion);
+	Job assignSchemaVersion(User user, SchemaContainerVersion schemaContainerVersion, EventQueueBatch batch);
 
 	/**
 	 * Unassign all schema versions of the given schema from this branch.
@@ -234,9 +238,10 @@ public interface Branch
 	 * @param user
 	 * 
 	 * @param microschemaContainerVersion
+	 * @param batch
 	 * @return Job which has been created if the version has not yet been assigned. Otherwise null will be returned.
 	 */
-	Job assignMicroschemaVersion(User user, MicroschemaContainerVersion microschemaContainerVersion);
+	Job assignMicroschemaVersion(User user, MicroschemaContainerVersion microschemaContainerVersion, EventQueueBatch batch);
 
 	/**
 	 * Unassigns all versions of the given microschema from this branch.
@@ -284,11 +289,11 @@ public interface Branch
 	 * 
 	 * @return Iterable
 	 */
-	Iterable<? extends SchemaContainerVersion> findActiveSchemaVersions();
+	TraversalResult<? extends SchemaContainerVersion> findActiveSchemaVersions();
 
 	/**
-	 * Get an iterable over all active microschema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one which
-	 * is queued and will soon contain containers due to an executed node migration.
+	 * Get an iterable over all active microschema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one
+	 * which is queued and will soon contain containers due to an executed node migration.
 	 *
 	 * @return Iterable
 	 */
@@ -300,13 +305,6 @@ public interface Branch
 	 * @return Iterable
 	 */
 	Iterable<? extends BranchSchemaEdge> findAllLatestSchemaVersionEdges();
-
-	/**
-	 * Project to which the branch belongs.
-	 * 
-	 * @return Project of the branch
-	 */
-	Project getProject();
 
 	/**
 	 * Assign the branch to a specific project.
@@ -398,12 +396,56 @@ public interface Branch
 	TransformablePage<? extends Tag> getTags(User user, PagingParameters params);
 
 	/**
+	 * Tests if the branch is tagged with the given tag.
+	 *
+	 * @param tag
+	 * @return
+	 */
+	boolean hasTag(Tag tag);
+
+	/**
 	 * Handle the update tags request.
-	 * 
+	 *
 	 * @param ac
 	 * @param batch
 	 * @return Page which includes the new set of tags
 	 */
-	TransformablePage<? extends Tag> updateTags(InternalActionContext ac, SearchQueueBatch batch);
+	TransformablePage<? extends Tag> updateTags(InternalActionContext ac, EventQueueBatch batch);
+
+	/**
+	 * Generate event which is send when the branch is set to be the latest of the project.
+	 *
+	 * @return
+	 */
+	ProjectBranchEventModel onSetLatest();
+
+	/**
+	 * Generate a tagging event for the branch.
+	 *
+	 * @param tag
+	 * @param assignment
+	 * @return
+	 */
+	BranchTaggedEventModel onTagged(Tag tag, Assignment assignment);
+
+	/**
+	 * Create a project schema assignment event.
+	 *
+	 * @param schemaContainerVersion
+	 * @param assigned
+	 * @param status
+	 * @return
+	 */
+	BranchSchemaAssignEventModel onSchemaAssignEvent(SchemaContainerVersion schemaContainerVersion, Assignment assigned, MigrationStatus status);
+
+	/**
+	 * Create a project microschema assignment event.
+	 *
+	 * @param microschemaContainerVersion
+	 * @param assigned
+	 * @param status
+	 * @return
+	 */
+	BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion, Assignment assigned, MigrationStatus status);
 
 }

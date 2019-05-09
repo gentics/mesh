@@ -14,8 +14,6 @@ import org.junit.runners.Parameterized;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.stream.Stream;
-
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)

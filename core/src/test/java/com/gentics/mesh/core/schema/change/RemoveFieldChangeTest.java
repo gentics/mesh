@@ -21,7 +21,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class RemoveFieldChangeTest extends AbstractChangeTest {
 
 	@Test

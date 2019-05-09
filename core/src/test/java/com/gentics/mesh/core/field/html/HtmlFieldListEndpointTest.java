@@ -26,7 +26,7 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Override

@@ -1,21 +1,20 @@
 package com.gentics.mesh.core.admin;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
-
-import java.io.IOException;
-
-import org.junit.Test;
-
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import org.junit.Test;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true, startStorageServer = true, clusterMode = false, inMemoryDB = false)
+import java.io.IOException;
+
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
+
+@MeshTestSetting(testSize = FULL, startServer = true, startStorageServer = true, clusterMode = false, inMemoryDB = false)
 public class AdminEndpointBackupServerTest extends AbstractMeshTest {
 
 	@Test

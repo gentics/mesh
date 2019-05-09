@@ -29,9 +29,9 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.root.impl.AbstractRootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -101,7 +101,6 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		job.setStatus(QUEUED);
 		job.setFromSchemaVersion(fromVersion);
 		job.setToSchemaVersion(toVersion);
-		job.prepare();
 		addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued schema migration job {" + job.getUuid() + "}");
@@ -119,7 +118,6 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		job.setStatus(QUEUED);
 		job.setFromMicroschemaVersion(fromVersion);
 		job.setToMicroschemaVersion(toVersion);
-		job.prepare();
 		addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued microschema migration job {" + job.getUuid() + "} - " + toVersion.getSchemaContainer().getName() + " "
@@ -137,7 +135,6 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		job.setStatus(QUEUED);
 		job.setFromSchemaVersion(fromVersion);
 		job.setToSchemaVersion(toVersion);
-		job.prepare();
 		addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued branch migration job {" + job.getUuid() + "} for branch {" + branch.getUuid() + "}");
@@ -152,8 +149,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		job.setType(MigrationType.branch);
 		job.setStatus(QUEUED);
 		job.setBranch(branch);
-		job.prepare();
-		addItem(job);
+			addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued branch migration job {" + job.getUuid() + "} for branch {" + branch.getUuid() + "}");
 		}
@@ -166,7 +162,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Job create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
+	public Job create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		throw new NotImplementedException("Jobs can be created using REST");
 	}
 

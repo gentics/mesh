@@ -3,6 +3,7 @@ package com.gentics.mesh.search;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.context.MeshTestHelper.getRangeQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
@@ -15,11 +16,11 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -34,14 +35,15 @@ import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true, withIngestPlugin = false)
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
 public class NodeBinaryNoIngestSearchTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testBinarySearchMapping() throws Exception {
+		Node nodeA = content("concorde");
+		Node nodeB = content();
+
 		try (Tx tx = tx()) {
-			Node nodeA = content("concorde");
-			Node nodeB = content();
 			SchemaModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 
 			List<String> names = Arrays.asList("binary", "binary2", "binary3");
@@ -73,9 +75,12 @@ public class NodeBinaryNoIngestSearchTest extends AbstractNodeSearchEndpointTest
 				.setMimeType("text/plain");
 			nodeB.getLatestDraftFieldContainer(english()).createBinary("binary2", binaryB).setFileName("somefile.dat")
 				.setMimeType("text/plain");
+			tx.success();
+		}
 
-			recreateIndices();
+		recreateIndices();
 
+		try (Tx tx = tx()) {
 			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
 				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
 			String id = NodeGraphFieldContainer.composeDocumentId(nodeB.getUuid(), "en");
@@ -103,9 +108,10 @@ public class NodeBinaryNoIngestSearchTest extends AbstractNodeSearchEndpointTest
 
 	@Test
 	public void testSearchBinaryField() throws Exception {
+		Node nodeA = content("concorde");
+		Node nodeB = content();
+
 		try (Tx tx = tx()) {
-			Node nodeA = content("concorde");
-			Node nodeB = content();
 			SchemaModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new BinaryFieldSchemaImpl().setName("binary"));
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
@@ -123,8 +129,12 @@ public class NodeBinaryNoIngestSearchTest extends AbstractNodeSearchEndpointTest
 				.setMimeType("text/plain");
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
 			MeshInternal.get().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binary.getBinary().getUuid()).blockingAwait();
-			recreateIndices();
+			tx.success();
+		}
 
+		recreateIndices();
+
+		try (Tx tx = tx()) {
 			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
 				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
 			String id = NodeGraphFieldContainer.composeDocumentId(nodeB.getUuid(), "en");

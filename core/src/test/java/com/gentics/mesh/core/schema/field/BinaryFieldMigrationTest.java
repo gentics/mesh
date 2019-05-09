@@ -6,9 +6,11 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.binary.BinaryFieldTestHelper;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.RxUtil;
+import com.gentics.mesh.util.UUIDUtil;
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 import org.junit.Test;
@@ -31,23 +33,37 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest implements BinaryFieldTestHelper {
 
 	String hash;
 
+	/**
+	 * Creates a new binary field in the given container
+	 */
 	final DataProvider FILL = (container, name) -> {
 		Buffer buffer = Buffer.buffer(FILECONTENTS);
 		hash = FileUtils.hash(buffer).blockingGet();
 		BinaryRoot binaryRoot = MeshInternal.get().boot().binaryRoot();
+
+		// Check whether the binary could already be found
 		Binary binary = binaryRoot.findByHash(hash);
+		boolean store = false;
 		if (binary == null) {
 			binary = binaryRoot.create(hash, 1L);
+			store = true;
 		}
 		BinaryGraphField field = container.createBinary(name, binary);
 		field.setFileName(FILENAME);
 		field.setMimeType(MIMETYPE);
-		meshDagger().binaryStorage().store(Flowable.just(buffer), binary.getUuid()).blockingAwait();
+
+		// Only store the file data if we need to
+		if (store == true) {
+			BinaryStorage storage = meshDagger().binaryStorage();
+			String tmpId = UUIDUtil.randomUUID();
+			storage.storeInTemp(Flowable.just(buffer), tmpId).blockingAwait();
+			storage.moveInPlace(binary.getUuid(), tmpId).blockingAwait();
+		}
 	};
 
 	@Test

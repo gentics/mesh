@@ -1,20 +1,11 @@
 package com.gentics.mesh.test.context;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.io.FileUtils;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-import org.testcontainers.containers.wait.Wait;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.search.IndexHandler;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.DaggerMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
@@ -24,39 +15,76 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.etc.config.OAuth2Options;
 import com.gentics.mesh.etc.config.OAuth2ServerConfig;
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.rest.client.MeshRestClientConfig;
+import com.gentics.mesh.rest.client.impl.MeshRestOkHttpClientImpl;
 import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.TrackingSearchProvider;
+import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import com.gentics.mesh.test.TestDataProvider;
-import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.docker.ElasticsearchContainer;
 import com.gentics.mesh.test.docker.KeycloakContainer;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
-
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import okhttp3.OkHttpClient;
+import org.apache.commons.io.FileUtils;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
+import org.testcontainers.containers.Network;
+import org.testcontainers.containers.ToxiproxyContainer;
+import org.testcontainers.containers.ToxiproxyContainer.ContainerProxy;
+import org.testcontainers.containers.wait.strategy.Wait;
+
+import java.io.File;
+import java.io.IOException;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+
+import static com.gentics.mesh.test.context.MeshTestHelper.noopConsumer;
+import static org.junit.Assert.assertTrue;
 
 public class MeshTestContext extends TestWatcher {
 
 	static {
-		System.setProperty("mesh.test", "true");
+		System.setProperty(TrackingSearchProvider.TEST_PROPERTY_KEY, "true");
 	}
 
 	private static final Logger log = LoggerFactory.getLogger(MeshTestContext.class);
 
 	private static final String CONF_PATH = "target/config-" + System.currentTimeMillis();
 
-	private static MeshOptions meshOptions = new MeshOptions();
+	private static MeshOptions meshOptions;
 
 	public static ElasticsearchContainer elasticsearch;
 
 	public static KeycloakContainer keycloak;
+
+	public static Network network;
+
+	public static ToxiproxyContainer toxiproxy;
+
+	public static ContainerProxy proxy;
+
+	public static OkHttpClient okHttp = new OkHttpClient.Builder()
+		.callTimeout(Duration.ofMinutes(1))
+		.connectTimeout(Duration.ofMinutes(1))
+		.writeTimeout(Duration.ofMinutes(1))
+		.readTimeout(Duration.ofMinutes(1))
+		.build();
 
 	private List<File> tmpFolders = new ArrayList<>();
 	private MeshComponent meshDagger;
@@ -73,6 +101,11 @@ public class MeshTestContext extends TestWatcher {
 
 	private List<String> deploymentIds = new ArrayList<>();
 
+	private CountDownLatch idleLatch;
+	private MessageConsumer<Object> idleConsumer;
+
+	private Consumer<MeshOptions> optionChanger = noopConsumer();
+
 	@Override
 	protected void starting(Description description) {
 		try {
@@ -84,15 +117,22 @@ public class MeshTestContext extends TestWatcher {
 				removeDataDirectory();
 				removeConfigDirectory();
 				MeshOptions options = init(settings);
-				initDagger(options, settings.testSize());
+				initDagger(options, settings);
 				meshDagger.boot().registerEventHandlers();
 			} else {
 				if (!settings.inMemoryDB()) {
 					DatabaseHelper.init(meshDagger.database());
 				}
+				initFolders(Mesh.mesh().getOptions());
 				setupData();
-				if (settings.useElasticsearch()) {
+				listenToSearchIdleEvent();
+				switch (settings.elasticsearch()) {
+				case CONTAINER:
+				case CONTAINER_WITH_INGEST:
 					setupIndexHandlers();
+					break;
+				default:
+					break;
 				}
 				if (settings.startServer()) {
 					setupRestEndpoints(settings);
@@ -109,6 +149,8 @@ public class MeshTestContext extends TestWatcher {
 		try {
 			MeshTestSetting settings = getSettings(description);
 			if (description.isSuite()) {
+				// TODO CI does not like this, reactivate later:
+				// Mesh.mesh().shutdown();
 				removeDataDirectory();
 				removeConfigDirectory();
 				if (elasticsearch != null && elasticsearch.isRunning()) {
@@ -117,16 +159,30 @@ public class MeshTestContext extends TestWatcher {
 				if (keycloak != null && keycloak.isRunning()) {
 					keycloak.stop();
 				}
+				if (toxiproxy != null) {
+					toxiproxy.stop();
+					network.close();
+				}
+				optionChanger = noopConsumer();
 			} else {
 				cleanupFolders();
 				if (settings.startServer()) {
 					undeployAndReset();
 					closeClient();
 				}
-				if (settings.useElasticsearch()) {
+				idleConsumer.unregister();
+				switch (settings.elasticsearch()) {
+				case CONTAINER:
+				case CONTAINER_TOXIC:
+				case EMBEDDED:
+				case CONTAINER_WITH_INGEST:
 					meshDagger.searchProvider().clear().blockingAwait();
-				} else {
-					meshDagger.trackingSearchProvider().clear();
+					break;
+				case TRACKING:
+					meshDagger.trackingSearchProvider().reset();
+					break;
+				default:
+					break;
 				}
 				resetDatabase(settings);
 			}
@@ -173,7 +229,12 @@ public class MeshTestContext extends TestWatcher {
 		// Setup the rest client
 		try (Tx tx = db().tx()) {
 			boolean ssl = settings.ssl();
-			client = MeshRestClient.create("localhost", port, ssl);
+			MeshRestClientConfig clientConfig = new MeshRestClientConfig.Builder()
+				.setHost("localhost")
+				.setPort(port)
+				.setSsl(ssl)
+				.build();
+			client = new MeshRestOkHttpClientImpl(clientConfig, okHttp);
 			client.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
 			client.login().blockingGet();
 		}
@@ -203,7 +264,6 @@ public class MeshTestContext extends TestWatcher {
 	 */
 	private void setupData() throws Exception {
 		meshDagger.database().setMassInsertIntent();
-		meshDagger.boot().createSearchIndicesAndMappings();
 		dataProvider.setup();
 		meshDagger.database().resetIntent();
 	}
@@ -275,6 +335,7 @@ public class MeshTestContext extends TestWatcher {
 	 */
 	public MeshOptions init(MeshTestSetting settings) throws Exception {
 		MeshFactoryImpl.clear();
+		meshOptions = new MeshOptions();
 
 		if (settings == null) {
 			throw new RuntimeException("Settings could not be found. Did you forgot to add the @MeshTestSetting annotation to your test?");
@@ -285,6 +346,9 @@ public class MeshTestContext extends TestWatcher {
 			meshOptions.setInitCluster(true);
 			meshOptions.getClusterOptions().setClusterName("cluster" + System.currentTimeMillis());
 		}
+
+		// Monitoring
+		meshOptions.getMonitoringOptions().setEnabled(settings.monitoring());
 
 		// Setup the keystore
 		File keystoreFile = new File("target", "keystore_" + UUIDUtil.randomUUID() + ".jceks");
@@ -297,20 +361,7 @@ public class MeshTestContext extends TestWatcher {
 		meshOptions.getAuthenticationOptions().setKeystorePath(keystoreFile.getAbsolutePath());
 		meshOptions.setNodeName("testNode");
 
-		String uploads = newFolder("testuploads");
-		meshOptions.getUploadOptions().setDirectory(uploads);
-
-		String targetTmpDir = newFolder("tmpdir");
-		meshOptions.getUploadOptions().setTempDirectory(targetTmpDir);
-
-		String imageCacheDir = newFolder("image_cache");
-		meshOptions.getImageOptions().setImageCacheDirectory(imageCacheDir);
-
-		String backupPath = newFolder("backups");
-		meshOptions.getStorageOptions().setBackupDirectory(backupPath);
-
-		String exportPath = newFolder("exports");
-		meshOptions.getStorageOptions().setExportDirectory(exportPath);
+		initFolders(meshOptions);
 
 		HttpServerConfig httpOptions = meshOptions.getHttpServerOptions();
 		httpOptions.setPort(port);
@@ -336,19 +387,54 @@ public class MeshTestContext extends TestWatcher {
 			meshOptions.getStorageOptions().setStartServer(true);
 		}
 		// Increase timeout to high load during testing
-		meshOptions.getSearchOptions().setTimeout(10_000L);
+		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
+		searchOptions.setTimeout(10_000L);
 		meshOptions.getStorageOptions().setDirectory(graphPath);
-		if (settings.useElasticsearchContainer()) {
-			meshOptions.getSearchOptions().setStartEmbedded(false);
-			meshOptions.getSearchOptions().setUrl(null);
-			if (settings.useElasticsearch()) {
-				elasticsearch = new ElasticsearchContainer(settings.withIngestPlugin());
-				if (!elasticsearch.isRunning()) {
-					elasticsearch.start();
-				}
-				elasticsearch.waitingFor(Wait.forHttp("/"));
-				meshOptions.getSearchOptions().setUrl("http://localhost:" + elasticsearch.getMappedPort(9200));
+
+		switch (settings.elasticsearch()) {
+		case CONTAINER:
+		case CONTAINER_WITH_INGEST:
+			elasticsearch = new ElasticsearchContainer(settings.elasticsearch() == ElasticsearchTestMode.CONTAINER_WITH_INGEST);
+			if (!elasticsearch.isRunning()) {
+				elasticsearch.start();
 			}
+			elasticsearch.waitingFor(Wait.forHttp("/"));
+
+			searchOptions.setStartEmbedded(false);
+			searchOptions.setUrl("http://localhost:" + elasticsearch.getMappedPort(9200));
+			break;
+		case CONTAINER_TOXIC:
+			network = Network.newNetwork();
+			elasticsearch = new ElasticsearchContainer(false).withNetwork(network);
+			elasticsearch.waitingFor(Wait.forHttp(("/")));
+			toxiproxy = new ToxiproxyContainer().withNetwork(network);
+			if (!toxiproxy.isRunning()) {
+				toxiproxy.start();
+			}
+			proxy = toxiproxy.getProxy(elasticsearch, 9200);
+
+			final String ipAddressViaToxiproxy = proxy.getContainerIpAddress();
+			final int portViaToxiproxy = proxy.getProxyPort();
+
+			if (!elasticsearch.isRunning()) {
+				elasticsearch.start();
+			}
+			searchOptions.setStartEmbedded(false);
+			searchOptions.setUrl("http://" + ipAddressViaToxiproxy + ":" + portViaToxiproxy);
+			break;
+		case EMBEDDED:
+			searchOptions.setStartEmbedded(true);
+			break;
+		case NONE:
+			searchOptions.setUrl(null);
+			searchOptions.setStartEmbedded(false);
+			break;
+		case TRACKING:
+			System.setProperty(TrackingSearchProvider.TEST_PROPERTY_KEY, "true");
+			searchOptions.setStartEmbedded(false);
+			break;
+		default:
+			break;
 		}
 
 		if (settings.useKeycloak()) {
@@ -371,9 +457,27 @@ public class MeshTestContext extends TestWatcher {
 
 			oauth2Options.setConfig(realmConfig);
 		}
-
+		settings.optionChanger().changer.accept(meshOptions);
 		Mesh.mesh(meshOptions);
 		return meshOptions;
+	}
+
+	private void initFolders(MeshOptions meshOptions) throws IOException {
+		String tmpDir = newFolder("tmpDir");
+		meshOptions.setTempDirectory(tmpDir);
+
+		String uploads = newFolder("testuploads");
+		meshOptions.getUploadOptions().setDirectory(uploads);
+		String targetUploadTmpDir = newFolder("uploadTmpDir");
+		meshOptions.getUploadOptions().setTempDirectory(targetUploadTmpDir);
+
+		String imageCacheDir = newFolder("image_cache");
+		meshOptions.getImageOptions().setImageCacheDirectory(imageCacheDir);
+
+		String backupPath = newFolder("backups");
+		meshOptions.getStorageOptions().setBackupDirectory(backupPath);
+		String exportPath = newFolder("exports");
+		meshOptions.getStorageOptions().setExportDirectory(exportPath);
 	}
 
 	/**
@@ -388,7 +492,7 @@ public class MeshTestContext extends TestWatcher {
 		File directory = new File(path);
 		FileUtils.deleteDirectory(directory);
 		directory.deleteOnExit();
-		directory.mkdirs();
+		assertTrue("Could not create dir for path {" + path + "}", directory.mkdirs());
 		tmpFolders.add(directory);
 		return path;
 	}
@@ -397,14 +501,18 @@ public class MeshTestContext extends TestWatcher {
 	 * Initialise the mesh dagger context and inject the dependencies within the test.
 	 * 
 	 * @param options
-	 * 
+	 *
+	 * @param settings
 	 * @throws Exception
 	 */
-	public void initDagger(MeshOptions options, TestSize size) throws Exception {
+	public void initDagger(MeshOptions options, MeshTestSetting settings) throws Exception {
 		log.info("Initializing dagger context");
-		meshDagger = DaggerMeshComponent.builder().configuration(options).build();
+		meshDagger = DaggerMeshComponent.builder()
+			.configuration(options)
+			.searchProviderType(settings.elasticsearch().toSearchProviderType())
+			.build();
 		MeshInternal.set(meshDagger);
-		dataProvider = new TestDataProvider(size, meshDagger.boot(), meshDagger.database());
+		dataProvider = new TestDataProvider(settings.testSize(), meshDagger.boot(), meshDagger.database());
 		if (meshDagger.searchProvider() instanceof TrackingSearchProvider) {
 			trackingSearchProvider = meshDagger.trackingSearchProvider();
 		}
@@ -416,7 +524,7 @@ public class MeshTestContext extends TestWatcher {
 			throw e;
 		}
 	}
-	
+
 	public MonitoringRestClient getMonitoringClient() {
 		return monitoringClient;
 	}
@@ -433,4 +541,48 @@ public class MeshTestContext extends TestWatcher {
 		return meshOptions;
 	}
 
+	private void listenToSearchIdleEvent() {
+		idleConsumer = vertx.eventBus().consumer(MeshEvent.SEARCH_IDLE.address, handler -> {
+			log.info("Got search idle event");
+			if (idleLatch != null) {
+				idleLatch.countDown();
+			}
+		});
+	}
+
+	/**
+	 * Waits until all requests have been sent successfully.
+	 */
+	public void waitForSearchIdleEvent() {
+		Objects.requireNonNull(idleConsumer, "Call #listenToSearchIdleEvent first");
+		ElasticsearchProcessVerticle verticle = getElasticSearchVerticle();
+		try {
+			verticle.flush().blockingAwait();
+			idleLatch = new CountDownLatch(1);
+			boolean success = idleLatch.await(30, TimeUnit.SECONDS);
+			if (!success) {
+				throw new RuntimeException("Timed out while waiting for search idle event");
+			}
+			verticle.refresh().blockingAwait();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public ElasticsearchProcessVerticle getElasticSearchVerticle() {
+		return ((BootstrapInitializerImpl) meshDagger.boot()).loader.get().getSearchVerticle();
+	}
+
+	public static ContainerProxy getProxy() {
+		return proxy;
+	}
+
+	public static ElasticsearchContainer elasticsearchContainer() {
+		return elasticsearch;
+	}
+
+	public MeshTestContext setOptionChanger(Consumer<MeshOptions> optionChanger) {
+		this.optionChanger = optionChanger;
+		return this;
+	}
 }

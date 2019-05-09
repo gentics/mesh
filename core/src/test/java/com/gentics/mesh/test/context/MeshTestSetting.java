@@ -1,11 +1,13 @@
 package com.gentics.mesh.test.context;
 
-import static com.gentics.mesh.test.TestSize.PROJECT;
+import com.gentics.mesh.test.TestSize;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-import com.gentics.mesh.test.TestSize;
+import static com.gentics.mesh.test.TestSize.PROJECT;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
+import static com.gentics.mesh.test.context.MeshOptionChanger.NO_CHANGE;
 
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MeshTestSetting {
@@ -15,21 +17,7 @@ public @interface MeshTestSetting {
 	 * 
 	 * @return
 	 */
-	boolean useElasticsearch() default false;
-
-	/**
-	 * Flag which indicates whether the ES docker container should use the ingest plugin.
-	 * 
-	 * @return
-	 */
-	boolean withIngestPlugin() default false;
-
-	/**
-	 * Flag which indicates whether the ES test container should be used. Otherwise the embedded ES will be used instead.
-	 * 
-	 * @return
-	 */
-	boolean useElasticsearchContainer() default true;
+	ElasticsearchTestMode elasticsearch() default NONE;
 
 	/**
 	 * Setting which indicates what size of test data should be created.
@@ -79,4 +67,12 @@ public @interface MeshTestSetting {
 	 * @return
 	 */
 	boolean ssl() default false;
+
+	/**
+	 * Flag which indicates whether the monitoring feature should be enabled.
+	 * @return
+	 */
+	boolean monitoring() default true;
+
+	MeshOptionChanger optionChanger() default NO_CHANGE;
 }

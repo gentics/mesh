@@ -2,6 +2,7 @@ package com.gentics.mesh.rest.client.method;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
@@ -26,8 +27,9 @@ public interface AuthClientMethods {
 	/**
 	 * Return the currently active user's rest model data.
 	 * 
+	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<UserResponse> me();
+	MeshRequest<UserResponse> me(ParameterProvider... parameters);
 
 }

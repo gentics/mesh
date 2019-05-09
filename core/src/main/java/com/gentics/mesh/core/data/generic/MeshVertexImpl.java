@@ -1,8 +1,5 @@
 package com.gentics.mesh.core.data.generic;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -10,12 +7,12 @@ import java.util.Set;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.IndexableElement;
+import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.util.UUIDUtil;
@@ -167,19 +164,22 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	}
 
 	@Override
-	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-			Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+		Set<GraphPermission> permissionsToRevoke) {
+		applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke);
+	}
+
+	protected void applyVertexPermissions(EventQueueBatch batch, Role role, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		role.grantPermissions(this, permissionsToGrant.toArray(new GraphPermission[permissionsToGrant.size()]));
 		role.revokePermissions(this, permissionsToRevoke.toArray(new GraphPermission[permissionsToRevoke.size()]));
-		if (this instanceof IndexableElement) {
-			// Check whether the action affects read permissions. We only need to update the document in the index if the action affects those perms
-			boolean grantReads = permissionsToGrant.contains(READ_PERM) || permissionsToGrant.contains(READ_PUBLISHED_PERM);
-			boolean revokesRead = permissionsToRevoke.contains(READ_PERM) || permissionsToRevoke.contains(READ_PUBLISHED_PERM);
-			if (grantReads || revokesRead) {
-				batch.updatePermissions((IndexableElement) this);
-			}
+
+		if (this instanceof MeshCoreVertex) {
+			MeshCoreVertex<?, ?> coreVertex = (MeshCoreVertex<?, ?>) this;
+			batch.add(coreVertex.onPermissionChanged(role));
 		}
+		// TODO Also handle RootVertex - We need to add a dedicated event in those cases.
 	}
+
 
 	@Override
 	public Vertex getElement() {
@@ -188,7 +188,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		FramedGraph fg = Tx.getActive().getGraph();
 		if (fg == null) {
 			throw new RuntimeException(
-					"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
 
 		Vertex vertexForId = fg.getVertex(id);
@@ -203,7 +203,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		}
 		return (Vertex) vertex;
 	}
-	
+
 	@Override
 	public String getElementVersion() {
 		Vertex vertex = getElement();

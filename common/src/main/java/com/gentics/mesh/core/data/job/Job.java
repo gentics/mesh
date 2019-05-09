@@ -11,7 +11,6 @@ import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.util.DateUtils;
-
 import io.reactivex.Completable;
 
 /**
@@ -125,11 +124,6 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	 * @param toVersion
 	 */
 	void setToMicroschemaVersion(MicroschemaContainerVersion toVersion);
-
-	/**
-	 * Prepare the job.
-	 */
-	void prepare();
 
 	/**
 	 * Process the job.

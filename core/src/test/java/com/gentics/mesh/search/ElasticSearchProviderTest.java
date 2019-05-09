@@ -25,8 +25,8 @@ import com.gentics.mesh.util.UUIDUtil;
 import io.reactivex.Observable;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
-@MeshTestSetting(useElasticsearch = true, testSize = TestSize.PROJECT_AND_NODE, startServer = true, withIngestPlugin = true)
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_WITH_INGEST;
+@MeshTestSetting(elasticsearch = CONTAINER_WITH_INGEST, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class ElasticSearchProviderTest extends AbstractMeshTest {
 
 	@Test
@@ -73,7 +73,7 @@ public class ElasticSearchProviderTest extends AbstractMeshTest {
 				client.hasIngestProcessor("append", "attachment").blockingGet());
 
 		assertTrue("The ingest attachment processors should be configured",
-				getProvider().hasIngestPipelinePlugin());
+				getProvider().hasIngestPipelinePlugin().blockingGet());
 	}
 
 	/**
@@ -96,7 +96,7 @@ public class ElasticSearchProviderTest extends AbstractMeshTest {
 		String uuid = UUIDUtil.randomUUID();
 		List<BulkEntry> entries = new ArrayList<>();
 		entries.add(new IndexBulkEntry("test", uuid, input, true));
-		provider.processBulk(entries).blockingAwait();
+		provider.processBulkOld(entries).blockingAwait();
 
 		JsonObject output = provider.getDocument("test", uuid).blockingGet();
 		assertEquals("Lorem ipsum dolor sit amet",

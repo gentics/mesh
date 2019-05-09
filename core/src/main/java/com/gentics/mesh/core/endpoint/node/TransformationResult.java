@@ -105,4 +105,5 @@ public class TransformationResult {
 	public String getMimeType() {
 		return mimeType;
 	}
+
 }

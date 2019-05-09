@@ -2,10 +2,13 @@ package com.gentics.mesh.core.schema;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_START;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_UPDATED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.junit.Assert.assertEquals;
@@ -26,13 +29,14 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -55,7 +59,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 	@Before
@@ -96,7 +100,14 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		String json = TestUtils.getJson("schema-changes.json");
 		String uuid = tx(() -> schemaContainer("folder").getUuid());
 		SchemaChangesListModel changes = JsonUtil.readValue(json, SchemaChangesListModel.class);
+
+		expect(SCHEMA_UPDATED).match(1, MeshElementEventModelImpl.class, event -> {
+			assertEquals("folder", event.getName());
+			assertEquals(uuid, event.getUuid());
+		}).one();
+		expect(SCHEMA_MIGRATION_START).none();
 		call(() -> client().applyChangesToSchema(uuid, changes));
+		awaitEvents();
 
 		SchemaResponse response = call(() -> client().findSchemaByUuid(uuid));
 		assertEquals("string", response.getField("pub_dir").getType());
@@ -143,8 +154,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		listField.setLabel("testListTypeLabel");
 		schema.getFields().add(listField);
 		// Update schema and wait for migration
-		waitForJobs(() -> call(() ->
-				client().updateSchema(schemaUuid, this.buildListFieldUpdateRequest(schema))), COMPLETED, 1);
+		waitForJobs(() -> call(() -> client().updateSchema(schemaUuid, this.buildListFieldUpdateRequest(schema))), COMPLETED, 1);
 
 		SchemaResponse updated = call(() -> client().findSchemaByUuid(schemaUuid));
 		assertNotNull("The new field should have been added to the schema.", updated.getField("testListType"));
@@ -152,16 +162,13 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		assertEquals("The list type should be string.", "string", listField.getListType());
 		listField.setListType("micronode");
 		// Update schema and wait for migration
-		waitForJobs(() -> call(() ->
-				client().updateSchema(schemaUuid, this.buildListFieldUpdateRequest(updated))), COMPLETED, 1);
-
+		waitForJobs(() -> call(() -> client().updateSchema(schemaUuid, this.buildListFieldUpdateRequest(updated))), COMPLETED, 1);
 
 		SchemaResponse changed = call(() -> client().findSchemaByUuid(schemaUuid));
 		assertNotNull("The new field should still be in the schema.", changed.getField("testListType"));
 		listField = (ListFieldSchema) changed.getField("testListType");
 		assertEquals("The list type should have changed to micronode.", "micronode", listField.getListType());
 	}
-
 
 	@Test
 	public void testFieldTypeChange() throws Exception {
@@ -181,9 +188,8 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		waitForJobs(() -> {
 			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
-					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
+				new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
-
 
 		try (Tx tx = tx()) {
 			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
@@ -218,14 +224,14 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		// 4. Update the schema server side -> 2.0
 		try (Tx tx = tx()) {
 			GenericMessageResponse status = call(() -> client().updateSchema(schemaContainer.getUuid(), request,
-					new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
+				new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
 			assertThat(status).matches("schema_updated_migration_deferred", request.getName(), "2.0");
 			// 5. assign the new schema version to the branch (which will start the migration)
 			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaContainer.getUuid()));
 
 			waitForJobs(() -> {
 				call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, project().getLatestBranch().getUuid(),
-						new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
+					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 			}, COMPLETED, 1);
 		}
 
@@ -237,7 +243,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new VersioningParametersImpl().draft()));
 			assertNotNull("The response should contain the content field.", response.getFields().hasField("content"));
 			assertEquals("The type of the content field was not changed to a number field.", NumberFieldImpl.class,
-					response.getFields().getNumberField("content").getClass());
+				response.getFields().getNumberField("content").getClass());
 			assertEquals("2.0", response.getVersion());
 
 			// 7. Update the node and set the new field
@@ -338,7 +344,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 		waitForJobs(() -> {
 			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
-					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
+				new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
@@ -369,7 +375,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		waitForJobs(() -> {
 			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
-					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
+				new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
@@ -379,7 +385,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			// Assert that migration worked
 			Node node = content();
 			assertNotNull("The schema of the node should contain the new field schema",
-					node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField"));
+				node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField"));
 			assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
 				!Objects.equals(currentVersion.getVersion(), node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion()));
 			assertEquals("label1234", node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField").getLabel());
@@ -408,7 +414,6 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField_" + i, "html", null);
 			listOfChanges.getChanges().add(change);
 
-
 			GenericMessageResponse status = call(() -> client().applyChangesToSchema(containerUuid, listOfChanges));
 			assertThat(status).matches("schema_changes_applied", "content");
 			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(containerUuid));
@@ -416,7 +421,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			// 2. Invoke migration
 			waitForJobs(() -> {
 				call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, branchUuid,
-						new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
+					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 			}, COMPLETED, 1);
 
 			try (Tx tx = tx()) {
@@ -426,7 +431,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 				// Assert that migration worked
 				Node node = content();
 				assertNotNull("The schema of the node should contain the new field schema",
-						node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField_" + i));
+					node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField_" + i));
 				assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
 					!Objects.equals(currentVersion.getVersion(), node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion()));
 			}
@@ -447,9 +452,9 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 					break;
 				}
 				assertNotNull("The schema version {" + version.getUuid() + "-" + version.getVersion() + "} should have a next change",
-						version.getNextChange());
+					version.getNextChange());
 				assertEquals("The version is not referencing the correct parent container.", container.getUuid(),
-						version.getSchemaContainer().getUuid());
+					version.getSchemaContainer().getUuid());
 				nVersions++;
 			}
 
@@ -491,7 +496,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		// 3. Update the schema server side -> 2.0
 		GenericMessageResponse status = call(
-				() -> client().updateSchema(schemaUuid, schema, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
+			() -> client().updateSchema(schemaUuid, schema, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
 		assertThat(status).matches("schema_updated_migration_deferred", "content", "2.0");
 
 		// 4. Assign the new schema version to the branch
@@ -499,7 +504,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		waitForJobs(() -> {
 			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
-					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
+				new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
 
 		Schema reloadedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
@@ -553,7 +558,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		assertNull("The content field should have been removed", updatedSchema.getField("content"));
 		waitForJobs(() -> {
 			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, branchUuid,
-					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
+				new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
 		schema.setVersion(schema.getVersion() + 1);
 
@@ -586,7 +591,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 		waitForJobs(() -> {
 			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
-					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
+				new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
 
 		// node must be migrated for initial branch
@@ -595,7 +600,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			// node must not be migrated for new branch
 			assertThat(content.getGraphFieldContainer("en", newBranch.getUuid(), ContainerType.DRAFT))
-					.isOf(schemaContainer.getLatestVersion().getPreviousVersion());
+				.isOf(schemaContainer.getLatestVersion().getPreviousVersion());
 		}
 	}
 }

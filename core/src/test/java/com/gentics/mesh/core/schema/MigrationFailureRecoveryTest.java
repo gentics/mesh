@@ -39,7 +39,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
  * Tests for https://github.com/gentics/mesh/issues/532
  * Tests if a schema or microschema can be updated after a failed migration.
  */
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true, clusterMode = false)
+@MeshTestSetting(testSize = FULL, startServer = true, clusterMode = false)
 public class MigrationFailureRecoveryTest extends AbstractMeshTest {
 	private static final String SCHEMA_NAME = "testSchema";
 	private static final String MICROSCHEMA_NAME = "testMicroschema";

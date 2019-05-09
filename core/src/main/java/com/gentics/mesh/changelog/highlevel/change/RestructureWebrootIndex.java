@@ -1,18 +1,18 @@
 package com.gentics.mesh.changelog.highlevel.change;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.changelog.highlevel.AbstractHighLevelChange;
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.tx.Tx;

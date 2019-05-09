@@ -1,10 +1,5 @@
 package com.gentics.mesh.core.data.generic;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-import java.util.Set;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
@@ -12,20 +7,31 @@ import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NamedElement;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.ProjectElement;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.event.MeshElementEventModel;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.value.FieldsSet;
-
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import java.util.Set;
+
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_PERMISSIONS_CHANGED;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * Abstract class for mesh core vertices that includes methods which are commonly used when transforming the vertices into REST POJO's.
@@ -124,54 +130,33 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	}
 
 	@Override
-	public void onUpdated() {
-		String address = getTypeInfo().getOnUpdatedAddress();
-		if (address != null) {
-			JsonObject json = new JsonObject();
-			if (this instanceof NamedElement) {
-				json.put("name", ((NamedElement) this).getName());
-			}
-			json.put("origin", Mesh.mesh().getOptions().getNodeName());
-			json.put("uuid", getUuid());
-			Mesh.vertx().eventBus().publish(address, json);
-			if (log.isDebugEnabled()) {
-				log.debug("Updated event sent {" + address + "}");
-			}
-		}
+	public MeshElementEventModel onUpdated() {
+		return createEvent(getTypeInfo().getOnUpdated());
 	}
 
 	@Override
-	public void onCreated() {
-		String address = getTypeInfo().getOnCreatedAddress();
-		if (address != null) {
-			JsonObject json = new JsonObject();
-			if (this instanceof NamedElement) {
-				json.put("name", ((NamedElement) this).getName());
-			}
-			json.put("origin", Mesh.mesh().getOptions().getNodeName());
-			json.put("uuid", getUuid());
-			Mesh.vertx().eventBus().publish(address, json);
-			if (log.isDebugEnabled()) {
-				log.debug("Created event sent {" + address + "}");
-			}
-		}
+	public MeshElementEventModel onCreated() {
+		return createEvent(getTypeInfo().getOnCreated());
 	}
 
 	@Override
-	public void onDeleted(String uuid, String name) {
-		String address = getTypeInfo().getOnDeletedAddress();
-		if (address != null) {
-			JsonObject json = new JsonObject();
-			if (this instanceof NamedElement) {
-				json.put("name", name);
-			}
-			json.put("origin", Mesh.mesh().getOptions().getNodeName());
-			json.put("uuid", getUuid());
-			Mesh.vertx().eventBus().publish(address, json);
-			if (log.isDebugEnabled()) {
-				log.debug("Deleted event sent {" + address + "}");
-			}
+	public MeshElementEventModel onDeleted() {
+		return createEvent(getTypeInfo().getOnDeleted());
+	}
+
+	protected MeshElementEventModel createEvent(MeshEvent event) {
+		MeshElementEventModel model = new MeshElementEventModelImpl();
+		model.setEvent(event);
+		fillEventInfo(model);
+		return model;
+	}
+
+	protected void fillEventInfo(MeshElementEventModel model) {
+		if (this instanceof NamedElement) {
+			model.setName(((NamedElement) this).getName());
 		}
+		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
+		model.setUuid(getUuid());
 	}
 
 	@Override
@@ -181,6 +166,36 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		keyBuilder.append("-");
 		keyBuilder.append(ac.getUser().getPermissionInfo(this).getHash());
 		return keyBuilder.toString();
+	}
+
+	@Override
+	public PermissionChangedEventModelImpl onPermissionChanged(Role role) {
+		PermissionChangedEventModelImpl model = new PermissionChangedEventModelImpl();
+		fillPermissionChanged(model, role);
+		return model;
+	}
+
+	@Override
+	public void fillPermissionChanged(PermissionChangedEventModelImpl model, Role role) {
+		model.setEvent(ROLE_PERMISSIONS_CHANGED);
+		model.setRole(role.transformToReference());
+		model.setType(getTypeInfo().getType());
+		model.setUuid(getUuid());
+		if (this instanceof NamedElement) {
+			String name = ((NamedElement) this).getName();
+			model.setName(name);
+		}
+		if (this instanceof ProjectElement) {
+			Project project = ((ProjectElement) this).getProject();
+			if (project != null) {
+				if (model instanceof PermissionChangedProjectElementEventModel) {
+					((PermissionChangedProjectElementEventModel) model).setProject(project.transformToReference());
+				}
+			} else {
+				log.warn("The project for element {" + getUuid() + "} could not be found.");
+			}
+		}
+
 	}
 
 }

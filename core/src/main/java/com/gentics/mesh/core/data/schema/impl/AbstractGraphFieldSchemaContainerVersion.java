@@ -1,15 +1,5 @@
 package com.gentics.mesh.core.data.schema.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-
-import org.apache.commons.lang.NotImplementedException;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
@@ -17,13 +7,22 @@ import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
+import org.apache.commons.lang.NotImplementedException;
+
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 /**
  * Abstract implementation for a graph field container version.
@@ -162,12 +161,12 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	}
 
 	@Override
-	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
 		throw new NotImplementedException("Updating is not directly supported for schemas. Please start a schema migration");
 	}
 
 	@Override
-	public SCV applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges, SearchQueueBatch batch) {
+	public SCV applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges, EventQueueBatch batch) {
 		if (listOfChanges.getChanges().isEmpty()) {
 			throw error(BAD_REQUEST, "schema_migration_no_changes_specified");
 		}
@@ -210,12 +209,12 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 		getSchemaContainer().setLatestVersion(nextVersion);
 
 		// Update the search index
-		batch.store(getSchemaContainer(), true);
+		batch.add(getSchemaContainer().onUpdated());
 		return nextVersion;
 	}
 
 	@Override
-	public SCV applyChanges(InternalActionContext ac, SearchQueueBatch batch) {
+	public SCV applyChanges(InternalActionContext ac, EventQueueBatch batch) {
 		SchemaChangesListModel listOfChanges = JsonUtil.readValue(ac.getBodyAsString(), SchemaChangesListModel.class);
 
 		if (getNextChange() != null) {

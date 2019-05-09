@@ -24,6 +24,16 @@ public interface SchemaClientMethods {
 	MeshRequest<SchemaResponse> createSchema(SchemaCreateRequest request);
 
 	/**
+	 * Create a new schema using the given uuid and request.
+	 * 
+	 * @param uuid
+	 *            Uuid of the schema
+	 * @param request
+	 * @return
+	 */
+	MeshRequest<SchemaResponse> createSchema(String uuid, SchemaCreateRequest request);
+
+	/**
 	 * Load the schema with the given uuid.
 	 * 
 	 * @param uuid
@@ -58,7 +68,8 @@ public interface SchemaClientMethods {
 	/**
 	 * Delete the given schema
 	 *
-	 * @param uuid Schema uuid
+	 * @param uuid
+	 *            Schema uuid
 	 * @return
 	 */
 	MeshRequest<EmptyResponse> deleteSchema(String uuid);
@@ -104,8 +115,10 @@ public interface SchemaClientMethods {
 	/**
 	 * Unassign a schema from the project
 	 *
-	 * @param projectName project name
-	 * @param schemaUuid  schema uuid
+	 * @param projectName
+	 *            project name
+	 * @param schemaUuid
+	 *            schema uuid
 	 * @return
 	 */
 	MeshRequest<EmptyResponse> unassignSchemaFromProject(String projectName, String schemaUuid);
@@ -134,8 +147,10 @@ public interface SchemaClientMethods {
 	/**
 	 * Unassign a microschema from the project
 	 *
-	 * @param projectName     project name
-	 * @param microschemaUuid microschema uuid
+	 * @param projectName
+	 *            project name
+	 * @param microschemaUuid
+	 *            microschema uuid
 	 * @return
 	 */
 	MeshRequest<EmptyResponse> unassignMicroschemaFromProject(String projectName, String microschemaUuid);

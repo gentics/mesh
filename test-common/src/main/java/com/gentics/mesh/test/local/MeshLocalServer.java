@@ -17,7 +17,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.MeshTestServer;
 
-import static com.gentics.mesh.MeshEvent.STARTUP;
+import static com.gentics.mesh.core.rest.MeshEvent.STARTUP;
 
 public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 

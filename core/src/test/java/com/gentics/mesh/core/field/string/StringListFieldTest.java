@@ -28,7 +28,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = false)
+@MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = false)
 public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 	private static final String STRING_LIST = "stringList";

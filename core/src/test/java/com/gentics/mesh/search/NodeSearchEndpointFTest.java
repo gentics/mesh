@@ -3,6 +3,7 @@ package com.gentics.mesh.search;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -25,15 +26,12 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
-
-@MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
 public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchAndSort() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		String query = getESText("contentSchemaTermQuery.es");
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, query, new VersioningParametersImpl().draft()));
@@ -55,9 +53,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchContent() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "the"), new PagingParametersImpl()
 			.setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));
@@ -78,12 +74,14 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 	 */
 	@Test
 	public void testSearchMissingVertex() throws Exception {
+		recreateIndices();
 		try (Tx tx = tx()) {
-			recreateIndices();
 			BulkActionContext context = createBulkContext();
 			content("honda nr").delete(context);
 			tx.success();
 		}
+
+		waitForSearchIdleEvent();
 
 		NodeListResponse response = call(() -> client().searchNodes(getSimpleQuery("fields.content", "the"), new PagingParametersImpl().setPage(1)
 			.setPerPage(2L)));
@@ -100,6 +98,8 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 			SchemaResponse response = call(() -> client().createSchema(request));
 			call(() -> client().assignSchemaToProject(PROJECT_NAME, response.getUuid()));
 		}
+
+		waitForSearchIdleEvent();
 
 		call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "the"), new PagingParametersImpl()
 			.setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));

@@ -1,8 +1,11 @@
 package com.gentics.mesh.util;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collector;
@@ -73,5 +76,14 @@ public final class StreamUtil {
 				return m1;
 			}
 		);
+	}
+
+	public static <T> Stream<T> ofNullable(T... elements) {
+		return Arrays.stream(elements)
+			.filter(Objects::nonNull);
+	}
+
+	public static <T> Predicate<T> not(Predicate<T> predicate) {
+		return predicate.negate();
 	}
 }

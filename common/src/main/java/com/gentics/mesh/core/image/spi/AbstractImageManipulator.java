@@ -1,22 +1,21 @@
 package com.gentics.mesh.core.image.spi;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import com.gentics.mesh.etc.config.ImageManipulatorOptions;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
+import io.reactivex.Maybe;
+import io.reactivex.Single;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.Vertx;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import javax.imageio.ImageIO;
-
-import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.parameter.ImageManipulationParameters;
-
-import io.reactivex.Single;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.reactivex.core.Vertx;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 /**
  * Abstract image manipulator implementation.
@@ -68,13 +67,13 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 
 			log.warn(
 				"More than one cache file found:"
-				+ System.lineSeparator() + "  hash: " + sha512sum
-				+ System.lineSeparator() + "  key: " + parameters.getCacheKey()
-				+ System.lineSeparator() + "  files:"
-				+ indent
-				+ Arrays.stream(foundFiles).map(File::getName).collect(Collectors.joining(indent))
-				+ System.lineSeparator()
-				+ "The cache directory {" + options.getImageCacheDirectory() + "} should be cleared");
+					+ System.lineSeparator() + "  hash: " + sha512sum
+					+ System.lineSeparator() + "  key: " + parameters.getCacheKey()
+					+ System.lineSeparator() + "  files:"
+					+ indent
+					+ Arrays.stream(foundFiles).map(File::getName).collect(Collectors.joining(indent))
+					+ System.lineSeparator()
+					+ "The cache directory {" + options.getImageCacheDirectory() + "} should be cleared");
 		}
 
 		if (log.isDebugEnabled()) {
@@ -85,13 +84,19 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	}
 
 	@Override
-	public Single<ImageInfo> readImageInfo(String file) {
-		return vertx.rxExecuteBlocking(bh -> {
+	public Single<ImageInfo> readImageInfo(String path) {
+		Maybe<ImageInfo> result = vertx.rxExecuteBlocking(bh -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Reading image information from stream");
 			}
 			try {
-				BufferedImage image = ImageIO.read(new File(file));
+				File file = new File(path);
+				if (!file.exists()) {
+					log.error("The image file {" + file.getAbsolutePath() + "} could not be found.");
+					bh.fail(error(BAD_REQUEST, "image_error_reading_failed"));
+					return;
+				}
+				BufferedImage image = ImageIO.read(file);
 				if (image == null) {
 					bh.fail(error(BAD_REQUEST, "image_error_reading_failed"));
 				} else {
@@ -102,6 +107,7 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 				bh.fail(e);
 			}
 		});
+		return result.toSingle();
 	}
 
 	/**

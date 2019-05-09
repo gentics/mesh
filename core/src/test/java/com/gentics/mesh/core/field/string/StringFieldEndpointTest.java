@@ -27,7 +27,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
-@MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	private static final String FIELD_NAME = "stringField";

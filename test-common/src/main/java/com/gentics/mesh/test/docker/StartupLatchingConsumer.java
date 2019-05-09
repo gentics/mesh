@@ -4,7 +4,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import com.gentics.mesh.MeshEvent;
+import com.gentics.mesh.core.rest.MeshEvent;
 import org.testcontainers.containers.output.OutputFrame;
 
 import io.vertx.core.logging.Logger;

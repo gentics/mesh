@@ -23,7 +23,7 @@ import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.FILL;
 import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class MicronodeFieldMigrationTest extends AbstractFieldMigrationTest {
 
 	@Override

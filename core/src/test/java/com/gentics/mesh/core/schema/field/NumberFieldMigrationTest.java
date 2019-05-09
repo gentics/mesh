@@ -22,7 +22,7 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class NumberFieldMigrationTest extends AbstractFieldMigrationTest implements NumberFieldTestHelper {
 
 	@Override

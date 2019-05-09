@@ -1,5 +1,15 @@
 package com.gentics.mesh.core.data.root.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+import org.apache.commons.lang.NotImplementedException;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -13,22 +23,13 @@ import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import org.apache.commons.lang.NotImplementedException;
-
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * @see MicroschemaContainerRoot
@@ -52,17 +53,17 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public void addMicroschema(User user, MicroschemaContainer container) {
+	public void addMicroschema(User user, MicroschemaContainer container, EventQueueBatch batch) {
 		addItem(container);
 	}
 
 	@Override
-	public void removeMicroschema(MicroschemaContainer container) {
+	public void removeMicroschema(MicroschemaContainer container, EventQueueBatch batch) {
 		removeItem(container);
 	}
 
 	@Override
-	public MicroschemaContainer create(MicroschemaModel microschema, User user, String uuid) {
+	public MicroschemaContainer create(MicroschemaModel microschema, User user, String uuid, EventQueueBatch batch) {
 		microschema.validate();
 
 		String name = microschema.getName();
@@ -89,7 +90,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		version.setSchemaContainer(container);
 		container.setCreated(user);
 		container.setName(microschema.getName());
-		addMicroschema(user, container);
+		addMicroschema(user, container, batch);
 
 		return container;
 	}
@@ -100,16 +101,16 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public MicroschemaContainer create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
+	public MicroschemaContainer create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
 		MicroschemaModel microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 		microschema.validate();
 		if (!requestUser.hasPermission(this, GraphPermission.CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
-		MicroschemaContainer container = create(microschema, requestUser, uuid);
+		MicroschemaContainer container = create(microschema, requestUser, uuid, batch);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
-		batch.store(container, true);
+		batch.add(container.onCreated());
 		return container;
 
 	}

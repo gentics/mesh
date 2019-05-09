@@ -1,8 +1,5 @@
 package com.gentics.mesh.core.data.search;
 
-import java.util.Map;
-import java.util.Set;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -11,9 +8,13 @@ import com.gentics.mesh.core.data.search.bulk.DeleteBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
-
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Index handlers are used to interact with the search provider index on a type specific level. Each domain model in mesh which is indexable needs to implement
@@ -72,7 +73,7 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	 * 
 	 * @return
 	 */
-	Completable syncIndices();
+	Flowable<SearchRequest> syncIndices();
 
 	/**
 	 * Filter the given list and return only indices which match the type of the handler but are no longer in use or unknown.

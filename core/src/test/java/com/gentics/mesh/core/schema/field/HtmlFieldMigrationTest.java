@@ -27,9 +27,10 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static org.junit.Assert.assertEquals;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = false)
 public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implements HtmlFieldTestHelper {
 
 	@Test
@@ -250,6 +251,7 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 				(container, name) -> {
 					HtmlGraphField htmlField = container.getHtml(name);
 					assertEquals("The html field should not be truncted.", 40_000, htmlField.getHTML().length());
+					waitForSearchIdleEvent();
 					assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 				});
 	}

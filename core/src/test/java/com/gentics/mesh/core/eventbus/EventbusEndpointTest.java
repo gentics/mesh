@@ -1,10 +1,11 @@
 
 package com.gentics.mesh.core.eventbus;
 
-import static com.gentics.mesh.MeshEvent.NODE_CREATED;
-import static com.gentics.mesh.MeshEvent.NODE_DELETED;
-import static com.gentics.mesh.MeshEvent.NODE_UPDATED;
-import static com.gentics.mesh.MeshEvent.MESH_MIGRATION;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -13,13 +14,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.gentics.mesh.MeshEvent;
-import com.gentics.mesh.assertj.MeshAssertions;
-import com.gentics.mesh.rest.client.MeshRestClientUtil;
-import com.gentics.mesh.rest.client.MeshWebsocket;
-import com.gentics.mesh.util.RxUtil;
-import io.reactivex.Completable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,18 +21,26 @@ import org.junit.runner.RunWith;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.assertj.MeshAssertions;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.rest.client.MeshRestClientUtil;
+import com.gentics.mesh.rest.client.MeshWebsocket;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.RxUtil;
 
+import io.reactivex.Completable;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 @RunWith(VertxUnitRunner.class)
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class EventbusEndpointTest extends AbstractMeshTest {
 
 	private MeshWebsocket ws;
@@ -61,7 +63,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 	public void testExternalEventbusMessage(TestContext context) throws Exception {
 
 		Async async = context.async();
-		MeshEvent allowedAddress = MESH_MIGRATION;
+		MeshEvent allowedAddress = USER_CREATED;
 
 		// Register
 		ws.registerEvents(allowedAddress);
@@ -73,7 +75,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		});
 
 		Thread.sleep(1000);
-		Mesh.vertx().eventBus().send(allowedAddress.address, new JsonObject().put("test", "someValue"));
+		Mesh.vertx().eventBus().publish(allowedAddress.address, new JsonObject().put("test", "someValue"));
 	}
 
 	@Test(timeout = 4_000)
@@ -84,10 +86,9 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 
 		// Handle msgs
 		ws.events().firstOrError().subscribe(event -> {
-			ObjectNode body = event.getBodyAsJson();
-			context.assertNotNull(body.get("uuid").textValue());
-			context.assertEquals("content", body.get("schemaName").textValue());
-			context.assertFalse(body.has("languageTag"));
+			NodeMeshEventModel body = JsonUtil.readValue(event.getBodyAsJson().toString(), NodeMeshEventModel.class);
+			context.assertNotNull(body.getUuid());
+			context.assertEquals("content", body.getSchema().getName());
 			async.complete();
 		});
 		call(() -> client().deleteNode(PROJECT_NAME, contentUuid()));
@@ -97,14 +98,14 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 	public void testNodeDeleteLanguageEvent(TestContext context) throws Exception {
 		Async async = context.async();
 
-		ws.registerEvents(NODE_DELETED);
+		ws.registerEvents(NODE_CONTENT_DELETED);
 
 		// Handle msgs
 		ws.events().firstOrError().subscribe(event -> {
-			ObjectNode body = event.getBodyAsJson();
-			context.assertNotNull(body.get("uuid").textValue());
-			context.assertEquals("content", body.get("schemaName").textValue());
-			context.assertEquals("en", body.get("languageTag").textValue());
+			NodeMeshEventModel body = JsonUtil.readValue(event.getBodyAsJson().toString(), NodeMeshEventModel.class);
+			context.assertNotNull(body.getUuid());
+			context.assertEquals("content", body.getSchema().getName());
+			context.assertEquals("en", body.getLanguageTag());
 			async.complete();
 		});
 		call(() -> client().deleteNode(PROJECT_NAME, contentUuid(), "en"));
@@ -119,9 +120,9 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 
 		// Handle msgs
 		ws.events().firstOrError().subscribe(event -> {
-			ObjectNode body = event.getBodyAsJson();
-			assertNotNull(body.get("uuid").textValue());
-			assertEquals("content", body.get("schemaName").textValue());
+			NodeMeshEventModel body = JsonUtil.readValue(event.getBodyAsJson().toString(), NodeMeshEventModel.class);
+			assertNotNull(body.getUuid());
+			assertEquals("content", body.getSchema().getName());
 			async.complete();
 		});
 
@@ -186,9 +187,9 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 
 		// Handle msgs
 		ws.events().firstOrError().subscribe(event -> {
-			ObjectNode body = event.getBodyAsJson();
-			assertNotNull(body.get("uuid").textValue());
-			assertEquals("content", body.get("schemaName").textValue());
+			NodeMeshEventModel body = JsonUtil.readValue(event.getBodyAsJson().toString(), NodeMeshEventModel.class);
+			assertNotNull(body.getUuid());
+			assertEquals("content", body.getSchema().getName());
 			async.countDown();
 		});
 

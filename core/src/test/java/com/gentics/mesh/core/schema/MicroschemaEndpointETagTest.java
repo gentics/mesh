@@ -15,7 +15,7 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class MicroschemaEndpointETagTest extends AbstractMeshTest {
 
 	@Test

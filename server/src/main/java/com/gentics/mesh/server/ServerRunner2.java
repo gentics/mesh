@@ -41,7 +41,8 @@ public class ServerRunner2 {
 		options.getClusterOptions().setEnabled(true);
 		options.getSearchOptions().setUrl("http://localhost:9200");
 		options.getSearchOptions().setStartEmbedded(false);
-		options.getHttpServerOptions().setPort(8081);
+		options.getHttpServerOptions().setPort(8082);
+		options.getMonitoringOptions().setPort(8083);
 
 		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {

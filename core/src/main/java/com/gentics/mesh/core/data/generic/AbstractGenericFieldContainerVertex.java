@@ -1,17 +1,12 @@
 package com.gentics.mesh.core.data.generic;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.tinkerpop.blueprints.Direction.IN;
-
-import java.util.Iterator;
-
 import com.gentics.mesh.core.data.BasicFieldContainer;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedGraph;
@@ -19,6 +14,11 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+
+import java.util.Iterator;
+
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.tinkerpop.blueprints.Direction.IN;
 
 public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResponse, R extends MeshCoreVertex<T, R>> extends
 		AbstractMeshCoreVertex<T, R> {

@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
 	private SchemaComparator comparator = new SchemaComparator();

@@ -11,16 +11,17 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.MappingProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetric;
 
-import io.reactivex.Completable;
+import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
+import io.reactivex.Flowable;
 
 /**
  * Handler for schema container index.
@@ -35,8 +36,8 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	SchemaMappingProvider mappingProvider;
 
 	@Inject
-	public SchemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
-		super(searchProvider, db, boot, searchQueue);
+	public SchemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper) {
+		super(searchProvider, db, boot, helper);
 	}
 
 	@Override
@@ -70,10 +71,8 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	}
 
 	@Override
-	public Completable syncIndices() {
-		return Completable.defer(() -> {
-			return diffAndSync(SchemaContainer.composeIndexName(), null, new SyncMetric(getType()));
-		});
+	public Flowable<SearchRequest> syncIndices() {
+		return diffAndSync(SchemaContainer.composeIndexName(), null, new SyncMetric(getType()));
 	}
 
 	@Override

@@ -58,6 +58,10 @@ public class ExampleGeneratorRunner {
 		// Generate CLI info
 		CLIHelpGenerator cliGenerator = new CLIHelpGenerator(OUTPUT_ROOT_FOLDER);
 		cliGenerator.run();
+
+		// Event tables
+		EventTableGenerator eventTable = new EventTableGenerator(OUTPUT_ROOT_FOLDER);
+		eventTable.run();
 	}
 
 	private static void cleanConf() {

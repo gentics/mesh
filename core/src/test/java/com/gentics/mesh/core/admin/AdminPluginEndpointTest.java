@@ -1,25 +1,5 @@
 package com.gentics.mesh.core.admin;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.PROJECT;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
@@ -34,11 +14,29 @@ import com.gentics.mesh.plugin.PluginManager;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
-
 import io.vertx.core.ServiceHelper;
 import io.vertx.reactivex.core.Vertx;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true, inMemoryDB = true)
+import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.PROJECT;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+@MeshTestSetting(testSize = PROJECT, startServer = true, inMemoryDB = true)
 public class AdminPluginEndpointTest extends AbstractMeshTest {
 
 	private static final String API_NAME = "basic";

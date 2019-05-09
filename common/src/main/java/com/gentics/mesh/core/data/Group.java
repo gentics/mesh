@@ -1,29 +1,28 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.MeshEvent.GROUP_CREATED;
-import static com.gentics.mesh.MeshEvent.GROUP_DELETED;
-import static com.gentics.mesh.MeshEvent.GROUP_UPDATED;
+import com.gentics.mesh.ElementType;
+import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
+import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
+import com.gentics.mesh.core.rest.group.GroupReference;
+import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.event.Assignment;
+import com.gentics.mesh.madlmigration.TraversalResult;
+import com.gentics.mesh.parameter.PagingParameters;
 
 import java.util.Objects;
 
-import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.rest.group.GroupReference;
-import com.gentics.mesh.core.rest.group.GroupResponse;
-import com.gentics.mesh.madlmigration.TraversalResult;
-import com.gentics.mesh.parameter.PagingParameters;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_UPDATED;
 
 /**
  * Graph domain model interface for groups.
  */
-public interface Group extends MeshCoreVertex<GroupResponse, Group>, ReferenceableElement<GroupReference>, UserTrackingVertex, IndexableElement {
+public interface Group extends MeshCoreVertex<GroupResponse, Group>, ReferenceableElement<GroupReference>, UserTrackingVertex {
 
-	/**
-	 * Type Value: {@value #TYPE}
-	 */
-	String TYPE = "group";
-
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, GROUP_CREATED.address, GROUP_UPDATED.address, GROUP_DELETED.address);
+	TypeInfo TYPE_INFO = new TypeInfo(ElementType.GROUP, GROUP_CREATED, GROUP_UPDATED, GROUP_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {
@@ -36,7 +35,7 @@ public interface Group extends MeshCoreVertex<GroupResponse, Group>, Referenceab
 	 * @return
 	 */
 	static String composeIndexName() {
-		return Group.TYPE.toLowerCase();
+		return "group";
 	}
 
 	/**
@@ -127,5 +126,24 @@ public interface Group extends MeshCoreVertex<GroupResponse, Group>, Referenceab
 	 * @return Page with found users, an empty page is returned when no users could be found
 	 */
 	TransformablePage<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo);
+
+	/**
+	 * Create the assignment event for the given user.
+	 * 
+	 * @param user
+	 * @param assignment
+	 *            Direction of the assignment
+	 * @return
+	 */
+	GroupUserAssignModel createUserAssignmentEvent(User user, Assignment assignment);
+
+	/**
+	 * Create the assignment event for the given role.
+	 * 
+	 * @param role
+	 * @param assignment
+	 * @return
+	 */
+	GroupRoleAssignModel createRoleAssignmentEvent(Role role, Assignment assignment);
 
 }

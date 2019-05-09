@@ -1,0 +1,17 @@
+
+{{#each entries}}
+
+=== _{{this.adress}}_
+
+{{this.description}}
+
+
+{{#if this.example}}
+.Example
+[source,json]
+----
+{{{this.example}}}
+----
+{{/if}}
+
+{{/each}}

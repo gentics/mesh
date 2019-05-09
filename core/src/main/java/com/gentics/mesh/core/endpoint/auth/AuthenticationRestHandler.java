@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
@@ -22,11 +23,13 @@ public class AuthenticationRestHandler extends AbstractHandler {
 
 	private MeshJWTAuthProvider authProvider;
 	private Database db;
+	private HandlerUtilities utils;
 
 	@Inject
-	public AuthenticationRestHandler(MeshJWTAuthProvider authProvider, Database db) {
+	public AuthenticationRestHandler(MeshJWTAuthProvider authProvider, Database db, HandlerUtilities utils) {
 		this.authProvider = authProvider;
 		this.db = db;
+		this.utils = utils;
 	}
 
 	/**
@@ -35,11 +38,11 @@ public class AuthenticationRestHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleMe(InternalActionContext ac) {
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 			// TODO add permission check
 			MeshAuthUser requestUser = ac.getUser();
-			return requestUser.transformToRest(ac, 0);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			return requestUser.transformToRestSync(ac, 0);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**

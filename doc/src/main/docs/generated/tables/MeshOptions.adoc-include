@@ -157,15 +157,40 @@
 | string
 | String of arguments which will be used for starting the Elasticsearch server instance
 
-| searchOptions.bulkLimit
-| false
-| int
-| Upper limit for the size of bulk requests.
-
 | searchOptions.prefix
 | false
 | string
 | Search server prefix for this installation. Choosing different prefixes for each Gentics Mesh instance will allow you to use a single Elasticsearch cluster for multiple Gentics Mesh instances. Default: mesh-
+
+| searchOptions.bulkLimit
+| false
+| int
+| Upper limit for the size of bulk requests. Default: 2000
+
+| searchOptions.eventBufferSize
+| false
+| int
+| Upper limit for mesh events that are to be mapped to elastic search requests. Default: 1000
+
+| searchOptions.bulkDebounceTime
+| false
+| int
+| The maximum amount of time in milliseconds between two bulkable requests before they are sent. Default: 2000
+
+| searchOptions.idleDebounceTime
+| false
+| int
+| The maximum amount of time in milliseconds between two successful requests before the idle event is emitted. Default: 100
+
+| searchOptions.retryInterval
+| false
+| int
+| The time in milliseconds between retries of elastic search requests in case of a failure. Default: 5000
+
+| searchOptions.waitForIdle
+| false
+| boolean
+| If true, search endpoints wait for elasticsearch to be idle before sending a response. Default: true
 
 | uploadOptions.byteLimit
 | false

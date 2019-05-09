@@ -23,7 +23,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class DateListFieldMigrationTest extends AbstractFieldMigrationTest implements DateListFieldHelper {
 
 	/**

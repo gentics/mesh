@@ -1,16 +1,13 @@
 package com.gentics.mesh.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.util.function.Function;
-
 import io.reactivex.Completable;
 import io.reactivex.CompletableSource;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.reactivex.SingleSource;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.BiFunction;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.logging.Logger;
@@ -18,9 +15,17 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.RxHelper;
 import io.vertx.reactivex.core.Vertx;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.util.function.Function;
+
 public final class RxUtil {
 
 	private static final Logger log = LoggerFactory.getLogger(RxUtil.class);
+
+	public static final Action NOOP = () -> {};
 
 	private RxUtil() {
 	}
@@ -85,6 +90,12 @@ public final class RxUtil {
 		return toBufferFlow(new io.vertx.reactivex.core.file.AsyncFile(file));
 	}
 
+	/**
+	 * Transform the async file into a flowable which returns the content. This method will also take care of closing the async file.
+	 * 
+	 * @param file
+	 * @return
+	 */
 	public static Flowable<Buffer> toBufferFlow(io.vertx.reactivex.core.file.AsyncFile file) {
 		return file.toFlowable()
 			.map(io.vertx.reactivex.core.buffer.Buffer::getDelegate)
@@ -94,6 +105,7 @@ public final class RxUtil {
 
 	/**
 	 * Flips a completable. Emits an error when the source has completed, and completes when the source emits an error.
+	 * 
 	 * @param source
 	 * @return
 	 */
@@ -106,5 +118,19 @@ public final class RxUtil {
 					throw new RuntimeException("Completable has succeeded");
 				}
 			}).ignoreElements();
+	}
+
+	/**
+	 * Zip the given sources and return single with the result of the zipper.
+	 * 
+	 * @param source1
+	 * @param source2
+	 * @param zipper
+	 * @return
+	 */
+	public static <T1, T2, R> Single<R> flatZip(
+		SingleSource<? extends T1> source1, SingleSource<? extends T2> source2,
+		BiFunction<? super T1, ? super T2, SingleSource<? extends R>> zipper) {
+		return Single.zip(source1, source2, zipper).flatMap(x -> x);
 	}
 }
