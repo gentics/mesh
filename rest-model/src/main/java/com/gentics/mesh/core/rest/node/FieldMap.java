@@ -1,9 +1,5 @@
 package com.gentics.mesh.core.rest.node;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -26,6 +22,10 @@ import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * A field map stores all fields of a node or micronode.
  */
@@ -39,6 +39,14 @@ public interface FieldMap extends RestModel {
 	 * @return
 	 */
 	Field put(String fieldKey, Field field);
+
+	default Field put(Map.Entry<String, Field> entry) {
+		return put(entry.getKey(), entry.getValue());
+	}
+
+	default Field putString(String fieldKey, String string) {
+		return put(fieldKey, new StringFieldImpl().setString(string));
+	}
 
 	/**
 	 * Add or update all fields in the given map.
@@ -255,4 +263,5 @@ public interface FieldMap extends RestModel {
 	@JsonIgnore
 	Set<String> getUrlFieldValues(Schema schema);
 
+	void clear();
 }

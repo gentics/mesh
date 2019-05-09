@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.schema.field;
 
+import com.gentics.mesh.core.field.number.NumberFieldTestHelper;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import org.junit.Test;
+
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEANLIST;
@@ -18,13 +22,6 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.script.ScriptException;
-
-import org.junit.Test;
-
-import com.gentics.mesh.core.field.number.NumberFieldTestHelper;
-import com.gentics.mesh.test.context.MeshTestSetting;
-
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class NumberFieldMigrationTest extends AbstractFieldMigrationTest implements NumberFieldTestHelper {
 
@@ -32,15 +29,6 @@ public class NumberFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	@Test
 	public void testRemove() throws Exception {
 		removeField(CREATENUMBER, FILL, FETCH);
-	}
-
-	@Override
-	@Test
-	public void testRename() throws Exception {
-		renameField(CREATENUMBER, FILL, FETCH, (container, name) -> {
-			assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(NUMBERVALUE);
-		});
 	}
 
 	@Override
@@ -190,11 +178,5 @@ public class NumberFieldMigrationTest extends AbstractFieldMigrationTest impleme
 			assertThat(container.getStringList(name)).as(NEWFIELD).isNotNull();
 			assertThat(container.getStringList(name).getValues()).as(NEWFIELDVALUE).containsExactly(Long.toString(NUMBERVALUE));
 		});
-	}
-
-	@Override
-	@Test(expected = ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		invalidMigrationScript(CREATENUMBER, FILL, KILLERSCRIPT);
 	}
 }

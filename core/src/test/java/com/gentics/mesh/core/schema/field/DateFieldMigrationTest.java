@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.schema.field;
 
+import com.gentics.mesh.core.field.date.DateFieldTestHelper;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import org.junit.Test;
+
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEANLIST;
@@ -15,16 +19,9 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import javax.script.ScriptException;
-
-import org.junit.Test;
-
-import com.gentics.mesh.core.field.date.DateFieldTestHelper;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class DateFieldMigrationTest extends AbstractFieldMigrationTest implements DateFieldTestHelper {
@@ -33,15 +30,6 @@ public class DateFieldMigrationTest extends AbstractFieldMigrationTest implement
 	@Test
 	public void testRemove() throws Exception {
 		removeField(CREATEDATE, FILL, FETCH);
-	}
-
-	@Override
-	@Test
-	public void testRename() throws Exception {
-		renameField(CREATEDATE, FILL, FETCH, (container, name) -> {
-			assertThat(container.getDate(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(DATEVALUE);
-		});
 	}
 
 	@Override
@@ -172,9 +160,4 @@ public class DateFieldMigrationTest extends AbstractFieldMigrationTest implement
 		});
 	}
 
-	@Override
-	@Test(expected = ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		invalidMigrationScript(CREATEDATE, FILL, KILLERSCRIPT);
-	}
 }

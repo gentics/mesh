@@ -1,5 +1,18 @@
 package com.gentics.mesh.core.schema.field;
 
+import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.BinaryRoot;
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.field.DataProvider;
+import com.gentics.mesh.core.field.binary.BinaryFieldTestHelper;
+import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.FileUtils;
+import com.gentics.mesh.util.RxUtil;
+import io.reactivex.Flowable;
+import io.vertx.core.buffer.Buffer;
+import org.junit.Test;
+
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEANLIST;
@@ -17,23 +30,6 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import javax.script.ScriptException;
-
-import org.junit.Test;
-
-import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.binary.BinaryRoot;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.field.DataProvider;
-import com.gentics.mesh.core.field.binary.BinaryFieldTestHelper;
-import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.FileUtils;
-import com.gentics.mesh.util.RxUtil;
-
-import io.reactivex.Flowable;
-import io.vertx.core.buffer.Buffer;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest implements BinaryFieldTestHelper {
@@ -58,19 +54,6 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	@Override
 	public void testRemove() throws Exception {
 		removeField(CREATEBINARY, FILL, FETCH);
-	}
-
-	@Test
-	@Override
-	public void testRename() throws Exception {
-		renameField(CREATEBINARY, FILL, FETCH, (container, name) -> {
-			assertThat(container.getBinary(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getBinary(name).getFileName()).as(NEWFIELDVALUE).isEqualTo(FILENAME);
-			assertThat(container.getBinary(name).getMimeType()).as(NEWFIELDVALUE).isEqualTo(MIMETYPE);
-			assertThat(container.getBinary(name).getBinary().getSHA512Sum()).as(NEWFIELDVALUE).isEqualTo(hash);
-			Buffer contents = RxUtil.readEntireData(container.getBinary(name).getBinary().getStream()).blockingGet();
-			assertThat(contents.toString()).as(NEWFIELDVALUE).isEqualTo(FILECONTENTS);
-		});
 	}
 
 	@Test
@@ -198,9 +181,4 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		});
 	}
 
-	@Override
-	@Test(expected = ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		invalidMigrationScript(CREATEBINARY, FILL, KILLERSCRIPT);
-	}
 }

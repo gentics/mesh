@@ -1,13 +1,17 @@
 package com.gentics.mesh.util;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public final class StreamUtil {
-	private StreamUtil() {}
+	private StreamUtil() {
+	}
 
 	public static <T> Stream<T> toStream(Iterable<T> iterable) {
 		return StreamSupport.stream(iterable.spliterator(), false);
@@ -28,6 +32,7 @@ public final class StreamUtil {
 	public static <T> Stream<T> untilNull(Supplier<T> initialValue, UnaryOperator<T> nextValue) {
 		return toStream(new Iterator<T>() {
 			Supplier<T> next = lazy(initialValue);
+
 			@Override
 			public boolean hasNext() {
 				return next.get() != null;
@@ -46,6 +51,7 @@ public final class StreamUtil {
 		return new Supplier<T>() {
 			T value;
 			boolean hasBeenCalled;
+
 			@Override
 			public T get() {
 				if (!hasBeenCalled) {
@@ -55,5 +61,17 @@ public final class StreamUtil {
 				return value;
 			}
 		};
+	}
+
+
+	public static <K, V> Collector<Map<K, V>, Map<K, V>, Map<K, V>> mergeMaps() {
+		return Collector.of(
+			HashMap::new,
+			Map::putAll,
+			(m1, m2) -> {
+				m1.putAll(m2);
+				return m1;
+			}
+		);
 	}
 }

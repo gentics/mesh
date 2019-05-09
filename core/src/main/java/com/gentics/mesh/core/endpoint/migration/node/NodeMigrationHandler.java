@@ -1,21 +1,5 @@
 package com.gentics.mesh.core.endpoint.migration.node;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING;
-import static com.gentics.mesh.metric.Metrics.NODE_MIGRATION_PENDING;
-
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.validation.constraints.NotNull;
-
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -36,11 +20,25 @@ import com.gentics.mesh.metric.ResettableCounter;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.common.collect.Lists;
 import com.syncleus.ferma.tx.Tx;
-
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING;
+import static com.gentics.mesh.metric.Metrics.NODE_MIGRATION_PENDING;
 
 /**
  * Handler for node migrations after schema updates.
@@ -249,7 +247,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		}
 
 		// Pass the new version through the migration scripts and update the version
-		migrate(ac, container, migrated, fromVersion, toVersion, touchedFields);
+		migrate(ac, migrated, restModel, fromVersion, toVersion, touchedFields);
 
 		// Ensure the search index is updated accordingly
 		sqb.move(container, migrated, branchUuid, DRAFT);
@@ -291,7 +289,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		migrated.setVersion(container.getVersion().nextPublished());
 		node.setPublished(migrated, branchUuid);
 
-		migrate(ac, container, migrated, fromVersion, toVersion, touchedFields);
+		migrate(ac, migrated, restModel, fromVersion, toVersion, touchedFields);
 		sqb.store(migrated, branchUuid, PUBLISHED, false);
 		return migrated.getVersion();
 	}

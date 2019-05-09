@@ -1,5 +1,22 @@
 package com.gentics.mesh.core.data.schema.impl;
 
+import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
+import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
+import com.gentics.mesh.graphdb.spi.Database;
+import io.vertx.core.json.JsonObject;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.CONTAINER_FLAG_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DISPLAY_FIELD_NAME_KEY;
@@ -7,22 +24,6 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.SE
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.URLFIELDS_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-import java.util.Arrays;
-import java.util.List;
-
-import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
-import com.gentics.mesh.core.rest.common.FieldContainer;
-import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
-import com.gentics.mesh.graphdb.spi.Database;
-
-import io.vertx.core.json.JsonObject;
 
 /**
  * @see UpdateSchemaChange
@@ -147,7 +148,7 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 	}
 
 	@Override
-	public void apply(GraphFieldContainer oldContent, GraphFieldContainer newContent) {
-
+	public Map<String, Field> createFields(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
+		return Collections.emptyMap();
 	}
 }

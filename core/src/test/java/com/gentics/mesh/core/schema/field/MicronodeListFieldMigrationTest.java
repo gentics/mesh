@@ -1,5 +1,12 @@
 package com.gentics.mesh.core.schema.field;
 
+import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
+import com.gentics.mesh.core.field.DataProvider;
+import com.gentics.mesh.core.field.FieldFetcher;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import org.junit.Test;
+
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
@@ -16,17 +23,6 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import javax.script.ScriptException;
-
-import org.junit.Test;
-
-import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
-import com.gentics.mesh.core.field.DataProvider;
-import com.gentics.mesh.core.field.FieldFetcher;
-import com.gentics.mesh.test.context.MeshTestSetting;
 import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
@@ -51,19 +47,6 @@ public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest 
 	@Test
 	public void testRemove() throws Exception {
 		removeField(CREATEMICRONODELIST, FILL, FETCH);
-	}
-
-	@Override
-	@Test
-	public void testRename() throws Exception {
-		renameField(CREATEMICRONODELIST, FILL, FETCH, (container, name) -> {
-			assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getMicronodeList(name).getValues()).as(NEWFIELDVALUE).hasSize(2);
-			assertThat(container.getMicronodeList(name).getValues().get(0)).as(NEWFIELDVALUE)
-					.containsStringField("firstName", "Donald").containsStringField("lastName", "Duck");
-			assertThat(container.getMicronodeList(name).getValues().get(1)).as(NEWFIELDVALUE)
-					.containsStringField("firstName", "Mickey").containsStringField("lastName", "Mouse");
-		});
 	}
 
 	@Override
@@ -198,9 +181,4 @@ public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest 
 		});
 	}
 
-	@Override
-	@Test(expected=ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		invalidMigrationScript(CREATEMICRONODELIST, FILL, KILLERSCRIPT);
-	}
 }

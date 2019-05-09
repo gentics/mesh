@@ -1,5 +1,10 @@
 package com.gentics.mesh.core.schema.field;
 
+import com.gentics.mesh.core.field.DataProvider;
+import com.gentics.mesh.core.field.node.NodeFieldTestHelper;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import org.junit.Test;
+
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
@@ -17,15 +22,6 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import javax.script.ScriptException;
-
-import org.junit.Test;
-
-import com.gentics.mesh.core.field.DataProvider;
-import com.gentics.mesh.core.field.node.NodeFieldTestHelper;
-import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implements NodeFieldTestHelper {
@@ -36,15 +32,6 @@ public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implement
 	@Override
 	public void testRemove() throws Exception {
 		removeField(CREATENODE, FILL, FETCH);
-	}
-
-	@Test
-	@Override
-	public void testRename() throws Exception {
-		renameField(CREATENODE, FILL, FETCH, (container, name) -> {
-			assertThat(container.getNode(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNode(name).getNode()).as(NEWFIELDVALUE).isEqualTo(folder("2015"));
-		});
 	}
 
 	@Test
@@ -169,9 +156,4 @@ public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implement
 		});
 	}
 
-	@Override
-	@Test(expected = ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		invalidMigrationScript(CREATENODE, FILL, KILLERSCRIPT);
-	}
 }

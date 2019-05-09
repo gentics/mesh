@@ -1,11 +1,5 @@
 package com.gentics.mesh.core.data.schema;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -14,9 +8,10 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
-import com.gentics.mesh.util.Tuple;
-
 import io.vertx.core.json.JsonObject;
+
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * A schema change represents a single manipulation of a field container (e.g.: {@link Schema}, {@link Microschema}).
@@ -110,9 +105,9 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 	<R extends FieldSchemaContainer> R apply(R container);
 
 	/**
-	 * Apply the current change on the field container.
+	 * Apply the current change on the field container to create a new field.
 	 */
-	void apply(GraphFieldContainer oldContent, GraphFieldContainer newContent);
+	Map<String, Field> createFields(FieldSchemaContainer oldSchema, FieldContainer oldContent);
 
 	/**
 	 * Set the change specific properties by examining the rest change model.

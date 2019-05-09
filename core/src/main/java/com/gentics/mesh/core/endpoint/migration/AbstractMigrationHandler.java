@@ -1,11 +1,5 @@
 package com.gentics.mesh.core.endpoint.migration;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import javax.annotation.ParametersAreNonnullByDefault;
-
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
@@ -17,14 +11,22 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
 import com.gentics.mesh.core.rest.common.FieldContainer;
-import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
-
+import com.gentics.mesh.util.StreamUtil;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import jdk.nashorn.api.scripting.ClassFilter;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @SuppressWarnings("restriction")
 public abstract class AbstractMigrationHandler extends AbstractHandler implements MigrationHandler {
@@ -88,19 +90,24 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 *            set of touched fields
 	 * @throws Exception
 	 */
-	protected void migrate(NodeMigrationActionContextImpl ac, GraphFieldContainer oldContent, RestModel newContent,
+	protected void migrate(NodeMigrationActionContextImpl ac, GraphFieldContainer newContainer, FieldContainer newContent,
 		   	GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion,
 			GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> newVersion, Set<String> touchedFields) throws Exception {
 
-		newContent.setSchemaContainerVersion(newVersion);
+		// Remove all touched fields (if necessary, they will be readded later)
+		newContainer.getFields().stream().filter(f -> touchedFields.contains(f.getFieldKey())).forEach(f -> f.removeField(newContainer));
+		newContainer.setSchemaContainerVersion(newVersion);
 
-		transformFields(fromVersion, oldContent, newContent);
-	}
+		FieldMap fields = newContent.getFields();
 
-	private void transformRestModel(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion,
-									GraphFieldContainer oldContent,
-									RestModel newContent) {
-		fromVersion.getChanges().forEach(change -> change.apply(oldContent, newContent));
+		Map<String, Field> newFields = fromVersion.getChanges()
+			.map(change -> change.createFields(fromVersion.getSchema(), newContent))
+			.collect(StreamUtil.mergeMaps());
+
+		fields.clear();
+		fields.putAll(newFields);
+
+		newContainer.updateFieldsFromRest(ac, fields);
 	}
 
 	@ParametersAreNonnullByDefault

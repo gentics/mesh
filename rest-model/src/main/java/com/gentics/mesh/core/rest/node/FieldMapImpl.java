@@ -1,17 +1,5 @@
 package com.gentics.mesh.core.rest.node;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -52,6 +40,18 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.json.JsonUtil;
 import com.google.common.collect.Lists;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 /**
  * Implementation of a fieldmap which uses a central JsonNode to access the field specific data. Fields will be mapped during runtime.
@@ -551,6 +551,11 @@ public class FieldMapImpl implements FieldMap {
 		ObjectNode objectNode = ((ObjectNode) node);
 		JsonNode object = objectNode.remove(fieldKey);
 		return object != null;
+	}
+
+	@Override
+	public void clear() {
+		((ObjectNode) node).removeAll();
 	}
 
 	@Override

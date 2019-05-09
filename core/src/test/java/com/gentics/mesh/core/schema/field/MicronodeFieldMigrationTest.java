@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.schema.field;
 
+import com.gentics.mesh.test.context.MeshTestSetting;
+import org.junit.Test;
+
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
@@ -18,15 +21,6 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.FILL;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import javax.script.ScriptException;
-
-import org.junit.Test;
-
-import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.test.context.MeshTestSetting;
 import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
@@ -36,16 +30,6 @@ public class MicronodeFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Test
 	public void testRemove() throws Exception {
 		removeField(CREATEMICRONODE, FILL, FETCH);
-	}
-
-	@Override
-	@Test
-	public void testRename() throws Exception {
-		renameField(CREATEMICRONODE, FILL, FETCH, (container, name) -> {
-			assertThat(container.getMicronode(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getMicronode(name).getMicronode()).as(NEWFIELDVALUE).containsStringField("firstName", "Donald")
-					.containsStringField("lastName", "Duck");
-		});
 	}
 
 	@Override
@@ -173,9 +157,4 @@ public class MicronodeFieldMigrationTest extends AbstractFieldMigrationTest {
 		});
 	}
 
-	@Override
-	@Test(expected = ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		invalidMigrationScript(CREATEMICRONODE, FILL, KILLERSCRIPT);
-	}
 }

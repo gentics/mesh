@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.schema.field;
 
+import com.gentics.mesh.core.field.html.HtmlListFieldHelper;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import org.junit.Test;
+
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEANLIST;
@@ -15,16 +19,8 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import javax.script.ScriptException;
-
-import org.junit.Test;
-
-import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
-import com.gentics.mesh.core.field.html.HtmlListFieldHelper;
-import com.gentics.mesh.test.context.MeshTestSetting;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest implements HtmlListFieldHelper {
@@ -33,15 +29,6 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	@Override
 	public void testRemove() throws Exception {
 		removeField(CREATEHTMLLIST, FILLTEXT, FETCH);
-	}
-
-	@Test
-	@Override
-	public void testRename() throws Exception {
-		renameField(CREATEHTMLLIST, FILLTEXT, FETCH, (container, name) -> {
-			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getHTMLList(name).getValues()).as(NEWFIELDVALUE).containsExactly(TEXT1, TEXT2, TEXT3);
-		});
 	}
 
 	@Test
@@ -214,9 +201,4 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 		});
 	}
 
-	@Override
-	@Test(expected = ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		invalidMigrationScript(CREATEHTMLLIST, FILLTEXT, KILLERSCRIPT);
-	}
 }

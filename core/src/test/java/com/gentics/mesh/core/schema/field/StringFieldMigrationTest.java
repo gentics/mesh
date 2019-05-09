@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.schema.field;
 
+import com.gentics.mesh.core.field.string.StringFieldTestHelper;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import org.junit.Test;
+
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEANLIST;
@@ -19,13 +23,6 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.util.DateUtils.fromISO8601;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.script.ScriptException;
-
-import org.junit.Test;
-
-import com.gentics.mesh.core.field.string.StringFieldTestHelper;
-import com.gentics.mesh.test.context.MeshTestSetting;
-
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class StringFieldMigrationTest extends AbstractFieldMigrationTest implements StringFieldTestHelper {
 
@@ -33,15 +30,6 @@ public class StringFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	@Override
 	public void testRemove() throws Exception {
 		removeField(CREATESTRING, FILLTEXT, FETCH);
-	}
-
-	@Test
-	@Override
-	public void testRename() throws Exception {
-		renameField(CREATESTRING, FILLTEXT, FETCH, (container, name) -> {
-			assertThat(container.getString(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getString(name).getString()).as(NEWFIELDVALUE).isEqualTo("<b>HTML</b> content");
-		});
 	}
 
 	@Test
@@ -257,9 +245,4 @@ public class StringFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		});
 	}
 
-	@Override
-	@Test(expected = ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		invalidMigrationScript(CREATESTRING, FILLTEXT, KILLERSCRIPT);
-	}
 }

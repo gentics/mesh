@@ -1,20 +1,5 @@
 package com.gentics.mesh.core.endpoint.migration.micronode;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.validation.constraints.NotNull;
-
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -34,11 +19,24 @@ import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
-
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING;
 
 @Singleton
 public class MicronodeMigrationHandler extends AbstractMigrationHandler {
@@ -269,7 +267,8 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 			field = container.createMicronode(field.getFieldKey(), fromVersion);
 			Micronode micronode = field.getMicronode();
 			// transform to rest and migrate
-			migrate(ac, field.getMicronode(), micronode, fromVersion, toVersion, touchedFields);
+			MicronodeResponse restModel = micronode.transformToRestSync(ac, 0);
+			migrate(ac, micronode, restModel, fromVersion, toVersion, touchedFields);
 		}
 
 		// iterate over all micronode list fields to migrate
@@ -289,7 +288,8 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 				// migrate the micronode, if it uses the fromVersion
 				if (newMicronode.getSchemaContainerVersion().equals(fromVersion)) {
 					// transform to rest and migrate
-					migrate(ac, oldMicronode, newMicronode, fromVersion, toVersion, touchedFields);
+					MicronodeResponse restModel = newMicronode.transformToRestSync(ac, 0);
+					migrate(ac, newMicronode, restModel, fromVersion, toVersion, touchedFields);
 				}
 			}
 		}

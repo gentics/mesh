@@ -12,13 +12,6 @@ public interface FieldMigrationTestcases {
 	void testRemove() throws Exception;
 
 	/**
-	 * Test renaming the field
-	 * 
-	 * @throws Exception
-	 */
-	void testRename() throws Exception;
-
-	/**
 	 * Test changing the field to a binary field
 	 * 
 	 * @throws Exception
@@ -123,10 +116,4 @@ public interface FieldMigrationTestcases {
 	 */
 	void testChangeToStringList() throws Exception;
 
-	/**
-	 * Test that trying System.exit in a migration script will throw an error but not kill the JVM
-	 * 
-	 * @throws Throwable
-	 */
-	void testSystemExit() throws Throwable;
 }

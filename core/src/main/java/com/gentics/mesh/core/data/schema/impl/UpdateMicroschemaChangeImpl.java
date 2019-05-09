@@ -1,13 +1,17 @@
 package com.gentics.mesh.core.data.schema.impl;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.UpdateMicroschemaChange;
 import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.graphdb.spi.Database;
+
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * @see UpdateMicroschemaChange
@@ -19,8 +23,8 @@ public class UpdateMicroschemaChangeImpl extends AbstractFieldSchemaContainerUpd
 	}
 
 	@Override
-	public void apply(GraphFieldContainer oldContent, GraphFieldContainer newContent) {
-
+	public Map<String, Field> createFields(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
+		return Collections.emptyMap();
 	}
 
 	@Override

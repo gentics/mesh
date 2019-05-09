@@ -1,5 +1,11 @@
 package com.gentics.mesh.core.schema.field;
 
+import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
+import com.gentics.mesh.core.field.DataProvider;
+import com.gentics.mesh.core.field.node.NodeListFieldTestHelper;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import org.junit.Test;
+
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
@@ -16,16 +22,6 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import javax.script.ScriptException;
-
-import org.junit.Test;
-
-import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
-import com.gentics.mesh.core.field.DataProvider;
-import com.gentics.mesh.core.field.node.NodeListFieldTestHelper;
-import com.gentics.mesh.test.context.MeshTestSetting;
 import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
@@ -40,15 +36,6 @@ public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	@Override
 	public void testRemove() throws Exception {
 		removeField(CREATENODELIST, FILL, FETCH);
-	}
-
-	@Test
-	@Override
-	public void testRename() throws Exception {
-		renameField(CREATENODELIST, FILL, FETCH, (container, name) -> {
-			assertThat(container.getNodeList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNodeList(name).getValues()).as(NEWFIELDVALUE).containsExactly(folder("2015"), folder("news"));
-		});
 	}
 
 	@Test
@@ -178,9 +165,4 @@ public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest imple
 		});
 	}
 
-	@Override
-	@Test(expected=ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		invalidMigrationScript(CREATENODELIST, FILL, KILLERSCRIPT);
-	}
 }

@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.schema.field;
 
+import com.gentics.mesh.core.field.bool.BooleanListFieldHelper;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import org.junit.Test;
+
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEANLIST;
@@ -18,15 +22,6 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.script.ScriptException;
-
-import org.junit.Test;
-
-import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
-import com.gentics.mesh.core.field.bool.BooleanListFieldHelper;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.tx.Tx;
-
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest implements BooleanListFieldHelper {
 
@@ -34,15 +29,6 @@ public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest im
 	@Test
 	public void testRemove() throws Exception {
 		removeField(CREATEBOOLEANLIST, FILL, FETCH);
-	}
-
-	@Override
-	@Test
-	public void testRename() throws Exception {
-		renameField(CREATEBOOLEANLIST, FILL, FETCH, (container, name) -> {
-			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getBooleanList(name).getValues()).as(NEWFIELDVALUE).containsExactly(true, false);
-		});
 	}
 
 	@Override
@@ -174,11 +160,4 @@ public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest im
 		});
 	}
 
-	@Override
-	@Test(expected = ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		try (Tx tx = tx()) {
-			invalidMigrationScript(CREATEBOOLEANLIST, FILL, KILLERSCRIPT);
-		}
-	}
 }
