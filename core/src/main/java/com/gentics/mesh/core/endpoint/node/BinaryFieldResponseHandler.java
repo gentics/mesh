@@ -108,7 +108,10 @@ public class BinaryFieldResponseHandler {
 		String encodedFileName = getEncodedFileName(fileName);
 
 		// TODO images and pdf files should be shown in inline format
-		response.putHeader("content-disposition", "attachment; filename=\"" + encodedFileName + '"');
+		response.putHeader(
+				"content-disposition",
+				"attachment; filename=\"" + encodedFileName + "\"; filename*=\"" + encodedFileName + '"'
+		);
 
 		// Set to IDENTITY to avoid gzip compression
 		response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
@@ -155,7 +158,10 @@ public class BinaryFieldResponseHandler {
 
 				String encodedFileName = getEncodedFileName(fileName);
 
-				response.putHeader("content-disposition", "inline; filename=\"" + encodedFileName + '"');
+				response.putHeader(
+						"content-disposition",
+						"inline; filename=\"" + encodedFileName + "\"; filename*=\"" + encodedFileName + '"'
+				);
 				return fileWithProps.getFile();
 			}).flatMap(RxUtil::toBufferFlow);
 		resizedData.subscribe(response::write, rc::fail, response::end);
