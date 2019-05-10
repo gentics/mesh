@@ -14,7 +14,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -74,7 +73,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 			// TODO which perm to use? Admin perm?
 			Project project = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
 			db.tx(() -> {
-				Job job = boot.jobRoot().enqueueVersionPurge(user, project, since);
+				boot.jobRoot().enqueueVersionPurge(user, project, since);
 			});
 			MeshEvent.triggerJobWorker();
 

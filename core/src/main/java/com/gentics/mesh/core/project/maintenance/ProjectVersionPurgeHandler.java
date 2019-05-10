@@ -90,7 +90,12 @@ public class ProjectVersionPurgeHandler {
 		boolean previousRemoved, Optional<ZonedDateTime> maxAge) {
 		List<? extends NodeGraphFieldContainer> nextVersions = Lists.newArrayList(version.getNextVersions());
 
-		if (isPurgeable(version, maxAge)) {
+		boolean isInTimeFrame = maxAge.isPresent() ? isOlderThanMaxAge(version, maxAge.get()) : true;
+		if (isInTimeFrame && version.isInitial()) {
+			// We need to re-map the initial version somehow
+			System.out.println("Is initial");
+
+		} else if (isInTimeFrame && isPurgeable(version)) {
 			log.info("Purging container " + version.getUuid() + "@" + version.getVersion());
 			// Delete this version - This will also take care of removing the version references
 			// version.delete(bac);
@@ -122,19 +127,19 @@ public class ProjectVersionPurgeHandler {
 
 	}
 
-	private boolean isPurgeable(NodeGraphFieldContainer version, Optional<ZonedDateTime> maxAge) {
-		// Check whether the version is older than the max age
-		if (maxAge.isPresent()) {
-			Long editTs = version.getLastEditedTimestamp();
-			ZonedDateTime editDate = DateUtils.toZonedDateTime(editTs);
-			ZonedDateTime maxDate = maxAge.get();
-			if (editDate.isAfter(maxDate)) {
-				log.info("Version {" + version.getUuid() + "}@{" + version.getVersion() + "} is not purgable since it was edited {" + editDate
-					+ "} which is newer than {" + maxDate + "}");
-				return false;
-			}
+	private boolean isOlderThanMaxAge(NodeGraphFieldContainer version, ZonedDateTime maxAge) {
+		Long editTs = version.getLastEditedTimestamp();
+		ZonedDateTime editDate = DateUtils.toZonedDateTime(editTs);
+		ZonedDateTime maxDate = maxAge;
+		if (editDate.isAfter(maxDate)) {
+			log.info("Version {" + version.getUuid() + "}@{" + version.getVersion() + "} is not purgable since it was edited {" + editDate
+				+ "} which is newer than {" + maxDate + "}");
+			return false;
 		}
+		return true;
+	}
 
+	private boolean isPurgeable(NodeGraphFieldContainer version) {
 		// The container is purgeable if no edge (publish, draft, initial) exists to its node.
 		return !version.inE(HAS_FIELD_CONTAINER).hasNext();
 	}
