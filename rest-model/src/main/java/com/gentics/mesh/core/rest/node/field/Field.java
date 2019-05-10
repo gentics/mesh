@@ -11,4 +11,9 @@ public interface Field extends RestModel {
 	 */
 	public String getType();
 
+	/**
+	 * Return the value stored in the field.
+	 * @return
+	 */
+	Object getValue();
 }

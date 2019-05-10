@@ -6,4 +6,8 @@ public interface ListField<T extends ListableField> extends Field, MicroschemaLi
 
 	List<T> getItems();
 
+	@Override
+	default Object getValue() {
+		return getItems();
+	}
 }

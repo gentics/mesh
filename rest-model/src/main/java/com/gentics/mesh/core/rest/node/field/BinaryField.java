@@ -185,4 +185,8 @@ public interface BinaryField extends Field {
 	 */
 	BinaryField setMetadata(BinaryMetadata metaData);
 
+	@Override
+	default Object getValue() {
+		return getBinaryUuid();
+	}
 }

@@ -44,6 +44,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -183,7 +184,7 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 		FieldSchema fieldSchema = oldSchema.getField(fieldName);
 		TypeConverter typeConverter = new TypeConverter();
 
-		return new BooleanFieldImpl().setValue(typeConverter.toBoolean(oldContent.getFields().getField(fieldName, fieldSchema).toJson()));
+		return new BooleanFieldImpl().setValue(typeConverter.toBoolean(oldContent.getFields().getField(fieldName, fieldSchema).getValue()));
 	}
 
 	private NumberField changeToNumber(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
@@ -191,10 +192,14 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 		FieldSchema fieldSchema = oldSchema.getField(fieldName);
 		TypeConverter typeConverter = new TypeConverter();
 
-		if (fieldSchema.getType().equals("number")) {
-			return oldContent.getFields().getNumberField(fieldName);
-		} else {
-			return new NumberFieldImpl().setNumber(typeConverter.toNumber(oldContent.getFields().getField(fieldName, fieldSchema).toJson()));
+		String oldType = fieldSchema.getType();
+		switch (oldType) {
+			case "number":
+				return oldContent.getFields().getNumberField(fieldName);
+			case "node":
+				return null;
+			default:
+				return new NumberFieldImpl().setNumber(typeConverter.toNumber(oldContent.getFields().getField(fieldName, fieldSchema).getValue()));
 		}
 	}
 
@@ -203,7 +208,7 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 		FieldSchema fieldSchema = oldSchema.getField(fieldName);
 		TypeConverter typeConverter = new TypeConverter();
 
-		return new DateFieldImpl().setDate(typeConverter.toDate(oldContent.getFields().getField(fieldName, fieldSchema).toJson()));
+		return new DateFieldImpl().setDate(typeConverter.toDate(oldContent.getFields().getField(fieldName, fieldSchema).getValue()));
 	}
 
 	private HtmlField changeToHtml(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
@@ -211,7 +216,7 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 		FieldSchema fieldSchema = oldSchema.getField(fieldName);
 		TypeConverter typeConverter = new TypeConverter();
 
-		return new HtmlFieldImpl().setHTML(typeConverter.toString(oldContent.getFields().getField(fieldName, fieldSchema).toJson()));
+		return new HtmlFieldImpl().setHTML(typeConverter.toString(oldContent.getFields().getField(fieldName, fieldSchema).getValue()));
 	}
 
 	private StringField changeToString(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
@@ -219,7 +224,7 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 		FieldSchema fieldSchema = oldSchema.getField(fieldName);
 		TypeConverter typeConverter = new TypeConverter();
 
-		return new StringFieldImpl().setString(typeConverter.toString(oldContent.getFields().getField(fieldName, fieldSchema).toJson()));
+		return new StringFieldImpl().setString(typeConverter.toString(oldContent.getFields().getField(fieldName, fieldSchema).getValue()));
 	}
 
 	private BinaryField changeToBinary(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
@@ -235,27 +240,24 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 		FieldSchema fieldSchema = oldSchema.getField(fieldName);
 		TypeConverter typeConverter = new TypeConverter();
 		String listType = getListType();
-		String oldValue = oldContent.getFields().getField(fieldName, fieldSchema).toJson();
+		Object oldValue = oldContent.getFields().getField(fieldName, fieldSchema).getValue();
 
 		switch (listType) {
 			case "boolean":
-				Boolean[] booleanList = typeConverter.toBooleanList(oldValue);
-				return booleanList == null
-					? null
-					: new BooleanFieldListImpl().setItems(Arrays.asList(booleanList));
+				return nullableList(typeConverter.toBooleanList(oldValue), BooleanFieldListImpl::new);
 			case "number":
 				if (fieldSchema.getType().equals("number")) {
 					return new NumberFieldListImpl().setItems(Collections.singletonList(oldContent.getFields().getNumberField(fieldName).getNumber()));
 				} else if (fieldSchema instanceof ListFieldSchema && ((ListFieldSchema) fieldSchema).getListType().equals("number")) {
 					return oldContent.getFields().getNumberFieldList(fieldName);
 				}
-				return new NumberFieldListImpl().setItems(Arrays.asList(typeConverter.toNumberList(oldValue)));
+				return nullableList(typeConverter.toNumberList(oldValue), NumberFieldListImpl::new);
 			case "date":
-				return new DateFieldListImpl().setItems(Arrays.asList(typeConverter.toDateList(oldValue)));
+				return nullableList(typeConverter.toDateList(oldValue), DateFieldListImpl::new);
 			case "html":
-				return new HtmlFieldListImpl().setItems(Arrays.asList(typeConverter.toStringList(oldValue)));
+				return nullableList(typeConverter.toStringList(oldValue), HtmlFieldListImpl::new);
 			case "string":
-				return new StringFieldListImpl().setItems(Arrays.asList(typeConverter.toStringList(oldValue)));
+				return nullableList(typeConverter.toStringList(oldValue), StringFieldListImpl::new);
 			case "micronode":
 //				return new MicronodeFieldListImpl().setItems(Arrays.asList(typeConverter.toMicronodeList(oldValue)));
 				return null;
@@ -264,6 +266,16 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 				return null;
 			default:
 				throw error(BAD_REQUEST, "Unknown list type {" + listType + "} for change " + getUuid());
+		}
+	}
+
+	private <T> FieldList<T> nullableList(T[] input, Supplier<FieldList<T>> output) {
+		if (input == null) {
+			return null;
+		} else {
+			FieldList<T> list = output.get();
+			list.setItems(Arrays.asList(input));
+			return list;
 		}
 	}
 
