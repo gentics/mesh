@@ -74,7 +74,7 @@ export default function useWebsocketBridge(callback) {
 }
 ----
 
-The `useWebroot` method can't be used for React hooks. We need to create a async variant which invokes the same GraphQL query to load the content.
+Lets now declare a `GraphQL` query method which will load the content for the given path and return a promise with the result data.
 
 .api.js
 [source,javascript]
@@ -96,7 +96,14 @@ export async function getNodeByPath(path) {
 }
 ----
 
-Finally we need to alter the `Content.jsx` file. The `useWebsocketBridge` method will invoke the `setNodeResponse` method once one of the three events (update, delete, create) has been received. This will update the nodeResponse state and thus reload the NodeComponent with the updated data.
+Finally we need to alter the `Content.jsx` file.
+
+First we need to declare a link:https://reactjs.org/docs/hooks-state.html[State Hook] for our component which keeps track of the content that is used in the component.
+
+Next we register the callback for the websocket event handler using the `useWebsocketBridge` method. This method will update the state using the update function `setNodeResponse` of the state once one of the three events (update, delete, create) has been received.
+
+Finally we want to use the link:https://reactjs.org/docs/hooks-effect.html[Effect Hook] to trigger the update of the state once the `location.pathname` variable changes.
+Without this effect the component would not be rendered again once a different webroot content gets loaded.
 
 .Content.jsx
 [source,javascript]
@@ -126,7 +133,7 @@ const WebrootContent = ({ location }) => {
 …
 ----
 
-=== Testing
+== Testing
 
 Once you applied the changes you should be able to open the react app and in parallel use the Gentics Mesh UI to update the contents. The changes should directly be visible in the app.
 
