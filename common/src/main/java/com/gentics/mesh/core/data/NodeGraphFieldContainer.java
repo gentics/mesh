@@ -469,8 +469,9 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	/**
 	 * Transform the container into a version info object.
 	 * 
+	 * @param ac
 	 * @return
 	 */
-	VersionInfo transformToVersionInfo();
+	VersionInfo transformToVersionInfo(InternalActionContext ac);
 
 }

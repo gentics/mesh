@@ -479,6 +479,6 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			return node.transformToNodeList(ac);
 		}, model -> {
 			ac.send(model, OK);
-		});		
+		});
 	}
 }

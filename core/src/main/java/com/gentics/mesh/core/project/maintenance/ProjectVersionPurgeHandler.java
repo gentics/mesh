@@ -88,14 +88,13 @@ public class ProjectVersionPurgeHandler {
 	 */
 	private void purgeVersion(Tx tx, Long txCounter, BulkActionContext bac, NodeGraphFieldContainer lastRemaining, NodeGraphFieldContainer version,
 		boolean previousRemoved, Optional<ZonedDateTime> maxAge) {
+
+		// We need to load some information first since we may remove the version in this step
 		List<? extends NodeGraphFieldContainer> nextVersions = Lists.newArrayList(version.getNextVersions());
-
+		boolean isNewerThanMaxAge = maxAge.isPresent() && !isOlderThanMaxAge(version, maxAge.get());
 		boolean isInTimeFrame = maxAge.isPresent() ? isOlderThanMaxAge(version, maxAge.get()) : true;
-		if (isInTimeFrame && version.isInitial()) {
-			// We need to re-map the initial version somehow
-			System.out.println("Is initial");
 
-		} else if (isInTimeFrame && isPurgeable(version)) {
+		if (isInTimeFrame && isPurgeable(version)) {
 			log.info("Purging container " + version.getUuid() + "@" + version.getVersion());
 			// Delete this version - This will also take care of removing the version references
 			// version.delete(bac);
@@ -120,11 +119,17 @@ public class ProjectVersionPurgeHandler {
 			previousRemoved = false;
 		}
 
-		// Continue with next versions
-		for (NodeGraphFieldContainer next : nextVersions) {
-			purgeVersion(tx, txCounter, bac, lastRemaining, next, previousRemoved, maxAge);
-		}
+		// Check if a maxage is set and whether the version is newer than the maxage
 
+		if (isNewerThanMaxAge) {
+			// We can stop traversing the tree at this point.
+			return;
+		} else {
+			// Continue with next versions
+			for (NodeGraphFieldContainer next : nextVersions) {
+				purgeVersion(tx, txCounter, bac, lastRemaining, next, previousRemoved, maxAge);
+			}
+		}
 	}
 
 	private boolean isOlderThanMaxAge(NodeGraphFieldContainer version, ZonedDateTime maxAge) {

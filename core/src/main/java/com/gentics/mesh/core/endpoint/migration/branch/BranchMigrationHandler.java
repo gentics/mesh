@@ -14,6 +14,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BranchMigrationContext;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -23,6 +24,7 @@ import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.metric.MetricsService;
 
 import io.reactivex.Completable;
@@ -116,11 +118,13 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 					node.setParentNode(newBranch.getUuid(), parent);
 				}
 
-				node.getGraphFieldContainersIt(oldBranch, DRAFT).forEach(container -> {
-					GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
-					initialEdge.setLanguageTag(container.getLanguageTag());
-					initialEdge.setType(INITIAL);
-					initialEdge.setBranchUuid(newBranch.getUuid());
+				TraversalResult<? extends NodeGraphFieldContainer> drafts = node.getGraphFieldContainersIt(oldBranch, DRAFT);
+				TraversalResult<? extends NodeGraphFieldContainer> published = node.getGraphFieldContainersIt(oldBranch, PUBLISHED);
+
+				drafts.forEach(container -> {
+					if (!published.hasNext()) {
+						setInitial(node, container, newBranch);
+					}
 
 					GraphFieldContainerEdgeImpl draftEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 					draftEdge.setLanguageTag(container.getLanguageTag());
@@ -137,6 +141,8 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 				});
 
 				node.getGraphFieldContainersIt(oldBranch, PUBLISHED).forEach(container -> {
+					setInitial(node, container, newBranch);
+
 					GraphFieldContainerEdgeImpl publishEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 					publishEdge.setLanguageTag(container.getLanguageTag());
 					publishEdge.setType(PUBLISHED);
@@ -158,5 +164,13 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 			log.error("Error while handling node {" + node.getUuid() + "} during schema migration.", e1);
 			errorsDetected.add(e1);
 		}
+	}
+
+	private void setInitial(Node node, NodeGraphFieldContainer container, Branch newBranch) {
+		GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container,
+			GraphFieldContainerEdgeImpl.class);
+		initialEdge.setLanguageTag(container.getLanguageTag());
+		initialEdge.setType(INITIAL);
+		initialEdge.setBranchUuid(newBranch.getUuid());
 	}
 }

@@ -772,13 +772,15 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public VersionInfo transformToVersionInfo() {
+	public VersionInfo transformToVersionInfo(InternalActionContext ac) {
+		String branchUuid = ac.getBranch().getUuid();
 		VersionInfo info = new VersionInfo();
 		info.setVersion(getVersion().getFullVersion());
 		info.setCreated(getLastEditedDate());
 		info.setCreator(getEditor().transformToReference());
-		info.setPublished(isPublished());
-		info.setDraft(isDraft());
+		info.setPublished(isPublished(branchUuid));
+		info.setDraft(isDraft(branchUuid));
+		info.setBranchRoot(isInitial());
 		return info;
 	}
 

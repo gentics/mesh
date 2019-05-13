@@ -974,21 +974,32 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeVersionsResponse response = new NodeVersionsResponse();
 		// TODO sort by id
 		Map<String, List<VersionInfo>> versions = new HashMap<>();
-		getGraphFieldContainers(ac.getBranch(), ContainerType.INITIAL).forEach(c -> {
+		getOldestContainer(ac.getBranch()).forEach(c -> {
 			List<VersionInfo> list = versions.computeIfAbsent(c.getLanguageTag(), (e) -> {
 				return new ArrayList<VersionInfo>();
 			});
-			walkVersions(list, c);
+			walkVersions(ac, list, c);
 		});
 		response.setVersions(versions);
 		return response;
 	}
 
-	private void walkVersions(List<VersionInfo> versions, NodeGraphFieldContainer current) {
-		versions.add(current.transformToVersionInfo());
-		Iterable<? extends NodeGraphFieldContainer> nexts = current.getNextVersions();
-		for (NodeGraphFieldContainer next : nexts) {
-			walkVersions(versions, next);
+	@Override
+	public TraversalResult<? extends NodeGraphFieldContainer> getOldestContainer(Branch branch) {
+		// We only need to check whether a draft content for the node exists. The draft content is always older compared to the published.
+		TraversalResult<? extends NodeGraphFieldContainer> draft = getGraphFieldContainersIt(branch, DRAFT);
+		if (draft.hasNext()) {
+			return draft;
+		} else {
+			return getGraphFieldContainersIt(branch, PUBLISHED);
+		}
+	}
+
+	private void walkVersions(InternalActionContext ac, List<VersionInfo> versions, NodeGraphFieldContainer current) {
+		versions.add(current.transformToVersionInfo(ac));
+		NodeGraphFieldContainer prev = current.getPreviousVersion();
+		if (prev != null) {
+			walkVersions(ac, versions, prev);
 		}
 	}
 

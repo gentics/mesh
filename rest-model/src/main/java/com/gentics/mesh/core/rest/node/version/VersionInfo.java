@@ -26,6 +26,10 @@ public class VersionInfo {
 	@JsonPropertyDescription("Is the content published version?")
 	private Boolean published;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Is the version used as a root version in another branch?")
+	private Boolean branchRoot;
+
 	public VersionInfo() {
 	}
 
@@ -72,6 +76,15 @@ public class VersionInfo {
 	public VersionInfo setPublished(Boolean published) {
 		this.published = published;
 		return this;
+	}
+
+	public VersionInfo setBranchRoot(Boolean branchRoot) {
+		this.branchRoot = branchRoot;
+		return this;
+	}
+
+	public Boolean getBranchRoot() {
+		return branchRoot;
 	}
 
 }
