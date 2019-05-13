@@ -1,0 +1,16 @@
+{
+	# [$.data.nodes.elements.length()=1]
+	nodes(query: "{\"query\":{\"query_string\":{\"query\":\"supersonic\", \"type\": \"phrase\" }}}") {
+		elements {
+			node {uuid}
+			language
+		}
+	}
+
+	result: nodes(query: "{ \"query\": { \"match\": { \"fields.slug\": \"blaar\" } } }") {
+		elements {
+			uuid
+		}
+	}
+}
+# [$.errors=<is-undefined>]
