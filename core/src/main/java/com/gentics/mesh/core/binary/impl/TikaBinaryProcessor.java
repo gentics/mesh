@@ -2,8 +2,10 @@ package com.gentics.mesh.core.binary.impl;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -11,16 +13,16 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.collections4.map.HashedMap;
+import org.apache.commons.io.IOUtils;
 import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.AutoDetectParser;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.Parser;
-import org.apache.tika.sax.BodyContentHandler;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.binary.AbstractBinaryProcessor;
+import com.gentics.mesh.core.binary.DocumentTikaParser;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 
 import io.reactivex.Maybe;
 import io.vertx.core.logging.Logger;
@@ -37,10 +39,14 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 
 	private final Set<String> skipSet = new HashSet<>();
 
-	private final Parser parser = new AutoDetectParser();
+	private static final int DEFAULT_TIKA_CHAR_LIMIT = 100000;
+
+	private final MeshOptions options;
 
 	@Inject
-	public TikaBinaryProcessor() {
+	public TikaBinaryProcessor(MeshOptions options) {
+		this.options = options;
+
 		// Accepted types
 		acceptedTypes.add("application/pdf");
 		acceptedTypes.add("application/msword");
@@ -83,7 +89,7 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	}
 
 	@Override
-	public Maybe<Consumer<BinaryGraphField>> process(FileUpload upload) {
+	public Maybe<Consumer<BinaryGraphField>> process(FileUpload upload, String hash) {
 
 		File uploadFile = new File(upload.uploadedFileName());
 		Maybe<Consumer<BinaryGraphField>> result = Maybe.create(sub -> {
@@ -91,17 +97,19 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 			Map<String, String> fields = new HashedMap<>();
 			try (FileInputStream inputstream = new FileInputStream(uploadFile)) {
 				Metadata metadata = new Metadata();
-				ParseContext context = new ParseContext();
-				BodyContentHandler handler = new BodyContentHandler();
 
 				// PDF files need to be parsed fully
-				if (upload.contentType().toLowerCase().startsWith("application/pdf")) {
-					handler = new BodyContentHandler(-1);
+				int len = DEFAULT_TIKA_CHAR_LIMIT;
+				if (needsFullParsing(upload)) {
+					len = -1;
 				}
 
-				parser.parse(inputstream, handler, metadata, context);
+				Optional<String> content = DocumentTikaParser.parse(inputstream, metadata, len);
 				if (log.isDebugEnabled()) {
-					log.debug("Parsed file {" + uploadFile + "} got content: {" + handler.toString() + "}");
+					log.debug("Parsed file {" + uploadFile + "}");
+				}
+				if (content.isPresent()) {
+					log.debug("Got content {" + content.get() + "}");
 				}
 
 				String[] metadataNames = metadata.names();
@@ -140,6 +148,23 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 					fields.put(name, value);
 				}
 
+				// Cache fields
+				ElasticSearchOptions searchOptions = options.getSearchOptions();
+				if (searchOptions != null && searchOptions.isProcessBinary() && searchOptions.getMetadataCacheDirectory() != null) {
+					if (content.isPresent()) {
+						File cacheFile = new File(searchOptions.getMetadataCacheDirectory());
+						if (!cacheFile.exists()) {
+							try (FileOutputStream fos = new FileOutputStream(cacheFile)) {
+								IOUtils.write(content.get(), fos);
+							}
+						} else {
+							log.debug("Cache file {" + cacheFile + "} found. No need to write file.");
+						}
+					}
+				} else {
+					log.debug("Binary processing or metadata cache directory not set. Not caching metadata.");
+				}
+
 				Consumer<BinaryGraphField> consumer = field -> {
 					fields.forEach((e, k) -> {
 						field.setMetadata(e, k);
@@ -157,6 +182,10 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 
 		return result.observeOn(RxHelper.blockingScheduler(Mesh.vertx(), false)).onErrorComplete();
 
+	}
+
+	private boolean needsFullParsing(FileUpload upload) {
+		return upload.contentType().toLowerCase().startsWith("application/pdf");
 	}
 
 	/**

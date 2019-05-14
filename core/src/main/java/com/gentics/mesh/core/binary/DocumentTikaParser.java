@@ -1,9 +1,10 @@
-package com.gentics.mesh.search.processor;
+package com.gentics.mesh.core.binary;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.tika.Tika;
@@ -14,7 +15,7 @@ import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.ParserDecorator;
 
-class DocumentTikaParser {
+public class DocumentTikaParser {
 
 	/**
 	 * Exclusions
@@ -29,7 +30,7 @@ class DocumentTikaParser {
 		MediaType.application("vnd.ms-visio.drawing")));
 
 	/**
-	 * Suppored parsers.
+	 * Supported parsers.
 	 */
 	private static final Parser PARSERS[] = new Parser[] {
 		// documents
@@ -50,9 +51,20 @@ class DocumentTikaParser {
 
 	private static final Tika TIKA_INSTANCE = new Tika(PARSER_INSTANCE.getDetector(), PARSER_INSTANCE);
 
-	public static String parse(final byte content[], final Metadata metadata, final int limit) throws TikaException, IOException {
+	/**
+	 * Parse the input and set the metadata.
+	 * 
+	 * @param input
+	 * @param metadata
+	 * @param limit
+	 * @return Extracted content
+	 * @throws TikaException
+	 * @throws IOException
+	 */
+	public static Optional<String> parse(final InputStream input, final Metadata metadata, final int limit) throws TikaException, IOException {
 		try {
-			return TIKA_INSTANCE.parseToString(new ByteArrayInputStream(content), metadata, limit);
+			String content = TIKA_INSTANCE.parseToString(input, metadata, limit);
+			return Optional.of(content);
 		} catch (Exception e) {
 			Throwable cause = e.getCause();
 			if (cause instanceof TikaException) {

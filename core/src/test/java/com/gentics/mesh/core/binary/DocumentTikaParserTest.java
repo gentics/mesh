@@ -1,7 +1,8 @@
-package com.gentics.mesh.search.processor;
+package com.gentics.mesh.core.binary;
 
 import static org.junit.Assert.assertNotNull;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -12,7 +13,7 @@ import org.junit.Test;
 
 import io.vertx.core.buffer.Buffer;
 
-public class TikaImplTest {
+public class DocumentTikaParserTest {
 
 	@Test
 	public void testTika() throws TikaException, IOException {
@@ -20,7 +21,7 @@ public class TikaImplTest {
 		byte[] data = buffer.getBytes();
 		Metadata metadata = new Metadata();
 		int limit = 10000;
-		String content = DocumentTikaParser.parse(data, metadata, limit);
+		String content = DocumentTikaParser.parse(new ByteArrayInputStream(data), metadata, limit).get();
 		System.out.println(content);
 		System.out.println(metadata.toString());
 	}
