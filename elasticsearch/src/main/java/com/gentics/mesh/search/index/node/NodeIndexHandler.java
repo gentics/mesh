@@ -170,11 +170,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			IndexInfo draftInfo = new IndexInfo(draftIndexName, settings, mapping, schema.getName() + "@" + schema.getVersion());
 			IndexInfo publishInfo = new IndexInfo(publishIndexName, settings, mapping, schema.getName() + "@" + schema.getVersion());
 
-			// Check whether we also need to create an ingest pipeline config which corresponds to the index/schema
-			JsonObject ingestConfig = ingestConfigProvider.getConfig(schema);
-			draftInfo.setIngestPipelineSettings(ingestConfig);
-			publishInfo.setIngestPipelineSettings(ingestConfig);
-
 			indexInfo.put(draftIndexName, draftInfo);
 			indexInfo.put(publishIndexName, publishInfo);
 			return indexInfo;
@@ -537,14 +532,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String newLanguageTag = newContainer.getLanguageTag();
 		String newDocumentId = NodeGraphFieldContainer.composeDocumentId(newContainer.getParentNode().getUuid(), newLanguageTag);
 		JsonObject doc = transformer.toDocument(newContainer, releaseUuid, type);
-		Observable<IndexBulkEntry> addEntry = searchProvider.hasIngestPipelinePlugin().flatMapObservable(enabled ->
-			Observable.just(new IndexBulkEntry(newIndexName, newDocumentId, doc, enabled))
-		);
+		return 	Observable.just(new IndexBulkEntry(newIndexName, newDocumentId, doc, false));
 
-		return Observable.concatArray(
-			addEntry,
-			deleteEntry
-		);
 	}
 
 	/**
@@ -598,8 +587,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String languageTag = container.getLanguageTag();
 		String documentId = NodeGraphFieldContainer.composeDocumentId(container.getParentNode().getUuid(), languageTag);
 
-		return searchProvider.hasIngestPipelinePlugin()
-			.map(enabled -> new IndexBulkEntry(indexName, documentId, doc, enabled));
+		return Single.just(new IndexBulkEntry(indexName, documentId, doc, false));
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 
 import java.io.ByteArrayInputStream;
 
@@ -17,8 +18,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.buffer.Buffer;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_WITH_INGEST;
-@MeshTestSetting(elasticsearch = CONTAINER_WITH_INGEST, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
 public class NodeBinaryIngestMigrationTest extends AbstractMeshTest {
 
 	@Test

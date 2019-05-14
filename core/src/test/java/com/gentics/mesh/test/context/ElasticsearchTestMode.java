@@ -27,12 +27,7 @@ public enum ElasticsearchTestMode {
 	/**
 	 * Run using a toxified ES docker container
 	 */
-	CONTAINER_TOXIC,
-
-	/**
-	 * Run using a ES docker container which includes the ingest plugin
-	 */
-	CONTAINER_WITH_INGEST;
+	CONTAINER_TOXIC;
 
 	public SearchProviderType toSearchProviderType() {
 		switch (this) {

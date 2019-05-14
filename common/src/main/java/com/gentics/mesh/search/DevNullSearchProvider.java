@@ -40,11 +40,6 @@ public class DevNullSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable registerIngestPipeline(IndexInfo info) {
-		return Completable.complete();
-	}
-
-	@Override
 	public Completable deregisterPipeline(String name) {
 		return Completable.complete();
 	}
@@ -133,11 +128,6 @@ public class DevNullSearchProvider implements SearchProvider {
 	@Override
 	public <T> T getClient() {
 		return null;
-	}
-
-	@Override
-	public Single<Boolean> hasIngestPipelinePlugin() {
-		return Single.just(true);
 	}
 
 	@Override

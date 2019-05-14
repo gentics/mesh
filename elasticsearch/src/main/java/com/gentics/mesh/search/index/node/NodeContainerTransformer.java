@@ -51,8 +51,8 @@ import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractTransformer;
+import com.gentics.mesh.search.processor.AttachmentProcessor;
 import com.gentics.mesh.util.ETag;
 
 import io.reactivex.Observable;
@@ -72,11 +72,11 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 
 	private static final String VERSION_KEY = "version";
 
-	private SearchProvider searchProvider;
+	private AttachmentProcessor attachmentProcessor;
 
 	@Inject
-	public NodeContainerTransformer(SearchProvider searchProvider) {
-		this.searchProvider = searchProvider;
+	public NodeContainerTransformer(AttachmentProcessor attachmentProcessor) {
+		this.attachmentProcessor = attachmentProcessor;
 	}
 
 	/**
@@ -204,9 +204,10 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 
 						// Only add the base64 content if we can actually process it and if it can be processed
 						// Images, Videos etc can't be processed by the ingest plugin
-						if (searchProvider.hasIngestPipelinePlugin().blockingGet() && binaryField.isIngestableDocument()) {
-							binaryFieldInfo.put("data", binary.getBase64ContentSync());
-						}
+						
+						//if (searchProvider.hasIngestPipelinePlugin().blockingGet() && binaryField.isIngestableDocument()) {
+						//	binaryFieldInfo.put("data", binary.getBase64ContentSync());
+						//}
 					}
 
 					// Add the metadata

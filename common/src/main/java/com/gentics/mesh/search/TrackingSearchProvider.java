@@ -74,12 +74,6 @@ public class TrackingSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable registerIngestPipeline(IndexInfo info) {
-		pipelineEvents.put(info.getIngestPipelineName(), info.getIngestPipelineSettings());
-		return Completable.complete();
-	}
-
-	@Override
 	public Completable deregisterPipeline(String name) {
 		return Completable.complete();
 	}
@@ -249,11 +243,6 @@ public class TrackingSearchProvider implements SearchProvider {
 				System.out.println("Json:\n" + entry.getValue().encodePrettily());
 			}
 		}
-	}
-
-	@Override
-	public Single<Boolean> hasIngestPipelinePlugin() {
-		return Single.just(true);
 	}
 
 	@Override

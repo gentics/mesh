@@ -3,7 +3,7 @@ package com.gentics.mesh.search;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_WITH_INGEST;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.context.MeshTestHelper.getRangeQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
@@ -42,7 +42,7 @@ import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(elasticsearch = CONTAINER_WITH_INGEST, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
 public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 
 	@Test

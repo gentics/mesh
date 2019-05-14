@@ -128,7 +128,6 @@ public class MeshTestContext extends TestWatcher {
 				listenToSearchIdleEvent();
 				switch (settings.elasticsearch()) {
 				case CONTAINER:
-				case CONTAINER_WITH_INGEST:
 					setupIndexHandlers();
 					break;
 				default:
@@ -175,7 +174,6 @@ public class MeshTestContext extends TestWatcher {
 				case CONTAINER:
 				case CONTAINER_TOXIC:
 				case EMBEDDED:
-				case CONTAINER_WITH_INGEST:
 					meshDagger.searchProvider().clear().blockingAwait();
 					break;
 				case TRACKING:
@@ -393,8 +391,7 @@ public class MeshTestContext extends TestWatcher {
 
 		switch (settings.elasticsearch()) {
 		case CONTAINER:
-		case CONTAINER_WITH_INGEST:
-			elasticsearch = new ElasticsearchContainer(settings.elasticsearch() == ElasticsearchTestMode.CONTAINER_WITH_INGEST);
+			elasticsearch = new ElasticsearchContainer(false);
 			if (!elasticsearch.isRunning()) {
 				elasticsearch.start();
 			}
