@@ -47,7 +47,6 @@ import com.gentics.mesh.util.NodeUtil;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
-import com.google.common.hash.HashFunction;
 
 import dagger.Lazy;
 import io.reactivex.Completable;

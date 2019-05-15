@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.binary;
 
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -45,6 +47,22 @@ public class DocumentTikaParser {
 		new org.apache.tika.parser.iwork.IWorkPackageParser(),
 		new org.apache.tika.parser.xml.DcXMLParser(),
 		new org.apache.tika.parser.epub.EpubParser(),
+
+		// audio
+		new org.apache.tika.parser.audio.AudioParser(),
+		new org.apache.tika.parser.mp3.Mp3Parser(),
+
+		// video
+		new org.apache.tika.parser.video.FLVParser(),
+		new org.apache.tika.parser.mp4.MP4Parser(),
+
+		// images
+		new org.apache.tika.parser.image.ImageParser(),
+		new org.apache.tika.parser.jpeg.JpegParser(),
+		new org.apache.tika.parser.image.WebPParser(),
+
+		// ogg (audio/video)
+		new org.gagravarr.tika.OggParser()
 	};
 
 	private static final AutoDetectParser PARSER_INSTANCE = new AutoDetectParser(PARSERS);
@@ -57,13 +75,16 @@ public class DocumentTikaParser {
 	 * @param input
 	 * @param metadata
 	 * @param limit
-	 * @return Extracted content
+	 * @return Optional with the extracted content
 	 * @throws TikaException
 	 * @throws IOException
 	 */
 	public static Optional<String> parse(final InputStream input, final Metadata metadata, final int limit) throws TikaException, IOException {
 		try {
 			String content = TIKA_INSTANCE.parseToString(input, metadata, limit);
+			if (isEmpty(content)) {
+				return Optional.empty();
+			}
 			return Optional.of(content);
 		} catch (Exception e) {
 			Throwable cause = e.getCause();
@@ -72,7 +93,7 @@ public class DocumentTikaParser {
 			} else if (cause instanceof IOException) {
 				throw (IOException) cause;
 			} else {
-				throw new AssertionError(cause);
+				throw e;
 			}
 		}
 	}

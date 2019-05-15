@@ -36,6 +36,8 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	String BINARY_ALT_KEY = "metadata-alt";
 
+	String PLAIN_TEXT_KEY = "plainText"; 
+
 	/**
 	 * Return the binary filename.
 	 * 
@@ -176,13 +178,6 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	Binary getBinary();
 
 	/**
-	 * Check whether the binary data represents a ingestable document(e.g.: pdf, doc, txt).
-	 * 
-	 * @return
-	 */
-	boolean isIngestableDocument();
-
-	/**
 	 * Set the metadata property.
 	 * 
 	 * @param key
@@ -288,4 +283,17 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return
 	 */
 	BinaryMetadata getMetadata();
+
+	/**
+	 * Set the plain text content.
+	 * @param text
+	 */
+	void setPlainText(String text);
+
+	/**
+	 * Return the extracted plain text content of the binary.
+	 * @return
+	 */
+	String getPlainText();
+
 }

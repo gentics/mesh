@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.storage.BinaryStorage;
 
 import io.reactivex.Flowable;
@@ -30,8 +31,8 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 	}
 
 	@Override
-	public Iterable<? extends BinaryGraphField> findFields() {
-		return inE(HAS_FIELD).frameExplicit(BinaryGraphFieldImpl.class);
+	public TraversalResult<? extends BinaryGraphField> findFields() {
+		return new TraversalResult<>(inE(HAS_FIELD).frameExplicit(BinaryGraphFieldImpl.class));
 	}
 
 	@Override

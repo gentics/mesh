@@ -19,6 +19,7 @@ import org.junit.runners.model.Statement;
 
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.OAuth2Options;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestContext;
@@ -35,9 +36,12 @@ public class OAuth2KeycloakTest extends AbstractMeshTest {
 
 	@ClassRule
 	public static TestRule rule = (Statement base, Description description) -> {
-		OAuth2Options options = testContext.getOptions().getAuthenticationOptions().getOauth2();
-		options.setMapperScriptDevMode(true);
-		options.setMapperScriptPath("src/test/resources/oauth2/mapperscript.js");
+		testContext.setOptionChanger(options -> {
+			AuthenticationOptions auth = options.getAuthenticationOptions();
+			OAuth2Options oauth2options = auth.getOauth2();
+			oauth2options.setMapperScriptDevMode(true);
+			oauth2options.setMapperScriptPath("src/test/resources/oauth2/mapperscript.js");
+		});
 		return base;
 	};
 

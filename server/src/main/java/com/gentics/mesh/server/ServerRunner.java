@@ -8,7 +8,6 @@ import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.router.EndpointRegistry;
-import com.gentics.mesh.search.endpoint.ElasticsearchHeadEndpoint;
 import com.gentics.mesh.verticle.admin.AdminGUIEndpoint;
 
 import io.vertx.core.json.JsonObject;
@@ -27,7 +26,7 @@ public class ServerRunner {
 		LoggingConfigurator.init();
 		MeshOptions options = OptionsLoader.createOrloadOptions(args);
 
-		// options.setAdminPassword("admin");
+		options.setAdminPassword("admin");
 		// options.getStorageOptions().setStartServer(true);
 		// options.getHttpServerOptions().setCorsAllowCredentials(true);
 		// options.getHttpServerOptions().setEnableCors(true);
@@ -42,6 +41,8 @@ public class ServerRunner {
 		// options.getHttpServerOptions().setPort(9999);
 		// options.getMonitoringOptions().setPort(9991);
 		// options.getMonitoringOptions().setHost("0.0.0.0");
+		options.getSearchOptions().setUrl(null);
+		options.getSearchOptions().setStartEmbedded(false);
 
 		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {
@@ -51,11 +52,6 @@ public class ServerRunner {
 			// Add admin ui
 			EndpointRegistry registry = MeshInternal.get().endpointRegistry();
 			registry.register(AdminGUIEndpoint.class);
-
-			// Add elastichead
-			if (options.getSearchOptions().getUrl() != null) {
-				registry.register(ElasticsearchHeadEndpoint.class);
-			}
 		});
 		mesh.run();
 	}

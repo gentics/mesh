@@ -185,4 +185,18 @@ public interface BinaryField extends Field {
 	 */
 	BinaryField setMetadata(BinaryMetadata metaData);
 
+	/**
+	 * Returns the plain text that was extracted from the uploaded document.
+	 * 
+	 * @return
+	 */
+	String getPlainText();
+
+	/**
+	 * Set the plain text from the binary document.
+	 * 
+	 * @return
+	 */
+	BinaryField setPlainText(String text);
+
 }

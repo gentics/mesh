@@ -1,7 +1,5 @@
 package com.gentics.mesh.etc.config.search;
 
-import java.io.File;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
@@ -30,8 +28,6 @@ public class ElasticSearchOptions implements Option {
 	public static final int DEFAULT_IDLE_DEBOUNCE_TIME = 100;
 	public static final int DEFAULT_RETRY_INTERVAL = 5000;
 	public static final boolean DEFAULT_WAIT_FOR_IDLE = true;
-	public static final boolean DEFAULT_PROCESS_BINARY = false;
-	public static final String DEFAULT_BINARY_METADATA_DIRECTORY = "data" + File.separator + "binaryMetadataCache";
 
 	public static final String DEFAULT_PREFIX = "mesh-";
 
@@ -48,8 +44,6 @@ public class ElasticSearchOptions implements Option {
 	public static final String MESH_ELASTICSEARCH_IDLE_DEBOUNCE_TIME_ENV = "MESH_ELASTICSEARCH_IDLE_DEBOUNCE_TIME";
 	public static final String MESH_ELASTICSEARCH_RETRY_INTERVAL_ENV = "MESH_ELASTICSEARCH_RETRY_INTERVAL";
 	public static final String MESH_ELASTICSEARCH_WAIT_FOR_IDLE_ENV = "MESH_ELASTICSEARCH_WAIT_FOR_IDLE";
-	public static final String MESH_ELASTICSEARCH_PROCESS_BINARY_ENV = "MESH_ELASTICSEARCH_PROCESS_BINARY";
-	public static final String MESH_ELASTICSEARCH_METADATA_CACHE_DIRECTORY_ENV = "MESH_ELASTICSEARCH_METADATA_DIRECTORY";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Elasticsearch connection url to be used. Set this setting to null will disable the Elasticsearch support.")
@@ -115,17 +109,6 @@ public class ElasticSearchOptions implements Option {
 		+ DEFAULT_WAIT_FOR_IDLE)
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_WAIT_FOR_IDLE_ENV, description = "Override the search idle wait flag.")
 	private boolean waitForIdle = DEFAULT_WAIT_FOR_IDLE;
-
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("If true, binary data will be processed. Metadata and contents of PDF, Docs etc. will be added to the search index. Default: "
-		+ DEFAULT_PROCESS_BINARY)
-	@EnvironmentVariable(name = MESH_ELASTICSEARCH_PROCESS_BINARY_ENV, description = "Override the search process binary flag.")
-	private boolean processBinary = DEFAULT_PROCESS_BINARY;
-
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("Path to the binary metadata cache directory.")
-	@EnvironmentVariable(name = MESH_ELASTICSEARCH_METADATA_CACHE_DIRECTORY_ENV, description = "Set the metadata cache directory.")
-	private String metadataCacheDirectory = DEFAULT_BINARY_METADATA_DIRECTORY;
 
 	public ElasticSearchOptions() {
 
@@ -265,21 +248,4 @@ public class ElasticSearchOptions implements Option {
 		return this;
 	}
 
-	public boolean isProcessBinary() {
-		return processBinary;
-	}
-
-	public ElasticSearchOptions setProcessBinary(boolean processBinary) {
-		this.processBinary = processBinary;
-		return this;
-	}
-
-	public String getMetadataCacheDirectory() {
-		return metadataCacheDirectory;
-	}
-
-	public ElasticSearchOptions setMetadataCacheDirectory(String metadataCacheDirectory) {
-		this.metadataCacheDirectory = metadataCacheDirectory;
-		return this;
-	}
 }

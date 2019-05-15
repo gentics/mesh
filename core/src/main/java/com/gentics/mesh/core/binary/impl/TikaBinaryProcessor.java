@@ -2,7 +2,8 @@ package com.gentics.mesh.core.binary.impl;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -13,7 +14,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.collections4.map.HashedMap;
-import org.apache.commons.io.IOUtils;
+import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 
 import com.gentics.mesh.Mesh;
@@ -21,8 +22,6 @@ import com.gentics.mesh.core.binary.AbstractBinaryProcessor;
 import com.gentics.mesh.core.binary.DocumentTikaParser;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 
 import io.reactivex.Maybe;
 import io.vertx.core.logging.Logger;
@@ -41,11 +40,8 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 
 	private static final int DEFAULT_TIKA_CHAR_LIMIT = 100000;
 
-	private final MeshOptions options;
-
 	@Inject
-	public TikaBinaryProcessor(MeshOptions options) {
-		this.options = options;
+	public TikaBinaryProcessor() {
 
 		// Accepted types
 		acceptedTypes.add("application/pdf");
@@ -90,87 +86,28 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 
 	@Override
 	public Maybe<Consumer<BinaryGraphField>> process(FileUpload upload, String hash) {
-
-		File uploadFile = new File(upload.uploadedFileName());
 		Maybe<Consumer<BinaryGraphField>> result = Maybe.create(sub -> {
-			Location loc = new Location();
-			Map<String, String> fields = new HashedMap<>();
-			try (FileInputStream inputstream = new FileInputStream(uploadFile)) {
-				Metadata metadata = new Metadata();
-
-				// PDF files need to be parsed fully
-				int len = DEFAULT_TIKA_CHAR_LIMIT;
-				if (needsFullParsing(upload)) {
-					len = -1;
-				}
-
-				Optional<String> content = DocumentTikaParser.parse(inputstream, metadata, len);
-				if (log.isDebugEnabled()) {
-					log.debug("Parsed file {" + uploadFile + "}");
-				}
-				if (content.isPresent()) {
-					log.debug("Got content {" + content.get() + "}");
-				}
-
-				String[] metadataNames = metadata.names();
-				for (String name : metadataNames) {
-					String value = metadata.get(name);
-					name = sanitizeName(name);
-					if (skipSet.contains(name)) {
-						log.debug("Skipping entry {" + name + "} because it is on the skip set.");
-						continue;
-					}
-					if (value == null) {
-						log.debug("Skipping entry {" + name + "} because value is null.");
-						continue;
-					}
-
-					// Dedicated handling of GPS information
-					try {
-						if (name.equals("geo_lat")) {
-							loc.setLat(Double.valueOf(value));
-							continue;
-						}
-						if (name.equals("geo_long")) {
-							loc.setLon(Double.valueOf(value));
-							continue;
-						}
-						if (name.equals("GPS_Altitude")) {
-							String v = value.replaceAll(" .*", "");
-							loc.setAlt(Integer.parseInt(v));
-							continue;
-						}
-					} catch (NumberFormatException e) {
-						log.warn("Could not parse {" + name + "} key with value {" + value + "} - Ignoring field.", e);
-					}
-
-					log.debug("Adding property {" + name + "}={" + value + "}");
-					fields.put(name, value);
-				}
-
-				// Cache fields
-				ElasticSearchOptions searchOptions = options.getSearchOptions();
-				if (searchOptions != null && searchOptions.isProcessBinary() && searchOptions.getMetadataCacheDirectory() != null) {
-					if (content.isPresent()) {
-						File cacheFile = new File(searchOptions.getMetadataCacheDirectory());
-						if (!cacheFile.exists()) {
-							try (FileOutputStream fos = new FileOutputStream(cacheFile)) {
-								IOUtils.write(content.get(), fos);
-							}
-						} else {
-							log.debug("Cache file {" + cacheFile + "} found. No need to write file.");
-						}
-					}
-				} else {
-					log.debug("Binary processing or metadata cache directory not set. Not caching metadata.");
-				}
+			File uploadFile = new File(upload.uploadedFileName());
+			if (log.isDebugEnabled()) {
+				log.debug("Parsing file {" + uploadFile + "}");
+			}
+			// PDF files need to be parsed fully
+			int len = DEFAULT_TIKA_CHAR_LIMIT;
+			if (needsFullParsing(upload.contentType())) {
+				len = -1;
+			}
+			try (FileInputStream ins = new FileInputStream(uploadFile)) {
+				TikaResult pr = parseFile(ins, len);
 
 				Consumer<BinaryGraphField> consumer = field -> {
-					fields.forEach((e, k) -> {
+					pr.getMetadata().forEach((e, k) -> {
 						field.setMetadata(e, k);
 					});
-					if (loc.isPresent()) {
-						field.setLocation(loc);
+					if (pr.getPlainText().isPresent()) {
+						field.setPlainText(pr.getPlainText().get());
+					}
+					if (pr.getLoc().isPresent()) {
+						field.setLocation(pr.getLoc());
 					}
 				};
 				sub.onSuccess(consumer);
@@ -184,8 +121,59 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 
 	}
 
-	private boolean needsFullParsing(FileUpload upload) {
-		return upload.contentType().toLowerCase().startsWith("application/pdf");
+	public TikaResult parseFile(InputStream ins, int len) throws TikaException, IOException {
+
+		Location loc = new Location();
+		Map<String, String> fields = new HashedMap<>();
+
+		Metadata metadata = new Metadata();
+
+		Optional<String> content = DocumentTikaParser.parse(ins, metadata, len);
+		if (content.isPresent()) {
+			log.debug("Got content {" + content.get() + "}");
+		}
+
+		String[] metadataNames = metadata.names();
+		for (String name : metadataNames) {
+			String value = metadata.get(name);
+			name = sanitizeName(name);
+			if (skipSet.contains(name)) {
+				log.debug("Skipping entry {" + name + "} because it is on the skip set.");
+				continue;
+			}
+			if (value == null) {
+				log.debug("Skipping entry {" + name + "} because value is null.");
+				continue;
+			}
+
+			// Dedicated handling of GPS information
+			try {
+				if (name.equals("geo_lat")) {
+					loc.setLat(Double.valueOf(value));
+					continue;
+				}
+				if (name.equals("geo_long")) {
+					loc.setLon(Double.valueOf(value));
+					continue;
+				}
+				if (name.equals("GPS_Altitude")) {
+					String v = value.replaceAll(" .*", "");
+					loc.setAlt(Integer.parseInt(v));
+					continue;
+				}
+			} catch (NumberFormatException e) {
+				log.warn("Could not parse {" + name + "} key with value {" + value + "} - Ignoring field.", e);
+			}
+
+			log.debug("Adding property {" + name + "}={" + value + "}");
+			fields.put(name, value);
+		}
+		return new TikaResult(fields, content, loc);
+
+	}
+
+	private boolean needsFullParsing(String contentType) {
+		return contentType.toLowerCase().startsWith("application/pdf");
 	}
 
 	/**
