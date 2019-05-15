@@ -24,6 +24,11 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.32.1]]
+== 0.32.1 (TBD)
+
+icon:check[] Core: Various internal libraries have been updated (logback, hazelcast-kubernetes, tika)
+
 [[v0.32.0]]
 == 0.32.0 (08.05.2019)
 
