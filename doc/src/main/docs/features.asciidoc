@@ -1306,6 +1306,14 @@ Example response:
 }
 ----
 
+=== Text extraction
+
+Uploaded documents (PDF, Doc, Docx) will automatically be parsed to extract the the plain text content. The `upload.parserLimit` configuration in the `mesh.yml` can be used to limit the parser output. By default a limit of __40.000__ characters has been configured.
+
+The plainText can be accessed via the `plainText` field in GraphQL. The same field is also included in the REST response of a binary field. This field can be modified via REST.
+
+NOTE: The parser limit of documents also affects the metadata extraction. In-line attributes of PDF files will only be added to the list of metadata when the parser limit is set high enough. A `parserLimit` of `-1` can be used to fully parse documents and to ensure that all attributes are identified.
+
 
 [[multilanguage]]
 == Multi-Language

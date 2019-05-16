@@ -22,6 +22,7 @@ import com.gentics.mesh.core.binary.AbstractBinaryProcessor;
 import com.gentics.mesh.core.binary.DocumentTikaParser;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
+import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.reactivex.Maybe;
 import io.vertx.core.logging.Logger;
@@ -38,10 +39,16 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 
 	private final Set<String> skipSet = new HashSet<>();
 
-	private static final int DEFAULT_TIKA_CHAR_LIMIT = 100000;
+	private final MeshOptions options;
+
+	/**
+	 * Default limit for non-document binaries
+	 */
+	private static final int DEFAULT_NON_DOC_TIKA_PARSE_LIMIT = 0;
 
 	@Inject
-	public TikaBinaryProcessor() {
+	public TikaBinaryProcessor(MeshOptions options) {
+		this.options = options;
 
 		// Accepted types
 		acceptedTypes.add("application/pdf");
@@ -91,11 +98,12 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 			if (log.isDebugEnabled()) {
 				log.debug("Parsing file {" + uploadFile + "}");
 			}
-			// PDF files need to be parsed fully
-			int len = DEFAULT_TIKA_CHAR_LIMIT;
-			if (needsFullParsing(upload.contentType())) {
-				len = -1;
+
+			int len = getParserLimit(upload.contentType());
+			if (log.isDebugEnabled()) {
+				log.debug("Using parser limit of {" + len + "}");
 			}
+
 			try (FileInputStream ins = new FileInputStream(uploadFile)) {
 				TikaResult pr = parseFile(ins, len);
 
@@ -172,8 +180,12 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 
 	}
 
-	private boolean needsFullParsing(String contentType) {
-		return contentType.toLowerCase().startsWith("application/pdf");
+	private int getParserLimit(String contentType) {
+		if (contentType.toLowerCase().startsWith("application/pdf") && options.getUploadOptions() != null) {
+			return options.getUploadOptions().getParserLimit();
+		} else {
+			return DEFAULT_NON_DOC_TIKA_PARSE_LIMIT;
+		}
 	}
 
 	/**

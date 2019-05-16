@@ -24,6 +24,11 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.33.0]]
+== 0.33.0 (TBD)
+
+The support for the Elasticsearch ingest plugin has been removed. The same functionality has been replaced with a much more efficient implementation which extracts the plain text of a document during upload processing. See link:{{< relref "features.asciidoc" >}}#_text_extraction[Text extraction documentation] for more information. 
+
 [[v0.32.1]]
 == 0.32.1 (TBD)
 
@@ -63,7 +68,7 @@ The Elasticsearch integration has been overhauled.
 
 Elasticsearch synchronization operations have been decoupled from regular write operations.
 
-This has two main effects. First, regular write operations (e.g. Node Update, Node Create) will not block until the changed data has been synchronized with elasticsearch. This will result in higher overall write performance. Secondly, changes will not be directly visible in Elasticsearch since write operations in Elasticsearch have been decoupled and will be executed asynchrously after a element in Gentics Mesh has been modified. Implementations which highly rely on Gentics Mesh being in sync with ES for each operation may need to be adapted. When using the `/search` or `/rawSearch` endpoints in mesh, you can now provide the `?wait=true` query parameter. See details link:{{< relref "elasticsearch.asciidoc" >}}#endpoints[here]
+This has two main effects. First, regular write operations (e.g. Node Update, Node Create) will not block until the changed data has been synchronized with elasticsearch. This will result in higher overall write performance. Secondly, changes will not be directly visible in Elasticsearch since write operations in Elasticsearch have been decoupled and will be executed asynchronously after a element in Gentics Mesh has been modified. Implementations which highly rely on Gentics Mesh being in sync with ES for each operation may need to be adapted. When using the `/search` or `/rawSearch` endpoints in mesh, you can now provide the `?wait=true` query parameter. See details link:{{< relref "elasticsearch.asciidoc" >}}#endpoints[here]
 
 *Fixes*
 

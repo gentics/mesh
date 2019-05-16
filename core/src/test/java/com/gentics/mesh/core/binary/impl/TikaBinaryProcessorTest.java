@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -27,7 +28,7 @@ public class TikaBinaryProcessorTest extends AbstractMeshTest {
 
 	@Test
 	public void tikaCachingTest() throws FileNotFoundException, IOException {
-		TikaBinaryProcessor processor = new TikaBinaryProcessor();
+		TikaBinaryProcessor processor = new TikaBinaryProcessor(new MeshOptions());
 		FileUpload ul = mockUpload("test.pdf", "application/pdf");
 
 		Maybe<Consumer<BinaryGraphField>> result = processor.process(ul, "HASHSUM");
