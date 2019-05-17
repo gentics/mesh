@@ -41,10 +41,7 @@ An automatic changelog entry has been added which will parse all uploaded docume
 The new __mesh.yml__ setting `upload.parserLimit` can be used to control the document parser. See link:{{< relref "features.asciidoc" >}}#_text_extraction[Text extraction documentation] for more information. 
 ____
 
-icon:plus[] Elastichead: The embedded elastichead interface has been removed. It is recommended to use browser extentions like link:https://chrome.google.com/webstore/detail/elasticsearch-head/ffmkiejjmecolpfloofpjologoblkegm[ElasticSearch Head for Chrome] instead.
-
-[[v0.32.1]]
-== 0.32.1 (TBD)
+icon:plus[] Search: The embedded elastichead interface has been removed. It is recommended to use browser extentions like link:https://chrome.google.com/webstore/detail/elasticsearch-head/ffmkiejjmecolpfloofpjologoblkegm[ElasticSearch Head for Chrome] instead.
 
 icon:check[] Core: Various internal libraries have been updated (logback, hazelcast-kubernetes, tika)
 
