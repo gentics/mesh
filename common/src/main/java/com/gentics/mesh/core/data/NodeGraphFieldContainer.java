@@ -474,4 +474,11 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 */
 	VersionInfo transformToVersionInfo(InternalActionContext ac);
 
+	/**
+	 * A container is purgeable when it is not being utilized as draft, published or initial version in any branch.
+	 * 
+	 * @return
+	 */
+	boolean isPurgeable();
+
 }

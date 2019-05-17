@@ -50,6 +50,10 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	@JsonPropertyDescription("List of schema fields")
 	private List<FieldSchema> fields = new ArrayList<>();
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Versioning flag of the schema. Controls whether contents of this schema should create new versions.")
+	private boolean versioned;
+
 	@Override
 	public String getName() {
 		return name;
@@ -176,8 +180,20 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	}
 
 	@Override
+	public boolean isVersioned() {
+		return versioned;
+	}
+
+	@Override
+	public SchemaResponse setVersioned(boolean versioned) {
+		this.versioned = versioned;
+		return this;
+	}
+
+	@Override
 	public String toString() {
 		String fields = getFields().stream().map(field -> field.getName()).collect(Collectors.joining(","));
 		return getName() + " fields: {" + fields + "}";
 	}
+
 }

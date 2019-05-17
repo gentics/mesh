@@ -65,6 +65,10 @@ public class SchemaModelImpl implements SchemaModel {
 	@JsonPropertyDescription("List of schema fields")
 	private List<FieldSchema> fields = new ArrayList<>();
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Versioning flag of the schema. Controls whether contents of this schema should create new versions.")
+	private boolean versioned;
+
 	@Override
 	public String getVersion() {
 		return version;
@@ -161,6 +165,17 @@ public class SchemaModelImpl implements SchemaModel {
 	@Override
 	public SchemaModelImpl setElasticsearch(JsonObject elasticsearch) {
 		this.elasticsearch = elasticsearch;
+		return this;
+	}
+
+	@Override
+	public boolean isVersioned() {
+		return versioned;
+	}
+
+	@Override
+	public SchemaModelImpl setVersioned(boolean versioned) {
+		this.versioned = versioned;
 		return this;
 	}
 

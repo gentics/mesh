@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.schema.handler;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.CONTAINER_FLAG_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DISPLAY_FIELD_NAME_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ELASTICSEARCH_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.VERSIONED_FIELD_NAME_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.SEGMENT_FIELD_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.URLFIELDS_KEY;
 
@@ -40,6 +41,9 @@ public class SchemaComparator extends AbstractFieldSchemaContainerComparator<Sch
 
 		// .displayField
 		compareAndAddSchemaProperty(changes, DISPLAY_FIELD_NAME_KEY, schemaA.getDisplayField(), schemaB.getDisplayField(), Schema.class);
+
+		//.versioned
+		compareAndAddSchemaProperty(changes, VERSIONED_FIELD_NAME_KEY, schemaA.isVersioned(), schemaB.isVersioned(), Schema.class);
 
 		// .container
 		// Only diff the container flag if a value has been set in the schemaB

@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.project.maintenance;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-
 import java.time.ZonedDateTime;
 import java.util.Iterator;
 import java.util.List;
@@ -94,7 +92,7 @@ public class ProjectVersionPurgeHandler {
 		boolean isNewerThanMaxAge = maxAge.isPresent() && !isOlderThanMaxAge(version, maxAge.get());
 		boolean isInTimeFrame = maxAge.isPresent() ? isOlderThanMaxAge(version, maxAge.get()) : true;
 
-		if (isInTimeFrame && isPurgeable(version)) {
+		if (isInTimeFrame && version.isPurgeable()) {
 			log.info("Purging container " + version.getUuid() + "@" + version.getVersion());
 			// Delete this version - This will also take care of removing the version references
 			// version.delete(bac);
@@ -144,8 +142,4 @@ public class ProjectVersionPurgeHandler {
 		return true;
 	}
 
-	private boolean isPurgeable(NodeGraphFieldContainer version) {
-		// The container is purgeable if no edge (publish, draft, initial) exists to its node.
-		return !version.inE(HAS_FIELD_CONTAINER).hasNext();
-	}
 }

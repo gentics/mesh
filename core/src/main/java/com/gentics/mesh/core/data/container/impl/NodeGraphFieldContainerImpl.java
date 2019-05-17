@@ -784,4 +784,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		return info;
 	}
 
+	@Override
+	public boolean isPurgeable() {
+		// The container is purgeable if no edge (publish, draft, initial) exists to its node.
+		return !inE(HAS_FIELD_CONTAINER).hasNext();
+	}
+
 }

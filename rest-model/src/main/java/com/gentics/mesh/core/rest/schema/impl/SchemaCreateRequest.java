@@ -44,6 +44,8 @@ public class SchemaCreateRequest implements Schema {
 	@JsonPropertyDescription("List of schema fields")
 	private List<FieldSchema> fields = new ArrayList<>();
 
+	private boolean versioned = true;
+
 	@Override
 	public String getDescription() {
 		return description;
@@ -129,6 +131,17 @@ public class SchemaCreateRequest implements Schema {
 	@Override
 	public SchemaCreateRequest setElasticsearch(JsonObject elasticsearch) {
 		this.elasticsearch = elasticsearch;
+		return this;
+	}
+
+	@Override
+	public boolean isVersioned() {
+		return versioned;
+	}
+
+	@Override
+	public SchemaCreateRequest setVersioned(boolean versioned) {
+		this.versioned = versioned;
 		return this;
 	}
 

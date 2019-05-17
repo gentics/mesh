@@ -394,7 +394,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String branchUuid = branch.getUuid();
 
 		// check whether there is a current draft version
-
 		if (handleDraftEdge) {
 			draftEdge = getGraphFieldContainerEdgeFrame(languageTag, branchUuid, DRAFT);
 			if (draftEdge != null) {
@@ -455,6 +454,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			initialEdge.setLanguageTag(languageTag);
 			initialEdge.setBranchUuid(branchUuid);
 			initialEdge.setType(INITIAL);
+		}
+
+		SchemaContainerVersion schema = newContainer.getSchemaContainerVersion();
+		if (schema.getSchema().isVersioned() && previous.isPurgeable()) {
+			System.out.println("TODO: remove the previous version");
 		}
 
 		return newContainer;
