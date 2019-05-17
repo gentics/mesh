@@ -25,8 +25,9 @@ public interface BinaryDataProcessor {
 	 * Process the binary data and return a consumer for the binary field.
 	 * 
 	 * @param upload
+	 * @param hash SHA512 sum of the upload
 	 * @return Modifier for the binary graph field.
 	 */
-	Maybe<Consumer<BinaryGraphField>> process(FileUpload upload);
+	Maybe<Consumer<BinaryGraphField>> process(FileUpload upload, String hash);
 
 }

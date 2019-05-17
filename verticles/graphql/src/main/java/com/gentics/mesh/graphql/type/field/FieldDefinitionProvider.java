@@ -132,6 +132,9 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return field.getImageFocalPoint();
 			}));
 
+		// .plainText
+		type.field(newFieldDefinition().name("plainText").description("Extracted plain text of the uploaded document.").type(GraphQLString));
+
 		return type.build();
 	}
 

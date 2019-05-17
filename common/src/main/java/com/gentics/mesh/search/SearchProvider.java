@@ -48,14 +48,6 @@ public interface SearchProvider {
 	Completable createIndex(IndexInfo info);
 
 	/**
-	 * Register the ingest pipeline using the index information.
-	 * 
-	 * @param info
-	 * @return Completable for the action
-	 */
-	Completable registerIngestPipeline(IndexInfo info);
-
-	/**
 	 * Deregister the ingest pipeline using the index information.
 	 * 
 	 * @param name
@@ -244,13 +236,6 @@ public interface SearchProvider {
 	 * @return
 	 */
 	Completable validateCreateViaTemplate(IndexInfo info);
-
-	/**
-	 * Check whether the ingest attachment plugin can be used.
-	 * 
-	 * @return
-	 */
-	Single<Boolean> hasIngestPipelinePlugin();
 
 	/**
 	 * Return the specific prefix for this installation. Indices and pipelines will make use of this prefix so that multiple mesh instances can use the same

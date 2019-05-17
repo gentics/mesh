@@ -36,7 +36,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
-public class NodeBinaryNoIngestSearchTest extends AbstractNodeSearchEndpointTest {
+public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testBinarySearchMapping() throws Exception {

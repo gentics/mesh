@@ -8,7 +8,6 @@ import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.router.EndpointRegistry;
-import com.gentics.mesh.search.endpoint.ElasticsearchHeadEndpoint;
 import com.gentics.mesh.verticle.admin.AdminGUIEndpoint;
 
 import io.vertx.core.json.JsonObject;
@@ -54,10 +53,6 @@ public class ServerRunner1 {
 			EndpointRegistry registry = MeshInternal.get().endpointRegistry();
 			registry.register(AdminGUIEndpoint.class);
 
-			// Add elastichead
-			if (options.getSearchOptions().getUrl() != null) {
-				registry.register(ElasticsearchHeadEndpoint.class);
-			}
 		});
 		mesh.run();
 	}

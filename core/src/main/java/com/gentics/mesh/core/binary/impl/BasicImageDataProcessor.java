@@ -37,7 +37,7 @@ public class BasicImageDataProcessor extends AbstractBinaryProcessor {
 	}
 
 	@Override
-	public Maybe<Consumer<BinaryGraphField>> process(FileUpload upload) {
+	public Maybe<Consumer<BinaryGraphField>> process(FileUpload upload, String hash) {
 		return imageManipulator.readImageInfo(upload.uploadedFileName()).map(info -> {
 			Consumer<BinaryGraphField> consumer = field -> {
 				log.info("Setting info to binary field " + field.getUuid() + " - " + info);

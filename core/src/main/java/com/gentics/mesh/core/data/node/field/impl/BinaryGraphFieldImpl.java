@@ -47,16 +47,6 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 
 	private static final Logger log = LoggerFactory.getLogger(BinaryGraphFieldImpl.class);
 
-	static {
-		allowedTypes.add("application/pdf");
-		allowedTypes.add("application/msword");
-		allowedTypes.add("text/rtf");
-		allowedTypes.add("application/vnd.ms-powerpoint");
-		allowedTypes.add("application/vnd.oasis.opendocument.text");
-		allowedTypes.add("text/plain");
-		allowedTypes.add("application/rtf");
-	}
-
 	public static void init(Database database) {
 		// database.addVertexType(BinaryGraphFieldImpl.class, MeshVertexImpl.class);
 	}
@@ -157,6 +147,12 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 				graphBinaryField.setLocation(loc);
 			}
 		}
+		
+		// Handle Update - Plain text
+		String text = binaryField.getPlainText();
+		if (text != null) {
+			graphBinaryField.setPlainText(text);
+		}
 
 		// Don't update image width, height, SHA checksum - those are immutable
 	};
@@ -185,6 +181,8 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 
 		BinaryMetadata metaData = getMetadata();
 		restModel.setMetadata(metaData);
+
+		restModel.setPlainText(getPlainText());
 		return restModel;
 	}
 
@@ -230,7 +228,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		Binary binary = getBinary();
 		remove();
 		// Only get rid of the binary as well if no other fields are using the binary.
-		if (!binary.findFields().iterator().hasNext()) {
+		if (!binary.findFields().hasNext()) {
 			binary.delete(bac);
 		}
 	}
@@ -330,16 +328,6 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	}
 
 	@Override
-	public boolean isIngestableDocument() {
-		String mimeType = getMimeType();
-		if (mimeType == null) {
-			return false;
-		}
-		mimeType = mimeType.toLowerCase();
-		return allowedTypes.contains(mimeType);
-	}
-
-	@Override
 	public Map<String, String> getMetadataProperties() {
 		List<String> keys = getPropertyKeys().stream().filter(k -> k.startsWith(META_DATA_PROPERTY_PREFIX)).collect(Collectors.toList());
 
@@ -375,6 +363,16 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	@Override
 	public void setMetadata(String key, String value) {
 		setProperty(META_DATA_PROPERTY_PREFIX + key, value);
+	}
+
+	@Override
+	public String getPlainText() {
+		return getProperty(PLAIN_TEXT_KEY);
+	}
+
+	@Override
+	public void setPlainText(String text) {
+		setProperty(PLAIN_TEXT_KEY, text);
 	}
 
 }

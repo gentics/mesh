@@ -54,8 +54,6 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(ElasticSearchProvider.class);
 
-	private static final String INGEST_ATTACHMENT_PROCESSOR_NAME = "attachment";
-
 	private SearchClient client;
 
 	private MeshOptions options;
@@ -63,8 +61,6 @@ public class ElasticSearchProvider implements SearchProvider {
 	private ElasticsearchProcessManager processManager;
 
 	private final static int MAX_RETRY_ON_ERROR = 5;
-
-	private Single<Boolean> hasAttachmentIngestProcessor = null;
 
 	private Lazy<Vertx> vertx;
 
@@ -273,28 +269,8 @@ public class ElasticSearchProvider implements SearchProvider {
 				}).toCompletable()
 				.onErrorResumeNext(error -> isResourceAlreadyExistsError(error) ? Completable.complete() : Completable.error(error));
 
-			if (info.getIngestPipelineSettings() != null) {
-				return hasIngestPipelinePlugin().flatMapCompletable(enabled -> enabled
-					? Completable.mergeArray(indexCreation, registerIngestPipeline(info))
-					: indexCreation);
-			} else {
-				return indexCreation;
-			}
+			return indexCreation;
 		}).compose(withTimeoutAndLog("Creating index {" + indexName + "} for {" + info.getSourceInfo() + "}", true));
-	}
-
-	@Override
-	public Completable registerIngestPipeline(IndexInfo info) {
-		String name = installationPrefix() + info.getIngestPipelineName();
-		JsonObject config = info.getIngestPipelineSettings();
-		return client.registerPipeline(name, config).async()
-			.doOnSuccess(response -> {
-				if (log.isDebugEnabled()) {
-					log.debug("Registered pipeline {" + name + "} response: {" + response.toString() + "}");
-				}
-			}).toCompletable()
-			.onErrorResumeNext(error -> isResourceAlreadyExistsError(error) ? Completable.complete() : Completable.error(error))
-			.compose(withTimeoutAndLog("Creating pipeline {" + name + "}", true));
 	}
 
 	@Override
@@ -449,24 +425,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			.onErrorResumeNext(ignore404)
 			.compose(withTimeoutAndLog("Deletion of indices " + indices, true));
 
-		return hasIngestPipelinePlugin().flatMapCompletable(enabled -> {
-			if (enabled) {
-				Completable deletePipelines = Observable.fromArray(indexNames).flatMapCompletable(indexName -> {
-					// We don't need to delete the pipeline for non node indices
-					if (!indexName.startsWith("node")) {
-						return Completable.complete();
-					}
-					return deregisterPipeline(indexName);
-				})
-					.onErrorResumeNext(error -> {
-						return isNotFoundError(error) ? Completable.complete() : Completable.error(error);
-					})
-					.compose(withTimeoutAndLog("Deletion of pipelines " + indices, true));
-				return Completable.mergeArray(deleteIndex, deletePipelines);
-			} else {
-				return deleteIndex;
-			}
-		});
+		return deleteIndex;
 	}
 
 	@Override
@@ -569,14 +528,6 @@ public class ElasticSearchProvider implements SearchProvider {
 				});
 			return ignoreError ? t.onErrorComplete() : t;
 		};
-	}
-
-	@Override
-	public Single<Boolean> hasIngestPipelinePlugin() {
-		if (hasAttachmentIngestProcessor == null) {
-			hasAttachmentIngestProcessor = SingleCacheSuccess.create(this.client.hasIngestProcessor(INGEST_ATTACHMENT_PROCESSOR_NAME));
-		}
-		return hasAttachmentIngestProcessor;
 	}
 
 	/**

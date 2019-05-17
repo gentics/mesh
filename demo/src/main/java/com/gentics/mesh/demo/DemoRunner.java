@@ -15,7 +15,6 @@ import com.gentics.mesh.demo.verticle.DemoAppEndpoint;
 import com.gentics.mesh.demo.verticle.DemoVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.router.EndpointRegistry;
-import com.gentics.mesh.search.endpoint.ElasticsearchHeadEndpoint;
 import com.gentics.mesh.util.DeploymentUtil;
 import com.gentics.mesh.verticle.admin.AdminGUIEndpoint;
 
@@ -74,11 +73,6 @@ public class DemoRunner {
 
 			// Add admin ui
 			registry.register(AdminGUIEndpoint.class);
-
-			// Add elastichead
-			if (options.getSearchOptions() != null) {
-				registry.register(ElasticsearchHeadEndpoint.class);
-			}
 		});
 		mesh.run();
 	}

@@ -2,8 +2,11 @@ package com.gentics.mesh.core.binary.impl;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -11,16 +14,15 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.collections4.map.HashedMap;
+import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.AutoDetectParser;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.Parser;
-import org.apache.tika.sax.BodyContentHandler;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.binary.AbstractBinaryProcessor;
+import com.gentics.mesh.core.binary.DocumentTikaParser;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
+import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.reactivex.Maybe;
 import io.vertx.core.logging.Logger;
@@ -35,16 +37,28 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 
 	private final Set<String> acceptedTypes = new HashSet<>();
 
+	private final Set<String> acceptedDocumentTypes = new HashSet<>();
+
 	private final Set<String> skipSet = new HashSet<>();
 
-	private final Parser parser = new AutoDetectParser();
+	private final MeshOptions options;
+
+	/**
+	 * Default limit for non-document binaries
+	 */
+	private static final int DEFAULT_NON_DOC_TIKA_PARSE_LIMIT = 0;
 
 	@Inject
-	public TikaBinaryProcessor() {
-		// Accepted types
-		acceptedTypes.add("application/pdf");
-		acceptedTypes.add("application/msword");
-		acceptedTypes.add("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+	public TikaBinaryProcessor(MeshOptions options) {
+		this.options = options;
+
+		// document
+		acceptedDocumentTypes.add("text/plain");
+		acceptedDocumentTypes.add("application/rtf");
+		acceptedDocumentTypes.add("application/pdf");
+		acceptedDocumentTypes.add("application/msword");
+		acceptedDocumentTypes.add("application/vnd.");
+		acceptedTypes.addAll(acceptedDocumentTypes);
 
 		// image
 		acceptedTypes.add("image/jpeg");
@@ -79,73 +93,41 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 
 	@Override
 	public boolean accepts(String contentType) {
-		return acceptedTypes.contains(contentType);
+		boolean accepted = acceptedTypes.stream().anyMatch(type -> {
+			return contentType.startsWith(type);
+		});
+		if (log.isDebugEnabled()) {
+			String mode = accepted ? "Accepting" : "Rejecting";
+			log.debug(mode + " {" + contentType + "} for processor {" + getClass().getName() + "}");
+		}
+		return accepted;
 	}
 
 	@Override
-	public Maybe<Consumer<BinaryGraphField>> process(FileUpload upload) {
-
-		File uploadFile = new File(upload.uploadedFileName());
+	public Maybe<Consumer<BinaryGraphField>> process(FileUpload upload, String hash) {
 		Maybe<Consumer<BinaryGraphField>> result = Maybe.create(sub -> {
-			Location loc = new Location();
-			Map<String, String> fields = new HashedMap<>();
-			try (FileInputStream inputstream = new FileInputStream(uploadFile)) {
-				Metadata metadata = new Metadata();
-				ParseContext context = new ParseContext();
-				BodyContentHandler handler = new BodyContentHandler();
+			File uploadFile = new File(upload.uploadedFileName());
+			if (log.isDebugEnabled()) {
+				log.debug("Parsing file {" + uploadFile + "}");
+			}
 
-				// PDF files need to be parsed fully
-				if (upload.contentType().toLowerCase().startsWith("application/pdf")) {
-					handler = new BodyContentHandler(-1);
-				}
+			int len = getParserLimit(upload.contentType());
+			if (log.isDebugEnabled()) {
+				log.debug("Using parser limit of {" + len + "}");
+			}
 
-				parser.parse(inputstream, handler, metadata, context);
-				if (log.isDebugEnabled()) {
-					log.debug("Parsed file {" + uploadFile + "} got content: {" + handler.toString() + "}");
-				}
-
-				String[] metadataNames = metadata.names();
-				for (String name : metadataNames) {
-					String value = metadata.get(name);
-					name = sanitizeName(name);
-					if (skipSet.contains(name)) {
-						log.debug("Skipping entry {" + name + "} because it is on the skip set.");
-						continue;
-					}
-					if (value == null) {
-						log.debug("Skipping entry {" + name + "} because value is null.");
-						continue;
-					}
-
-					// Dedicated handling of GPS information
-					try {
-						if (name.equals("geo_lat")) {
-							loc.setLat(Double.valueOf(value));
-							continue;
-						}
-						if (name.equals("geo_long")) {
-							loc.setLon(Double.valueOf(value));
-							continue;
-						}
-						if (name.equals("GPS_Altitude")) {
-							String v = value.replaceAll(" .*", "");
-							loc.setAlt(Integer.parseInt(v));
-							continue;
-						}
-					} catch (NumberFormatException e) {
-						log.warn("Could not parse {" + name + "} key with value {" + value + "} - Ignoring field.", e);
-					}
-
-					log.debug("Adding property {" + name + "}={" + value + "}");
-					fields.put(name, value);
-				}
+			try (FileInputStream ins = new FileInputStream(uploadFile)) {
+				TikaResult pr = parseFile(ins, len);
 
 				Consumer<BinaryGraphField> consumer = field -> {
-					fields.forEach((e, k) -> {
+					pr.getMetadata().forEach((e, k) -> {
 						field.setMetadata(e, k);
 					});
-					if (loc.isPresent()) {
-						field.setLocation(loc);
+					if (pr.getPlainText().isPresent()) {
+						field.setPlainText(pr.getPlainText().get());
+					}
+					if (pr.getLoc().isPresent()) {
+						field.setLocation(pr.getLoc());
 					}
 				};
 				sub.onSuccess(consumer);
@@ -157,6 +139,68 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 
 		return result.observeOn(RxHelper.blockingScheduler(Mesh.vertx(), false)).onErrorComplete();
 
+	}
+
+	public TikaResult parseFile(InputStream ins, int len) throws TikaException, IOException {
+
+		Location loc = new Location();
+		Map<String, String> fields = new HashedMap<>();
+
+		Metadata metadata = new Metadata();
+
+		Optional<String> content = DocumentTikaParser.parse(ins, metadata, len);
+		if (content.isPresent()) {
+			log.debug("Got content {" + content.get() + "}");
+		}
+
+		String[] metadataNames = metadata.names();
+		for (String name : metadataNames) {
+			String value = metadata.get(name);
+			name = sanitizeName(name);
+			if (skipSet.contains(name)) {
+				log.debug("Skipping entry {" + name + "} because it is on the skip set.");
+				continue;
+			}
+			if (value == null) {
+				log.debug("Skipping entry {" + name + "} because value is null.");
+				continue;
+			}
+
+			// Dedicated handling of GPS information
+			try {
+				if (name.equals("geo_lat")) {
+					loc.setLat(Double.valueOf(value));
+					continue;
+				}
+				if (name.equals("geo_long")) {
+					loc.setLon(Double.valueOf(value));
+					continue;
+				}
+				if (name.equals("GPS_Altitude")) {
+					String v = value.replaceAll(" .*", "");
+					loc.setAlt(Integer.parseInt(v));
+					continue;
+				}
+			} catch (NumberFormatException e) {
+				log.warn("Could not parse {" + name + "} key with value {" + value + "} - Ignoring field.", e);
+			}
+
+			log.debug("Adding property {" + name + "}={" + value + "}");
+			fields.put(name, value);
+		}
+		return new TikaResult(fields, content, loc);
+
+	}
+
+	public int getParserLimit(String contentType) {
+		boolean isDocument = acceptedDocumentTypes.stream().anyMatch(type -> {
+			return contentType.startsWith(type);
+		});
+		if (isDocument && options.getUploadOptions() != null) {
+			return options.getUploadOptions().getParserLimit();
+		} else {
+			return DEFAULT_NON_DOC_TIKA_PARSE_LIMIT;
+		}
 	}
 
 	/**

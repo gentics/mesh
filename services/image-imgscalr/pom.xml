@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>mesh-service-image-imgscalr</artifactId>
@@ -26,18 +28,16 @@
 			<artifactId>mesh-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-parsers</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.imgscalr</groupId>
 			<artifactId>imgscalr-lib</artifactId>
 			<version>${imgscalr-lib.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.tika</groupId>
-			<artifactId>tika-parsers</artifactId>
-			<version>${tika.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>

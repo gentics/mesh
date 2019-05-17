@@ -26,6 +26,7 @@
 		<hazelcast.version>3.10.4</hazelcast.version>
 		<jackson.version>2.9.8</jackson.version>
 		<netty.version>4.1.30.Final</netty.version>
+		<tika.version>1.17</tika.version>
 
 		<surefire.forkcount>3</surefire.forkcount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>
@@ -176,6 +177,12 @@
 				<version>20.0-rc1</version>
 			</dependency>
 
+			<!-- Tika -->
+			<dependency>
+				<groupId>org.apache.tika</groupId>
+				<artifactId>tika-parsers</artifactId>
+				<version>${tika.version}</version>
+			</dependency>
 
 			<!-- Spring - bcrypt -->
 			<dependency>
@@ -351,7 +358,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>	
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
