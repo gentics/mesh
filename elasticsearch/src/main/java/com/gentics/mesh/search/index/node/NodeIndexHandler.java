@@ -531,7 +531,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String newLanguageTag = newContainer.getLanguageTag();
 		String newDocumentId = NodeGraphFieldContainer.composeDocumentId(newContainer.getParentNode().getUuid(), newLanguageTag);
 		JsonObject doc = transformer.toDocument(newContainer, releaseUuid, type);
-		return 	Observable.just(new IndexBulkEntry(newIndexName, newDocumentId, doc, false));
+		return 	Observable.just(new IndexBulkEntry(newIndexName, newDocumentId, doc));
 
 	}
 
@@ -586,7 +586,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String languageTag = container.getLanguageTag();
 		String documentId = NodeGraphFieldContainer.composeDocumentId(container.getParentNode().getUuid(), languageTag);
 
-		return Single.just(new IndexBulkEntry(indexName, documentId, doc, false));
+		return Single.just(new IndexBulkEntry(indexName, documentId, doc));
 	}
 
 	@Override

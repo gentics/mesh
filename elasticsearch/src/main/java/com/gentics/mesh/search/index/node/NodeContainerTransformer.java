@@ -197,13 +197,6 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 						binaryFieldInfo.put("sha512sum", binary.getSHA512Sum());
 						binaryFieldInfo.put("width", binary.getImageWidth());
 						binaryFieldInfo.put("height", binary.getImageHeight());
-
-						// Only add the base64 content if we can actually process it and if it can be processed
-						// Images, Videos etc can't be processed by the ingest plugin
-						
-						//if (searchProvider.hasIngestPipelinePlugin().blockingGet() && binaryField.isIngestableDocument()) {
-						//	binaryFieldInfo.put("data", binary.getBase64ContentSync());
-						//}
 					}
 
 					// Add the metadata

@@ -2,6 +2,8 @@ package com.gentics.mesh.changelog.highlevel.change;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -58,39 +60,45 @@ public class ExtractPlainText extends AbstractHighLevelChange {
 		FramedTransactionalGraph graph = Tx.getActive().getGraph();
 		BinaryRoot root = boot.get().meshRoot().getBinaryRoot();
 		AtomicLong total = new AtomicLong(0);
-
 		for (Binary binary : root.findAll()) {
 			final String filename = storage.get().getFilePath(binary.getUuid());
 			File uploadFile = new File(filename);
 			if (uploadFile.exists()) {
 
 				TraversalResult<? extends BinaryGraphField> fields = binary.findFields();
-				try (FileInputStream ins = new FileInputStream(uploadFile)) {
-					TikaResult result = processor.parseFile(ins, -1);
+				Map<String, TikaResult> results = new HashMap<>();
 
-					fields.forEach(field -> {
-						String contentType = field.getMimeType();
-						if (log.isDebugEnabled()) {
-							log.debug("Parsing file {" + uploadFile + "}");
+				fields.forEach(field -> {
+					String contentType = field.getMimeType();
+					if (!results.containsKey(contentType)) {
+						int limit = processor.getParserLimit(contentType);
+						try (FileInputStream ins = new FileInputStream(uploadFile)) {
+							TikaResult result = processor.parseFile(ins, limit);
+							if (log.isDebugEnabled()) {
+								log.debug("Parsing file {" + uploadFile + "} - {" + contentType + "}");
+							}
+							results.put(contentType, result);
+						} catch (Exception e) {
+							log.error("Error while parsing file {" + uploadFile + "}", e);
 						}
-
-						Optional<String> plainText = result.getPlainText();
+					}
+					TikaResult res = results.get(contentType);
+					if (res != null) {
+						Optional<String> plainText = res.getPlainText();
 						if (plainText.isPresent()) {
-							log.info("Parses text: " + plainText.get().length());
 							field.setPlainText(plainText.get());
 						}
-						if (total.get() % 10 == 0) {
-							log.info("Updated {" + total + "} fields.");
-						}
+					}
+					if (total.get() % 10 == 0) {
+						log.info("Updated {" + total + "} fields.");
+					}
 
-						if (total.get() % 100 == 0) {
-							graph.commit();
-						}
-						total.incrementAndGet();
-					});
-				} catch (Exception e) {
-					log.error("Error while parsing file {" + uploadFile + "}", e);
-				}
+					if (total.get() % 100 == 0) {
+						graph.commit();
+					}
+					total.incrementAndGet();
+
+				});
 			} else {
 				graph.commit();
 				log.info("File for binary {" + binary.getUuid() + "} could not be found {" + filename + "}");
