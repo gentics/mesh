@@ -324,10 +324,10 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPlainTextExtractionForDocuments() throws IOException {
-		expectPlainText("test.pdf", "application/pdf", "\nEnemenemu \n\n\n");
+		expectPlainText("test.pdf", "application/pdf", "Enemenemu");
 		expectPlainText("test.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-			"Das ist ein Word Dokument für den Johannes\n");
-		expectPlainText("small.mp4", "application/pdf", "HandBrake 0.9.4 2009112300\n");
+			"Das ist ein Word Dokument für den Johannes");
+		expectPlainText("small.mp4", "application/pdf", "HandBrake 0.9.4 2009112300");
 	}
 
 

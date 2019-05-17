@@ -12,6 +12,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Base64;
@@ -22,25 +23,20 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
 import com.syncleus.ferma.tx.Tx;
 
-import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 
@@ -66,14 +62,12 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 			binaryField.setElasticsearch(customMapping);
 			schemaUpdateRequest.addField(binaryField);
 		}
-		System.out.println(schemaUpdateRequest.toJson());
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
 		}, MigrationStatus.COMPLETED, 1);
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
 		}, MigrationStatus.COMPLETED, 1);
-		System.out.println("Schema: " + call(() -> client().findSchemaByUuid(contentSchemaUuid)).toJson());
 
 		// .rtf with lorem text
 		byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
@@ -84,7 +78,7 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 			() -> client().updateNodeBinaryField(projectName(), nodeUuid, "en", "draft", "binary2", new ByteArrayInputStream(bytes), bytes.length,
 				"test.rtf", "application/rtf"));
 
-		recreateIndices();
+		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
 			String schemaVersionUuid = nodeA.getSchemaContainer().getLatestVersion().getUuid();
@@ -92,7 +86,6 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 				schemaVersionUuid, ContainerType.DRAFT);
 			String id = NodeGraphFieldContainer.composeDocumentId(nodeA.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
-			System.out.println(doc.encodePrettily());
 			assertEquals("Lorem ipsum dolor sit amet",
 				doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").getJsonObject("file").getString("content"));
 			tx.success();
@@ -145,35 +138,30 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	@Test
-	public void testSearchBinaryField() throws Exception {
+	public void testDocumentSearch() throws Exception {
+		grantAdminRole();
 		Node nodeA = content("concorde");
-		Node nodeB = content();
-		try (Tx tx = tx()) {
-			SchemaModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
-			schema.addField(new BinaryFieldSchemaImpl().setName("binary"));
-			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
+		String nodeUuid = tx(() -> nodeA.getUuid());
+		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
 
-			// image
-			Binary binaryA = MeshInternal.get().boot().binaryRoot().create("someHashA", 200L);
-			binaryA.setImageHeight(200);
-			binaryA.setImageWidth(400);
-			nodeA.getLatestDraftFieldContainer(english()).createBinary("binary", binaryA).setFileName("somefile.jpg").setMimeType("image/jpeg")
-				.setImageDominantColor("#super");
+		// Add binary field
+		SchemaUpdateRequest schemaUpdateRequest = call(() -> client().findSchemaByUuid(contentSchemaUuid)).toUpdateRequest();
+		schemaUpdateRequest.addField(new BinaryFieldSchemaImpl().setName("binary"));
+		waitForJobs(() -> {
+			call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
+		}, MigrationStatus.COMPLETED, 1);
 
-			// file
-			Binary binaryB = MeshInternal.get().boot().binaryRoot().create("someHashB", 200L);
-			BinaryGraphField binary = nodeB.getLatestDraftFieldContainer(english()).createBinary("binary", binaryB).setFileName("somefile.dat")
-				.setMimeType("text/plain");
-			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
-			MeshInternal.get().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binary.getBinary().getUuid()).blockingAwait();
-			tx.success();
-		}
-		recreateIndices();
+		byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
+		call(
+			() -> client().updateNodeBinaryField(projectName(), nodeUuid, "en", "draft", "binary", new ByteArrayInputStream(bytes), bytes.length,
+				"test.rtf", "application/rtf"));
+
+		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
 			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
-				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
-			String id = NodeGraphFieldContainer.composeDocumentId(nodeB.getUuid(), "en");
+				nodeA.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
+			String id = NodeGraphFieldContainer.composeDocumentId(nodeUuid, "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertEquals("Lorem ipsum dolor sit amet",
 				doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").getJsonObject("file").getString("content"));
@@ -181,30 +169,54 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		// filesize
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.filesize", 100, 300),
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.filesize", 40, 50),
 			new VersioningParametersImpl().draft()));
-		assertEquals("Exactly two nodes should be found for the given filesize range.", 2, response.getData().size());
-
-		// width
-		response = call(() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.width", 300, 500), new VersioningParametersImpl()
-			.draft()));
-		assertEquals("Exactly one node should be found for the given image width range.", 1, response.getData().size());
-
-		// height
-		response = call(() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.height", 100, 300), new VersioningParametersImpl()
-			.draft()));
-		assertEquals("Exactly one node should be found for the given image height range.", 1, response.getData().size());
-
-		// dominantColor
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.binary.dominantColor", "#super"),
-			new VersioningParametersImpl().draft()));
-		assertEquals("Exactly one node should be found for the given image dominant color.", 1, response.getData().size());
+		assertEquals("Exactly one node should be found for the given filesize range.", 1, response.getData().size());
 
 		// mimeType
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.binary.mimeType", "image/jpeg"),
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.binary.mimeType", "application/rtf"),
 			new VersioningParametersImpl().draft()));
 		assertEquals("Exactly one node should be found for the given image mime type.", 1, response.getData().size());
 
 	}
 
+	@Test
+	public void testImageSearch() throws IOException {
+		grantAdminRole();
+		Node nodeA = content("concorde");
+		String nodeUuid = tx(() -> nodeA.getUuid());
+		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
+
+		// Add binary field
+		SchemaUpdateRequest schemaUpdateRequest = call(() -> client().findSchemaByUuid(contentSchemaUuid)).toUpdateRequest();
+		schemaUpdateRequest.addField(new BinaryFieldSchemaImpl().setName("binary"));
+		waitForJobs(() -> {
+			call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
+		}, MigrationStatus.COMPLETED, 1);
+
+		// Upload image
+		byte[] bytes = IOUtils.toByteArray(getClass().getResourceAsStream("/pictures/blume.jpg"));
+		call(
+			() -> client().updateNodeBinaryField(projectName(), nodeUuid, "en", "draft", "binary", new ByteArrayInputStream(bytes), bytes.length,
+				"blume.jpg", "image/jpeg"));
+
+		waitForSearchIdleEvent();
+
+		// width
+		NodeListResponse response = call(
+			() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.width", 1150, 1170), new VersioningParametersImpl()
+				.draft()));
+		assertEquals("Exactly one node should be found for the given image width range.", 1, response.getData().size());
+
+		// height
+		response = call(() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.height", 1276, 1476), new VersioningParametersImpl()
+			.draft()));
+		assertEquals("Exactly one node should be found for the given image height range.", 1, response.getData().size());
+
+		// dominantColor
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.binary.dominantColor", "#737042"),
+			new VersioningParametersImpl().draft()));
+		assertEquals("Exactly one node should be found for the given image dominant color.", 1, response.getData().size());
+
+	}
 }
