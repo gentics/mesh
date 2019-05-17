@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -48,6 +49,7 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testBinarySearchMapping() throws Exception {
+		grantAdminRole();
 		Node nodeA = content("concorde");
 		String nodeUuid = tx(() -> nodeA.getUuid());
 		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
@@ -65,8 +67,13 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 			schemaUpdateRequest.addField(binaryField);
 		}
 		System.out.println(schemaUpdateRequest.toJson());
-		call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
-		//System.out.println("Schema: "  + call(() -> client().findSchemaByUuid(contentSchemaUuid)).toJson() );
+		waitForJobs(() -> {
+			call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
+		}, MigrationStatus.COMPLETED, 1);
+		waitForJobs(() -> {
+			call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
+		}, MigrationStatus.COMPLETED, 1);
+		System.out.println("Schema: " + call(() -> client().findSchemaByUuid(contentSchemaUuid)).toJson());
 
 		// .rtf with lorem text
 		byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
@@ -100,10 +107,10 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 		assertEquals("Exactly one node should be found for the given content.", 1, response.getData().size());
 
 		// mimeType
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.binary.mimeType", "text/plain")));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.binary.mimeType", "application/rtf")));
 		assertEquals("Exactly one node should be found for the given image mime type.", 1, response.getData().size());
 
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.binary.mimeType.raw", "text/plain")));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.binary.mimeType.raw", "application/rtf")));
 		assertEquals("Exactly one node should be found for the given image mime type.", 1, response.getData().size());
 
 	}
