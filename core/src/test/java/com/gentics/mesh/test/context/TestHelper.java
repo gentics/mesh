@@ -82,7 +82,6 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
-import com.gentics.mesh.search.processor.AttachmentProcessor;
 import com.gentics.mesh.storage.LocalBinaryStorage;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.util.VersionNumber;
@@ -629,10 +628,6 @@ public interface TestHelper {
 
 	default SearchProvider searchProvider() {
 		return meshDagger().searchProvider();
-	}
-
-	default AttachmentProcessor searchAttachmentProcessor() {
-		return meshDagger().searchAttachmentProcessor();
 	}
 
 	default public int getNodeCount() {

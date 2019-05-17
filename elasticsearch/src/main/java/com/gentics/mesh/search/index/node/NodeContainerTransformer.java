@@ -52,7 +52,6 @@ import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.search.index.AbstractTransformer;
-import com.gentics.mesh.search.processor.AttachmentProcessor;
 import com.gentics.mesh.util.ETag;
 
 import io.reactivex.Observable;
@@ -72,11 +71,8 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 
 	private static final String VERSION_KEY = "version";
 
-	private AttachmentProcessor attachmentProcessor;
-
 	@Inject
-	public NodeContainerTransformer(AttachmentProcessor attachmentProcessor) {
-		this.attachmentProcessor = attachmentProcessor;
+	public NodeContainerTransformer() {
 	}
 
 	/**
@@ -229,6 +225,14 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 							// Add height outside of object to prevent ES error
 							binaryFieldMetadataInfo.put("location-z", loc.getAlt());
 						}
+					}
+
+					// Plain text
+					String plainText = binaryField.getPlainText();
+					if (plainText != null) {
+						JsonObject file = new JsonObject();
+						binaryFieldInfo.put("file", file);
+						file.put("content", plainText);
 					}
 
 				}

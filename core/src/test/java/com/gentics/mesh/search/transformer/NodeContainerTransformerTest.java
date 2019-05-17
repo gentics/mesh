@@ -25,7 +25,7 @@ public class NodeContainerTransformerTest extends AbstractMeshTest {
 
 	@Test
 	public void testNodeTagFamilyTransformer() {
-		NodeContainerTransformer transformer = new NodeContainerTransformer(searchAttachmentProcessor());
+		NodeContainerTransformer transformer = new NodeContainerTransformer();
 		try (Tx tx = tx()) {
 			Branch branch = project().getLatestBranch();
 			NodeGraphFieldContainer node = content("concorde").getGraphFieldContainer(english(), branch, PUBLISHED);

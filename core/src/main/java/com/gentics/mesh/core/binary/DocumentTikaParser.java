@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.Tika;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -85,6 +86,7 @@ public class DocumentTikaParser {
 			if (isEmpty(content)) {
 				return Optional.empty();
 			}
+			content = StringUtils.trim(content);
 			return Optional.of(content);
 		} catch (Exception e) {
 			Throwable cause = e.getCause();

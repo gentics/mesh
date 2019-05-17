@@ -19,16 +19,16 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.buffer.Buffer;
 @MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
-public class NodeBinaryIngestMigrationTest extends AbstractMeshTest {
+public class NodeBinaryDocumentMigrationTest extends AbstractMeshTest {
 
 	@Test
-	public void schemaMigrationWithIngestableBinary() {
+	public void schemaMigrationWithDocumentBinary() {
 		grantAdminRole();
-		uploadIngestableNode();
+		uploadDocumentNode();
 		waitForJobs(this::migrateSchema, MigrationStatus.COMPLETED, 1);
 	}
 
-	private void uploadIngestableNode() {
+	private void uploadDocumentNode() {
 		NodeResponse node = createBinaryContent().blockingGet();
 		Buffer buffer = Buffer.buffer("This is a text");
 		client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), node.getLanguage(), node.getVersion(),

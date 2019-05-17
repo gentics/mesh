@@ -32,6 +32,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -48,51 +49,43 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testBinarySearchMapping() throws Exception {
 		Node nodeA = content("concorde");
-		Node nodeB = content();
+		String nodeUuid = tx(() -> nodeA.getUuid());
+		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
 
-		try (Tx tx = tx()) {
-			SchemaModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
-
-			// Update the schema to include the binary fields we need
-			List<String> names = Arrays.asList("binary", "binary2", "binary3");
-			for (String name : names) {
-				BinaryFieldSchema binaryField = new BinaryFieldSchemaImpl();
-				binaryField.setName(name);
-				JsonObject customMapping = new JsonObject();
-				customMapping.put("mimeType", IndexOptionHelper.getRawFieldOption());
-				customMapping.put("file.content", IndexOptionHelper.getRawFieldOption());
-				binaryField.setElasticsearch(customMapping);
-				schema.addField(binaryField);
-			}
-			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
-
-			// Add image binary to node content
-			Binary binaryA = MeshInternal.get().boot().binaryRoot().create("someHashA", 200L);
-			binaryA.setImageHeight(200);
-			binaryA.setImageWidth(400);
-			nodeA.getLatestDraftFieldContainer(english()).createBinary("binary", binaryA).setFileName("somefile.jpg").setMimeType("image/jpeg")
-				.setImageDominantColor("#super");
-
-			// Add shared binary to node content in two fields
-			Binary binaryB = MeshInternal.get().boot().binaryRoot().create("someHashB", 200L);
-			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
-			MeshInternal.get().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binaryB.getUuid()).blockingAwait();
-
-			nodeB.getLatestDraftFieldContainer(english()).createBinary("binary", binaryB).setFileName("somefile.dat")
-				.setMimeType("text/plain");
-			nodeB.getLatestDraftFieldContainer(english()).createBinary("binary2", binaryB).setFileName("somefile.dat")
-				.setMimeType("text/plain");
-			tx.success();
+		// Update the schema to include the binary fields we need
+		SchemaUpdateRequest schemaUpdateRequest = call(() -> client().findSchemaByUuid(contentSchemaUuid)).toUpdateRequest();
+		List<String> names = Arrays.asList("binary", "binary2", "binary3");
+		for (String name : names) {
+			BinaryFieldSchema binaryField = new BinaryFieldSchemaImpl();
+			binaryField.setName(name);
+			JsonObject customMapping = new JsonObject();
+			customMapping.put("mimeType", IndexOptionHelper.getRawFieldOption());
+			customMapping.put("file.content", IndexOptionHelper.getRawFieldOption());
+			binaryField.setElasticsearch(customMapping);
+			schemaUpdateRequest.addField(binaryField);
 		}
+		System.out.println(schemaUpdateRequest.toJson());
+		call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
+		//System.out.println("Schema: "  + call(() -> client().findSchemaByUuid(contentSchemaUuid)).toJson() );
+
+		// .rtf with lorem text
+		byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
+		call(
+			() -> client().updateNodeBinaryField(projectName(), nodeUuid, "en", "draft", "binary", new ByteArrayInputStream(bytes), bytes.length,
+				"test.rtf", "application/rtf"));
+		call(
+			() -> client().updateNodeBinaryField(projectName(), nodeUuid, "en", "draft", "binary2", new ByteArrayInputStream(bytes), bytes.length,
+				"test.rtf", "application/rtf"));
 
 		recreateIndices();
 
 		try (Tx tx = tx()) {
-			String schemaVersionUuid = nodeB.getSchemaContainer().getLatestVersion().getUuid();
+			String schemaVersionUuid = nodeA.getSchemaContainer().getLatestVersion().getUuid();
 			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
 				schemaVersionUuid, ContainerType.DRAFT);
-			String id = NodeGraphFieldContainer.composeDocumentId(nodeB.getUuid(), "en");
+			String id = NodeGraphFieldContainer.composeDocumentId(nodeA.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
+			System.out.println(doc.encodePrettily());
 			assertEquals("Lorem ipsum dolor sit amet",
 				doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").getJsonObject("file").getString("content"));
 			tx.success();

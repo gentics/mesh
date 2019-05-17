@@ -1,5 +1,25 @@
 package com.gentics.mesh.search.index.node;
 
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -33,6 +53,7 @@ import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.syncleus.ferma.tx.Tx;
+
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
@@ -42,25 +63,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
-import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 /**
  * Handler for the node specific search index.
@@ -82,9 +84,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Inject
 	public NodeContainerMappingProvider mappingProvider;
-
-	@Inject
-	public AttachmentIngestConfigProvider ingestConfigProvider;
 
 	@Inject
 	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper) {

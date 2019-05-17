@@ -37,6 +37,8 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 
 	private final Set<String> acceptedTypes = new HashSet<>();
 
+	private final Set<String> acceptedDocumentTypes = new HashSet<>();
+
 	private final Set<String> skipSet = new HashSet<>();
 
 	private final MeshOptions options;
@@ -50,10 +52,13 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	public TikaBinaryProcessor(MeshOptions options) {
 		this.options = options;
 
-		// Accepted types
-		acceptedTypes.add("application/pdf");
-		acceptedTypes.add("application/msword");
-		acceptedTypes.add("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+		// document
+		acceptedDocumentTypes.add("text/plain");
+		acceptedDocumentTypes.add("application/rtf");
+		acceptedDocumentTypes.add("application/pdf");
+		acceptedDocumentTypes.add("application/msword");
+		acceptedDocumentTypes.add("application/vnd.");
+		acceptedTypes.addAll(acceptedDocumentTypes);
 
 		// image
 		acceptedTypes.add("image/jpeg");
@@ -88,7 +93,14 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 
 	@Override
 	public boolean accepts(String contentType) {
-		return acceptedTypes.contains(contentType);
+		boolean accepted = acceptedTypes.stream().anyMatch(type -> {
+			return contentType.startsWith(type);
+		});
+		if (log.isDebugEnabled()) {
+			String mode = accepted ? "Accepting" : "Rejecting";
+			log.debug(mode + " {" + contentType + "} for processor {" + getClass().getName() + "}");
+		}
+		return accepted;
 	}
 
 	@Override
@@ -181,7 +193,10 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	}
 
 	private int getParserLimit(String contentType) {
-		if (contentType.toLowerCase().startsWith("application/pdf") && options.getUploadOptions() != null) {
+		boolean isDocument = acceptedDocumentTypes.stream().anyMatch(type -> {
+			return contentType.startsWith(type);
+		});
+		if (isDocument && options.getUploadOptions() != null) {
 			return options.getUploadOptions().getParserLimit();
 		} else {
 			return DEFAULT_NON_DOC_TIKA_PARSE_LIMIT;
