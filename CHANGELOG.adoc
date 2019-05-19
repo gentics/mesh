@@ -45,6 +45,8 @@ icon:plus[] Search: The embedded elastichead interface has been removed. It is r
 
 icon:check[] Core: Various internal libraries have been updated (logback, hazelcast-kubernetes, tika)
 
+icon:plus[] OrientDB: The included OrientDB version has been updated to version 3.0.19
+
 [[v0.32.0]]
 == 0.32.0 (08.05.2019)
 
