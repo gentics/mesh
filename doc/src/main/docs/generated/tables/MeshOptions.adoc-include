@@ -207,6 +207,11 @@
 | string
 | Path to the file upload temporary directory. Inbound file uploads will be placed here before they are processed.
 
+| uploadOptions.parserLimit
+| false
+| int
+| The parser limit for uploaded documents (pdf, doc, docx). Default: 40000
+
 | authenticationOptions.tokenExpirationTime
 | true
 | int
