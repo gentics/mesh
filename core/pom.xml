@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.32.1-SNAPSHOT</version>
+		<version>0.33.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -159,7 +159,7 @@
 		<dependency>
 			<groupId>com.hazelcast</groupId>
 			<artifactId>hazelcast-kubernetes</artifactId>
-			<version>1.3.1</version>
+			<version>1.4</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.hazelcast</groupId>

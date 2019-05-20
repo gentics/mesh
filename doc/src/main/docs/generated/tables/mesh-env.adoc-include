@@ -38,6 +38,9 @@
 | *MESH_HTTP_SSL_CERT_PATH*
 | Override the configured SSL enable flag.
 
+| *MESH_BINARY_DOCUMENT_PARSER_LIMIT*
+| Override the configured parser limit.
+
 | *MESH_HTTP_HOST*
 | Override the configured http server host which is used to bind to.
 

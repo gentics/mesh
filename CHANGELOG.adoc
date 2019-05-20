@@ -24,6 +24,29 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.33.0]]
+== 0.33.0 (TBD)
+
+icon:bullhorn[] Elasticsearch document handling
+
+[quote]
+____
+
+The support for the Elasticsearch ingest plugin has been removed. The same functionality has been replaced with a much more efficient implementation which extracts the plain text of a document during upload processing. The structure of the generated search index has not changed and thus no modifications on existing search queries is required.
+
+The plain text will now also be included in the REST and GraphQL response of binary fields.
+
+An automatic changelog entry has been added which will parse all uploaded documents and extract the plain text. The duration of the execution of this task depends on the amount of documents that need to be parsed.
+
+The new __mesh.yml__ setting `upload.parserLimit` can be used to control the document parser. See link:{{< relref "features.asciidoc" >}}#_text_extraction[Text extraction documentation] for more information. 
+____
+
+icon:plus[] Search: The embedded elastichead interface has been removed. It is recommended to use browser extentions like link:https://chrome.google.com/webstore/detail/elasticsearch-head/ffmkiejjmecolpfloofpjologoblkegm[ElasticSearch Head for Chrome] instead.
+
+icon:check[] Core: Various internal libraries have been updated (logback, hazelcast-kubernetes, tika)
+
+icon:plus[] OrientDB: The included OrientDB version has been updated to version 3.0.19
+
 [[v0.32.0]]
 == 0.32.0 (08.05.2019)
 
@@ -58,7 +81,7 @@ The Elasticsearch integration has been overhauled.
 
 Elasticsearch synchronization operations have been decoupled from regular write operations.
 
-This has two main effects. First, regular write operations (e.g. Node Update, Node Create) will not block until the changed data has been synchronized with elasticsearch. This will result in higher overall write performance. Secondly, changes will not be directly visible in Elasticsearch since write operations in Elasticsearch have been decoupled and will be executed asynchrously after a element in Gentics Mesh has been modified. Implementations which highly rely on Gentics Mesh being in sync with ES for each operation may need to be adapted. When using the `/search` or `/rawSearch` endpoints in mesh, you can now provide the `?wait=true` query parameter. See details link:{{< relref "elasticsearch.asciidoc" >}}#endpoints[here]
+This has two main effects. First, regular write operations (e.g. Node Update, Node Create) will not block until the changed data has been synchronized with elasticsearch. This will result in higher overall write performance. Secondly, changes will not be directly visible in Elasticsearch since write operations in Elasticsearch have been decoupled and will be executed asynchronously after a element in Gentics Mesh has been modified. Implementations which highly rely on Gentics Mesh being in sync with ES for each operation may need to be adapted. When using the `/search` or `/rawSearch` endpoints in mesh, you can now provide the `?wait=true` query parameter. See details link:{{< relref "elasticsearch.asciidoc" >}}#endpoints[here]
 
 *Fixes*
 

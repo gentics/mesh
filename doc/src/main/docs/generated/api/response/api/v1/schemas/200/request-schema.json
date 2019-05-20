@@ -110,12 +110,12 @@
               "type" : "object",
               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
               "properties" : {
+                "required" : {
+                  "type" : "boolean"
+                },
                 "label" : {
                   "type" : "string",
                   "description" : "Label of the field."
-                },
-                "required" : {
-                  "type" : "boolean"
                 },
                 "elasticsearch" : {
                   "type" : "object",

@@ -39,19 +39,6 @@ public class IndexInfo {
 		return indexSettings;
 	}
 
-	public String getIngestPipelineName() {
-		return indexName;
-	}
-
-	public JsonObject getIngestPipelineSettings() {
-		return ingestPipelineSettings;
-	}
-
-	public IndexInfo setIngestPipelineSettings(JsonObject ingestPipelineSettings) {
-		this.ingestPipelineSettings = ingestPipelineSettings;
-		return this;
-	}
-
 	public String getSourceInfo() {
 		return sourceInfo;
 	}

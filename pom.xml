@@ -6,7 +6,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>0.32.1-SNAPSHOT</version>
+	<version>0.33.1-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Gentics Mesh</name>
@@ -21,11 +21,12 @@
 		<spring.security.version>4.2.12.RELEASE</spring.security.version>
 		<ferma.version>2.4.0-MIG</ferma.version>
 		<elasticsearch.client.version>0.5.2</elasticsearch.client.version>
-		<orientdb.version>3.0.18</orientdb.version>
+		<orientdb.version>3.0.19</orientdb.version>
 		<dagger.version>2.11</dagger.version>
 		<hazelcast.version>3.10.4</hazelcast.version>
 		<jackson.version>2.9.8</jackson.version>
 		<netty.version>4.1.30.Final</netty.version>
+		<tika.version>1.17</tika.version>
 
 		<surefire.forkcount>3</surefire.forkcount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>
@@ -176,6 +177,12 @@
 				<version>20.0-rc1</version>
 			</dependency>
 
+			<!-- Tika -->
+			<dependency>
+				<groupId>org.apache.tika</groupId>
+				<artifactId>tika-parsers</artifactId>
+				<version>${tika.version}</version>
+			</dependency>
 
 			<!-- Spring - bcrypt -->
 			<dependency>
@@ -351,7 +358,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>	
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>

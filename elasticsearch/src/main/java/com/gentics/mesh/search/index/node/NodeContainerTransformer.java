@@ -51,7 +51,6 @@ import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
 
@@ -72,11 +71,8 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 
 	private static final String VERSION_KEY = "version";
 
-	private SearchProvider searchProvider;
-
 	@Inject
-	public NodeContainerTransformer(SearchProvider searchProvider) {
-		this.searchProvider = searchProvider;
+	public NodeContainerTransformer() {
 	}
 
 	/**
@@ -201,12 +197,6 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 						binaryFieldInfo.put("sha512sum", binary.getSHA512Sum());
 						binaryFieldInfo.put("width", binary.getImageWidth());
 						binaryFieldInfo.put("height", binary.getImageHeight());
-
-						// Only add the base64 content if we can actually process it and if it can be processed
-						// Images, Videos etc can't be processed by the ingest plugin
-						if (searchProvider.hasIngestPipelinePlugin().blockingGet() && binaryField.isIngestableDocument()) {
-							binaryFieldInfo.put("data", binary.getBase64ContentSync());
-						}
 					}
 
 					// Add the metadata
@@ -228,6 +218,14 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 							// Add height outside of object to prevent ES error
 							binaryFieldMetadataInfo.put("location-z", loc.getAlt());
 						}
+					}
+
+					// Plain text
+					String plainText = binaryField.getPlainText();
+					if (plainText != null) {
+						JsonObject file = new JsonObject();
+						binaryFieldInfo.put("file", file);
+						file.put("content", plainText);
 					}
 
 				}

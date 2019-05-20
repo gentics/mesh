@@ -17,25 +17,18 @@ public class CreateDocumentRequest implements Bulkable {
 	private final String id;
 	private final JsonObject doc;
 	private final Action onComplete;
-	private final Single<Boolean> usePipeline;
 
 	public CreateDocumentRequest(String index, String transformedIndex, String id, JsonObject doc) {
-		this(index, transformedIndex, id, doc, NOOP, Single.just(false));
+		this(index, transformedIndex, id, doc, NOOP);
 	}
 
 	public CreateDocumentRequest(String index, String transformedIndex, String id, JsonObject doc, Action onComplete) {
-		this(index, transformedIndex, id, doc, onComplete, 	Single.just(false));
-	}
-
-	public CreateDocumentRequest(String index, String transformedIndex, String id, JsonObject doc, Action onComplete, Single<Boolean> usePipeline) {
 		this.index = index;
 		this.transformedIndex = transformedIndex;
 		this.id = id;
 		this.doc = doc;
 		this.onComplete = onComplete;
-		this.usePipeline = usePipeline;
 	}
-
 
 	@Override
 	public int requestCount() {
@@ -49,20 +42,16 @@ public class CreateDocumentRequest implements Bulkable {
 
 	@Override
 	public Single<List<String>> toBulkActions() {
-		return usePipeline.map(pipeline -> {
-			JsonObject metadata = new JsonObject()
-				.put("_index", transformedIndex)
-				.put("_type", SearchProvider.DEFAULT_TYPE)
-				.put("_id", id);
-			if (pipeline) {
-				metadata.put("pipeline", transformedIndex);
-			}
-			JsonObject jsonDoc = new JsonObject().put("index", metadata);
-			return Arrays.asList(
-				jsonDoc.encode(),
-				doc.encode()
-			);
-		});
+
+		JsonObject metadata = new JsonObject()
+			.put("_index", transformedIndex)
+			.put("_type", SearchProvider.DEFAULT_TYPE)
+			.put("_id", id);
+
+		JsonObject jsonDoc = new JsonObject().put("index", metadata);
+		return Single.just(Arrays.asList(
+			jsonDoc.encode(),
+			doc.encode()));
 	}
 
 	@Override
