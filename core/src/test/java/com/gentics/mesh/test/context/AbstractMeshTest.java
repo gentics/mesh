@@ -118,7 +118,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 				response.getInconsistencies().addAll(result.getResults());
 			}
 
-		 	assertThat(response.getInconsistencies()).as("Inconsistencies").isEmpty();
+			assertThat(response.getInconsistencies()).as("Inconsistencies").isEmpty();
 		}
 	}
 
@@ -253,6 +253,10 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		assertNotNull("The resource for path {" + path + "} could not be found", ins);
 		byte[] bytes = IOUtils.toByteArray(ins);
 		return Buffer.buffer(bytes);
+	}
+
+	protected JobListResponse waitForJob(Runnable action) {
+		return waitForJobs(action, COMPLETED, 1);
 	}
 
 	/**
@@ -736,6 +740,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	/**
 	 * Return the used elasticsearch container.
+	 * 
 	 * @return
 	 */
 	public ElasticsearchContainer elasticsearch() {

@@ -78,7 +78,9 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 		} else {
 			VersionNumber previousVersion = previous.getVersion();
 			if (previousVersion != null && version != null) {
-				if (!version.equals(previousVersion.nextDraft()) && !version.equals(previousVersion.nextPublished())) {
+				boolean notSameDraft = !version.equals(previousVersion.nextDraft());
+				boolean notLargerVersion = version.compareTo(previousVersion.nextPublished()) > 1;
+				if (notSameDraft && notLargerVersion) {
 					String nodeInfo = "unknown";
 					try {
 						Node node = container.getParentNode();

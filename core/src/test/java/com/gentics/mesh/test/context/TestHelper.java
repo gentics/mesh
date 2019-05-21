@@ -46,6 +46,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
@@ -683,4 +684,18 @@ public interface TestHelper {
 			throw new RuntimeException(e);
 		}
 	}
+
+	default void assertVersions(String nodeUuid, String lang, String versions, String branchName) {
+		VersioningParametersImpl param = new VersioningParametersImpl();
+		if (branchName != null) {
+			param.setBranch(branchName);
+		}
+		NodeVersionsResponse response = call(() -> client().listNodeVersions(projectName(), nodeUuid, param));
+		assertEquals("The versions did not match", versions, response.listVersions(lang));
+	}
+
+	default void assertVersions(String nodeUuid, String lang, String versions) {
+		assertVersions(nodeUuid, lang, versions, null);
+	}
+
 }

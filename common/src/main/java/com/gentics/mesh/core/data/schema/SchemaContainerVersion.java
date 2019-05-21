@@ -58,4 +58,10 @@ public interface SchemaContainerVersion
 	 */
 	Iterable<? extends Node> getNodes(String branchUuid, User user, ContainerType type);
 
+	/**
+	 * Check whether versioning is disabled by default or via the schema setting.
+	 * @return
+	 */
+	boolean isVersioningDisabled();
+
 }
