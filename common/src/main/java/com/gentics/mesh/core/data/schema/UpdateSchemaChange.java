@@ -43,6 +43,20 @@ public interface UpdateSchemaChange extends FieldSchemaContainerUpdateChange<Sch
 	Boolean getContainerFlag();
 
 	/**
+	 * Return the versioned flag.
+	 * 
+	 * @return
+	 */
+	Boolean getVersionedFlag();
+
+	/**
+	 * Set the versioned flag.
+	 * 
+	 * @param flag
+	 */
+	void setVersionedFlag(Boolean flag);
+
+	/**
 	 * Set the segmentField name.
 	 * 
 	 * @param fieldName

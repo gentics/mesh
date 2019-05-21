@@ -67,7 +67,7 @@ public class SchemaModelImpl implements SchemaModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Versioning flag of the schema. Controls whether contents of this schema should create new versions.")
-	private boolean versioned;
+	private Boolean versioned = true;
 
 	@Override
 	public String getVersion() {
@@ -169,7 +169,7 @@ public class SchemaModelImpl implements SchemaModel {
 	}
 
 	@Override
-	public boolean isVersioned() {
+	public Boolean isVersioned() {
 		return versioned;
 	}
 

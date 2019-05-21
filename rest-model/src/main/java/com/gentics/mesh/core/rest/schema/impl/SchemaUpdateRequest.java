@@ -147,7 +147,7 @@ public class SchemaUpdateRequest implements SchemaModel {
 	}
 
 	@Override
-	public boolean isVersioned() {
+	public Boolean isVersioned() {
 		return versioned;
 	}
 

@@ -1,7 +1,9 @@
 package com.gentics.mesh.assertj.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import com.gentics.mesh.assertj.AbstractMeshAssert;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -58,6 +60,17 @@ public class SchemaResponseAssert extends AbstractMeshAssert<SchemaResponseAsser
 		matches(storedSchema);
 		SchemaContainer container = version.getSchemaContainer();
 		matches(container);
+		return this;
+	}
+
+	public SchemaResponseAssert isVersioned() {
+		assertTrue("We expected the schema versioned flag to be set to true.", actual.isVersioned());
+		return this;
+	}
+
+	public SchemaResponseAssert isNotVersioned() {
+		System.out.println(actual.toJson());
+		assertFalse("We expected the schema versioned flag to be set to false.", actual.isVersioned());
 		return this;
 	}
 

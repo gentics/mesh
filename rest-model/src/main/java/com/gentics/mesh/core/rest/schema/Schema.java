@@ -134,7 +134,7 @@ public interface Schema extends FieldSchemaContainer {
 	 * 
 	 * @return
 	 */
-	boolean isVersioned();
+	Boolean isVersioned();
 
 	/**
 	 * Set the versioning flag.

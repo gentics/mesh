@@ -52,7 +52,7 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Versioning flag of the schema. Controls whether contents of this schema should create new versions.")
-	private boolean versioned;
+	private Boolean versioned = true;
 
 	@Override
 	public String getName() {
@@ -180,7 +180,7 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	}
 
 	@Override
-	public boolean isVersioned() {
+	public Boolean isVersioned() {
 		return versioned;
 	}
 

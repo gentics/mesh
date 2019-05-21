@@ -457,7 +457,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		SchemaContainerVersion schema = newContainer.getSchemaContainerVersion();
-		if (schema.getSchema().isVersioned() && previous.isPurgeable()) {
+		Boolean versioningFlag = schema.getSchema().isVersioned();
+		if (versioningFlag != null && versioningFlag == true && previous !=null && previous.isPurgeable()) {
 			System.out.println("TODO: remove the previous version");
 		}
 

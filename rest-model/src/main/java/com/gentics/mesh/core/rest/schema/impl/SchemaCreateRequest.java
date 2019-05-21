@@ -135,7 +135,7 @@ public class SchemaCreateRequest implements Schema {
 	}
 
 	@Override
-	public boolean isVersioned() {
+	public Boolean isVersioned() {
 		return versioned;
 	}
 
