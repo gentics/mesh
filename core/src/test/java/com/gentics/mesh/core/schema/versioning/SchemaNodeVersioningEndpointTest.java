@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
@@ -114,6 +115,11 @@ public class SchemaNodeVersioningEndpointTest extends AbstractMeshTest {
 		call(() -> client().transformNodeBinaryField(PROJECT_NAME, nodeUuid, "en", version, "image", params));
 		assertVersions(nodeUuid, "en", "D(2.2)=>P(2.0)=>(1.0)=>I(0.1)");
 
+	}
+
+	@Test
+	public void testDisableVersioningForMigration() {
+		fail("implement me");
 	}
 
 	private void disableVersionedFlag() {
