@@ -790,4 +790,23 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		return !inE(HAS_FIELD_CONTAINER).hasNext();
 	}
 
+	@Override
+	public boolean isVersioningDisabled() {
+		SchemaContainerVersion schema = getSchemaContainerVersion();
+		return schema.isVersioningDisabled();
+	}
+
+	@Override
+	public void purge(BulkActionContext bac) {
+		if (log.isDebugEnabled()) {
+			log.debug("Purging container {" + getUuid() +"} for version {" + getVersion() + "}");
+		}
+		// Link the previous to the next to isolate the old container
+		NodeGraphFieldContainer beforePrev = getPreviousVersion();
+		for (NodeGraphFieldContainer afterPrev : getNextVersions()) {
+			beforePrev.setNextVersion(afterPrev);
+		}
+		delete(bac, false);
+	}
+
 }

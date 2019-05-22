@@ -1327,8 +1327,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void setPublished(NodeGraphFieldContainer container, String branchUuid) {
 		String languageTag = container.getLanguageTag();
-		SchemaContainerVersion schema = container.getSchemaContainerVersion();
-		boolean isVersioningDisabled = schema.isVersioningDisabled();
+		boolean isVersioningDisabled = container.isVersioningDisabled();
 
 		// Remove an existing published edge
 		EdgeFrame currentPublished = getGraphFieldContainerEdgeFrame(languageTag, branchUuid, PUBLISHED);
@@ -1339,32 +1338,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			currentPublished.remove();
 			oldPublishedContainer.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_publish");
 			if (isVersioningDisabled && oldPublishedContainer.isPurgeable()) {
-				if (log.isDebugEnabled()) {
-					log.debug("Previous publish version is purgeable. Removing it now.");
-				}
-				// Link the previous to the next to isolate the old container
-				NodeGraphFieldContainer prev = oldPublishedContainer.getPreviousVersion();
-				for (NodeGraphFieldContainer next : oldPublishedContainer.getNextVersions()) {
-					prev.setNextVersion(next);
-				}
-				BulkActionContext bac = BulkActionContext.create();
-				oldPublishedContainer.delete(bac, false);
+				oldPublishedContainer.purge(BulkActionContext.create());
 			}
 		}
 
 		// Check whether for example a previous draft can be purged.
 		NodeGraphFieldContainer prev = container.getPreviousVersion();
 		if (isVersioningDisabled && prev.isPurgeable()) {
-			if (log.isDebugEnabled()) {
-				log.debug("Previous version is purgeable. Removing it now.");
-			}
-			// Link the previous to the next to isolate the old container
-			NodeGraphFieldContainer beforePrev = prev.getPreviousVersion();
-			for (NodeGraphFieldContainer afterPrev : prev.getNextVersions()) {
-				beforePrev.setNextVersion(afterPrev);
-			}
-			BulkActionContext bac = BulkActionContext.create();
-			prev.delete(bac, false);
+			prev.purge(BulkActionContext.create());
 		}
 
 		// create new published edge
@@ -1815,19 +1796,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// Update the existing fields
 				newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
 
-				SchemaContainerVersion schema = newDraftVersion.getSchemaContainerVersion();
-				Boolean versioningFlag = schema.getSchema().isVersioned();
-				if (versioningFlag != null && versioningFlag == false && latestDraftVersion.isPurgeable()) {
-					if (log.isDebugEnabled()) {
-						log.debug("Previous version is purgeable. Removing it now.");
-					}
-
-					// Delete the old draft and link the previous to the newly created draft
-					NodeGraphFieldContainer prev = latestDraftVersion.getPreviousVersion();
-					NodeGraphFieldContainer next = newDraftVersion;
-					BulkActionContext bac = BulkActionContext.create();
-					latestDraftVersion.delete(bac, false);
-					prev.setNextVersion(next);
+				// Purge the old draft
+				boolean versioningDisabled = newDraftVersion.isVersioningDisabled();
+				if (versioningDisabled && latestDraftVersion.isPurgeable()) {
+					latestDraftVersion.purge(BulkActionContext.create());
 				}
 
 				latestDraftVersion = newDraftVersion;

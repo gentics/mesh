@@ -18,6 +18,7 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.binary.BinaryDataProcessor;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistry;
@@ -352,6 +353,20 @@ public class BinaryUploadHandler extends AbstractHandler {
 				// If the binary field is the segment field, we need to update the webroot info in the node
 				if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
 					newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
+				}
+
+				boolean isVersioningDisabled = newDraftVersion.isVersioningDisabled();
+				if (isVersioningDisabled && latestDraftVersion.isPurgeable()) {
+					if (log.isDebugEnabled()) {
+						log.debug("Previous version is purgeable. Removing it now.");
+					}
+					// Link the previous to the next to isolate the old container
+					NodeGraphFieldContainer beforePrev = latestDraftVersion.getPreviousVersion();
+					for (NodeGraphFieldContainer afterPrev : latestDraftVersion.getNextVersions()) {
+						beforePrev.setNextVersion(afterPrev);
+					}
+					BulkActionContext bac = BulkActionContext.create();
+					latestDraftVersion.delete(bac, false);
 				}
 
 				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));

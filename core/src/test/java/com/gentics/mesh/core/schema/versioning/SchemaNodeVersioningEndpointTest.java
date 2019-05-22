@@ -3,15 +3,19 @@ package com.gentics.mesh.core.schema.versioning;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -74,6 +78,41 @@ public class SchemaNodeVersioningEndpointTest extends AbstractMeshTest {
 		// Publish it again and ensure that version 4.0 is not removed
 		call(() -> client().publishNode(projectName(), nodeUuid));
 		assertVersions(nodeUuid, "en", "PD(5.0)=>I(4.0)=>(1.0)=>I(0.1)");
+
+	}
+
+	@Test
+	public void testDisableVersioningWithUpload() {
+		disableVersionedFlag();
+		Node node = content();
+		String nodeUuid = tx(() -> node.getUuid());
+		tx(() -> prepareSchema(node, "", "binary"));
+		assertVersions(nodeUuid, "en", "PD(2.0)=>(1.0)=>I(0.1)");
+
+		call(() -> uploadRandomData(node, "en", "binary", 1000, "application/pdf", "somefile.PDF"));
+		assertVersions(nodeUuid, "en", "D(2.1)=>P(2.0)=>(1.0)=>I(0.1)");
+		call(() -> uploadRandomData(node, "en", "binary", 1000, "application/pdf", "somefile.PDF"));
+		assertVersions(nodeUuid, "en", "D(2.2)=>P(2.0)=>(1.0)=>I(0.1)");
+
+	}
+
+	@Test
+	public void testDisableVersioningWithBinaryTransform() {
+		disableVersionedFlag();
+		Node node = content();
+		String nodeUuid = tx(() -> node.getUuid());
+		assertVersions(nodeUuid, "en", "PD(2.0)=>(1.0)=>I(0.1)");
+
+		// 1. Upload image
+		String version = db().tx(() -> {
+			return uploadImage(node, "en", "image").getVersion();
+		});
+		assertVersions(nodeUuid, "en", "D(2.1)=>P(2.0)=>(1.0)=>I(0.1)");
+
+		// 2. Transform the image
+		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100);
+		call(() -> client().transformNodeBinaryField(PROJECT_NAME, nodeUuid, "en", version, "image", params));
+		assertVersions(nodeUuid, "en", "D(2.2)=>P(2.0)=>(1.0)=>I(0.1)");
 
 	}
 

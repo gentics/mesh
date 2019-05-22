@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
@@ -243,6 +244,12 @@ public class BinaryTransformHandler extends AbstractHandler {
 				newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
 			}
 			String branchUuid = node.getProject().getBranchRoot().getLatestBranch().getUuid();
+
+			// Purge the old draft
+			if(newDraftVersion.isVersioningDisabled() && latestDraftVersion.isPurgeable()) {
+				latestDraftVersion.purge(BulkActionContext.create());
+			}
+
 			batch.add(newDraftVersion.onCreated(branchUuid, DRAFT));
 			return node.transformToRestSync(ac, 0);
 		});

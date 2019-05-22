@@ -481,4 +481,18 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 */
 	boolean isPurgeable();
 
+	/**
+	 * Check whether versioning is disabled globally or for the schema of the container.
+	 * 
+	 * @return
+	 */
+	boolean isVersioningDisabled();
+
+	/**
+	 * Purge the container from the version history and ensure that the links between versions are consistent.
+	 * 
+	 * @param bac Action context for the deletion process
+	 */
+	void purge(BulkActionContext bac);
+
 }
