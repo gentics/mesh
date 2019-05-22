@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
-import org.testcontainers.containers.wait.Wait;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 import io.vertx.core.json.JsonObject;
 
@@ -24,7 +24,7 @@ import io.vertx.core.json.JsonObject;
  */
 public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
 
-	private static final String VERSION = "3.4.3.Final";
+	private static final String VERSION = "6.0.1";
 
 	private static final Logger log = LoggerFactory.getLogger(KeycloakContainer.class);
 
