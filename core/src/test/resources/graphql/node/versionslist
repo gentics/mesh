@@ -1,0 +1,27 @@
+{
+	node(path:"/") {
+		versions(lang: "en") {
+			# [$.data.node.versions[0].version=1.0]
+			# [$.data.node.versions[1].version=0.1]
+			version
+			# [$.data.node.versions[0].draft=true]
+			# [$.data.node.versions[1].draft=false]
+			draft
+			# [$.data.node.versions[0].published=true]
+			# [$.data.node.versions[1].published=false]
+			published
+			# [$.data.node.versions[0].branchRoot=false]
+			# [$.data.node.versions[1].branchRoot=true]
+			branchRoot
+		}
+		# [$.data.node.v2=<is-null>]
+		v2: versions(lang: "de") {
+			version
+		}
+		# [$.data.node.v3=<is-null>]
+		v3: versions(lang: "ru") {
+			version
+		}
+	}
+}
+# [$.errors=<is-undefined>]

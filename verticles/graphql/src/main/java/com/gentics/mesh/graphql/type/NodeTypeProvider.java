@@ -13,6 +13,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Stack;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -58,6 +59,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 	public static final String NODE_PAGE_TYPE_NAME = "NodesPage";
 
+	public static final String NODE_CONTENT_VERSION_TYPE_NAME = "ContentVersion";
+
 	@Inject
 	public NodeSearchHandler nodeSearchHandler;
 
@@ -97,7 +100,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		}
 		gc.requiresPerm(parentNode, READ_PERM, READ_PUBLISHED_PERM);
 
-		List<String> languageTags =  getLanguageArgument(env, content);
+		List<String> languageTags = getLanguageArgument(env, content);
 		return new NodeContent(parentNode, parentNode.findVersion(gc, languageTags), languageTags);
 	}
 
@@ -136,7 +139,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		}
 
 		return content.getNode().getBreadcrumbNodes(gc).stream().map(node -> {
-			List<String> languageTags =  getLanguageArgument(env, content);
+			List<String> languageTags = getLanguageArgument(env, content);
 			return new NodeContent(node, node.findVersion(gc, languageTags), languageTags);
 		}).collect(Collectors.toList());
 	}
@@ -259,11 +262,11 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		// .parent
 		nodeType.field(
 			newFieldDefinition()
-			.name("parent")
-			.description("Parent node")
-			.type(new GraphQLTypeReference(NODE_TYPE_NAME))
-			.argument(createLanguageTagArg(false))
-			.dataFetcher(this::parentNodeFetcher));
+				.name("parent")
+				.description("Parent node")
+				.type(new GraphQLTypeReference(NODE_TYPE_NAME))
+				.argument(createLanguageTagArg(false))
+				.dataFetcher(this::parentNodeFetcher));
 
 		// .tags
 		nodeType.field(newFieldDefinition().name("tags").argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME)).dataFetcher((
@@ -383,6 +386,28 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			return container.getVersion().getFullVersion();
 		}));
 
+		// .versions
+		nodeType.field(newFieldDefinition().name("versions").description("List of versions of the node.")
+			.argument(createSingleLanguageTagArg(true))
+			.type(new GraphQLList(createVersionInfoType())).dataFetcher(env -> {
+				GraphQLContext gc = env.getContext();
+				String languageTag = getSingleLanguageArgument(env);
+				NodeContent content = env.getSource();
+				Node node = content.getNode();
+				if (node == null) {
+					return null;
+				}
+				Optional<? extends NodeGraphFieldContainer> first = node.getOldestContainer(gc.getBranch()).stream().filter(c -> {
+					String lang = c.getLanguageTag();
+					return lang.equals(languageTag);
+				}).findFirst();
+				if (first.isPresent()) {
+					return first.get().versions();
+				}
+				return null;
+
+			}));
+
 		// .fields
 		nodeType.field(newFieldDefinition().name("fields").description("Contains the fields of the content.").type(nodeFieldTypeProvider
 			.getSchemaFieldsType(context)).dataFetcher(env -> {
@@ -401,6 +426,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			return container.getLanguageTag();
 		}));
 
+		// .displayName
 		nodeType
 			.field(newFieldDefinition().name("displayName").description("The value of the display field.").type(GraphQLString).dataFetcher(env -> {
 				NodeContent content = env.getSource();
@@ -412,6 +438,61 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			}));
 
 		return nodeType.build();
+	}
+
+	public GraphQLObjectType createVersionInfoType() {
+		Builder builder = newObject();
+		builder.name(NODE_CONTENT_VERSION_TYPE_NAME);
+		builder.description("Content version information");
+
+		// .version
+		builder.field(newFieldDefinition().name("version").description("Version of the content").type(GraphQLString).dataFetcher((env) -> {
+			NodeGraphFieldContainer version = env.getSource();
+			return version.getVersion();
+		}));
+
+		// .draft
+		builder.field(newFieldDefinition().name("draft").description("Flag that indicates whether the version is used as a draft.")
+			.type(GraphQLBoolean).dataFetcher((env) -> {
+				GraphQLContext gc = env.getContext();
+				String branchUuid = gc.getBranch().getUuid();
+				NodeGraphFieldContainer version = env.getSource();
+				return version.isDraft(branchUuid);
+			}));
+
+		// .published
+		builder.field(newFieldDefinition().name("published").description("Flag that indicates whether the version is used as a published version.")
+			.type(GraphQLBoolean).dataFetcher((env) -> {
+				GraphQLContext gc = env.getContext();
+				String branchUuid = gc.getBranch().getUuid();
+				NodeGraphFieldContainer version = env.getSource();
+				return version.isPublished(branchUuid);
+			}));
+
+		// .branchRoot
+		builder.field(newFieldDefinition().name("branchRoot")
+			.description("Flag that indicates whether the version is used as a branch root version for a branch.").type(GraphQLBoolean)
+			.dataFetcher((env) -> {
+				NodeGraphFieldContainer version = env.getSource();
+				return version.isInitial();
+			}));
+
+		// .created
+		builder.field(
+			newFieldDefinition().name("created").description("ISO8601 formatted created date string").type(GraphQLString).dataFetcher(env -> {
+				NodeGraphFieldContainer source = env.getSource();
+				return source.getLastEditedDate();
+			}));
+
+		// .creator
+		builder.field(
+			newFieldDefinition().name("creator").description("Creator of the version").type(new GraphQLTypeReference("User")).dataFetcher(env -> {
+				GraphQLContext gc = env.getContext();
+				NodeGraphFieldContainer source = env.getSource();
+				return gc.requiresPerm(source.getEditor(), READ_PERM);
+			}));
+
+		return builder.build();
 	}
 
 	public Object editorFetcher(DataFetchingEnvironment env) {

@@ -11,7 +11,7 @@ import java.util.stream.StreamSupport;
 import com.google.common.collect.Iterators;
 
 /**
- * MADL migration class for traversal results. 
+ * MADL migration class for traversal results.
  *
  * @param <T>
  */
@@ -56,5 +56,9 @@ public class TraversalResult<T> implements Iterable<T> {
 
 	public boolean hasNext() {
 		return iterator().hasNext();
+	}
+
+	public T next() {
+		return iterator().next();
 	}
 }

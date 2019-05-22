@@ -495,4 +495,10 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 */
 	void purge(BulkActionContext bac);
 
+	/**
+	 * Return a list of all versions.
+	 * 
+	 * @return
+	 */
+	List<NodeGraphFieldContainer> versions();
 }

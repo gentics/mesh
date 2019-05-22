@@ -171,7 +171,8 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Arrays.asList("filtering/users", true, "draft"),
 			Arrays.asList("filtering/groups", true, "draft"),
 			Arrays.asList("filtering/roles", true, "draft"),
-			Arrays.asList("node/breadcrumb-root", true, "draft")
+			Arrays.asList("node/breadcrumb-root", true, "draft"),
+			Arrays.asList("node/versionslist", true, "draft")
 		)
 		// Make sure all testData entries have four parts.
 		.map(data -> data.toArray(new Object[4])).collect(Collectors.toList());
@@ -445,7 +446,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		GraphQLResponse response = call(
 			() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName), new VersioningParametersImpl().setVersion(version)));
 		JsonObject jsonResponse = new JsonObject(response.toJson());
-
+System.out.println(jsonResponse.encodePrettily());
 		if (assertion == null) {
 			assertThat(jsonResponse).compliesToAssertions(queryName);
 		} else {

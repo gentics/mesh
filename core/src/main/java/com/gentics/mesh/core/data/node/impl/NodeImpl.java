@@ -974,11 +974,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// TODO sort by id
 		Map<String, List<VersionInfo>> versions = new HashMap<>();
 		getOldestContainer(ac.getBranch()).forEach(c -> {
-			List<VersionInfo> list = versions.computeIfAbsent(c.getLanguageTag(), (e) -> {
-				return new ArrayList<VersionInfo>();
-			});
-			walkVersions(ac, list, c);
+			List<NodeGraphFieldContainer> list = c.versions();
+			versions.put(c.getLanguageTag(), list.stream().map(v -> v.transformToVersionInfo(ac)).collect(Collectors.toList()));
 		});
+
 		response.setVersions(versions);
 		return response;
 	}
@@ -991,14 +990,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			return draft;
 		} else {
 			return getGraphFieldContainersIt(branch, PUBLISHED);
-		}
-	}
-
-	private void walkVersions(InternalActionContext ac, List<VersionInfo> versions, NodeGraphFieldContainer current) {
-		versions.add(current.transformToVersionInfo(ac));
-		NodeGraphFieldContainer prev = current.getPreviousVersion();
-		if (prev != null) {
-			walkVersions(ac, versions, prev);
 		}
 	}
 
