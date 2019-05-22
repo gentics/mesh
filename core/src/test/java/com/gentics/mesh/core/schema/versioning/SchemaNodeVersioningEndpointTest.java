@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
@@ -119,7 +118,42 @@ public class SchemaNodeVersioningEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testDisableVersioningForMigration() {
-		fail("implement me");
+		grantAdminRole();
+		disableVersionedFlag();
+		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
+		String nodeUuid = contentUuid();
+		assertVersions(nodeUuid, "en", "PD(2.0)=>(1.0)=>I(0.1)");
+
+		// 1. Migration
+		SchemaUpdateRequest request = call(() -> client().findSchemaByUuid(contentSchemaUuid)).toUpdateRequest();
+		request.addField(FieldUtil.createStringFieldSchema("1"));
+		waitForJob(() -> {
+			call(() -> client().updateSchema(contentSchemaUuid, request));
+		});
+		assertVersions(nodeUuid, "en", "PD(3.0)=>I(0.1)");
+
+		// 2. Migration
+		request.addField(FieldUtil.createStringFieldSchema("2"));
+		waitForJob(() -> {
+			call(() -> client().updateSchema(contentSchemaUuid, request));
+		});
+		assertVersions(nodeUuid, "en", "PD(4.0)=>I(0.1)");
+
+		// 3. Create new draft
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.setVersion("draft");
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("new name"));
+		call(() -> client().updateNode(projectName(), nodeUuid, nodeUpdateRequest));
+		assertVersions(nodeUuid, "en", "D(4.1)=>P(4.0)=>I(0.1)");
+
+		// 4. Migration
+		request.addField(FieldUtil.createStringFieldSchema("3"));
+		waitForJob(() -> {
+			call(() -> client().updateSchema(contentSchemaUuid, request));
+		});
+		assertVersions(nodeUuid, "en", "D(4.2)=>P(4.0)=>I(0.1)");
+
 	}
 
 	private void disableVersionedFlag() {

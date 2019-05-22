@@ -446,7 +446,6 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		GraphQLResponse response = call(
 			() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName), new VersioningParametersImpl().setVersion(version)));
 		JsonObject jsonResponse = new JsonObject(response.toJson());
-System.out.println(jsonResponse.encodePrettily());
 		if (assertion == null) {
 			assertThat(jsonResponse).compliesToAssertions(queryName);
 		} else {

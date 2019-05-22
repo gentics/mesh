@@ -15,6 +15,7 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -154,8 +155,10 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, SchemaModel newSchema, List<Exception> errorsDetected,
 		Set<String> touchedFields) {
 
+		String containerUuid = container.getUuid();
+		String parentNodeUuid = container.getParentNode().getUuid();
 		if (log.isDebugEnabled()) {
-			log.debug("Migrating container {" + container.getUuid() + "}");
+			log.debug("Migrating container {" + containerUuid + "} of node {" + parentNodeUuid + "}");
 		}
 
 		Branch branch = ac.getBranch();
@@ -167,26 +170,37 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			ac.getVersioningParameters().setVersion("draft");
 
 			VersionNumber nextDraftVersion = null;
-			NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, branch.getUuid(), PUBLISHED);
-			// 1. Check whether there is any other published container which we need to handle separately
-			if (oldPublished != null && !oldPublished.equals(container)) {
-				// We only need to migrate the container if the container's schema version is also "old"
-				boolean hasSameOldSchemaVersion = container != null
-					&& container.getSchemaContainerVersion().id().equals(container.getSchemaContainerVersion().id());
-				if (hasSameOldSchemaVersion) {
-					nextDraftVersion = migratePublishedContainer(ac, batch, branch, node, oldPublished, toVersion, touchedFields,
-						migrationScripts,
-						newSchema);
-					nextDraftVersion = nextDraftVersion.nextDraft();
+			// NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, branch.getUuid(), PUBLISHED);
+
+			// // 1. Check whether there is any other published container which we need to handle separately
+			// if (oldPublished != null && !oldPublished.equals(container)) {
+			// // We only need to migrate the container if the container's schema version is also "old"
+			// boolean hasSameOldSchemaVersion = container != null
+			// && container.getSchemaContainerVersion().id().equals(container.getSchemaContainerVersion().id());
+			// if (hasSameOldSchemaVersion) {
+			// nextDraftVersion = migratePublishedContainer(ac, batch, branch, node, oldPublished, toVersion, touchedFields,
+			// migrationScripts,
+			// newSchema);
+			// nextDraftVersion = nextDraftVersion.nextDraft();
+			// }
+			//
+			// } else {
+			// 2. Migrate the draft container. This will also update the draft edge.
+			migrateDraftContainer(ac, batch, branch, node, container, toVersion, touchedFields, migrationScripts, newSchema, nextDraftVersion);
+			// }
+
+			// TODO determine whether the container has been migrated. Or prevent purge during migration. (e.g. by checking the context type)
+			try {
+				container.getUuid();
+				if (container.isVersioningDisabled() && container.isPurgeable()) {
+					container.purge(BulkActionContext.create());
 				}
+			} catch (Exception e) {
 
 			}
 
-			// 2. Migrate the draft container. This will also update the draft edge.
-			migrateDraftContainer(ac, batch, branch, node, container, toVersion, touchedFields, migrationScripts, newSchema, nextDraftVersion);
 		} catch (Exception e1) {
-			log.error("Error while handling container {" + container.getUuid() + "} of node {" + container.getParentNode().getUuid()
-				+ "} during schema migration.", e1);
+			log.error("Error while handling container {" + containerUuid + "} of node {" + parentNodeUuid + "} during schema migration.", e1);
 			errorsDetected.add(e1);
 		}
 

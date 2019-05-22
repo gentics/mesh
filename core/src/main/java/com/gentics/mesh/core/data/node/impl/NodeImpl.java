@@ -1333,9 +1333,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 		}
 
-		// Check whether for example a previous draft can be purged.
+		// Check whether a previous draft can be purged.
 		NodeGraphFieldContainer prev = container.getPreviousVersion();
-		if (isVersioningDisabled && prev.isPurgeable()) {
+		if (isVersioningDisabled && prev != null && prev.isPurgeable()) {
 			prev.purge(BulkActionContext.create());
 		}
 
