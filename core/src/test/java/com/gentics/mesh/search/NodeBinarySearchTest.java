@@ -24,8 +24,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -64,10 +64,10 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 		}
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
-		}, MigrationStatus.COMPLETED, 1);
+		}, JobStatus.COMPLETED, 1);
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
-		}, MigrationStatus.COMPLETED, 1);
+		}, JobStatus.COMPLETED, 1);
 
 		// .rtf with lorem text
 		byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
@@ -149,7 +149,7 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 		schemaUpdateRequest.addField(new BinaryFieldSchemaImpl().setName("binary"));
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
-		}, MigrationStatus.COMPLETED, 1);
+		}, JobStatus.COMPLETED, 1);
 
 		byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
 		call(
@@ -192,7 +192,7 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 		schemaUpdateRequest.addField(new BinaryFieldSchemaImpl().setName("binary"));
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
-		}, MigrationStatus.COMPLETED, 1);
+		}, JobStatus.COMPLETED, 1);
 
 		// Upload image
 		byte[] bytes = IOUtils.toByteArray(getClass().getResourceAsStream("/pictures/blume.jpg"));
