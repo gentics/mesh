@@ -457,6 +457,7 @@ public class MeshTestContext extends TestWatcher {
 			oauth2Options.setConfig(realmConfig);
 		}
 		settings.optionChanger().changer.accept(meshOptions);
+		optionChanger.accept(meshOptions);
 		Mesh.mesh(meshOptions);
 		return meshOptions;
 	}

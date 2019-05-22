@@ -2,6 +2,7 @@ package com.gentics.mesh.auth;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
+import static com.gentics.mesh.test.context.MeshOptionChanger.WITH_MAPPER_SCRIPT;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -10,17 +11,10 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.etc.config.AuthenticationOptions;
-import com.gentics.mesh.etc.config.OAuth2Options;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestContext;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -31,22 +25,10 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-@MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = true, useKeycloak = true)
+@MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = true, useKeycloak = true, optionChanger = WITH_MAPPER_SCRIPT)
 public class OAuth2KeycloakTest extends AbstractMeshTest {
 
-	@ClassRule
-	public static TestRule rule = (Statement base, Description description) -> {
-		testContext.setOptionChanger(options -> {
-			AuthenticationOptions auth = options.getAuthenticationOptions();
-			OAuth2Options oauth2options = auth.getOauth2();
-			oauth2options.setMapperScriptDevMode(true);
-			oauth2options.setMapperScriptPath("src/test/resources/oauth2/mapperscript.js");
-		});
-		return base;
-	};
-
 	@Test
-	@Ignore("Fails on CI pipeline. See https://github.com/gentics/mesh/issues/608")
 	public void testKeycloakAuth() throws Exception {
 
 		// 1. Login the user
@@ -67,6 +49,8 @@ public class OAuth2KeycloakTest extends AbstractMeshTest {
 		call(() -> client().me());
 
 		UserResponse me2 = call(() -> client().me());
+		System.out.println(me2.toJson());
+		 
 		assertEquals("The uuid should not change. The previously created user should be returned.", uuid, me2.getUuid());
 		assertEquals("group1", me2.getGroups().get(0).getName());
 		assertEquals("group2", me2.getGroups().get(1).getName());

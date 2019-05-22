@@ -70,9 +70,15 @@ public @interface MeshTestSetting {
 
 	/**
 	 * Flag which indicates whether the monitoring feature should be enabled.
+	 * 
 	 * @return
 	 */
 	boolean monitoring() default true;
 
+	/**
+	 * Predefined set of options changers that can be used to alter the mesh options for the test.
+	 * 
+	 * @return
+	 */
 	MeshOptionChanger optionChanger() default NO_CHANGE;
 }
