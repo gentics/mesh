@@ -30,8 +30,7 @@ public class ProjectPurgeParametersImpl extends AbstractParameters implements Pr
 
 		// since
 		QueryParameter sinceParameter = new QueryParameter();
-		// TODO description
-		sinceParameter.setDescription("");
+		sinceParameter.setDescription("Limit the purge operation to versions which are older than the given date.");
 		sinceParameter.setExample("2019-04-20T18:00Z");
 		sinceParameter.setRequired(false);
 		sinceParameter.setType(ParamType.STRING);

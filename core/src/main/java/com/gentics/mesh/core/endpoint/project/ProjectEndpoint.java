@@ -20,7 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.parameter.ProjectPurgeParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.ProjectPurgeParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;

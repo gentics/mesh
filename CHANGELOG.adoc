@@ -24,6 +24,32 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.34.0]]
+== 0.34.0 (TBD)
+
+icon:bullhorn[] Versioning Enhancements
+
+[quote]
+____
+
+The versioning system has received various enhancements.
+
+link:{{< relref "features.asciidoc" >}}#controlling-versioning[Controlling Versioning]
+
+Versioning will now be **disabled** by default. You can change this default setting within the `mesh.yml` file. 
+Schema's now may contain a `versioned` flag to control versioning on a per schema basis.
+
+The documentation contains detailed information about how versioning can be controlled. 
+
+link:{{< relref "features.asciidoc" >}}#_listing_versions[Listing Versions]
+
+Versions of a node can now be listed via REST and GraphQL.
+
+link:{{< relref "features.asciidoc" >}}#_purging_versions[Purging Versions]
+
+Versions can now be purged across projects to reduce disk storage usage.
+____
+
 [[v0.33.0]]
 == 0.33.0 (TBD)
 
