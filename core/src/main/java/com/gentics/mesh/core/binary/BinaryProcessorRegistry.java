@@ -21,7 +21,7 @@ public class BinaryProcessorRegistry {
 	@Inject
 	public BinaryProcessorRegistry(BasicImageDataProcessor imageProcessor,
 		TikaBinaryProcessor tikaProcessor) {
-		// Add build-in processors
+		// Add built-in processors
 		addProcessor(imageProcessor);
 		addProcessor(tikaProcessor);
 	}

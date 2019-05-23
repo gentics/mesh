@@ -268,7 +268,7 @@ The tags field is a nested field and thus a nested query must be used to match t
 ----
 
 
-NOTE: The `"ignore_unmapped": "true"` will supress errors which may be returned due to missing paths. This is useful when invoking `/rawSearch` requests which will directly return the Elasticsearch response. This response would otherwise be cluttered with a lot of errors due to missing path. This can be omitted for these kinds of searches.
+NOTE: The `"ignore_unmapped": "true"` will suppress errors which may be returned due to missing paths. This is useful when invoking `/rawSearch` requests which will directly return the Elasticsearch response. This response would otherwise be cluttered with a lot of errors due to missing path. This can be omitted for these kinds of searches.
 
 
 ==== Search nodes by geolocation of images
