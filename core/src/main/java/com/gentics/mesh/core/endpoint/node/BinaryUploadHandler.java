@@ -355,7 +355,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 					newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
 				}
 
-				if (newDraftVersion.isVersioningDisabled() && latestDraftVersion.isPurgeable()) {
+				if (newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
 					latestDraftVersion.purge(BulkActionContext.create());
 				}
 

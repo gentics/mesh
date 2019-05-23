@@ -62,6 +62,6 @@ public interface SchemaContainerVersion
 	 * Check whether versioning is disabled by default or via the schema setting.
 	 * @return
 	 */
-	boolean isVersioningDisabled();
+	boolean isAutoPurgeEnabled();
 
 }

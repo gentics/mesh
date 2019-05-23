@@ -222,21 +222,21 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public boolean isVersioningDisabled() {
-		Boolean schemaFlag = getSchema().isVersioned();
-		if (schemaFlag == null) {
+	public boolean isAutoPurgeEnabled() {
+		Boolean schemaAutoPurge = getSchema().getAutoPurge();
+		if (schemaAutoPurge == null) {
 			if (log.isDebugEnabled()) {
-				log.debug("No schema flag set. Falling back to mesh default content setting");
+				log.debug("No schema auto purge flag set. Falling back to mesh global setting");
 			}
 			MeshOptions options = Mesh.mesh().getOptions();
 			ContentConfig contentOptions = options.getContentOptions();
 			if (contentOptions != null) {
-				return contentOptions.isVersioning();
+				return contentOptions.isAutoPurge();
 			} else {
 				return true;
 			}
 		} else {
-			return !schemaFlag;
+			return schemaAutoPurge;
 		}
 	}
 

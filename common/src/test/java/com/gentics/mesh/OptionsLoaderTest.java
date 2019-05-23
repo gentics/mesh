@@ -54,7 +54,7 @@ public class OptionsLoaderTest {
 		envMap.put(MeshOptions.MESH_LOCK_PATH_ENV, "dummy/1234");
 		envMap.put(MeshUploadOptions.MESH_BINARY_DIR_ENV, "/uploads");
 		envMap.put(MonitoringConfig.MESH_MONITORING_HTTP_HOST_ENV, "0.0.0.0");
-		envMap.put(ContentConfig.MESH_CONTENT_VERSIONING_ENV, "true");
+		envMap.put(ContentConfig.MESH_CONTENT_AUTO_PURGE_ENV, "true");
 		set(envMap);
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		assertEquals(8100, options.getHttpServerOptions().getPort());
@@ -69,7 +69,7 @@ public class OptionsLoaderTest {
 		assertEquals("dummy/1234", options.getLockPath());
 		assertEquals("/uploads", options.getUploadOptions().getDirectory());
 		assertEquals("0.0.0.0", options.getMonitoringOptions().getHost());
-		assertTrue(options.getContentOptions().isVersioning());
+		assertTrue(options.getContentOptions().isAutoPurge());
 	}
 
 	@Test

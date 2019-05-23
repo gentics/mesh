@@ -15,7 +15,6 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -170,33 +169,23 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			ac.getVersioningParameters().setVersion("draft");
 
 			VersionNumber nextDraftVersion = null;
-			// NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, branch.getUuid(), PUBLISHED);
+			NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, branch.getUuid(), PUBLISHED);
 
-			// // 1. Check whether there is any other published container which we need to handle separately
-			// if (oldPublished != null && !oldPublished.equals(container)) {
-			// // We only need to migrate the container if the container's schema version is also "old"
-			// boolean hasSameOldSchemaVersion = container != null
-			// && container.getSchemaContainerVersion().id().equals(container.getSchemaContainerVersion().id());
-			// if (hasSameOldSchemaVersion) {
-			// nextDraftVersion = migratePublishedContainer(ac, batch, branch, node, oldPublished, toVersion, touchedFields,
-			// migrationScripts,
-			// newSchema);
-			// nextDraftVersion = nextDraftVersion.nextDraft();
-			// }
-			//
-			// } else {
-			// 2. Migrate the draft container. This will also update the draft edge.
-			migrateDraftContainer(ac, batch, branch, node, container, toVersion, touchedFields, migrationScripts, newSchema, nextDraftVersion);
-			// }
-
-			// TODO determine whether the container has been migrated. Or prevent purge during migration. (e.g. by checking the context type)
-			try {
-				container.getUuid();
-				if (container.isVersioningDisabled() && container.isPurgeable()) {
-					container.purge(BulkActionContext.create());
+			// 1. Check whether there is any other published container which we need to handle separately
+			if (oldPublished != null && !oldPublished.equals(container)) {
+				// We only need to migrate the container if the container's schema version is also "old"
+				boolean hasSameOldSchemaVersion = container != null
+					&& container.getSchemaContainerVersion().id().equals(container.getSchemaContainerVersion().id());
+				if (hasSameOldSchemaVersion) {
+					nextDraftVersion = migratePublishedContainer(ac, batch, branch, node, oldPublished, toVersion, touchedFields,
+						migrationScripts,
+						newSchema);
+					nextDraftVersion = nextDraftVersion.nextDraft();
 				}
-			} catch (Exception e) {
 
+			} else {
+				// 2. Migrate the draft container. This will also update the draft edge.
+				migrateDraftContainer(ac, batch, branch, node, container, toVersion, touchedFields, migrationScripts, newSchema, nextDraftVersion);
 			}
 
 		} catch (Exception e1) {

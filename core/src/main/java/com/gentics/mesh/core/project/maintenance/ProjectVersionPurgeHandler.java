@@ -95,7 +95,7 @@ public class ProjectVersionPurgeHandler {
 		if (isInTimeFrame && version.isPurgeable()) {
 			log.info("Purging container " + version.getUuid() + "@" + version.getVersion());
 			// Delete this version - This will also take care of removing the version references
-			version.delete(bac);
+			version.delete(bac, false);
 			previousRemoved = true;
 			txCounter++;
 		} else {
@@ -117,7 +117,6 @@ public class ProjectVersionPurgeHandler {
 		}
 
 		// Check if a maxage is set and whether the version is newer than the maxage
-
 		if (isNewerThanMaxAge) {
 			// We can stop traversing the tree at this point.
 			return;

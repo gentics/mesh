@@ -5,7 +5,7 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.CO
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DISPLAY_FIELD_NAME_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.SEGMENT_FIELD_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.URLFIELDS_KEY;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.VERSIONED_FLAG_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.AUTO_PURGE_FLAG_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -81,9 +81,9 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 		}
 
 		// .versioned
-		Boolean versionedFlag = getVersionedFlag();
+		Boolean versionedFlag = getAutoPurgeFlag();
 		if (versionedFlag != null) {
-			schema.setVersioned(versionedFlag);
+			schema.setAutoPurge(versionedFlag);
 		}
 
 		return (R) schema;
@@ -110,13 +110,13 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 	}
 
 	@Override
-	public Boolean getVersionedFlag() {
-		return getRestProperty(VERSIONED_FLAG_KEY);
+	public Boolean getAutoPurgeFlag() {
+		return getRestProperty(AUTO_PURGE_FLAG_KEY);
 	}
 
 	@Override
-	public void setVersionedFlag(Boolean flag) {
-		setRestProperty(VERSIONED_FLAG_KEY, flag);
+	public void setAutoPurgeFlag(Boolean flag) {
+		setRestProperty(AUTO_PURGE_FLAG_KEY, flag);
 	}
 
 	@Override

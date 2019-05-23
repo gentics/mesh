@@ -50,8 +50,8 @@ public class SchemaUpdateRequest implements SchemaModel {
 	private List<FieldSchema> fields = new ArrayList<>();
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Versioning flag of the schema. Controls whether contents of this schema should create new versions.")
-	private Boolean versioned;
+	@JsonPropertyDescription("Auto purge flag of the schema. Controls whether contents of this schema should create new versions.")
+	private Boolean autoPurge;
 
 	@Override
 	public String getName() {
@@ -147,13 +147,13 @@ public class SchemaUpdateRequest implements SchemaModel {
 	}
 
 	@Override
-	public Boolean isVersioned() {
-		return versioned;
+	public Boolean getAutoPurge() {
+		return autoPurge;
 	}
 
 	@Override
-	public SchemaUpdateRequest setVersioned(boolean versioned) {
-		this.versioned = versioned;
+	public SchemaUpdateRequest setAutoPurge(boolean autoPurge) {
+		this.autoPurge = autoPurge;
 		return this;
 	}
 

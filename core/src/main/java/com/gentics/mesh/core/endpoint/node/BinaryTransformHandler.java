@@ -246,7 +246,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			String branchUuid = node.getProject().getBranchRoot().getLatestBranch().getUuid();
 
 			// Purge the old draft
-			if(newDraftVersion.isVersioningDisabled() && latestDraftVersion.isPurgeable()) {
+			if(newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
 				latestDraftVersion.purge(BulkActionContext.create());
 			}
 

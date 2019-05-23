@@ -51,8 +51,8 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	private List<FieldSchema> fields = new ArrayList<>();
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Versioning flag of the schema. Controls whether contents of this schema should create new versions.")
-	private Boolean versioned = true;
+	@JsonPropertyDescription("Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update.")
+	private Boolean autoPurge;
 
 	@Override
 	public String getName() {
@@ -180,13 +180,13 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	}
 
 	@Override
-	public Boolean isVersioned() {
-		return versioned;
+	public Boolean getAutoPurge() {
+		return autoPurge;
 	}
 
 	@Override
-	public SchemaResponse setVersioned(boolean versioned) {
-		this.versioned = versioned;
+	public SchemaResponse setAutoPurge(boolean autoPurge) {
+		this.autoPurge = autoPurge;
 		return this;
 	}
 

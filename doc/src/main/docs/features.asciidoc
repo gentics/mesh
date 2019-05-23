@@ -1892,8 +1892,6 @@ NOTE: Versioning within Gentics Mesh only applies to *contents* and their refere
 
 Various content management tasks will have different effects for versioning in Gentics Mesh. Some of them create versions, others don't. Following, we go through all of these actions which involve versioning.
 
-NOTE: At the moment it is not possible to delete older versions.
-
 === Node Creation
 
 Once a node has been created the initial version 0.1 will be assigned to its content.
@@ -1973,7 +1971,7 @@ Versions of a node can be listed via the ```/api/v1/:projectName/nodes/:uuid/ver
 }
 ```
 
-A version can be used as a `draft` version. This version can also be referenced as a `published` version when published. The `branchRoot` flag indicates whether the version is being referenced as root version in a branch. All these three different kind of versions are not purgeable. Versions which have been made in betweet can be purged.
+A version can be used as a `draft` version. This version can also be referenced as a `published` version when published. The `branchRoot` flag indicates whether the version is being referenced as root version in a branch. All these three different kind of versions are not purgeable. Versions which have been made in between can be purged.
 
 NOTE: Versions are language specific. This means that each language of a node has its dedicated version history.
 
@@ -1982,33 +1980,34 @@ NOTE: Versions are language specific. This means that each language of a node ha
 
 Versioning can be controlled on a *per-schema* basis. The `versioned` property within the schema controls whether additional versions for a content will be kept.
 
-The default versioning flag from the `mesh.yml` configuration file will be used if for schemas which don't have `versioned` property set. Setting the `versioned` property will thus also allow to override the default configuration in the `mesh.yml`.
+The global autoPurge flag from the `mesh.yml` configuration file will be used for schemas which don't have `autoPurge` property set. Setting the `autoPurge` property will thus also allow to override the default configuration in the `mesh.yml`.
 
-The default behaviour can be configured via the environment variable `MESH_CONTENT_VERSIONING_ENABLED` 
-or the config file.
+The default behaviour can be configured via the environment variable `MESH_CONTENT_AUTO_PURGE` or the config file.
 
 .mesh.yml
 [source,yaml]
 ----
 content:
-  versioning: false
+  autoPurge: true
 ----
 
-NOTE: Disabling versioning will not stop version numbers to increase. Instead the mechanism will automatically purge the previously used version (if possible).
+NOTE: Enabling auto purge mechanism will not stop version numbers to increase. Instead the mechanism will automatically purge the previously used version (if possible).
+
+NOTE: Setting the auto purge flag in a schema will not automatically purge any version. The versions will only be purged when content gets modified.
 
 === Purging versions
 
-The ```POST /api/v1/projects/:projectUuid/maintenance/purge` endpoint can be used to purge older versions from the system.
+The `POST /api/v1/projects/:projectUuid/maintenance/purge` endpoint can be used to purge older versions from the system.
 
 When invoked a new job will triggered which purges all possible content versions from the given project.
 
-The `?since` query parameter can be used to control what versions should be purged. 
+The `?before` query parameter can be used to control what versions should be purged. 
 
-The call `POST /api/v1/projects/:projectUuid/maintenance/purge?since=2019-04-20T18:00Z` will thus only purge versions which are older than the given date. Omitting the parameter will purge all versions.
+The call `POST /api/v1/projects/:projectUuid/maintenance/purge?before=2019-04-20T18:00Z` will thus only purge versions which are older than the given date. Omitting the parameter will purge all versions.
 
 Draft and publish versions will not be purged since they are still required. Additionally when the initial version of a node can also not be purged since it is bound to the _Branch_ of the node. Gentics Mesh requires this version to keep track of the branch starting point. The version lists endpoint will mark those versions using the `branchRoot` flag.
 
-
+NOTE: The version purge mechanism works independently from the auto purge mechanism.
 
 == Content Branches
 

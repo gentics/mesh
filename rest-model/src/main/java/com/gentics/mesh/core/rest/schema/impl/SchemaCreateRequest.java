@@ -44,7 +44,9 @@ public class SchemaCreateRequest implements Schema {
 	@JsonPropertyDescription("List of schema fields")
 	private List<FieldSchema> fields = new ArrayList<>();
 
-	private boolean versioned = true;
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Auto purge flag of the schema. Controls whether contents of this schema should create new versions.")
+	private boolean autoPurge = true;
 
 	@Override
 	public String getDescription() {
@@ -135,13 +137,13 @@ public class SchemaCreateRequest implements Schema {
 	}
 
 	@Override
-	public Boolean isVersioned() {
-		return versioned;
+	public Boolean getAutoPurge() {
+		return autoPurge;
 	}
 
 	@Override
-	public SchemaCreateRequest setVersioned(boolean versioned) {
-		this.versioned = versioned;
+	public SchemaCreateRequest setAutoPurge(boolean autoPurge) {
+		this.autoPurge = autoPurge;
 		return this;
 	}
 

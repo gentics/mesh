@@ -31,7 +31,7 @@ public class SchemaChangeModel implements RestModel {
 
 	public static final String DISPLAY_FIELD_NAME_KEY = "displayFieldname";
 	
-	public static final String VERSIONED_FLAG_KEY = "versioned";
+	public static final String AUTO_PURGE_FLAG_KEY = "autoPurge";
 
 	public static final String FIELD_ORDER_KEY = "order";
 

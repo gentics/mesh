@@ -34,7 +34,7 @@ public class ProjectPurgeParametersImpl extends AbstractParameters implements Pr
 		sinceParameter.setExample("2019-04-20T18:00Z");
 		sinceParameter.setRequired(false);
 		sinceParameter.setType(ParamType.STRING);
-		parameters.put(SINCE_QUERY_PARAM_KEY, sinceParameter);
+		parameters.put(BEFORE_QUERY_PARAM_KEY, sinceParameter);
 
 		return parameters;
 	}

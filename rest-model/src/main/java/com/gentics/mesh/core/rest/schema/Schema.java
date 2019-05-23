@@ -130,17 +130,17 @@ public interface Schema extends FieldSchemaContainer {
 	}
 
 	/**
-	 * Return the versioning flag for the schema.
+	 * Return the auto purge flag for the schema.
 	 * 
 	 * @return
 	 */
-	Boolean isVersioned();
+	Boolean getAutoPurge();
 
 	/**
-	 * Set the versioning flag.
+	 * Set the auto purge flag.
 	 * 
-	 * @param versioned
+	 * @param autoPurge
 	 * @return
 	 */
-	Schema setVersioned(boolean versioned);
+	Schema setAutoPurge(boolean autoPurge);
 }

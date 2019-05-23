@@ -793,9 +793,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public boolean isVersioningDisabled() {
+	public boolean isAutoPurgeEnabled() {
 		SchemaContainerVersion schema = getSchemaContainerVersion();
-		return schema.isVersioningDisabled();
+		return schema.isAutoPurgeEnabled();
 	}
 
 	@Override

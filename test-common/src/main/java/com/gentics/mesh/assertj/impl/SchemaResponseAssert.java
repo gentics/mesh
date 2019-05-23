@@ -3,6 +3,7 @@ package com.gentics.mesh.assertj.impl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.gentics.mesh.assertj.AbstractMeshAssert;
@@ -63,14 +64,18 @@ public class SchemaResponseAssert extends AbstractMeshAssert<SchemaResponseAsser
 		return this;
 	}
 
-	public SchemaResponseAssert isVersioned() {
-		assertTrue("We expected the schema versioned flag to be set to true.", actual.isVersioned());
+	public SchemaResponseAssert autoPurgeIsEnabled() {
+		assertTrue("We expected the schema auto purge flag to be set to true.", actual.getAutoPurge());
 		return this;
 	}
 
-	public SchemaResponseAssert isNotVersioned() {
-		System.out.println(actual.toJson());
-		assertFalse("We expected the schema versioned flag to be set to false.", actual.isVersioned());
+	public SchemaResponseAssert autoPurgeIsNotSet() {
+		assertNull("We expected the schema auto purge flag not to be set.", actual.getAutoPurge());
+		return this;
+	}
+
+	public SchemaResponseAssert isAutoPurgeDisabled() {
+		assertFalse("We expected the schema auto purge flag to be set to false.", actual.getAutoPurge());
 		return this;
 	}
 

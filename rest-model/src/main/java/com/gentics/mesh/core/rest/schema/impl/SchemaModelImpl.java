@@ -66,8 +66,8 @@ public class SchemaModelImpl implements SchemaModel {
 	private List<FieldSchema> fields = new ArrayList<>();
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Versioning flag of the schema. Controls whether contents of this schema should create new versions.")
-	private Boolean versioned = true;
+	@JsonPropertyDescription("Auto purge flag of the schema. Controls whether contents of this schema should create new versions.")
+	private Boolean autoPurge;
 
 	@Override
 	public String getVersion() {
@@ -169,13 +169,13 @@ public class SchemaModelImpl implements SchemaModel {
 	}
 
 	@Override
-	public Boolean isVersioned() {
-		return versioned;
+	public Boolean getAutoPurge() {
+		return autoPurge;
 	}
 
 	@Override
-	public SchemaModelImpl setVersioned(boolean versioned) {
-		this.versioned = versioned;
+	public SchemaModelImpl setAutoPurge(boolean autoPurge) {
+		this.autoPurge = autoPurge;
 		return this;
 	}
 

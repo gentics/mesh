@@ -1318,7 +1318,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void setPublished(NodeGraphFieldContainer container, String branchUuid) {
 		String languageTag = container.getLanguageTag();
-		boolean isVersioningDisabled = container.isVersioningDisabled();
+		boolean isAutoPurgeEnabled = container.isAutoPurgeEnabled();
 
 		// Remove an existing published edge
 		EdgeFrame currentPublished = getGraphFieldContainerEdgeFrame(languageTag, branchUuid, PUBLISHED);
@@ -1328,14 +1328,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			NodeGraphFieldContainerImpl oldPublishedContainer = currentPublished.inV().nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
 			currentPublished.remove();
 			oldPublishedContainer.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_publish");
-			if (isVersioningDisabled && oldPublishedContainer.isPurgeable()) {
+			if (isAutoPurgeEnabled && oldPublishedContainer.isPurgeable()) {
 				oldPublishedContainer.purge(BulkActionContext.create());
 			}
 		}
 
 		// Check whether a previous draft can be purged.
 		NodeGraphFieldContainer prev = container.getPreviousVersion();
-		if (isVersioningDisabled && prev != null && prev.isPurgeable()) {
+		if (isAutoPurgeEnabled && prev != null && prev.isPurgeable()) {
 			prev.purge(BulkActionContext.create());
 		}
 
@@ -1788,8 +1788,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
 
 				// Purge the old draft
-				boolean versioningDisabled = newDraftVersion.isVersioningDisabled();
-				if (versioningDisabled && latestDraftVersion.isPurgeable()) {
+				if (newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
 					latestDraftVersion.purge(BulkActionContext.create());
 				}
 

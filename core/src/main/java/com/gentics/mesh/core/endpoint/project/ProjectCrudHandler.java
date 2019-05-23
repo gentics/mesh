@@ -67,7 +67,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 		validateParameter(uuid, "uuid");
 
 		ProjectPurgeParameters purgeParams = ac.getProjectPurgeParameters();
-		Optional<ZonedDateTime> since = purgeParams.getSinceDate();
+		Optional<ZonedDateTime> since = purgeParams.getBeforeDate();
 
 		utils.syncTx(ac, (tx) -> {
 			if (!ac.getUser().hasAdminRole()) {
