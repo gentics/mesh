@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.user.UserReference;
 
+/**
+ * Response POJO which is used in {@link NodeVersionsResponse} to return information about a single version.
+ */
 public class VersionInfo {
 
 	@JsonProperty(required = true)

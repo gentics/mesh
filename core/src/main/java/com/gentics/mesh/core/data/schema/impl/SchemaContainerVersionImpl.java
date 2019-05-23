@@ -236,7 +236,7 @@ public class SchemaContainerVersionImpl extends
 				return true;
 			}
 		} else {
-			return schemaFlag == false;
+			return !schemaFlag;
 		}
 	}
 

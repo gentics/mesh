@@ -6,6 +6,9 @@ import java.util.Map;
 
 import com.gentics.mesh.core.rest.common.RestModel;
 
+/**
+ * Response POJO which is used to return version lists of a node.
+ */
 public class NodeVersionsResponse implements RestModel {
 
 	private Map<String, List<VersionInfo>> versions;
@@ -31,7 +34,7 @@ public class NodeVersionsResponse implements RestModel {
 	}
 
 	/**
-	 * Returns a human readable version list.
+	 * Returns a human readable version list for the given language.
 	 * 
 	 * @param languageTag
 	 * @return

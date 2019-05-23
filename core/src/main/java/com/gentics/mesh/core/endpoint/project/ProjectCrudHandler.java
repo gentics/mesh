@@ -2,7 +2,9 @@ package com.gentics.mesh.core.endpoint.project;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.time.ZonedDateTime;
@@ -68,9 +70,11 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 		Optional<ZonedDateTime> since = purgeParams.getSinceDate();
 
 		utils.syncTx(ac, (tx) -> {
+			if (!ac.getUser().hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
 			RootVertex<Project> root = getRootVertex(ac);
 			MeshAuthUser user = ac.getUser();
-			// TODO which perm to use? Admin perm?
 			Project project = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
 			db.tx(() -> {
 				boot.jobRoot().enqueueVersionPurge(user, project, since);

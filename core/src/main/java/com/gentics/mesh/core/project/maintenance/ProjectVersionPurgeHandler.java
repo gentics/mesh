@@ -95,8 +95,7 @@ public class ProjectVersionPurgeHandler {
 		if (isInTimeFrame && version.isPurgeable()) {
 			log.info("Purging container " + version.getUuid() + "@" + version.getVersion());
 			// Delete this version - This will also take care of removing the version references
-			// version.delete(bac);
-			version.remove();
+			version.delete(bac);
 			previousRemoved = true;
 			txCounter++;
 		} else {

@@ -355,18 +355,8 @@ public class BinaryUploadHandler extends AbstractHandler {
 					newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
 				}
 
-				boolean isVersioningDisabled = newDraftVersion.isVersioningDisabled();
-				if (isVersioningDisabled && latestDraftVersion.isPurgeable()) {
-					if (log.isDebugEnabled()) {
-						log.debug("Previous version is purgeable. Removing it now.");
-					}
-					// Link the previous to the next to isolate the old container
-					NodeGraphFieldContainer beforePrev = latestDraftVersion.getPreviousVersion();
-					for (NodeGraphFieldContainer afterPrev : latestDraftVersion.getNextVersions()) {
-						beforePrev.setNextVersion(afterPrev);
-					}
-					BulkActionContext bac = BulkActionContext.create();
-					latestDraftVersion.delete(bac, false);
+				if (newDraftVersion.isVersioningDisabled() && latestDraftVersion.isPurgeable()) {
+					latestDraftVersion.purge(BulkActionContext.create());
 				}
 
 				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
