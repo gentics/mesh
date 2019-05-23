@@ -1230,11 +1230,16 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String branchUuid = branch.getUuid();
 
 		// Remove the published edge for each found container
-		TraversalResult<? extends NodeGraphFieldContainer> publishedContainers = getGraphFieldContainers(branchUuid, PUBLISHED);
+		List<? extends NodeGraphFieldContainer> publishedContainers = getGraphFieldContainers(branchUuid, PUBLISHED).list();
 		for (NodeGraphFieldContainer container : publishedContainers) {
 			bac.add(container.onTakenOffline(branchUuid));
 		}
 		getGraphFieldContainerEdges(branchUuid, PUBLISHED).forEach(EdgeFrame::remove);
+		for (NodeGraphFieldContainer container : publishedContainers) {
+			if (container.isAutoPurgeEnabled() && container.isPurgeable()) {
+				container.purge(bac);
+			}
+		}
 
 		assertPublishConsistency(ac, branch);
 

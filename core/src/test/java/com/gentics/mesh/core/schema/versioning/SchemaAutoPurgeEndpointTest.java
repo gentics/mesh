@@ -71,6 +71,9 @@ public class SchemaAutoPurgeEndpointTest extends AbstractMeshTest {
 		call(() -> client().takeNodeOffline(projectName(), nodeUuid));
 		assertVersions(nodeUuid, "en", "D(4.1)=>I(0.1)");
 
+		call(() -> client().publishNode(projectName(), nodeUuid));
+		assertVersions(nodeUuid, "en", "PD(5.0)=>I(0.1)");
+
 		// Now create a branch. A new initial edge should be created
 		waitForJob(() -> {
 			BranchCreateRequest branchCreateRequest = new BranchCreateRequest();
@@ -78,36 +81,36 @@ public class SchemaAutoPurgeEndpointTest extends AbstractMeshTest {
 			branchCreateRequest.setLatest(false);
 			call(() -> client().createBranch(projectName(), branchCreateRequest));
 		});
-		assertVersions(nodeUuid, "en", "PDI(4.0)=>I(0.1)");
+		assertVersions(nodeUuid, "en", "PDI(5.0)=>I(0.1)");
 
 		// Update the node again
-		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("new name4"));
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("new name5"));
 		call(() -> client().updateNode(projectName(), nodeUuid, nodeUpdateRequest));
-		assertVersions(nodeUuid, "en", "D(4.1)=>PI(4.0)=>I(0.1)");
+		assertVersions(nodeUuid, "en", "D(5.1)=>PI(5.0)=>I(0.1)");
 
 		// Publish it again and ensure that version 4.0 is not removed
 		call(() -> client().publishNode(projectName(), nodeUuid));
-		assertVersions(nodeUuid, "en", "PD(5.0)=>I(4.0)=>I(0.1)");
+		assertVersions(nodeUuid, "en", "PD(6.0)=>I(5.0)=>I(0.1)");
 
 	}
 
 	@Test
-	public void testDisableVersioningWithUpload() {
+	public void testAutoPurgeWithUpload() {
 		enableAutoPurgeOnSchema();
 		Node node = content();
 		String nodeUuid = tx(() -> node.getUuid());
 		tx(() -> prepareSchema(node, "", "binary"));
-		assertVersions(nodeUuid, "en", "PD(2.0)=>(1.0)=>I(0.1)");
+		assertVersions(nodeUuid, "en", "PD(2.0)=>I(0.1)");
 
 		call(() -> uploadRandomData(node, "en", "binary", 1000, "application/pdf", "somefile.PDF"));
-		assertVersions(nodeUuid, "en", "D(2.1)=>P(2.0)=>(1.0)=>I(0.1)");
+		assertVersions(nodeUuid, "en", "D(2.1)=>P(2.0)=>I(0.1)");
 		call(() -> uploadRandomData(node, "en", "binary", 1000, "application/pdf", "somefile.PDF"));
-		assertVersions(nodeUuid, "en", "D(2.2)=>P(2.0)=>(1.0)=>I(0.1)");
+		assertVersions(nodeUuid, "en", "D(2.2)=>P(2.0)=>I(0.1)");
 
 	}
 
 	@Test
-	public void testDisableVersioningWithBinaryTransform() {
+	public void testAutoPurgeWithBinaryTransform() {
 		Node node = content();
 		String nodeUuid = tx(() -> node.getUuid());
 		assertVersions(nodeUuid, "en", "PD(1.0)=>I(0.1)");
@@ -129,7 +132,7 @@ public class SchemaAutoPurgeEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testDisableVersioningForMigration() {
+	public void testAutoPurgeForMigration() {
 		grantAdminRole();
 		enableAutoPurgeOnSchema();
 		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
@@ -164,7 +167,7 @@ public class SchemaAutoPurgeEndpointTest extends AbstractMeshTest {
 		waitForJob(() -> {
 			call(() -> client().updateSchema(contentSchemaUuid, request));
 		});
-		assertVersions(nodeUuid, "en", "D(4.2)=>P(4.0)=>I(0.1)");
+		assertVersions(nodeUuid, "en", "PD(5.0)=>I(0.1)");
 
 	}
 
