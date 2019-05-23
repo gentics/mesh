@@ -698,4 +698,8 @@ public interface TestHelper {
 		assertVersions(nodeUuid, lang, versions, null);
 	}
 
+	default void disableAutoPurge() {
+		Mesh.mesh().getOptions().getContentOptions().setAutoPurge(false);
+	}
+
 }

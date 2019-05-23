@@ -139,6 +139,8 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		disableAutoPurge();
+
 		String filename = "filename.txt";
 		Buffer buffer = TestUtils.randomBuffer(1000);
 		Node node = folder("2015");

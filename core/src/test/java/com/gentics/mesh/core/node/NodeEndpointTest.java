@@ -1297,8 +1297,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadNodeVersionForBranch() {
-		// Disable auto purge for this test.
-		Mesh.mesh().getOptions().getContentOptions().setAutoPurge(false);
+		disableAutoPurge();
+
 		Node node = folder("2015");
 		String uuid = tx(() -> node.getUuid());
 		Branch newBranch = createBranch("newbranch", true);

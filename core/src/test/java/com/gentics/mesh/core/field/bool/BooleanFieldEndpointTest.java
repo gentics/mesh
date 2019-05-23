@@ -65,6 +65,8 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
+		disableAutoPurge();
+
 		Node node = folder("2015");
 		for (int i = 0; i < 20; i++) {
 			boolean flag = false;
@@ -106,6 +108,8 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		disableAutoPurge();
+
 		NodeResponse firstResponse = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(true));
 		String oldVersion = firstResponse.getVersion();
 
