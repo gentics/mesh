@@ -28,7 +28,6 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.Tuple;
 
-import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import jdk.nashorn.api.scripting.ClassFilter;
