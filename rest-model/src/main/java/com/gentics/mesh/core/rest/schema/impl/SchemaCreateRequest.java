@@ -46,7 +46,7 @@ public class SchemaCreateRequest implements Schema {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Auto purge flag of the schema. Controls whether contents of this schema should create new versions.")
-	private boolean autoPurge = true;
+	private Boolean autoPurge;
 
 	@Override
 	public String getDescription() {
