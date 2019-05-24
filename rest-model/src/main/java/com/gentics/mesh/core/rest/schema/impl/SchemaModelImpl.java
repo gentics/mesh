@@ -174,7 +174,7 @@ public class SchemaModelImpl implements SchemaModel {
 	}
 
 	@Override
-	public SchemaModelImpl setAutoPurge(boolean autoPurge) {
+	public SchemaModelImpl setAutoPurge(Boolean autoPurge) {
 		this.autoPurge = autoPurge;
 		return this;
 	}

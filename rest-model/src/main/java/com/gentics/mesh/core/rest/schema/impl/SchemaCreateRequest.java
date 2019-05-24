@@ -142,7 +142,7 @@ public class SchemaCreateRequest implements Schema {
 	}
 
 	@Override
-	public SchemaCreateRequest setAutoPurge(boolean autoPurge) {
+	public SchemaCreateRequest setAutoPurge(Boolean autoPurge) {
 		this.autoPurge = autoPurge;
 		return this;
 	}

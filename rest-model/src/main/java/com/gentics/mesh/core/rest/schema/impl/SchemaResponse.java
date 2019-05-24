@@ -158,6 +158,7 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	public SchemaUpdateRequest toUpdateRequest() {
 		SchemaUpdateRequest updateRequest = new SchemaUpdateRequest();
 		updateRequest.setContainer(getContainer());
+		updateRequest.setAutoPurge(getAutoPurge());
 		updateRequest.getFields().addAll(getFields());
 		updateRequest.setName(getName());
 		updateRequest.setSegmentField(getSegmentField());
@@ -185,7 +186,7 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	}
 
 	@Override
-	public SchemaResponse setAutoPurge(boolean autoPurge) {
+	public SchemaResponse setAutoPurge(Boolean autoPurge) {
 		this.autoPurge = autoPurge;
 		return this;
 	}

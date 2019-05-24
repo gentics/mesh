@@ -142,5 +142,5 @@ public interface Schema extends FieldSchemaContainer {
 	 * @param autoPurge
 	 * @return
 	 */
-	Schema setAutoPurge(boolean autoPurge);
+	Schema setAutoPurge(Boolean autoPurge);
 }

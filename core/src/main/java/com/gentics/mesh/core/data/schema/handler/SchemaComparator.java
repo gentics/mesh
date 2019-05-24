@@ -43,10 +43,7 @@ public class SchemaComparator extends AbstractFieldSchemaContainerComparator<Sch
 		compareAndAddSchemaProperty(changes, DISPLAY_FIELD_NAME_KEY, schemaA.getDisplayField(), schemaB.getDisplayField(), Schema.class);
 
 		// .autoPurge
-		// Only diff the flag if a value has been set in the schemaB
-		if (schemaB.getAutoPurge() != null) {
-			compareAndAddSchemaProperty(changes, AUTO_PURGE_FLAG_KEY, schemaA.getAutoPurge(), schemaB.getAutoPurge(), Schema.class);
-		}
+		compareAndAddSchemaProperty(changes, AUTO_PURGE_FLAG_KEY, schemaA.getAutoPurge(), schemaB.getAutoPurge(), Schema.class);
 
 		// .container
 		// Only diff the flag if a value has been set in the schemaB

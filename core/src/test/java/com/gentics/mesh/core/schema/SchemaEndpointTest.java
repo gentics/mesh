@@ -394,9 +394,30 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		request.setUrlFields("slug");
 
 		grantAdminRole();
-		waitForJobs(() -> {
+		waitForJob(() -> {
 			call(() -> client().updateSchema(uuid, request));
-		}, COMPLETED, 1);
+		});
+	}
+
+	@Test
+	public void testSetAutoPurgeToNull() {
+		grantAdminRole();
+		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
+		SchemaResponse response = call(() -> client().findSchemaByUuid(schemaUuid));
+		assertNull(response.getAutoPurge());
+		SchemaUpdateRequest request = response.toUpdateRequest();
+		request.setAutoPurge(true);
+
+		waitForJob(() -> {
+			call(() -> client().updateSchema(schemaUuid, request));
+		});
+
+		assertTrue("The flag should be updated", call(() -> client().findSchemaByUuid(schemaUuid)).getAutoPurge());
+		request.setAutoPurge(null);
+		waitForJob(() -> {
+			call(() -> client().updateSchema(schemaUuid, request));
+		});
+		assertNull("The flag should be updated to null", call(() -> client().findSchemaByUuid(schemaUuid)).getAutoPurge());
 	}
 
 	/**
@@ -488,9 +509,9 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		});
 
 		grantAdminRole();
-		waitForJobs(() -> {
+		waitForJob(() -> {
 			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
-		}, JobStatus.COMPLETED, 1);
+		});
 		revokeAdminRole();
 
 		awaitEvents();

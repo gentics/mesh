@@ -80,11 +80,9 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 			schema.setElasticsearch(options);
 		}
 
-		// .versioned
-		Boolean versionedFlag = getAutoPurgeFlag();
-		if (versionedFlag != null) {
-			schema.setAutoPurge(versionedFlag);
-		}
+		// .autoPurge
+		Boolean autoPurge = getAutoPurgeFlag();
+		schema.setAutoPurge(autoPurge);
 
 		return (R) schema;
 	}

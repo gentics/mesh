@@ -152,7 +152,7 @@ public class SchemaUpdateRequest implements SchemaModel {
 	}
 
 	@Override
-	public SchemaUpdateRequest setAutoPurge(boolean autoPurge) {
+	public SchemaUpdateRequest setAutoPurge(Boolean autoPurge) {
 		this.autoPurge = autoPurge;
 		return this;
 	}
