@@ -19,10 +19,8 @@ import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.parameter.ProjectPurgeParameters;
 import com.gentics.mesh.parameter.impl.ProjectPurgeParametersImpl;
-import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -43,49 +41,67 @@ public class ProjectVersionPurgeEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testBasicPurge() {
+	public void testPurge() {
 		grantAdminRole();
-		waitForLatestJob(() -> {
+		disableAutoPurge();
+		String nodeUuid = contentUuid();
+		waitForJob(() -> {
 			call(() -> client().purgeProject(projectUuid()));
-		}, COMPLETED);
+		});
+		assertVersions(nodeUuid, "en", "PD(1.0)=>I(0.1)");
+
+		for (int i = 0; i < 5; i++) {
+			NodeUpdateRequest request = new NodeUpdateRequest();
+			request.setVersion("draft");
+			request.setLanguage("en");
+			request.getFields().put("slug", FieldUtil.createStringField("blub" + i));
+			call(() -> client().updateNode(projectName(), nodeUuid, request));
+		}
+		assertVersions(nodeUuid, "en", "D(1.5)=>(1.4)=>(1.3)=>(1.2)=>(1.1)=>P(1.0)=>I(0.1)");
+
+		// Now only D I and P must remain.
+		waitForJob(() -> {
+			call(() -> client().purgeProject(projectUuid()));
+		});
+		assertVersions(nodeUuid, "en", "D(1.5)=>P(1.0)=>I(0.1)");
 	}
 
 	@Test
-	public void testPurgeWithSince() throws InterruptedException, ExecutionException {
+	public void testPurgeWithBefore() throws InterruptedException, ExecutionException {
 		grantAdminRole();
+		disableAutoPurge();
+		String nodeUuid = contentUuid();
 		String middle = null;
 		for (int i = 0; i < 12; i++) {
 			if (i == 6) {
 				middle = Instant.now().atZone(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
-				String branchUuid = setupBranch(initialBranchUuid(), "demo2", false);
-				// String branchUuid2 = setupBranch(initialBranchUuid(), "demo3", false);
-				// String branchUuid3 = setupBranch(branchUuid, "demo4", false);
+				setupBranch(initialBranchUuid(), "demo2", false);
 			}
 			NodeUpdateRequest request = new NodeUpdateRequest();
 			request.setVersion("draft");
 			request.setLanguage("en");
 			request.getFields().put("slug", FieldUtil.createStringField("blub" + i));
-			call(() -> client().updateNode(projectName(), contentUuid(), request));
+			call(() -> client().updateNode(projectName(), nodeUuid, request));
 
 			NodeUpdateRequest request2 = new NodeUpdateRequest();
 			request2.setVersion("draft");
 			request2.setLanguage("de");
 			request2.getFields().put("slug", FieldUtil.createStringField("blub_de" + i));
-			call(() -> client().updateNode(projectName(), contentUuid(), request2));
+			call(() -> client().updateNode(projectName(), nodeUuid, request2));
 			TestUtils.sleep(500);
 		}
 
 		final String middleDate = middle;
-		waitForLatestJob(() -> {
+		waitForJob(() -> {
 			ProjectPurgeParameters purgeParams = new ProjectPurgeParametersImpl();
-			// purgeParams.setSince(middleDate);
+			purgeParams.setBefore(middleDate);
 			call(() -> client().purgeProject(projectUuid(), purgeParams));
-		}, COMPLETED);
+		});
 
-		NodeVersionsResponse versions = call(() -> client().listNodeVersions(projectName(), contentUuid()));
-
-		NodeVersionsResponse versions2 = call(
-			() -> client().listNodeVersions(projectName(), contentUuid(), new VersioningParametersImpl().setBranch("demo2")));
+		assertVersions(nodeUuid, "en", "D(1.12)=>(1.11)=>(1.10)=>(1.9)=>(1.8)=>(1.7)=>(1.6)=>PI(1.0)=>I(0.1)");
+		assertVersions(nodeUuid, "de", "D(1.12)=>(1.11)=>(1.10)=>(1.9)=>(1.8)=>(1.7)=>(1.6)=>PI(1.0)=>I(0.1)");
+		assertVersions(nodeUuid, "en", "D(1.6)=>PI(1.0)=>I(0.1)", "demo2");
+		assertVersions(nodeUuid, "de", "D(1.6)=>PI(1.0)=>I(0.1)", "demo2");
 	}
 
 	private String setupBranch(String initialBranchUuid, String branchName, boolean latest) throws InterruptedException, ExecutionException {

@@ -65,7 +65,7 @@ public class ProjectVersionPurgeHandler {
 		Iterable<? extends NodeGraphFieldContainer> initials = node.getGraphFieldContainersIt(ContainerType.INITIAL);
 		for (NodeGraphFieldContainer initial : initials) {
 			Long counter = 0L;
-			purgeVersion(tx, counter, null, initial, initial, false, maxAge);
+			purgeVersion(tx, counter, BulkActionContext.create(), initial, initial, false, maxAge);
 		}
 	}
 
