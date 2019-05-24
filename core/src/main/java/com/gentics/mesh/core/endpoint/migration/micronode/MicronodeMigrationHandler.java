@@ -13,7 +13,6 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.MicronodeMigrationContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
@@ -209,17 +208,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 				// 2. Migrate the draft container. This will also update the draft edge.
 				migrateDraftContainer(ac, batch, branch, node, container, fromVersion, toVersion, touchedFields, migrationScripts, nextDraftVersion);
 
-				// The purge operation was suppressed before. We need to invoke it now
-				// Purge the old publish container if it did not match the draft container. In this case we need to purge the published container dedicatedly.
-				if (oldPublished != null && !oldPublished.equals(container) && oldPublished.isAutoPurgeEnabled() && oldPublished.isPurgeable()) {
-					log.debug("Removing old published container {" + oldPublished.getUuid() + "}");
-					oldPublished.purge(BulkActionContext.create());
-				}
-				// Now we can purge the draft container (which may also be the published container)
-				if (container.isAutoPurgeEnabled() && container.isPurgeable()) {
-					log.debug("Removing source container {" + containerUuid + "}");
-					container.purge(BulkActionContext.create());
-				}
+				postMigrationPurge(container, oldPublished);
 
 			});
 		} catch (Exception e1) {
