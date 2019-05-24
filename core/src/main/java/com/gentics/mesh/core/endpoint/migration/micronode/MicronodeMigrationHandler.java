@@ -146,7 +146,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 		if (publish) {
 			migrated.setVersion(container.getVersion().nextPublished());
 			// Ensure that the publish edge is also updated correctly
-			node.setPublished(migrated, branchUuid);
+			node.setPublished(ac, migrated, branchUuid);
 		} else {
 			if (nextDraftVersion == null) {
 				nextDraftVersion = container.getVersion().nextDraft();
@@ -241,7 +241,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 
 		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguageTag(), branch, container.getEditor(), container, true);
 		migrated.setVersion(container.getVersion().nextPublished());
-		node.setPublished(migrated, branchUuid);
+		node.setPublished(ac, migrated, branchUuid);
 
 		migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
 		sqb.add(migrated.onUpdated(branchUuid, PUBLISHED));

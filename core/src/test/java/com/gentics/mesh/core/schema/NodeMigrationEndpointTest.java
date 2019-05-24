@@ -703,6 +703,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMigrateDraftAndPublished() throws Throwable {
+		disableAutoPurge();
 
 		// Create schema
 		SchemaCreateRequest request = new SchemaCreateRequest();
@@ -1081,6 +1082,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMicroschemaMigrationMixedList() throws Throwable {
+		disableAutoPurge();
+
 		String fieldName = "changedfield";
 		String micronodeFieldName = "micronodefield";
 		MicroschemaContainer container;

@@ -167,7 +167,7 @@ public class SchemaAutoPurgeEndpointTest extends AbstractMeshTest {
 		waitForJob(() -> {
 			call(() -> client().updateSchema(contentSchemaUuid, request));
 		});
-		assertVersions(nodeUuid, "en", "PD(5.0)=>I(0.1)");
+		assertVersions(nodeUuid, "en", "D(5.1)=>P(5.0)=>I(0.1)");
 
 	}
 

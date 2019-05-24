@@ -528,12 +528,13 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void publish(InternalActionContext ac, BulkActionContext bac, String languageTag);
 
 	/**
-	 * Set the graph field container to be the (only) published for the given branch
+	 * Set the graph field container to be the (only) published for the given branch.
 	 *
+	 * @param ac
 	 * @param container
 	 * @param branchUuid
 	 */
-	void setPublished(NodeGraphFieldContainer container, String branchUuid);
+	void setPublished(InternalActionContext ac, NodeGraphFieldContainer container, String branchUuid);
 
 	/**
 	 * Take a language of the node offline.
@@ -667,6 +668,8 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	/**
 	 * Create a new published version of the given language in the branch.
 	 * 
+	 * @param ac
+	 *            Action Context
 	 * @param languageTag
 	 *            language
 	 * @param branch
@@ -675,7 +678,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            user
 	 * @return published field container
 	 */
-	NodeGraphFieldContainer publish(String languageTag, Branch branch, User user);
+	NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, Branch branch, User user);
 
 	/**
 	 * Publish the node for the specified branch.
@@ -810,6 +813,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Transform the node information to a version list response.
+	 * 
 	 * @param ac
 	 * @return Versions response
 	 */

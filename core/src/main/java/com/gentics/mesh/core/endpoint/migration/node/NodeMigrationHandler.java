@@ -15,6 +15,7 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -183,9 +184,20 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 					nextDraftVersion = nextDraftVersion.nextDraft();
 				}
 
-			} else {
-				// 2. Migrate the draft container. This will also update the draft edge.
-				migrateDraftContainer(ac, batch, branch, node, container, toVersion, touchedFields, migrationScripts, newSchema, nextDraftVersion);
+			}
+			// 2. Migrate the draft container. This will also update the draft edge.
+			migrateDraftContainer(ac, batch, branch, node, container, toVersion, touchedFields, migrationScripts, newSchema, nextDraftVersion);
+
+			// The purge operation was suppressed before. We need to invoke it now
+			// Purge the old publish container if it did not match the draft container. In this case we need to purge the published container dedicately.
+			if (oldPublished != null && !oldPublished.equals(container) && oldPublished.isAutoPurgeEnabled() && oldPublished.isPurgeable()) {
+				log.debug("Removing old published container {" + oldPublished.getUuid() + "} for migration of node {" + parentNodeUuid + "}");
+				oldPublished.purge(BulkActionContext.create());
+			}
+			// Now we can purge the draft container (which may also be the published container)
+			if (container.isAutoPurgeEnabled() && container.isPurgeable()) {
+				log.debug("Removing source container {" + containerUuid + "} for migration of node {" + parentNodeUuid + "}");
+				container.purge(BulkActionContext.create());
 			}
 
 		} catch (Exception e1) {
@@ -241,7 +253,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		// Ensure that the migrated version is also published since the old version was
 		if (publish) {
 			migrated.setVersion(container.getVersion().nextPublished());
-			node.setPublished(migrated, branchUuid);
+			node.setPublished(ac, migrated, branchUuid);
 		} else {
 			if (nextDraftVersion == null) {
 				nextDraftVersion = container.getVersion().nextDraft();
@@ -291,7 +303,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguageTag(), branch, container.getEditor(), container, true);
 
 		migrated.setVersion(container.getVersion().nextPublished());
-		node.setPublished(migrated, branchUuid);
+		node.setPublished(ac, migrated, branchUuid);
 
 		migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
 		sqb.add(migrated.onUpdated(branchUuid, PUBLISHED));

@@ -21,6 +21,8 @@ import org.mockito.Mockito;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -335,7 +337,8 @@ public class TestDataProvider {
 		RoleRoot roleRoot = getMeshRoot().getRoleRoot();
 
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
-		project = root.getProjectRoot().create(PROJECT_NAME, null, null, null, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion(), batch);
+		project = root.getProjectRoot().create(PROJECT_NAME, null, null, null, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion(),
+			batch);
 		User jobUser = userInfo.getUser();
 		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("folder"), batch);
 		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("content"), batch);
@@ -367,7 +370,8 @@ public class TestDataProvider {
 			roles.put(role.getName(), role);
 		}
 		// Publish the project basenode
-		project.getBaseNode().publish(getEnglish(), getProject().getLatestBranch(), getUserInfo().getUser());
+		InternalActionContext ac = new NodeMigrationActionContextImpl();
+		project.getBaseNode().publish(ac, getEnglish(), getProject().getLatestBranch(), getUserInfo().getUser());
 		contentCount++;
 
 	}
@@ -448,7 +452,8 @@ public class TestDataProvider {
 		postcodeFieldSchema.setLabel("Post Code");
 		vcardMicroschema.addField(postcodeFieldSchema);
 
-		MicroschemaContainer vcardMicroschemaContainer = boot.microschemaContainerRoot().create(vcardMicroschema, userInfo.getUser(), EventQueueBatch.create());
+		MicroschemaContainer vcardMicroschemaContainer = boot.microschemaContainerRoot().create(vcardMicroschema, userInfo.getUser(),
+			EventQueueBatch.create());
 		microschemaContainers.put(vcardMicroschemaContainer.getName(), vcardMicroschemaContainer);
 		project.getMicroschemaContainerRoot().addMicroschema(user(), vcardMicroschemaContainer, EventQueueBatch.create());
 	}
@@ -476,12 +481,14 @@ public class TestDataProvider {
 		captionFieldSchema.setLabel("Caption");
 		captionedImageMicroschema.addField(captionFieldSchema);
 
-		MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(captionedImageMicroschema, userInfo.getUser(), EventQueueBatch.create());
+		MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(captionedImageMicroschema, userInfo.getUser(),
+			EventQueueBatch.create());
 		microschemaContainers.put(captionedImageMicroschema.getName(), microschemaContainer);
 		project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, EventQueueBatch.create());
 	}
 
 	public Node addFolder(Node rootNode, String englishName, String germanName) {
+		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		SchemaContainerVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
 		Node folderNode = rootNode.create(userInfo.getUser(), schemaVersion, project);
 		Branch branch = project.getLatestBranch();
@@ -492,7 +499,7 @@ public class TestDataProvider {
 			germanContainer.createString("slug").setString(germanName);
 			germanContainer.updateDisplayFieldValue();
 			contentCount++;
-			folderNode.publish(getGerman(), branch, getUserInfo().getUser());
+			folderNode.publish(ac, getGerman(), branch, getUserInfo().getUser());
 		}
 		if (englishName != null) {
 			NodeGraphFieldContainer englishContainer = folderNode.createGraphFieldContainer(english, branch, userInfo.getUser());
@@ -501,7 +508,7 @@ public class TestDataProvider {
 			englishContainer.createString("slug").setString(englishName);
 			englishContainer.updateDisplayFieldValue();
 			contentCount++;
-			folderNode.publish(getEnglish(), branch, getUserInfo().getUser());
+			folderNode.publish(ac, getEnglish(), branch, getUserInfo().getUser());
 		}
 
 		if (englishName == null || StringUtils.isEmpty(englishName)) {
@@ -529,6 +536,7 @@ public class TestDataProvider {
 	}
 
 	private Node addContent(Node parentNode, String name, String englishContent, String germanContent, SchemaContainer schema) {
+		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		Node node = parentNode.create(userInfo.getUser(), schemaContainers.get("content").getLatestVersion(), project);
 		Branch branch = project.getLatestBranch();
 		if (englishContent != null) {
@@ -540,7 +548,7 @@ public class TestDataProvider {
 			englishContainer.createHTML("content").setHtml(englishContent);
 			englishContainer.updateDisplayFieldValue();
 			contentCount++;
-			node.publish(getEnglish(), branch, getUserInfo().getUser());
+			node.publish(ac, getEnglish(), branch, getUserInfo().getUser());
 		}
 
 		if (germanContent != null) {
@@ -552,7 +560,7 @@ public class TestDataProvider {
 			germanContainer.createHTML("content").setHtml(germanContent);
 			germanContainer.updateDisplayFieldValue();
 			contentCount++;
-			node.publish(getGerman(), branch, getUserInfo().getUser());
+			node.publish(ac, getGerman(), branch, getUserInfo().getUser());
 		}
 
 		if (contents.containsKey(name.toLowerCase())) {

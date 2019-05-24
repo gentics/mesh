@@ -1198,7 +1198,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// publish all unpublished containers and handle recursion
 		unpublishedContainers.stream().forEach(c -> {
-			NodeGraphFieldContainer newVersion = publish(c.getLanguageTag(), branch, ac.getUser());
+			NodeGraphFieldContainer newVersion = publish(ac, c.getLanguageTag(), branch, ac.getUser());
 			bac.add(newVersion.onPublish(branchUuid));
 		});
 		assertPublishConsistency(ac, branch);
@@ -1235,9 +1235,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			bac.add(container.onTakenOffline(branchUuid));
 		}
 		getGraphFieldContainerEdges(branchUuid, PUBLISHED).forEach(EdgeFrame::remove);
-		for (NodeGraphFieldContainer container : publishedContainers) {
-			if (container.isAutoPurgeEnabled() && container.isPurgeable()) {
-				container.purge(bac);
+		if (ac.isPurgeAllowed()) {
+			for (NodeGraphFieldContainer container : publishedContainers) {
+				if (container.isAutoPurgeEnabled() && container.isPurgeable()) {
+					container.purge(bac);
+				}
 			}
 		}
 
@@ -1297,7 +1299,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		// TODO check whether all required fields are filled, if not -> unable to publish
-		NodeGraphFieldContainer publishedContainer = publish(draftVersion.getLanguageTag(), branch, ac.getUser());
+		NodeGraphFieldContainer publishedContainer = publish(ac, draftVersion.getLanguageTag(), branch, ac.getUser());
 		// Invoke a store of the document since it must now also be added to the published index
 		bac.add(publishedContainer.onPublish(branchUuid));
 	}
@@ -1321,7 +1323,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void setPublished(NodeGraphFieldContainer container, String branchUuid) {
+	public void setPublished(InternalActionContext ac, NodeGraphFieldContainer container, String branchUuid) {
 		String languageTag = container.getLanguageTag();
 		boolean isAutoPurgeEnabled = container.isAutoPurgeEnabled();
 
@@ -1333,15 +1335,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			NodeGraphFieldContainerImpl oldPublishedContainer = currentPublished.inV().nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
 			currentPublished.remove();
 			oldPublishedContainer.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_publish");
-			if (isAutoPurgeEnabled && oldPublishedContainer.isPurgeable()) {
-				oldPublishedContainer.purge(BulkActionContext.create());
+			if (ac.isPurgeAllowed()) {
+				if (isAutoPurgeEnabled && oldPublishedContainer.isPurgeable()) {
+					oldPublishedContainer.purge(BulkActionContext.create());
+				}
 			}
 		}
 
-		// Check whether a previous draft can be purged.
-		NodeGraphFieldContainer prev = container.getPreviousVersion();
-		if (isAutoPurgeEnabled && prev != null && prev.isPurgeable()) {
-			prev.purge(BulkActionContext.create());
+		if (ac.isPurgeAllowed()) {
+			// Check whether a previous draft can be purged.
+			NodeGraphFieldContainer prev = container.getPreviousVersion();
+			if (isAutoPurgeEnabled && prev != null && prev.isPurgeable()) {
+				prev.purge(BulkActionContext.create());
+			}
 		}
 
 		// create new published edge
@@ -1353,14 +1359,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer publish(String languageTag, Branch branch, User user) {
+	public NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, Branch branch, User user) {
 		String branchUuid = branch.getUuid();
 
 		// create published version
 		NodeGraphFieldContainer newVersion = createGraphFieldContainer(languageTag, branch, user);
 		newVersion.setVersion(newVersion.getVersion().nextPublished());
 
-		setPublished(newVersion, branchUuid);
+		setPublished(ac, newVersion, branchUuid);
 		return newVersion;
 	}
 
@@ -1793,8 +1799,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
 
 				// Purge the old draft
-				if (newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
-					latestDraftVersion.purge(BulkActionContext.create());
+				if (ac.isPurgeAllowed()) {
+					if (newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
+						latestDraftVersion.purge(BulkActionContext.create());
+					}
 				}
 
 				latestDraftVersion = newDraftVersion;

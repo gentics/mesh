@@ -973,4 +973,9 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 		Objects.requireNonNull(toContainerVersion, "The target schema reference is missing in the context.");
 	}
 
+	@Override
+	public boolean isPurgeAllowed() {
+		return false;
+	}
+
 }
