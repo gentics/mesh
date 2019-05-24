@@ -110,6 +110,12 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- Attachment parsing -->
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-parsers</artifactId>
+		</dependency>
+
 		<!-- Metrics -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>

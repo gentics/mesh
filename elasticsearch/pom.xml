@@ -33,12 +33,6 @@
 			<version>${elasticsearch.client.version}</version>
 		</dependency>
 
-		<!-- Attachment parsing -->
-		<dependency>
-			<groupId>org.apache.tika</groupId>
-			<artifactId>tika-parsers</artifactId>
-		</dependency>
-
 		<dependency>
 			<groupId>net.lingala.zip4j</groupId>
 			<artifactId>zip4j</artifactId>
