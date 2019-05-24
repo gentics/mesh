@@ -62,12 +62,12 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 			binaryField.setElasticsearch(customMapping);
 			schemaUpdateRequest.addField(binaryField);
 		}
-		waitForJobs(() -> {
+		waitForJob(() -> {
 			call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
-		}, JobStatus.COMPLETED, 1);
-		waitForJobs(() -> {
+		});
+		waitForJob(() -> {
 			call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
-		}, JobStatus.COMPLETED, 1);
+		});
 
 		// .rtf with lorem text
 		byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");

@@ -73,6 +73,7 @@ public class OAuth2KeycloakTest extends AbstractMeshTest {
 		JsonObject meJson = new JsonObject(get("/api/v1/auth/me"));
 		assertEquals("anonymous", meJson.getString("username"));
 
+		client().setAPIKey(null);
 		client().setLogin("admin", "admin");
 		client().login().blockingGet();
 
