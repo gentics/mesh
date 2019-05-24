@@ -38,6 +38,7 @@ public class ProjectVersionPurgeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testBogusProject() {
+		grantAdminRole();
 		call(() -> client().purgeProject(userUuid()), NOT_FOUND, "object_not_found_for_uuid", userUuid());
 	}
 

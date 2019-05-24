@@ -51,7 +51,6 @@ import com.gentics.mesh.test.assertj.MeshCoreAssertion;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.VersionNumber;
-import com.jmatio.io.stream.ByteBufferInputStream;
 import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Observable;
@@ -118,6 +117,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUploadMultipleToBinaryNode() throws IOException {
+		disableAutoPurge();
+
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;
 		Node node = folder("news");
