@@ -854,6 +854,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartMicroschemaMigration() throws Throwable {
+		disableAutoPurge();
+
 		String fieldName = "changedfield";
 		String micronodeFieldName = "micronodefield";
 		MicroschemaContainer container;
