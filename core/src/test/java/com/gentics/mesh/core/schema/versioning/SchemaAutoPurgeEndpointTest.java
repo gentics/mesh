@@ -10,13 +10,17 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.Tuple;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class SchemaAutoPurgeEndpointTest extends AbstractMeshTest {
@@ -106,7 +110,6 @@ public class SchemaAutoPurgeEndpointTest extends AbstractMeshTest {
 		assertVersions(nodeUuid, "en", "D(2.1)=>P(2.0)=>I(0.1)");
 		call(() -> uploadRandomData(node, "en", "binary", 1000, "application/pdf", "somefile.PDF"));
 		assertVersions(nodeUuid, "en", "D(2.2)=>P(2.0)=>I(0.1)");
-
 	}
 
 	@Test
@@ -132,7 +135,7 @@ public class SchemaAutoPurgeEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testAutoPurgeForMigration() {
+	public void testAutoPurgeForSchemaMigration() {
 		grantAdminRole();
 		enableAutoPurgeOnSchema();
 		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
@@ -168,7 +171,42 @@ public class SchemaAutoPurgeEndpointTest extends AbstractMeshTest {
 			call(() -> client().updateSchema(contentSchemaUuid, request));
 		});
 		assertVersions(nodeUuid, "en", "D(5.1)=>P(5.0)=>I(0.1)");
+	}
 
+	@Test
+	public void testAutoPurgeForMicroschemaMigration() {
+		grantAdminRole();
+		String microschemaUuid = tx(() -> microschemaContainer("vcard").getUuid());
+		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
+		String nodeUuid = contentUuid();
+		assertVersions(nodeUuid, "en", "PD(1.0)=>I(0.1)");
+
+		// 1. Add vcard to schema
+		SchemaUpdateRequest schemaRequest = call(() -> client().findSchemaByUuid(contentSchemaUuid)).toUpdateRequest();
+		schemaRequest.addField(FieldUtil.createMicronodeFieldSchema("card").setAllowedMicroSchemas("vcard"));
+		waitForJob(() -> {
+			call(() -> client().updateSchema(contentSchemaUuid, schemaRequest));
+		});
+		assertVersions(nodeUuid, "en", "PD(2.0)=>I(0.1)");
+
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.setVersion("draft");
+		Tuple<String, Field> firstNameField = Tuple.tuple("firstName", FieldUtil.createStringField("joe"));
+		Tuple<String, Field> lastNameField = Tuple.tuple("lastName", FieldUtil.createStringField("doe"));
+		MicronodeField micronode = FieldUtil.createMicronodeField("card", firstNameField, lastNameField);
+		micronode.getMicroschema().setName("vcard");
+		nodeUpdateRequest.getFields().put("card", micronode);
+		call(() -> client().updateNode(projectName(), nodeUuid, nodeUpdateRequest));
+		assertVersions(nodeUuid, "en", "D(2.1)=>P(2.0)=>I(0.1)");
+
+		// 2. Migrate vcard
+		MicroschemaUpdateRequest microschemaRequest = call(() -> client().findMicroschemaByUuid(microschemaUuid)).toRequest();
+		microschemaRequest.addField(FieldUtil.createStringFieldSchema("extra"));
+		waitForJob(() -> {
+			call(() -> client().updateMicroschema(microschemaUuid, microschemaRequest));
+		});
+		assertVersions(nodeUuid, "en", "D(3.1)=>P(3.0)=>I(0.1)");
 	}
 
 	private void enableAutoPurgeOnSchema() {

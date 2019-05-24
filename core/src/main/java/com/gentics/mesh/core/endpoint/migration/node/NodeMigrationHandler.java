@@ -189,7 +189,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			migrateDraftContainer(ac, batch, branch, node, container, toVersion, touchedFields, migrationScripts, newSchema, nextDraftVersion);
 
 			// The purge operation was suppressed before. We need to invoke it now
-			// Purge the old publish container if it did not match the draft container. In this case we need to purge the published container dedicately.
+			// Purge the old publish container if it did not match the draft container. In this case we need to purge the published container dedicatedly.
 			if (oldPublished != null && !oldPublished.equals(container) && oldPublished.isAutoPurgeEnabled() && oldPublished.isPurgeable()) {
 				log.debug("Removing old published container {" + oldPublished.getUuid() + "} for migration of node {" + parentNodeUuid + "}");
 				oldPublished.purge(BulkActionContext.create());
