@@ -17,6 +17,13 @@
         name
     }
 
+	folderSchema: schema(name: "folder") {
+		# [$.data.folderSchema.name=folder]
+		name
+		# [$.data.folderSchema.isAutoPurge=true]
+		isAutoPurge
+	}
+
 	schema(name:"content") {
 		# [$.data.schema.uuid=<is-uuid>]
 		uuid
@@ -60,6 +67,8 @@
 		segmentField
 		# [$.data.schema.isContainer=false]
 		isContainer
+		# [$.data.schema.isAutoPurge=<is-null>]
+		isAutoPurge
 		nodes {
 		    elements {
 		        # [$.data.schema.nodes.elements[0].uuid=<is-uuid>]
