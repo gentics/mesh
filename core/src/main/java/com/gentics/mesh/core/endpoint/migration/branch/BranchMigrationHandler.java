@@ -109,7 +109,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 			db.tx((tx) -> {
 
 				// Check whether the node already has an initial container and thus was already migrated
-				if (node.getGraphFieldContainersIt(newBranch, INITIAL).iterator().hasNext()) {
+				if (node.getGraphFieldContainersIt(newBranch, INITIAL).hasNext()) {
 					return;
 				}
 
@@ -121,7 +121,10 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 				TraversalResult<? extends NodeGraphFieldContainer> drafts = node.getGraphFieldContainersIt(oldBranch, DRAFT);
 				TraversalResult<? extends NodeGraphFieldContainer> published = node.getGraphFieldContainersIt(oldBranch, PUBLISHED);
 
+				// 1. Migrate draft containers first
 				drafts.forEach(container -> {
+					// We only need to set the initial edge if there are no published containers.
+					// Otherwise the initial edge will be set using the published container.
 					if (!published.hasNext()) {
 						setInitial(node, container, newBranch);
 					}
@@ -140,7 +143,10 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 					batch.add(container.onUpdated(newBranch.getUuid(), DRAFT));
 				});
 
-				node.getGraphFieldContainersIt(oldBranch, PUBLISHED).forEach(container -> {
+				// 2. Migrate published containers
+				published.forEach(container -> {
+					// Set the initial edge for published containers since the published container may be an older version and created before the draft container was created.
+					// The initial edge should always point to the oldest container.
 					setInitial(node, container, newBranch);
 
 					GraphFieldContainerEdgeImpl publishEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
@@ -157,7 +163,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 					batch.add(container.onUpdated(newBranch.getUuid(), PUBLISHED));
 				});
 
-				// migrate tags
+				// Migrate tags
 				node.getTags(oldBranch).forEach(tag -> node.addTag(tag, newBranch));
 			});
 		} catch (Exception e1) {
@@ -166,11 +172,14 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 		}
 	}
 
-	private void setInitial(Node node, NodeGraphFieldContainer container, Branch newBranch) {
+	/**
+	 * Create a new initial edge between node and container for the given branch.
+	 */
+	private void setInitial(Node node, NodeGraphFieldContainer container, Branch branch) {
 		GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container,
 			GraphFieldContainerEdgeImpl.class);
 		initialEdge.setLanguageTag(container.getLanguageTag());
+		initialEdge.setBranchUuid(branch.getUuid());
 		initialEdge.setType(INITIAL);
-		initialEdge.setBranchUuid(newBranch.getUuid());
 	}
 }
