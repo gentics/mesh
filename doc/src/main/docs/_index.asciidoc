@@ -299,6 +299,9 @@ ul.doc-toc h2 {
                         <h2>Guides</h2>
                         <ul>
                             <li>
+                                <a href="guides/mesh-api-intro">API Introduction</a>
+                            </li>
+                            <li>
                                 <a href="guides/mesh-react">React - Basics</a>
                             </li>
                             <li>
