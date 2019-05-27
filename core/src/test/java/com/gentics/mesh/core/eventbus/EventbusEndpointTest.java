@@ -1,10 +1,33 @@
 
 package com.gentics.mesh.core.eventbus;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.MeshEvent;
+import com.gentics.mesh.assertj.MeshAssertions;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.rest.client.MeshRestClientUtil;
+import com.gentics.mesh.rest.client.MeshWebsocket;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.RxUtil;
+import io.reactivex.Completable;
+import io.reactivex.subjects.CompletableSubject;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static com.gentics.mesh.MeshEvent.MESH_MIGRATION;
 import static com.gentics.mesh.MeshEvent.NODE_CREATED;
 import static com.gentics.mesh.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.MeshEvent.NODE_UPDATED;
-import static com.gentics.mesh.MeshEvent.MESH_MIGRATION;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -12,30 +35,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.gentics.mesh.MeshEvent;
-import com.gentics.mesh.assertj.MeshAssertions;
-import com.gentics.mesh.rest.client.MeshRestClientUtil;
-import com.gentics.mesh.rest.client.MeshWebsocket;
-import com.gentics.mesh.util.RxUtil;
-import io.reactivex.Completable;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
-
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 @RunWith(VertxUnitRunner.class)
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
@@ -153,13 +152,15 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		ws.publishEvent("custom.myEvent", "someText");
 	}
 
-	@Test
+	@Test(timeout = 20_000)
 	public void testAutoReconnect(TestContext context) {
 		Async nodesCreated = context.strictAsync(2);
 		Async connections = context.strictAsync(2);
-		Async errors = context.async();
+		// The first error is the disconnect itself, the second one is the failing first reconnect.
+		Async errors = context.strictAsync(2);
+		CompletableSubject firstReconnect = CompletableSubject.create();
 
-		ws.registerEvents(MeshEvent.NODE_CREATED);
+		ws.registerEvents(NODE_CREATED);
 		ws.events().subscribe(event -> nodesCreated.countDown(), context::fail);
 
 		ws.connections()
@@ -168,11 +169,19 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 			.skip(1)
 			.subscribe(ignore -> createBinaryContent().subscribe());
 
-		ws.errors().take(1).subscribe(ignore -> errors.complete());
+		ws.errors().take(2).subscribe(ignore -> {
+			errors.countDown();
+
+			if (errors.count() == 0) {
+				// The first reconnect failed, we can now start the REST verticle again.
+				firstReconnect.onComplete();
+			}
+		});
 
 		createBinaryContent().toCompletable()
 			.andThen(stopRestVerticle())
 			.andThen(verifyStoppedRestVerticle())
+			.andThen(firstReconnect)
 			.andThen(startRestVerticle())
 			.subscribe(() -> {}, context::fail);
 	}
