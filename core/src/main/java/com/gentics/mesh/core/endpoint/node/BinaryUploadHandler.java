@@ -18,7 +18,6 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.binary.BinaryDataProcessor;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistry;
@@ -357,7 +356,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 
 				if (ac.isPurgeAllowed()) {
 					if (newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
-						latestDraftVersion.purge(BulkActionContext.create());
+						latestDraftVersion.purge();
 					}
 				}
 

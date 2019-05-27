@@ -1337,7 +1337,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			oldPublishedContainer.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_publish");
 			if (ac.isPurgeAllowed()) {
 				if (isAutoPurgeEnabled && oldPublishedContainer.isPurgeable()) {
-					oldPublishedContainer.purge(BulkActionContext.create());
+					oldPublishedContainer.purge();
 				}
 			}
 		}
@@ -1346,7 +1346,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// Check whether a previous draft can be purged.
 			NodeGraphFieldContainer prev = container.getPreviousVersion();
 			if (isAutoPurgeEnabled && prev != null && prev.isPurgeable()) {
-				prev.purge(BulkActionContext.create());
+				prev.purge();
 			}
 		}
 
@@ -1801,7 +1801,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// Purge the old draft
 				if (ac.isPurgeAllowed()) {
 					if (newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
-						latestDraftVersion.purge(BulkActionContext.create());
+						latestDraftVersion.purge();
 					}
 				}
 

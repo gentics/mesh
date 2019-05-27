@@ -1,6 +1,5 @@
 package com.gentics.mesh.test.docker;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -8,14 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import io.vertx.core.json.JsonObject;
 
@@ -30,15 +28,13 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
 
 	private Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(log);
 
-	/**
-	 * Path to the realm configuration on the docker host system.
-	 */
-	private String realmHostPath = null;
+	private static final String REALM_CONFIG_PATH = "/opt/jboss/keycloak/realm.json";
 
-	private JsonObject json;
+	private boolean withConfig = false;
 
-	public KeycloakContainer() {
-		super("jboss/keycloak:" + VERSION);
+	public KeycloakContainer(String classPathToConfig) {
+		super(prepareDockerImage(loadConfig(classPathToConfig)));
+		this.withConfig = true;
 	}
 
 	@Override
@@ -56,32 +52,23 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
 		args.add("-Dkeycloak.migration.usersExportStrategy=SAME_FILE");
 		args.add("-Dkeycloak.migration.strategy=OVERWRITE_EXISTING");
 
-		if (json != null) {
-			realmHostPath = toHostPath(json).getAbsolutePath();
-		}
-
-		if (realmHostPath != null) {
-			String containerPath = "/opt/jboss/keycloak/realm.json";
-			addFileSystemBind(realmHostPath, containerPath, BindMode.READ_ONLY);
-			args.add("-Dkeycloak.import=" + containerPath);
+		if (withConfig) {
+			args.add("-Dkeycloak.import=" + REALM_CONFIG_PATH);
 		}
 		withCommand(args.stream().toArray(String[]::new));
 	}
 
-	/**
-	 * Write the json to a temp file and return the file.
-	 * 
-	 * @param json
-	 * @return Path to created file which contains the json data
-	 */
-	private File toHostPath(JsonObject json) {
-		try {
-			File hostFile = File.createTempFile("realm-file", ".json");
-			FileUtils.writeStringToFile(hostFile, json.encodePrettily(), Charset.defaultCharset());
-			return hostFile;
-		} catch (IOException e) {
-			throw new RuntimeException("Could not create realm host file", e);
+	public static ImageFromDockerfile prepareDockerImage(JsonObject realmConfig) {
+		ImageFromDockerfile dockerImage = new ImageFromDockerfile("keycloak-mesh", true);
+		StringBuilder dockerFile = new StringBuilder();
+		dockerFile.append("FROM jboss/keycloak:" + VERSION + "\n");
+
+		if (realmConfig != null) {
+			dockerFile.append("ADD /realm.json " + REALM_CONFIG_PATH + "\n");
+			dockerImage.withFileFromString("/realm.json", realmConfig.encodePrettily());
 		}
+		dockerImage.withFileFromString("/Dockerfile", dockerFile.toString());
+		return dockerImage;
 	}
 
 	/**
@@ -94,28 +81,13 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
 		return this;
 	}
 
-	/**
-	 * Use the provided realm data to import into keycloak.
-	 * 
-	 * @param json
-	 * @return
-	 */
-	public KeycloakContainer withRealmConfig(JsonObject json) {
-		this.json = json;
-		return this;
-	}
-
-	public KeycloakContainer withRealmFromClassPath(String path) {
-		JsonObject realmServerConfig;
-
-		try (InputStream ins = getClass().getResourceAsStream(path)) {
-			Objects.requireNonNull(ins, "Could not find file {" + path + "}");
+	public static JsonObject loadConfig(String classPath) {
+		try (InputStream ins = KeycloakContainer.class.getResourceAsStream(classPath)) {
+			Objects.requireNonNull(ins, "Could not find file {" + classPath + "}");
 			String json = IOUtils.toString(ins, Charset.defaultCharset());
-			realmServerConfig = new JsonObject(json);
+			return new JsonObject(json);
 		} catch (IOException e) {
-			throw new RuntimeException("Could not write realm server config file.", e);
+			throw new RuntimeException("Could not loadrealm server config file.", e);
 		}
-		withRealmConfig(realmServerConfig);
-		return this;
 	}
 }

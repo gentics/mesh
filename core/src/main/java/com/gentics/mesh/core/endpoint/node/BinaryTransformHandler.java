@@ -12,7 +12,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
@@ -248,7 +247,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			// Purge the old draft
 			if (ac.isPurgeAllowed()) {
 				if (newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
-					latestDraftVersion.purge(BulkActionContext.create());
+					latestDraftVersion.purge();
 				}
 			}
 

@@ -11,6 +11,7 @@ import java.util.Set;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
@@ -491,9 +492,17 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	/**
 	 * Purge the container from the version history and ensure that the links between versions are consistent.
 	 * 
-	 * @param bac Action context for the deletion process
+	 * @param bac
+	 *            Action context for the deletion process
 	 */
 	void purge(BulkActionContext bac);
+
+	/**
+	 * Purge the container from the version without the use of a Bulk Action Context.
+	 */
+	default void purge() {
+		purge(new DummyBulkActionContext());
+	}
 
 	/**
 	 * Return a list of all versions.

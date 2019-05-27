@@ -8,7 +8,6 @@ import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.script.ScriptEngine;
 
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -202,18 +201,17 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 *            Optional published container
 	 */
 	protected void postMigrationPurge(NodeGraphFieldContainer container, NodeGraphFieldContainer oldPublished) {
-		BulkActionContext bac = BulkActionContext.create();
 
 		// The purge operation was suppressed before. We need to invoke it now
 		// Purge the old publish container if it did not match the draft container. In this case we need to purge the published container dedicatedly.
 		if (oldPublished != null && !oldPublished.equals(container) && oldPublished.isAutoPurgeEnabled() && oldPublished.isPurgeable()) {
 			log.debug("Removing old published container {" + oldPublished.getUuid() + "}");
-			oldPublished.purge(bac);
+			oldPublished.purge();
 		}
 		// Now we can purge the draft container (which may also be the published container)
 		if (container.isAutoPurgeEnabled() && container.isPurgeable()) {
 			log.debug("Removing source container {" + container.getUuid() + "}");
-			container.purge(bac);
+			container.purge();
 		}
 	}
 
