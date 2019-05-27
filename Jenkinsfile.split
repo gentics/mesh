@@ -38,6 +38,9 @@ stage("Setup Build Environment") {
 			def branchName = GitHelper.fetchCurrentBranchName()
 			def version = MavenHelper.getVersion()
 
+			echo "PR: $GITHUB_PR_NUMBER"
+			echo "BR: $branchName"
+
 			stage("Set Version") {
 				if (Boolean.valueOf(params.runDeploy)) {
 					if (version) {
@@ -143,8 +146,9 @@ stage("Setup Build Environment") {
 						}
 					}
 
-					withCredentials([string(credentialsId: 'sonarcube.key', variable: 'TOKEN')]) {
-						sh "mvn sonar:sonar -Dsonar.projectKey=mesh -Dsonar.host.url=https://sonarqube.apa.at -Dsonar.login=$TOKEN"
+					withCredentials([string(credentialsId: 'sonarcloud.key', variable: 'TOKEN')]) {
+						sh "mvn sonar:sonar -Dsonar.projectKey=gentics_mesh -Dsonar.organization=gentics -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$TOKEN -Dsonar.pullrequest.key=$GITHUB_PR_NUMBER -Dsonar.pullrequest.branch=" + branchName + " -Dsonar.pullrequest.base=dev"
+						//sh "mvn sonar:sonar -Dsonar.projectKey=mesh -Dsonar.host.url=https://sonarqube.apa.at -Dsonar.login=$TOKEN"
 					}
 				}
 			}
