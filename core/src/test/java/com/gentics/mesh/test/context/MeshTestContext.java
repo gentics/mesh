@@ -437,11 +437,10 @@ public class MeshTestContext extends TestWatcher {
 		}
 
 		if (settings.useKeycloak()) {
-			keycloak = new KeycloakContainer("/keycloak/realm.json");
+			keycloak = new KeycloakContainer("/keycloak/realm.json").waitingFor(Wait.forHttp("/auth/realms/master-test"));
 			if (!keycloak.isRunning()) {
 				keycloak.start();
 			}
-			keycloak.waitingFor(Wait.forHttp("/auth/realms/master-test/health/check"));
 			OAuth2Options oauth2Options = meshOptions.getAuthenticationOptions().getOauth2();
 			oauth2Options.setEnabled(true);
 
