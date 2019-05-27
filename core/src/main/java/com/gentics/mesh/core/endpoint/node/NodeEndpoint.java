@@ -135,7 +135,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Returns a list of versions.");
 		endpoint.displayName("Versions");
-		endpoint.exampleResponse(OK, nodeExamples.createVersionsList(), "Loaded navigation.");
+		endpoint.exampleResponse(OK, nodeExamples.createVersionsList(), "Loaded version list.");
 		endpoint.addQueryParameters(NodeParametersImpl.class);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);

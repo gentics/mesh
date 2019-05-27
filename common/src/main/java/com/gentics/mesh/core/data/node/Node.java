@@ -215,14 +215,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	}
 
 	/**
-	 * Return the youngest container of either the draft or the published content.
-	 * 
-	 * @param branch
-	 * @return
-	 */
-	TraversalResult<? extends NodeGraphFieldContainer> getYoungestContainer(Branch branch);
-
-	/**
 	 * Return traversal of graph field containers of given type for the node in the given branch.
 	 *
 	 * @param branchUuid

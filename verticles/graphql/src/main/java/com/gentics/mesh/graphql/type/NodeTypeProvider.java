@@ -2,6 +2,7 @@ package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_TYPE_NAME;
@@ -397,7 +398,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				if (node == null) {
 					return null;
 				}
-				return node.getYoungestContainer(gc.getBranch()).stream().filter(c -> {
+				return node.getGraphFieldContainersIt(gc.getBranch(), DRAFT).stream().filter(c -> {
 					String lang = c.getLanguageTag();
 					return lang.equals(languageTag);
 				}).findFirst().map(NodeGraphFieldContainer::versions).orElse(null);

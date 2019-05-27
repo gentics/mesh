@@ -975,6 +975,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	@Override
 	public boolean isPurgeAllowed() {
+		// The purge operation is now allowed during schema migrations. Instead the purge will be executed after containers have been migrated.
 		return false;
 	}
 

@@ -972,23 +972,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public NodeVersionsResponse transformToVersionList(InternalActionContext ac) {
 		NodeVersionsResponse response = new NodeVersionsResponse();
 		Map<String, List<VersionInfo>> versions = new HashMap<>();
-		getYoungestContainer(ac.getBranch()).forEach(c -> {
+		getGraphFieldContainersIt(ac.getBranch(), DRAFT).forEach(c -> {
 			versions.put(c.getLanguageTag(), c.versions().stream().map(v -> v.transformToVersionInfo(ac)).collect(Collectors.toList()));
 		});
 
 		response.setVersions(versions);
 		return response;
-	}
-
-	@Override
-	public TraversalResult<? extends NodeGraphFieldContainer> getYoungestContainer(Branch branch) {
-		// We only need to check whether a draft content for the node exists. The draft content is always younger compared to the published.
-		TraversalResult<? extends NodeGraphFieldContainer> draft = getGraphFieldContainersIt(branch, DRAFT);
-		if (draft.hasNext()) {
-			return draft;
-		} else {
-			return getGraphFieldContainersIt(branch, PUBLISHED);
-		}
 	}
 
 	/**
@@ -1795,10 +1784,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
 
 				// Purge the old draft
-				if (ac.isPurgeAllowed()) {
-					if (newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
-						latestDraftVersion.purge();
-					}
+				if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
+					latestDraftVersion.purge();
 				}
 
 				latestDraftVersion = newDraftVersion;

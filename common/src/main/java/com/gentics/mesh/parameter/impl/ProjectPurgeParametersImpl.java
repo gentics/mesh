@@ -28,7 +28,7 @@ public class ProjectPurgeParametersImpl extends AbstractParameters implements Pr
 	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
 		Map<String, QueryParameter> parameters = new HashMap<>();
 
-		// since
+		// before
 		QueryParameter sinceParameter = new QueryParameter();
 		sinceParameter.setDescription("Limit the purge operation to versions which are older than the given date.");
 		sinceParameter.setExample("2019-04-20T18:00Z");
