@@ -397,14 +397,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				if (node == null) {
 					return null;
 				}
-				Optional<? extends NodeGraphFieldContainer> first = node.getOldestContainer(gc.getBranch()).stream().filter(c -> {
+				return node.getYoungestContainer(gc.getBranch()).stream().filter(c -> {
 					String lang = c.getLanguageTag();
 					return lang.equals(languageTag);
-				}).findFirst();
-				if (first.isPresent()) {
-					return first.get().versions();
-				}
-				return null;
+				}).findFirst().map(NodeGraphFieldContainer::versions).orElse(null);
 
 			}));
 

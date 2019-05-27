@@ -3,7 +3,6 @@ package com.gentics.mesh.core.project.maintenance;
 import java.time.ZonedDateTime;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -47,7 +46,7 @@ public class ProjectVersionPurgeHandler {
 	 *            Limit the purge operation to versions which exceed the max age.
 	 * @return
 	 */
-	public Completable purgeVersions(Project project, Optional<ZonedDateTime> maxAge) {
+	public Completable purgeVersions(Project project, ZonedDateTime maxAge) {
 		return Completable.fromAction(() -> {
 			db.tx(tx -> {
 				NodeRoot nodeRoot = project.getNodeRoot();
@@ -61,7 +60,7 @@ public class ProjectVersionPurgeHandler {
 		});
 	}
 
-	private void purgeNode(Tx tx, Node node, Optional<ZonedDateTime> maxAge) {
+	private void purgeNode(Tx tx, Node node, ZonedDateTime maxAge) {
 		Iterable<? extends NodeGraphFieldContainer> initials = node.getGraphFieldContainersIt(ContainerType.INITIAL);
 		for (NodeGraphFieldContainer initial : initials) {
 			Long counter = 0L;
@@ -85,12 +84,12 @@ public class ProjectVersionPurgeHandler {
 	 * @param maxAge
 	 */
 	private void purgeVersion(Tx tx, Long txCounter, BulkActionContext bac, NodeGraphFieldContainer lastRemaining, NodeGraphFieldContainer version,
-		boolean previousRemoved, Optional<ZonedDateTime> maxAge) {
+		boolean previousRemoved, ZonedDateTime maxAge) {
 
 		// We need to load some information first since we may remove the version in this step
 		List<? extends NodeGraphFieldContainer> nextVersions = Lists.newArrayList(version.getNextVersions());
-		boolean isNewerThanMaxAge = maxAge.isPresent() && !isOlderThanMaxAge(version, maxAge.get());
-		boolean isInTimeFrame = maxAge.isPresent() ? isOlderThanMaxAge(version, maxAge.get()) : true;
+		boolean isNewerThanMaxAge = maxAge != null && !isOlderThanMaxAge(version, maxAge);
+		boolean isInTimeFrame = maxAge != null ? isOlderThanMaxAge(version, maxAge) : true;
 
 		if (isInTimeFrame && version.isPurgeable()) {
 			log.info("Purging container " + version.getUuid() + "@" + version.getVersion());
@@ -108,7 +107,7 @@ public class ProjectVersionPurgeHandler {
 				txCounter++;
 			}
 			if (txCounter % getBatchSize() == 0 && txCounter != 0) {
-				log.info("Comitting batch - Elements handled {" + txCounter + "}");
+				log.info("Committing batch - Elements handled {" + txCounter + "}");
 				tx.getGraph().commit();
 			}
 			// Update the reference since this version is now the last remaining because it was not removed

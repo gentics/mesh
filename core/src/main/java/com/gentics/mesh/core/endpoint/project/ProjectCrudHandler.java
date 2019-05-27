@@ -67,7 +67,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 		validateParameter(uuid, "uuid");
 
 		ProjectPurgeParameters purgeParams = ac.getProjectPurgeParameters();
-		Optional<ZonedDateTime> since = purgeParams.getBeforeDate();
+		Optional<ZonedDateTime> before = purgeParams.getBeforeDate();
 
 		utils.syncTx(ac, (tx) -> {
 			if (!ac.getUser().hasAdminRole()) {
@@ -77,7 +77,11 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 			MeshAuthUser user = ac.getUser();
 			Project project = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
 			db.tx(() -> {
-				boot.jobRoot().enqueueVersionPurge(user, project, since);
+				if (before.isPresent()) {
+					boot.jobRoot().enqueueVersionPurge(user, project, before.get());
+				} else {
+					boot.jobRoot().enqueueVersionPurge(user, project);
+				}
 			});
 			MeshEvent.triggerJobWorker();
 

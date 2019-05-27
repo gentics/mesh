@@ -25,6 +25,10 @@ public class TraversalResult<T> implements Iterable<T> {
 	public TraversalResult(Iterable<T> it) {
 		this.it = it;
 	}
+	
+	public TraversalResult(Stream<T> stream) {
+		this.it = stream::iterator;
+	}
 
 	public long count() {
 		return Iterators.size(it.iterator());

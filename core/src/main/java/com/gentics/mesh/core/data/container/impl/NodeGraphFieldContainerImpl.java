@@ -85,6 +85,7 @@ import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.ETag;
+import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UniquenessUtil;
 import com.gentics.mesh.util.VersionNumber;
@@ -801,7 +802,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public void purge(BulkActionContext bac) {
 		if (log.isDebugEnabled()) {
-			log.debug("Purging container {" + getUuid() +"} for version {" + getVersion() + "}");
+			log.debug("Purging container {" + getUuid() + "} for version {" + getVersion() + "}");
 		}
 		// Link the previous to the next to isolate the old container
 		NodeGraphFieldContainer beforePrev = getPreviousVersion();
@@ -812,18 +813,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public List<NodeGraphFieldContainer> versions() {
-		List<NodeGraphFieldContainer> list = new ArrayList<>();
-		walkVersions(list, this);
-		return list;
-	}
-
-	private void walkVersions(List<NodeGraphFieldContainer> versions, NodeGraphFieldContainer current) {
-		versions.add(current);
-		NodeGraphFieldContainer prev = current.getPreviousVersion();
-		if (prev != null) {
-			walkVersions(versions, prev);
-		}
+	public TraversalResult<NodeGraphFieldContainer> versions() {
+		return new TraversalResult<>(StreamUtil.untilNull(() -> this, NodeGraphFieldContainer::getPreviousVersion));
 	}
 
 }

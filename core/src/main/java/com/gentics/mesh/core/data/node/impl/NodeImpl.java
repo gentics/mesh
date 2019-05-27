@@ -969,13 +969,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeVersionsResponse transformToNodeList(InternalActionContext ac) {
+	public NodeVersionsResponse transformToVersionList(InternalActionContext ac) {
 		NodeVersionsResponse response = new NodeVersionsResponse();
-		// TODO sort by id
 		Map<String, List<VersionInfo>> versions = new HashMap<>();
-		getOldestContainer(ac.getBranch()).forEach(c -> {
-			List<NodeGraphFieldContainer> list = c.versions();
-			versions.put(c.getLanguageTag(), list.stream().map(v -> v.transformToVersionInfo(ac)).collect(Collectors.toList()));
+		getYoungestContainer(ac.getBranch()).forEach(c -> {
+			versions.put(c.getLanguageTag(), c.versions().stream().map(v -> v.transformToVersionInfo(ac)).collect(Collectors.toList()));
 		});
 
 		response.setVersions(versions);
@@ -983,8 +981,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TraversalResult<? extends NodeGraphFieldContainer> getOldestContainer(Branch branch) {
-		// We only need to check whether a draft content for the node exists. The draft content is always older compared to the published.
+	public TraversalResult<? extends NodeGraphFieldContainer> getYoungestContainer(Branch branch) {
+		// We only need to check whether a draft content for the node exists. The draft content is always younger compared to the published.
 		TraversalResult<? extends NodeGraphFieldContainer> draft = getGraphFieldContainersIt(branch, DRAFT);
 		if (draft.hasNext()) {
 			return draft;
@@ -1335,10 +1333,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			NodeGraphFieldContainerImpl oldPublishedContainer = currentPublished.inV().nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
 			currentPublished.remove();
 			oldPublishedContainer.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_publish");
-			if (ac.isPurgeAllowed()) {
-				if (isAutoPurgeEnabled && oldPublishedContainer.isPurgeable()) {
-					oldPublishedContainer.purge();
-				}
+			if (ac.isPurgeAllowed() && isAutoPurgeEnabled && oldPublishedContainer.isPurgeable()) {
+				oldPublishedContainer.purge();
 			}
 		}
 

@@ -42,20 +42,19 @@ public class VersionPurgeJobImpl extends JobImpl {
 	public void setProject(Project project) {
 		setSingleLinkOutTo(project, HAS_PROJECT);
 	}
-	
+
 	public Optional<ZonedDateTime> getMaxAge() {
 		Long maxAge = getProperty(MAX_AGE_PROPERTY);
-		if (maxAge == null) {
-			return Optional.empty();
-		} else {
-			ZonedDateTime maxAgeDate = DateUtils.toZonedDateTime(maxAge);
-			return Optional.of(maxAgeDate);
-		}
+		return Optional.ofNullable(maxAge).map(DateUtils::toZonedDateTime);
 	}
-	
+
 	public void setMaxAge(ZonedDateTime time) {
-		Long ms = time.toInstant().toEpochMilli();
-		setProperty(MAX_AGE_PROPERTY, ms);
+		if (time != null) {
+			Long ms = time.toInstant().toEpochMilli();
+			setProperty(MAX_AGE_PROPERTY, ms);
+		} else {
+			removeProperty(MAX_AGE_PROPERTY);
+		}
 	}
 
 	@Override
@@ -64,7 +63,7 @@ public class VersionPurgeJobImpl extends JobImpl {
 		ProjectVersionPurgeHandler handler = MeshInternal.get().projectVersionPurgeHandler();
 		Project project = db.tx(() -> getProject());
 		Optional<ZonedDateTime> maxAge = db.tx(() -> getMaxAge());
-		return handler.purgeVersions(project, maxAge)
+		return handler.purgeVersions(project, maxAge.orElse(null))
 			.doOnComplete(() -> {
 				db.tx(() -> {
 					setStopTimestamp();

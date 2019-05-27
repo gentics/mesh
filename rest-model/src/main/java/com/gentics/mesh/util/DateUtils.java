@@ -56,7 +56,7 @@ public final class DateUtils {
 	 * @return
 	 */
 	public static ZonedDateTime toZonedDateTime(long timeInMs) {
-		return Instant.ofEpochSecond(timeInMs / 1000).atZone(ZoneOffset.UTC);
+		return Instant.ofEpochMilli(timeInMs).atZone(ZoneOffset.UTC);
 	}
 
 	public static Long fromISO8601(String dateString) {

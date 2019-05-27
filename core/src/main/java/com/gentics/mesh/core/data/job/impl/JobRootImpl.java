@@ -99,7 +99,8 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	public Job enqueueSchemaMigration(User creator, Branch branch, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
 		NodeMigrationJobImpl job = getGraph().addFramedVertex(NodeMigrationJobImpl.class);
 		job.setType(JobType.schema);
-		//job.setCreated(creator);
+		// Don't add the user to reduce contention
+		// job.setCreated(creator);
 		job.setBranch(branch);
 		job.setStatus(QUEUED);
 		job.setFromSchemaVersion(fromVersion);
@@ -116,7 +117,8 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		MicroschemaContainerVersion toVersion) {
 		MicronodeMigrationJobImpl job = getGraph().addFramedVertex(MicronodeMigrationJobImpl.class);
 		job.setType(JobType.microschema);
-		//job.setCreated(creator);
+		// Don't add the user to reduce contention
+		// job.setCreated(creator);
 		job.setBranch(branch);
 		job.setStatus(QUEUED);
 		job.setFromMicroschemaVersion(fromVersion);
@@ -132,7 +134,8 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	@Override
 	public Job enqueueBranchMigration(User creator, Branch branch, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
 		Job job = getGraph().addFramedVertex(BranchMigrationJobImpl.class);
-		//job.setCreated(creator);
+		// Don't add the user to reduce contention
+		// job.setCreated(creator);
 		job.setType(JobType.branch);
 		job.setBranch(branch);
 		job.setStatus(QUEUED);
@@ -148,7 +151,8 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	@Override
 	public Job enqueueBranchMigration(User creator, Branch branch) {
 		Job job = getGraph().addFramedVertex(BranchMigrationJobImpl.class);
-		//job.setCreated(creator);
+		// Don't add the user to reduce contention
+		// job.setCreated(creator);
 		job.setType(JobType.branch);
 		job.setStatus(QUEUED);
 		job.setBranch(branch);
@@ -159,22 +163,27 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		return job;
 	}
 	
+	
+	
 	@Override
-	public Job enqueueVersionPurge(User user, Project project, Optional<ZonedDateTime> since) {
+	public Job enqueueVersionPurge(User user, Project project, ZonedDateTime before) {
 		VersionPurgeJobImpl job = getGraph().addFramedVertex(VersionPurgeJobImpl.class);
-		//TODO why is user omitted?
-		//job.setCreated(user);
+		// TODO Don't add the user to reduce contention
+		// job.setCreated(user);
 		job.setType(JobType.versionpurge);
 		job.setStatus(QUEUED);
 		job.setProject(project);
-		if (since.isPresent()) {
-			job.setMaxAge(since.get());
-		}
+		job.setMaxAge(before);
 		addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued project version purge job {" + job.getUuid() + "} for project {" + project.getName() + "}");
 		}
 		return job;
+	}
+
+	@Override
+	public Job enqueueVersionPurge(User user, Project project) {
+		return enqueueVersionPurge(user, project, null);
 	}
 
 	@Override

@@ -3,8 +3,6 @@ package com.gentics.mesh.core.project.maintenance;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
 
-import java.util.Optional;
-
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -31,6 +29,6 @@ public class ProjectVersionPurgeHandlerTest extends AbstractMeshTest {
 		}
 
 		ProjectVersionPurgeHandler handler = MeshInternal.get().projectVersionPurgeHandler();
-		handler.purgeVersions(project, Optional.empty()).blockingAwait();
+		handler.purgeVersions(project, null).blockingAwait();
 	}
 }

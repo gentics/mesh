@@ -2024,11 +2024,13 @@ The call `POST /api/v1/projects/:projectUuid/maintenance/purge?before=2019-04-20
 
 Draft and publish versions will not be purged since they are still required. Additionally when the initial version of a node can also not be purged since it is bound to the _Branch_ of the node. Gentics Mesh requires this version to keep track of the branch starting point. The version lists endpoint will mark those versions using the `branchRoot` flag.
 
+The purge operation requires _admin_ role and _delete_ permissions on the project to be executed.
+
 NOTE: The version purge mechanism works independently from the auto purge mechanism.
 
 == Content Branches
 
-So far we learned that node contents can be versioned and published. Additionally Gentics Mesh versioning provides a powerful concept we call `Branches`. A project branch is very similar to branches in a versioning control system like GIT or similar systems.
+So far we learned that node contents can be versioned and published. Additionally Gentics Mesh versioning provides a powerful concept we call `Branches`. A project branch is very similar to branches in a versioning control system like Git or similar systems.
 
 Branches can be used to restructure your nodes and change the contents within a specific branch without affecting a different branch which provides a different structure/content.
 

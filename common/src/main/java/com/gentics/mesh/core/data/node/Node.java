@@ -220,7 +220,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 * @return
 	 */
-	TraversalResult<? extends NodeGraphFieldContainer> getOldestContainer(Branch branch);
+	TraversalResult<? extends NodeGraphFieldContainer> getYoungestContainer(Branch branch);
 
 	/**
 	 * Return traversal of graph field containers of given type for the node in the given branch.
@@ -817,6 +817,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param ac
 	 * @return Versions response
 	 */
-	NodeVersionsResponse transformToNodeList(InternalActionContext ac);
+	NodeVersionsResponse transformToVersionList(InternalActionContext ac);
 
 }
