@@ -130,6 +130,11 @@ icon:plus[] Core: The core Vert.x library was updated to version 3.7.0
 
 icon:plus[] Performance: The overall read performance has been improved. The memory usage has been reduced.
 
+[[v0.31.6]]
+== 0.31.6 (27.05.2018)
+
+icon:check[] Java Rest Client: Fixed a bug that prevented automatic reconnection to the eventbus when it did not succeed immediately.
+
 [[v0.31.5]]
 == 0.31.5 (07.05.2019)
 
