@@ -27,7 +27,7 @@ title: Changelog
 [[v0.33.2]]
 == 0.33.2 (TBD)
 
-icon:check[] Java Rest Client: Fixed a bug that prevented automatic reconnection to the eventbus, when it did not succeed immediately.
+icon:check[] Java Rest Client: Fixed a bug that prevented automatic reconnection to the eventbus when it did not succeed immediately.
 
 [[v0.33.1]]
 == 0.33.1 (23.05.2019)
