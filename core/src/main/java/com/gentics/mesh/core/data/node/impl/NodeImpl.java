@@ -477,14 +477,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param type
 	 * @return
 	 */
-	protected Iterable<? extends EdgeFrame> getGraphFieldContainerEdges(String branchUuid, ContainerType type) {
-		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).has(
-			GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
-		return edgeTraversal.frameExplicit(GraphFieldContainerEdgeImpl.class);
-	}
-
-	protected Iterable<GraphFieldContainerEdgeImpl> getGraphFieldContainerEdges(ContainerType type) {
-		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
+	protected Iterable<? extends GraphFieldContainerEdgeImpl> getGraphFieldContainerEdges(String branchUuid, ContainerType type) {
+		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER)
+			.has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid)
+			.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
 		return edgeTraversal.frameExplicit(GraphFieldContainerEdgeImpl.class);
 	}
 
@@ -1216,19 +1212,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		String branchUuid = branch.getUuid();
 
+		TraversalResult<? extends GraphFieldContainerEdgeImpl> publishEdges = new TraversalResult<>(getGraphFieldContainerEdges(branchUuid, PUBLISHED));
+
 		// Remove the published edge for each found container
-		List<? extends NodeGraphFieldContainer> publishedContainers = getGraphFieldContainers(branchUuid, PUBLISHED).list();
-		for (NodeGraphFieldContainer container : publishedContainers) {
-			bac.add(container.onTakenOffline(branchUuid));
-		}
-		getGraphFieldContainerEdges(branchUuid, PUBLISHED).forEach(EdgeFrame::remove);
-		if (ac.isPurgeAllowed()) {
-			for (NodeGraphFieldContainer container : publishedContainers) {
-				if (container.isAutoPurgeEnabled() && container.isPurgeable()) {
-					container.purge(bac);
-				}
+		publishEdges.forEach(edge -> {
+			NodeGraphFieldContainer content = edge.getNodeContainer();
+			bac.add(content.onTakenOffline(branchUuid));
+			edge.remove();
+			if (content.isAutoPurgeEnabled() && content.isPurgeable()) {
+				content.purge(bac);
 			}
-		}
+		});
 
 		assertPublishConsistency(ac, branch);
 
