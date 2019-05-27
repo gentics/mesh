@@ -1975,14 +1975,29 @@ A version can be used as a `draft` version. This version can also be referenced 
 
 NOTE: Versions are language specific. This means that each language of a node has its dedicated version history.
 
-[[controlling-versioning]]
-=== Controlling versioning
+[[auto-purge]]
+=== Auto Purge
 
-Versioning can be controlled on a *per-schema* basis. The `versioned` property within the schema controls whether additional versions for a content will be kept.
+The auto purge mechanism can be used to control the versioning mechanism. The mechanism will automatically purge the previously used version when a new version gets created. This way the version history of a node can be kept small. This will reduce disk usage and reduce the complexity of the Graph that stores the versions. Actions such as _update node_, _upload binary_, _publish node_, _take node offline_ create versions. The auto purge feature can be controlled by a global default setting which can be fine tuned on a per-schema level.
 
-The global autoPurge flag from the `mesh.yml` configuration file will be used for schemas which don't have `autoPurge` property set. Setting the `autoPurge` property will thus also allow to override the default configuration in the `mesh.yml`.
+[caption=]
+.Auto Purge settings
+[options="header"]
+|======
+| Defaut setting | Schema setting | Auto Purge
+| true           | null           | Enabled
+| true           | false          | Disabled
+| false          | true           | Enabled
+| false          | false          | Disabled
+|======
 
-The default behaviour can be configured via the environment variable `MESH_CONTENT_AUTO_PURGE` or the config file.
+NOTE: Enabling auto purge mechanism will not stop version numbers to increase. Instead the mechanism will automatically purge the previously used version (if possible).
+
+NOTE: Setting the auto purge flag in a schema will not automatically purge any version. The versions will only be purged when content gets modified.
+
+==== Default Setting
+
+The global `autoPurge` flag from the `mesh.yml` configuration file will be used for schemas which don't have `autoPurge` property set. Setting the `autoPurge` property will thus also allow to override the default configuration in the `mesh.yml`.
 
 .mesh.yml
 [source,yaml]
@@ -1991,15 +2006,17 @@ content:
   autoPurge: true
 ----
 
-NOTE: Enabling auto purge mechanism will not stop version numbers to increase. Instead the mechanism will automatically purge the previously used version (if possible).
+==== Schema Setting
 
-NOTE: Setting the auto purge flag in a schema will not automatically purge any version. The versions will only be purged when content gets modified.
+Versioning can be controlled on a *per-schema* basis. The `autoPurge` property within the schema controls whether additional versions for a content will be kept.
+
+The default behaviour can be configured via the environment variable `MESH_CONTENT_AUTO_PURGE` or the config file.
 
 === Purging versions
 
 The `POST /api/v1/projects/:projectUuid/maintenance/purge` endpoint can be used to purge older versions from the system.
 
-When invoked a new job will triggered which purges all possible content versions from the given project.
+When invoked a new job will be triggered which purges all possible content versions from the given project.
 
 The `?before` query parameter can be used to control what versions should be purged. 
 

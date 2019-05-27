@@ -34,10 +34,11 @@ ____
 
 The versioning system has received various enhancements.
 
-link:{{< relref "features.asciidoc" >}}#controlling-versioning[Controlling Versioning]
+link:{{< relref "features.asciidoc" >}}#auto-purge[Auto Purge]
 
-Versioning will now be **disabled** by default. You can change this default setting within the `mesh.yml` file. 
-Schema's now may contain a `versioned` flag to control versioning on a per schema basis.
+The auto purge feature will now automatically purge the previously no longer needed version of a content. You can control this behaviour using the `autoPurge` flag in the `mesh.yml` file.
+
+Additionally schema's may now contain a `autoPurge` flag to override the setting on a per schema basis.
 
 The documentation contains detailed information about how versioning can be controlled. 
 
