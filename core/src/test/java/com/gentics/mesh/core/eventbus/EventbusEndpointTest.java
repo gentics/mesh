@@ -159,7 +159,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		Async connections = context.strictAsync(2);
 		// The first error is the disconnect itself, the second one is the failing first reconnect.
 		Async errors = context.strictAsync(2);
-		CompletableSubject firstReconnect= CompletableSubject.create();
+		CompletableSubject firstReconnect = CompletableSubject.create();
 
 		ws.registerEvents(MeshEvent.NODE_CREATED);
 		ws.events().subscribe(event -> nodesCreated.countDown(), context::fail);
