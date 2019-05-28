@@ -115,6 +115,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 		parameters.setWidth(transformation.getWidth());
 		parameters.setHeight(transformation.getHeight());
 		parameters.setRect(transformation.getCropRect());
+		parameters.setFocalPoint(transformation.getFocalPoint());
 		if (parameters.getRect() != null) {
 			parameters.setCropMode(CropMode.RECT);
 		}
@@ -126,7 +127,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			// Use the focal point which is stored along with the binary field if no custom point was included in the query parameters.
 			// Otherwise the query parameter focal point will be used and thus override the stored focal point.
 			FocalPoint focalPoint = field.getImageFocalPoint();
-			if (parameters.getFocalPoint() == null && focalPoint != null) {
+			if (!parameters.hasFocalPoint() && focalPoint != null) {
 				parameters.setFocalPoint(focalPoint);
 			}
 			return field.getBinary().getUuid();
@@ -170,7 +171,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			return binaryStorage.storeInTemp(data, temporaryId).andThen(Single.just(r));
 		}).map(r -> {
 			// Update graph with the new image information
-			return updateNodeInGraph(ac, context, r, node, languageTag, fieldName);
+			return updateNodeInGraph(ac, context, r, node, languageTag, fieldName, parameters);
 		}).onErrorResumeNext(e -> {
 			if (context.isInvokeStore()) {
 				if (log.isDebugEnabled()) {
@@ -197,7 +198,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 	}
 
 	private NodeResponse updateNodeInGraph(InternalActionContext ac, UploadContext context, TransformationResult result, Node node,
-		String languageTag, String fieldName) {
+		String languageTag, String fieldName, ImageManipulationParameters parameters) {
 		return utils.eventAction(batch -> {
 
 			NodeGraphFieldContainer latestDraftVersion = loadTargetedContent(node, languageTag, fieldName);
@@ -232,12 +233,16 @@ public class BinaryTransformHandler extends AbstractHandler {
 				oldField.copyTo(field);
 				oldField.remove();
 			}
-			field.getBinary().setSize(result.getSize());
+			Binary currentBinary = field.getBinary();
+			currentBinary.setSize(result.getSize());
 			field.setMimeType(result.getMimeType());
-
 			// TODO should we rename the image, if the extension is wrong?
-			field.getBinary().setImageHeight(result.getImageInfo().getHeight());
-			field.getBinary().setImageWidth(result.getImageInfo().getWidth());
+			currentBinary.setImageHeight(result.getImageInfo().getHeight());
+			currentBinary.setImageWidth(result.getImageInfo().getWidth());
+
+			if (parameters.hasFocalPoint()) {
+				field.setImageFocalPoint(parameters.getFocalPoint());
+			}
 			// If the binary field is the segment field, we need to update the webroot info in the node
 			if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
 				newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");

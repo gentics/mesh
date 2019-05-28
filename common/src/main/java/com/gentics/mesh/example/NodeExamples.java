@@ -49,6 +49,7 @@ import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
@@ -132,6 +133,7 @@ public class NodeExamples extends AbstractExamples {
 		BinaryField binaryField = new BinaryFieldImpl();
 		binaryField.setFileName("flower.jpg");
 		binaryField.setDominantColor("#22a7f0");
+		binaryField.setFocalPoint(0.1f, 0.2f);
 		binaryField.setFileSize(95365);
 		binaryField.setWidth(800);
 		binaryField.setHeight(600);
@@ -257,6 +259,7 @@ public class NodeExamples extends AbstractExamples {
 		request.setCropRect(50, 20, 150, 170);
 		request.setLanguage("en");
 		request.setVersion("1.0");
+		request.setFocalPoint(new FocalPoint(0.3f,0.6f));
 		return request;
 	}
 
@@ -272,6 +275,7 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("enabled", createBooleanField(true));
 		fields.put("branch", createDateField(createOldTimestamp()));
 		fields.put("categories", createNodeListField(UUID_2, UUID_3, UUID_4));
+		fields.put("image", createBinaryField());
 		fields.put("names", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds", createNumberListField(1, 42, 133, 7));
 		fields.put("location", createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)), Tuple.tuple(
