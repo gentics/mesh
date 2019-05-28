@@ -24,6 +24,11 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.34.1]]
+== 0.34.1 (TBD)
+
+icon:plus[] Core: The core Vert.x library was updated to version 3.7.1
+
 [[v0.34.0]]
 == 0.34.0 (28.05.2019)
 
