@@ -38,6 +38,9 @@
 | *MESH_HTTP_SSL_CERT_PATH*
 | Override the configured SSL enable flag.
 
+| *MESH_CONTENT_AUTO_PURGE*
+| Override the content versioning flag
+
 | *MESH_BINARY_DOCUMENT_PARSER_LIMIT*
 | Override the configured parser limit.
 

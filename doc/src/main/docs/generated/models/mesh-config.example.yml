@@ -75,3 +75,5 @@ image:
   maxHeight: 2048
   jpegQuality: 0.95
   resampleFilter: "LANCZOS"
+content:
+  autoPurge: true

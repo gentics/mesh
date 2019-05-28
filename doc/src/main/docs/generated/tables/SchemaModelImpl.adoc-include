@@ -7,6 +7,11 @@
 | Description
 
 
+| autoPurge
+| false
+| boolean
+| Auto purge flag of the schema. Controls whether contents of this schema should create new versions.
+
 | container
 | false
 | boolean

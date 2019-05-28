@@ -53,7 +53,7 @@
             "type" : "string",
             "required" : true,
             "description" : "The type of the job.",
-            "enum" : [ "schema", "microschema", "branch" ]
+            "enum" : [ "schema", "microschema", "branch", "versionpurge" ]
           },
           "status" : {
             "type" : "string",
