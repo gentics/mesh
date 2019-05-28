@@ -24,6 +24,11 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.35.0]]
+== 0.35.0 (TBD)
+
+CAUTION: Rest Model: The `BranchResponse#istMigrated` method has been changed to `BranchResponse#getMigrated`.
+
 [[v0.34.0]]
 == 0.34.0 (28.05.2019)
 
