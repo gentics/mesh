@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.33.2-SNAPSHOT</version>
+		<version>0.34.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -31,12 +31,6 @@
 			<groupId>com.gentics.elasticsearch</groupId>
 			<artifactId>elasticsearch-client</artifactId>
 			<version>${elasticsearch.client.version}</version>
-		</dependency>
-
-		<!-- Attachment parsing -->
-		<dependency>
-			<groupId>org.apache.tika</groupId>
-			<artifactId>tika-parsers</artifactId>
 		</dependency>
 
 		<dependency>

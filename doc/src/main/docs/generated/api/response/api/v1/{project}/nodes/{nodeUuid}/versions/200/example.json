@@ -1,0 +1,54 @@
+{
+  "versions" : {
+    "de" : [ {
+      "creator" : {
+        "firstName" : "Joe",
+        "lastName" : "Doe",
+        "uuid" : "589319933be24ec79319933be24ec7fe"
+      },
+      "created" : "2018-11-20T20:12:01.084Z",
+      "version" : "1.0"
+    }, {
+      "creator" : {
+        "firstName" : "Joe",
+        "lastName" : "Doe",
+        "uuid" : "589319933be24ec79319933be24ec7fe"
+      },
+      "created" : "2018-11-20T20:12:01.084Z",
+      "version" : "1.1"
+    }, {
+      "creator" : {
+        "firstName" : "Joe",
+        "lastName" : "Doe",
+        "uuid" : "589319933be24ec79319933be24ec7fe"
+      },
+      "created" : "2018-11-20T20:12:01.084Z",
+      "version" : "2.0"
+    } ],
+    "en" : [ {
+      "creator" : {
+        "firstName" : "Joe",
+        "lastName" : "Doe",
+        "uuid" : "589319933be24ec79319933be24ec7fe"
+      },
+      "created" : "2018-11-20T20:12:01.084Z",
+      "version" : "1.0"
+    }, {
+      "creator" : {
+        "firstName" : "Joe",
+        "lastName" : "Doe",
+        "uuid" : "589319933be24ec79319933be24ec7fe"
+      },
+      "created" : "2018-11-20T20:12:01.084Z",
+      "version" : "1.1"
+    }, {
+      "creator" : {
+        "firstName" : "Joe",
+        "lastName" : "Doe",
+        "uuid" : "589319933be24ec79319933be24ec7fe"
+      },
+      "created" : "2018-11-20T20:12:01.084Z",
+      "version" : "2.0"
+    } ]
+  }
+}

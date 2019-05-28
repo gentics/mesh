@@ -21,9 +21,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -186,7 +186,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 			BranchCreateRequest branchCreateRequest = new BranchCreateRequest();
 			branchCreateRequest.setName(SECOND_BRANCH_NAME);
 			call(() -> client().createBranch(PROJECT_NAME, branchCreateRequest));
-		}, MigrationStatus.COMPLETED, 1);
+		}, JobStatus.COMPLETED, 1);
 
 		// Create two drafts in branch A
 		updateNode(5, uuid, INITIAL_BRANCH_NAME);

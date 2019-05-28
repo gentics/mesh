@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.33.2-SNAPSHOT</version>
+		<version>0.34.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -108,6 +108,12 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-service-keycloak-auth</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+
+		<!-- Attachment parsing -->
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-parsers</artifactId>
 		</dependency>
 
 		<!-- Metrics -->

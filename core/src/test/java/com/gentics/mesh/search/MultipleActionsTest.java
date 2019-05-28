@@ -1,5 +1,17 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
+import static org.junit.Assert.assertEquals;
+
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.codehaus.jettison.json.JSONException;
+import org.junit.Test;
+
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -11,19 +23,11 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
+
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import org.codehaus.jettison.json.JSONException;
-import org.junit.Test;
 
-import java.util.concurrent.atomic.AtomicReference;
-
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
-import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-import static org.junit.Assert.assertEquals;
 @MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
 public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 	public static final String SCHEMA_NAME = "content";
@@ -31,11 +35,11 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 	/**
 	 * This test does the following:
 	 * <ol>
-	 *     <li>Delete all nodes of a schema</li>
-	 *     <li>Delete that schema</li>
-	 *     <li>Create a new schema with the same name as the old schema</li>
-	 *     <li>Create nodes of that schema</li>
-	 *     <li>Search for all nodes of that schema</li>
+	 * <li>Delete all nodes of a schema</li>
+	 * <li>Delete that schema</li>
+	 * <li>Create a new schema with the same name as the old schema</li>
+	 * <li>Create nodes of that schema</li>
+	 * <li>Search for all nodes of that schema</li>
 	 * </ol>
 	 *
 	 * @throws Exception
@@ -45,24 +49,23 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 		recreateIndices();
 		final int nodeCount = 1;
 
-		waitForSearchIdleEvent(
-			getNodesBySchema(SCHEMA_NAME)
-				.flatMapCompletable(this::deleteNode)
-				.andThen(deleteSchemaByName(SCHEMA_NAME))
-				.andThen(createTestSchema())
-				.flatMapObservable(newSchema -> getRootNodeReference()
+		getNodesBySchema(SCHEMA_NAME)
+			.flatMapCompletable(this::deleteNode)
+			.andThen(deleteSchemaByName(SCHEMA_NAME))
+			.andThen(createTestSchema())
+			.flatMapObservable(newSchema -> getRootNodeReference()
 				.flatMapObservable(rootNodeReference -> Observable.range(1, nodeCount)
-				.flatMapSingle(unused -> createEmptyNode(newSchema, rootNodeReference))))
-				.ignoreElements()
-		);
+					.flatMapSingle(unused -> createEmptyNode(newSchema, rootNodeReference))))
+			.ignoreElements().blockingAwait();
 
-		NodeListResponse searchResult = client().searchNodes(getSimpleTermQuery("schema.name.raw", SCHEMA_NAME))
-				.toSingle().blockingGet();
+		waitForSearchIdleEvent();
+
+		NodeListResponse searchResult = call(() -> client().searchNodes(getSimpleTermQuery("schema.name.raw", SCHEMA_NAME)));
 		assertEquals("Check search result after actions", nodeCount, searchResult.getMetainfo().getTotalCount());
 	}
 
 	private Observable<NodeResponse> getNodesBySchema(String schemaName) throws JSONException {
-		return client().findNodes(PROJECT_NAME, new NodeParametersImpl().setLanguages("en", "de"), new PagingParametersImpl().setPerPage(10000L))
+		return client().findNodes(PROJECT_NAME, new NodeParametersImpl().setLanguages("en", "de"))
 			.toObservable()
 			.flatMapIterable(ListResponse::getData)
 			.filter(nr -> nr.getSchema().getName().equals(schemaName));

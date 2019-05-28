@@ -174,4 +174,5 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * @return
 	 */
 	ProjectMicroschemaEventModel onMicroschemaAssignEvent(MicroschemaContainer microschema, Assignment assigned);
+
 }

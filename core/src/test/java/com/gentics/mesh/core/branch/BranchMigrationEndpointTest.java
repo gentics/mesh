@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.branch;
 
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -26,10 +26,10 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.job.JobListResponse;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -143,7 +143,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 		// The second job should fail because the branch has already been migrated.
 		String jobUuidB = requestBranchMigration(newBranch);
 		JobListResponse response = triggerAndWaitForJob(jobUuidB, FAILED);
-		List<MigrationStatus> status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
+		List<JobStatus> status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
 		assertThat(status).contains(COMPLETED, FAILED);
 
 	}
@@ -159,7 +159,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 			triggerAndWaitForJob(requestBranchMigration(newestBranch), FAILED);
 
 			JobListResponse response = triggerAndWaitForJob(requestBranchMigration(newBranch), COMPLETED);
-			List<MigrationStatus> status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
+			List<JobStatus> status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
 			assertThat(status).contains(FAILED, COMPLETED);
 
 			response = triggerAndWaitForJob(requestBranchMigration(newestBranch), COMPLETED);

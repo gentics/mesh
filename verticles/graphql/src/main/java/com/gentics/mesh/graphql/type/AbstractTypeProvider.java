@@ -91,6 +91,15 @@ public abstract class AbstractTypeProvider {
 		return getLanguageArgument(env, (List<String>) null);
 	}
 
+	public String getSingleLanguageArgument(DataFetchingEnvironment env) {
+		String argument = env.getArgument("lang");
+		if (argument != null) {
+			return argument;
+		} else {
+			return Mesh.mesh().getOptions().getDefaultLanguage();
+		}
+	}
+
 	/**
 	 * Generate a language fallback list and utilize any existing language fallback list from the given content.
 	 * 
@@ -103,8 +112,8 @@ public abstract class AbstractTypeProvider {
 	}
 
 	/**
-	 * Generate a language fallback list and utilize the given container language. 
-	 * Prefer the language of the container for the fallback. 
+	 * Generate a language fallback list and utilize the given container language. Prefer the language of the container for the fallback.
+	 * 
 	 * @param env
 	 * @param source
 	 * @return
@@ -162,6 +171,22 @@ public abstract class AbstractTypeProvider {
 		return arg.build();
 	}
 
+	public GraphQLArgument createSingleLanguageTagArg(boolean withDefaultLang) {
+
+		// #lang
+		String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
+		graphql.schema.GraphQLArgument.Builder arg = newArgument()
+			.name("lang")
+			.type(GraphQLString)
+			.description("Language tag to filter by.");
+
+		if (withDefaultLang) {
+			arg.defaultValue(defaultLanguage);
+		}
+
+		return arg.build();
+	}
+
 	/**
 	 * Return a new argument for the uuid.
 	 * 
@@ -175,7 +200,8 @@ public abstract class AbstractTypeProvider {
 	/**
 	 * Return a new argument for a list of uuids.
 	 *
-	 * @param description The new arguments description
+	 * @param description
+	 *            The new arguments description
 	 * @return A new argument for a list of uuids
 	 */
 	public GraphQLArgument createUuidsArg(String description) {
@@ -305,7 +331,8 @@ public abstract class AbstractTypeProvider {
 	 * @param filterArgument
 	 * @return
 	 */
-	protected <T extends MeshCoreVertex<? extends RestModel, T>> GraphQLFieldDefinition newPagingSearchField(String name, String description, Function<GraphQLContext, RootVertex<T>> rootProvider,
+	protected <T extends MeshCoreVertex<? extends RestModel, T>> GraphQLFieldDefinition newPagingSearchField(String name, String description,
+		Function<GraphQLContext, RootVertex<T>> rootProvider,
 		String pageTypeName, SearchHandler<?, ?> searchHandler, StartFilter<T, Map<String, ?>> filterProvider) {
 		Builder fieldDefBuilder = newFieldDefinition()
 			.name(name)

@@ -57,7 +57,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	 *            Query parameters which will form the complete query string
 	 */
 	public LocalActionContextImpl(MeshAuthUser user, Class<? extends T> classOfResponse,
-			ParameterProvider... requestParameters) {
+		ParameterProvider... requestParameters) {
 		this.query = getQuery(requestParameters);
 		this.user = user;
 		this.classOfResponse = classOfResponse;
@@ -243,6 +243,11 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	@Override
 	public void setWebrootResponseType(String type) {
 		// Not supported
+	}
+
+	@Override
+	public boolean isPurgeAllowed() {
+		return true;
 	}
 
 }

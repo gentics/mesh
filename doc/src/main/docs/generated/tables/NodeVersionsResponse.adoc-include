@@ -1,0 +1,40 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| versions.additionalProperties.items.branchRoot
+| true
+| boolean
+| Is the version used as a root version in another branch?
+
+| versions.additionalProperties.items.created
+| true
+| string
+| ISO8601 formatted created date string.
+
+| versions.additionalProperties.items.creator
+| true
+| object
+| User reference of the creator of the element.
+
+| versions.additionalProperties.items.draft
+| true
+| boolean
+| Is the content a draft version?
+
+| versions.additionalProperties.items.published
+| true
+| boolean
+| Is the content published version?
+
+| versions.additionalProperties.items.version
+| true
+| string
+| Version of the content.
+
+|======

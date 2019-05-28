@@ -10,6 +10,7 @@ import javax.script.ScriptEngine;
 
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.handler.TypeConverter;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
@@ -65,7 +66,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 * @throws IOException
 	 */
 	protected void prepareMigration(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion,
-			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Set<String> touchedFields) throws IOException {
+		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Set<String> touchedFields) throws IOException {
 		SchemaChange<?> change = fromVersion.getNextChange();
 		while (change != null) {
 			String migrationScript = change.getMigrationScript();
@@ -105,8 +106,8 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 * @throws Exception
 	 */
 	protected <T extends FieldContainer> void migrate(NodeMigrationActionContextImpl ac, GraphFieldContainer container, RestModel restModel,
-			GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> newVersion, Set<String> touchedFields,
-			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Class<T> clazz) throws Exception {
+		GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> newVersion, Set<String> touchedFields,
+		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Class<T> clazz) throws Exception {
 
 		// Remove all touched fields (if necessary, they will be readded later)
 		container.getFields().stream().filter(f -> touchedFields.contains(f.getFieldKey())).forEach(f -> f.removeField(container));
@@ -145,7 +146,8 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	}
 
 	@ParametersAreNonnullByDefault
-	protected <T> List<Exception> migrateLoop(Iterable<T> containers, EventCauseInfo cause, MigrationStatusHandler status, TriConsumer<EventQueueBatch, T, List<Exception>> migrator) {
+	protected <T> List<Exception> migrateLoop(Iterable<T> containers, EventCauseInfo cause, MigrationStatusHandler status,
+		TriConsumer<EventQueueBatch, T, List<Exception>> migrator) {
 		// Iterate over all containers and invoke a migration for each one
 		long count = 0;
 		List<Exception> errorsDetected = new ArrayList<>();
@@ -188,6 +190,29 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 		log.info("Migration of " + count + " containers done..");
 		log.info("Encountered {" + errorsDetected.size() + "} errors during node migration.");
 		return errorsDetected;
+	}
+
+	/**
+	 * Invoke the post migration purge for the containers.
+	 * 
+	 * @param container
+	 *            Draft container. May also be published container
+	 * @param oldPublished
+	 *            Optional published container
+	 */
+	protected void postMigrationPurge(NodeGraphFieldContainer container, NodeGraphFieldContainer oldPublished) {
+
+		// The purge operation was suppressed before. We need to invoke it now
+		// Purge the old publish container if it did not match the draft container. In this case we need to purge the published container dedicatedly.
+		if (oldPublished != null && !oldPublished.equals(container) && oldPublished.isAutoPurgeEnabled() && oldPublished.isPurgeable()) {
+			log.debug("Removing old published container {" + oldPublished.getUuid() + "}");
+			oldPublished.purge();
+		}
+		// Now we can purge the draft container (which may also be the published container)
+		if (container.isAutoPurgeEnabled() && container.isPurgeable()) {
+			log.debug("Removing source container {" + container.getUuid() + "}");
+			container.purge();
+		}
 	}
 
 	/**

@@ -1,5 +1,42 @@
 package com.gentics.mesh.core.data.container.impl;
 
+import static com.gentics.mesh.core.data.GraphFieldContainerEdge.BRANCH_UUID_KEY;
+import static com.gentics.mesh.core.data.GraphFieldContainerEdge.EDGE_TYPE_KEY;
+import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_INDEX_NAME;
+import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_URLFIELD_INDEX_NAME;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNPUBLISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import org.apache.commons.collections.CollectionUtils;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
@@ -38,6 +75,7 @@ import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -47,6 +85,7 @@ import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.ETag;
+import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UniquenessUtil;
 import com.gentics.mesh.util.VersionNumber;
@@ -54,44 +93,9 @@ import com.google.common.base.Equivalence;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.syncleus.ferma.traversals.EdgeTraversal;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.collections.CollectionUtils;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import static com.gentics.mesh.core.data.GraphFieldContainerEdge.BRANCH_UUID_KEY;
-import static com.gentics.mesh.core.data.GraphFieldContainerEdge.EDGE_TYPE_KEY;
-import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_INDEX_NAME;
-import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_URLFIELD_INDEX_NAME;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNPUBLISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
-import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
-import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 /**
  * @see NodeGraphFieldContainer
@@ -457,7 +461,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public NodeGraphFieldContainer getPreviousVersion() {
-		return in(HAS_VERSION).has(NodeGraphFieldContainerImpl.class).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
+		return in(HAS_VERSION).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
 	}
 
 	@Override
@@ -768,6 +772,49 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		Project project = node.getProject();
 		model.setProject(project.transformToReference());
 		return model;
+	}
+
+	@Override
+	public VersionInfo transformToVersionInfo(InternalActionContext ac) {
+		String branchUuid = ac.getBranch().getUuid();
+		VersionInfo info = new VersionInfo();
+		info.setVersion(getVersion().getFullVersion());
+		info.setCreated(getLastEditedDate());
+		info.setCreator(getEditor().transformToReference());
+		info.setPublished(isPublished(branchUuid));
+		info.setDraft(isDraft(branchUuid));
+		info.setBranchRoot(isInitial());
+		return info;
+	}
+
+	@Override
+	public boolean isPurgeable() {
+		// The container is purgeable if no edge (publish, draft, initial) exists to its node.
+		return !inE(HAS_FIELD_CONTAINER).hasNext();
+	}
+
+	@Override
+	public boolean isAutoPurgeEnabled() {
+		SchemaContainerVersion schema = getSchemaContainerVersion();
+		return schema.isAutoPurgeEnabled();
+	}
+
+	@Override
+	public void purge(BulkActionContext bac) {
+		if (log.isDebugEnabled()) {
+			log.debug("Purging container {" + getUuid() + "} for version {" + getVersion() + "}");
+		}
+		// Link the previous to the next to isolate the old container
+		NodeGraphFieldContainer beforePrev = getPreviousVersion();
+		for (NodeGraphFieldContainer afterPrev : getNextVersions()) {
+			beforePrev.setNextVersion(afterPrev);
+		}
+		delete(bac, false);
+	}
+
+	@Override
+	public TraversalResult<NodeGraphFieldContainer> versions() {
+		return new TraversalResult<>(StreamUtil.untilNull(() -> this, NodeGraphFieldContainer::getPreviousVersion));
 	}
 
 }

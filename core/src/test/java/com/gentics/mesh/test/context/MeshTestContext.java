@@ -437,17 +437,15 @@ public class MeshTestContext extends TestWatcher {
 		}
 
 		if (settings.useKeycloak()) {
-			keycloak = new KeycloakContainer()
-				.withRealmFromClassPath("/keycloak/realm.json");
+			keycloak = new KeycloakContainer("/keycloak/realm.json").waitingFor(Wait.forHttp("/auth/realms/master-test"));
 			if (!keycloak.isRunning()) {
 				keycloak.start();
 			}
-			keycloak.waitingFor(Wait.forListeningPort());
 			OAuth2Options oauth2Options = meshOptions.getAuthenticationOptions().getOauth2();
 			oauth2Options.setEnabled(true);
 
 			OAuth2ServerConfig realmConfig = new OAuth2ServerConfig();
-			realmConfig.setAuthServerUrl("http://localhost:" + keycloak.getFirstMappedPort() + "/auth");
+			realmConfig.setAuthServerUrl("http://localhost:" + keycloak.getMappedPort(8080) + "/auth");
 			realmConfig.setRealm("master-test");
 			realmConfig.setSslRequired("external");
 			realmConfig.setResource("mesh");

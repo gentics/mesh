@@ -65,6 +65,10 @@ public class SchemaModelImpl implements SchemaModel {
 	@JsonPropertyDescription("List of schema fields")
 	private List<FieldSchema> fields = new ArrayList<>();
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Auto purge flag of the schema. Controls whether contents of this schema should create new versions.")
+	private Boolean autoPurge;
+
 	@Override
 	public String getVersion() {
 		return version;
@@ -161,6 +165,17 @@ public class SchemaModelImpl implements SchemaModel {
 	@Override
 	public SchemaModelImpl setElasticsearch(JsonObject elasticsearch) {
 		this.elasticsearch = elasticsearch;
+		return this;
+	}
+
+	@Override
+	public Boolean getAutoPurge() {
+		return autoPurge;
+	}
+
+	@Override
+	public SchemaModelImpl setAutoPurge(Boolean autoPurge) {
+		this.autoPurge = autoPurge;
 		return this;
 	}
 

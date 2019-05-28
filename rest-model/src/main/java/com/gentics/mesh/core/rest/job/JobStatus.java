@@ -1,6 +1,6 @@
-package com.gentics.mesh.core.rest.admin.migration;
+package com.gentics.mesh.core.rest.job;
 
-public enum MigrationStatus {
+public enum JobStatus {
 
 	/**
 	 * Global status which indicates that no migration is currently running

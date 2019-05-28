@@ -1,6 +1,9 @@
 package com.gentics.mesh.core.data.job;
 
+import java.time.ZonedDateTime;
+
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -54,6 +57,24 @@ public interface JobRoot extends RootVertex<Job> {
 	 * @return
 	 */
 	Job enqueueBranchMigration(User creator, Branch branch);
+
+	/**
+	 * Enqueue a project version purge job that is limited to the given date.
+	 * 
+	 * @param user
+	 * @param project
+	 * @param before
+	 * @return
+	 */
+	Job enqueueVersionPurge(User user, Project project, ZonedDateTime before);
+
+	/**
+	 * Enqueue a project version purge job.
+	 * @param user
+	 * @param project
+	 * @return
+	 */
+	Job enqueueVersionPurge(User user, Project project);
 
 	/**
 	 * Process all remaining jobs.

@@ -262,6 +262,11 @@
 | resamplefilter
 | Configure the filter that is used when resizing images. Default: LANCZOS
 
+| contentOptions.autoPurge
+| false
+| boolean
+| Flag which controls the global setting for the auto purge mechanism. The setting can be overriden by the schema &#x27;autoPurge&#x27; flag. Default: true
+
 | tempDirectory
 | false
 | string

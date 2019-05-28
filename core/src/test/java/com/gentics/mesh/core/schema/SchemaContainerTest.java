@@ -179,7 +179,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 			assertFalse(role().hasPermission(GraphPermission.CREATE_PERM, newContainer));
 			getRequestUser().addCRUDPermissionOnRole(meshRoot().getSchemaContainerRoot(), GraphPermission.CREATE_PERM, newContainer);
 			assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new schema container.", role().hasPermission(
-					GraphPermission.CREATE_PERM, newContainer));
+				GraphPermission.CREATE_PERM, newContainer));
 		}
 
 	}
@@ -198,7 +198,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 		try (Tx tx = tx()) {
 			assertNotNull(getSchemaContainer().getLatestVersion().getSchema());
 			assertEquals("The schema container and schema rest model version must always be in sync", getSchemaContainer().getLatestVersion()
-					.getVersion(), getSchemaContainer().getLatestVersion().getSchema().getVersion());
+				.getVersion(), getSchemaContainer().getLatestVersion().getSchema().getVersion());
 		}
 	}
 

@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.graphql;
 
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -66,6 +66,6 @@ public class GraphQLEndpointBranchTest extends AbstractMeshTest {
 		request.setLatest(latest);
 		waitForJobs(() -> {
 			call(() -> client().createBranch(PROJECT_NAME, request));
-		}, MigrationStatus.COMPLETED, 1);
+		}, JobStatus.COMPLETED, 1);
 	}
 }
