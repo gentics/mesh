@@ -3,6 +3,8 @@ package com.gentics.mesh.core.endpoint.project;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_VERSION_PURGE_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_VERSION_PURGE_START;
 import static com.gentics.mesh.example.ExampleUuids.PROJECT_DEMO_UUID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
@@ -19,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.ProjectPurgeParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
@@ -50,13 +53,16 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 		addReadHandler();
 		addUpdateHandler();
 		addDeleteHandler();
+
+		// Version purge
+		addVersionPurgeHandler();
 	}
 
 	private void addUpdateHandler() {
 		InternalEndpointRoute updateEndpoint = createRoute();
 		updateEndpoint.path("/:projectUuid");
 		updateEndpoint
-				.description("Update the project with the given uuid. The project is created if no project with the specified uuid could be found.");
+			.description("Update the project with the given uuid. The project is created if no project with the specified uuid could be found.");
 		updateEndpoint.addUriParameter("projectUuid", "Uuid of the project.", PROJECT_DEMO_UUID);
 		updateEndpoint.method(POST);
 		updateEndpoint.consumes(APPLICATION_JSON);
@@ -135,6 +141,23 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("projectUuid");
 			crudHandler.handleDelete(ac, uuid);
+		});
+	}
+
+	private void addVersionPurgeHandler() {
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.path("/:projectUuid/maintenance/purge");
+		endpoint.addUriParameter("projectUuid", "Uuid of the project.", PROJECT_DEMO_UUID);
+		endpoint.method(POST);
+		endpoint.description("Invoke a version purge of the project.");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.addQueryParameters(ProjectPurgeParametersImpl.class);
+		endpoint.exampleResponse(OK, "Project versions purge job added.");
+		endpoint.events(PROJECT_VERSION_PURGE_FINISHED, PROJECT_VERSION_PURGE_START);
+		endpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = ac.getParameter("projectUuid");
+			crudHandler.handlePurge(ac, uuid);
 		});
 	}
 }

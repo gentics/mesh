@@ -1,12 +1,12 @@
 package com.gentics.mesh.core.data.branch.impl;
 
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.UNKNOWN;
+import static com.gentics.mesh.core.rest.job.JobStatus.UNKNOWN;
 
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.branch.BranchVersionEdge;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.core.rest.job.JobStatus;
 
 /**
  * Abstract implementation for {@link BranchMicroschemaEdgeImpl} and {@link BranchSchemaEdgeImpl}.
@@ -14,17 +14,17 @@ import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 public abstract class AbstractVersionEdge extends MeshEdgeImpl implements BranchVersionEdge {
 
 	@Override
-	public void setMigrationStatus(MigrationStatus status) {
+	public void setMigrationStatus(JobStatus status) {
 		setProperty(MIGRATION_STATUS_PROPERTY_KEY, status.name());
 	}
 
 	@Override
-	public MigrationStatus getMigrationStatus() {
+	public JobStatus getMigrationStatus() {
 		String status = getProperty(MIGRATION_STATUS_PROPERTY_KEY);
 		if (status == null) {
 			return UNKNOWN;
 		}
-		return MigrationStatus.valueOf(status);
+		return JobStatus.valueOf(status);
 	}
 
 	@Override

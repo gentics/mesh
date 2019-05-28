@@ -1,7 +1,10 @@
 package com.gentics.mesh.assertj.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import com.gentics.mesh.assertj.AbstractMeshAssert;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -58,6 +61,21 @@ public class SchemaResponseAssert extends AbstractMeshAssert<SchemaResponseAsser
 		matches(storedSchema);
 		SchemaContainer container = version.getSchemaContainer();
 		matches(container);
+		return this;
+	}
+
+	public SchemaResponseAssert autoPurgeIsEnabled() {
+		assertTrue("We expected the schema auto purge flag to be set to true.", actual.getAutoPurge());
+		return this;
+	}
+
+	public SchemaResponseAssert autoPurgeIsNotSet() {
+		assertNull("We expected the schema auto purge flag not to be set.", actual.getAutoPurge());
+		return this;
+	}
+
+	public SchemaResponseAssert isAutoPurgeDisabled() {
+		assertFalse("We expected the schema auto purge flag to be set to false.", actual.getAutoPurge());
 		return this;
 	}
 

@@ -17,6 +17,7 @@ import com.gentics.mesh.core.endpoint.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.dagger.module.BindModule;
 import com.gentics.mesh.dagger.module.MeshModule;
@@ -84,6 +85,8 @@ public interface MeshComponent {
 	BranchMigrationHandler branchMigrationHandler();
 
 	MicronodeMigrationHandler micronodeMigrationHandler();
+
+	ProjectVersionPurgeHandler projectVersionPurgeHandler();
 
 	MeshLocalClientImpl meshLocalClientImpl();
 

@@ -53,6 +53,7 @@ import org.junit.Test;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import io.reactivex.Observable;
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Branch;
@@ -1296,6 +1297,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadNodeVersionForBranch() {
+		disableAutoPurge();
+
 		Node node = folder("2015");
 		String uuid = tx(() -> node.getUuid());
 		Branch newBranch = createBranch("newbranch", true);

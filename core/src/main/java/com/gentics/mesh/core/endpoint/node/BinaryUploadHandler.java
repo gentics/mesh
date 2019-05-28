@@ -354,6 +354,10 @@ public class BinaryUploadHandler extends AbstractHandler {
 					newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
 				}
 
+				if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
+					latestDraftVersion.purge();
+				}
+
 				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
 			});
 			return node.transformToRestSync(ac, 0);
@@ -366,7 +370,8 @@ public class BinaryUploadHandler extends AbstractHandler {
 	 * 
 	 * @param upload
 	 *            Upload to process
-	 * @param hash SHA512 sum of the upload
+	 * @param hash
+	 *            SHA512 sum of the upload
 	 * @return Consumers which modify the graph field
 	 */
 	private Observable<Consumer<BinaryGraphField>> postProcessUpload(FileUpload upload, String hash) {

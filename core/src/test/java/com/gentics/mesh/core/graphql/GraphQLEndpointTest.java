@@ -171,7 +171,8 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Arrays.asList("filtering/users", true, "draft"),
 			Arrays.asList("filtering/groups", true, "draft"),
 			Arrays.asList("filtering/roles", true, "draft"),
-			Arrays.asList("node/breadcrumb-root", true, "draft")
+			Arrays.asList("node/breadcrumb-root", true, "draft"),
+			Arrays.asList("node/versionslist", true, "draft")
 		)
 		// Make sure all testData entries have four parts.
 		.map(data -> data.toArray(new Object[4])).collect(Collectors.toList());
@@ -217,6 +218,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			schemaContainer.setUuid(FOLDER_SCHEMA_UUID);
 			SchemaModel schema = schemaContainer.getLatestVersion().getSchema();
 			schema.setUrlFields("niceUrl");
+			schema.setAutoPurge(true);
 			NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
 			nodeFieldSchema.setName("nodeRef");
 			nodeFieldSchema.setLabel("Some label");
@@ -445,7 +447,6 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		GraphQLResponse response = call(
 			() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName), new VersioningParametersImpl().setVersion(version)));
 		JsonObject jsonResponse = new JsonObject(response.toJson());
-
 		if (assertion == null) {
 			assertThat(jsonResponse).compliesToAssertions(queryName);
 		} else {

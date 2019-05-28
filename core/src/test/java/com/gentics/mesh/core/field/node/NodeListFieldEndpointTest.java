@@ -110,6 +110,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
+		disableAutoPurge();
+
 		Node node = folder("2015");
 		Node targetNode = folder("news");
 		Node targetNode2 = folder("deals");
@@ -163,6 +165,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		disableAutoPurge();
+
 		Node targetNode = folder("news");
 		Node targetNode2 = folder("deals");
 

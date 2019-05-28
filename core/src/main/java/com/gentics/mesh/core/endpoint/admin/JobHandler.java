@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.endpoint.admin;
 
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.UNKNOWN;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
+import static com.gentics.mesh.core.rest.job.JobStatus.UNKNOWN;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -22,9 +22,9 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -149,7 +149,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 			JobRoot root = boot.jobRoot();
 			Job job = root.loadObjectByUuidNoPerm(uuid, true);
 			db.tx(() -> {
-				MigrationStatus status = job.getStatus();
+				JobStatus status = job.getStatus();
 				if (status == FAILED || status == UNKNOWN) {
 					job.resetJob();
 				}

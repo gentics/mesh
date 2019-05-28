@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.endpoint.migration.branch;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +14,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BranchMigrationContext;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -23,6 +24,7 @@ import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.metric.MetricsService;
 
 import io.reactivex.Completable;
@@ -107,7 +109,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 			db.tx((tx) -> {
 
 				// Check whether the node already has an initial container and thus was already migrated
-				if (node.getGraphFieldContainersIt(newBranch, INITIAL).iterator().hasNext()) {
+				if (node.getGraphFieldContainersIt(newBranch, INITIAL).hasNext()) {
 					return;
 				}
 
@@ -116,11 +118,16 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 					node.setParentNode(newBranch.getUuid(), parent);
 				}
 
-				node.getGraphFieldContainersIt(oldBranch, DRAFT).forEach(container -> {
-					GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
-					initialEdge.setLanguageTag(container.getLanguageTag());
-					initialEdge.setType(INITIAL);
-					initialEdge.setBranchUuid(newBranch.getUuid());
+				TraversalResult<? extends NodeGraphFieldContainer> drafts = node.getGraphFieldContainersIt(oldBranch, DRAFT);
+				TraversalResult<? extends NodeGraphFieldContainer> published = node.getGraphFieldContainersIt(oldBranch, PUBLISHED);
+
+				// 1. Migrate draft containers first
+				drafts.forEach(container -> {
+					// We only need to set the initial edge if there are no published containers.
+					// Otherwise the initial edge will be set using the published container.
+					if (!published.hasNext()) {
+						setInitial(node, container, newBranch);
+					}
 
 					GraphFieldContainerEdgeImpl draftEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 					draftEdge.setLanguageTag(container.getLanguageTag());
@@ -136,7 +143,12 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 					batch.add(container.onUpdated(newBranch.getUuid(), DRAFT));
 				});
 
-				node.getGraphFieldContainersIt(oldBranch, PUBLISHED).forEach(container -> {
+				// 2. Migrate published containers
+				published.forEach(container -> {
+					// Set the initial edge for published containers since the published container may be an older version and created before the draft container was created.
+					// The initial edge should always point to the oldest container of either draft or published.
+					setInitial(node, container, newBranch);
+
 					GraphFieldContainerEdgeImpl publishEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 					publishEdge.setLanguageTag(container.getLanguageTag());
 					publishEdge.setType(PUBLISHED);
@@ -151,12 +163,23 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 					batch.add(container.onUpdated(newBranch.getUuid(), PUBLISHED));
 				});
 
-				// migrate tags
+				// Migrate tags
 				node.getTags(oldBranch).forEach(tag -> node.addTag(tag, newBranch));
 			});
 		} catch (Exception e1) {
 			log.error("Error while handling node {" + node.getUuid() + "} during schema migration.", e1);
 			errorsDetected.add(e1);
 		}
+	}
+
+	/**
+	 * Create a new initial edge between node and container for the given branch.
+	 */
+	private void setInitial(Node node, NodeGraphFieldContainer container, Branch branch) {
+		GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container,
+			GraphFieldContainerEdgeImpl.class);
+		initialEdge.setLanguageTag(container.getLanguageTag());
+		initialEdge.setBranchUuid(branch.getUuid());
+		initialEdge.setType(INITIAL);
 	}
 }

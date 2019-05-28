@@ -3,7 +3,6 @@ package com.gentics.mesh.core.branch;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchListResponse;
 import com.gentics.mesh.core.rest.branch.BranchReference;
@@ -21,6 +20,7 @@ import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.event.project.ProjectBranchEventModel;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
@@ -79,11 +79,11 @@ import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_LATEST_BRANCH_UPDATED
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_ASSIGN;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_START;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.INITIAL_BRANCH_NAME;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -1330,7 +1330,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			BranchCreateRequest request = new BranchCreateRequest();
 			request.setName("branch1");
 			call(() -> client().createBranch(PROJECT_NAME, request));
-		}, MigrationStatus.COMPLETED, 2);
+		}, JobStatus.COMPLETED, 2);
 		NodeResponse originalNode = call(
 			() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(INITIAL_BRANCH_NAME)));
 		NodeResponse migratedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));

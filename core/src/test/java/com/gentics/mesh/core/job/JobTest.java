@@ -18,8 +18,8 @@ import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.job.impl.BranchMigrationJobImpl;
 import com.gentics.mesh.core.data.job.impl.MicronodeMigrationJobImpl;
 import com.gentics.mesh.core.data.job.impl.NodeMigrationJobImpl;
-import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
@@ -41,7 +41,7 @@ public class JobTest extends AbstractMeshTest {
 			//assertNotNull("The creation timestamp was not set.", job.getCreationTimestamp());
 			assertNotNull("The uuid of the job was not set.", job.getUuid());
 			assertEquals("The job branch information did not match.", initialBranchUuid(), job.getBranch().getUuid());
-			assertEquals("The job type did not match.", MigrationType.branch, job.getType());
+			assertEquals("The job type did not match.", JobType.branch, job.getType());
 			assertNull("The job error detail should be null since it has not yet been marked as failed.", job.getErrorDetail());
 			assertNull("The job error message should be null since it has not yet been marked as failed.", job.getErrorMessage());
 

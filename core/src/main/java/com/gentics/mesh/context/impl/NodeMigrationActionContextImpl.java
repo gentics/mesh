@@ -973,4 +973,10 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 		Objects.requireNonNull(toContainerVersion, "The target schema reference is missing in the context.");
 	}
 
+	@Override
+	public boolean isPurgeAllowed() {
+		// The purge operation is not allowed during schema migrations. Instead the purge will be executed after containers have been migrated.
+		return false;
+	}
+
 }

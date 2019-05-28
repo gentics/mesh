@@ -24,8 +24,32 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
-[[v0.33.2]]
-== 0.33.2 (TBD)
+[[v0.34.0]]
+== 0.34.0 (TBD)
+
+icon:bullhorn[] Versioning Enhancements
+
+[quote]
+____
+
+The versioning system has received various enhancements.
+
+link:{{< relref "features.asciidoc" >}}#auto-purge[Auto Purge]
+
+The auto purge feature will now automatically purge the previously no longer needed version of a content. You can control this behaviour using the `autoPurge` flag in the `mesh.yml` file.
+
+Additionally schema's may now contain a `autoPurge` flag to override the setting on a per schema basis.
+
+The documentation contains detailed information about how versioning can be controlled. 
+
+link:{{< relref "features.asciidoc" >}}#_listing_versions[Listing Versions]
+
+Versions of a node can now be listed via REST and GraphQL.
+
+link:{{< relref "features.asciidoc" >}}#_purging_versions[Purging Versions]
+
+Versions can now be purged across projects to reduce disk storage usage.
+____
 
 icon:check[] Java Rest Client: Fixed a bug that prevented automatic reconnection to the eventbus when it did not succeed immediately.
 

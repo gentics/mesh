@@ -91,6 +91,8 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
+		disableAutoPurge();
+
 		Node node = folder("2015");
 
 		MicronodeResponse field = new MicronodeResponse();
@@ -149,6 +151,8 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		disableAutoPurge();
+
 		MicronodeResponse field = new MicronodeResponse();
 		field.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
 		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));

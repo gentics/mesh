@@ -2,10 +2,10 @@ package com.gentics.mesh.core.data.job.impl;
 
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_MIGRATION_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_MIGRATION_START;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.STARTING;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
+import static com.gentics.mesh.core.rest.job.JobStatus.STARTING;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.Mesh;
@@ -17,10 +17,10 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
-import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
+import com.gentics.mesh.core.rest.job.JobType;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -38,7 +38,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 		database.addVertexType(BranchMigrationJobImpl.class, MeshVertexImpl.class);
 	}
 
-	public BranchMigrationMeshEventModel createEvent(MeshEvent event, MigrationStatus status) {
+	public BranchMigrationMeshEventModel createEvent(MeshEvent event, JobStatus status) {
 		BranchMigrationMeshEventModel model = new BranchMigrationMeshEventModel();
 		model.setEvent(event);
 
@@ -54,7 +54,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 	}
 
 	private BranchMigrationContext prepareContext() {
-		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.branch);
+		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), JobType.branch);
 		try {
 			return DB.get().tx(() -> {
 				BranchMigrationContextImpl context = new BranchMigrationContextImpl();

@@ -116,6 +116,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
+		disableAutoPurge();
 		Node node = folder("2015");
 
 		NodeGraphFieldContainer container = tx(() -> node.getGraphFieldContainer("en"));
@@ -205,6 +206,8 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		disableAutoPurge();
+
 		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
 		field.add(createItem("Max", "Böse"));
 		field.add(createItem("Moritz", "Böse"));

@@ -109,6 +109,8 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		disableAutoPurge();
+
 		String oldVersion;
 		Node target = folder("news");
 

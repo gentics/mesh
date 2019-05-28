@@ -43,6 +43,20 @@ public interface UpdateSchemaChange extends FieldSchemaContainerUpdateChange<Sch
 	Boolean getContainerFlag();
 
 	/**
+	 * Return the auto purge flag.
+	 * 
+	 * @return
+	 */
+	Boolean getAutoPurgeFlag();
+
+	/**
+	 * Set the auto purge flag.
+	 * 
+	 * @param flag
+	 */
+	void setAutoPurgeFlag(Boolean flag);
+
+	/**
 	 * Set the segmentField name.
 	 * 
 	 * @param fieldName

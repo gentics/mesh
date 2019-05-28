@@ -1,6 +1,6 @@
 package com.gentics.mesh.search.migration;
 
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -15,9 +15,9 @@ import java.util.List;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -83,7 +83,7 @@ public class NodeMigrationSearchTest extends AbstractNodeSearchEndpointTest {
 
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(schemaResponse.getUuid(), schemaUpdateRequest));
-		}, MigrationStatus.COMPLETED, 1);
+		}, JobStatus.COMPLETED, 1);
 
 		waitForSearchIdleEvent();
 

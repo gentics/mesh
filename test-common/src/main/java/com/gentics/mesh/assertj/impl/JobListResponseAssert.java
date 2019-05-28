@@ -8,9 +8,9 @@ import java.util.stream.Collectors;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.job.JobStatus;
 
 public class JobListResponseAssert extends AbstractAssert<JobListResponseAssert, JobListResponse> {
 
@@ -23,7 +23,7 @@ public class JobListResponseAssert extends AbstractAssert<JobListResponseAssert,
 	 * 
 	 * @return Fluent API
 	 */
-	public JobListResponseAssert listsAll(MigrationStatus status) {
+	public JobListResponseAssert listsAll(JobStatus status) {
 		for (JobResponse info : actual.getData()) {
 			assertEquals("Migration {" + info + "}", status, info.getStatus());
 		}

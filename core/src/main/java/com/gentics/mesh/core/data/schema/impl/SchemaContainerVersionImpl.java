@@ -16,6 +16,7 @@ import java.util.Spliterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -41,6 +42,8 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.etc.config.ContentConfig;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madlmigration.TraversalResult;
@@ -50,6 +53,8 @@ import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.VertexFrame;
 
 import io.reactivex.Single;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * @see SchemaContainerVersion
@@ -57,6 +62,8 @@ import io.reactivex.Single;
 public class SchemaContainerVersionImpl extends
 	AbstractGraphFieldSchemaContainerVersion<SchemaResponse, SchemaModel, SchemaReference, SchemaContainerVersion, SchemaContainer> implements
 	SchemaContainerVersion {
+
+	private static final Logger log = LoggerFactory.getLogger(SchemaContainerVersionImpl.class);
 
 	public static void init(Database database) {
 		database.addVertexType(SchemaContainerVersionImpl.class, MeshVertexImpl.class);
@@ -196,6 +203,7 @@ public class SchemaContainerVersionImpl extends
 
 	/**
 	 * Genereates branch unassign events for every assigned branch.
+	 * 
 	 * @return
 	 */
 	private Stream<BranchSchemaAssignEventModel> generateUnassignEvents() {
@@ -211,6 +219,25 @@ public class SchemaContainerVersionImpl extends
 	@Override
 	public MeshElementEventModel onUpdated() {
 		return getSchemaContainer().onUpdated();
+	}
+
+	@Override
+	public boolean isAutoPurgeEnabled() {
+		Boolean schemaAutoPurge = getSchema().getAutoPurge();
+		if (schemaAutoPurge == null) {
+			if (log.isDebugEnabled()) {
+				log.debug("No schema auto purge flag set. Falling back to mesh global setting");
+			}
+			MeshOptions options = Mesh.mesh().getOptions();
+			ContentConfig contentOptions = options.getContentOptions();
+			if (contentOptions != null) {
+				return contentOptions.isAutoPurge();
+			} else {
+				return true;
+			}
+		} else {
+			return schemaAutoPurge;
+		}
 	}
 
 }

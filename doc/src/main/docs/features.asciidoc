@@ -45,7 +45,7 @@ The ```segmentField``` is used to build the path of a specific node. According t
 
 image::../images/GenticsMesh-PrettyURL-Example.png[Gentics Mesh Example for Building Pretty URLs,role="img-responsive"]
 
-The ```path``` property as well as the ```languagesPath``` property (for available language variants) of a node can be queried using the ```/api/v1/projectName/nodes/:nodeUuid``` endpoint together with the query parameter ```resolveLinks```. Alternatively, the WebRoot API can be used ```/api/v1/:projectName/webroot/:path```
+The ```path``` property as well as the ```languagesPath``` property (for available contents) of a node can be queried using the ```/api/v1/projectName/nodes/:nodeUuid``` endpoint together with the query parameter ```resolveLinks```. Alternatively, the WebRoot API can be used ```/api/v1/:projectName/webroot/:path```
 For more details see the documentation on link:{{< relref "building-blocks.asciidoc" >}}#_node[node] and <<webroot,WebRoot API>>, respectively.
 
 You can also specify dedicated paths for nodes using the ```urlFields``` schema property. You can add string or string list fields to your schema and list them via the ```urlFields``` property. Gentics Mesh will utilize these fields in nodes in order to retrieve the node.
@@ -868,7 +868,7 @@ Using the WebRoot API it is possible to easily integrate Gentics Mesh with many 
 
 A WebRoot path may consist of multiple path segments, each corresponding to a node within the content tree. The ```segmentField``` property from the schema is used to determine the node's relevant field value.
 
-NOTE: Each segment of the URL must be URL-encoded. A node's language variants must provide different path segment in order to guarantee unique paths.
+NOTE: Each segment of the URL must be URL-encoded. A node's contents must provide different path segment in order to guarantee unique paths.
 
 ==== Fetch node with UUID
 
@@ -1318,9 +1318,9 @@ NOTE: The parser limit of documents also affects the metadata extraction. In-lin
 [[multilanguage]]
 == Multi-Language
 
-Gentics Mesh comes with multi-language support out of the box. In particular, a node serves as a container for one or more language variants. These language variants will store the actual content fields.
+Gentics Mesh comes with multi-language support out of the box. In particular, a node serves as a container for one or more contents. These contents will store the actual content fields.
 
-You can query individual language variants by appending the ```?lang``` query parameter. The ```language``` json property within an update or create request will be used to identify which language variant should be created or updated.
+You can query individual contents by appending the ```?lang``` query parameter. The ```language``` json property within an update or create request will be used to identify which language variant should be created or updated.
 
 Requests for nodes should contain the requested languages (as comma separated list)as query parameter:
 
@@ -1883,24 +1883,22 @@ NOTE: Branches can not be deleted. Hence, permissions for deleting do not apply.
 | Can update the branch               | ```/api/v1/:projectName/branches/:uuid```  | Update         | false 
 |======
 
-
+[[versioning]]
 == Versioning
 
-In order to understand the concept of versioning in Gentics Mesh it is important to remember that nodes are containers for language variants (see <<multilanguage, Multi-Language>>). The language variant of a node contains the fields and thus stores all the content.
+In order to understand the concept of versioning in Gentics Mesh it is important to remember that nodes are containers for language specific contents (see <<multilanguage, Multi-Language>>). The content of a node contains the fields and thus stores all the content.
 
-NOTE: Versioning within Gentics Mesh only applies to *language variants* and their referenced fields. Other elements such as users, groups, roles, permissions and even nodes are not versioned.
+NOTE: Versioning within Gentics Mesh only applies to *contents* and their referenced fields. Other elements such as users, groups, roles, permissions are not versioned.
 
 Various content management tasks will have different effects for versioning in Gentics Mesh. Some of them create versions, others don't. Following, we go through all of these actions which involve versioning.
 
-NOTE: At the moment it is not possible to delete older versions.
-
 === Node Creation
 
-Once a node has been created the initial version 0.1 will be assigned to its language variant.
+Once a node has been created the initial version 0.1 will be assigned to its content.
 
 === Node Updates
 
-Updating a node's language variant may create a minor version 0.2 of that language variant if changes have been detected within the posted request fields.
+Updating a node's content may create a minor version 0.2 of that content if changes have been detected within the posted request fields.
 
 *No Locks:*
 
@@ -1913,20 +1911,20 @@ Gentics Mesh will check whether new versions have been created in the meanwhile.
 The detected changes will be compared automatically in order to determine whether the current update request causes a conflict with a newer edit request.
 Gentics Mesh will return a response which contains information about the conflict in those cases. Other update operations which do not cause a conflict will be stored and the changed fields will be updated.
 
-The latest version which was created using an update request is called the ```draft``` version. Only a single draft version per language variant exists.
+The latest version which was created using an update request is called the ```draft``` version. Only a single draft version per content exists.
 
 === Publishing Nodes
 
-Node language variants can be published and taken offline. This is particularly useful if you want to first work on a draft, then review it and publish it at a later point in time.
+Node contents can be published and taken offline. This is particularly useful if you want to first work on a draft, then review it and publish it at a later point in time.
 
-Publishing requires a ```POST``` request on the ```/api/v1/:projectName/nodes/:uuid/published``` endpoint, which will publish all language variants of the node.
-It is also possible to just publish specific language variants with dedicated ```POST``` requests on ```/api/v1/:projectName/nodes/:uuid/languages/:languageTag/published```.
+Publishing requires a ```POST``` request on the ```/api/v1/:projectName/nodes/:uuid/published``` endpoint, which will publish all contents of the node.
+It is also possible to just publish specific contents with dedicated ```POST``` requests on ```/api/v1/:projectName/nodes/:uuid/languages/:languageTag/published```.
 
 Gentics Mesh will automatically create a new major version when publishing a node language variant (e.g.: 1.0, 2.0). The ```draft``` reference will also be updated to point to the major version, e.g. 1.0.
 
 Furthermore, it is possible to retrieve information about the published status via a ```GET``` request on ```/api/v1/:/nodes/:uuid/published```.
 
-NOTE: Publishing node language variants requires the user to be assigned to a group with a role which provides the ```publish``` permission.
+NOTE: Publishing node contents requires the user to be assigned to a group with a role which provides the ```publish``` permission.
 
 [source,json]
 ----
@@ -1937,10 +1935,10 @@ NOTE: It is not possible to publish a specific version. Publish always affects t
 
 === Taking Nodes Offline
 
-Similarly to publishing, the language variants of a node can be taken offline via a ```DELETE``` request on ```/api/v1/:projectName/nodes/:uuid/published```.
+Similarly to publishing, the contents of a node can be taken offline via a ```DELETE``` request on ```/api/v1/:projectName/nodes/:uuid/published```.
 E.g., taking a specific node language variant with version 1.0 offline using ```DELETE /api/v1/:projectName/nodes/:uuid/languages/:languageTag/published``` will just change the node's publish state. Version 1.0 will still be available.
 
-NOTE: Taking node language variants offline requires the user have ```publish``` permissions on the node.
+NOTE: Taking node contents offline requires the user have ```publish``` permissions on the node.
 
 ===  Reading Nodes
 
@@ -1950,9 +1948,89 @@ IMPORTANT: Gentics Mesh by default returns the ```draft``` version of nodes. Thi
 
 NOTE: Reading published nodes requires the user to be assigned to a role which grants the ```readPublished``` permission.
 
+=== Listing versions
+
+Versions of a node can be listed via the ```/api/v1/:projectName/nodes/:uuid/versions``` endpoint.
+
+```
+"versions" : {
+    "de" : [ {
+      "creator" : {
+        "firstName" : "Joe",
+        "lastName" : "Doe",
+        "uuid" : "307cf98b66424db5bcf98b66424db5aa"
+      },
+      "created" : "2019-05-22T19:04:10Z",
+      "version" : "2.0",
+      "draft" : true,
+      "published" : true,
+      "branchRoot" : false
+    }
+    …
+  } ]
+}
+```
+
+A version can be used as a `draft` version. This version can also be referenced as a `published` version when published. The `branchRoot` flag indicates whether the version is being referenced as root version in a branch. All these three different kind of versions are not purgeable. Versions which have been made in between can be purged.
+
+NOTE: Versions are language specific. This means that each language of a node has its dedicated version history.
+
+[[auto-purge]]
+=== Auto Purge
+
+The auto purge mechanism can be used to control the versioning mechanism. The mechanism will automatically purge the previously used version when a new version gets created. This way the version history of a node can be kept small. This will reduce disk usage and reduce the complexity of the Graph that stores the versions. Actions such as _update node_, _upload binary_, _publish node_, _take node offline_ create versions. The auto purge feature can be controlled by a global default setting which can be fine tuned on a per-schema level.
+
+[caption=]
+.Auto Purge settings
+[options="header"]
+|======
+| Defaut setting | Schema setting | Auto Purge
+| true           | null           | Enabled
+| true           | false          | Disabled
+| false          | true           | Enabled
+| false          | false          | Disabled
+|======
+
+NOTE: Enabling auto purge mechanism will not stop version numbers to increase. Instead the mechanism will automatically purge the previously used version (if possible).
+
+NOTE: Setting the auto purge flag in a schema will not automatically purge any version. The versions will only be purged when content gets modified.
+
+==== Default Setting
+
+The global `autoPurge` flag from the `mesh.yml` configuration file will be used for schemas which don't have `autoPurge` property set. Setting the `autoPurge` property will thus also allow to override the default configuration in the `mesh.yml`.
+
+.mesh.yml
+[source,yaml]
+----
+content:
+  autoPurge: true
+----
+
+==== Schema Setting
+
+Versioning can be controlled on a *per-schema* basis. The `autoPurge` property within the schema controls whether additional versions for a content will be kept.
+
+The default behaviour can be configured via the environment variable `MESH_CONTENT_AUTO_PURGE` or the config file.
+
+=== Purging versions
+
+The `POST /api/v1/projects/:projectUuid/maintenance/purge` endpoint can be used to purge older versions from the system.
+
+When invoked a new job will be triggered which purges all possible content versions from the given project.
+
+The `?before` query parameter can be used to control what versions should be purged. 
+
+The call `POST /api/v1/projects/:projectUuid/maintenance/purge?before=2019-04-20T18:00Z` will thus only purge versions which are older than the given date. Omitting the parameter will purge all versions.
+
+Draft and publish versions will not be purged since they are still required. Additionally when the initial version of a node can also not be purged since it is bound to the _Branch_ of the node. Gentics Mesh requires this version to keep track of the branch starting point. The version lists endpoint will mark those versions using the `branchRoot` flag.
+
+The purge operation requires _admin_ role and _delete_ permissions on the project to be executed.
+
+NOTE: The version purge mechanism works independently from the auto purge mechanism.
+
 == Content Branches
 
-So far we learned that node language variants can be versioned and published. Additionally Mesh versioning provides a powerful concept we call `Branches`. A project branch is very similar to branches in a versioning control system.
+So far we learned that node contents can be versioned and published. Additionally Gentics Mesh versioning provides a powerful concept we call `Branches`. A project branch is very similar to branches in a versioning control system like Git or similar systems.
 
 Branches can be used to restructure your nodes and change the contents within a specific branch without affecting a different branch which provides a different structure/content.
 
@@ -1993,7 +2071,7 @@ A branch can be _renamed_ and new schema/microschema versions can be _assigned_ 
 
 Renaming is useful if you want to change your development branch to be the current production branch.
 
-Assigning schema versions to the branch via a ```PUT``` request to ```/api/v1/:projectName/branches/:uuid/schemas``` will automatically trigger a schema migration of the affected nodes language variants within the branch.
+Assigning schema versions to the branch via a ```PUT``` request to ```/api/v1/:projectName/branches/:uuid/schemas``` will automatically trigger a schema migration of the affected nodes contents within the branch.
 
 [source,json]
 ----
@@ -2008,9 +2086,9 @@ include::content/docs/api/request/api/v1/\{project\}/branches/\{branchUuid\}/mic
 ----
 
 All nodes which reference the branch via the updated schema version will automatically be migrated to use the newer schema version.
-Please note the started *schema migration* will be processed asynchronously and thus not all node language variants may be directly accessible within the scope of the branch.
+Please note the started *schema migration* will be processed asynchronously and thus not all node contents may be directly accessible within the scope of the branch.
 
-The migration will create new versions for the affected node language variants.
+The migration will create new versions for the affected node contents.
 
 NOTE: It is note worthy that updating a schema and thus creating new schema version will not automatically affect the branch. Each schema update created a new schema version. This new version must first be assigned to the branch.
 
@@ -2035,7 +2113,7 @@ NOTE: Taggings to nodes are not versioned.
 === Deleting Nodes
 
 Deleting nodes is also branch specific. Deleting a node via ```DELETE``` to ```/api/v1/:projectName/node/:uuid?branch=winter2016``` will delete the node and all its sub nodes from the _winter2016_ branch.
-The node will be completely removed from the system if no more language variants are referenced within any branch.
+The node will be completely removed from the system if no more contents are referenced within any branch.
 
 It is also possible to just delete a specific language variant via ```DELETE``` to ```/api/v1/:projectName/node/:uuid/languages/en?branch=winter2016``` from branch _winter2016_.
 

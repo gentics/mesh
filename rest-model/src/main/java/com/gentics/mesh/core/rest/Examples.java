@@ -3,7 +3,6 @@ package com.gentics.mesh.core.rest;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.event.branch.BranchMeshEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
@@ -12,6 +11,7 @@ import com.gentics.mesh.core.rest.event.branch.BranchTaggedEventModel;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
+import com.gentics.mesh.core.rest.event.job.ProjectVersionPurgeEventModel;
 import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
@@ -23,6 +23,7 @@ import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
 import com.gentics.mesh.core.rest.group.GroupReference;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
@@ -42,6 +43,14 @@ public final class Examples {
 	private Examples() {
 	}
 
+	public static ProjectVersionPurgeEventModel versionPurgeEvent() {
+		ProjectVersionPurgeEventModel model = new ProjectVersionPurgeEventModel();
+		model.setUuid(uuid1());
+		model.setName("demo");
+		model.setStatus(JobStatus.RUNNING);
+		return model;
+	}
+
 	public static SchemaMigrationMeshEventModel schemaMigrationEvent() {
 		SchemaMigrationMeshEventModel model = new SchemaMigrationMeshEventModel();
 		model.setUuid(uuid1());
@@ -49,7 +58,7 @@ public final class Examples {
 		model.setProject(projectRef());
 		model.setFromVersion(schemaRef("1"));
 		model.setToVersion(schemaRef("2"));
-		model.setStatus(MigrationStatus.RUNNING);
+		model.setStatus(JobStatus.RUNNING);
 		return model;
 	}
 
@@ -60,7 +69,7 @@ public final class Examples {
 		model.setProject(projectRef());
 		model.setFromVersion(microschemaRef("1"));
 		model.setToVersion(microschemaRef("2"));
-		model.setStatus(MigrationStatus.RUNNING);
+		model.setStatus(JobStatus.RUNNING);
 		return model;
 	}
 
@@ -69,7 +78,7 @@ public final class Examples {
 		model.setUuid(uuid1());
 		model.setBranch(branchRef());
 		model.setProject(projectRef());
-		model.setStatus(MigrationStatus.RUNNING);
+		model.setStatus(JobStatus.RUNNING);
 		return model;
 	}
 
@@ -78,7 +87,7 @@ public final class Examples {
 		model.setBranch(branchRef());
 		model.setProject(projectRef());
 		model.setSchema(schemaRef("1"));
-		model.setStatus(MigrationStatus.COMPLETED);
+		model.setStatus(JobStatus.COMPLETED);
 		return model;
 	}
 
@@ -87,7 +96,7 @@ public final class Examples {
 		model.setBranch(branchRef());
 		model.setProject(projectRef());
 		model.setSchema(microschemaRef("1"));
-		model.setStatus(MigrationStatus.COMPLETED);
+		model.setStatus(JobStatus.COMPLETED);
 		return model;
 	}
 

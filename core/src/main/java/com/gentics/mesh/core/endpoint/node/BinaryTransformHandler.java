@@ -243,6 +243,12 @@ public class BinaryTransformHandler extends AbstractHandler {
 				newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
 			}
 			String branchUuid = node.getProject().getBranchRoot().getLatestBranch().getUuid();
+
+			// Purge the old draft
+			if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
+				latestDraftVersion.purge();
+			}
+
 			batch.add(newDraftVersion.onCreated(branchUuid, DRAFT));
 			return node.transformToRestSync(ac, 0);
 		});

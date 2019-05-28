@@ -130,6 +130,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() throws IOException {
+		disableAutoPurge();
 		Node node = folder("2015");
 
 		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList("A", "B", "C"), Arrays.asList("C", "B", "A"), Collections.emptyList(),
@@ -173,6 +174,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		disableAutoPurge();
 		Node node = folder("2015");
 
 		HtmlFieldListImpl list = new HtmlFieldListImpl();
