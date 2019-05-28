@@ -25,7 +25,7 @@ title: Changelog
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 [[v0.34.0]]
-== 0.34.0 (TBD)
+== 0.34.0 (28.05.2019)
 
 icon:bullhorn[] Versioning Enhancements
 

@@ -62,7 +62,6 @@ stage("Setup Build Environment") {
 		instanceCap: 40,
 		label: 'mesh',
 		name: 'jenkins-slave-mesh',
-		namespace: 'default',
 		nodeSelector: 'jenkins_mesh_worker=true',
 		affinity: [
 			nodeAffinity: [
