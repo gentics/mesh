@@ -43,14 +43,25 @@ The schema we are using here is the vehicle schema. A vehicle the following fiel
 
 In this guide we will mainly focus on loading, creating and updating vehicle contents.
 
-=== Docker
+=== Setup
 
-We can quickly start-up a Gentics Mesh instance using docker. Alternativly we can also use `demo.getmesh.io` which will however be reset once a day.
+We can quickly start-up a Gentics Mesh instance using Docker. Alternativly we can also use `demo.getmesh.io` which will however be reset once a day.
 
 [source,bash]
 ----
 docker run -p 8080:8080 --rm gentics/mesh-demo:0.33.1
 ----
+
+Now lets set the base so we can reuse it in our examples:
+
+[source,bash]
+----
+export MESH_BASE="http://localhost:8080/api/v1"
+or
+export MESH_BASE="https://demo.getmesh.io/api/v1"
+----
+
+In this guide we only use `curl` and `jq` which is just used to increase readability.
 
 == Authentication
 
@@ -65,7 +76,7 @@ curl -X POST \
     "password":"admin"
     }' \ 
  -H "Content-Type: application/json" \
- https://demo.getmesh.io/api/v1/auth/login
+ $MESH_BASE/auth/login
 
 {
   "token" : "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6ImMyZTkyNTEzZjI3ODQwZDFhOTI1MTNmMjc4MjBkMWM3IiwiaWF0IjoxNTU4OTg3NjQxLCJleHAiOjE1NTg5OTEyNDF9.jOYDqTbaD1QMNWkI8Wu6llg82QXxiGi1A34qYZnUpMc"
@@ -82,7 +93,6 @@ Lets now set some environment variables so that the examples get easier to use i
 [source,bash]
 ----
 export MESH_TOKEN="<TOKEN FROM LOGIN>"
-export MESH_BASE="https://demo.getmesh.io/api/v1"
 ----
 
 .CURL Example
@@ -292,7 +302,6 @@ Now that we created the content we can also use the webroot endpoint to fetch it
 [source,bash]
 ----
 curl -X GET -H "Authorization: Bearer $MESH_TOKEN" \
- -H "Content-Type: application/json" \
  $MESH_BASE/demo/webroot/aircrafts/sr-71
 ----
 
@@ -360,10 +369,16 @@ curl -X POST -H "Authorization: Bearer $MESH_TOKEN" \
         }
     }' \
  -H "Content-Type: application/json" \
- $MESH_BASE/demo/nodes
+ $MESH_BASE/demo/nodes | jq ".uuid"
 ----
 
-Now we can upload an image to the binary field of the created node. We'll use the  binary endpoint `/api/v1/demo/nodes/:nodeUuid/*binary*/:fieldName` for this.
+.Set UUID of created node
+[source,bash]
+----
+export UUID=b7e6e290ce554ebca6e290ce55eebcff
+----
+
+Now we can upload an image to the `image` field of the created node. We'll use the  binary endpoint `/api/v1/demo/nodes/:nodeUuid/*binary*/:fieldName` for this.
 
 .CURL Example
 [source,bash]
@@ -372,21 +387,21 @@ curl -v -X POST -H "Authorization: Bearer $MESH_TOKEN" \
  -F version=draft \
  -F language=en \
  -F binary=@Lockheed_SR-71_Blackbird.jpg \
- -H "Content-Type: application/json" \
- $MESH_BASE/demo/nodes/9429c081c5864ad7a9c081c5866ad702/binary/binary
+ -H "Content-Type: multipart/form-data" \
+ $MESH_BASE/demo/nodes/$UUID/binary/image
 ----
 
-
-The uploaded file is now reachable via the webroot path `/api/v1/demo/webroot/*images/Lockheed_SR-71_Blackbird.jpg*`.
+The uploaded file is now reachable via the webroot path `/api/v1/demo/webroot/*images/Lockheed_SR-71_Blackbird.jpg*`. We can download the image and resize it to a width of 200px with a simple curl.
 
 .CURL Example
 [source,bash]
 ----
 curl -X GET -H "Authorization: Bearer $MESH_TOKEN" \
- -H "Content-Type: application/json" \
- $MESH_BASE/demo/webroot/images/Lockheed_SR-71_Blackbird.jpg
+ $MESH_BASE/demo/webroot/images/Lockheed_SR-71_Blackbird.jpg?w=200 \
+ --output sr71.jpg
 ----
 
+TIP: The link:{{< relref "features.asciidoc" >}}#imagemanipulation[Image Manipulation] feature can also be used to crop images. You can set a focal point to images so that this focal point may be utilized when dynamically cropping image for responsive designs.
 
 == Next
 
