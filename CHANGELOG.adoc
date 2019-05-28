@@ -53,6 +53,8 @@ ____
 
 icon:check[] Java Rest Client: Fixed a bug that prevented automatic reconnection to the eventbus when it did not succeed immediately.
 
+icon:check[] Upload: The document processing library _tika_ has been updated to version `1.21` to fix potential out of memory issues during upload document processing.
+
 [[v0.33.1]]
 == 0.33.1 (23.05.2019)
 
