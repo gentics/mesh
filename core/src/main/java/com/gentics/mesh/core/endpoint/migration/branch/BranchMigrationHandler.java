@@ -146,7 +146,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 				// 2. Migrate published containers
 				published.forEach(container -> {
 					// Set the initial edge for published containers since the published container may be an older version and created before the draft container was created.
-					// The initial edge should always point to the oldest container.
+					// The initial edge should always point to the oldest container of either draft or published.
 					setInitial(node, container, newBranch);
 
 					GraphFieldContainerEdgeImpl publishEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);

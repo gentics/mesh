@@ -89,7 +89,7 @@ public class ProjectVersionPurgeHandler {
 		// We need to load some information first since we may remove the version in this step
 		List<? extends NodeGraphFieldContainer> nextVersions = Lists.newArrayList(version.getNextVersions());
 		boolean isNewerThanMaxAge = maxAge != null && !isOlderThanMaxAge(version, maxAge);
-		boolean isInTimeFrame = maxAge != null ? isOlderThanMaxAge(version, maxAge) : true;
+		boolean isInTimeFrame = maxAge == null || isOlderThanMaxAge(version, maxAge);
 
 		if (isInTimeFrame && version.isPurgeable()) {
 			log.info("Purging container " + version.getUuid() + "@" + version.getVersion());

@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -33,6 +34,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+@Ignore
 @MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = true, useKeycloak = true, optionChanger = WITH_MAPPER_SCRIPT)
 public class OAuth2KeycloakTest extends AbstractMeshTest {
 

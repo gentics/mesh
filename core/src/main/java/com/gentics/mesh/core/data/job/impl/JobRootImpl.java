@@ -99,8 +99,6 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	public Job enqueueSchemaMigration(User creator, Branch branch, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
 		NodeMigrationJobImpl job = getGraph().addFramedVertex(NodeMigrationJobImpl.class);
 		job.setType(JobType.schema);
-		// Don't add the user to reduce contention
-		// job.setCreated(creator);
 		job.setBranch(branch);
 		job.setStatus(QUEUED);
 		job.setFromSchemaVersion(fromVersion);
@@ -117,8 +115,6 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		MicroschemaContainerVersion toVersion) {
 		MicronodeMigrationJobImpl job = getGraph().addFramedVertex(MicronodeMigrationJobImpl.class);
 		job.setType(JobType.microschema);
-		// Don't add the user to reduce contention
-		// job.setCreated(creator);
 		job.setBranch(branch);
 		job.setStatus(QUEUED);
 		job.setFromMicroschemaVersion(fromVersion);
@@ -134,8 +130,6 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	@Override
 	public Job enqueueBranchMigration(User creator, Branch branch, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
 		Job job = getGraph().addFramedVertex(BranchMigrationJobImpl.class);
-		// Don't add the user to reduce contention
-		// job.setCreated(creator);
 		job.setType(JobType.branch);
 		job.setBranch(branch);
 		job.setStatus(QUEUED);
@@ -151,8 +145,6 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	@Override
 	public Job enqueueBranchMigration(User creator, Branch branch) {
 		Job job = getGraph().addFramedVertex(BranchMigrationJobImpl.class);
-		// Don't add the user to reduce contention
-		// job.setCreated(creator);
 		job.setType(JobType.branch);
 		job.setStatus(QUEUED);
 		job.setBranch(branch);
@@ -162,9 +154,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		}
 		return job;
 	}
-	
-	
-	
+
 	@Override
 	public Job enqueueVersionPurge(User user, Project project, ZonedDateTime before) {
 		VersionPurgeJobImpl job = getGraph().addFramedVertex(VersionPurgeJobImpl.class);

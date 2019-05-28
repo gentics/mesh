@@ -969,7 +969,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeVersionsResponse response = new NodeVersionsResponse();
 		Map<String, List<VersionInfo>> versions = new HashMap<>();
 		getGraphFieldContainersIt(ac.getBranch(), DRAFT).forEach(c -> {
-			versions.put(c.getLanguageTag(), c.versions().stream().map(v -> v.transformToVersionInfo(ac)).collect(Collectors.toList()));
+			versions.put(c.getLanguageTag(), c.versions().stream()
+				.map(v -> v.transformToVersionInfo(ac))
+				.collect(Collectors.toList()));
 		});
 
 		response.setVersions(versions);
@@ -1212,7 +1214,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		String branchUuid = branch.getUuid();
 
-		TraversalResult<? extends GraphFieldContainerEdgeImpl> publishEdges = new TraversalResult<>(getGraphFieldContainerEdges(branchUuid, PUBLISHED));
+		TraversalResult<? extends GraphFieldContainerEdgeImpl> publishEdges = new TraversalResult<>(
+			getGraphFieldContainerEdges(branchUuid, PUBLISHED));
 
 		// Remove the published edge for each found container
 		publishEdges.forEach(edge -> {
