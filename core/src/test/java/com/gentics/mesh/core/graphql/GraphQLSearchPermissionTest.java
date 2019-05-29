@@ -3,6 +3,7 @@ package com.gentics.mesh.core.graphql;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 
 import java.io.IOException;
 
@@ -20,7 +21,7 @@ import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(useElasticsearch = true, testSize = TestSize.FULL, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.FULL, startServer = true)
 public class GraphQLSearchPermissionTest extends AbstractMeshTest {
 
 	@Test
