@@ -27,6 +27,8 @@ title: Changelog
 [[v0.34.1]]
 == 0.34.1 (TBD)
 
+icon:check[] Backup: Fixed `NullPointerException` which happend when the backup directory was missing and the backup endpoint was invoked. link:https://github.com/gentics/mesh/issues/463[#463]
+
 icon:plus[] Core: The core Vert.x library was updated to version 3.7.1
 
 icon:check[] Focal point: It is now possible to use the `/api/v1/:projectName/nodes/:uuid/binaryTransform/:fieldName` to resize and image and set the focal point in one operation.
