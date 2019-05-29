@@ -2,6 +2,7 @@
 [![Stack Overflow](http://img.shields.io/:stack%20overflow-genticsmesh-brightgreen.svg)](http://stackoverflow.com/questions/tagged/gentics-mesh)
 [![Join the chat at https://gitter.im/gentics/mesh](https://badges.gitter.im/gentics/mesh.svg)](https://gitter.im/gentics/mesh?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gentics_mesh&metric=alert_status)](https://sonarcloud.io/dashboard?id=gentics_mesh)
+<a href="https://cla-assistant.io/gentics/cla-assistant-test"><img src="https://cla-assistant.io/readme/badge/gentics/cla-assistant-test" alt="CLA assistant" /></a>
 
 
 # [Gentics Mesh](https://getmesh.io)
