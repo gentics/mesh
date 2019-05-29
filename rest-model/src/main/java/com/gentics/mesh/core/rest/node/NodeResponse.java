@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.rest.node;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -16,11 +20,6 @@ import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.parameter.NodeParameters;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * POJO for the node rest response model.
@@ -46,7 +45,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of tags that were used to tag the node.")
-	private List<TagReference> tags = new ArrayList<>();
+	private List<TagReference> tags;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Reference to the project of the node.")
@@ -57,7 +56,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 */
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Object which contains information about child elements.")
-	private Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
+	private Map<String, NodeChildrenInfo> childrenInfo;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Reference to the schema of the node.")
@@ -78,7 +77,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Dynamic map with fields of the node language specific content.")
-	private FieldMap fields = new FieldMapImpl();
+	private FieldMap fields;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Webroot path to the node content. Will only be provided if the " + NodeParameters.RESOLVE_LINKS_QUERY_PARAM_KEY
@@ -87,7 +86,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of nodes which construct the breadcrumb. Note that the start node will not be included in the list.")
-	private List<NodeReference> breadcrumb = new ArrayList<>();
+	private List<NodeReference> breadcrumb;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Version of the node content.")
@@ -122,7 +121,14 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * @return
 	 */
 	public List<TagReference> getTags() {
+		if (tags == null) {
+			tags = new ArrayList<>();
+		}
 		return tags;
+	}
+
+	public void setTags(List<TagReference> tags) {
+		this.tags = tags;
 	}
 
 	/**
@@ -245,6 +251,14 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 */
 	public FieldMap getFields() {
 		return fields;
+	}
+
+	/**
+	 * Set the fields of the node.
+	 * @param fields
+	 */
+	public void setFields(FieldMap fields) {
+		this.fields = fields;
 	}
 
 	/**

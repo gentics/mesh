@@ -105,6 +105,7 @@ import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -803,6 +804,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			restNode.setEdited(fieldContainer.getLastEditedDate());
 
 			// Iterate over all fields and transform them to rest
+			com.gentics.mesh.core.rest.node.FieldMap fields = new FieldMapImpl();
 			for (FieldSchema fieldEntry : schema.getFields()) {
 				// boolean expandField =
 				// fieldsToExpand.contains(fieldEntry.getName()) ||
@@ -816,17 +818,18 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					// node. Please add the field using an update call or change
 					// the field schema and
 					// remove the required flag.");
-					restNode.getFields().put(fieldEntry.getName(), null);
+					fields.put(fieldEntry.getName(), null);
 				}
 				if (restField == null) {
 					if (log.isDebugEnabled()) {
 						log.debug("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
 					}
 				} else {
-					restNode.getFields().put(fieldEntry.getName(), restField);
+					fields.put(fieldEntry.getName(), restField);
 				}
 
 			}
+			restNode.setFields(fields);
 		}
 	}
 
@@ -870,10 +873,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @return
 	 */
 	private void setTagsToRest(InternalActionContext ac, NodeResponse restNode, Branch branch) {
-		for (Tag tag : getTags(branch)) {
-			TagReference reference = tag.transformToReference();
-			restNode.getTags().add(reference);
-		}
+		List<TagReference> list = getTags(branch).stream()
+			.map(Tag::transformToReference)
+			.collect(Collectors.toList());
+		restNode.setTags(list);
 	}
 
 	/**

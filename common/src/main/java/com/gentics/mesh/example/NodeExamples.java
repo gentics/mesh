@@ -40,6 +40,7 @@ import org.raml.model.parameter.FormParameter;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -74,7 +75,7 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.setCreated(createOldTimestamp());
 		nodeResponse.setEdited(createNewTimestamp());
 		nodeResponse.setCreator(createUserReference());
-		nodeResponse.getTags().add(new TagReference().setName("red").setUuid(TAG_RED_UUID).setTagFamily("colors"));
+		nodeResponse.setTags(Arrays.asList(new TagReference().setName("red").setUuid(TAG_RED_UUID).setTagFamily("colors")));
 		nodeResponse.setPath(VersionHandler.CURRENT_API_BASE_PATH + "/yourProject/webroot/Images");
 		Map<String, PublishStatusModel> languageInfo = new HashMap<>();
 
@@ -88,10 +89,11 @@ public class NodeExamples extends AbstractExamples {
 		languagePaths.put("en", VersionHandler.CURRENT_API_BASE_PATH + "/yourProject/webroot/Images");
 		languagePaths.put("de", VersionHandler.CURRENT_API_BASE_PATH + "/yourProject/webroot/Bilder");
 		nodeResponse.setLanguagePaths(languagePaths);
+		nodeResponse.setChildrenInfo(new HashMap<>());
 		nodeResponse.getChildrenInfo().put("blogpost", new NodeChildrenInfo().setCount(1).setSchemaUuid(UUID_2));
 		nodeResponse.getChildrenInfo().put("folder", new NodeChildrenInfo().setCount(5).setSchemaUuid(UUID_3));
 
-		FieldMap fields = nodeResponse.getFields();
+		FieldMap fields = new FieldMapImpl();
 		fields.put("name", createStringField("Name for language tag de-DE"));
 		fields.put("filename", createStringField("dummy-content.de.html"));
 		fields.put("teaser", createStringField("Dummy teaser for de-DE"));
@@ -109,6 +111,7 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("locations", createMicronodeListField(createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(
 			48.208330230278)), Tuple.tuple("longitude", createNumberField(16.373063840833))), createMicronodeField("geolocation", Tuple.tuple(
 				"latitude", createNumberField(48.137222)), Tuple.tuple("longitude", createNumberField(11.575556)))));
+		nodeResponse.setFields(fields);
 
 		nodeResponse.setSchema(getSchemaReference("content"));
 		nodeResponse.setPermissions(READ, UPDATE, DELETE, CREATE);
@@ -121,11 +124,13 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.setBreadcrumb(breadcrumb);
 
 		// tags
-		nodeResponse.getTags().add(new TagReference().setName("red").setUuid(TAG_RED_UUID).setTagFamily("colors"));
-		nodeResponse.getTags().add(new TagReference().setName("green").setUuid(TAG_GREEN_UUID).setTagFamily("colors"));
+		List<TagReference> tags = new ArrayList<>();
+		tags.add(new TagReference().setName("red").setUuid(TAG_RED_UUID).setTagFamily("colors"));
+		tags.add(new TagReference().setName("green").setUuid(TAG_GREEN_UUID).setTagFamily("colors"));
 
-		nodeResponse.getTags().add(new TagReference().setName("car").setUuid(UUID_1));
-		nodeResponse.getTags().add(new TagReference().setName("ship").setUuid(UUID_2));
+		tags.add(new TagReference().setName("car").setUuid(UUID_1));
+		tags.add(new TagReference().setName("ship").setUuid(UUID_2));
+		nodeResponse.setTags(tags);
 
 		return nodeResponse;
 	}
@@ -182,11 +187,12 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.setEdited(createNewTimestamp());
 		nodeResponse.setEditor(createUserReference());
 
-		FieldMap fields = nodeResponse.getFields();
+		FieldMap fields = new FieldMapImpl();
 		fields.put("name", createStringField("Name for language tag en"));
 		fields.put("filename", createStringField("dummy-content.en.html"));
 		fields.put("teaser", createStringField("Dummy teaser for en"));
 		fields.put("content", createStringField("Content for language tag en"));
+		nodeResponse.setFields(fields);
 
 		nodeResponse.setPermissions(READ, CREATE);
 
@@ -198,10 +204,12 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.setBreadcrumb(breadcrumb);
 
 		// tags
-		nodeResponse.getTags().add(new TagReference().setName("red").setUuid(TAG_RED_UUID).setTagFamily("colors"));
-		nodeResponse.getTags().add(new TagReference().setName("green").setUuid(TAG_GREEN_UUID).setTagFamily("colors"));
-		nodeResponse.getTags().add(new TagReference().setName("car").setUuid(UUID_1).setTagFamily("vehicles"));
-		nodeResponse.getTags().add(new TagReference().setName("ship").setUuid(UUID_2).setTagFamily("vehicles"));
+		List<TagReference> tags = new ArrayList<>();
+		tags.add(new TagReference().setName("red").setUuid(TAG_RED_UUID).setTagFamily("colors"));
+		tags.add(new TagReference().setName("green").setUuid(TAG_GREEN_UUID).setTagFamily("colors"));
+		tags.add(new TagReference().setName("car").setUuid(UUID_1).setTagFamily("vehicles"));
+		tags.add(new TagReference().setName("ship").setUuid(UUID_2).setTagFamily("vehicles"));
+		nodeResponse.setTags(tags);
 
 		return nodeResponse;
 	}

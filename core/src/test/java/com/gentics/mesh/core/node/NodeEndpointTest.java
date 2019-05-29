@@ -668,10 +668,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// not empty
 		assertThat(response.getUuid()).isNotEmpty();
 
-		// empty
+		// omitted
 		assertThat(response.getAvailableLanguages()).isNull();
-		assertThat(response.getChildrenInfo()).isEmpty();
-		assertThat(response.getFields()).isEmpty();
+		assertThat(response.getChildrenInfo()).isNull();
+		assertThat(response.getFields()).isNull();
 
 		response = call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new GenericParametersImpl().setFields("uuid", "fields")));
 
@@ -680,9 +680,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(response.getUuid()).isNotEmpty();
 		assertThat(response.getFields()).isNotEmpty();
 
-		// empty
+		// omitted
 		assertThat(response.getAvailableLanguages()).isNull();
-		assertThat(response.getChildrenInfo()).isEmpty();
+		assertThat(response.getChildrenInfo()).isNull();
 
 	}
 
