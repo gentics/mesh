@@ -27,7 +27,10 @@ include::content/docs/variables.adoc-include[]
 
 CAUTION: Fetching fields of a node/micronode in GraphQL requires a different syntax. Please refer to the link:https://github.com/gentics/mesh/issues/428[#428] and link:https://github.com/gentics/mesh/issues/317[#317] for details.
 
+icon:plus[] Core: The core Vert.x library was updated to version 3.7.1
+
 icon:check[] Focal point: It is now possible to use the `:apiLatest:/:projectName/nodes/:uuid/binaryTransform/:fieldName` to resize and image and set the focal point in one operation.
+
 [[v0.34.0]]
 == 0.34.0 (28.05.2019)
 
