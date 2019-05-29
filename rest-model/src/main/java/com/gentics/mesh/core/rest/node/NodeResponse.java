@@ -121,9 +121,6 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * @return
 	 */
 	public List<TagReference> getTags() {
-		if (tags == null) {
-			tags = new ArrayList<>();
-		}
 		return tags;
 	}
 

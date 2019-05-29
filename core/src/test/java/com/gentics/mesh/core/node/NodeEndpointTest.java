@@ -1543,7 +1543,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, versionParams));
 			assertThat(response.getLanguage()).as("Node language").isNull();
 			assertThat(response.getAvailableLanguages().keySet()).as("Available languages").containsOnly("nl");
-			assertThat(response.getFields()).as("Node Fields").isEmpty();
+			assertThat(response.getFields()).as("Node Fields").isNull();
 			assertNotNull(response.getProject());
 			assertEquals(project().getUuid(), response.getProject().getUuid());
 			assertEquals(project().getName(), response.getProject().getName());
