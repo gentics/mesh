@@ -27,6 +27,7 @@ include::content/docs/variables.adoc-include[]
 [[v0.36.0]]
 == 0.36.0 (TBD)
 
+
 CAUTION: Java Rest Client: The default field values for `NodeResponse` and `AbstractGenericRestResponse` has been updated. 
 
 The following values have been changed:
