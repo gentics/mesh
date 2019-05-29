@@ -2,7 +2,7 @@
 [![Stack Overflow](http://img.shields.io/:stack%20overflow-genticsmesh-brightgreen.svg)](http://stackoverflow.com/questions/tagged/gentics-mesh)
 [![Join the chat at https://gitter.im/gentics/mesh](https://badges.gitter.im/gentics/mesh.svg)](https://gitter.im/gentics/mesh?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gentics_mesh&metric=alert_status)](https://sonarcloud.io/dashboard?id=gentics_mesh)
-<a href="https://cla-assistant.io/gentics/cla-assistant-test"><img src="https://cla-assistant.io/readme/badge/gentics/cla-assistant-test" alt="CLA assistant" /></a>
+<a href="https://cla-assistant.io/gentics/mesh"><img src="https://cla-assistant.io/readme/badge/gentics/mesh" alt="CLA assistant" /></a>
 
 
 # [Gentics Mesh](https://getmesh.io)
@@ -14,20 +14,20 @@ Gentics Mesh is an Open Source API-first CMS for developers. All contents can be
 ### [Docker](https://getmesh.io/docs/administration-guide/#_run_with_docker)
 
 ```bash
-docker run -p 8080:8080 gentics/mesh-demo:0.31.4
+docker run -p 8080:8080 gentics/mesh-demo:0.34.0
 ```
 
 ### [CLI](https://getmesh.io/docs/cli)
 
 ```bash
 npm install mesh-cli -g
-mesh docker start -t 0.31.4 -p 8080
+mesh docker start -t 0.34.0 -p 8080
 ```
 
 ### [Java](https://getmesh.io/docs/administration-guide/#_run_with_jar_file)
 
 ```bash
-java -jar mesh-demo-0.31.4.jar
+java -jar mesh-demo-0.34.0.jar
 ```
 
 ## Demo
