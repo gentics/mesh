@@ -659,9 +659,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (fields.has("languages")) {
 			restNode.setAvailableLanguages(getLanguageInfo(ac));
 		}
-		if (fields.has("fields")) {
-			setFields(ac, branch, restNode, level, languageTags);
-		}
+
+		setFields(ac, branch, restNode, level, fields, languageTags);
+
 		if (fields.has("parent")) {
 			setParentNodeInfo(ac, branch, restNode);
 		}
@@ -727,12 +727,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *            Branch which will be used to locate the correct field container
 	 * @param restNode
 	 *            Rest model which will be updated
+	 * @param fields
+	 *            Field whitelist for the response
 	 * @param level
 	 *            Current level of transformation
 	 * @param languageTags
 	 * @return
 	 */
-	private void setFields(InternalActionContext ac, Branch branch, NodeResponse restNode, int level, String... languageTags) {
+	private void setFields(InternalActionContext ac, Branch branch, NodeResponse restNode, int level, FieldsSet fieldsSet, String... languageTags) {
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		NodeParameters nodeParameters = ac.getNodeParameters();
 
@@ -769,18 +771,28 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// No field container was found so we can only set the schema
 			// reference that points to the container (no version information
 			// will be included)
-			restNode.setSchema(getSchemaContainer().transformToReference());
+			if (fieldsSet.has("schema")) {
+				restNode.setSchema(getSchemaContainer().transformToReference());
+			}
 			// TODO BUG Issue #119 - Actually we would need to throw a 404 in these cases but many current implementations rely on the empty node response.
 			// The response will also contain information about other languages and general structure information.
 			// We should change this behaviour and update the client implementations.
 			// throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
 		} else {
 			Schema schema = fieldContainer.getSchemaContainerVersion().getSchema();
-			restNode.setContainer(schema.getContainer());
-			restNode.setDisplayField(schema.getDisplayField());
-			restNode.setDisplayName(getDisplayName(ac));
+			if (fieldsSet.has("container")) {
+				restNode.setContainer(schema.getContainer());
+			}
+			if (fieldsSet.has("displayField")) {
+				restNode.setDisplayField(schema.getDisplayField());
+			}
+			if (fieldsSet.has("displayName")) {
+				restNode.setDisplayName(getDisplayName(ac));
+			}
 
-			restNode.setLanguage(fieldContainer.getLanguageTag());
+			if (fieldsSet.has("language")) {
+				restNode.setLanguage(fieldContainer.getLanguageTag());
+			}
 			// List<String> fieldsToExpand = ac.getExpandedFieldnames();
 			// modify the language fallback list by moving the container's
 			// language to the front
@@ -789,47 +801,55 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			containerLanguageTags.add(0, restNode.getLanguage());
 
 			// Schema reference
-			restNode.setSchema(fieldContainer.getSchemaContainerVersion().transformToReference());
+			if (fieldsSet.has("schema")) {
+				restNode.setSchema(fieldContainer.getSchemaContainerVersion().transformToReference());
+			}
 
 			// Version reference
-			if (fieldContainer.getVersion() != null) {
+			if (fieldsSet.has("version") && fieldContainer.getVersion() != null) {
 				restNode.setVersion(fieldContainer.getVersion().toString());
 			}
 
 			// editor and edited
-			User editor = fieldContainer.getEditor();
-			if (editor != null) {
-				restNode.setEditor(editor.transformToReference());
-			}
-			restNode.setEdited(fieldContainer.getLastEditedDate());
-
-			// Iterate over all fields and transform them to rest
-			com.gentics.mesh.core.rest.node.FieldMap fields = new FieldMapImpl();
-			for (FieldSchema fieldEntry : schema.getFields()) {
-				// boolean expandField =
-				// fieldsToExpand.contains(fieldEntry.getName()) ||
-				// ac.getExpandAllFlag();
-				Field restField = fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level);
-				if (fieldEntry.isRequired() && restField == null) {
-					// TODO i18n
-					// throw error(BAD_REQUEST, "The field {" +
-					// fieldEntry.getName()
-					// + "} is a required field but it could not be found in the
-					// node. Please add the field using an update call or change
-					// the field schema and
-					// remove the required flag.");
-					fields.put(fieldEntry.getName(), null);
+			if (fieldsSet.has("editor")) {
+				User editor = fieldContainer.getEditor();
+				if (editor != null) {
+					restNode.setEditor(editor.transformToReference());
 				}
-				if (restField == null) {
-					if (log.isDebugEnabled()) {
-						log.debug("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
+			}
+			if (fieldsSet.has("edited")) {
+				restNode.setEdited(fieldContainer.getLastEditedDate());
+			}
+
+			if (fieldsSet.has("fields")) {
+				// Iterate over all fields and transform them to rest
+				com.gentics.mesh.core.rest.node.FieldMap fields = new FieldMapImpl();
+				for (FieldSchema fieldEntry : schema.getFields()) {
+					// boolean expandField =
+					// fieldsToExpand.contains(fieldEntry.getName()) ||
+					// ac.getExpandAllFlag();
+					Field restField = fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level);
+					if (fieldEntry.isRequired() && restField == null) {
+						// TODO i18n
+						// throw error(BAD_REQUEST, "The field {" +
+						// fieldEntry.getName()
+						// + "} is a required field but it could not be found in the
+						// node. Please add the field using an update call or change
+						// the field schema and
+						// remove the required flag.");
+						fields.put(fieldEntry.getName(), null);
 					}
-				} else {
-					fields.put(fieldEntry.getName(), restField);
-				}
+					if (restField == null) {
+						if (log.isDebugEnabled()) {
+							log.debug("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
+						}
+					} else {
+						fields.put(fieldEntry.getName(), restField);
+					}
 
+				}
+				restNode.setFields(fields);
 			}
-			restNode.setFields(fields);
 		}
 	}
 

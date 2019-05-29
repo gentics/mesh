@@ -86,7 +86,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 			assertNotNull(node.getUuid());
 			NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 			assertThat(node).matches(restNode);
-			assertTrue(restNode.isContainer());
+			assertTrue(restNode.getContainer());
 
 			long subFolderCount = restNode.getChildrenInfo().get("folder").getCount();
 			assertEquals("The node should have more than {" + subFolderCount + "} children. But it got {" + subFolderCount + "}", 2, subFolderCount);
@@ -111,7 +111,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 			assertThat(node).matches(restNode);
-			assertTrue(restNode.isContainer());
+			assertTrue(restNode.getContainer());
 
 			long subFolderCount = restNode.getChildrenInfo().get("folder").getCount();
 			assertEquals("The node should have more than {" + subFolderCount + "} children. But it got {" + subFolderCount + "}", 1, subFolderCount);
@@ -131,7 +131,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 			NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 			assertThat(node).matches(restNode);
-			assertFalse("The node should not be a container", restNode.isContainer());
+			assertFalse("The node should not be a container", restNode.getContainer());
 			assertNull(restNode.getChildrenInfo().get("folder"));
 		}
 	}

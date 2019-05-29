@@ -30,7 +30,7 @@ public abstract class AbstractGenericRestResponse extends AbstractResponse imple
 	private String edited;
 
 	@JsonProperty(value = "permissions", required = true)
-	private PermissionInfo permissions = new PermissionInfo();
+	private PermissionInfo permissions;
 
 	@JsonPropertyDescription("Permission information for provided role. This property will only be populated if a "
 			+ RolePermissionParameters.ROLE_PERMISSION_QUERY_PARAM_KEY + " query parameter has been specified.")
@@ -90,6 +90,9 @@ public abstract class AbstractGenericRestResponse extends AbstractResponse imple
 	@Override
 	@JsonIgnore
 	public void setPermissions(Permission... permissions) {
+		if (this.permissions == null) {
+			this.permissions = new PermissionInfo();
+		}
 		for (Permission permission : Arrays.asList(permissions)) {
 			getPermissions().set(permission, true);
 		}

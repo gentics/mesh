@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.rest.node;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -65,7 +64,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Flag which indicates whether the node is a container and can contain nested elements.")
-	private boolean container;
+	private Boolean container;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Display field name of the node. May not be retured if the node schema has no display field.")
@@ -168,8 +167,20 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * Return the flag which indicates whether the node is a container.
 	 * 
 	 * @return Container flag
+	 * @deprecated Use {@link #getContainer()}
 	 */
+	@Deprecated
+	@JsonIgnore
 	public boolean isContainer() {
+		return container != null ? container : false;
+	}
+
+	/**
+	 * Return the flag which indicates whether the node is a container.
+	 * 
+	 * @return
+	 */
+	public Boolean getContainer() {
 		return container;
 	}
 
@@ -179,7 +190,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * @param isContainer
 	 *            Container flag
 	 */
-	public void setContainer(boolean isContainer) {
+	public void setContainer(Boolean isContainer) {
 		this.container = isContainer;
 	}
 
@@ -252,6 +263,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	/**
 	 * Set the fields of the node.
+	 * 
 	 * @param fields
 	 */
 	public void setFields(FieldMap fields) {
