@@ -7,7 +7,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_MODIFIED;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.mail.internet.MimeUtility;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -21,6 +20,7 @@ import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.ETag;
+import com.gentics.mesh.util.EncodeUtil;
 import com.gentics.mesh.util.RxUtil;
 
 import io.reactivex.Flowable;
@@ -29,8 +29,6 @@ import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.ext.web.RoutingContext;
-
-import java.io.UnsupportedEncodingException;
 
 /**
  * Handler which will accept {@link BinaryGraphField} elements and return the binary data using the given context.
@@ -105,13 +103,7 @@ public class BinaryFieldResponseHandler {
 
 		response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
 
-		String encodedFileName = getEncodedFileName(fileName);
-
-		// TODO images and pdf files should be shown in inline format
-		response.putHeader(
-				"content-disposition",
-				"attachment; filename=\"" + encodedFileName + "\"; filename*=\"" + encodedFileName + '"'
-		);
+		addContentDispositionHeader(response, fileName, "attachment");
 
 		// Set to IDENTITY to avoid gzip compression
 		response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
@@ -156,24 +148,23 @@ public class BinaryFieldResponseHandler {
 				// Set to IDENTITY to avoid gzip compression
 				response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
 
-				String encodedFileName = getEncodedFileName(fileName);
+				addContentDispositionHeader(response, fileName, "inline");
 
-				response.putHeader(
-						"content-disposition",
-						"inline; filename=\"" + encodedFileName + "\"; filename*=\"" + encodedFileName + '"'
-				);
 				return fileWithProps.getFile();
 			}).flatMap(RxUtil::toBufferFlow);
 		resizedData.subscribe(response::write, rc::fail, response::end);
 
 	}
 
-	private String getEncodedFileName(String fileName) {
-		try {
-			return MimeUtility.encodeText(fileName, "UTF-8", "Q");
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
+	private void addContentDispositionHeader(HttpServerResponse response, String fileName, String type) {
+		String encodedFileNameUTF8 = EncodeUtil.encodeForRFC5597(fileName);
+		String encodedFileNameISO = EncodeUtil.toISO88591(fileName);
+
+		StringBuilder value = new StringBuilder();
+		value.append(type + ";");
+		value.append(" filename=\"" + encodedFileNameISO + "\";");
+		value.append(" filename*=" + encodedFileNameUTF8);
+		response.putHeader("content-disposition", value.toString());
 	}
 
 }

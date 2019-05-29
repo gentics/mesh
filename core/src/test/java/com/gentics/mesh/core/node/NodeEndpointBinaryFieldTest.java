@@ -15,7 +15,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
@@ -39,6 +41,7 @@ import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.FileUtils;
@@ -241,6 +244,28 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 	}
 
 	@Test
+	public void testDownloadBinaryFieldEncoding() throws IOException {
+		String contentType = "application/octet-stream";
+		int binaryLen = 8000;
+		String fileName = "some \u01f92a file.dat";
+		Node node = prepareSchema();
+		String uuid = tx(() -> node.getUuid());
+
+		// 1. Upload some binary data
+		call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
+
+		// 2. Download the data using the REST API
+		MeshResponse<MeshBinaryResponse> response = client().downloadBinaryField(PROJECT_NAME, uuid, "en", "binary").getResponse().blockingGet();
+
+		// Validate content disposition encoding
+		List<String> params = Arrays.asList(response.getHeader("content-disposition").get().split(";")).stream().map(String::trim)
+			.collect(Collectors.toList());
+		assertEquals("attachment", params.get(0));
+		assertEquals("filename=\"some ?2a file.dat\"", params.get(1));
+		assertEquals("filename*=utf-8''some+%C7%B92a+file.dat", params.get(2));
+	}
+
+	@Test
 	public void testDownloadBinaryFieldRange() throws IOException {
 
 		String contentType = "plain/text";
@@ -256,7 +281,8 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		Buffer buffer = Buffer.buffer(data);
 
 		ByteArrayInputStream stream = new ByteArrayInputStream(buffer.getBytes());
-		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), "binary", stream, buffer.length(), fileName, contentType));
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), "binary", stream, buffer.length(), fileName,
+			contentType));
 
 		MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary", 0, 4));
 		String decoded = new String(IOUtils.toByteArray(response.getStream()));
@@ -297,7 +323,8 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 
 		// Upload the image
 		NodeResponse node2 = call(
-			() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", new ByteArrayInputStream(buffer.getBytes()), buffer.length(), "test.jpg", "image/jpeg"));
+			() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", new ByteArrayInputStream(buffer.getBytes()),
+				buffer.length(), "test.jpg", "image/jpeg"));
 
 		// Update the stored focalpoint
 		NodeUpdateRequest nodeUpdateRequest = node2.toRequest();
@@ -339,7 +366,8 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		String blumeSum = "0b8f63eaa9893d994572a14a012c886d4b6b7b32f79df820f7aed201b374c89cf9d40f79345d5d76662ea733b23ed46dbaa243368627cbfe91a26c6452b88a29";
 
 		io.reactivex.functions.Function<String, ObservableSource<NodeResponse>> uploadBinary = (fieldName) -> client()
-			.updateNodeBinaryField(PROJECT_NAME, nodeResponse.getUuid(), nodeResponse.getLanguage(), nodeResponse.getVersion(), fieldName, new ByteArrayInputStream(buffer.getBytes()), buffer.length(),
+			.updateNodeBinaryField(PROJECT_NAME, nodeResponse.getUuid(), nodeResponse.getLanguage(), nodeResponse.getVersion(), fieldName,
+				new ByteArrayInputStream(buffer.getBytes()), buffer.length(),
 				"blume.jpg", "image/jpeg")
 			.toObservable().doOnSubscribe((e) -> System.out.println("Requesting " + fieldName));
 
