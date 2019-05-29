@@ -29,6 +29,8 @@ title: Changelog
 
 icon:check[] Focal point: It is now possible to use the `/api/v1/:projectName/nodes/:uuid/binaryTransform/:fieldName` to resize and image and set the focal point in one operation.
 
+icon:plus[] REST: It is now possible to set a flag that forces a user to change their password on the next login. Take a look at link:{{< relref "authentication.asciidoc" >}}#_forcing_user_to_change_password[the documentation] for more information.
+
 [[v0.34.0]]
 == 0.34.0 (28.05.2019)
 
@@ -187,7 +189,6 @@ icon:check[] Core: Fixed a bug that caused an internal server error when applyin
 
 icon:check[] UI: Fixed validation issues in microschema lists when updating nodes. Previously validation issues would not be detected by the UI and the node update would fail. link:https://github.com/gentics/mesh-ui/pull/202[#202]
 
-icon:plus[] REST: It is now possible to set a flag that forces a user to change their password on the next login. Take a look at link:{{< relref "authentication.asciidoc" >}}#_forcing_user_to_change_password[the documentation] for more information.
 
 [[v0.31.4]]
 == 0.31.4 (11.04.2019)
