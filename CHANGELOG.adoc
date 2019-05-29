@@ -27,6 +27,23 @@ include::content/docs/variables.adoc-include[]
 [[v0.36.0]]
 == 0.36.0 (TBD)
 
+CAUTION: Java Rest Client: The default field values for `NodeResponse` and `AbstractGenericRestResponse` has been updated. 
+
+The following values have been changed:
+
+* `AbstractGenericRestResponse#permissions`
+* `NodeResponse#tags`
+* `NodeResponse#childrenInfo`
+* `NodeResponse#container`
+* `NodeResponse#fields`
+* `NodeResponse#breadcrumb`
+
+The `NodeResponse#isContainer` method has been deprecated and was replaced by `NodeResponse#getContainer`
+
+Applications which use affected models will most likly not needed to updated since the returned response will always set the affected fields.
+
+icon:plus[] REST: The `?fields` query parameter which can be used to filter response properties will now work more granular on node responses.
+
 CAUTION: Custom node migration scripts have been removed. The script system was a source of possible errors and performance problems. Also, the nashorn javascript engine has been deprecated with the release of Java 11. If you need to change data for a migration, use the REST Api instead.
 
 icon:check[] REST: Fixed a bug that sometimes caused a wrong image to be responded when using image manipulation. link:https://github.com/gentics/mesh/issues/669[#669]
