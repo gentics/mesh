@@ -42,7 +42,7 @@ The `NodeResponse#isContainer` method has been deprecated and was replaced by `N
 
 Applications which use affected models will most likely not need to updated since the returned response will always set the affected fields.
 
-icon:plus[] REST: The `?fields` query parameter which can be used to filter response properties will now work more granular on node responses.
+icon:plus[] REST: The `?fields` query parameter which can be used to filter response properties will now work more granularly on node responses.
 
 CAUTION: Custom node migration scripts have been removed. The script system was a source of possible errors and performance problems. Also, the nashorn javascript engine has been deprecated with the release of Java 11. If you need to change data for a migration, use the REST Api instead.
 
