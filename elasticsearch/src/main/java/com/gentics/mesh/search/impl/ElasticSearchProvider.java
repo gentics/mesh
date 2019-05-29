@@ -1,37 +1,20 @@
 package com.gentics.mesh.search.impl;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isConflictError;
-import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isNotFoundError;
-import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isResourceAlreadyExistsError;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.Bulkable;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.search.ElasticsearchProcessManager;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.verticle.eventhandler.SingleCacheSuccess;
 import com.gentics.mesh.util.UUIDUtil;
-
 import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.CompletableSource;
 import io.reactivex.CompletableTransformer;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.functions.Function;
@@ -40,8 +23,28 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import joptsimple.internal.Strings;
 import net.lingala.zip4j.exception.ZipException;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_CLEAR_FINISHED;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isConflictError;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isNotFoundError;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isResourceAlreadyExistsError;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 /**
  * Elastic search provider class which implements the {@link SearchProvider} interface.
@@ -51,8 +54,6 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(ElasticSearchProvider.class);
 
-	private static final String INGEST_ATTACHMENT_PROCESSOR_NAME = "attachment";
-
 	private SearchClient client;
 
 	private MeshOptions options;
@@ -60,8 +61,6 @@ public class ElasticSearchProvider implements SearchProvider {
 	private ElasticsearchProcessManager processManager;
 
 	private final static int MAX_RETRY_ON_ERROR = 5;
-
-	private Boolean hasAttachmentIngestProcessor = false;
 
 	private Lazy<Vertx> vertx;
 
@@ -74,21 +73,14 @@ public class ElasticSearchProvider implements SearchProvider {
 		this.options = options;
 	}
 
-	@Override
-	public void start() {
-		start(true);
-	}
-
 	/**
 	 * Start the provider by creating the REST client and checking the server status.
-	 * 
-	 * @param waitForCluster
 	 */
-	public void start(boolean waitForCluster) {
+	@Override
+	public void start() {
 		log.debug("Creating elasticsearch provider.");
 
 		ElasticSearchOptions searchOptions = getOptions();
-		long start = System.currentTimeMillis();
 
 		if (searchOptions.isStartEmbedded()) {
 			try {
@@ -111,51 +103,9 @@ public class ElasticSearchProvider implements SearchProvider {
 				port = 443;
 			}
 			client = new SearchClient(proto, url.getHost(), port);
-
-			if (waitForCluster) {
-				waitForCluster(client, searchOptions.getStartupTimeout());
-				if (log.isDebugEnabled()) {
-					log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
-				}
-				hasAttachmentIngestProcessor = this.client.hasIngestProcessor(INGEST_ATTACHMENT_PROCESSOR_NAME).blockingGet();
-			}
 		} catch (MalformedURLException e) {
-			throw error(INTERNAL_SERVER_ERROR, "Invalid search provider url");
+			throw error(INTERNAL_SERVER_ERROR, "Invalid search provider url", e);
 		}
-
-	}
-
-	private void waitForCluster(SearchClient client, long timeoutInSec) {
-		long start = System.currentTimeMillis();
-		// Wait until the cluster is ready
-		while (true) {
-			if ((System.currentTimeMillis() - start) / 1000 > timeoutInSec) {
-				log.debug("Timeout of {" + timeoutInSec + "} reached.");
-				break;
-			}
-			try {
-				log.debug("Checking elasticsearch status...");
-				JsonObject response = client.clusterHealth().sync();
-				String status = response.getString("status");
-				log.debug("Elasticsearch status is: " + status);
-				if (!"red".equals(status)) {
-					log.info("Elasticsearch is ready. Releasing lock after " + (System.currentTimeMillis() - start) + " ms");
-					return;
-				}
-			} catch (HttpErrorException e1) {
-				if (log.isDebugEnabled()) {
-					log.debug("Error while checking elasticsearch status.", e1);
-				}
-			}
-			try {
-				log.info("Waiting for elasticsearch status...");
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-
-		}
-		throw new RuntimeException("Elasticsearch was not ready within set timeout of {" + timeoutInSec + "} seconds.");
 
 	}
 
@@ -248,7 +198,10 @@ public class ElasticSearchProvider implements SearchProvider {
 					.compose(withTimeoutAndLog("Deleting pipeline {" + pipeline + "}", true));
 			}).compose(withTimeoutAndLog("Clearing mesh piplines failed", true));
 
-		return Completable.mergeArray(clearIndices, clearPipelines);
+		return Completable.mergeArray(clearIndices, clearPipelines).doFinally(() -> {
+			log.info("Sending index clear completed event");
+			vertx.get().eventBus().publish(INDEX_CLEAR_FINISHED.address, null);
+		});
 	}
 
 	@Override
@@ -267,7 +220,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public Completable refreshIndex(String... indices) {
 		if (indices.length == 0) {
-			return client.refresh().async()
+			return client.refresh(installationPrefix() + "*").async()
 				.doOnError(error -> {
 					log.error("Refreshing of all indices failed.", error);
 					throw error(INTERNAL_SERVER_ERROR, "search_error_refresh_failed", error);
@@ -301,40 +254,23 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public Completable createIndex(IndexInfo info) {
 		String indexName = installationPrefix() + info.getIndexName();
+		return Completable.defer(() -> {
 
-		if (log.isDebugEnabled()) {
-			log.debug("Creating ES Index {" + indexName + "}");
-		}
+			if (log.isDebugEnabled()) {
+				log.debug("Creating ES Index {" + indexName + "}");
+			}
 
-		JsonObject json = createIndexSettings(info);
-		Completable indexCreation = client.createIndex(indexName, json).async()
-			.doOnSuccess(response -> {
-				if (log.isDebugEnabled()) {
-					log.debug("Create index {" + indexName + "} - {" + info.getSourceInfo() + "} response: {" + response.toString() + "}");
-				}
-			}).toCompletable()
-			.onErrorResumeNext(error -> isResourceAlreadyExistsError(error) ? Completable.complete() : Completable.error(error))
-			.compose(withTimeoutAndLog("Creating index {" + indexName + "} for {" + info.getSourceInfo() + "}", true));
+			JsonObject json = createIndexSettings(info);
+			Completable indexCreation = client.createIndex(indexName, json).async()
+				.doOnSuccess(response -> {
+					if (log.isDebugEnabled()) {
+						log.debug("Create index {" + indexName + "} - {" + info.getSourceInfo() + "} response: {" + response.toString() + "}");
+					}
+				}).toCompletable()
+				.onErrorResumeNext(error -> isResourceAlreadyExistsError(error) ? Completable.complete() : Completable.error(error));
 
-		if (info.getIngestPipelineSettings() != null && hasIngestPipelinePlugin()) {
-			return Completable.mergeArray(indexCreation, registerIngestPipeline(info));
-		} else {
 			return indexCreation;
-		}
-	}
-
-	@Override
-	public Completable registerIngestPipeline(IndexInfo info) {
-		String name = installationPrefix() + info.getIngestPipelineName();
-		JsonObject config = info.getIngestPipelineSettings();
-		return client.registerPipeline(name, config).async()
-			.doOnSuccess(response -> {
-				if (log.isDebugEnabled()) {
-					log.debug("Registered pipeline {" + name + "} response: {" + response.toString() + "}");
-				}
-			}).toCompletable()
-			.onErrorResumeNext(error -> isResourceAlreadyExistsError(error) ? Completable.complete() : Completable.error(error))
-			.compose(withTimeoutAndLog("Creating pipeline {" + name + "}", true));
+		}).compose(withTimeoutAndLog("Creating index {" + indexName + "} for {" + info.getSourceInfo() + "}", true));
 	}
 
 	@Override
@@ -390,23 +326,13 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable processBulk(List<? extends BulkEntry> entries) {
-		if (entries.isEmpty()) {
-			return Completable.complete();
-		}
+	public Completable processBulk(String actions) {
 		long start = System.currentTimeMillis();
-
-		String bulkData = entries.stream()
-			.map(e -> e.toBulkString(installationPrefix()))
-			.collect(Collectors.joining("\n")) + "\n";
-		if (log.isTraceEnabled()) {
-			log.trace("Using bulk payload:");
-			log.trace(bulkData);
-		}
-		return client.processBulk(bulkData).async()
-			.doOnSuccess(response -> {
+		return client.processBulk(actions).async()
+			.flatMap(response -> {
 				boolean errors = response.getBoolean("errors");
 				if (errors) {
+					log.trace("Error after processing bulk:\n{}", response);
 					JsonArray items = response.getJsonArray("items");
 					for (int i = 0; i < items.size(); i++) {
 						JsonObject item = items.getJsonObject(i).getJsonObject("index");
@@ -419,13 +345,51 @@ public class ElasticSearchProvider implements SearchProvider {
 							log.error("Could not store document {" + index + ":" + id + "} - " + type + " : " + reason);
 						}
 					}
+					return Single.error(new ElasticsearchBulkResponseError(response));
 				}
 
 				if (log.isDebugEnabled()) {
 					log.debug("Finished bulk request. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
+				return Single.just(response);
 			}).toCompletable()
-			.compose(withTimeoutAndLog("Storing document batch.", true));
+			.compose(withTimeoutAndLog("Storing document batch.", false));
+	}
+
+	@Override
+	public Completable processBulk(Collection<? extends Bulkable> entries) {
+		if (entries.isEmpty()) {
+			return Completable.complete();
+		}
+
+		return Flowable.fromIterable(entries)
+			.flatMapSingle(Bulkable::toBulkActions)
+			.flatMapIterable(list -> list)
+			.reduce(new StringBuilder(), (builder, str) -> builder.append(str).append("\n"))
+			.map(StringBuilder::toString)
+			.doOnSuccess(bulkData -> {
+				if (log.isTraceEnabled()) {
+					log.trace("Using bulk payload:");
+					log.trace(bulkData);
+				}
+			}).flatMapCompletable(this::processBulk);
+	}
+
+	@Override
+	public Completable processBulkOld(List<? extends BulkEntry> entries) {
+		if (entries.isEmpty()) {
+			return Completable.complete();
+		}
+
+		String bulkData = entries.stream()
+			.map(e -> e.toBulkString(installationPrefix()))
+			.collect(Collectors.joining("\n")) + "\n";
+		if (log.isTraceEnabled()) {
+			log.trace("Using bulk payload:");
+			log.trace(bulkData);
+		}
+
+		return processBulk(bulkData);
 	}
 
 	@Override
@@ -447,7 +411,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public Completable deleteIndex(boolean failOnMissingIndex, String... indexNames) {
 		String[] fullIndexNames = Arrays.stream(indexNames).map(i -> installationPrefix() + i).toArray(String[]::new);
-		String indices = Strings.join(fullIndexNames, ",");
+		String indices = String.join(",", fullIndexNames);
 		long start = System.currentTimeMillis();
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting indices {" + indices + "}");
@@ -461,23 +425,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			.onErrorResumeNext(ignore404)
 			.compose(withTimeoutAndLog("Deletion of indices " + indices, true));
 
-		if (hasIngestPipelinePlugin()) {
-			Completable deletePipelines = Observable.fromArray(indexNames).flatMapCompletable(indexName -> {
-				// We don't need to delete the pipeline for non node indices
-				if (!indexName.startsWith("node")) {
-					return Completable.complete();
-				}
-				return deregisterPipeline(indexName);
-			})
-				.onErrorResumeNext(error -> {
-					return isNotFoundError(error) ? Completable.complete() : Completable.error(error);
-				})
-				.compose(withTimeoutAndLog("Deletion of pipelines " + indices, true));
-			return Completable.mergeArray(deleteIndex, deletePipelines);
-		} else {
-			return deleteIndex;
-		}
-
+		return deleteIndex;
 	}
 
 	@Override
@@ -580,11 +528,6 @@ public class ElasticSearchProvider implements SearchProvider {
 				});
 			return ignoreError ? t.onErrorComplete() : t;
 		};
-	}
-
-	@Override
-	public boolean hasIngestPipelinePlugin() {
-		return hasAttachmentIngestProcessor;
 	}
 
 	/**

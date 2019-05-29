@@ -1,21 +1,21 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.junit.Assert.assertEquals;
 
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-
-@MeshTestSetting(useElasticsearch = true, startServer = true, testSize = FULL)
+import com.syncleus.ferma.tx.Tx;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+@MeshTestSetting(elasticsearch = CONTAINER, startServer = true, testSize = FULL)
 public class TagSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
 
 	@Test
@@ -25,6 +25,8 @@ public class TagSearchEndpointTest extends AbstractMeshTest implements BasicSear
 		try (Tx tx = tx()) {
 			createTag(PROJECT_NAME, tagFamily("colors").getUuid(), tagName);
 		}
+
+		waitForSearchIdleEvent();
 
 		TagListResponse list = call(() -> client().searchTags(getSimpleTermQuery("name.raw", tagName)));
 		assertEquals(1, list.getData().size());
@@ -44,6 +46,8 @@ public class TagSearchEndpointTest extends AbstractMeshTest implements BasicSear
 			assertEquals("The tag name was not updated as expected.", newName + "2", tag("red").getName());
 		}
 
+		waitForSearchIdleEvent();
+
 		TagListResponse list = call(() -> client().searchTags(getSimpleTermQuery("name.raw", newName + "2")));
 		assertEquals(1, list.getData().size());
 	}
@@ -59,12 +63,16 @@ public class TagSearchEndpointTest extends AbstractMeshTest implements BasicSear
 		String uuid = db().tx(() -> tag("red").getUuid());
 		String parentTagFamilyUuid = db().tx(() -> tagFamily("colors").getUuid());
 
+		waitForSearchIdleEvent();
+
 		// 1. Verify that the tag is indexed
 		TagListResponse list = call(() -> client().searchTags(getSimpleTermQuery("name.raw", name)));
 		assertEquals("The tag with name {" + name + "} and uuid {" + uuid + "} could not be found in the search index.", 1, list.getData().size());
 
 		// 2. Delete the tag
 		call(() -> client().deleteTag(PROJECT_NAME, parentTagFamilyUuid, uuid));
+
+		waitForSearchIdleEvent();
 
 		// 3. Search again and verify that the document was removed from the index
 		list = call(() -> client().searchTags(getSimpleTermQuery("fields.name", name)));

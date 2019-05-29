@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data;
 
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.Node;
@@ -15,9 +16,9 @@ import com.gentics.mesh.util.DateUtils;
 import java.util.Objects;
 import java.util.Set;
 
-import static com.gentics.mesh.MeshEvent.USER_CREATED;
-import static com.gentics.mesh.MeshEvent.USER_DELETED;
-import static com.gentics.mesh.MeshEvent.USER_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
 
 /**
  * The User Domain Model interface.
@@ -34,12 +35,7 @@ import static com.gentics.mesh.MeshEvent.USER_UPDATED;
  * <img src= "http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.impl.UserImpl.jpg" alt="">
  * </p>
  */
-public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableElement<UserReference>, UserTrackingVertex, IndexableElement {
-
-	/**
-	 * Type Value: {@value #TYPE}
-	 */
-	String TYPE = "user";
+public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableElement<UserReference>, UserTrackingVertex {
 
 	/**
 	 * API token id property name {@value #API_TOKEN_ID}
@@ -51,7 +47,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 */
 	String API_TOKEN_ISSUE_TIMESTAMP = "APITokenTimestamp";
 
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, USER_CREATED.address, USER_UPDATED.address, USER_DELETED.address);
+	TypeInfo TYPE_INFO = new TypeInfo(ElementType.USER, USER_CREATED, USER_UPDATED, USER_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {
@@ -64,7 +60,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @return
 	 */
 	static String composeIndexName() {
-		return TYPE.toLowerCase();
+		return "user";
 	}
 
 	/**

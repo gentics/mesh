@@ -7,20 +7,40 @@
 | Description
 
 
+| bulkDebounceTime
+| false
+| integer
+| The maximum amount of time in milliseconds between two bulkable requests before they are sent. Default: 2000
+
 | bulkLimit
 | false
 | integer
-| Upper limit for the size of bulk requests.
+| Upper limit for the size of bulk requests. Default: 2000
 
 | embeddedArguments
 | false
 | string
 | String of arguments which will be used for starting the Elasticsearch server instance
 
+| eventBufferSize
+| false
+| integer
+| Upper limit for mesh events that are to be mapped to elastic search requests. Default: 1000
+
+| idleDebounceTime
+| false
+| integer
+| The maximum amount of time in milliseconds between two successful requests before the idle event is emitted. Default: 100
+
 | prefix
 | false
 | string
 | Search server prefix for this installation. Choosing different prefixes for each Gentics Mesh instance will allow you to use a single Elasticsearch cluster for multiple Gentics Mesh instances. Default: mesh-
+
+| retryInterval
+| false
+| integer
+| The time in milliseconds between retries of elastic search requests in case of a failure. Default: 5000
 
 | startEmbedded
 | false
@@ -41,5 +61,10 @@
 | false
 | string
 | Elasticsearch connection url to be used. Set this setting to null will disable the Elasticsearch support.
+
+| waitForIdle
+| false
+| boolean
+| If true, search endpoints wait for elasticsearch to be idle before sending a response. Default: true
 
 |======

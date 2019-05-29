@@ -2,6 +2,7 @@ package com.gentics.mesh.image;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
+import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.image.focalpoint.FocalPointModifier;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
@@ -11,6 +12,7 @@ import com.gentics.mesh.util.PropReadFileStream;
 import com.gentics.mesh.util.RxUtil;
 import com.twelvemonkeys.image.ResampleOp;
 import io.reactivex.Flowable;
+import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
@@ -260,7 +262,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		// TODO handle execution timeout
 		// Make sure to run that code in the dedicated thread pool it may be CPU intensive for larger images and we don't want to exhaust the regular worker
 		// pool
-		return workerPool.rxExecuteBlocking(bh -> {
+		Maybe<PropReadFileStream> result = workerPool.rxExecuteBlocking(bh -> {
 			try (ImageInputStream ins = ImageIO.createImageInputStream(RxUtil.toInputStream(stream, vertx))) {
 				BufferedImage image;
 				ImageReader reader = getImageReader(ins);
@@ -299,6 +301,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 				bh.fail(e);
 			}
 		});
+		return result.toSingle();
 	}
 
 	private ImageWriteParam getImageWriteparams(String extension) {

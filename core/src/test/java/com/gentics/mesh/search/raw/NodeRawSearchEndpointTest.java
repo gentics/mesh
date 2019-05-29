@@ -4,7 +4,10 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Arrays;
 
 import org.junit.Test;
@@ -23,8 +26,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.json.JsonObject;
-
-@MeshTestSetting(useElasticsearch = true, startServer = true, testSize = FULL)
+@MeshTestSetting(elasticsearch = CONTAINER, startServer = true, testSize = FULL)
 public class NodeRawSearchEndpointTest extends AbstractMeshTest {
 
 	/**
@@ -62,6 +64,8 @@ public class NodeRawSearchEndpointTest extends AbstractMeshTest {
 		// We only want to test with our two projects.
 		call(() -> client().deleteProject(projectUuid()));
 
+		waitForSearchIdleEvent();
+
 		// search in old project
 		JsonObject response = new JsonObject(call(() -> client().searchNodesRaw(getSimpleQuery("fields.content", contentFieldValue))).toString());
 		assertThat(response).has("responses[0].hits.total", "2", "Not exactly two item was found.");
@@ -80,6 +84,7 @@ public class NodeRawSearchEndpointTest extends AbstractMeshTest {
 			SchemaResponse response = call(() -> client().createSchema(request));
 			call(() -> client().assignSchemaToProject(PROJECT_NAME, response.getUuid()));
 		}
+		waitForSearchIdleEvent();
 
 		call(() -> client().searchNodesRaw(PROJECT_NAME, getSimpleQuery("fields.content", "the"), new PagingParametersImpl()
 			.setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));

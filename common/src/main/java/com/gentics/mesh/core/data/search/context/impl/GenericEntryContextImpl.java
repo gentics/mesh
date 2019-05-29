@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.search.context.impl;
 
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
+import com.gentics.mesh.core.rest.common.ContainerType;
 
 /**
  * Index entry context which contains information about the scope of the action. The index handler implementation may use this information in order to correctly

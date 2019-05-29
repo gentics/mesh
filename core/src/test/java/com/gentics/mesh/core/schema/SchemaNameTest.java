@@ -1,5 +1,5 @@
 package com.gentics.mesh.core.schema;
-
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -15,7 +15,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.fail;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class SchemaNameTest extends AbstractNaughtyStringTest {
 	private Predicate<String> isValidName = Pattern.compile("^[_A-Za-z][_0-9A-Za-z]*$").asPredicate();
 

@@ -1,6 +1,6 @@
 package com.gentics.mesh.cli;
 
-import static com.gentics.mesh.MeshEvent.STARTUP;
+import static com.gentics.mesh.core.rest.MeshEvent.STARTUP;
 import static org.junit.Assert.fail;
 
 import java.io.File;

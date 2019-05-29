@@ -14,7 +14,7 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT, startServer = false)
+@MeshTestSetting(testSize = TestSize.PROJECT, startServer = false)
 public class AuthUserTest extends AbstractMeshTest {
 
 	@Test

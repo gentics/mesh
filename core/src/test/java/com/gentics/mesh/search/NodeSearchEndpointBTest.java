@@ -3,15 +3,14 @@ package com.gentics.mesh.search;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.Arrays;
-import java.util.concurrent.CountDownLatch;
 
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
@@ -24,10 +23,8 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.test.util.TestUtils;
 import com.syncleus.ferma.tx.Tx;
-
-@MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = NONE, testSize = FULL, startServer = true)
 public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	/**
@@ -66,10 +63,8 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchMicronodeResolveLinks() throws Exception {
-		try (Tx tx = tx()) {
-			addMicronodeField();
-			recreateIndices();
-		}
+		tx(this::addMicronodeField);
+		recreateIndices();
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.vcard.fields-vcard.firstName", "Mickey"),
 				new PagingParametersImpl().setPage(1).setPerPage(2L), new NodeParametersImpl().setResolveLinks(LinkType.FULL),
@@ -88,10 +83,8 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchListOfMicronodes() throws Exception {
-		try (Tx tx = tx()) {
-			addMicronodeListField();
-			recreateIndices();
-		}
+		tx(this::addMicronodeListField);
+		recreateIndices();
 
 		for (String firstName : Arrays.asList("Mickey", "Donald")) {
 			for (String lastName : Arrays.asList("Mouse", "Duck")) {
@@ -118,10 +111,8 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchListOfNodes() throws Exception {
-		try (Tx tx = tx()) {
-			addNodeListField();
-			recreateIndices();
-		}
+		tx(this::addNodeListField);
+		recreateIndices();
 
 		String nodeUuid = tx(() -> content("concorde").getUuid());
 
@@ -134,9 +125,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchDraftInBranch() throws Exception {
 		grantAdminRole();
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, db().tx(() -> content("concorde").getUuid()),
 				new VersioningParametersImpl().draft()));
@@ -145,6 +134,8 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 		BranchCreateRequest createBranch = new BranchCreateRequest();
 		createBranch.setName("newbranch");
 		waitForLatestJob(() -> call(() -> client().createBranch(PROJECT_NAME, createBranch)));
+
+		waitForSearchIdleEvent();
 
 		// 2. Search within the newly create branch
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),

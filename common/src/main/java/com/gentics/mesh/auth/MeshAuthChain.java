@@ -39,15 +39,18 @@ public class MeshAuthChain {
 		MeshOptions meshOptions = Mesh.mesh().getOptions();
 		OAuth2Options oauthOptions = meshOptions.getAuthenticationOptions().getOauth2();
 		if (oauthOptions != null && oauthOptions.isEnabled()) {
+			// First try to authenticate the key using JWT
 			route.handler(rc -> {
 				jwtAuthHandler.handle(rc, true);
 			});
+			// Now use the Oauth handler which may be able to authenticate the request - The jwt auth handler may have failed
 			oauthService.secure(route);
 		} else {
 			route.handler(rc -> {
 				jwtAuthHandler.handle(rc);
 			});
 		}
+		// Finally pass the request through the anonymous handler to fallback to anonymous when enabled
 		route.handler(rc -> {
 			anonHandler.handle(rc);
 		});

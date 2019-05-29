@@ -7,7 +7,7 @@ import org.junit.Test;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT_AND_NODE, startServer = false)
+@MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = false)
 public class RestructureWebrootIndexTest extends AbstractMeshTest {
 
 	@Test

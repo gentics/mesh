@@ -9,6 +9,8 @@ import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -28,6 +30,8 @@ import java.util.stream.Stream;
 import static com.gentics.mesh.rest.client.impl.Util.eventbusMessage;
 
 public class OkHttpWebsocket implements MeshWebsocket {
+	private static final Logger log = LoggerFactory.getLogger(OkHttpWebsocket.class);
+
 	private final OkHttpClient client;
 	private final MeshRestClientConfig config;
 
@@ -48,6 +52,7 @@ public class OkHttpWebsocket implements MeshWebsocket {
 
 		connect();
 		startPings();
+		errors.subscribe(err -> log.error("Error in Websocket", err));
 	}
 
 	private void connect() {
@@ -57,16 +62,23 @@ public class OkHttpWebsocket implements MeshWebsocket {
 
 		connected.set(false);
 
+		if (log.isDebugEnabled()) {
+			log.debug("Connecting to {}", request.url());
+		}
+
 		currentConnection = client.newWebSocket(request, new WebSocketListener() {
 			@Override
 			public void onOpen(WebSocket webSocket, Response response) {
 				connected.set(true);
 				sendRegisterEvents();
+				log.debug("Connection established, sending connection event");
 				connections.onNext(connectionDummy);
 			}
 
 			@Override
 			public void onMessage(WebSocket webSocket, String text) {
+				log.trace("Received message: {}", text);
+
 				try {
 					events.onNext(new EventbusEvent(text));
 				} catch (IOException e) {
@@ -107,11 +119,15 @@ public class OkHttpWebsocket implements MeshWebsocket {
 	}
 
 	private void reconnect() {
-		if (connected.compareAndSet(true, false)) {
-			Completable.complete()
-				.delay(config.getWebsocketReconnectInterval().toMillis(), TimeUnit.MILLISECONDS)
-				.subscribe(this::connect);
+		connected.set(false);
+
+		if (log.isDebugEnabled()) {
+			log.debug("Attempting reconnect in {}ms", config.getWebsocketReconnectInterval().toMillis());
 		}
+
+		Completable.complete()
+			.delay(config.getWebsocketReconnectInterval().toMillis(), TimeUnit.MILLISECONDS)
+			.subscribe(this::connect);
 	}
 
 	@Override

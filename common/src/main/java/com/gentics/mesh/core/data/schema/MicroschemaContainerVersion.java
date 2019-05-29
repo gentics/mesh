@@ -1,9 +1,5 @@
 package com.gentics.mesh.core.data.schema;
 
-import static com.gentics.mesh.MeshEvent.MICROSCHEMA_CREATED;
-import static com.gentics.mesh.MeshEvent.MICROSCHEMA_UPDATED;
-import static com.gentics.mesh.MeshEvent.SCHEMA_DELETED;
-
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -11,6 +7,11 @@ import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.madlmigration.TraversalResult;
+
+import static com.gentics.mesh.ElementType.MICROSCHEMAVERSION;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_DELETED;
 
 /**
  * A microschema container version is a container which holds a specific microschema. Microschema versions are usually bound to a {@link MicroschemaContainer}.
@@ -20,9 +21,7 @@ import com.gentics.mesh.madlmigration.TraversalResult;
 public interface MicroschemaContainerVersion extends
 		GraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer> {
 
-	static final String TYPE = "microschemaVersion";
-
-	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, MICROSCHEMA_CREATED.address, MICROSCHEMA_UPDATED.address, SCHEMA_DELETED.address);
+	static final TypeInfo TYPE_INFO = new TypeInfo(MICROSCHEMAVERSION, MICROSCHEMA_CREATED, MICROSCHEMA_UPDATED, SCHEMA_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {

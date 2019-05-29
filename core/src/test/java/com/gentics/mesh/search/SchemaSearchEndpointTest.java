@@ -1,6 +1,7 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
@@ -21,8 +22,7 @@ import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.DeploymentOptions;
-
-@MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
 public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
 
 	@Before
@@ -62,6 +62,8 @@ public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicS
 		try (Tx tx = tx()) {
 			assertElement(boot().schemaContainerRoot(), schema.getUuid(), true);
 		}
+		waitForSearchIdleEvent();
+
 		SchemaListResponse response = client()
 			.searchSchemas(getSimpleTermQuery("name.raw", newName), new PagingParametersImpl().setPage(1).setPerPage(2L)).blockingGet();
 		assertEquals(1, response.getData().size());
@@ -73,6 +75,7 @@ public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicS
 		final String schemaName = "newschemaname";
 		SchemaResponse schema = createSchema(schemaName);
 
+		waitForSearchIdleEvent();
 		SchemaListResponse response = client()
 			.searchSchemas(getSimpleTermQuery("name.raw", schemaName), new PagingParametersImpl().setPage(1).setPerPage(2L)).blockingGet();
 		assertEquals(1, response.getData().size());
@@ -90,10 +93,12 @@ public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicS
 		// 1. Create a new schema
 		final String schemaName = "newschemaname";
 		SchemaResponse schema = createSchema(schemaName);
+		waitForSearchIdleEvent();
 
 		// 2. Migrate Schema
 		String newSchemaName = "updatedschemaname";
 		waitForLatestJob(() -> updateSchema(schema.getUuid(), newSchemaName));
+		waitForSearchIdleEvent();
 
 		// 3. Search for the original schema
 		SchemaListResponse response = client()

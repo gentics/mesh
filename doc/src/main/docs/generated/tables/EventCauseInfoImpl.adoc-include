@@ -1,0 +1,25 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| action
+| true
+| string
+| Action of the cause. A event can for example be cause by a delete action.
+
+| type
+| false
+| string
+| Type of the element that is referenced by the cause.
+
+| uuid
+| false
+| string
+| Uuid of the element that is referenced by the cause.
+
+|======

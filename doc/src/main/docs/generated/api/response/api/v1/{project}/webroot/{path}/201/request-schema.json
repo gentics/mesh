@@ -116,6 +116,9 @@
             "version" : {
               "type" : "string"
             },
+            "versionUuid" : {
+              "type" : "string"
+            },
             "uuid" : {
               "type" : "string"
             },
@@ -264,12 +267,10 @@
         },
         "publish" : {
           "type" : "boolean",
-          "required" : true,
           "description" : "Flag which indicates whether the publish permission is granted."
         },
         "readPublished" : {
           "type" : "boolean",
-          "required" : true,
           "description" : "Flag which indicates whether the read published permission is granted."
         }
       }

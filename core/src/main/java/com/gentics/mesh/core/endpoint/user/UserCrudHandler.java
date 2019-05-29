@@ -33,7 +33,6 @@ import com.gentics.mesh.util.TokenUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.reactivex.Single;
 
 /**
  * Handler which contains methods for user related requests.
@@ -73,7 +72,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		if (log.isDebugEnabled()) {
 			log.debug("Handling permission request for element on path {" + pathToElement + "}");
 		}
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 			// 1. Load the user that should be used - read perm implies that the
 			// user is able to read the attached permissions
 			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
@@ -92,8 +91,8 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 
 			// 2. Add not granted permissions
 			response.setOthers(false);
-			return Single.just(response);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			return response;
+		}, model -> ac.send(model, OK));
 
 	}
 
@@ -107,7 +106,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	public void handleFetchToken(InternalActionContext ac, String userUuid) {
 		validateParameter(userUuid, "The userUuid must not be empty");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 			// 1. Load the user that should be used
 			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, CREATE_PERM);
 
@@ -125,8 +124,8 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 				response.setToken(token);
 				return response;
 			});
-			return Single.just(tokenResponse);
-		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
+			return tokenResponse;
+		}, model -> ac.send(model, CREATED));
 	}
 
 	/**
@@ -138,13 +137,13 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	public void handleIssueAPIToken(InternalActionContext ac, String userUuid) {
 		validateParameter(userUuid, "The userUuid must not be empty");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 			// 1. Load the user that should be used
 			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
 
 			// 2. Generate the API key for the user
 			UserAPITokenResponse apiKeyRespose = db.tx(() -> {
-				String tokenId = TokenUtil.randomToken(); 
+				String tokenId = TokenUtil.randomToken();
 				String apiToken = authProvider.generateAPIToken(user, tokenId, null);
 				UserAPITokenResponse response = new UserAPITokenResponse();
 				response.setPreviousIssueDate(user.getAPITokenIssueDate());
@@ -155,8 +154,8 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 				response.setToken(apiToken);
 				return response;
 			});
-			return Single.just(apiKeyRespose);
-		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
+			return apiKeyRespose;
+		}, model -> ac.send(model, CREATED));
 	}
 
 	/**
@@ -168,7 +167,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	public void handleDeleteAPIToken(InternalActionContext ac, String userUuid) {
 		validateParameter(userUuid, "The userUuid must not be empty");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 			// 1. Load the user that should be used
 			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
 
@@ -177,8 +176,8 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 				user.resetAPIToken();
 				return message(ac, "api_key_invalidated");
 			});
-			return Single.just(message);
-		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
+			return message;
+		}, model -> ac.send(model, CREATED));
 	}
 
 }

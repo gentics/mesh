@@ -17,6 +17,11 @@
 | string
 | Path binary data storage directory. Fileuploads will be placed here.
 
+| parserLimit
+| false
+| integer
+| The parser limit for uploaded documents (pdf, doc, docx). Default: 40000
+
 | tempDirectory
 | false
 | string

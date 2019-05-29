@@ -22,8 +22,6 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
@@ -31,11 +29,9 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.reactivex.Single;
 
 public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 
@@ -43,13 +39,10 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 
 	private BootstrapInitializer boot;
 
-	private SearchQueue searchQueue;
-
 	@Inject
-	public RoleCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, SearchQueue searchQueue) {
+	public RoleCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils) {
 		super(db, utils);
 		this.boot = boot;
-		this.searchQueue = searchQueue;
 	}
 
 	@Override
@@ -74,7 +67,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			throw error(BAD_REQUEST, "role_permission_path_missing");
 		}
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
@@ -95,8 +88,8 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			}
 			// 2. Add not granted permissions
 			response.setOthers(false);
-			return Single.just(response);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			return response;
+		}, model -> ac.send(model, OK));
 
 	}
 
@@ -117,7 +110,8 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			throw error(BAD_REQUEST, "role_permission_path_missing");
 		}
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
+
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}
@@ -132,42 +126,34 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 				throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 			}
 
-			return db.tx(() -> {
+			String name = utils.eventAction(batch -> {
 				RolePermissionRequest requestModel = ac.fromJson(RolePermissionRequest.class);
 
 				// Prepare the sets for revoke and grant actions
-				Tuple<SearchQueueBatch, String> tuple = db.tx(() -> {
-					SearchQueueBatch batch = searchQueue.create();
-					Set<GraphPermission> permissionsToGrant = new HashSet<>();
-					Set<GraphPermission> permissionsToRevoke = new HashSet<>();
+				Set<GraphPermission> permissionsToGrant = new HashSet<>();
+				Set<GraphPermission> permissionsToRevoke = new HashSet<>();
 
-					for (GraphPermission permission : GraphPermission.values()) {
-
-						if (requestModel.getPermissions().get(permission.getRestPerm()) == true) {
-							permissionsToGrant.add(permission);
-						} else {
-							permissionsToRevoke.add(permission);
-						}
+				for (GraphPermission permission : GraphPermission.values()) {
+					if (requestModel.getPermissions().get(permission.getRestPerm()) == true) {
+						permissionsToGrant.add(permission);
+					} else {
+						permissionsToRevoke.add(permission);
 					}
-					if (log.isDebugEnabled()) {
-						for (GraphPermission p : permissionsToGrant) {
-							log.debug("Granting permission: " + p);
-						}
-						for (GraphPermission p : permissionsToRevoke) {
-							log.debug("Revoking permission: " + p);
-						}
+				}
+				if (log.isDebugEnabled()) {
+					for (GraphPermission p : permissionsToGrant) {
+						log.debug("Granting permission: " + p);
 					}
-
-					// 3. Apply the permission actions
-					element.applyPermissions(batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
-					return Tuple.tuple(batch, role.getName());
-				});
-
-				tuple.v1().processSync();
-				String name = tuple.v2();
-				return Single.just(message(ac, "role_updated_permission", name));
-
+					for (GraphPermission p : permissionsToRevoke) {
+						log.debug("Revoking permission: " + p);
+					}
+				}
+				// 3. Apply the permission actions
+				element.applyPermissions(batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
+				return role.getName();
 			});
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			return message(ac, "role_updated_permission", name);
+		}, model -> ac.send(model, OK));
 	}
+
 }

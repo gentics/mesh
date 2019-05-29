@@ -1,7 +1,7 @@
 package com.gentics.mesh.router;
 
-import static com.gentics.mesh.MeshEvent.PROJECT_CREATED;
-import static com.gentics.mesh.MeshEvent.PROJECT_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 

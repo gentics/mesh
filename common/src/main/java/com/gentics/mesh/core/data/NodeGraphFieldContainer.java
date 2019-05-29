@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.INITIAL;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
 import java.util.Iterator;
 import java.util.List;
@@ -11,14 +11,19 @@ import java.util.Set;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.Errors;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.version.VersionInfo;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
@@ -104,7 +109,6 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 		id.append(languageTag);
 		return id.toString();
 	}
-
 
 	/**
 	 * Return the document id for the container.
@@ -421,4 +425,90 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 */
 	Iterator<? extends GraphFieldContainerEdge> getContainerEdge(ContainerType type, String branchUuid);
 
+	/**
+	 * Create the specific delete event.
+	 * 
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	NodeMeshEventModel onDeleted(String branchUuid, ContainerType type);
+
+	/**
+	 * Create the specific create event.
+	 * 
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	NodeMeshEventModel onCreated(String branchUuid, ContainerType type);
+
+	/**
+	 * Create the specific update event.
+	 * 
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	NodeMeshEventModel onUpdated(String branchUuid, ContainerType type);
+
+	/**
+	 * Create the taken offline event.
+	 * 
+	 * @param branchUuid
+	 * @return
+	 */
+	NodeMeshEventModel onTakenOffline(String branchUuid);
+
+	/**
+	 * Create the publish event.
+	 * 
+	 * @param branchUuid
+	 * @return
+	 */
+	NodeMeshEventModel onPublish(String branchUuid);
+
+	/**
+	 * Transform the container into a version info object.
+	 * 
+	 * @param ac
+	 * @return
+	 */
+	VersionInfo transformToVersionInfo(InternalActionContext ac);
+
+	/**
+	 * A container is purgeable when it is not being utilized as draft, published or initial version in any branch.
+	 * 
+	 * @return
+	 */
+	boolean isPurgeable();
+
+	/**
+	 * Check whether auto purge is enabled globally or for the schema of the container.
+	 * 
+	 * @return
+	 */
+	boolean isAutoPurgeEnabled();
+
+	/**
+	 * Purge the container from the version history and ensure that the links between versions are consistent.
+	 * 
+	 * @param bac
+	 *            Action context for the deletion process
+	 */
+	void purge(BulkActionContext bac);
+
+	/**
+	 * Purge the container from the version without the use of a Bulk Action Context.
+	 */
+	default void purge() {
+		purge(new DummyBulkActionContext());
+	}
+
+	/**
+	 * Return all versions.
+	 * 
+	 * @return
+	 */
+	TraversalResult<NodeGraphFieldContainer> versions();
 }

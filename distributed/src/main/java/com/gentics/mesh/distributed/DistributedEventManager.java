@@ -1,9 +1,9 @@
 package com.gentics.mesh.distributed;
 
-import static com.gentics.mesh.MeshEvent.CLEAR_PERMISSION_STORE;
-import static com.gentics.mesh.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
-import static com.gentics.mesh.MeshEvent.CLUSTER_NODE_JOINED;
-import static com.gentics.mesh.MeshEvent.CLUSTER_NODE_LEFT;
+import static com.gentics.mesh.core.rest.MeshEvent.CLEAR_PERMISSION_STORE;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_LEFT;
 import static com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS.ONLINE;
 
 import java.util.Map;
@@ -67,13 +67,13 @@ public class DistributedEventManager {
 		});
 
 		// React on project creates
-		eb.consumer(Project.TYPE_INFO.getOnCreatedAddress(), (Message<JsonObject> handler) -> {
+		eb.consumer(Project.TYPE_INFO.getOnCreated().getAddress(), (Message<JsonObject> handler) -> {
 			log.info("Received project create event");
 			handleClusterTopologyUpdate(handler);
 		});
 
 		// React on project updates
-		eb.consumer(Project.TYPE_INFO.getOnUpdatedAddress(), (Message<JsonObject> handler) -> {
+		eb.consumer(Project.TYPE_INFO.getOnUpdated().getAddress(), (Message<JsonObject> handler) -> {
 			log.info("Received project update event.");
 			handleClusterTopologyUpdate(handler);
 		});

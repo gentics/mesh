@@ -27,7 +27,7 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 
 	@Test
@@ -61,6 +61,8 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
+		disableAutoPurge();
+
 		Node node = folder("2015");
 		for (int i = 0; i < 20; i++) {
 			NodeGraphFieldContainer container = tx(() -> node.getGraphFieldContainer("en"));
@@ -107,6 +109,8 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		disableAutoPurge();
+
 		NodeResponse firstResponse = tx(() -> updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42)));
 		String oldVersion = firstResponse.getVersion();
 

@@ -28,6 +28,7 @@ import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
@@ -56,13 +57,16 @@ public class WebRootHandler {
 
 	private NodeCrudHandler nodeCrudHandler;
 
+	private HandlerUtilities utils;
+
 	@Inject
 	public WebRootHandler(Database database, WebRootServiceImpl webrootService, BinaryFieldResponseHandler binaryFieldResponseHandler,
-		NodeCrudHandler nodeCrudHandler) {
+		NodeCrudHandler nodeCrudHandler, HandlerUtilities utils) {
 		this.db = database;
 		this.webrootService = webrootService;
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
 		this.nodeCrudHandler = nodeCrudHandler;
+		this.utils = utils;
 	}
 
 	/**
@@ -76,7 +80,6 @@ public class WebRootHandler {
 			rc.mountPoint().length()
 		);
 		MeshAuthUser requestUser = ac.getUser();
-		// List<String> languageTags = ac.getSelectedLanguageTags();
 		db.asyncTx(() -> {
 
 			String branchUuid = ac.getBranch().getUuid();

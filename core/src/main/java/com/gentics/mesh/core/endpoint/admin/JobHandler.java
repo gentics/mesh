@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.endpoint.admin;
 
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.UNKNOWN;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
+import static com.gentics.mesh.core.rest.job.JobStatus.UNKNOWN;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -14,7 +14,6 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.NotImplementedException;
 
-import com.gentics.mesh.MeshEvent;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.job.Job;
@@ -22,9 +21,10 @@ import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -53,7 +53,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		utils.asyncTx(ac, (tx) -> {
+		utils.rxSyncTx(ac, tx -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -70,14 +70,15 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 					throw new NotModifiedException();
 				}
 			}
-			return page.transformToRest(ac, 0).blockingGet();
-		}, (e) -> ac.send(e, OK));
+			return page.transformToRest(ac, 0);
+		}, e -> ac.send(e, OK));
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.asyncTx(ac, (tx) -> {
+
+		utils.syncTx(ac, () -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -91,14 +92,14 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 				}
 			});
 			log.info("Deleted job {" + uuid + "}");
-			return (JobResponse) null;
-		}, model -> ac.send(NO_CONTENT));
+		}, () -> ac.send(NO_CONTENT));
+
 	}
 
 	@Override
 	public void handleRead(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.asyncTx(ac, (tx) -> {
+		utils.syncTx(ac, (tx) -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -111,7 +112,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 			} else {
 				return job.transformToRestSync(ac, 0);
 			}
-		}, (model) -> ac.send(model, OK));
+		}, model -> ac.send(model, OK));
 	}
 
 	@Override
@@ -126,7 +127,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	 * @param uuid
 	 */
 	public void handleResetJob(InternalActionContext ac, String uuid) {
-		utils.asyncTx(ac, (tx) -> {
+		utils.syncTx(ac, (tx) -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -141,21 +142,21 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 
 	public void handleProcess(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.asyncTx(ac, (tx) -> {
+		utils.syncTx(ac, (tx) -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			JobRoot root = boot.jobRoot();
 			Job job = root.loadObjectByUuidNoPerm(uuid, true);
 			db.tx(() -> {
-				MigrationStatus status = job.getStatus();
+				JobStatus status = job.getStatus();
 				if (status == FAILED || status == UNKNOWN) {
 					job.resetJob();
 				}
 			});
 			MeshEvent.triggerJobWorker();
 			return job.transformToRestSync(ac, 0);
-		}, (model) -> ac.send(model, OK));
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -164,12 +165,12 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	 * @param ac
 	 */
 	public void handleInvokeJobWorker(InternalActionContext ac) {
-		utils.asyncTx(ac, (tx) -> {
+		utils.syncTx(ac, (tx) -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			MeshEvent.triggerJobWorker();
 			return message(ac, "job_processing_invoked");
-		}, (model) -> ac.send(model, OK));
+		}, model -> ac.send(model, OK));
 	}
 }

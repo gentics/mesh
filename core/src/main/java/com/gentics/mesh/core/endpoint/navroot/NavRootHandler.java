@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
@@ -24,13 +24,12 @@ import io.vertx.ext.web.RoutingContext;
 public class NavRootHandler {
 
 	private WebRootServiceImpl webrootService;
-	private Database db;
-
+	private HandlerUtilities utils;
 
 	@Inject
-	public NavRootHandler(WebRootServiceImpl webRootService, Database db) {
+	public NavRootHandler(WebRootServiceImpl webRootService, HandlerUtilities utils) {
 		this.webrootService = webRootService;
-		this.db = db;
+		this.utils = utils;
 	}
 
 	/**
@@ -45,7 +44,7 @@ public class NavRootHandler {
 		);
 		MeshAuthUser requestUser = ac.getUser();
 
-		db.asyncTx(() -> {
+		utils.rxSyncTx(ac, tx-> {
 			Path nodePath = webrootService.findByProjectPath(ac, path);
 			PathSegment lastSegment = nodePath.getLast();
 
@@ -61,7 +60,7 @@ public class NavRootHandler {
 				throw error(FORBIDDEN, "error_missing_perm", node.getUuid(), READ_PUBLISHED_PERM.getRestPerm().getName());
 			}
 			return node.transformToNavigation(ac);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}, model -> ac.send(model, OK));
 
 	}
 }

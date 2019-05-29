@@ -17,8 +17,10 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.AuthProvider;
+import io.vertx.ext.auth.KeyStoreOptions;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.jwt.JWTAuth;
+import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.ext.jwt.JWTOptions;
 import io.vertx.ext.web.Cookie;
 import org.apache.commons.lang.NotImplementedException;
@@ -70,9 +72,9 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 
 		String keyStorePath = options.getKeystorePath();
 		String type = "jceks";
-		JsonObject config = new JsonObject().put("keyStore",
-			new JsonObject().put("path", keyStorePath).put("type", type).put("password", keystorePassword));
-		jwtProvider = JWTAuth.create(vertx, config);
+		JWTAuthOptions config = new JWTAuthOptions();
+		config.setKeyStore(new KeyStoreOptions().setPath(keyStorePath).setPassword(keystorePassword).setType(type));
+		jwtProvider = JWTAuth.create(vertx, new JWTAuthOptions(config));
 
 	}
 

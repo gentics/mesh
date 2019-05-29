@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.schema;
 
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
@@ -39,7 +39,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
  * Tests for https://github.com/gentics/mesh/issues/532
  * Tests if a schema or microschema can be updated after a failed migration.
  */
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true, clusterMode = false)
+@MeshTestSetting(testSize = FULL, startServer = true, clusterMode = false)
 public class MigrationFailureRecoveryTest extends AbstractMeshTest {
 	private static final String SCHEMA_NAME = "testSchema";
 	private static final String MICROSCHEMA_NAME = "testMicroschema";
@@ -54,9 +54,9 @@ public class MigrationFailureRecoveryTest extends AbstractMeshTest {
 		SchemaResponse schema = createSchema();
 		createNodes("nodeOne", "nodeOne", "nodeTwo");
 
-		waitForLatestJob(() -> invokeFailingMigration(schema), MigrationStatus.FAILED);
-		waitForLatestJob(() -> updateSchema(schema), MigrationStatus.COMPLETED);
-		waitForLatestJob(this::migrateSchemas, MigrationStatus.FAILED);
+		waitForLatestJob(() -> invokeFailingMigration(schema), JobStatus.FAILED);
+		waitForLatestJob(() -> updateSchema(schema), JobStatus.COMPLETED);
+		waitForLatestJob(this::migrateSchemas, JobStatus.FAILED);
 	}
 
 	@Test
@@ -67,11 +67,11 @@ public class MigrationFailureRecoveryTest extends AbstractMeshTest {
 		createNodes(true, "nodeOne", "nodeOne", "nodeTwo");
 
 		System.out.println(client().findJobs().toSingle().map(RestModel::toJson).blockingGet());
-		waitForLatestJob(() -> invokeFailingMigration(microschema), MigrationStatus.FAILED);
+		waitForLatestJob(() -> invokeFailingMigration(microschema), JobStatus.FAILED);
 		System.out.println(client().findJobs().toSingle().map(RestModel::toJson).blockingGet());
-		waitForLatestJob(() -> updateSchema(microschema), MigrationStatus.COMPLETED);
+		waitForLatestJob(() -> updateSchema(microschema), JobStatus.COMPLETED);
 		System.out.println(client().findJobs().toSingle().map(RestModel::toJson).blockingGet());
-		waitForLatestJob(this::migrateMicroschemas, MigrationStatus.FAILED);
+		waitForLatestJob(this::migrateMicroschemas, JobStatus.FAILED);
 		System.out.println(client().findJobs().toSingle().map(RestModel::toJson).blockingGet());
 	}
 

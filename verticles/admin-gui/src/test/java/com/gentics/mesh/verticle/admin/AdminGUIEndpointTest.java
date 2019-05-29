@@ -23,7 +23,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 
-@MeshTestSetting(useElasticsearch = false, testSize = TestSize.EMPTY, startServer = false)
+@MeshTestSetting(testSize = TestSize.EMPTY, startServer = false)
 public class AdminGUIEndpointTest extends AbstractMeshTest {
 
 	@Before

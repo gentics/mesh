@@ -11,6 +11,7 @@ import org.raml.model.parameter.FormParameter;
 import org.raml.model.parameter.QueryParameter;
 import org.raml.model.parameter.UriParameter;
 
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.ParameterProvider;
 
@@ -371,5 +372,13 @@ public interface InternalEndpointRoute extends Comparable<InternalEndpointRoute>
 	Map<Integer, Class<?>> getExampleResponseClasses();
 
 	Class<? extends RestModel> getExampleRequestClass();
+
+	/**
+	 * Set the events which are emitted by the action of the endpoint.
+	 * 
+	 * @param events
+	 * @return Fluent API
+	 */
+	InternalEndpointRoute events(MeshEvent... events);
 
 }

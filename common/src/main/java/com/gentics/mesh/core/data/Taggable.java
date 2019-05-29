@@ -13,9 +13,9 @@ import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagReference;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 
 /**
@@ -36,7 +36,7 @@ public interface Taggable {
 	 * @param batch search queue batch
 	 * @return list of tags
 	 */
-	default List<Tag> getTagsToSet(InternalActionContext ac, SearchQueueBatch batch) {
+	default List<Tag> getTagsToSet(InternalActionContext ac, EventQueueBatch batch) {
 		TagListUpdateRequest request = JsonUtil.readValue(ac.getBodyAsString(), TagListUpdateRequest.class);
 		return getTagsToSet(request.getTags(), ac, batch);
 	}
@@ -48,7 +48,7 @@ public interface Taggable {
 	 * @param batch
 	 * @return
 	 */
-	default List<Tag> getTagsToSet(List<TagReference> list, InternalActionContext ac, SearchQueueBatch batch) {
+	default List<Tag> getTagsToSet(List<TagReference> list, InternalActionContext ac, EventQueueBatch batch) {
 		List<Tag> tags = new ArrayList<>();
 		Project project = getProject();
 		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
@@ -83,8 +83,7 @@ public interface Taggable {
 					if (user.hasPermission(tagFamily, CREATE_PERM)) {
 						tag = tagFamily.create(tagReference.getName(), project, user);
 						user.addCRUDPermissionOnRole(tagFamily, CREATE_PERM, tag);
-						batch.store(tag, false);
-						batch.store(tagFamily, false);
+						batch.add(tag.onCreated());
 					} else {
 						throw error(FORBIDDEN, "tag_error_missing_perm_on_tag_family", tagFamily.getName(), tagFamily.getUuid(), tagReference
 							.getName());

@@ -1,32 +1,35 @@
 package com.gentics.mesh.core.node;
 
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.INITIAL_BRANCH_NAME;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.project.ProjectReference;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
@@ -34,10 +37,9 @@ import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.test.util.TestUtils;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class NodeDeleteEndpointTest extends AbstractMeshTest {
 
 	/**
@@ -56,6 +58,9 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 			call(() -> client().createBranch(PROJECT_NAME, new BranchCreateRequest().setName(branchName)));
 		});
 
+		String branchUuid = call(() -> client().findBranches(PROJECT_NAME)).getData().stream().filter(b -> b.getName().equals(branchName)).findFirst()
+			.get().getUuid();
+
 		Set<String> childrenUuids = new HashSet<>();
 		try (Tx tx = tx()) {
 			assertThat(node.getChildren(initialBranchUuid())).as("The node must have children").isNotEmpty();
@@ -63,8 +68,9 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 				collectUuids(child, childrenUuids);
 			}
 		}
-		System.out.println("Collected: " + childrenUuids.size());
 		String uuid = tx(() -> node.getUuid());
+		String schemaUuid = tx(() -> node.getSchemaContainer().getUuid());
+		String schemaName = tx(() -> node.getSchemaContainer().getName());
 		call(() -> client().takeNodeOffline(PROJECT_NAME, uuid, new PublishParametersImpl().setRecursive(true)));
 
 		NodeResponse response = call(
@@ -77,12 +83,29 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		assertThat(responseForRelease.getAvailableLanguages()).as("The node should have two container").hasSize(2);
 
 		// Delete first language container: german
+		expect(NODE_CONTENT_DELETED).match(1, NodeMeshEventModel.class, event -> {
+			assertEquals("de", event.getLanguageTag());
+			assertEquals(branchUuid, event.getBranchUuid());
+			assertEquals(uuid, event.getUuid());
+
+			SchemaReference schemaRef = event.getSchema();
+			assertNotNull(schemaRef);
+			assertEquals(schemaName, schemaRef.getName());
+			assertEquals(schemaUuid, schemaRef.getUuid());
+			assertNotNull(schemaRef.getVersion());
+
+			ProjectReference projectRef = event.getProject();
+			assertNotNull(projectRef);
+			assertEquals(PROJECT_NAME, projectRef.getName());
+			assertEquals(projectUuid(), projectRef.getUuid());
+		});
 		// The node should still be loadable and all child elements should still be existing
 		call(() -> client().deleteNode(PROJECT_NAME, uuid, "de"));
+		awaitEvents();
 		response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
 		assertThat(response.getAvailableLanguages()).as("The node should only have a single container/language").hasSize(1);
-		assertThatSubNodesExist(childrenUuids,initialBranchUuid());
-		assertThatSubNodesExist(childrenUuids,branchName);
+		assertThatSubNodesExist(childrenUuids, initialBranchUuid());
+		assertThatSubNodesExist(childrenUuids, branchName);
 
 		// Delete the second language container (english) - The delete should fail since this would be the last language for this node
 		call(() -> client().deleteNode(PROJECT_NAME, uuid, "en"), BAD_REQUEST, "node_error_delete_failed_last_container_for_branch");
@@ -96,7 +119,24 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		assertThatSubNodesExist(childrenUuids, initialBranchUuid());
 
 		// Delete the second language container (english) and use the recursive flag. The node and all subnodes should have been removed in the current branch
+		expect(NODE_CONTENT_DELETED).match(1, NodeMeshEventModel.class, event -> {
+			assertEquals("en", event.getLanguageTag());
+			assertEquals(branchUuid, event.getBranchUuid());
+			assertEquals(uuid, event.getUuid());
+
+			SchemaReference schemaRef = event.getSchema();
+			assertNotNull(schemaRef);
+			assertEquals(schemaName, schemaRef.getName());
+			assertEquals(schemaUuid, schemaRef.getUuid());
+			assertNotNull(schemaRef.getVersion());
+
+			ProjectReference projectRef = event.getProject();
+			assertNotNull(projectRef);
+			assertEquals(PROJECT_NAME, projectRef.getName());
+			assertEquals(projectUuid(), projectRef.getUuid());
+		});
 		call(() -> client().deleteNode(PROJECT_NAME, uuid, "en", new DeleteParametersImpl().setRecursive(true)));
+		awaitEvents();
 		// Verify that the node is still loadable in the initial branch
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(initialBranchUuid())));
 
@@ -146,7 +186,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 			BranchCreateRequest branchCreateRequest = new BranchCreateRequest();
 			branchCreateRequest.setName(SECOND_BRANCH_NAME);
 			call(() -> client().createBranch(PROJECT_NAME, branchCreateRequest));
-		}, MigrationStatus.COMPLETED, 1);
+		}, JobStatus.COMPLETED, 1);
 
 		// Create two drafts in branch A
 		updateNode(5, uuid, INITIAL_BRANCH_NAME);

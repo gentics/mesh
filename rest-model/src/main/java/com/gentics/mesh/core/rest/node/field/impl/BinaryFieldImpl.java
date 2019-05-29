@@ -56,6 +56,10 @@ public class BinaryFieldImpl implements BinaryField {
 	@JsonPropertyDescription("Metadata of the upload. This object may contain exif data of images or meta data from PDF files.")
 	private BinaryMetadata metadata;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Plain text content of the upload. This can be the text content of a word or PDF document.")
+	private String plainText;
+
 	@Override
 	public String getBinaryUuid() {
 		return binaryUuid;
@@ -163,6 +167,17 @@ public class BinaryFieldImpl implements BinaryField {
 	@Override
 	public BinaryField setMetadata(BinaryMetadata metadata) {
 		this.metadata = metadata;
+		return this;
+	}
+	
+	@Override
+	public String getPlainText() {
+		return plainText;
+	}
+	
+	@Override
+	public BinaryField setPlainText(String text) {
+		this.plainText = text;
 		return this;
 	}
 

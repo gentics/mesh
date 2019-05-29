@@ -2,10 +2,9 @@ package com.gentics.mesh.core.data.schema;
 
 import java.util.Map;
 
-import com.gentics.mesh.core.data.IndexableElement;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.UserTrackingVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
@@ -26,7 +25,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
  *            Container version type
  */
 public interface GraphFieldSchemaContainer<R extends FieldSchemaContainer, RE extends NameUuidReference<RE>, V extends GraphFieldSchemaContainer<R, RE, V, VV>, VV extends GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?>>
-		extends MeshCoreVertex<R, V>, ReferenceableElement<RE>, UserTrackingVertex, IndexableElement {
+		extends MeshCoreVertex<R, V>, ReferenceableElement<RE>, UserTrackingVertex {
 
 	/**
 	 * Return the version of the container using the version UUID as a reference.

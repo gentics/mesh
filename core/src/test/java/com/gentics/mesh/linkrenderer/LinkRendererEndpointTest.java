@@ -22,7 +22,7 @@ import static com.gentics.mesh.test.ClientHelper.call;
 /**
  * Test cases for link rendering using the Utility Verticle
  */
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class LinkRendererEndpointTest extends AbstractMeshTest {
 
 	/**

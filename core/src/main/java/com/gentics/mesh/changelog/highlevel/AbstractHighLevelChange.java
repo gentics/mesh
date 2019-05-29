@@ -8,5 +8,10 @@ public abstract class AbstractHighLevelChange implements HighLevelChange {
 	public void apply() {
 
 	}
+	
+	@Override
+	public void applyNoTx() {
+		
+	}
 
 }

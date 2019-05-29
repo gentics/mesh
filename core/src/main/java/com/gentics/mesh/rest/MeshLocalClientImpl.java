@@ -1,5 +1,16 @@
 package com.gentics.mesh.rest;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.apache.commons.io.IOUtils;
+
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.impl.LocalActionContextImpl;
@@ -11,7 +22,7 @@ import com.gentics.mesh.core.endpoint.auth.AuthenticationRestHandler;
 import com.gentics.mesh.core.endpoint.branch.BranchCrudHandler;
 import com.gentics.mesh.core.endpoint.group.GroupCrudHandler;
 import com.gentics.mesh.core.endpoint.microschema.MicroschemaCrudHandler;
-import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
+import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
 import com.gentics.mesh.core.endpoint.project.ProjectCrudHandler;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
@@ -51,6 +62,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
@@ -109,7 +121,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.ext.web.FileUpload;
-import org.apache.commons.io.IOUtils;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -156,7 +167,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public NodeCrudHandler nodeCrudHandler;
 
 	@Inject
-	public BinaryFieldHandler fieldAPIHandler;
+	public BinaryUploadHandler fieldAPIHandler;
 
 	@Inject
 	public WebRootHandler webrootHandler;
@@ -313,6 +324,11 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<NodeVersionsResponse> listNodeVersions(String projectName, String nodeUuid, ParameterProvider... parameters) {
+		return null;
+	}
+
+	@Override
 	public MeshRequest<TagListResponse> findTagsForNode(String projectName, String nodeUuid, ParameterProvider... parameters) {
 		LocalActionContextImpl<TagListResponse> ac = createContext(TagListResponse.class, parameters);
 		ac.setProject(projectName);
@@ -346,6 +362,15 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<TagResponse> updateTag(String projectName, String tagFamilyUuid, String uuid, TagUpdateRequest request) {
+		LocalActionContextImpl<TagResponse> ac = createContext(TagResponse.class);
+		ac.setProject(projectName);
+		ac.setPayloadObject(request);
+		tagCrudHandler.handleUpdate(ac, tagFamilyUuid, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<TagResponse> createTag(String projectName, String tagFamilyUuid, String uuid, TagCreateRequest request) {
 		LocalActionContextImpl<TagResponse> ac = createContext(TagResponse.class);
 		ac.setProject(projectName);
 		ac.setPayloadObject(request);
@@ -435,6 +460,13 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<GenericMessageResponse> purgeProject(String uuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+		projectCrudHandler.handlePurge(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
 	public MeshRequest<SchemaResponse> assignSchemaToProject(String projectName, String schemaUuid) {
 		LocalActionContextImpl<SchemaResponse> ac = createContext(SchemaResponse.class);
 		ac.setProject(projectName);
@@ -520,6 +552,15 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<TagFamilyResponse> createTagFamily(String projectName, String tagFamilyUuid, TagFamilyCreateRequest request) {
+		LocalActionContextImpl<TagFamilyResponse> ac = createContext(TagFamilyResponse.class);
+		ac.setPayloadObject(request);
+		ac.setProject(projectName);
+		tagFamilyCrudHandler.handleUpdate(ac, tagFamilyUuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
 	public MeshRequest<TagFamilyListResponse> findTagFamilies(String projectName, ParameterProvider... parameters) {
 		LocalActionContextImpl<TagFamilyListResponse> ac = createContext(TagFamilyListResponse.class, parameters);
 		ac.setProject(projectName);
@@ -579,6 +620,14 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		LocalActionContextImpl<SchemaResponse> ac = createContext(SchemaResponse.class);
 		ac.setPayloadObject(request);
 		schemaCrudHandler.handleCreate(ac);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<SchemaResponse> createSchema(String uuid, SchemaCreateRequest request) {
+		LocalActionContextImpl<SchemaResponse> ac = createContext(SchemaResponse.class);
+		ac.setPayloadObject(request);
+		schemaCrudHandler.handleUpdate(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -845,8 +894,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<UserResponse> me() {
-		LocalActionContextImpl<UserResponse> ac = createContext(UserResponse.class);
+	public MeshRequest<UserResponse> me(ParameterProvider... parameters) {
+		LocalActionContextImpl<UserResponse> ac = createContext(UserResponse.class, parameters);
 		authRestHandler.handleMe(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -1001,6 +1050,14 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		LocalActionContextImpl<MicroschemaResponse> ac = createContext(MicroschemaResponse.class);
 		ac.setPayloadObject(request);
 		microschemaCrudHandler.handleCreate(ac);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<MicroschemaResponse> createMicroschema(String uuid, MicroschemaCreateRequest request) {
+		LocalActionContextImpl<MicroschemaResponse> ac = createContext(MicroschemaResponse.class);
+		ac.setPayloadObject(request);
+		microschemaCrudHandler.handleUpdate(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 

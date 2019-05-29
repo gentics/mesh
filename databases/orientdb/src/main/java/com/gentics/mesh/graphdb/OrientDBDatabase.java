@@ -126,7 +126,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final Logger log = LoggerFactory.getLogger(OrientDBDatabase.class);
 
-	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.0.17.zip";
+	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.0.19.zip";
 
 	private TopologyEventBridge topologyEventBridge;
 
@@ -952,7 +952,11 @@ public class OrientDBDatabase extends AbstractDatabase {
 		}
 	}
 
+	/**
+	 * @deprecated Don't use tx method directly. Use {@link #tx(com.syncleus.ferma.tx.TxAction0)} instead to avoid tx commit issues.
+	 */
 	@Override
+	@Deprecated
 	public Tx tx() {
 		return new OrientDBTx(txProvider, resolver);
 	}

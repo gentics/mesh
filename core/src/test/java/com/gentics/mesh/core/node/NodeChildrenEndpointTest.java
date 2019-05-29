@@ -34,7 +34,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
@@ -204,8 +204,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 			firstChild = node.getChildren().iterator().next();
 			childrenSize = size(node.getChildren());
 			expectedItemsInPage = childrenSize > 25 ? 25 : childrenSize;
-
-			newBranch = project().getBranchRoot().create("newbranch", user());
+			newBranch = createBranch("newbranch");
 			tx.success();
 		}
 

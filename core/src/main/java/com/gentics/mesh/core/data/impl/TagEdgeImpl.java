@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
-
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagEdge;
@@ -10,6 +8,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.annotations.GraphElement;
 import com.syncleus.ferma.traversals.VertexTraversal;
+
+import static com.gentics.mesh.core.data.MeshVertex.UUID_KEY;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 
 /**
  * @see TagEdge
@@ -32,6 +33,18 @@ public class TagEdgeImpl extends MeshEdgeImpl implements TagEdge {
 	 */
 	public static VertexTraversal<?, ?, ?> getTagTraversal(VertexFrame vertex, Branch branch) {
 		return vertex.outE(HAS_TAG).has(BRANCH_UUID_KEY, branch.getUuid()).inV();
+	}
+
+	/**
+	 * Get the traversal for the tag assigned to the given vertex for the given branch
+	 *
+	 * @param vertex
+	 * @param tag
+	 * @param branch
+	 * @return Traversal
+	 */
+	public static boolean hasTag(VertexFrame vertex, Tag tag, Branch branch) {
+		return vertex.outE(HAS_TAG).has(BRANCH_UUID_KEY, branch.getUuid()).inV().has(UUID_KEY, tag.getUuid()).hasNext();
 	}
 
 	/**

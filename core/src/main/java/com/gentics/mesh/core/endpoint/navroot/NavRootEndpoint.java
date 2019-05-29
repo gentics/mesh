@@ -8,7 +8,6 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
@@ -51,6 +50,6 @@ public class NavRootEndpoint extends AbstractProjectEndpoint {
 		endpoint.addQueryParameters(NavigationParametersImpl.class);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, nodeExamples.getNavigationResponse(), "Loaded navigation.");
-		endpoint.handler(rc -> handler.handleGetPath(rc));
+		endpoint.blockingHandler(rc -> handler.handleGetPath(rc));
 	}
 }

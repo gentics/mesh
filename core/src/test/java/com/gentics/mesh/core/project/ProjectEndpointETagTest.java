@@ -12,7 +12,7 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
+@MeshTestSetting(testSize = PROJECT, startServer = true)
 public class ProjectEndpointETagTest extends AbstractMeshTest {
 
 	@Test

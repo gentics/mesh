@@ -35,7 +35,7 @@ import com.gentics.mesh.test.util.TestUtils;
 
 import io.reactivex.Single;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class TxTest extends AbstractMeshTest {
 
 	@Test

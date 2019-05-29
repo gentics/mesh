@@ -3,6 +3,7 @@ package com.gentics.mesh.search;
 import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -37,8 +38,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.json.JsonObject;
-
-@MeshTestSetting(useElasticsearch = true, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 @RunWith(Parameterized.class)
 public class MicroschemaMappingTest extends AbstractMeshTest {
 
@@ -207,6 +207,8 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 			MICROSCHEMA_NAME));
 		this.schema = call(() -> client().createSchema(createSchema));
 		call(() -> client().assignSchemaToProject(PROJECT_NAME, this.schema.getUuid()));
+
+		waitForSearchIdleEvent();
 	}
 
 	@Test
@@ -249,6 +251,8 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 				FieldUtil.createMicronodeField(MICROSCHEMA_NAME, new Tuple<>(DYNAMIC_FIELD_NAME, this.nodeField)));
 			NodeResponse node = call(() -> client().createNode(PROJECT_NAME, createNode));
 
+			waitForSearchIdleEvent();
+
 			// Search for the node
 			NodeListResponse response = call(() -> client().searchNodes(project().getName(),
 				new JsonObject().put("query", this.searchQuery.apply(searchPath)).encode()));
@@ -288,6 +292,7 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 					)
 			);
 
+			waitForSearchIdleEvent();
 			// Search for the node
 			NodeListResponse response = call(() -> client().searchNodes(project().getName(), query.encode()));
 

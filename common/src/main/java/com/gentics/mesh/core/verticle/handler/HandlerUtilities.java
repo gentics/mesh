@@ -3,32 +3,29 @@ package com.gentics.mesh.core.verticle.handler;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.event.EventCauseAction.DELETE;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -38,9 +35,8 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.TxAction;
 import com.syncleus.ferma.tx.TxAction0;
 import com.syncleus.ferma.tx.TxAction1;
-import com.syncleus.ferma.tx.TxAction2;
 
-import io.vertx.core.AsyncResult;
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -53,14 +49,14 @@ public class HandlerUtilities {
 	private static final Logger log = LoggerFactory.getLogger(HandlerUtilities.class);
 
 	private final Database database;
-	private final SearchQueue searchQueue;
 	private final MetricsService metrics;
+	private final boolean clustered;
 
 	@Inject
-	public HandlerUtilities(Database database, SearchQueue searchQueue, MeshOptions meshOptions, MetricsService metrics) {
-		this.searchQueue = searchQueue;
+	public HandlerUtilities(Database database, MeshOptions meshOptions, MetricsService metrics) {
 		this.database = database;
 		this.metrics = metrics;
+		this.clustered = meshOptions.getClusterOptions() != null && meshOptions.getClusterOptions().isEnabled();
 	}
 
 	/**
@@ -84,32 +80,18 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxAction1<RootVertex<T>> handler,
 		String uuid) {
-
-		asyncTx(ac, (tx) -> {
+		syncTx(ac, () -> {
 			RootVertex<T> root = handler.handle();
 			T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
 
 			// Load the name and uuid of the element. We need this info after deletion.
 			String elementUuid = element.getUuid();
-			String name = null;
-			if (element instanceof NamedElement) {
-				name = ((NamedElement) element).getName();
-			}
-
-			database.tx(() -> {
-				BulkActionContext bac = searchQueue.createBulkContext();
-				// Check whether the element is indexable. Indexable elements must also be purged from the search index.
-				if (element instanceof IndexableElement) {
-					element.delete(bac);
-					return bac.batch();
-				} else {
-					throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
-				}
-			}).processSync();
-			element.onDeleted(uuid, name);
+			bulkableAction(bac -> {
+				bac.setRootCause(element.getTypeInfo().getType(), elementUuid, DELETE);
+				element.delete(bac);
+			});
 			log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
-			return (RM) null;
-		}, model -> ac.send(NO_CONTENT));
+		}, () -> ac.send(NO_CONTENT));
 	}
 
 	/**
@@ -140,7 +122,7 @@ public class HandlerUtilities {
 		TxAction1<RootVertex<T>> handler) {
 
 		AtomicBoolean created = new AtomicBoolean(false);
-		asyncTx(ac, (tx) -> {
+		syncTx(ac, tx -> {
 			RootVertex<T> root = handler.handle();
 
 			// 1. Load the element from the root element using the given uuid (if not null)
@@ -152,50 +134,28 @@ public class HandlerUtilities {
 				element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM, false);
 			}
 
-			ResultInfo info = null;
-
 			// Check whether we need to update a found element or whether we need to create a new one.
 			if (element != null) {
 				final T updateElement = element;
-				Tuple<Boolean, SearchQueueBatch> tuple = database.tx(() -> {
-					SearchQueueBatch batch = searchQueue.create();
-					boolean updated = updateElement.update(ac, batch);
-					return Tuple.tuple(updated, batch);
+				eventAction(batch -> {
+					return updateElement.update(ac, batch);
 				});
-
-				SearchQueueBatch b = tuple.v2();
-				Boolean isUpdated = tuple.v1();
-				RM model = updateElement.transformToRestSync(ac, 0);
-				info = new ResultInfo(model, b);
-				if (isUpdated) {
-					updateElement.onUpdated();
-				}
+				return updateElement.transformToRestSync(ac, 0);
 			} else {
-				Tuple<T, SearchQueueBatch> tuple = database.tx(() -> {
-					SearchQueueBatch batch = searchQueue.create();
+				T createdElement = eventAction(batch -> {
 					created.set(true);
-					return Tuple.tuple(root.create(ac, batch, uuid), batch);
+					return root.create(ac, batch, uuid);
 				});
-
-				SearchQueueBatch b = tuple.v2();
-				T createdElement = tuple.v1();
 				RM model = createdElement.transformToRestSync(ac, 0);
 				String path = createdElement.getAPIPath(ac);
-				info = new ResultInfo(model, b);
+				ResultInfo info = new ResultInfo(model);
 				info.setProperty("path", path);
 				createdElement.onCreated();
 				ac.setLocation(path);
+				return model;
 			}
 
-			// 3. The updating transaction has succeeded. Now lets store it in the index
-			final ResultInfo info2 = info;
-			return database.tx(() -> {
-				info2.getBatch().processSync();
-				return info2.getModel();
-			});
-		}, model -> {
-			ac.send(model, created.get() ? CREATED : OK);
-		});
+		}, model -> ac.send(model, created.get() ? CREATED : OK));
 	}
 
 	/**
@@ -211,7 +171,8 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
 		TxAction1<RootVertex<T>> handler, GraphPermission perm) {
-		asyncTx(ac, (tx) -> {
+
+		syncTx(ac, tx -> {
 			RootVertex<T> root = handler.handle();
 			T element = root.loadObjectByUuid(ac, uuid, perm);
 
@@ -224,8 +185,7 @@ public class HandlerUtilities {
 				}
 			}
 			return element.transformToRestSync(ac, 0);
-		}, (model) -> ac.send(model, OK));
-
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -236,7 +196,8 @@ public class HandlerUtilities {
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac, TxAction1<RootVertex<T>> handler) {
-		asyncTx(ac, (tx) -> {
+
+		rxSyncTx(ac, tx -> {
 			RootVertex<T> root = handler.handle();
 
 			PagingParameters pagingInfo = ac.getPagingParameters();
@@ -250,76 +211,103 @@ public class HandlerUtilities {
 					throw new NotModifiedException();
 				}
 			}
-			return page.transformToRest(ac, 0).blockingGet();
-		}, (e) -> ac.send(e, OK));
+			return page.transformToRest(ac, 0);
+
+		}, m -> ac.send(m, OK));
+	}
+
+	public <RM> void syncTx(InternalActionContext ac, TxAction<RM> handler, Consumer<RM> action) {
+		try {
+			RM model = database.tx(handler);
+			action.accept(model);
+		} catch (Throwable t) {
+			ac.fail(t);
+		}
+	}
+
+	public <RM extends RestModel> void rxSyncTx(InternalActionContext ac, TxAction<Single<RM>> handler, Consumer<RM> action) {
+		try {
+			Single<RM> model = database.tx(handler);
+			model.subscribe(action::accept, ac::fail);
+		} catch (Throwable t) {
+			ac.fail(t);
+		}
 	}
 
 	/**
-	 * Asynchronously execute the handler within a scope of a no tx transaction.
-	 * 
-	 * @param ac
-	 * @param handler
-	 *            Handler which will be executed within a worker thread
-	 * @param action
-	 *            Action which will be invoked once the handler has finished
-	 */
-	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction<RM> handler, Consumer<RM> action) {
-		async(ac, () -> {
-			return database.tx(handler);
-		}, action);
-	}
-
-	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction<RM> handler, Consumer<RM> action, boolean order) {
-		async(ac, () -> {
-			return database.tx(handler);
-		}, action, order);
-	}
-
-	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction0 handler, Consumer<RM> action) {
-		async(ac, () -> {
-			database.tx(handler);
-			return null;
-		}, action);
-	}
-
-	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction1<RM> handler, Consumer<RM> action) {
-		async(ac, () -> {
-			return database.tx(handler);
-		}, action);
-	}
-
-	public <RM extends RestModel> void asyncTx(InternalActionContext ac, TxAction2 handler, Consumer<RM> action) {
-		async(ac, () -> {
-			database.tx(handler);
-			return null;
-		}, action);
-	}
-
-	private <RM extends RestModel> void async(InternalActionContext ac, TxAction1<RM> handler, Consumer<RM> action) {
-		async(ac, handler, action, false);
-	}
-
-	/**
-	 * Asynchronously execute the handler.
+	 * Invoke sync action in a tx.
 	 * 
 	 * @param ac
 	 * @param handler
 	 * @param action
 	 */
-	private <RM extends RestModel> void async(InternalActionContext ac, TxAction1<RM> handler, Consumer<RM> action, boolean order) {
-		Mesh.vertx().executeBlocking(bc -> {
-			try {
-				bc.complete(handler.handle());
-			} catch (Exception e) {
-				bc.fail(e);
-			}
-		}, order, (AsyncResult<RM> rh) -> {
-			if (rh.failed()) {
-				ac.fail(rh.cause());
-			} else {
-				action.accept(rh.result());
-			}
+	public <RM extends RestModel> void syncTx(InternalActionContext ac, TxAction0 handler, Runnable action) {
+		try {
+			database.tx(handler);
+			action.run();
+		} catch (Throwable t) {
+			ac.fail(t);
+		}
+	}
+
+	/**
+	 * Invoke a bulkable action.
+	 * 
+	 * @param function
+	 */
+	public void bulkableAction(Consumer<BulkActionContext> function) {
+		BulkActionContext b = database.tx(tx -> {
+			BulkActionContext bac = BulkActionContext.create();
+			function.accept(bac);
+			return bac;
 		});
+		b.process(true);
+	}
+
+	/**
+	 * Invoke a bulkable action.
+	 * 
+	 * @param function
+	 * @return
+	 */
+	public <T> T bulkableAction(Function<BulkActionContext, T> function) {
+		Tuple<T, BulkActionContext> r = database.tx(tx -> {
+			BulkActionContext bac = BulkActionContext.create();
+			T result = function.apply(bac);
+			return Tuple.tuple(result, bac);
+		});
+		r.v2().process(true);
+		return r.v1();
+	}
+
+	/**
+	 * Invoke an event action.
+	 * 
+	 * @param function
+	 */
+	public void eventAction(Consumer<EventQueueBatch> function) {
+		EventQueueBatch b = database.tx(tx -> {
+			EventQueueBatch batch = EventQueueBatch.create();
+			function.accept(batch);
+			return batch;
+		});
+		b.dispatch();
+	}
+
+	/**
+	 * Invoke an event action which returns a result.
+	 * 
+	 * @param function
+	 * @return
+	 */
+	public <T> T eventAction(Function<EventQueueBatch, T> function) {
+		Tuple<T, EventQueueBatch> tuple = database.tx(tx -> {
+			EventQueueBatch batch = EventQueueBatch.create();
+			T result = function.apply(batch);
+			return Tuple.tuple(result, batch);
+		});
+		tuple.v2().dispatch();
+		return tuple.v1();
 	}
 
 }

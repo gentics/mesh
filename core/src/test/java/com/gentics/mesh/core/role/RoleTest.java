@@ -45,7 +45,7 @@ import com.tinkerpop.blueprints.Edge;
 
 import io.vertx.ext.web.RoutingContext;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = false)
+@MeshTestSetting(testSize = PROJECT, startServer = false)
 public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
@@ -389,17 +389,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 				tx2.success();
 			}
 			assertElement(boot().roleRoot(), uuid, false);
-
-			// Check role entry
-			// Optional<? extends SearchQueueEntry> roleEntry = batch.findEntryByUuid(uuid);
-			// assertThat(roleEntry).isPresent();
-			// assertEquals(DELETE_ACTION, roleEntry.get().getElementAction());
-			//
-			// Optional<? extends SearchQueueEntry> groupEntry = batch.findEntryByUuid(group().getUuid());
-			// assertThat(groupEntry).isPresent();
-			// assertEquals(STORE_ACTION, groupEntry.get().getElementAction());
-
-			assertEquals("The role and all the documents which had permissions on the role must be updated.", 2 + 30, context.batch().getEntries().size());
+			assertEquals("The role event was not included in the batch", 1, context.batch().getEntries().size());
 		}
 	}
 

@@ -80,7 +80,7 @@ public interface Schema extends FieldSchemaContainer {
 					throw error(BAD_REQUEST, "schema_error_urlfield_null", urlFieldName);
 				}
 				if (segmentFieldSchema != null && (!((segmentFieldSchema instanceof StringFieldSchema)
-						|| (segmentFieldSchema instanceof ListFieldSchema)))) {
+					|| (segmentFieldSchema instanceof ListFieldSchema)))) {
 					throw error(BAD_REQUEST, "schema_error_urlfield_type_invalid", urlFieldName, segmentFieldSchema.getType());
 				}
 				if (segmentFieldSchema instanceof ListFieldSchema) {
@@ -94,7 +94,7 @@ public interface Schema extends FieldSchemaContainer {
 
 		FieldSchema segmentFieldSchema = getField(getSegmentField());
 		if (segmentFieldSchema != null && (!((segmentFieldSchema instanceof StringFieldSchema)
-				|| (segmentFieldSchema instanceof BinaryFieldSchema)))) {
+			|| (segmentFieldSchema instanceof BinaryFieldSchema)))) {
 			throw error(BAD_REQUEST, "schema_error_segmentfield_type_invalid", segmentFieldSchema.getType());
 		}
 
@@ -129,4 +129,18 @@ public interface Schema extends FieldSchemaContainer {
 		return this;
 	}
 
+	/**
+	 * Return the auto purge flag for the schema.
+	 * 
+	 * @return
+	 */
+	Boolean getAutoPurge();
+
+	/**
+	 * Set the auto purge flag.
+	 * 
+	 * @param autoPurge
+	 * @return
+	 */
+	Schema setAutoPurge(Boolean autoPurge);
 }

@@ -2,24 +2,28 @@ package com.gentics.mesh.auth;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
+import static com.gentics.mesh.test.context.MeshOptionChanger.WITH_MAPPER_SCRIPT;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 
+import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.etc.config.OAuth2Options;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestContext;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -30,19 +34,11 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-@MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = true, useKeycloak = true)
+@Ignore
+@MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = true, useKeycloak = true, optionChanger = WITH_MAPPER_SCRIPT)
 public class OAuth2KeycloakTest extends AbstractMeshTest {
 
-	@ClassRule
-	public static TestRule rule = (Statement base, Description description) -> {
-		OAuth2Options options = testContext.getOptions().getAuthenticationOptions().getOauth2();
-		options.setMapperScriptDevMode(true);
-		options.setMapperScriptPath("src/test/resources/oauth2/mapperscript.js");
-		return base;
-	};
-
 	@Test
-	@Ignore("Fails on CI pipeline. See https://github.com/gentics/mesh/issues/608")
 	public void testKeycloakAuth() throws Exception {
 
 		// 1. Login the user
@@ -63,6 +59,8 @@ public class OAuth2KeycloakTest extends AbstractMeshTest {
 		call(() -> client().me());
 
 		UserResponse me2 = call(() -> client().me());
+		System.out.println(me2.toJson());
+
 		assertEquals("The uuid should not change. The previously created user should be returned.", uuid, me2.getUuid());
 		assertEquals("group1", me2.getGroups().get(0).getName());
 		assertEquals("group2", me2.getGroups().get(1).getName());
@@ -77,6 +75,7 @@ public class OAuth2KeycloakTest extends AbstractMeshTest {
 		JsonObject meJson = new JsonObject(get("/api/v1/auth/me"));
 		assertEquals("anonymous", meJson.getString("username"));
 
+		client().setAPIKey(null);
 		client().setLogin("admin", "admin");
 		client().login().blockingGet();
 
@@ -94,6 +93,54 @@ public class OAuth2KeycloakTest extends AbstractMeshTest {
 		client().setAPIKey(null);
 		UserResponse anonymous = call(() -> client().me());
 		assertEquals("anonymous", anonymous.getUsername());
+	}
+
+	@Test
+	public void testWebroot() throws IOException {
+		// Upload test image
+		String parentUuid = tx(() -> folder("2015").getUuid());
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setSchemaName("binary_content");
+		nodeCreateRequest.getFields().put("name", FieldUtil.createStringField("MyImage"));
+		nodeCreateRequest.setParentNodeUuid(parentUuid);
+		NodeResponse createdNode = call(() -> client().createNode(projectName(), nodeCreateRequest));
+		uploadImage(createdNode, "en", "binary");
+
+		// 1. Login the user
+		JsonObject authInfo = loginKeycloak();
+		String token = authInfo.getString("access_token");
+		client().setAPIKey(token);
+		System.out.println("Login Token\n:" + authInfo.encodePrettily());
+
+		// 1. Invoke request to create groups
+		call(() -> client().me());
+		// 2. Now grant permissions via admin
+		client().setAPIKey(null);
+		client().setLogin("admin", "admin");
+		client().login().blockingGet();
+
+		// Apply permissions
+		String role1Uuid = tx(() -> boot().roleRoot().findByName("role1").getUuid());
+		RolePermissionRequest updateRequest = new RolePermissionRequest().setRecursive(true);
+		updateRequest.getPermissions().setRead(true);
+		call(() -> client().updateRolePermissions(role1Uuid, "projects/" + projectUuid(), updateRequest));
+		// Assign the role to the group
+		String groupUuid = tx(() -> boot().groupRoot().findByName("group1").getUuid());
+		call(() -> client().addRoleToGroup(groupUuid, role1Uuid));
+
+		// Reset the keycloak token
+		client().setAPIKey(token);
+
+		String nodePath = "/News/2015";
+		MeshWebrootResponse response = call(
+			() -> client().webroot(projectName(), nodePath, new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
+		assertEquals(nodePath, response.getNodeResponse().getPath());
+
+		String imagePath = "/News/2015/blume.jpg";
+		response = call(() -> client().webroot(projectName(), imagePath));
+		assertTrue(response.isBinary());
+
 	}
 
 	protected JsonObject get(String path, String token) throws IOException {

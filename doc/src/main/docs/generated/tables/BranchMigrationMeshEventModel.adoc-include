@@ -1,0 +1,40 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| branch
+| true
+| object
+| Branch to which the migration applies.
+
+| cause
+| true
+| object
+| Some events will be caused by another action. This object contains information about the cause of the event.
+
+| origin
+| true
+| string
+| Name of the mesh node from which the event originates.
+
+| project
+| true
+| object
+| Project to which the migration applies.
+
+| status
+| true
+| string
+| Status of the migration at the time when the event was send.
+
+| uuid
+| true
+| string
+| Uuid of the corresponding job.
+
+|======

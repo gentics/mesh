@@ -16,8 +16,9 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = false)
+@MeshTestSetting(elasticsearch = NONE, testSize = PROJECT, startServer = false)
 public class AtomicTagTest extends AbstractMeshTest {
 
 	@Test
