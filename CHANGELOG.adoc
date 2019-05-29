@@ -40,7 +40,7 @@ The following values have been changed:
 
 The `NodeResponse#isContainer` method has been deprecated and was replaced by `NodeResponse#getContainer`
 
-Applications which use affected models will most likly not needed to updated since the returned response will always set the affected fields.
+Applications which use affected models will most likely not need to updated since the returned response will always set the affected fields.
 
 icon:plus[] REST: The `?fields` query parameter which can be used to filter response properties will now work more granular on node responses.
 
