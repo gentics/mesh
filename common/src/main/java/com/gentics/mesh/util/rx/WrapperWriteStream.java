@@ -8,6 +8,7 @@ import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.ReplaySubject;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
@@ -228,6 +229,17 @@ public class WrapperWriteStream implements WriteStream<Buffer> {
 
 	private boolean endedAndEmpty() {
 		return ended && (buffer == null || buffer.length() == 0);
+	}
+
+	@Override
+	public WriteStream<Buffer> write(Buffer data, Handler<AsyncResult<Void>> handler) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void end(Handler<AsyncResult<Void>> handler) {
+
 	}
 
 }
