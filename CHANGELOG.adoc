@@ -22,13 +22,174 @@ include::content/docs/variables.adoc-include[]
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
-[[v0.31.5]]
-== 0.31.5 (TBD)
+[[v0.34.1]]
+== 0.34.1 (TBD)
 
 CAUTION: Fetching fields of a node/micronode in GraphQL requires a different syntax. Please refer to the link:https://github.com/gentics/mesh/issues/428[#428] and link:https://github.com/gentics/mesh/issues/317[#317] for details.
 
+icon:check[] Focal point: It is now possible to use the `:apiLatest:/:projectName/nodes/:uuid/binaryTransform/:fieldName` to resize and image and set the focal point in one operation.
+[[v0.34.0]]
+== 0.34.0 (28.05.2019)
+
+icon:bullhorn[] Versioning Enhancements
+
+[quote]
+____
+
+The versioning system has received various enhancements.
+
+link:{{< relref "features.asciidoc" >}}#auto-purge[Auto Purge]
+
+The auto purge feature will now automatically purge the previously no longer needed version of a content. You can control this behaviour using the `autoPurge` flag in the `mesh.yml` file.
+
+Additionally schema's may now contain a `autoPurge` flag to override the setting on a per schema basis.
+
+The documentation contains detailed information about how versioning can be controlled.
+
+link:{{< relref "features.asciidoc" >}}#_listing_versions[Listing Versions]
+
+Versions of a node can now be listed via REST and GraphQL.
+
+link:{{< relref "features.asciidoc" >}}#_purging_versions[Purging Versions]
+
+Versions can now be purged across projects to reduce disk storage usage.
+____
+
+icon:check[] Java Rest Client: Fixed a bug that prevented automatic reconnection to the eventbus when it did not succeed immediately.
+
+icon:check[] Upload: The document processing library _tika_ has been updated to version `1.21` to fix potential out of memory issues during upload document processing.
+
+icon:check[] Branch Migration: A bug in the branch migration process has been fixed. Previously the wrong version of the content was used as branch root version. The process will now utilize the published version if one exists and otherwise use the draft version. This fix only affected internal data handling.
+
+[[v0.33.1]]
+== 0.33.1 (23.05.2019)
+
+icon:check[] Core: The dependency _hazelcast-kubernetes_ has set to version 1.2.2 to fix a compatibility issue with the used hazelcast version.
+
+[[v0.33.0]]
+== 0.33.0 (20.05.2019)
+
+icon:bullhorn[] Elasticsearch document handling
+
+[quote]
+____
+
+The support for the Elasticsearch ingest plugin has been removed. The same functionality has been replaced with a much more efficient implementation which extracts the plain text of a document during upload processing. The structure of the generated search index has not changed and thus no modifications on existing search queries is required.
+
+The plain text will now also be included in the REST and GraphQL response of binary fields.
+
+An automatic changelog entry has been added which will parse all uploaded documents and extract the plain text. The duration of the execution of this task depends on the amount of documents that need to be parsed.
+
+The new __mesh.yml__ setting `upload.parserLimit` can be used to control the document parser. See link:{{< relref "features.asciidoc" >}}#_text_extraction[Text extraction documentation] for more information.
+____
+
+icon:plus[] Search: The embedded elastichead interface has been removed. It is recommended to use browser extentions like link:https://chrome.google.com/webstore/detail/elasticsearch-head/ffmkiejjmecolpfloofpjologoblkegm[ElasticSearch Head for Chrome] instead.
+
+icon:check[] Core: Various internal libraries have been updated (logback, hazelcast-kubernetes, tika)
+
+icon:plus[] OrientDB: The included OrientDB version has been updated to version 3.0.19
+
+[[v0.32.0]]
+== 0.32.0 (08.05.2019)
+
+icon:bullhorn[] Event Handling
+
+[quote]
+____
+
+The event handling mechanism has been completely overhauled.
+
+*Changes*
+
+* Additional events have been added
+* Event payload includes more information
+* Java Models for events have been added
+
+*API*
+
+The API class `com.gentics.mesh.MeshEvent` was replaced by `com.gentics.mesh.core.rest.MeshEvent`.
+
+A detailed description of this feature can be found in our link:{{< relref "events.asciidoc" >}}[Event Documentation].
+____
+
+icon:bullhorn[] Elasticsearch Handling
+
+[quote]
+____
+
+The Elasticsearch integration has been overhauled.
+
+*Integration*
+
+Elasticsearch synchronization operations have been decoupled from regular write operations.
+
+This has two main effects. First, regular write operations (e.g. Node Update, Node Create) will not block until the changed data has been synchronized with elasticsearch. This will result in higher overall write performance. Secondly, changes will not be directly visible in Elasticsearch since write operations in Elasticsearch have been decoupled and will be executed asynchronously after a element in Gentics Mesh has been modified. Implementations which highly rely on Gentics Mesh being in sync with ES for each operation may need to be adapted. When using the `/search` or `/rawSearch` endpoints in mesh, you can now provide the `?wait=true` query parameter. See details link:{{< relref "elasticsearch.asciidoc" >}}#endpoints[here]
+
+*Fixes*
+
+Various issues with the previous Elasticsearch synchronization mechanism have been addressed.
+
+* Deletion of nodes will now also update documents in the index which reference the deleted node
+* Tag and Tag Family deletion will now correctly update referenced tags, tag families and nodes
+
+*Startup*
+
+Gentics Mesh will no longer wait for Elasticsearch during start-up.
+
+*Resilience*
+
+The resilience for Elasticsearch server issues has been improved. Failed requests will automatically be retried. If too many issues occur Gentics Mesh will automatically invoke an index sync in order to recover from the issue. This sync will be retried until Elasticsearch becomes responsive again.
+
+*Syncing*
+
+The clear and sync mechanism has been streamlined in order to benefit from other changes like resilience.
+
+____
+
+NOTE: It is not required to reindex documents since the index names and structure has not been changed.
+
+icon:check[] File Handling: The file upload mechanism has been overhauled to address issues with blocked uploads which could occur when uploading multiple files in-parallel.
+
+icon:check[] File Handling: Failed Uploads will now remove temporary files from disk. Previously in some error situations the temporary upload have not been removed.
+
+icon:check[] Permissions: Applying permissions recursively on projects did not affect branches. This has been fixed.
+
+icon:plus[] Permissions: Setting permissions recursively is now done more efficiently.
+
+icon:plus[] Thread Usage: The overall request handling has been refactored to reduce situations in which the event-loop threads could be blocked. The request handling code has been unified.
+
+icon:plus[] Core: The core Vert.x library was updated to version 3.7.0
+
+icon:plus[] Performance: The overall read performance has been improved. The memory usage has been reduced.
+
+[[v0.31.6]]
+== 0.31.6 (27.05.2018)
+
+icon:check[] Java Rest Client: Fixed a bug that prevented automatic reconnection to the eventbus when it did not succeed immediately.
+
+[[v0.31.5]]
+== 0.31.5 (07.05.2019)
+
+icon:check[] REST: The `publish` and `readPublished` permissions are now only shown for nodes.
+
+icon:check[] Core: Creation of schemas with the same name of an existing microschema or vice versa is not allowed anymore. Doing so caused conflicts in GraphQL. link:https://github.com/gentics/mesh/issues/597[#597]
+
+icon:check[] Core: A bug in the image transform endpoint has been fixed. Previously nodes which were updated using that endpoint could not be found via webroot anymore. link:https://github.com/gentics/mesh/issues/599[#599]
+
+icon:plus[] Job: The endpoint `POST :apiLatest:/admin/jobs/:jobUuid/process` has been added. It can be used to trigger job processing. The endpoint will also automatically reset a failed job to be queued again. The endpoints `DELETE :apiLatest:/admin/jobs/:jobUuid/error` and `POST :apiLatest:/admin/processJobs` will be removed in a future release. link:https://github.com/gentics/mesh/issues/171[#171]
+
+icon:check[] Plugins: A `NullPointerException` has been fixed which has happened when accessing `rc.user().principal()` within a plugin. link:https://github.com/gentics/mesh/issues/516[#516]
+
+icon:check[] REST: Creating a schema with a micronode field and the allow option set to `[]` will now allow micronodes of all microschemas. link:https://github.com/gentics/mesh/issues/431[#431]
+
+icon:check[] Core: Fixed a bug that caused an internal server error when applying changes to a microschema. link:https://github.com/gentics/mesh/issues/591[#591]
+
+icon:check[] UI: Fixed validation issues in microschema lists when updating nodes. Previously validation issues would not be detected by the UI and the node update would fail. link:https://github.com/gentics/mesh-ui/pull/202[#202]
+
 [[v0.31.4]]
 == 0.31.4 (11.04.2019)
+
+icon:check[] Schema: The `container` flag in the schema update request is now optional. Omitting the value will no longer cause Gentics Mesh to use the default value `false`. Subsequently the java request model was altered. The `Schema#isContainer` method was replaced with `Schema#getContainer`. Older REST client versions which by default always specified the container flag are still compatible with this change. link:https://github.com/gentics/mesh/issues/165[#165]
 
 icon:check[] GraphQL: The permission check for the `nodes` field of the type `Tag` has been fixed. Previously loading tagged nodes for a tag did not return the expected result. The `published` permission for published nodes was not checked correctly. This has been fixed now.
 
@@ -107,6 +268,8 @@ icon:check[] Schema: A bug was fixed which prevented the update of the schema fi
 
 icon:plus[] Docker: Default memory settings for the server and demo docker images were added. Default for server is set to `-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m`. The setting can be changed using the `JAVA_TOOL_OPTIONS` environment variable. See link:https://getmesh.io/docs/administration-guide/#_memory_settings[Memory documentation] for more information.
 
+icon:check[] The `.vertx` cache folder was moved to the configurable `data/tmp` folder.
+
 [[v0.30.2]]
 == 0.30.2 (28.02.2019)
 
@@ -128,7 +291,7 @@ icon:check[] Java Rest Client: Fixed a bug in the MeshRestClient#isOneOf helper 
 [[v0.30.0]]
 == 0.30.0 (12.02.2019)
 
-CAUTION: Java Rest Client: The Gentics Mesh Java REST client which was based on Vert.x was replaced with a OkHttpClient implementation. Some changes to the client interface were necessary to make the client independent of Vert.x. See link:https://getmesh.io/docs/platforms/#_java[this example] and the Javadoc for more information.
+CAUTION: Java Rest Client: The Gentics Mesh Java REST client which was based on Vert.x was replaced with a `OkHttpClient` implementation. Some changes to the client interface were necessary to make the client independent of Vert.x. See link:https://getmesh.io/docs/platforms/#_java[this example] and the Javadoc for more information.
 
 icon:check[] Clustering: The mesh version will no longer be appended  to the node name used for OrientDB clustering. It is recommended to sanitize the `data/graphdb/storage/distributed-db-config.json` file and remove/rename entries which reference older mesh nodes. Only the active nodes should be listed in the file.
 
@@ -189,7 +352,7 @@ icon:check[] Core: Fixed a bug that caused nodes with a slash in their segment f
 
 icon:check[] Restore: A `ClassCastException` has been fixed which could be observed directly after a backup restore operation.
 
-icon:check[] Changelog: The automatic backup of orientdb configurations which was executed during the 0.29.0 update has been removed.
+icon:check[] Changelog: The automatic backup of OrientDB configurations which was executed during the 0.29.0 update has been removed.
 
 [[v0.29.2]]
 == 0.29.2 (18.01.2019)
@@ -227,7 +390,7 @@ CAUTION: The embedded Graph Database was updated from version 2.2.37 to 3.0.13. 
 
 icon:plus[] OrientDB 3.0.x: Existing `orientdb-server-config.xml`, `hazelcast.xml`, `default-distributed-db-config.json` configuration files will automatically be moved away and the new configuration files will be created instead.
 
-icon:plus[] OrientDB 3.0.x: A reindex of all vertices and edges will be triggered during the first startup. This can take some time depending on the database size.
+icon:plus[] OrientDB 3.0.x: A reindex of all vertices and edges will be triggered during the first start-up. This can take some time depending on the database size.
 
 icon:plus[] Memory: The internal overall memory usage has been optimized.
 
@@ -620,7 +783,7 @@ icon:check[] UI: In some cases the UI did not load fast. We updated the caching 
 [[v0.19.1]]
 == 0.19.1 (30.04.2018)
 
-icon:plus[] REST: The `:apiLatest:/admin/consistency/repair` endpoint has been added. The endpoint can be used to verify and directly repair found inconsistencies. 
+icon:plus[] REST: The `:apiLatest:/admin/consistency/repair` endpoint has been added. The endpoint can be used to verify and directly repair found inconsistencies.
                   The `:apiLatest:/admin/consistency/check` endpoint response has been updated to also include information about the action which will be performed by `/repair` in order to repair the inconsistency.
                   You can read more about these endpoints in the link:{{< relref "administration-guide.asciidoc" >}}#_database_consistency[database consistency] section in our administration documentation.
 
@@ -702,10 +865,10 @@ CAUTION: Search: The  `:apiLatest:/search/reindex` endpoint was replaced by `:ap
 
 icon:plus[] Docs: The link:{{< relref "contributing.asciidoc" >}}[Contribution Guide] has been added.
 
-icon:plus[] The `:apiLatest:/search/sync` endpoint can now be used to trigger the differential synchronization of search indices. 
+icon:plus[] The `:apiLatest:/search/sync` endpoint can now be used to trigger the differential synchronization of search indices.
             The indices will no longer be dropped and re-populated. Instead only needed actions will be executed to sync the index with the Gentics Mesh data.
 
-icon:plus[] The `:apiLatest:/search/clear` endpoint has been added. It can be used to re-create all Elasticsearch indices which are managed by Gentics Mesh. 
+icon:plus[] The `:apiLatest:/search/clear` endpoint has been added. It can be used to re-create all Elasticsearch indices which are managed by Gentics Mesh.
             Note that this operation does not invoke the index sync.
 
 icon:plus[] Docker: A new volume location for the data directory of the embedded elasticsearch has been added.
@@ -1162,7 +1325,7 @@ icon:plus[] REST: The `POST :apiLatest:/utilities/validateSchema` and `POST :api
 
 icon:plus[] GraphQL: Nodes can now be loaded in the context of a schema. This will return all nodes which use the schema.
 
-icon:plus[] Search: The `:apiLatest:/rawSearch/..` and `:apiLatest:/:projectName/rawSearch/..` endpoints have been added. These can be used to invoke search requests which will return the raw elasticsearch response JSON. 
+icon:plus[] Search: The `:apiLatest:/rawSearch/..` and `:apiLatest:/:projectName/rawSearch/..` endpoints have been added. These can be used to invoke search requests which will return the raw elasticsearch response JSON.
                        The needed indices will automatically be selected in order to only return the type specific documents. Read permissions on the document will also be automatically checked.
 
 icon:plus[] Search: Error information for failed Elasticsearch queries will now be added to the response.
@@ -1226,7 +1389,7 @@ icon:book[] Documentation: The new link:{{< relref "security.asciidoc" >}}[secur
 
 icon:plus[] The *Webroot-Response-Type* header can now be used to differentiate between a webroot binary and node responses. The values of this header can either be *binary* or *node*.
 
-icon:plus[] The `:apiLatest:/admin/status/migrations` endpoint was removed. 
+icon:plus[] The `:apiLatest:/admin/status/migrations` endpoint was removed.
             The status of a migration job can now be obtained via the `:apiLatest:/admin/jobs` endpoint. Successfully executed jobs will no longer be removed from the job list.
 
 icon:plus[] The `:apiLatest:/:projectName/release/:releaseUuid/schemas` and `:apiLatest:/:projectName/release/:releaseUuid/microschemas` endpoint has been reworked.

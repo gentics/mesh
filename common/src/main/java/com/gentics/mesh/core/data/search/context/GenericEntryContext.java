@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.search.context;
 
-import com.gentics.mesh.core.data.ContainerType;
+import com.gentics.mesh.core.rest.common.ContainerType;
 
 public interface GenericEntryContext extends EntryContext {
 

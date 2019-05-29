@@ -1,16 +1,16 @@
 package com.gentics.mesh.core.schema;
 
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_MIGRATION_START;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_UPDATED;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-
-import java.util.concurrent.CountDownLatch;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
@@ -31,13 +32,12 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
+import com.gentics.mesh.parameter.client.SchemaUpdateParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.test.util.TestUtils;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 	@Before
@@ -73,7 +73,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(microschemaUuid));
 		waitForJobs(() -> {
 			call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(),
-					new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
+				new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
 		}, COMPLETED, 1);
 
 		// 4. Assert migrated node
@@ -105,7 +105,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 			call(() -> client().applyChangesToMicroschema(microschemaUuid, listOfChanges));
 			MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(microschemaUuid));
 			call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(),
-					new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
+				new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
 		});
 
 		try (Tx tx = tx()) {
@@ -117,25 +117,29 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateName() throws Exception {
-		String name = "new_name";
+		final String newName = "new_name";
 
 		String vcardUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
 		MicroschemaContainerVersion beforeVersion = tx(() -> microschemaContainers().get("vcard").getLatestVersion());
 
-		// 1. Setup new microschema
+		expect(MICROSCHEMA_UPDATED).match(1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName(newName).hasUuid(vcardUuid);
+		}).one();
+		expect(MICROSCHEMA_MIGRATION_START).none();
 		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
-		request.setName(name);
+		request.setName(newName);
 		call(() -> client().updateMicroschema(vcardUuid, request, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
 		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(vcardUuid));
+		awaitEvents();
 
-		// 2. Invoke migration
+		// Invoke migration
 		waitForJobs(() -> {
 			call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(),
-					new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
+				new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
 		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
-			assertEquals("The name of the microschema was not updated", name, beforeVersion.getNextVersion().getName());
+			assertEquals("The name of the microschema was not updated", newName, beforeVersion.getNextVersion().getName());
 		}
 	}
 

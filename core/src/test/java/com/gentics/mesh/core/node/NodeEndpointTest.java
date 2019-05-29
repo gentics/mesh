@@ -1,22 +1,78 @@
 package com.gentics.mesh.core.node;
 
+import static com.gentics.mesh.FieldUtil.createStringField;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.rest.client.MeshRestClientUtil.onErrorCodeResumeNext;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.validateDeletion;
+import static com.gentics.mesh.test.TestDataProvider.INITIAL_BRANCH_NAME;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
+import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
+import static com.gentics.mesh.test.util.MeshAssert.assertElement;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static java.lang.System.currentTimeMillis;
+import static java.lang.System.out;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
+import io.reactivex.Observable;
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -88,7 +144,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 	@Before
 	public void addAdminPerms() {
@@ -152,9 +208,11 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setParentNodeUuid(folderUuid);
 
+		waitForSearchIdleEvent();
 		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
 		assertThat(restNode).matches(request);
+		waitForSearchIdleEvent();
 		assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 	}
 
@@ -172,6 +230,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
 		assertThat(restNode).matches(request);
+		waitForSearchIdleEvent();
+
 		assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 	}
 
@@ -196,7 +256,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				request.getFields().put("content", createStringField("Blessed mealtime again!"));
 				request.setParentNodeUuid(uuid);
 
-				NodeResponse future = client().createNode(PROJECT_NAME, request).blockingGet();
+				call(() -> client().createNode(PROJECT_NAME, request));
 				long duration = currentTimeMillis() - start;
 				out.println("Duration:" + i + " " + (duration / i));
 			}
@@ -230,6 +290,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testCreate() throws Exception {
 
+		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
 		String parentNodeUuid = tx(() -> folder("news").getUuid());
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setSchemaName("content");
@@ -240,12 +301,23 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setParentNodeUuid(parentNodeUuid);
 
-		try (Tx tx = tx()) {
-			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
-			NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
-			assertThat(restNode).matches(request);
-			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
-		}
+		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
+
+		expect(NODE_CONTENT_CREATED).match(1, NodeMeshEventModel.class, event -> {
+			assertThat(event)
+				.uuidNotNull()
+				.hasBranchUuid(initialBranchUuid())
+				.hasSchemaName("content")
+				.hasSchemaUuid(schemaUuid)
+				.hasLanguage("en");
+		});
+
+		NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
+		awaitEvents();
+		waitForSearchIdleEvent();
+
+		assertThat(restNode).matches(request);
+		assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 	}
 
 	@Test
@@ -313,6 +385,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 			NodeResponse restNode = call(() -> client().createNode(nodeUuid, PROJECT_NAME, request));
 			assertThat(restNode).matches(request).hasUuid(nodeUuid);
+			waitForSearchIdleEvent();
 			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 		}
 	}
@@ -366,62 +439,59 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateForBranchByName() {
+		String initialBranchUuid = tx(() -> initialBranch().getUuid());
+		String newBranchUuid = tx(() -> createBranch("newbranch").getUuid());
+		String nodeUuid = tx(() -> folder("news").getUuid());
+
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchemaName("content");
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(nodeUuid);
+
+		NodeResponse nodeResponse = call(
+			() -> client().createNode(PROJECT_NAME, request, new VersioningParametersImpl().setBranch(INITIAL_BRANCH_NAME)));
+
 		try (Tx tx = tx()) {
-			Project project = project();
-			Branch initialBranch = project.getBranchRoot().getInitialBranch();
-			Branch newBranch = project.getBranchRoot().create("newbranch", user());
-
-			Node parentNode = folder("news");
-			String uuid = parentNode.getUuid();
-			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReferenceImpl().setName("content").setUuid(schemaContainer("content").getUuid()));
-			request.setLanguage("en");
-			request.getFields().put("title", FieldUtil.createStringField("some title"));
-			request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
-			request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
-			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			request.setParentNodeUuid(uuid);
-
-			NodeResponse nodeResponse = call(() -> client().createNode(project.getName(), request, new VersioningParametersImpl().setBranch(
-				initialBranch.getName())));
-
 			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
-				assertThat(newNode.getGraphFieldContainer("en", initialBranch.getUuid(), type)).as(type + " Field container for initial branch")
+				assertThat(newNode.getGraphFieldContainer("en", initialBranchUuid, type)).as(type + " Field container for initial branch")
 					.isNotNull().hasVersion("0.1");
-				assertThat(newNode.getGraphFieldContainer("en", newBranch.getUuid(), type)).as(type + " Field Container for new branch").isNull();
+				assertThat(newNode.getGraphFieldContainer("en", newBranchUuid, type)).as(type + " Field Container for new branch").isNull();
 			}
 		}
 	}
 
 	@Test
 	public void testCreateForBranchByUuid() {
+		String nodeUuid = tx(() -> folder("news").getUuid());
+		String initialBranchUuid = tx(() -> initialBranch().getUuid());
+		Branch newBranch = tx(() -> createBranch("newbranch"));
+
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchemaName("content");
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(nodeUuid);
+
+		NodeResponse nodeResponse = call(() -> client().createNode(PROJECT_NAME, request, new VersioningParametersImpl().setBranch(
+			initialBranchUuid)));
+
 		try (Tx tx = tx()) {
-			Project project = project();
-			Branch initialBranch = project.getBranchRoot().getInitialBranch();
-			Branch newBranch = project.getBranchRoot().create("newbranch", user());
-
-			Node parentNode = folder("news");
-			String uuid = parentNode.getUuid();
-			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReferenceImpl().setName("content").setUuid(schemaContainer("content").getUuid()));
-			request.setLanguage("en");
-			request.getFields().put("title", FieldUtil.createStringField("some title"));
-			request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
-			request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
-			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			request.setParentNodeUuid(uuid);
-
-			NodeResponse nodeResponse = call(() -> client().createNode(project.getName(), request, new VersioningParametersImpl().setBranch(
-				initialBranch.getUuid())));
-
 			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
-				assertThat(newNode.getGraphFieldContainer("en", initialBranch.getUuid(), type)).as(type + " Field container for initial branch")
+				assertThat(newNode.getGraphFieldContainer("en", initialBranchUuid, type)).as(type + " Field container for initial branch")
 					.isNotNull().hasVersion("0.1");
 				assertThat(newNode.getGraphFieldContainer("en", newBranch.getUuid(), type)).as(type + " Field Container for new branch").isNull();
 			}
 		}
+
 	}
 
 	@Test
@@ -432,7 +502,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReferenceImpl().setName("content").setUuid(schemaContainer("content").getUuid()));
+			request.setSchemaName("content");
 			request.setLanguage("en");
 			request.getFields().put("title", FieldUtil.createStringField("some title"));
 			request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
@@ -455,24 +525,24 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateForBogusBranch() {
-		try (Tx tx = tx()) {
+		String uuid = tx(() -> {
 			Project project = project();
-			project.getBranchRoot().create("newbranch", user());
+			createBranch("newbranch");
 
 			Node parentNode = folder("news");
-			String uuid = parentNode.getUuid();
-			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReferenceImpl().setName("content").setUuid(schemaContainer("content").getUuid()));
-			request.setLanguage("en");
-			request.getFields().put("title", FieldUtil.createStringField("some title"));
-			request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
-			request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
-			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			request.setParentNodeUuid(uuid);
+			return parentNode.getUuid();
+		});
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchemaName("content");
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(uuid);
+		call(() -> client().createNode(PROJECT_NAME, request, new VersioningParametersImpl().setBranch("bogusbranch")), BAD_REQUEST,
+			"branch_error_not_found", "bogusbranch");
 
-			call(() -> client().createNode(project.getName(), request, new VersioningParametersImpl().setBranch("bogusbranch")), BAD_REQUEST,
-				"branch_error_not_found", "bogusbranch");
-		}
 	}
 
 	@Test
@@ -503,6 +573,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 			NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request, new NodeParametersImpl().setLanguages("de"),
 				new VersioningParametersImpl().draft()));
+			waitForSearchIdleEvent();
 			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 			assertThat(restNode).matches(request);
 
@@ -558,7 +629,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.setSchema(new SchemaReferenceImpl().setName("content").setUuid(schemaContainer("content").getUuid()));
 			request.setLanguage("en");
 			request.setParentNodeUuid(uuid);
-			call(() -> client().createNode(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", schemaContainer("content").getUuid(), READ_PERM.getRestPerm().getName());
+			call(() -> client().createNode(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", schemaContainer("content").getUuid(),
+				READ_PERM.getRestPerm().getName());
 		}
 	}
 
@@ -750,12 +822,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadNodesForBranch() {
-
-		Branch newBranch;
-		try (Tx tx = tx()) {
-			newBranch = project().getBranchRoot().create("newbranch", user());
-			tx.success();
-		}
+		Branch newBranch = tx(() -> createBranch("newbranch"));
 
 		try (Tx tx = tx()) {
 			NodeListResponse restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000L),
@@ -889,7 +956,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Read the given node - It should still be readable
 			String uuid = tx(() -> node.getUuid());
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()));
-			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
+			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid,
+				READ_PERM.getRestPerm().getName());
 
 			// Verify also that the read nodes endpoint still finds all nodes
 			NodeListResponse listResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().published(),
@@ -924,7 +992,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// version=<default>
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
 		// version=draft
-		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
+		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid,
+			READ_PERM.getRestPerm().getName());
 		// version=published
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()));
 		// version=<draftversion>
@@ -1067,7 +1136,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		int nJobs = 50;
 		try (Tx tx = tx()) {
 			Observable.range(0, nJobs)
-				.flatMapCompletable(i -> client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParametersImpl().draft()).toCompletable())
+				.flatMapCompletable(
+					i -> client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParametersImpl().draft()).toCompletable())
 				.blockingAwait();
 		}
 	}
@@ -1078,8 +1148,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		int nJobs = 200;
 		try (Tx tx = tx()) {
 			Observable.range(0, nJobs)
-				.flatMapCompletable(i ->
-					client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParametersImpl().draft()).toCompletable())
+				.flatMapCompletable(
+					i -> client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParametersImpl().draft()).toCompletable())
 				.blockingAwait();
 		}
 	}
@@ -1271,6 +1341,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadNodeVersionForBranch() {
+		disableAutoPurge();
+
 		Node node = folder("2015");
 		String uuid = tx(() -> node.getUuid());
 		Branch newBranch = createBranch("newbranch", true);
@@ -1496,7 +1568,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Language languageNl = meshRoot().getLanguageRoot().findByLanguageTag("nl");
 			SchemaContainerVersion version = schemaContainer("content").getLatestVersion();
 			node = parentNode.create(user(), version, project());
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(languageNl.getLanguageTag(), node.getProject().getLatestBranch(), user());
+			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(languageNl.getLanguageTag(),
+				node.getProject().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("name");
 			englishContainer.createString("title").setString("title");
 			englishContainer.createString("displayName").setString("displayName");
@@ -1552,7 +1625,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			role().revokePermissions(node, READ_PERM);
 			tx.success();
 		}
-		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
+		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid,
+			READ_PERM.getRestPerm().getName());
 
 	}
 
@@ -1578,12 +1652,20 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(node).hasUuid(uuid);
 	}
 
+	@Test
+	@Override
+	public void testPermissionResponse() {
+		NodeResponse node = client().findNodes(PROJECT_NAME).blockingGet().getData().get(0);
+		assertThat(node.getPermissions()).hasPublishPermsSet();
+	}
+
 	// Update
 
 	@Test
 	@Override
 	public void testUpdate() throws GenericRestException, Exception {
 		final String newSlug = "english renamed name";
+		final String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
 
 		// 1. Load Ids / Objects
 		String uuid = tx(() -> content("concorde").getUuid());
@@ -1611,7 +1693,18 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// 3. Invoke update
 		searchProvider().clear().blockingAwait();
+
+		expect(NODE_UPDATED).match(1, NodeMeshEventModel.class, event -> {
+			assertThat(event)
+				.hasProject(PROJECT_NAME, projectUuid())
+				.hasLanguage("en").hasSchema("content", contentSchemaUuid)
+				.hasUuid(uuid)
+				.hasBranchUuid(initialBranchUuid());
+		});
+
 		NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, uuid, request, new NodeParametersImpl().setLanguages("en", "de")));
+		awaitEvents();
+
 		// Assert updater information
 		assertEquals("Dummy Firstname", restNode.getEditor().getFirstName());
 		assertEquals("Dummy Lastname", restNode.getEditor().getLastName());
@@ -1620,9 +1713,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
 
+		waitForSearchIdleEvent();
 		assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
 			ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(uuid, "en"));
-		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		// 4. Assert that new version 1.1 was created. (1.0 was the published 0.1 draft)
 		assertThat(restNode).as("update response").isNotNull().hasLanguage("en").hasVersion("1.1").hasStringField("slug", newSlug).hasStringField(
@@ -1671,15 +1765,34 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String projectUuid = tx(() -> project().getUuid());
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
+		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 
 		searchProvider().clear().blockingAwait();
+
+		expect(NODE_CONTENT_CREATED).match(1, NodeMeshEventModel.class, event -> {
+			assertEquals(branchUuid, event.getBranchUuid());
+			assertEquals(uuid, event.getUuid());
+			assertEquals("de", event.getLanguageTag());
+
+			ProjectReference projectRef = event.getProject();
+			assertNotNull(projectRef);
+			assertEquals(PROJECT_NAME, projectRef.getName());
+			assertEquals(projectUuid(), projectRef.getUuid());
+
+			SchemaReference schemaRef = event.getSchema();
+			assertNotNull(schemaRef);
+			assertEquals(schemaUuid, schemaRef.getUuid());
+			assertEquals("folder", schemaRef.getName());
+		});
 		NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, uuid, request, new NodeParametersImpl().setLanguages("de")));
+		awaitEvents();
 		assertEquals("de", restNode.getLanguage());
+		waitForSearchIdleEvent();
 		// Only the new language container is stored in the index. The existing one does not need to be updated since it does not reference other languages
 		assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
 			ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(uuid, "de"));
 
-		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 	}
 
 	@Test
@@ -1822,14 +1935,28 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		try (Tx tx = tx()) {
-			Node node = content("concorde");
-			String uuid = node.getUuid();
-			call(() -> client().deleteNode(PROJECT_NAME, uuid));
+		Node node = content("concorde");
+		String uuid = tx(() -> node.getUuid());
+		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+		assertTrue("The node is expected to be published", tx(() -> node.getGraphFieldContainer("en").isPublished()));
 
+		expect(NODE_DELETED).match(1, NodeMeshEventModel.class, event -> {
+			assertThat(event)
+				.uuidNotNull()
+				.hasSchemaName("content")
+				.hasSchemaUuid(schemaUuid);
+		});
+
+		call(() -> client().deleteNode(PROJECT_NAME, uuid));
+
+		awaitEvents();
+		waitForSearchIdleEvent();
+
+		try (Tx tx = tx()) {
 			assertElement(meshRoot().getNodeRoot(), uuid, false);
 			// Delete Events after node delete. We expect 4 since both languages have draft and publish version.
-			assertThat(trackingSearchProvider()).hasEvents(0, 4, 0, 0);
+			int deletes = 4;
+			assertThat(trackingSearchProvider()).hasEvents(0, 0, deletes, 0, 0);
 		}
 	}
 
@@ -1888,63 +2015,72 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testDeleteForBranch() throws Exception {
+		Node node = content("concorde");
+		String uuid = tx(() -> node.getUuid());
+
+		// Create new branch
+		Branch newBranch = tx(() -> createBranch("newbranch"));
+
+		BranchMigrationContextImpl context = new BranchMigrationContextImpl();
+		context.setNewBranch(newBranch);
+		context.setOldBranch(tx(() -> initialBranch()));
+		meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
+
+		String newBranchUuid = tx(() -> newBranch.getUuid());
+		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setBranch(initialBranchUuid())));
+		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setBranch(newBranchUuid)));
+
+		// Delete node in new branch
+		call(() -> client().deleteNode(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(newBranch.getUuid())));
+
+		// Assert that the node was only deleted in the new branch
 		try (Tx tx = tx()) {
-			// 1. get the node
-			Node node = content("concorde");
-			String uuid = node.getUuid();
-
-			// 2. create new branch
-			Project project = project();
-			Branch initialBranch = project.getInitialBranch();
-			Branch newBranch = project.getBranchRoot().create("newbranch", user());
-
-			// 3. migrate nodes
-			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null).blockingAwait();
-			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setBranch(initialBranch.getUuid())));
-			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setBranch(newBranch.getUuid())));
-
-			// 4. delete node in new branch
-			call(() -> client().deleteNode(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(newBranch.getUuid())));
-
-			// 5. Assert
 			assertElement(meshRoot().getNodeRoot(), uuid, true);
-			assertThat(node.getGraphFieldContainers(initialBranch, ContainerType.DRAFT)).as("draft containers for initial branch").isNotEmpty();
-			assertThat(node.getGraphFieldContainers(newBranch, ContainerType.DRAFT)).as("draft containers for new branch").isEmpty();
+			assertThat(node.getGraphFieldContainers(initialBranch(), DRAFT)).as("draft containers for initial branch").isNotEmpty();
+			assertThat(node.getGraphFieldContainers(newBranch, DRAFT)).as("draft containers for new branch").isEmpty();
 		}
+
 	}
 
 	@Test
 	public void testDeletePublishedForBranch() throws Exception {
-		try (Tx tx = tx()) {
-			// 1. get the node
-			Node node = content("concorde");
-			String uuid = node.getUuid();
+		Node node = content("concorde");
+		Project project = project();
+		String uuid = tx(() -> node.getUuid());
 
-			// 2. publish the node
+		Branch newBranch = tx(() -> {
+			// Publish the node
 			BulkActionContext bac = createBulkContext();
 			node.publish(mockActionContext(), bac);
 
-			// 3. create new branch
-			Project project = project();
-			Branch initialBranch = project.getInitialBranch();
-			Branch newBranch = project.getBranchRoot().create("newbranch", user());
+			// Create new branch
+			Branch b = createBranch("newbranch");
 
-			// 4. migrate nodes
-			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null).blockingAwait();
-			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setBranch(initialBranch.getUuid())));
-			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setBranch(newBranch.getUuid())));
+			// Migrate nodes
+			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
+			context.setNewBranch(b);
+			context.setOldBranch(initialBranch());
+			meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
+			return b;
+		});
 
-			// 5. delete node in new branch
-			call(() -> client().deleteNode(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(newBranch.getUuid())));
+		String newBranchUuid = tx(() -> newBranch.getUuid());
+		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setBranch(initialBranchUuid())));
+		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setBranch(newBranchUuid)));
 
-			// 6. assert
+		// Delete node in new branch
+		call(() -> client().deleteNode(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(newBranchUuid)));
+
+		// Assert deletion - nodes should only be deleted for new branch
+		try (Tx tx = tx()) {
 			assertElement(meshRoot().getNodeRoot(), uuid, true);
-			assertThat(node.getGraphFieldContainers(initialBranch, ContainerType.DRAFT)).as("draft containers for initial branch").isNotEmpty();
-			assertThat(node.getGraphFieldContainers(initialBranch, ContainerType.PUBLISHED)).as("published containers for initial branch")
+			assertThat(node.getGraphFieldContainers(initialBranch(), ContainerType.DRAFT)).as("draft containers for initial branch").isNotEmpty();
+			assertThat(node.getGraphFieldContainers(initialBranch(), ContainerType.PUBLISHED)).as("published containers for initial branch")
 				.isNotEmpty();
 			assertThat(node.getGraphFieldContainers(newBranch, ContainerType.DRAFT)).as("draft containers for new branch").isEmpty();
 			assertThat(node.getGraphFieldContainers(newBranch, ContainerType.PUBLISHED)).as("published containers for new branch").isEmpty();
 		}
+
 	}
 
 	@Test
@@ -1963,7 +2099,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			parentRequest.setLanguage("en");
 			parentRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
 			parentRequest.setParentNodeUuid(node.getUuid());
-			NodeResponse parentNode = call(() -> client().createNode(PROJECT_NAME, parentRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
+			NodeResponse parentNode = call(
+				() -> client().createNode(PROJECT_NAME, parentRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
 
 			// create child in same branch
 			NodeCreateRequest sameBranchChildRequest = new NodeCreateRequest();
@@ -1980,7 +2117,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			childRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
 			childRequest.setParentNodeUuid(parentNode.getUuid());
 			call(() -> client().createNode(PROJECT_NAME, childRequest, new VersioningParametersImpl().setBranch(initialBranch.getName())), NOT_FOUND,
-					"object_not_found_for_uuid", parentNode.getUuid());
+				"object_not_found_for_uuid", parentNode.getUuid());
 
 			tx.success();
 		}
@@ -1992,8 +2129,11 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// create a new branch
 			Project project = project();
 			Branch initialBranch = project.getInitialBranch();
-			Branch newBranch = project.getBranchRoot().create("newbranch", user());
-			meshDagger().branchMigrationHandler().migrateBranch(newBranch, null).blockingAwait();
+			Branch newBranch = createBranch("newbranch");
+			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
+			context.setNewBranch(newBranch);
+			context.setOldBranch(initialBranch);
+			meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
 
 			// create node in one branch
 			Node node = content("concorde");
@@ -2002,7 +2142,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			parentRequest.setLanguage("en");
 			parentRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
 			parentRequest.setParentNodeUuid(node.getUuid());
-			NodeResponse parentNode = call(() -> client().createNode(PROJECT_NAME, parentRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
+			NodeResponse parentNode = call(
+				() -> client().createNode(PROJECT_NAME, parentRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
 
 			// create child in same branch
 			NodeCreateRequest sameBranchChildRequest = new NodeCreateRequest();
@@ -2011,7 +2152,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			sameBranchChildRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
 			sameBranchChildRequest.setParentNodeUuid(parentNode.getUuid());
 			NodeResponse sameBranchChildResponse = call(
-					() -> client().createNode(PROJECT_NAME, sameBranchChildRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
+				() -> client().createNode(PROJECT_NAME, sameBranchChildRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
 
 			// try to create node with same uuid in other branch with first node as parent
 			NodeCreateRequest childRequest = new NodeCreateRequest();
@@ -2020,7 +2161,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			childRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
 			childRequest.setParentNodeUuid(parentNode.getUuid());
 			call(() -> client().createNode(sameBranchChildResponse.getUuid(), PROJECT_NAME, childRequest,
-					new VersioningParametersImpl().setBranch(initialBranch.getName())), NOT_FOUND, "object_not_found_for_uuid", parentNode.getUuid());
+				new VersioningParametersImpl().setBranch(initialBranch.getName())), NOT_FOUND, "object_not_found_for_uuid", parentNode.getUuid());
 
 			tx.success();
 		}

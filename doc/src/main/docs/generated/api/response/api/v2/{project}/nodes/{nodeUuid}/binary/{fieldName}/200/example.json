@@ -99,7 +99,11 @@
       "sha512sum" : "ec582eb760034dd91d5fd33656c0b56f082b7365d32e2a139dd9c87ebc192bff3525f32ff4c4137463a31cad020ac19e6e356508db2b90e32d737b6d725e14c1",
       "fileSize" : 95365,
       "mimeType" : "image/jpeg",
-      "dominantColor" : "#22a7f0"
+      "dominantColor" : "#22a7f0",
+      "focalPoint" : {
+        "x" : 0.1,
+        "y" : 0.2
+      }
     },
     "location" : {
       "microschema" : {

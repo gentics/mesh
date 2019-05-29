@@ -1,5 +1,62 @@
 package com.gentics.mesh.core.data.impl;
 
+import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.cache.PermissionStore;
+import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.NodeRoot;
+import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.group.GroupReference;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.project.ProjectReference;
+import com.gentics.mesh.core.rest.user.ExpandableNode;
+import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.rest.user.UserReference;
+import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.dagger.DB;
+import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.VersionHandler;
+import com.gentics.mesh.madlmigration.TraversalResult;
+import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.NodeParameters;
+import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
+import com.gentics.mesh.util.ETag;
+import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.traversals.VertexTraversal;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
+import io.reactivex.Single;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.BooleanUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import java.util.List;
+import java.util.Set;
+import java.util.Spliterator;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
@@ -18,64 +75,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Spliterator;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import org.apache.commons.lang3.BooleanUtils;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
-import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.cache.PermissionStore;
-import com.gentics.mesh.core.data.ContainerType;
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
-import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
-import com.gentics.mesh.core.rest.group.GroupReference;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.project.ProjectReference;
-import com.gentics.mesh.core.rest.user.ExpandableNode;
-import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.core.rest.user.UserReference;
-import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.dagger.DB;
-import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.VersionHandler;
-import com.gentics.mesh.madlmigration.TraversalResult;
-import com.gentics.mesh.parameter.GenericParameters;
-import com.gentics.mesh.parameter.NodeParameters;
-import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.value.FieldsSet;
-import com.gentics.mesh.util.ETag;
-import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.traversals.VertexTraversal;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
-
-import io.reactivex.Single;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 /**
  * @see User
@@ -274,21 +273,21 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		for (GraphPermission perm : permissions) {
 			info.set(perm.getRestPerm(), true);
 		}
-		info.setOthers(false);
+		info.setOthers(false, vertex.hasPublishPermissions());
 
 		return info;
 	}
 
 	@Override
 	public Set<GraphPermission> getPermissions(MeshVertex vertex) {
-		Set<GraphPermission> graphPermissions = new HashSet<>();
-		// Check all permissions one at a time and add granted permissions to the set
-		for (GraphPermission perm : GraphPermission.values()) {
-			if (hasPermission(vertex, perm)) {
-				graphPermissions.add(perm);
-			}
-		}
-		return graphPermissions;
+		Predicate<? super GraphPermission> isValidPermission = perm ->
+			perm != READ_PUBLISHED_PERM && perm != PUBLISH_PERM || vertex.hasPublishPermissions();
+
+		return Stream.of(GraphPermission.values())
+			// Don't check for publish perms if it does not make sense for the vertex type
+			.filter(isValidPermission)
+			.filter(perm -> hasPermission(vertex, perm))
+			.collect(Collectors.toSet());
 	}
 
 	@Override
@@ -510,7 +509,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		// user will be just disabled and removed from all groups.");
 		// }
 		// outE(HAS_USER).removeAll();
-		bac.batch().delete(this, false);
+		bac.add(onDeleted());
 		getElement().remove();
 		bac.process();
 		PermissionStore.invalidate();
@@ -530,7 +529,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
 		UserUpdateRequest requestModel = ac.fromJson(UserUpdateRequest.class);
 		boolean modified = false;
 		if (shouldUpdate(requestModel.getUsername(), getUsername())) {
@@ -606,7 +605,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		if (modified) {
 			setEditor(ac.getUser());
 			setLastEditedTimestamp();
-			batch.store(this, true);
+			batch.add(onUpdated());
 		}
 		return modified;
 	}

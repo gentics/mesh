@@ -1,26 +1,5 @@
 package com.gentics.mesh.core.endpoint.branch;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.rest.Messages.message;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import javax.inject.Inject;
-
-import com.gentics.mesh.MeshEvent;
-import org.apache.commons.lang.NotImplementedException;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -37,9 +16,8 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
@@ -50,12 +28,30 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.PentaFunction;
-import com.gentics.mesh.util.Tuple;
-
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang.NotImplementedException;
+
+import javax.inject.Inject;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.event.Assignment.ASSIGNED;
+import static com.gentics.mesh.event.Assignment.UNASSIGNED;
+import static com.gentics.mesh.rest.Messages.message;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 /**
  * CRUD Handler for Branches
@@ -64,14 +60,11 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 
 	private static final Logger log = LoggerFactory.getLogger(BranchCrudHandler.class);
 
-	private SearchQueue searchQueue;
-
 	private BootstrapInitializer boot;
 
 	@Inject
-	public BranchCrudHandler(Database db, SearchQueue searchQueue, HandlerUtilities utils, BootstrapInitializer boot) {
+	public BranchCrudHandler(Database db, HandlerUtilities utils, BootstrapInitializer boot) {
 		super(db, utils);
-		this.searchQueue = searchQueue;
 		this.boot = boot;
 	}
 
@@ -116,8 +109,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			Project project = ac.getProject();
 			SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
 
-			Tuple<Single<BranchInfoSchemaList>, SearchQueueBatch> tuple = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+			Single<BranchInfoSchemaList> branchList = utils.eventAction(event -> {
 
 				// Resolve the list of references to graph schema container versions
 				for (SchemaReference reference : schemaReferenceList.getSchemas()) {
@@ -127,19 +119,16 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 						throw error(BAD_REQUEST, "branch_error_downgrade_schema_version", version.getName(), assignedVersion.getVersion(),
 							version.getVersion());
 					}
-					branch.assignSchemaVersion(ac.getUser(), version);
+					branch.assignSchemaVersion(ac.getUser(), version, event);
 				}
 
-				return Tuple.tuple(getSchemaVersionsInfo(branch), batch);
+				return getSchemaVersionsInfo(branch);
 			});
-
-			// 1. Process batch and create need indices
-			tuple.v2().processSync();
 
 			// 2. Invoke migrations which will populate the created index
 			MeshEvent.triggerJobWorker();
 
-			return tuple.v1();
+			return branchList;
 
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
@@ -169,14 +158,15 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	 */
 	public void handleAssignMicroschemaVersion(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.asyncTx(() -> {
+
+		utils.syncTx(ac, tx -> {
 			RootVertex<Branch> root = getRootVertex(ac);
 			Branch branch = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			BranchInfoMicroschemaList microschemaReferenceList = ac.fromJson(BranchInfoMicroschemaList.class);
 			MicroschemaContainerRoot microschemaContainerRoot = ac.getProject().getMicroschemaContainerRoot();
 
 			User user = ac.getUser();
-			Single<BranchInfoMicroschemaList> model = db.tx(() -> {
+			utils.eventAction(batch -> {
 				// Transform the list of references into microschema container version vertices
 				for (MicroschemaReference reference : microschemaReferenceList.getMicroschemas()) {
 					MicroschemaContainerVersion version = microschemaContainerRoot.fromReference(reference);
@@ -186,15 +176,13 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 						throw error(BAD_REQUEST, "branch_error_downgrade_microschema_version", version.getName(), assignedVersion.getVersion(),
 							version.getVersion());
 					}
-					branch.assignMicroschemaVersion(user, version);
+					branch.assignMicroschemaVersion(user, version, batch);
 				}
-				return getMicroschemaVersions(branch);
 			});
 
 			MeshEvent.triggerJobWorker();
-			return model;
-
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			return getMicroschemaVersions(branch).blockingGet();
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -242,8 +230,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	public void handleMigrateRemainingMicronodes(InternalActionContext ac, String branchUuid) {
 		handleMigrateRemaining(ac, branchUuid,
 			Branch::findActiveMicroschemaVersions,
-			JobRoot::enqueueMicroschemaMigration
-		);
+			JobRoot::enqueueMicroschemaMigration);
 	}
 
 	/**
@@ -255,31 +242,35 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	public void handleMigrateRemainingNodes(InternalActionContext ac, String branchUuid) {
 		handleMigrateRemaining(ac, branchUuid,
 			Branch::findActiveSchemaVersions,
-			JobRoot::enqueueSchemaMigration
-		);
+			JobRoot::enqueueSchemaMigration);
 	}
 
 	/**
 	 * A generic version to migrate remaining nodes/micronodes.
-	 * @param ac The action context
-	 * @param branchUuid The branch uuid
-	 * @param activeSchemas A function that returns an iterable of all active schema versions / microschema versions
-	 * @param enqueueMigration A function that enqueues a new migration job
-	 * @param <T> The type of the schema version (either schema version or microschema version)
+	 * 
+	 * @param ac
+	 *            The action context
+	 * @param branchUuid
+	 *            The branch uuid
+	 * @param activeSchemas
+	 *            A function that returns an iterable of all active schema versions / microschema versions
+	 * @param enqueueMigration
+	 *            A function that enqueues a new migration job
+	 * @param <T>
+	 *            The type of the schema version (either schema version or microschema version)
 	 */
-	private <T extends GraphFieldSchemaContainerVersion> void handleMigrateRemaining(InternalActionContext ac, String branchUuid
-		, Function<Branch, Iterable<T>> activeSchemas, PentaFunction<JobRoot, User, Branch, T, T, Job> enqueueMigration) {
-		utils.asyncTx(ac, () -> {
+	private <T extends GraphFieldSchemaContainerVersion> void handleMigrateRemaining(InternalActionContext ac, String branchUuid,
+		Function<Branch, Iterable<T>> activeSchemas, PentaFunction<JobRoot, User, Branch, T, T, Job> enqueueMigration) {
+		utils.syncTx(ac, tx -> {
 			Branch branch = ac.getProject().getBranchRoot().findByUuid(branchUuid);
 
 			// Get all active versions and group by Microschema
-			Collection<? extends List<T>> versions =
-				StreamSupport.stream(activeSchemas.apply(branch).spliterator(), false)
-					.collect(Collectors.groupingBy(GraphFieldSchemaContainerVersion::getName)).values();
+			Collection<? extends List<T>> versions = StreamSupport.stream(activeSchemas.apply(branch).spliterator(), false)
+				.collect(Collectors.groupingBy(GraphFieldSchemaContainerVersion::getName)).values();
 
 			// Get latest versions of all active Microschemas
 			Map<String, T> latestVersions = versions.stream()
-				.map(list -> (T)list.stream().max(Comparator.comparing(Function.identity())).get())
+				.map(list -> (T) list.stream().max(Comparator.comparing(Function.identity())).get())
 				.collect(Collectors.toMap(GraphFieldSchemaContainerVersion::getName, Function.identity()));
 
 			versions.stream()
@@ -305,9 +296,12 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	 * @param branchUuid
 	 */
 	public void handleSetLatest(InternalActionContext ac, String branchUuid) {
-		utils.asyncTx(ac, (tx) -> {
+		utils.syncTx(ac, (tx) -> {
 			Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, branchUuid, UPDATE_PERM);
-			branch.setLatest();
+			utils.eventAction(event -> {
+				branch.setLatest();
+				event.add(branch.onSetLatest());
+			});
 			return branch.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
 	}
@@ -323,11 +317,11 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	public void readTags(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		db.asyncTx(() -> {
+		utils.rxSyncTx(ac, (tx) -> {
 			Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, uuid, READ_PERM);
 			TransformablePage<? extends Tag> tagPage = branch.getTags(ac.getUser(), ac.getPagingParameters());
 			return tagPage.transformToRest(ac, 0);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -344,10 +338,21 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 		validateParameter(uuid, "uuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		utils.asyncTx(ac, (tx) -> {
+		utils.syncTx(ac, (tx) -> {
 			Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
-			branch.addTag(tag);
+
+			// TODO check if the branch is already tagged
+			if (branch.hasTag(tag)) {
+				if (log.isDebugEnabled()) {
+					log.debug("Branch {{}} is already tagged with tag {{}}", branch.getUuid(), tag.getUuid());
+				}
+			} else {
+				utils.eventAction(batch -> {
+					branch.addTag(tag);
+						batch.add(branch.onTagged(tag, ASSIGNED));
+				});
+			}
 
 			return branch.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
@@ -367,13 +372,26 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 		validateParameter(uuid, "uuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		utils.asyncTx(ac, (tx) -> {
+		utils.syncTx(ac, () -> {
 			Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
-			branch.removeTag(tag);
+			// TODO check if the tag has already been removed
 
-		}, model -> ac.send(NO_CONTENT));
+			if (branch.hasTag(tag)) {
+				utils.eventAction(batch -> {
+					batch.add(branch.onTagged(tag, UNASSIGNED));
+					branch.removeTag(tag);
+				});
+			} else {
+				if (log.isDebugEnabled()) {
+					log.debug("Branch {{}} was not tagged with tag {{}}", branch.getUuid(), tag.getUuid());
+				}
+
+			}
+
+
+		}, () -> ac.send(NO_CONTENT));
 	}
 
 	/**
@@ -387,16 +405,14 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	public void handleBulkTagUpdate(InternalActionContext ac, String branchUuid) {
 		validateParameter(branchUuid, "branchUuid");
 
-		db.asyncTx(() -> {
+		utils.rxSyncTx(ac, tx -> {
 			Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, branchUuid, UPDATE_PERM);
 
-			Tuple<TransformablePage<? extends Tag>, SearchQueueBatch> tuple = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
-				TransformablePage<? extends Tag> tags = branch.updateTags(ac, batch);
-				return Tuple.tuple(tags, batch);
+			TransformablePage<? extends Tag> page = utils.eventAction(batch -> {
+				return branch.updateTags(ac, batch);
 			});
 
-			return tuple.v2().processAsync().andThen(tuple.v1().transformToRest(ac, 0));
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			return page.transformToRest(ac, 0);
+		}, model -> ac.send(model, OK));
 	}
 }

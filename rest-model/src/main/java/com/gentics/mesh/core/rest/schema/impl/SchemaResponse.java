@@ -50,6 +50,10 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	@JsonPropertyDescription("List of schema fields")
 	private List<FieldSchema> fields = new ArrayList<>();
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update.")
+	private Boolean autoPurge;
+
 	@Override
 	public String getName() {
 		return name;
@@ -106,12 +110,12 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	}
 
 	@Override
-	public boolean isContainer() {
+	public Boolean getContainer() {
 		return container;
 	}
 
 	@Override
-	public SchemaResponse setContainer(boolean flag) {
+	public SchemaResponse setContainer(Boolean flag) {
 		this.container = flag;
 		return this;
 	}
@@ -153,7 +157,8 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 
 	public SchemaUpdateRequest toUpdateRequest() {
 		SchemaUpdateRequest updateRequest = new SchemaUpdateRequest();
-		updateRequest.setContainer(isContainer());
+		updateRequest.setContainer(getContainer());
+		updateRequest.setAutoPurge(getAutoPurge());
 		updateRequest.getFields().addAll(getFields());
 		updateRequest.setName(getName());
 		updateRequest.setSegmentField(getSegmentField());
@@ -176,8 +181,20 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	}
 
 	@Override
+	public Boolean getAutoPurge() {
+		return autoPurge;
+	}
+
+	@Override
+	public SchemaResponse setAutoPurge(Boolean autoPurge) {
+		this.autoPurge = autoPurge;
+		return this;
+	}
+
+	@Override
 	public String toString() {
 		String fields = getFields().stream().map(field -> field.getName()).collect(Collectors.joining(","));
 		return getName() + " fields: {" + fields + "}";
 	}
+
 }

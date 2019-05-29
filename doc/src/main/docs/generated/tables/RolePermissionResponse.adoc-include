@@ -18,7 +18,7 @@
 | Flag which indicates whether the delete permission is granted.
 
 | publish
-| true
+| false
 | boolean
 | Flag which indicates whether the publish permission is granted.
 
@@ -28,7 +28,7 @@
 | Flag which indicates whether the read permission is granted.
 
 | readPublished
-| true
+| false
 | boolean
 | Flag which indicates whether the read published permission is granted.
 

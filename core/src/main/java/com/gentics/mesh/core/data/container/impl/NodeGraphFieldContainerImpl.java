@@ -1,12 +1,9 @@
 package com.gentics.mesh.core.data.container.impl;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.BRANCH_UUID_KEY;
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.EDGE_TYPE_KEY;
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_INDEX_NAME;
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_URLFIELD_INDEX_NAME;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
@@ -14,6 +11,13 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIS
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNPUBLISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -31,23 +35,20 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.root.UserRoot;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
-import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.DisplayField;
@@ -62,14 +63,19 @@ import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NameConflictException;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -79,6 +85,7 @@ import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.ETag;
+import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UniquenessUtil;
 import com.gentics.mesh.util.VersionNumber;
@@ -165,7 +172,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		// Invoke common field removal operations
 		super.delete(bac);
 
-		// TODO delete linked aggregation nodes for node lists etc
 		for (BinaryGraphField binaryField : outE(HAS_FIELD).has(BinaryGraphFieldImpl.class).frameExplicit(BinaryGraphFieldImpl.class)) {
 			binaryField.removeField(bac, this);
 		}
@@ -174,16 +180,16 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			micronodeField.removeField(bac, this);
 		}
 
-		// We don't need to handle node fields since those are only edges and will automatically be removed
-
 		// Delete the container from all branches and types
 		getBranchTypes().forEach(tuple -> {
 			String branchUuid = tuple.v1();
 			ContainerType type = tuple.v2();
 			if (type != ContainerType.INITIAL) {
-				bac.batch().delete(this, branchUuid, type, false);
+				bac.add(onDeleted(branchUuid, type));
 			}
 		});
+
+		// We don't need to handle node fields since those are only edges and will automatically be removed
 		getElement().remove();
 		bac.inc();
 	}
@@ -193,9 +199,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public void deleteFromBranch(Branch branch, BulkActionContext bac) {
 		String branchUuid = branch.getUuid();
 
-		bac.batch().delete(this, branchUuid, DRAFT, false);
+		bac.batch().add(onDeleted(branchUuid, DRAFT));
 		if (isPublished(branchUuid)) {
-			bac.batch().delete(this, branchUuid, PUBLISHED, false);
+			bac.batch().add(onDeleted(branchUuid, PUBLISHED));
 		}
 		// Remove the edge between the node and the container that matches the branch
 		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).or(e -> e.traversal().has(
@@ -275,7 +281,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					Collection<String> conflictingValues = CollectionUtils.intersection(fromConflictingContainer, urlFieldValues);
 					String paths = conflictingValues.stream().map(n -> n.toString()).collect(Collectors.joining(","));
 
-					throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag(), "node_conflicting_urlfield_update", paths, conflictingContainer.getParentNode().getUuid(),
+					throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag(),
+						"node_conflicting_urlfield_update", paths, conflictingContainer.getParentNode().getUuid(),
 						conflictingContainer.getLanguageTag());
 				}
 			}
@@ -378,8 +385,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					log.debug("Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} of node {" + conflictingNode.getUuid()
 						+ "}");
 				}
-				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag()
-					, conflictI18n, segmentFieldName, segment);
+				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag(),
+					conflictI18n, segmentFieldName, segment);
 			} else {
 				edge.setSegmentInfo(segmentInfo);
 				return true;
@@ -392,8 +399,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public Node getParentNode(String branchUuid) {
-		return inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()).has(
-			GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).inV().nextOrDefaultExplicit(NodeImpl.class, null);
+		return inE(HAS_FIELD_CONTAINER).has(
+			GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).outV().nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
 	/**
@@ -454,7 +461,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public NodeGraphFieldContainer getPreviousVersion() {
-		return in(HAS_VERSION).has(NodeGraphFieldContainerImpl.class).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
+		return in(HAS_VERSION).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
 	}
 
 	@Override
@@ -712,4 +719,102 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		nodePath.addSegment(new PathSegment(this, null, getLanguageTag(), null));
 		return nodePath;
 	}
+
+	@Override
+	public NodeMeshEventModel onDeleted(String branchUuid, ContainerType type) {
+		return createEvent(NODE_CONTENT_DELETED, branchUuid, type);
+	}
+
+	@Override
+	public NodeMeshEventModel onUpdated(String branchUuid, ContainerType type) {
+		return createEvent(NODE_UPDATED, branchUuid, type);
+	}
+
+	@Override
+	public NodeMeshEventModel onCreated(String branchUuid, ContainerType type) {
+		return createEvent(NODE_CONTENT_CREATED, branchUuid, type);
+	}
+
+	@Override
+	public NodeMeshEventModel onTakenOffline(String branchUuid) {
+		return createEvent(NODE_UNPUBLISHED, branchUuid, ContainerType.PUBLISHED);
+	}
+
+	@Override
+	public NodeMeshEventModel onPublish(String branchUuid) {
+		return createEvent(NODE_PUBLISHED, branchUuid, ContainerType.PUBLISHED);
+	}
+
+	/**
+	 * Create a new node event.
+	 * 
+	 * @param event
+	 *            Type of the event
+	 * @param branchUuid
+	 *            Branch Uuid if known
+	 * @param type
+	 *            Type of the node content if known
+	 * @return Created model
+	 */
+	private NodeMeshEventModel createEvent(MeshEvent event, String branchUuid, ContainerType type) {
+		NodeMeshEventModel model = new NodeMeshEventModel();
+		model.setEvent(event);
+		Node node = getParentNode(branchUuid);
+		String nodeUuid = node.getUuid();
+		model.setUuid(nodeUuid);
+		model.setBranchUuid(branchUuid);
+		model.setLanguageTag(getLanguageTag());
+		model.setType(type);
+		SchemaContainerVersion version = getSchemaContainerVersion();
+		if (version != null) {
+			model.setSchema(version.transformToReference());
+		}
+		Project project = node.getProject();
+		model.setProject(project.transformToReference());
+		return model;
+	}
+
+	@Override
+	public VersionInfo transformToVersionInfo(InternalActionContext ac) {
+		String branchUuid = ac.getBranch().getUuid();
+		VersionInfo info = new VersionInfo();
+		info.setVersion(getVersion().getFullVersion());
+		info.setCreated(getLastEditedDate());
+		info.setCreator(getEditor().transformToReference());
+		info.setPublished(isPublished(branchUuid));
+		info.setDraft(isDraft(branchUuid));
+		info.setBranchRoot(isInitial());
+		return info;
+	}
+
+	@Override
+	public boolean isPurgeable() {
+		// The container is purgeable if no edge (publish, draft, initial) exists to its node.
+		return !inE(HAS_FIELD_CONTAINER).hasNext();
+	}
+
+	@Override
+	public boolean isAutoPurgeEnabled() {
+		SchemaContainerVersion schema = getSchemaContainerVersion();
+		return schema.isAutoPurgeEnabled();
+	}
+
+	@Override
+	public void purge(BulkActionContext bac) {
+		if (log.isDebugEnabled()) {
+			log.debug("Purging container {" + getUuid() + "} for version {" + getVersion() + "}");
+		}
+		// Link the previous to the next to isolate the old container
+		NodeGraphFieldContainer beforePrev = getPreviousVersion();
+		for (NodeGraphFieldContainer afterPrev : getNextVersions()) {
+			beforePrev.setNextVersion(afterPrev);
+		}
+		delete(bac, false);
+	}
+
+	@Override
+	public TraversalResult<NodeGraphFieldContainer> versions() {
+		return new TraversalResult<>(StreamUtil.untilNull(() -> this, NodeGraphFieldContainer::getPreviousVersion));
+	}
+
 }

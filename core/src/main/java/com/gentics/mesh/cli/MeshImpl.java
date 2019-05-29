@@ -360,6 +360,7 @@ public class MeshImpl implements Mesh {
 			log.error("The search provider did encounter an error while stopping", e);
 		}
 		MeshFactoryImpl.clear();
+		BootstrapInitializerImpl.clearReferences();
 		deleteLock();
 		log.info("Shutdown completed...");
 		latch.countDown();

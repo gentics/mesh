@@ -2,8 +2,8 @@ package com.gentics.mesh.core.rest.branch.info;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.common.AbstractNameUuidReference;
+import com.gentics.mesh.core.rest.job.JobStatus;
 
 public class AbstractBranchSchemaInfo<T> extends AbstractNameUuidReference<T> {
 
@@ -13,7 +13,7 @@ public class AbstractBranchSchemaInfo<T> extends AbstractNameUuidReference<T> {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Status of the migration which was triggered when the schema/microschema was added to the branch.")
-	private MigrationStatus migrationStatus;
+	private JobStatus migrationStatus;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Uuid of the migration job.")
@@ -28,11 +28,11 @@ public class AbstractBranchSchemaInfo<T> extends AbstractNameUuidReference<T> {
 		return this;
 	}
 
-	public MigrationStatus getMigrationStatus() {
+	public JobStatus getMigrationStatus() {
 		return migrationStatus;
 	}
 
-	public void setMigrationStatus(MigrationStatus status) {
+	public void setMigrationStatus(JobStatus status) {
 		this.migrationStatus = status;
 	}
 

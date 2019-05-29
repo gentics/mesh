@@ -47,6 +47,11 @@
 | string
 | Determined mimetype of the file.
 
+| plainText
+| false
+| string
+| Plain text content of the upload. This can be the text content of a word or PDF document.
+
 | sha512sum
 | true
 | string

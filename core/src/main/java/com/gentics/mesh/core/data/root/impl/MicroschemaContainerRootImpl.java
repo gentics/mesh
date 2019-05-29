@@ -12,8 +12,8 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
@@ -22,10 +22,12 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
@@ -51,23 +53,28 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public void addMicroschema(User user, MicroschemaContainer container) {
+	public void addMicroschema(User user, MicroschemaContainer container, EventQueueBatch batch) {
 		addItem(container);
 	}
 
 	@Override
-	public void removeMicroschema(MicroschemaContainer container) {
+	public void removeMicroschema(MicroschemaContainer container, EventQueueBatch batch) {
 		removeItem(container);
 	}
 
 	@Override
-	public MicroschemaContainer create(MicroschemaModel microschema, User user, String uuid) {
+	public MicroschemaContainer create(MicroschemaModel microschema, User user, String uuid, EventQueueBatch batch) {
 		microschema.validate();
 
 		String name = microschema.getName();
-		MicroschemaContainer conflictingSchema = findByName(name);
+		MicroschemaContainer conflictingMicroSchema = findByName(name);
+		if (conflictingMicroSchema != null) {
+			throw conflict(conflictingMicroSchema.getUuid(), name, "microschema_conflicting_name", name);
+		}
+
+		SchemaContainer conflictingSchema = MeshInternal.get().boot().schemaContainerRoot().findByName(name);
 		if (conflictingSchema != null) {
-			throw conflict(conflictingSchema.getUuid(), name, "microschema_conflicting_name", name);
+			throw conflict(conflictingSchema.getUuid(), name, "schema_conflicting_name", name);
 		}
 
 		MicroschemaContainer container = getGraph().addFramedVertex(MicroschemaContainerImpl.class);
@@ -83,7 +90,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		version.setSchemaContainer(container);
 		container.setCreated(user);
 		container.setName(microschema.getName());
-		addMicroschema(user, container);
+		addMicroschema(user, container, batch);
 
 		return container;
 	}
@@ -94,16 +101,16 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public MicroschemaContainer create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
+	public MicroschemaContainer create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
 		MicroschemaModel microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 		microschema.validate();
 		if (!requestUser.hasPermission(this, GraphPermission.CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
-		MicroschemaContainer container = create(microschema, requestUser, uuid);
+		MicroschemaContainer container = create(microschema, requestUser, uuid, batch);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
-		batch.store(container, true);
+		batch.add(container.onCreated());
 		return container;
 
 	}

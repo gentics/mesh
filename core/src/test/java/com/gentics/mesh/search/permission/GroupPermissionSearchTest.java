@@ -1,6 +1,7 @@
 package com.gentics.mesh.search.permission;
 
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -15,8 +16,7 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
-
-@MeshTestSetting(useElasticsearch = true, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class GroupPermissionSearchTest extends AbstractMeshTest {
 
 	@Test
@@ -33,9 +33,7 @@ public class GroupPermissionSearchTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		String json = getESText("groupWildcard.es");
 
@@ -50,9 +48,7 @@ public class GroupPermissionSearchTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		list = call(() -> client().searchGroups(json));
 		assertEquals("The group should be found since we added the permission to see it", 1, list.getData().size());
@@ -66,6 +62,8 @@ public class GroupPermissionSearchTest extends AbstractMeshTest {
 
 		String json = getESText("groupWildcard.es");
 
+		waitForSearchIdleEvent();
+
 		GroupListResponse list = call(() -> client().searchGroups(json));
 		assertEquals("The group should be found since the requestor has permission to see it", 1, list.getData().size());
 
@@ -73,6 +71,8 @@ public class GroupPermissionSearchTest extends AbstractMeshTest {
 		RolePermissionRequest request = new RolePermissionRequest();
 		request.getPermissions().setRead(false);
 		call(() -> client().updateRolePermissions(roleUuid(), "/groups/" + response.getUuid(), request));
+
+		waitForSearchIdleEvent();
 
 		list = call(() -> client().searchGroups(json));
 		assertEquals("The group should not be found since the requestor has no permission to see it", 0, list.getData().size());

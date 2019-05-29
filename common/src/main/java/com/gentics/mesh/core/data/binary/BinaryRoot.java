@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BIN
 
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Edge;
 
@@ -31,7 +32,7 @@ public interface BinaryRoot extends MeshVertex {
 	default public void addItem(Binary item) {
 		FramedGraph graph = getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(item.id(),
-				id()));
+			id()));
 		if (!edges.iterator().hasNext()) {
 			linkOut(item, getRootLabel());
 		}
@@ -63,12 +64,18 @@ public interface BinaryRoot extends MeshVertex {
 	/**
 	 * Create a new binary.
 	 * 
+	 * @param uuid
+	 *            Uuid of the binary
 	 * @param hash
 	 *            Hash sum of the binary
 	 * @param size
 	 *            Size in bytes
 	 * @return
 	 */
-	Binary create(String hash, Long size);
+	Binary create(String uuid, String hash, Long size);
+
+	default Binary create(String hash, long size) {
+		return create(UUIDUtil.randomUUID(), hash, size);
+	}
 
 }

@@ -17,7 +17,7 @@ import com.orientechnologies.orient.core.OConstants;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class RestInfoEndpointTest extends AbstractMeshTest {
 
 	@Test
@@ -25,7 +25,7 @@ public class RestInfoEndpointTest extends AbstractMeshTest {
 		MeshServerInfoModel info = call(() -> client().getApiInfo());
 		assertEquals(Mesh.getPlainVersion(), info.getMeshVersion());
 		assertEquals("orientdb", info.getDatabaseVendor());
-		assertEquals("dummy", info.getSearchVendor());
+		assertEquals("dev-null", info.getSearchVendor());
 		assertEquals(VersionCommand.getVersion(), info.getVertxVersion());
 		assertEquals(Mesh.mesh().getOptions().getNodeName(), info.getMeshNodeName());
 		assertEquals("The database version did not match.", OConstants.getVersion(), info.getDatabaseVersion());

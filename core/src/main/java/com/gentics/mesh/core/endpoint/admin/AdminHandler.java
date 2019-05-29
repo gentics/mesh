@@ -1,5 +1,11 @@
 package com.gentics.mesh.core.endpoint.admin;
 
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_START;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_START;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_START;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -21,22 +27,26 @@ import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
-import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.SearchProvider;
 import com.syncleus.ferma.tx.Tx;
-
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import javax.naming.InvalidNameException;
 
 /**
  * Handler for admin request methods.
@@ -56,13 +66,17 @@ public class AdminHandler extends AbstractHandler {
 
 	private final SearchProvider searchProvider;
 
+	private HandlerUtilities utils;
+
 	@Inject
-	public AdminHandler(Database db, RouterStorage routerStorage, BootstrapInitializer boot, MeshOptions options, SearchProvider searchProvider) {
+	public AdminHandler(Database db, RouterStorage routerStorage, BootstrapInitializer boot, SearchProvider searchProvider, HandlerUtilities utils,
+		MeshOptions options) {
 		this.db = db;
 		this.routerStorage = routerStorage;
 		this.boot = boot;
-		this.options = options;
 		this.searchProvider = searchProvider;
+		this.utils = utils;
+		this.options = options;
 	}
 
 	public void handleMeshStatus(InternalActionContext ac) {
@@ -77,16 +91,19 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleBackup(InternalActionContext ac) {
-		db.asyncTx(() -> {
+		Mesh mesh = Mesh.mesh();
+		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			MeshStatus oldStatus = Mesh.mesh().getStatus();
-			Mesh.mesh().setStatus(MeshStatus.BACKUP);
+			vertx.eventBus().publish(MeshEvent.GRAPH_BACKUP_START.address, null);
+			MeshStatus oldStatus = mesh.getStatus();
+			mesh.setStatus(MeshStatus.BACKUP);
+			vertx.eventBus().publish(MeshEvent.GRAPH_BACKUP_FINISHED.address, null);
 			db.backupGraph(options.getStorageOptions().getBackupDirectory());
-			Mesh.mesh().setStatus(oldStatus);
-			return Single.just(message(ac, "backup_finished"));
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			mesh.setStatus(oldStatus);
+			return message(ac, "backup_finished");
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -128,6 +145,7 @@ public class AdminHandler extends AbstractHandler {
 		MeshStatus oldStatus = Mesh.mesh().getStatus();
 		Completable.fromAction(() -> {
 			Mesh.mesh().setStatus(MeshStatus.RESTORE);
+			vertx.eventBus().publish(GRAPH_RESTORE_START.address, null);
 			db.stop();
 			db.restoreGraph(latestFile.getAbsolutePath());
 			db.setupConnectionPool();
@@ -136,11 +154,28 @@ public class AdminHandler extends AbstractHandler {
 			PermissionStore.invalidate(false);
 		}).andThen(db.asyncTx(() -> {
 			// Update the routes by loading the projects
-			boot.initProjects();
+			initProjects();
 			Mesh.mesh().setStatus(oldStatus);
 			return Single.just(message(ac, "restore_finished"));
-		})).subscribe(model -> ac.send(model, OK), ac::fail);
+		})).doFinally(() -> {
+			vertx.eventBus().publish(GRAPH_RESTORE_FINISHED.address, null);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
+
+	/**
+	 * The projects share various subrouters. This method will add the subrouters for all registered projects.
+	 *
+	 * @throws InvalidNameException
+	 */
+	private void initProjects() throws InvalidNameException {
+		for (Project project : boot.meshRoot().getProjectRoot().findAll()) {
+			RouterStorage.addProject(project.getName());
+			if (log.isDebugEnabled()) {
+				log.debug("Initalized project {" + project.getName() + "}");
+			}
+		}
+	}
+
 
 	/**
 	 * Handle graph export action.
@@ -148,15 +183,17 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleExport(InternalActionContext ac) {
-		db.asyncTx((tx) -> {
+		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			String exportDir = options.getStorageOptions().getExportDirectory();
 			log.debug("Exporting graph to {" + exportDir + "}");
+			vertx.eventBus().publish(GRAPH_EXPORT_START.address, null);
 			db.exportGraph(exportDir);
-			return Single.just(message(ac, "export_finished"));
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			vertx.eventBus().publish(GRAPH_EXPORT_FINISHED.address, null);
+			return message(ac, "export_finished");
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -176,7 +213,11 @@ public class AdminHandler extends AbstractHandler {
 		File latestFile = Arrays.asList(importsDir.listFiles()).stream().filter(file -> file.getName().endsWith(".gz"))
 			.sorted(comparing(File::lastModified)).reduce((first, second) -> second).orElseGet(() -> null);
 		try {
+
+			vertx.eventBus().publish(GRAPH_IMPORT_START.address, null);
 			db.importGraph(latestFile.getAbsolutePath());
+			vertx.eventBus().publish(GRAPH_IMPORT_FINISHED.address, null);
+
 			Single.just(message(ac, "import_finished")).subscribe(model -> ac.send(model, OK), ac::fail);
 		} catch (IOException e) {
 			ac.fail(e);
@@ -184,17 +225,17 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleClusterStatus(InternalActionContext ac) {
-		db.asyncTx(() -> {
-			MeshAuthUser user = ac.getUser();
+		utils.syncTx(ac, tx -> {
+			User user = ac.getUser();
 			if (user != null && !user.hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			if (options.getClusterOptions() != null && options.getClusterOptions().isEnabled()) {
-				return Single.just(db.getClusterStatus());
+				return db.getClusterStatus();
 			} else {
 				throw error(BAD_REQUEST, "error_cluster_status_only_aviable_in_cluster_mode");
 			}
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}, model -> ac.send(model, OK));
 	}
 
 	public void handleVersions(InternalActionContext ac) {

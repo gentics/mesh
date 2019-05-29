@@ -1,12 +1,11 @@
 package com.gentics.mesh.core.endpoint.migration.node;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
 import static com.gentics.mesh.metric.Metrics.NODE_MIGRATION_PENDING;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,29 +14,26 @@ import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.validation.constraints.NotNull;
 
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.endpoint.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
-import com.gentics.mesh.core.endpoint.node.BinaryFieldHandler;
+import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.ResettableCounter;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.common.collect.Lists;
-import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
@@ -55,92 +51,87 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	private final ResettableCounter migrationCounter;
 
 	@Inject
-	public NodeMigrationHandler(Database db, SearchQueue searchQueue, BinaryFieldHandler nodeFieldAPIHandler, MetricsService metrics) {
-		super(db, searchQueue, nodeFieldAPIHandler, metrics);
+	public NodeMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics) {
+		super(db, nodeFieldAPIHandler, metrics);
 		migrationCounter = metrics.resetableCounter(NODE_MIGRATION_PENDING);
 	}
 
 	/**
 	 * Migrate all nodes of a branch referencing the given schema container to the latest version of the schema.
 	 *
-	 * @param project
-	 *            Specific project to handle
-	 * @param branch
-	 *            Specific branch to handle
-	 * @param fromVersion
-	 *            Old container version
-	 * @param toVersion
-	 *            New container version
-	 * @param status
-	 *            status handler which will be used to track the progress
+	 * @param context
+	 *            Migration context
 	 * @return Completable which is completed once the migration finishes
 	 */
-	public Completable migrateNodes(NodeMigrationActionContextImpl ac, Project project, Branch branch, SchemaContainerVersion fromVersion,
-		SchemaContainerVersion toVersion,
-		@NotNull MigrationStatusHandler status) {
+	public Completable migrateNodes(NodeMigrationActionContextImpl context) {
+		context.validate();
+		return Completable.defer(() -> {
+			SchemaContainerVersion fromVersion = context.getFromVersion();
+			SchemaContainerVersion toVersion = context.getToVersion();
+			SchemaMigrationCause cause = context.getCause();
+			Branch branch = context.getBranch();
+			MigrationStatusHandler status = context.getStatus();
 
-		// Prepare the migration - Collect the migration scripts
-		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
-		Set<String> touchedFields = new HashSet<>();
-		SchemaModel newSchema = db.tx(() -> toVersion.getSchema());
+			// Prepare the migration - Collect the migration scripts
+			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
+			Set<String> touchedFields = new HashSet<>();
+			SchemaModel newSchema = db.tx(() -> toVersion.getSchema());
 
-		try (Tx tx = db.tx()) {
-			prepareMigration(fromVersion, migrationScripts, touchedFields);
-
-			ac.setProject(project);
-			ac.setBranch(branch);
-
-			if (status != null) {
-				status.setStatus(RUNNING);
-				status.commit();
-			}
-			tx.success();
-		} catch (IOException e) {
-			log.error("Error while preparing migration");
-			return Completable.error(e);
-		}
-
-		// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
-		// versions. We'll work on drafts. The migration code will later on also handle publish versions.
-		List<? extends NodeGraphFieldContainer> containers = db.tx(() -> {
-			Iterator<? extends NodeGraphFieldContainer> it = fromVersion.getDraftFieldContainers(branch.getUuid());
-			return Lists.newArrayList(it);
-		});
-
-		if (metrics.isEnabled()) {
-			migrationCounter.reset();
-			migrationCounter.inc(containers.size());
-		}
-
-		// No field containers, migration is done
-		if (containers.isEmpty()) {
-			if (status != null) {
+			try {
 				db.tx(() -> {
-					status.setStatus(COMPLETED);
-					status.commit();
+					prepareMigration(fromVersion, migrationScripts, touchedFields);
+					if (status != null) {
+						status.setStatus(RUNNING);
+						status.commit();
+					}
 				});
+			} catch (Exception e) {
+				log.error("Error while preparing migration");
+				return Completable.error(e);
 			}
-			return Completable.complete();
-		}
 
-		List<Exception> errorsDetected = migrateLoop(containers, status, (batch, container, errors) -> {
-			migrateContainer(ac, batch, container, toVersion, migrationScripts, branch, newSchema, errors, touchedFields);
+			// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
+			// versions. We'll work on drafts. The migration code will later on also handle publish versions.
+			List<? extends NodeGraphFieldContainer> containers = db.tx(() -> {
+				Iterator<? extends NodeGraphFieldContainer> it = fromVersion.getDraftFieldContainers(branch.getUuid());
+				return Lists.newArrayList(it);
+			});
+
 			if (metrics.isEnabled()) {
-				migrationCounter.dec();
+				migrationCounter.reset();
+				migrationCounter.inc(containers.size());
 			}
-		});
 
-		// TODO prepare errors. They should be easy to understand and to grasp
-		Completable result = Completable.complete();
-		if (!errorsDetected.isEmpty()) {
-			if (log.isDebugEnabled()) {
-				for (Exception error : errorsDetected) {
-					log.error("Encountered migration error.", error);
+			// No field containers, migration is done
+			if (containers.isEmpty()) {
+				if (status != null) {
+					db.tx(() -> {
+						status.setStatus(COMPLETED);
+						status.commit();
+					});
 				}
+				return Completable.complete();
 			}
-			result = Completable.error(new CompositeException(errorsDetected));
-		}
-		return result;
+
+			List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, container, errors) -> {
+				migrateContainer(context, batch, container, migrationScripts, newSchema, errors, touchedFields);
+				if (metrics.isEnabled()) {
+					migrationCounter.dec();
+				}
+			});
+
+			// TODO prepare errors. They should be easy to understand and to grasp
+			Completable result = Completable.complete();
+			if (!errorsDetected.isEmpty()) {
+				if (log.isDebugEnabled()) {
+					for (Exception error : errorsDetected) {
+						log.error("Encountered migration error.", error);
+					}
+				}
+				result = Completable.error(new CompositeException(errorsDetected));
+			}
+			return result;
+		});
 
 	}
 
@@ -159,14 +150,18 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @param touchedFields
 	 * @return
 	 */
-	private void migrateContainer(NodeMigrationActionContextImpl ac, SearchQueueBatch batch, NodeGraphFieldContainer container,
-		SchemaContainerVersion toVersion,
-		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Branch branch, SchemaModel newSchema, List<Exception> errorsDetected,
+	private void migrateContainer(NodeMigrationActionContextImpl ac, EventQueueBatch batch, NodeGraphFieldContainer container,
+		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, SchemaModel newSchema, List<Exception> errorsDetected,
 		Set<String> touchedFields) {
 
+		String containerUuid = container.getUuid();
+		String parentNodeUuid = container.getParentNode().getUuid();
 		if (log.isDebugEnabled()) {
-			log.debug("Migrating container {" + container.getUuid() + "}");
+			log.debug("Migrating container {" + containerUuid + "} of node {" + parentNodeUuid + "}");
 		}
+
+		Branch branch = ac.getBranch();
+		SchemaContainerVersion toVersion = ac.getToVersion();
 		try {
 			Node node = container.getParentNode();
 			String languageTag = container.getLanguageTag();
@@ -175,6 +170,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 
 			VersionNumber nextDraftVersion = null;
 			NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, branch.getUuid(), PUBLISHED);
+
 			// 1. Check whether there is any other published container which we need to handle separately
 			if (oldPublished != null && !oldPublished.equals(container)) {
 				// We only need to migrate the container if the container's schema version is also "old"
@@ -188,12 +184,13 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				}
 
 			}
-
 			// 2. Migrate the draft container. This will also update the draft edge.
 			migrateDraftContainer(ac, batch, branch, node, container, toVersion, touchedFields, migrationScripts, newSchema, nextDraftVersion);
+
+			postMigrationPurge(container, oldPublished);
+
 		} catch (Exception e1) {
-			log.error("Error while handling container {" + container.getUuid() + "} of node {" + container.getParentNode().getUuid()
-				+ "} during schema migration.", e1);
+			log.error("Error while handling container {" + containerUuid + "} of node {" + parentNodeUuid + "} during schema migration.", e1);
 			errorsDetected.add(e1);
 		}
 
@@ -220,7 +217,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 *            Suggested new draft version
 	 * @throws Exception
 	 */
-	private void migrateDraftContainer(NodeMigrationActionContextImpl ac, SearchQueueBatch sqb, Branch branch, Node node,
+	private void migrateDraftContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, Branch branch, Node node,
 		NodeGraphFieldContainer container, SchemaContainerVersion toVersion, Set<String> touchedFields,
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, SchemaModel newSchema, VersionNumber nextDraftVersion)
 		throws Exception {
@@ -245,7 +242,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		// Ensure that the migrated version is also published since the old version was
 		if (publish) {
 			migrated.setVersion(container.getVersion().nextPublished());
-			node.setPublished(migrated, branchUuid);
+			node.setPublished(ac, migrated, branchUuid);
 		} else {
 			if (nextDraftVersion == null) {
 				nextDraftVersion = container.getVersion().nextDraft();
@@ -257,9 +254,9 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
 
 		// Ensure the search index is updated accordingly
-		sqb.move(container, migrated, branchUuid, DRAFT);
+		sqb.add(migrated.onUpdated(branchUuid, DRAFT));
 		if (publish) {
-			sqb.move(container, migrated, branchUuid, PUBLISHED);
+			sqb.add(migrated.onUpdated(branchUuid, PUBLISHED));
 		}
 	}
 
@@ -281,7 +278,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @return Version of the new published container
 	 * @throws Exception
 	 */
-	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, SearchQueueBatch sqb, Branch branch, Node node,
+	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, Branch branch, Node node,
 		NodeGraphFieldContainer container, SchemaContainerVersion toVersion, Set<String> touchedFields,
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, SchemaModel newSchema) throws Exception {
 
@@ -295,10 +292,10 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguageTag(), branch, container.getEditor(), container, true);
 
 		migrated.setVersion(container.getVersion().nextPublished());
-		node.setPublished(migrated, branchUuid);
+		node.setPublished(ac, migrated, branchUuid);
 
 		migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
-		sqb.store(migrated, branchUuid, PUBLISHED, false);
+		sqb.add(migrated.onUpdated(branchUuid, PUBLISHED));
 		return migrated.getVersion();
 	}
 

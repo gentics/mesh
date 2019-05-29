@@ -146,8 +146,17 @@ ETag Handling can be disabled for each request via the `?etag=false` query param
 
 //=== Error Codes
 
-== Using the API RAML Documentation in other Tools
+== API Tools
+
 Gentics Mesh provides the `/raml` endpoint to easily extract the API documentation into third party tools.
+
+=== Insomnia 
+
+The link:https://insomnia.rest/[insomnia REST and GraphQL client] can be used to quickly and efficiently interact with the API.  
+
+You can download and import link:../mesh-insomnia-v1.json[mesh-insomnia-v1.json] in your Insomnia REST workspace to get a pre-defined set of useful requests and examples.
+
+=== Postman 
 
 Here is a quick guide to import the API into link:https://www.getpostman.com/[Postman]:
 
@@ -156,3 +165,4 @@ Here is a quick guide to import the API into link:https://www.getpostman.com/[Po
 * You can also try https://demo.getmesh.io{apiLatest}/raml to get it form our demo
 
 TIP: Make use of the params and workspace parameters to maximize your productiviy. Check out the link:https://www.getpostman.com/docs/v6/postman/sending_api_requests/requests#url[Postman documentation about URL setup] for more.
+

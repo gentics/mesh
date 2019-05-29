@@ -1,10 +1,8 @@
 package com.gentics.mesh.search.index.node;
 
 import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
-import static com.gentics.mesh.search.index.MappingHelper.BINARY;
 import static com.gentics.mesh.search.index.MappingHelper.BOOLEAN;
 import static com.gentics.mesh.search.index.MappingHelper.DATE;
-import static com.gentics.mesh.search.index.MappingHelper.DONT_INDEX_VALUE;
 import static com.gentics.mesh.search.index.MappingHelper.DOUBLE;
 import static com.gentics.mesh.search.index.MappingHelper.GEOPOINT;
 import static com.gentics.mesh.search.index.MappingHelper.INDEX_VALUE;
@@ -165,6 +163,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 
 	/**
 	 * Add custom exclude for the source document. We don't want to store the base64 encoded data fields.
+	 * 
 	 * @param mapping
 	 * @param schema
 	 */
@@ -341,21 +340,14 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		// .dominantColor
 		binaryProps.put("dominantColor", notAnalyzedType(KEYWORD));
 
-		// Add mapping for fields which were added by the ingest plugin
-		addBinaryFieldIngestMapping(binaryProps, customIndexOptions);
+		// Add mapping for plain text fields
+		addBinaryFieldPlainTextMapping(binaryProps, customIndexOptions);
 
 		// .metadata - Add metadata properties which are mostly dynamic string values
 		addMetadataMapping(binaryProps);
 	}
 
-	private void addBinaryFieldIngestMapping(JsonObject binaryProps, JsonObject customIndexOptions) {
-		// The data field must not be indexed. It is just provided for the ingest pipeline
-		// .data (for input only)
-		JsonObject ignoreField = new JsonObject();
-		ignoreField.put("type", BINARY);
-		ignoreField.put("index", DONT_INDEX_VALUE);
-		binaryProps.put("data", ignoreField);
-
+	private void addBinaryFieldPlainTextMapping(JsonObject binaryProps, JsonObject customIndexOptions) {
 		JsonObject contentProps = new JsonObject();
 
 		// .file.content
@@ -367,18 +359,6 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 			contentTextInfo.put("fields", customIndexOptions.getJsonObject("file.content"));
 		}
 		contentProps.put("content", contentTextInfo);
-
-		// .file.language
-		contentProps.put("language", notAnalyzedType(KEYWORD));
-
-		// .file.title
-		contentProps.put("title", notAnalyzedType(KEYWORD));
-
-		// .file.author
-		contentProps.put("author", notAnalyzedType(KEYWORD));
-
-		// .file.date
-		contentProps.put("date", notAnalyzedType(DATE));
 
 		JsonObject contentFieldInfo = new JsonObject();
 		contentFieldInfo.put("type", OBJECT);

@@ -18,7 +18,7 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
+@MeshTestSetting(testSize = PROJECT, startServer = true)
 public class MeshRestAPITest extends AbstractMeshTest {
 
 	@Test

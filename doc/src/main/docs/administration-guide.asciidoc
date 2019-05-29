@@ -12,7 +12,7 @@ include::content/docs/variables.adoc-include[]
 | https://orientdb.com/[OrientDB]                              | Graph Database       | 3.0.x
 | https://github.com/Syncleus/Ferma[Ferma]                     | OGM                  | 2.4.x
 | https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine        | 6.1.x
-| http://vertx.io/[Vert.x]                                     | Core Framework       | 3.5.x
+| http://vertx.io/[Vert.x]                                     | Core Framework       | 3.7.x
 | https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid  | 3.10.x
 | https://google.github.io/dagger/[Dagger 2]                   | Dependency Injection | 2.11.x
 |======

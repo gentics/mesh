@@ -26,11 +26,10 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OAuth2Options;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -72,14 +71,12 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	protected OAuth2Auth oauth2Provider;
 	protected Database db;
 	protected BootstrapInitializer boot;
-	protected SearchQueue searchQueue;
 
 	@Inject
-	public MeshOAuth2ServiceImpl(Database db, BootstrapInitializer boot, MeshOptions meshOptions, Vertx vertx, SearchQueue searchQueue) {
+	public MeshOAuth2ServiceImpl(Database db, BootstrapInitializer boot, MeshOptions meshOptions, Vertx vertx) {
 		this.db = db;
 		this.boot = boot;
 		this.options = meshOptions.getAuthenticationOptions().getOauth2();
-		this.searchQueue = searchQueue;
 		if (options == null || !options.isEnabled()) {
 			return;
 		}
@@ -198,7 +195,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		Objects.requireNonNull(username, "The preferred_username property could not be found in the principle user info.");
 		String currentTokenId = userInfo.getString("jti");
 
-		SearchQueueBatch batch = searchQueue.create();
+		EventQueueBatch batch = EventQueueBatch.create();
 		MeshAuthUser authUser = db.tx(() -> {
 			UserRoot root = boot.userRoot();
 			MeshAuthUser user = root.findMeshAuthUserByUsername(username);
@@ -225,7 +222,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			}
 			return user;
 		});
-		batch.processSync();
+		batch.dispatch();
 		return authUser;
 
 	}
@@ -238,7 +235,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	 * @param admin
 	 * @param userInfo
 	 */
-	protected void syncUser(SearchQueueBatch batch, MeshAuthUser user, com.gentics.mesh.core.data.User admin, JsonObject userInfo) {
+	protected void syncUser(EventQueueBatch batch, MeshAuthUser user, com.gentics.mesh.core.data.User admin, JsonObject userInfo) {
 		String givenName = userInfo.getString("given_name");
 		if (givenName == null) {
 			log.warn("Did not find given_name property in OAuth2 principle.");
@@ -259,7 +256,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		} else {
 			user.setEmailAddress(email);
 		}
-		batch.store(user, false);
+		batch.add(user.onUpdated());
 
 		try {
 			JsonObject mappingInfo = executeMapperScript(userInfo);
@@ -271,7 +268,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				if (role == null) {
 					role = roleRoot.create(roleName, admin);
 					admin.addCRUDPermissionOnRole(roleRoot, CREATE_PERM, role);
-					batch.store(role, false);
+					batch.add(role.onUpdated());
 				}
 				// The group<->role assignment must be done manually. We don't want to enforce this here.
 			}
@@ -284,7 +281,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				// We should not touch other groups if not needed.
 				// Otherwise the permission store and index sync gets a lot of work.
 				group.removeUser(user);
-				batch.store(group, false);
+				batch.add(group.onUpdated());
 			}
 
 			// Now create the groups and assign the user to the listed groups
@@ -297,7 +294,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				}
 				// Ensure that the user is part of the group
 				group.addUser(user);
-				batch.store(group, false);
+				batch.add(group.onUpdated());
 			}
 		} catch (Exception e) {
 			log.error("Error while executing mapping script. Ignoring mapping script.", e);
@@ -335,7 +332,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		}
 		JsonObject config = options.getAuthenticationOptions().getOauth2().getConfig().toJson();
 		if (config == null) {
-			log.debug("OAuth config  not specified. Can't setup OAuth2.");
+			log.debug("OAuth config not specified. Can't setup OAuth2.");
 			return null;
 		}
 
@@ -372,12 +369,13 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			.url(protocol + "://" + host + ":" + port + "" + "/auth/realms/" + realmName)
 			.build();
 
-		Response response = client.newCall(request).execute();
-		if (!response.isSuccessful()) {
-			log.error(response.body().toString());
-			throw new RuntimeException("Error while loading realm info. Got code {" + response.code() + "}");
-		}
-		return new JsonObject(response.body().string());
+		try (Response response = client.newCall(request).execute()) {
+			if (!response.isSuccessful()) {
+				log.error(response.body().toString());
 
+				throw new RuntimeException("Error while loading realm info. Got code {" + response.code() + "}");
+			}
+			return new JsonObject(response.body().string());
+		}
 	}
 }

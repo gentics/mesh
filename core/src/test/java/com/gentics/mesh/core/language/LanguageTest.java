@@ -23,7 +23,7 @@ import com.google.common.collect.Iterators;
 import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Vertex;
 
-@MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT, startServer = false)
+@MeshTestSetting(testSize = TestSize.PROJECT, startServer = false)
 public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Ignore("test test not apply")

@@ -1,15 +1,17 @@
 package com.gentics.mesh.core.graphql;
 
-import com.gentics.mesh.test.TestSize;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@MeshTestSetting(useElasticsearch = true, testSize = TestSize.FULL, startServer = true)
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
+import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.test.context.MeshTestSetting;
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.FULL, startServer = true)
 @RunWith(Parameterized.class)
 public class GraphQLSearchEndpointTest extends AbstractGraphQLSearchEndpointTest {
 

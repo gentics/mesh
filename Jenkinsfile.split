@@ -12,7 +12,7 @@ final def dockerImageName      = dockerRegistry + "/gentics/jenkinsbuilds/mesh-s
 properties([
 	parameters([
 		booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests"),
-		booleanParam(name: 'runSonar',            defaultValue: true,  description: "Whether to run the sonarqube checks"),
+		booleanParam(name: 'runSonar',            defaultValue: false,  description: "Whether to run the sonarqube checks"),
 		booleanParam(name: 'runPerformanceTests', defaultValue: false, description: "Whether to run performance tests."),
 		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
 		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
@@ -62,7 +62,6 @@ stage("Setup Build Environment") {
 		instanceCap: 40,
 		label: 'mesh',
 		name: 'jenkins-slave-mesh',
-		namespace: 'default',
 		nodeSelector: 'jenkins_mesh_worker=true',
 		affinity: [
 			nodeAffinity: [

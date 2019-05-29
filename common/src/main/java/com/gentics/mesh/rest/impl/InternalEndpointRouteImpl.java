@@ -5,7 +5,9 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,7 @@ import org.raml.model.parameter.Header;
 import org.raml.model.parameter.QueryParameter;
 import org.raml.model.parameter.UriParameter;
 
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
@@ -59,6 +62,8 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 	private Map<Integer, Response> exampleResponses = new HashMap<>();
 
 	private Map<Integer, Class<?>> exampleResponseClasses = new HashMap<>();
+
+	private Set<MeshEvent> events = new HashSet<>();
 
 	private String[] traits = new String[] {};
 
@@ -449,6 +454,21 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 	@Override
 	public Class<? extends RestModel> getExampleRequestClass() {
 		return exampleRequestClass;
+	}
+
+	@Override
+	public InternalEndpointRoute events(MeshEvent... events) {
+		this.events.addAll(Arrays.asList(events));
+		return this;
+	}
+
+	/**
+	 * Return list of events for the endpoint.
+	 * 
+	 * @return
+	 */
+	public Set<MeshEvent> getEvents() {
+		return events;
 	}
 
 }

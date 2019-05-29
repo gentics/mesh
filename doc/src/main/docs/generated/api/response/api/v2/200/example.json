@@ -1,9 +1,9 @@
 {
-  "meshVersion" : "0.31.5-SNAPSHOT",
+  "meshVersion" : "0.34.1-SNAPSHOT",
   "meshNodeName" : "Reminiscent Tirtouga",
   "databaseVendor" : "orientdb",
   "databaseVersion" : "2.2.16",
   "searchVendor" : "elasticsearch",
   "searchVersion" : "2.4.3",
-  "vertxVersion" : "3.5.4"
+  "vertxVersion" : "3.7.0"
 }

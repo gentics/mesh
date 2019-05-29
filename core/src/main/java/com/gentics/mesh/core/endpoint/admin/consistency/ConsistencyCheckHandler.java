@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.endpoint.admin.consistency;
 
+import static com.gentics.mesh.core.rest.MeshEvent.REPAIR_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.REPAIR_START;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -27,9 +29,9 @@ import com.gentics.mesh.core.endpoint.admin.consistency.check.TagFamilyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.UserCheck;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 
-import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -42,6 +44,8 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 	private static final Logger log = LoggerFactory.getLogger(ConsistencyCheckHandler.class);
 
 	private Database db;
+
+	private HandlerUtilities utils;
 
 	private static List<ConsistencyCheck> checks = Arrays.asList(
 		new GroupCheck(),
@@ -57,8 +61,7 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 		new GraphFieldContainerCheck(),
 		new MicronodeCheck(),
 		new BinaryCheck(),
-		new FieldCheck()
-		);
+		new FieldCheck());
 
 	/**
 	 * Get the list of checks
@@ -70,8 +73,9 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 	}
 
 	@Inject
-	public ConsistencyCheckHandler(Database db) {
+	public ConsistencyCheckHandler(Database db, HandlerUtilities utils) {
 		this.db = db;
+		this.utils = utils;
 	}
 
 	/**
@@ -95,11 +99,12 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 	}
 
 	private void invokeAction(InternalActionContext ac, boolean attemptRepair) {
-		db.asyncTx(tx -> {
+		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			log.info("Consistency check has been invoked. Repair: " + attemptRepair);
+			vertx.eventBus().publish(REPAIR_START.address, null);
 			ConsistencyCheckResponse response = new ConsistencyCheckResponse();
 			// Check domain model
 			for (ConsistencyCheck check : checks) {
@@ -112,8 +117,9 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 				response.getInconsistencies().addAll(result.getResults());
 				response.getRepairCount().put(check.getName(), result.getRepairCount());
 			}
-			return Single.just(response);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			vertx.eventBus().publish(REPAIR_FINISHED.address, null);
+			return response;
+		}, model -> ac.send(model, OK));
 	}
 
 }

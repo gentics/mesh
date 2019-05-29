@@ -32,7 +32,7 @@ import io.vertx.core.json.JsonObject;
 /**
  * Test {@link UpdateSchemaChangeImpl} methods
  */
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class UpdateSchemaChangeTest extends AbstractChangeTest {
 
 	@Test
@@ -156,7 +156,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			Schema updatedSchema = mutator.apply(version);
 			assertEquals("The display field name was not updated", "newDisplayField", updatedSchema.getDisplayField());
 			assertEquals("The segment field name was not updated", "newSegmentField", updatedSchema.getSegmentField());
-			assertTrue("The schema container flag was not updated", updatedSchema.isContainer());
+			assertTrue("The schema container flag was not updated", updatedSchema.getContainer());
 		}
 	}
 

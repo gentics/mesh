@@ -154,6 +154,13 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	void setBody(Object model);
 
 	/**
+	 * Check whether the context allows version purge operations.
+	 *
+	 * @return
+	 */
+	boolean isPurgeAllowed();
+
+	/**
 	 * Return the requested API version.
 	 * @return
 	 */

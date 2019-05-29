@@ -25,11 +25,11 @@ import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.syncleus.ferma.FramedGraph;
@@ -140,7 +140,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	}
 
 	@Override
-	public User create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
+	public User create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		BootstrapInitializer boot = MeshInternal.get().boot();
 		MeshAuthUser requestUser = ac.getUser();
 
@@ -173,12 +173,12 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, user);
 		ExpandableNode reference = requestModel.getNodeReference();
-		batch.store(user, true);
+		batch.add(user.onCreated());
 
 		if (!isEmpty(groupUuid)) {
 			Group parentGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, CREATE_PERM);
 			parentGroup.addUser(user);
-			batch.store(parentGroup, false);
+			//batch.add(parentGroup.onUpdated());
 			requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
 		}
 

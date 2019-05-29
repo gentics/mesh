@@ -28,7 +28,7 @@ import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class SchemaDiffEndpointElasticSearchTest extends AbstractMeshTest {
 
 	@Test

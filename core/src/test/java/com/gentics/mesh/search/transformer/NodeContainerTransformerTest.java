@@ -1,6 +1,6 @@
 package com.gentics.mesh.search.transformer;
 
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -20,12 +20,12 @@ import com.syncleus.ferma.tx.Tx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class NodeContainerTransformerTest extends AbstractMeshTest {
 
 	@Test
 	public void testNodeTagFamilyTransformer() {
-		NodeContainerTransformer transformer = new NodeContainerTransformer(searchProvider());
+		NodeContainerTransformer transformer = new NodeContainerTransformer();
 		try (Tx tx = tx()) {
 			Branch branch = project().getLatestBranch();
 			NodeGraphFieldContainer node = content("concorde").getGraphFieldContainer(english(), branch, PUBLISHED);

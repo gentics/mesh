@@ -11,6 +11,8 @@ import io.vertx.core.json.JsonObject;
 
 public abstract class AbstractMappingProvider implements MappingProvider {
 
+	public static final String ROLE_UUIDS = "_roleUuids";
+
 	@Override
 	public JsonObject getMapping() {
 		JsonObject mapping = new JsonObject();
@@ -23,7 +25,7 @@ public abstract class AbstractMappingProvider implements MappingProvider {
 		mappingProperties.put("edited", notAnalyzedType(DATE));
 		mappingProperties.put("editor", getUserReferenceMapping());
 		mappingProperties.put("creator", getUserReferenceMapping());
-		mappingProperties.put("_roleUuids", notAnalyzedType(KEYWORD));
+		mappingProperties.put(ROLE_UUIDS, notAnalyzedType(KEYWORD));
 
 		JsonObject typeMapping = new JsonObject();
 		typeMapping.put("properties", mappingProperties);

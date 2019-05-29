@@ -34,7 +34,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.google.common.collect.Iterables;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class SchemaContainerTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
@@ -179,7 +179,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 			assertFalse(role().hasPermission(GraphPermission.CREATE_PERM, newContainer));
 			getRequestUser().addCRUDPermissionOnRole(meshRoot().getSchemaContainerRoot(), GraphPermission.CREATE_PERM, newContainer);
 			assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new schema container.", role().hasPermission(
-					GraphPermission.CREATE_PERM, newContainer));
+				GraphPermission.CREATE_PERM, newContainer));
 		}
 
 	}
@@ -198,7 +198,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 		try (Tx tx = tx()) {
 			assertNotNull(getSchemaContainer().getLatestVersion().getSchema());
 			assertEquals("The schema container and schema rest model version must always be in sync", getSchemaContainer().getLatestVersion()
-					.getVersion(), getSchemaContainer().getLatestVersion().getSchema().getVersion());
+				.getVersion(), getSchemaContainer().getLatestVersion().getSchema().getVersion());
 		}
 	}
 
@@ -219,17 +219,17 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 
 			schema = currentVersion.getSchema();
 			schema.setContainer(true);
-			assertTrue("The schema container flag should be set to true since we updated it.", schema.isContainer());
+			assertTrue("The schema container flag should be set to true since we updated it.", schema.getContainer());
 			currentVersion.setSchema(schema);
 			schema = currentVersion.getSchema();
-			assertTrue(schema.isContainer());
+			assertTrue(schema.getContainer());
 
 			schema = currentVersion.getSchema();
 			schema.setContainer(false);
-			assertFalse(schema.isContainer());
+			assertFalse(schema.getContainer());
 			currentVersion.setSchema(schema);
 			schema = currentVersion.getSchema();
-			assertFalse(schema.isContainer());
+			assertFalse(schema.getContainer());
 		}
 	}
 

@@ -49,10 +49,13 @@ import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
+import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
@@ -131,6 +134,7 @@ public class NodeExamples extends AbstractExamples {
 		BinaryField binaryField = new BinaryFieldImpl();
 		binaryField.setFileName("flower.jpg");
 		binaryField.setDominantColor("#22a7f0");
+		binaryField.setFocalPoint(0.1f, 0.2f);
 		binaryField.setFileSize(95365);
 		binaryField.setWidth(800);
 		binaryField.setHeight(600);
@@ -244,6 +248,7 @@ public class NodeExamples extends AbstractExamples {
 	public NodeUpdateRequest getNodeUpdateRequest2() {
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.setVersion("1.0");
 		nodeUpdateRequest.getFields().put("weight", new NumberFieldImpl().setNumber(1230));
 		return nodeUpdateRequest;
 	}
@@ -255,12 +260,14 @@ public class NodeExamples extends AbstractExamples {
 		request.setCropRect(50, 20, 150, 170);
 		request.setLanguage("en");
 		request.setVersion("1.0");
+		request.setFocalPoint(new FocalPoint(0.3f,0.6f));
 		return request;
 	}
 
 	public NodeUpdateRequest getNodeUpdateRequest() {
 		NodeUpdateRequest nodeUpdate = new NodeUpdateRequest();
 		nodeUpdate.setLanguage("en");
+		nodeUpdate.setVersion("1.0");
 
 		FieldMap fields = nodeUpdate.getFields();
 		fields.put("filename", createStringField("index-renamed.en.html"));
@@ -269,6 +276,7 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("enabled", createBooleanField(true));
 		fields.put("branch", createDateField(createOldTimestamp()));
 		fields.put("categories", createNodeListField(UUID_2, UUID_3, UUID_4));
+		fields.put("image", createBinaryField());
 		fields.put("names", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds", createNumberListField(1, 42, 133, 7));
 		fields.put("location", createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)), Tuple.tuple(
@@ -310,6 +318,19 @@ public class NodeExamples extends AbstractExamples {
 		binaryParameter.setType(ParamType.FILE);
 		parameters.put("binary", Arrays.asList(binaryParameter));
 		return parameters;
+	}
+
+	public NodeVersionsResponse createVersionsList() {
+		NodeVersionsResponse response = new NodeVersionsResponse();
+		List<VersionInfo> list = new ArrayList<>();
+		list.add(new VersionInfo().setCreated(createNewTimestamp()).setCreator(createUserReference()).setVersion("1.0"));
+		list.add(new VersionInfo().setCreated(createNewTimestamp()).setCreator(createUserReference()).setVersion("1.1"));
+		list.add(new VersionInfo().setCreated(createNewTimestamp()).setCreator(createUserReference()).setVersion("2.0"));
+		Map<String, List<VersionInfo>> versions = new HashMap<>();
+		versions.put("en", list);
+		versions.put("de", list);
+		response.setVersions(versions);
+		return response;
 	}
 
 }

@@ -6,9 +6,11 @@ import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.ProjectPurgeParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
+import com.gentics.mesh.parameter.impl.SearchParametersImpl;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 
@@ -37,6 +39,10 @@ public interface ParameterProviderContext extends ActionContext {
 		return new RolePermissionParametersImpl(this);
 	}
 
+	default ProjectPurgeParameters getProjectPurgeParameters() {
+		return new ProjectPurgeParametersImpl(this);
+	}
+
 	default ImageManipulationParameters getImageParameters() {
 		return new ImageManipulationParametersImpl(this);
 	}
@@ -57,4 +63,7 @@ public interface ParameterProviderContext extends ActionContext {
 		return new GenericParametersImpl(this);
 	}
 
+	default SearchParameters getSearchParameters() {
+		return new SearchParametersImpl(this);
+	}
 }

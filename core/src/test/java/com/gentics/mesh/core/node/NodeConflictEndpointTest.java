@@ -38,7 +38,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 	private Node getTestNode() {
@@ -128,6 +128,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testDeduplicationDuringUpdate() {
+		disableAutoPurge();
 
 		try (Tx trx = tx()) {
 			updateSchema();
@@ -292,6 +293,8 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testConflictInMicronode() {
+		disableAutoPurge();
+
 		try (Tx trx = tx()) {
 			updateSchema();
 			NodeGraphFieldContainer origContainer = getTestNode().getLatestDraftFieldContainer(english());

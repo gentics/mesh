@@ -9,7 +9,7 @@ import com.gentics.mesh.core.schema.field.AbstractFieldMigrationTest.Microschema
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MicroschemaTest
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class StringMicroFieldMigrationTest extends StringFieldMigrationTest {
 
 	@Override

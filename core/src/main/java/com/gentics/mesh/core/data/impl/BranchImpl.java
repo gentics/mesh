@@ -11,16 +11,24 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MIC
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_TAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UNTAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_BRANCH_ASSIGN;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_BRANCH_UNASSIGN;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_LATEST_BRANCH_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_ASSIGN;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_UNASSIGN;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.job.JobStatus.QUEUED;
+import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.MeshEvent;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -49,15 +57,25 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
+import com.gentics.mesh.core.rest.event.branch.BranchMeshEventModel;
+import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
+import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
+import com.gentics.mesh.core.rest.event.branch.BranchTaggedEventModel;
+import com.gentics.mesh.core.rest.event.project.ProjectBranchEventModel;
+import com.gentics.mesh.core.rest.job.JobStatus;
+import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.Assignment;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -93,7 +111,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
 		Database db = MeshInternal.get().database();
 		BranchUpdateRequest requestModel = ac.fromJson(BranchUpdateRequest.class);
 		boolean modified = false;
@@ -126,6 +144,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 		if (modified) {
 			setEditor(ac.getUser());
 			setLastEditedTimestamp();
+			batch.add(onUpdated());
 		}
 		return modified;
 	}
@@ -322,13 +341,15 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public Iterable<? extends SchemaContainerVersion> findActiveSchemaVersions() {
-		return outE(HAS_SCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV().frameExplicit(SchemaContainerVersionImpl.class);
+	public TraversalResult<? extends SchemaContainerVersion> findActiveSchemaVersions() {
+		return new TraversalResult<>(
+			outE(HAS_SCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV().frameExplicit(SchemaContainerVersionImpl.class));
 	}
 
 	@Override
 	public Iterable<? extends MicroschemaContainerVersion> findActiveMicroschemaVersions() {
-		return outE(HAS_MICROSCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV().frameExplicit(MicroschemaContainerVersionImpl.class);
+		return outE(HAS_MICROSCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV()
+			.frameExplicit(MicroschemaContainerVersionImpl.class);
 	}
 
 	@Override
@@ -362,8 +383,9 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public Job assignSchemaVersion(User user, SchemaContainerVersion schemaContainerVersion) {
+	public Job assignSchemaVersion(User user, SchemaContainerVersion schemaContainerVersion, EventQueueBatch batch) {
 		BranchSchemaEdge edge = findBranchSchemaEdge(schemaContainerVersion);
+		Job job = null;
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {
 			SchemaContainerVersion currentVersion = findLatestSchemaVersion(schemaContainerVersion.getSchemaContainer());
@@ -371,23 +393,22 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 			// Enqueue the schema migration for each found schema version
 			edge.setActive(true);
 			if (currentVersion != null) {
-				Job job = MeshInternal.get().boot().jobRoot().enqueueSchemaMigration(user, this, currentVersion, schemaContainerVersion);
+				job = MeshInternal.get().boot().jobRoot().enqueueSchemaMigration(user, this, currentVersion, schemaContainerVersion);
 				edge.setMigrationStatus(QUEUED);
 				edge.setJobUuid(job.getUuid());
-				return job;
 			} else {
 				// No migration needed since there was no previous version assigned.
 				edge.setMigrationStatus(COMPLETED);
-				return null;
 			}
-		} else {
-			return null;
+			batch.add(onSchemaAssignEvent(schemaContainerVersion, ASSIGNED, edge.getMigrationStatus()));
 		}
+		return job;
 	}
 
 	@Override
-	public Job assignMicroschemaVersion(User user, MicroschemaContainerVersion microschemaContainerVersion) {
+	public Job assignMicroschemaVersion(User user, MicroschemaContainerVersion microschemaContainerVersion, EventQueueBatch batch) {
 		BranchMicroschemaEdge edge = findBranchMicroschemaEdge(microschemaContainerVersion);
+		Job job = null;
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {
 			MicroschemaContainerVersion currentVersion = findLatestMicroschemaVersion(microschemaContainerVersion.getSchemaContainer());
@@ -395,18 +416,54 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 			// Enqueue the job so that the worker can process it later on
 			edge.setActive(true);
 			if (currentVersion != null) {
-				Job job = MeshInternal.get().boot().jobRoot().enqueueMicroschemaMigration(user, this, currentVersion, microschemaContainerVersion);
+				job = MeshInternal.get().boot().jobRoot().enqueueMicroschemaMigration(user, this, currentVersion, microschemaContainerVersion);
 				edge.setMigrationStatus(QUEUED);
 				edge.setJobUuid(job.getUuid());
-				return job;
 			} else {
 				// No migration needed since there was no previous version assigned.
 				edge.setMigrationStatus(COMPLETED);
-				return null;
 			}
-		} else {
-			return null;
+			batch.add(onMicroschemaAssignEvent(microschemaContainerVersion, ASSIGNED, edge.getMigrationStatus()));
 		}
+		return job;
+	}
+
+	@Override
+	public BranchSchemaAssignEventModel onSchemaAssignEvent(SchemaContainerVersion schemaContainerVersion, Assignment assigned, JobStatus status) {
+		BranchSchemaAssignEventModel model = new BranchSchemaAssignEventModel();
+		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
+		switch (assigned) {
+			case ASSIGNED:
+				model.setEvent(SCHEMA_BRANCH_ASSIGN);
+				break;
+			case UNASSIGNED:
+				model.setEvent(SCHEMA_BRANCH_UNASSIGN);
+				break;
+		}
+		model.setSchema(schemaContainerVersion.transformToReference());
+		model.setStatus(status);
+		model.setBranch(transformToReference());
+		model.setProject(getProject().transformToReference());
+		return model;
+	}
+
+	@Override
+	public BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion, Assignment assigned, JobStatus status) {
+		BranchMicroschemaAssignModel model = new BranchMicroschemaAssignModel();
+		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
+		switch (assigned) {
+			case ASSIGNED:
+				model.setEvent(MICROSCHEMA_BRANCH_ASSIGN);
+				break;
+			case UNASSIGNED:
+				model.setEvent(MICROSCHEMA_BRANCH_UNASSIGN);
+				break;
+		}
+		model.setSchema(microschemaContainerVersion.transformToReference());
+		model.setStatus(status);
+		model.setBranch(transformToReference());
+		model.setProject(getProject().transformToReference());
+		return model;
 	}
 
 	@Override
@@ -511,14 +568,61 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public void delete(BulkActionContext bac) {
+		bac.add(onDeleted());
 		getVertex().remove();
 	}
 
 	@Override
-	public void onCreated() {
-		super.onCreated();
-		// TODO make this configurable via query parameter. It should be possible to postpone the migration.
+	public BranchMeshEventModel onCreated() {
 		MeshEvent.triggerJobWorker();
+		return createEvent(getTypeInfo().getOnCreated());
+	}
+
+	@Override
+	protected BranchMeshEventModel createEvent(MeshEvent event) {
+		BranchMeshEventModel model = new BranchMeshEventModel();
+		model.setEvent(event);
+		fillEventInfo(model);
+
+		// .project
+		Project project = getProject();
+		ProjectReference reference = project.transformToReference();
+		model.setProject(reference);
+
+		return model;
+	}
+
+	@Override
+	public ProjectBranchEventModel onSetLatest() {
+		ProjectBranchEventModel model = new ProjectBranchEventModel();
+		model.setEvent(PROJECT_LATEST_BRANCH_UPDATED);
+
+		// .project
+		Project project = getProject();
+		ProjectReference reference = project.transformToReference();
+		model.setProject(reference);
+
+		fillEventInfo(model);
+		return model;
+
+	}
+
+	@Override
+	public BranchTaggedEventModel onTagged(Tag tag, Assignment assignment) {
+		BranchTaggedEventModel model = new BranchTaggedEventModel();
+		model.setTag(tag.transformToReference());
+		model.setBranch(transformToReference());
+		model.setProject(getProject().transformToReference());
+		switch (assignment) {
+		case ASSIGNED:
+			model.setEvent(BRANCH_TAGGED);
+			break;
+		case UNASSIGNED:
+			model.setEvent(BRANCH_UNTAGGED);
+			break;
+		}
+
+		return model;
 	}
 
 	@Override
@@ -549,10 +653,19 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public TransformablePage<? extends Tag> updateTags(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean hasTag(Tag tag) {
+		return outE(HAS_BRANCH_TAG).inV().has(UUID_KEY, tag.getUuid()).hasNext();
+	}
+
+	@Override
+	public TransformablePage<? extends Tag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
 		List<Tag> tags = getTagsToSet(ac, batch);
+		//TODO Rework this code. We should only add the needed tags and don't dispatch all events.
 		removeAllTags();
-		tags.forEach(tag -> addTag(tag));
+		tags.forEach(tag -> {
+			batch.add(onTagged(tag, ASSIGNED));
+			addTag(tag);
+		});
 		return getTags(ac.getUser(), ac.getPagingParameters());
 	}
 

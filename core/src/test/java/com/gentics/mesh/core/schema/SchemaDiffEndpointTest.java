@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.schema;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.CONTAINER_FLAG_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.AUTO_PURGE_FLAG_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DISPLAY_FIELD_NAME_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.ADDFIELD;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
@@ -38,7 +40,7 @@ import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class SchemaDiffEndpointTest extends AbstractMeshTest {
 
 	private Schema getSchema() {
@@ -72,6 +74,51 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 
 		schema.setContainer(false);
 		return schema;
+	}
+
+	@Test
+	public void testDiffContainerFlag() {
+		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+		Schema request = getSchema();
+
+		// Flag not specified
+		request.setContainer(null);
+		SchemaChangesListModel changes = call(() -> client().diffSchema(schemaUuid, request));
+		assertThat(changes.getChanges()).hasSize(0);
+
+		// Set to same value
+		request.setContainer(false);
+		changes = call(() -> client().diffSchema(schemaUuid, request));
+		assertThat(changes.getChanges()).hasSize(0);
+
+		// Flag set to different value
+		request.setContainer(true);
+		changes = call(() -> client().diffSchema(schemaUuid, request));
+		assertThat(changes.getChanges()).hasSize(1);
+		assertThat(changes.getChanges().get(0)).is(UPDATESCHEMA).hasProperty(CONTAINER_FLAG_KEY, true);
+	}
+
+	@Test
+	public void testDiffAutoPurgeFlag() {
+		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+		Schema request = getSchema();
+
+		// Flag not specified
+		request.setAutoPurge(null);
+		SchemaChangesListModel changes = call(() -> client().diffSchema(schemaUuid, request));
+		assertThat(changes.getChanges()).hasSize(0);
+
+		// Set to same value
+		request.setAutoPurge(false);
+		changes = call(() -> client().diffSchema(schemaUuid, request));
+		assertThat(changes.getChanges().get(0)).is(UPDATESCHEMA).hasProperty(AUTO_PURGE_FLAG_KEY, false);
+
+		// Flag set to different value
+		request.setAutoPurge(true);
+		changes = call(() -> client().diffSchema(schemaUuid, request));
+		assertThat(changes.getChanges()).hasSize(1);
+		assertThat(changes.getChanges().get(0)).is(UPDATESCHEMA).hasProperty(AUTO_PURGE_FLAG_KEY, true);
+
 	}
 
 	@Test

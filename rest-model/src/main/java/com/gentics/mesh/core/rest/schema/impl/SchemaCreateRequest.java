@@ -26,7 +26,7 @@ public class SchemaCreateRequest implements Schema {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether nodes which use this schema store additional child nodes.")
-	private boolean container = false;
+	private Boolean container = false;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Description of the schema")
@@ -43,6 +43,10 @@ public class SchemaCreateRequest implements Schema {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("List of schema fields")
 	private List<FieldSchema> fields = new ArrayList<>();
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Auto purge flag of the schema. Controls whether contents of this schema should create new versions.")
+	private Boolean autoPurge;
 
 	@Override
 	public String getDescription() {
@@ -100,12 +104,12 @@ public class SchemaCreateRequest implements Schema {
 	}
 
 	@Override
-	public boolean isContainer() {
+	public Boolean getContainer() {
 		return container;
 	}
 
 	@Override
-	public SchemaCreateRequest setContainer(boolean flag) {
+	public SchemaCreateRequest setContainer(Boolean flag) {
 		this.container = flag;
 		return this;
 	}
@@ -129,6 +133,17 @@ public class SchemaCreateRequest implements Schema {
 	@Override
 	public SchemaCreateRequest setElasticsearch(JsonObject elasticsearch) {
 		this.elasticsearch = elasticsearch;
+		return this;
+	}
+
+	@Override
+	public Boolean getAutoPurge() {
+		return autoPurge;
+	}
+
+	@Override
+	public SchemaCreateRequest setAutoPurge(Boolean autoPurge) {
+		this.autoPurge = autoPurge;
 		return this;
 	}
 

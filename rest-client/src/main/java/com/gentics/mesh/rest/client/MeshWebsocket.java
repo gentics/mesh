@@ -1,6 +1,6 @@
 package com.gentics.mesh.rest.client;
 
-import com.gentics.mesh.MeshEvent;
+import com.gentics.mesh.core.rest.MeshEvent;
 import io.reactivex.Observable;
 
 import static com.gentics.mesh.rest.client.impl.Util.toAddresses;

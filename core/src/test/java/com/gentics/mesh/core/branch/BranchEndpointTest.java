@@ -3,7 +3,6 @@ package com.gentics.mesh.core.branch;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchListResponse;
 import com.gentics.mesh.core.rest.branch.BranchReference;
@@ -15,18 +14,27 @@ import com.gentics.mesh.core.rest.branch.info.BranchMicroschemaInfo;
 import com.gentics.mesh.core.rest.branch.info.BranchSchemaInfo;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
+import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
+import com.gentics.mesh.core.rest.event.project.ProjectBranchEventModel;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.project.ProjectReference;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.client.GenericParametersImpl;
@@ -60,7 +68,6 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
@@ -77,7 +84,53 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+import io.reactivex.Observable;
+import org.apache.commons.lang3.tuple.Pair;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_MIGRATION_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_MIGRATION_START;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_BRANCH_ASSIGN;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_LATEST_BRANCH_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_ASSIGN;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_START;
+import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.INITIAL_BRANCH_NAME;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@Before
@@ -171,10 +224,19 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName(branchName);
 
+		expect(BRANCH_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName(branchName).uuidNotNull();
+		});
+		expect(BRANCH_MIGRATION_START).one();
+		expect(BRANCH_MIGRATION_FINISHED).one();
+		expect(NODE_UPDATED).total(58);
+
 		waitForJobs(() -> {
 			BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
 			assertThat(response).as("Branch Response").isNotNull().hasName(branchName).isActive().isNotMigrated();
 		}, COMPLETED, 1);
+
+		awaitEvents();
 
 		BranchListResponse branches = call(() -> client().findBranches(PROJECT_NAME));
 		branches.getData().forEach(branch -> assertThat(branch).as("Branch " + branch.getName()).isMigrated());
@@ -209,7 +271,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName(branchName);
-		call(() -> client().createBranch(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", projectUuid() + "/" + PROJECT_NAME, CREATE_PERM.getRestPerm().getName());
+		call(() -> client().createBranch(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", projectUuid() + "/" + PROJECT_NAME,
+			CREATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -472,19 +535,20 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testReadByUUID() throws Exception {
 
 		List<Pair<String, String>> branchInfo = new ArrayList<>();
+		EventQueueBatch batch = EventQueueBatch.create();
 
 		try (Tx tx = tx()) {
 			Project project = project();
 			Branch initialBranch = project.getInitialBranch();
 			branchInfo.add(Pair.of(initialBranch.getUuid(), initialBranch.getName()));
 
-			Branch firstBranch = project.getBranchRoot().create("One", user());
+			Branch firstBranch = project.getBranchRoot().create("One", user(), batch);
 			branchInfo.add(Pair.of(firstBranch.getUuid(), firstBranch.getName()));
 
-			Branch secondBranch = project.getBranchRoot().create("Two", user());
+			Branch secondBranch = project.getBranchRoot().create("Two", user(), batch);
 			branchInfo.add(Pair.of(secondBranch.getUuid(), secondBranch.getName()));
 
-			Branch thirdBranch = project.getBranchRoot().create("Three", user());
+			Branch thirdBranch = project.getBranchRoot().create("Three", user(), batch);
 			branchInfo.add(Pair.of(thirdBranch.getUuid(), thirdBranch.getName()));
 
 			tx.success();
@@ -495,6 +559,13 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertThat(response).isNotNull().hasName(info.getValue()).hasUuid(info.getKey()).isActive().hasPathPrefix("");
 		}
 
+	}
+
+	@Test
+	@Override
+	public void testPermissionResponse() {
+		BranchResponse branch = client().findBranches(PROJECT_NAME).blockingGet().getData().get(0);
+		assertThat(branch.getPermissions()).hasNoPublishPermsSet();
 	}
 
 	@Test
@@ -518,12 +589,14 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			role().revokePermissions(project().getInitialBranch(), READ_PERM);
 			tx.success();
 		}
-		call(() -> client().findBranchByUuid(PROJECT_NAME, initialBranchUuid()), FORBIDDEN, "error_missing_perm", initialBranchUuid(), READ_PERM.getRestPerm().getName());
+		call(() -> client().findBranchByUuid(PROJECT_NAME, initialBranchUuid()), FORBIDDEN, "error_missing_perm", initialBranchUuid(),
+			READ_PERM.getRestPerm().getName());
 	}
 
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
+		EventQueueBatch batch = EventQueueBatch.create();
 		Branch initialBranch;
 		Branch firstBranch;
 		Branch thirdBranch;
@@ -532,9 +605,9 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		try (Tx tx = tx()) {
 			Project project = project();
 			initialBranch = project.getInitialBranch();
-			firstBranch = project.getBranchRoot().create("One", user());
-			secondBranch = project.getBranchRoot().create("Two", user());
-			thirdBranch = project.getBranchRoot().create("Three", user());
+			firstBranch = project.getBranchRoot().create("One", user(), batch);
+			secondBranch = project.getBranchRoot().create("Two", user(), batch);
+			thirdBranch = project.getBranchRoot().create("Three", user(), batch);
 			tx.success();
 		}
 
@@ -550,17 +623,18 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testReadMultipleWithRestrictedPermissions() throws Exception {
-		Project project = project();
+		EventQueueBatch batch = EventQueueBatch.create();
 		Branch initialBranch = tx(() -> initialBranch());
+		Project project = project();
 
 		Branch firstBranch;
 		Branch secondBranch;
 		Branch thirdBranch;
 
 		try (Tx tx = tx()) {
-			firstBranch = project.getBranchRoot().create("One", user());
-			secondBranch = project.getBranchRoot().create("Two", user());
-			thirdBranch = project.getBranchRoot().create("Three", user());
+			firstBranch = project.getBranchRoot().create("One", user(), batch);
+			secondBranch = project.getBranchRoot().create("Two", user(), batch);
+			thirdBranch = project.getBranchRoot().create("Three", user(), batch);
 			tx.success();
 		}
 		try (Tx tx = tx()) {
@@ -584,34 +658,39 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testUpdate() throws Exception {
 		String newName = "New Branch Name";
 		String anotherNewName = "Another New Branch Name";
-		try (Tx tx = tx()) {
 
-			// change name
-			BranchUpdateRequest request1 = new BranchUpdateRequest();
-			request1.setName(newName);
-			BranchResponse response = call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request1));
-			assertThat(response).as("Updated Branch").isNotNull().hasName(newName).isActive();
+		expect(BRANCH_UPDATED).match(1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName(newName).hasUuid(initialBranchUuid());
+		});
 
-			// change active
-			BranchUpdateRequest request2 = new BranchUpdateRequest();
-			// request2.setActive(false);
-			response = call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request2));
-			assertThat(response).as("Updated Branch").isNotNull().hasName(newName).isInactive();
+		// change name
+		BranchUpdateRequest request1 = new BranchUpdateRequest();
+		request1.setName(newName);
+		BranchResponse response = call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request1));
+		assertThat(response).as("Updated Branch").isNotNull().hasName(newName).isActive();
 
-			// change active and name
-			BranchUpdateRequest request3 = new BranchUpdateRequest();
-			// request3.setActive(true);
-			request3.setName(anotherNewName);
-			response = call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request3));
-			assertThat(response).as("Updated Branch").isNotNull().hasName(anotherNewName).isActive();
-		}
+		awaitEvents();
+
+		// change active
+		BranchUpdateRequest request2 = new BranchUpdateRequest();
+		// request2.setActive(false);
+		response = call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request2));
+		assertThat(response).as("Updated Branch").isNotNull().hasName(newName).isInactive();
+
+		// change active and name
+		BranchUpdateRequest request3 = new BranchUpdateRequest();
+		// request3.setActive(true);
+		request3.setName(anotherNewName);
+		response = call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request3));
+		assertThat(response).as("Updated Branch").isNotNull().hasName(anotherNewName).isActive();
 	}
 
 	@Test
 	public void testUpdateWithNameConflict() throws Exception {
+		EventQueueBatch batch = EventQueueBatch.create();
 		String newName = "New Branch Name";
 		try (Tx tx = tx()) {
-			project().getBranchRoot().create(newName, user());
+			project().getBranchRoot().create(newName, user(), batch);
 			tx.success();
 		}
 		BranchUpdateRequest request = new BranchUpdateRequest();
@@ -629,7 +708,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 		BranchUpdateRequest request = new BranchUpdateRequest();
 		// request.setActive(false);
-		call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request), FORBIDDEN, "error_missing_perm", initialBranchUuid(), UPDATE_PERM.getRestPerm().getName());
+		call(() -> client().updateBranch(PROJECT_NAME, initialBranchUuid(), request), FORBIDDEN, "error_missing_perm", initialBranchUuid(),
+			UPDATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -723,6 +803,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 				assertThat(response).as("Created branch").hasName(branchName).isNotLatest();
 				branchMap.put(branchName, response.getUuid());
 			}, COMPLETED, 1);
+
 		}
 
 		for (int i = 0; i < 2; i++) {
@@ -730,8 +811,17 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 				String branchName = entry.getKey();
 				String branchUuid = entry.getValue();
 
+				expect(PROJECT_LATEST_BRANCH_UPDATED).match(1, ProjectBranchEventModel.class, event -> {
+					ProjectReference project = event.getProject();
+					assertEquals("Project name not correct in event.", PROJECT_NAME, project.getName());
+					assertEquals("Project uuid not correct in event.", projectUuid(), project.getUuid());
+					assertEquals("Branch name not correct in event.", branchName, event.getName());
+					assertEquals("Branch uuid not correct in event.", branchUuid, event.getUuid());
+				});
+
 				BranchResponse response = call(() -> client().setLatestBranch(PROJECT_NAME, branchUuid));
 				assertThat(response).as("Latest branch").hasUuid(branchUuid).hasName(branchName).isLatest();
+				awaitEvents();
 
 				BranchListResponse updatedProjectBranches = call(() -> client().findBranches(PROJECT_NAME));
 				assertThat(updatedProjectBranches.getData().stream().filter(BranchResponse::getLatest).collect(Collectors.toList()))
@@ -747,7 +837,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			role().revokePermissions(project().getInitialBranch(), UPDATE_PERM);
 			tx.success();
 		}
-		call(() -> client().setLatestBranch(PROJECT_NAME, initialBranchUuid()), FORBIDDEN, "error_missing_perm", initialBranchUuid(), UPDATE_PERM.getRestPerm().getName());
+		call(() -> client().setLatestBranch(PROJECT_NAME, initialBranchUuid()), FORBIDDEN, "error_missing_perm", initialBranchUuid(),
+			UPDATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -857,13 +948,33 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		SchemaResponse schema = createSchema("schemaname");
 
 		// assign schema to project
+		expect(SCHEMA_BRANCH_ASSIGN).one().match(1, BranchSchemaAssignEventModel.class, event -> {
+			BranchReference branchRef = event.getBranch();
+			assertNotNull(branchRef);
+			assertEquals(PROJECT_NAME, branchRef.getName());
+			assertEquals(initialBranchUuid(), branchRef.getUuid());
+
+			SchemaReference schemaRef = event.getSchema();
+			assertEquals(schema.getName(), schemaRef.getName());
+			assertEquals(schema.getUuid(), schemaRef.getUuid());
+			assertEquals("1.0", schema.getVersion());
+
+			ProjectReference projectRef = event.getProject();
+			assertEquals(PROJECT_NAME, projectRef.getName());
+			assertEquals(projectUuid(), projectRef.getUuid());
+		});
 		call(() -> client().assignSchemaToProject(PROJECT_NAME, schema.getUuid()));
+		awaitEvents();
 
 		// generate version 2
+		expect(SCHEMA_BRANCH_ASSIGN).none();
 		updateSchema(schema.getUuid(), "newschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false));
+		awaitEvents();
 
 		// generate version 3
+		expect(SCHEMA_BRANCH_ASSIGN).none();
 		updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false));
+		awaitEvents();
 
 		// check that version 1 is assigned to branch
 		BranchInfoSchemaList list = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
@@ -871,11 +982,29 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			new BranchSchemaInfo().setName("schemaname").setUuid(schema.getUuid()).setVersion("1.0"));
 
 		// assign version 2 to the branch
+		expect(SCHEMA_BRANCH_ASSIGN).one().match(1, BranchSchemaAssignEventModel.class, event -> {
+			BranchReference branchRef = event.getBranch();
+			assertNotNull(branchRef);
+			assertEquals(PROJECT_NAME, branchRef.getName());
+			assertEquals(initialBranchUuid(), branchRef.getUuid());
+
+			SchemaReference schemaRef = event.getSchema();
+			assertEquals("newschemaname", schemaRef.getName());
+			assertEquals(schema.getUuid(), schemaRef.getUuid());
+			assertEquals("2.0", schemaRef.getVersion());
+
+			ProjectReference projectRef = event.getProject();
+			assertEquals(PROJECT_NAME, projectRef.getName());
+			assertEquals(projectUuid(), projectRef.getUuid());
+		});
+		expect(SCHEMA_MIGRATION_FINISHED).one();
+		expect(SCHEMA_MIGRATION_START).one();
 		BranchInfoSchemaList info = new BranchInfoSchemaList();
 		info.getSchemas().add(new BranchSchemaInfo().setUuid(schema.getUuid()).setVersion("2.0"));
 		waitForJobs(() -> {
 			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(), info));
 		}, COMPLETED, 1);
+		awaitEvents();
 
 		JobListResponse jobList = call(() -> client().findJobs());
 		JobResponse job = jobList.getData().stream().filter(j -> j.getProperties().get("schemaUuid").equals(schema.getUuid())).findAny().get();
@@ -1025,10 +1154,24 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			BranchInfoMicroschemaList info = new BranchInfoMicroschemaList();
 			info.add(new MicroschemaReferenceImpl().setUuid(microschema.getUuid()).setVersion("2.0"));
 
+			expect(MICROSCHEMA_BRANCH_ASSIGN).match(1, BranchMicroschemaAssignModel.class, event -> {
+				BranchReference branch = event.getBranch();
+				assertNotNull("The branch reference was missing in the assignment event.", branch);
+				assertEquals("Branch name did not match.", PROJECT_NAME, branch.getName());
+				assertEquals("Branch uuid did not match.", initialBranchUuid(), branch.getUuid());
+
+				MicroschemaReference schemaRef = event.getSchema();
+				assertEquals("Version did not match.", "2.0", schemaRef.getVersion());
+				assertEquals("Microschema name did not match.", "newmicroschemaname", schemaRef.getName());
+				assertEquals("Microschema uuid did not match.", microschema.getUuid(), schemaRef.getUuid());
+			});
+
 			// assign version 2 to the branch
 			waitForJobs(() -> {
 				call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(), info));
 			}, COMPLETED, 1);
+
+			awaitEvents();
 
 			// assert
 			list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
@@ -1099,7 +1242,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 			call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(), new MicroschemaReferenceImpl().setName(schema
 				.getName()).setVersion(schema.getVersion())), BAD_REQUEST, "error_microschema_reference_not_found", schema.getName(), "-", schema
-				.getVersion());
+					.getVersion());
 		}
 	}
 
@@ -1221,8 +1364,9 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			BranchCreateRequest request = new BranchCreateRequest();
 			request.setName("branch1");
 			call(() -> client().createBranch(PROJECT_NAME, request));
-		}, MigrationStatus.COMPLETED, 2);
-		NodeResponse originalNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(INITIAL_BRANCH_NAME)));
+		}, JobStatus.COMPLETED, 2);
+		NodeResponse originalNode = call(
+			() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(INITIAL_BRANCH_NAME)));
 		NodeResponse migratedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
 
 		assertThat(originalNode).hasSchemaVersion("folder", "1.0");
@@ -1257,8 +1401,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		request.setContainer(true);
 
 		ParameterProvider[] parameters = immediate
-			? new ParameterProvider[]{}
-			: new ParameterProvider[]{new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)};
+			? new ParameterProvider[] {}
+			: new ParameterProvider[] { new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false) };
 
 		client().updateSchema(schema.getUuid(), request, parameters).toSingle().blockingGet();
 	}

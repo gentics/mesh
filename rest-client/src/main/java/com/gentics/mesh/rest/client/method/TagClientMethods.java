@@ -34,7 +34,6 @@ public interface TagClientMethods {
 	 */
 	MeshRequest<TagResponse> findTagByUuid(String projectName, String tagFamilyUuid, String uuid, ParameterProvider... parameters);
 
-	//
 	/**
 	 * Update the tag.
 	 * 
@@ -49,6 +48,21 @@ public interface TagClientMethods {
 	 * @return
 	 */
 	MeshRequest<TagResponse> updateTag(String projectName, String tagFamilyUuid, String uuid, TagUpdateRequest request);
+
+	/**
+	 * Create the tag with the given uuid
+	 * 
+	 * @param projectName
+	 *            Name of the project
+	 * @param tagFamilyUuid
+	 *            Uuid of the tagfamily in which the tag is stored
+	 * @param uuid
+	 *            Uuid of the new tag
+	 * @param request
+	 *            Create request
+	 * @return
+	 */
+	MeshRequest<TagResponse> createTag(String projectName, String tagFamilyUuid, String uuid, TagCreateRequest request);
 
 	/**
 	 * Delete the tag.

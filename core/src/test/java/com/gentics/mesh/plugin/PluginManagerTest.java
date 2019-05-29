@@ -35,7 +35,7 @@ import io.vertx.core.json.JsonObject;
 import okhttp3.HttpUrl;
 import okhttp3.Request;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true, inMemoryDB = true)
+@MeshTestSetting(testSize = PROJECT, startServer = true, inMemoryDB = true)
 public class PluginManagerTest extends AbstractMeshTest {
 
 	private static final String NAME = "basic";

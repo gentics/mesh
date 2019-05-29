@@ -45,6 +45,8 @@ NOTE: It is not possible to search for specific individual versions. Instead onl
 NOTE: The stored documents within the Elasticsearch indices do not contain all properties which are otherwise available via REST. 
 Only directly accessible values which have minimal dependencies to other elements are stored in order to keep the update effort manageable.
 
+NOTE: Unlike Mesh, Elasticsearch does not allow an unbounded page size in the search result. The default value for the `perPage` parameter is `10`.
+
 == Configuration
 
 The Elasticsearch connection can be configured within the `mesh.yml` configuration file.
@@ -102,6 +104,11 @@ We currently run and test against Elasticsearch version 6.1.2. Other versions ha
 == REST endpoints
 
 Search requests are handled by the ```{apiLatest}/search``` or ```{apiLatest}/:projectName/search``` endpoints.
+
+If you want the search endpoints to wait until Elasticsearch has processed all pending changes to the index, you can set the query parameter `?wait=true`.
+The default value can be configured in the link:{{< relref "administration-guide.asciidoc" >}}#_search_options[search options].
+
+NOTE: If no query parameter and no configuration was provided, the wait parameter defaults to `true` to not break any existing implementations. In the future this will change to `false`.
 
 == Examples / Queries
 
@@ -258,7 +265,7 @@ The tags field is a nested field and thus a nested query must be used to match t
 ----
 
 
-NOTE: The `"ignore_unmapped": "true"` will supress errors which may be returned due to missing paths. This is useful when invoking `/rawSearch` requests which will directly return the Elasticsearch response. This response would otherwise be cluttered with a lot of errors due to missing path. This can be omitted for these kinds of searches.
+NOTE: The `"ignore_unmapped": "true"` will suppress errors which may be returned due to missing paths. This is useful when invoking `/rawSearch` requests which will directly return the Elasticsearch response. This response would otherwise be cluttered with a lot of errors due to missing path. This can be omitted for these kinds of searches.
 
 
 ==== Search nodes by geolocation of images
@@ -382,10 +389,7 @@ NOTE: This operation will remove all indices which have been created by Mesh and
 
 == Binary Search
 
-Starting with Gentics Mesh 0.21.0 it is possible to add the contents of file uploads to the search index.
-The https://www.elastic.co/guide/en/elasticsearch/plugins/6.2/ingest-attachment.html[Elasticsearch Ingest Attachment Plugin] will be utilized when installed to process text file uploads (PDF, DOC, DOCX).
-
-This is especially useful if you also want to search within document file uploads. 
+Document uploads to Gentics Mesh will automatically be parsed and the containing text will be extracted. This information will also be added to the search index and thus it is possible to search for text within uploaded documents.
 
 Currently uploads which have one of these mimetypes will be processed:
 
@@ -407,24 +411,12 @@ Example binary field within document:
     "sha512sum" : "16d3aeae9869d2915dda30866c2d7b77f50dc668daa3a49d2bc6eb6349cf6e895099349b7f8240174a788db967c87947b6a2fd41a353eec99a20358dfd4c9211",
     "mimeType" : "application/pdf",
     "filesize" : 200,
-    "dominantColor" : null,
-    "width" : null,
-    "height" : null,
     "file" : {
-      "language" : "ro",
-      "content" : "Lorem ipsum dolor sit amet",
-      "date" : "2018-05-04T21:28:30Z",
-      "author" : "Joe Doe",
-      "title" : "My Document Title"
+      "content" : "Lorem ipsum dolor sit amet"
     }
   }
 …
 ----
-
-Gentics Mesh will automatically create ingest piplines for each node index. The created pipelines will be utilized when storing documents. 
-The name of these pipelines matches the index name. No longer needed pipelines will automatically be removed.
-
-NOTE: All documents need to be re-index if you choose to enable the Elasticsearch plugin.
 
 == GraphQL
 

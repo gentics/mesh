@@ -1,9 +1,25 @@
 package com.gentics.mesh.core.node;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+
+import org.junit.Test;
+
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.rest.event.node.NodeMovedEventModel;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -19,20 +35,7 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
-import org.junit.Test;
-
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
@@ -44,7 +47,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			String oldParentUuid = sourceNode.getParentNode(branchUuid).getUuid();
 			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(branchUuid).getUuid());
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), BAD_REQUEST,
-					"node_move_error_targetnode_is_no_folder");
+				"node_move_error_targetnode_is_no_folder");
 			assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode(branchUuid).getUuid());
 		}
 	}
@@ -71,7 +74,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(branchUuid).getUuid());
 
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), BAD_REQUEST,
-					"node_move_error_not_allowed_to_move_node_into_one_of_its_children");
+				"node_move_error_not_allowed_to_move_node_into_one_of_its_children");
 
 			assertEquals("The node should not have been moved but it was.", oldParentUuid, sourceNode.getParentNode(branchUuid).getUuid());
 		}
@@ -90,9 +93,9 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), FORBIDDEN, "error_missing_perm",
-					sourceNode.getUuid(), UPDATE_PERM.getRestPerm().getName());
+				sourceNode.getUuid(), UPDATE_PERM.getRestPerm().getName());
 			assertNotEquals("The source node should not have been moved.", targetNode.getUuid(),
-					folder("deals").getParentNode(initialBranchUuid()).getUuid());
+				folder("deals").getParentNode(initialBranchUuid()).getUuid());
 		}
 	}
 
@@ -105,13 +108,22 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 		String targetNodeUuid = tx(() -> targetNode.getUuid());
 		String oldSourceParentId = tx(() -> sourceNode.getParentNode(branchUuid).getUuid());
 		assertNotEquals(targetNodeUuid, tx(() -> sourceNode.getParentNode(branchUuid).getUuid()));
+
+		expect(NODE_MOVED).match(1, NodeMovedEventModel.class, event -> {
+			assertEquals(sourceNodeUuid, event.getUuid());
+			NodeReference target = event.getTarget();
+			assertNotNull(target);
+			assertEquals(targetNodeUuid, target.getUuid());
+		});
 		call(() -> client().moveNode(PROJECT_NAME, sourceNodeUuid, targetNodeUuid));
+		awaitEvents();
+		waitForSearchIdleEvent();
 
 		try (Tx tx2 = tx()) {
 			assertNotEquals("The source node parent uuid should have been updated.", oldSourceParentId,
-					sourceNode.getParentNode(branchUuid).getUuid());
+				sourceNode.getParentNode(branchUuid).getUuid());
 			assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
-					targetNode.getUuid(), sourceNode.getParentNode(branchUuid).getUuid());
+				targetNode.getUuid(), sourceNode.getParentNode(branchUuid).getUuid());
 			assertEquals("A store event for each language variation per version should occure", 4, trackingSearchProvider().getStoreEvents().size());
 		}
 		// TODO assert entries
@@ -148,11 +160,11 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			request.setParentNodeUuid(folder("2015").getUuid());
 			request.setLanguage("en");
 			NodeResponse nodeResponse = call(
-					() -> client().createNode(PROJECT_NAME, request, new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
+				() -> client().createNode(PROJECT_NAME, request, new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
 			assertEquals("The node has no segmentfield value and thus a 404 path should be returned.", CURRENT_API_BASE_PATH + "/dummy/webroot/error/404",
-					nodeResponse.getPath());
+				nodeResponse.getPath());
 			assertEquals("The node has no segmentfield value and thus a 404 path should be returned.", CURRENT_API_BASE_PATH + "/dummy/webroot/error/404",
-					nodeResponse.getLanguagePaths().get("en"));
+				nodeResponse.getLanguagePaths().get("en"));
 
 			// 4. Now move the node to folder 2014
 			call(() -> client().moveNode(PROJECT_NAME, nodeResponse.getUuid(), folder("2014").getUuid()));
@@ -163,16 +175,15 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testMoveInBranch() {
 		Branch newBranch;
-		Project project = project();
 		Node movedNode = folder("deals");
 		Node targetNode = folder("2015");
 		String oldParentUuid;
 		try (Tx tx = tx()) {
 			// 1. Get original parent uuid
 			oldParentUuid = call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParametersImpl().draft()))
-					.getParentNode().getUuid();
+				.getParentNode().getUuid();
 
-			newBranch = project.getBranchRoot().create("newbranch", user());
+			newBranch = createBranch("newbranch");
 			tx.success();
 		}
 
@@ -183,16 +194,16 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 			// 2. Move in initial branch
 			call(() -> client().moveNode(PROJECT_NAME, movedNode.getUuid(), targetNode.getUuid(),
-					new VersioningParametersImpl().setBranch(initialBranch().getName())));
+				new VersioningParametersImpl().setBranch(initialBranch().getName())));
 
 			// 3. Assert that the node still uses the old parent for the new branch
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParametersImpl().draft())).getParentNode()
-					.getUuid()).as("Parent Uuid in new branch").isEqualTo(oldParentUuid);
+				.getUuid()).as("Parent Uuid in new branch").isEqualTo(oldParentUuid);
 
 			// 4. Assert that the node uses the new parent for the initial branch
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(),
-					new VersioningParametersImpl().setBranch(initialBranch().getName()).draft())).getParentNode().getUuid())
-							.as("Parent Uuid in initial branch").isEqualTo(targetNode.getUuid());
+				new VersioningParametersImpl().setBranch(initialBranch().getName()).draft())).getParentNode().getUuid())
+					.as("Parent Uuid in initial branch").isEqualTo(targetNode.getUuid());
 		}
 	}
 

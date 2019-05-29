@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.endpoint.role;
 
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_PERMISSIONS_CHANGED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_UPDATED;
 import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
 import static com.gentics.mesh.example.ExampleUuids.PROJECT_DEMO_UUID;
 import static com.gentics.mesh.example.ExampleUuids.ROLE_CLIENT_UUID;
@@ -63,7 +67,8 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		permissionSetEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Permissions were set.");
 		permissionSetEndpoint.exampleRequest(roleExamples.getRolePermissionRequest());
 		permissionSetEndpoint.consumes(APPLICATION_JSON);
-		permissionSetEndpoint.produces(APPLICATION_JSON).handler(rc -> {
+		permissionSetEndpoint.events(ROLE_PERMISSIONS_CHANGED);
+		permissionSetEndpoint.produces(APPLICATION_JSON).blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String roleUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
@@ -80,7 +85,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		permissionGetEndpoint.method(GET);
 		permissionGetEndpoint.produces(APPLICATION_JSON);
 		permissionGetEndpoint.exampleResponse(OK, roleExamples.getRolePermissionResponse(), "Loaded permissions.");
-		permissionGetEndpoint.handler(rc -> {
+		permissionGetEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String roleUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
@@ -95,7 +100,8 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		endpoint.method(DELETE);
 		endpoint.description("Delete the role with the given uuid");
 		endpoint.exampleResponse(NO_CONTENT, "Role was deleted.");
-		endpoint.handler(rc -> {
+		endpoint.events(ROLE_DELETED);
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("roleUuid");
 			crudHandler.handleDelete(ac, uuid);
@@ -111,7 +117,8 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.exampleRequest(roleExamples.getRoleUpdateRequest("New role name"));
 		endpoint.exampleResponse(OK, roleExamples.getRoleResponse1("New role name"), "Updated role.");
-		endpoint.handler(rc -> {
+		endpoint.events(ROLE_UPDATED, ROLE_CREATED);
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("roleUuid");
 			crudHandler.handleUpdate(ac, uuid);
@@ -127,7 +134,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(OK, roleExamples.getRoleResponse1("Admin Role"), "Loaded role.");
 		readOne.addQueryParameters(GenericParametersImpl.class);
-		readOne.handler(rc -> {
+		readOne.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("roleUuid");
 			crudHandler.handleRead(ac, uuid);
@@ -144,7 +151,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		readAll.exampleResponse(OK, roleExamples.getRoleListResponse(), "Loaded list of roles.");
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.addQueryParameters(GenericParametersImpl.class);
-		readAll.handler(rc -> {
+		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadList(ac);
 		});
@@ -159,7 +166,8 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(roleExamples.getRoleCreateRequest("New role"));
 		endpoint.exampleResponse(CREATED, roleExamples.getRoleResponse1("New role"), "Created role.");
-		endpoint.handler(rc -> {
+		endpoint.events(ROLE_CREATED);
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleCreate(ac);
 		});

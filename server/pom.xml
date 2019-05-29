@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.31.5-SNAPSHOT</version>
+		<version>0.34.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -32,7 +32,7 @@
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-transport-native-epoll</artifactId>
-			<version>4.1.15.Final</version>
+			<version>${netty.version}</version>
 			<classifier>linux-x86_64</classifier>
 		</dependency>
 	</dependencies>

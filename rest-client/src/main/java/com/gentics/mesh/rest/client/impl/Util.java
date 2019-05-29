@@ -1,7 +1,7 @@
 package com.gentics.mesh.rest.client.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.gentics.mesh.MeshEvent;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.json.JsonUtil;
 
 import java.security.InvalidParameterException;

@@ -89,7 +89,7 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 
 @RunWith(Parameterized.class)
-@MeshTestSetting(useElasticsearch = false, testSize = TestSize.FULL, startServer = true)
+@MeshTestSetting(testSize = TestSize.FULL, startServer = true)
 public class GraphQLEndpointTest extends AbstractMeshTest {
 
 	private static final String CONTENT_UUID = "43ee8f9ff71e4016ae8f9ff71e10161c";
@@ -174,7 +174,8 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Arrays.asList("filtering/users", true, "draft"),
 			Arrays.asList("filtering/groups", true, "draft"),
 			Arrays.asList("filtering/roles", true, "draft"),
-			Arrays.asList("node/breadcrumb-root", true, "draft")
+			Arrays.asList("node/breadcrumb-root", true, "draft"),
+			Arrays.asList("node/versionslist", true, "draft")
 		)
 		.flatMap(testCase -> IntStream.rangeClosed(1, CURRENT_API_VERSION).mapToObj(version -> {
 			// Make sure all testData entries have five parts.
@@ -229,6 +230,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			schemaContainer.setUuid(FOLDER_SCHEMA_UUID);
 			SchemaModel schema = schemaContainer.getLatestVersion().getSchema();
 			schema.setUrlFields("niceUrl");
+			schema.setAutoPurge(true);
 			NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
 			nodeFieldSchema.setName("nodeRef");
 			nodeFieldSchema.setLabel("Some label");
@@ -457,7 +459,6 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		GraphQLResponse response = call(
 			() -> client.graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName, apiVersion), new VersioningParametersImpl().setVersion(version)));
 		JsonObject jsonResponse = new JsonObject(response.toJson());
-
 		if (assertion == null) {
 			assertThat(jsonResponse).compliesToAssertions(queryName, apiVersion);
 		} else {

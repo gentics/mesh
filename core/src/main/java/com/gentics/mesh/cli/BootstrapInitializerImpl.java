@@ -1,12 +1,12 @@
 package com.gentics.mesh.cli;
 
-import static com.gentics.mesh.MeshEvent.STARTUP;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.STARTUP;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.io.File;
@@ -21,10 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.naming.InvalidNameException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -89,6 +89,7 @@ import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
+import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.util.MavenVersionNumber;
 import com.hazelcast.core.HazelcastInstance;
 import com.syncleus.ferma.tx.Tx;
@@ -163,30 +164,14 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			return;
 		}
 		// Ensure indices are setup and sync the documents
-		IndexHandlerRegistry registry = indexHandlerRegistry.get();
-		for (IndexHandler<?> handler : registry.getHandlers()) {
-			String handlerName = handler.getClass().getSimpleName();
-			try (Tx tx = db.tx()) {
-				log.info("Invoking index sync on handler {" + handlerName + "}. This may take some time..");
-				handler.init().andThen(handler.syncIndices()).blockingAwait();
-				log.info("Index sync on handler {" + handlerName + "} completed.");
-			}
-		}
+		log.info("Invoking index sync. This may take some time..");
+		SyncEventHandler.invokeSyncCompletable().blockingAwait();
+		log.info("Index sync completed.");
 	});
 
 	@Inject
 	public BootstrapInitializerImpl() {
 		clearReferences();
-	}
-
-	@Override
-	public void initProjects() throws InvalidNameException {
-		for (Project project : meshRoot().getProjectRoot().findAll()) {
-			RouterStorage.addProject(project.getName());
-			if (log.isDebugEnabled()) {
-				log.debug("Initalized project {" + project.getName() + "}");
-			}
-		}
 	}
 
 	/**
@@ -344,6 +329,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		vertxOptions.setClustered(options.getClusterOptions().isEnabled());
 		vertxOptions.setWorkerPoolSize(options.getVertxOptions().getWorkerPoolSize());
 		vertxOptions.setEventLoopPoolSize(options.getVertxOptions().getEventPoolSize());
+//		vertxOptions.setWorkerPoolSize(1);
+//		vertxOptions.setEventLoopPoolSize(1);
 
 		MonitoringConfig monitorinOptions = options.getMonitoringOptions();
 		if (monitorinOptions != null && monitorinOptions.isEnabled()) {
@@ -355,6 +342,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			vertxOptions.setMetricsOptions(metricsOptions);
 		}
 		vertxOptions.setPreferNativeTransport(true);
+		System.setProperty("vertx.cacheDirBase", options.getTempDirectory());
 		// TODO We need to find a different way to deal with the FileResolver classpath caching issue since disabling the cache
 		// has negative performance implications.
 		// vertxOptions.setFileResolverCachingEnabled(false);
@@ -436,15 +424,19 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 * @throws Exception
 	 */
 	private void handleLocalData(boolean forceIndexSync, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+		// Load the verticles
+		List<String> initialProjects = db.tx(() -> meshRoot().getProjectRoot().findAll().stream()
+			.map(Project::getName)
+			.collect(Collectors.toList()));
+
+		loader.get().loadVerticles(initialProjects);
+		if (verticleLoader != null) {
+			verticleLoader.apply(Mesh.vertx());
+		}
+
 		// Invoke reindex as requested
 		if (forceIndexSync && configuration.getSearchOptions().getUrl() != null) {
 			syncIndex();
-		}
-
-		// Load the verticles
-		loader.get().loadVerticles();
-		if (verticleLoader != null) {
-			verticleLoader.apply(Mesh.vertx());
 		}
 
 		// Handle admin password reset
@@ -458,10 +450,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				tx.success();
 			}
 		}
-		// Initialise routes for existing projects
-		try (Tx tx = db.tx()) {
-			initProjects();
-		}
+
 		registerEventHandlers();
 
 	}
@@ -724,9 +713,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// Scanner scanIn = new Scanner(System.in);
 				// String pw = scanIn.nextLine();
 				// TODO remove later on
-				String pw = "admin";
-				// scanIn.close();
-				adminUser.setPasswordHash(encoder.encode(pw));
+				// Default hash for pw = "admin";
+				// TODO Autogenerate new passwords
+				String hash = "$2a$10$X7NA0kiqrFlyX0NUhPdW1e7jevHyoaoB4OyoxV1pdA7B3SLVSkx22";
+				adminUser.setPasswordHash(hash);
 				log.debug("Created admin user {" + adminUser.getUuid() + "}");
 			}
 
@@ -762,7 +752,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.addField(contentFieldSchema);
 
 				schema.setContainer(false);
-				contentSchemaContainer = schemaContainerRoot.create(schema, adminUser);
+				contentSchemaContainer = schemaContainerRoot.create(schema, adminUser, null, false);
 				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + contentSchemaContainer.getUuid() + "}");
 			}
 
@@ -786,7 +776,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.addField(nameFieldSchema);
 
 				schema.setContainer(true);
-				folderSchemaContainer = schemaContainerRoot.create(schema, adminUser);
+				folderSchemaContainer = schemaContainerRoot.create(schema, adminUser, null, false);
 				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + folderSchemaContainer.getUuid() + "}");
 			}
 
@@ -811,7 +801,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.addField(binaryFieldSchema);
 
 				schema.setContainer(false);
-				binarySchemaContainer = schemaContainerRoot.create(schema, adminUser);
+				binarySchemaContainer = schemaContainerRoot.create(schema, adminUser, null, false);
 				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + binarySchemaContainer.getUuid() + "}");
 			}
 

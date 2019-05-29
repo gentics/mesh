@@ -1,17 +1,5 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-import java.util.concurrent.TimeUnit;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -21,21 +9,33 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
+
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * @see SchemaContainerRoot
@@ -62,20 +62,25 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public void addSchemaContainer(User user, SchemaContainer schema) {
+	public void addSchemaContainer(User user, SchemaContainer schema, EventQueueBatch batch) {
 		addItem(schema);
 	}
 
 	@Override
-	public void removeSchemaContainer(SchemaContainer schemaContainer) {
+	public void removeSchemaContainer(SchemaContainer schemaContainer, EventQueueBatch batch) {
 		removeItem(schemaContainer);
 	}
 
 	@Override
 	public SchemaContainer create(SchemaModel schema, User creator, String uuid) {
+		return create(schema, creator, uuid, true);
+	}
+
+	@Override
+	public SchemaContainer create(SchemaModel schema, User creator, String uuid, boolean validate) {
 		// TODO FIXME - We need to skip the validation check if the instance is creating a clustered instance because vert.x is not yet ready.
 		// https://github.com/gentics/mesh/issues/210
-		if (Mesh.vertx() != null) {
+		if (validate && Mesh.vertx() != null) {
 			validateSchema(schema);
 		}
 
@@ -83,6 +88,11 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		SchemaContainer conflictingSchema = findByName(name);
 		if (conflictingSchema != null) {
 			throw conflict(conflictingSchema.getUuid(), name, "schema_conflicting_name", name);
+		}
+
+		MicroschemaContainer conflictingMicroschema = MeshInternal.get().boot().microschemaContainerRoot().findByName(name);
+		if (conflictingMicroschema != null) {
+			throw conflict(conflictingMicroschema.getUuid(), name, "microschema_conflicting_name", name);
 		}
 
 		SchemaContainerImpl container = getGraph().addFramedVertex(SchemaContainerImpl.class);
@@ -100,7 +110,8 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		container.setCreated(creator);
 		container.setName(schema.getName());
 
-		addSchemaContainer(creator, container);
+		EventQueueBatch batch = EventQueueBatch.create();
+		addSchemaContainer(creator, container, batch);
 		return container;
 	}
 
@@ -137,16 +148,17 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public SchemaContainer create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
+	public SchemaContainer create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
 		SchemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
 		requestModel.validate();
+
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		SchemaContainer container = create(requestModel, requestUser, uuid);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
-		batch.store(container, true);
+		batch.add(container.onCreated());
 		return container;
 
 	}

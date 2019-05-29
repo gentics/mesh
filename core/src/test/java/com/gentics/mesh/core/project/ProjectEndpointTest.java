@@ -1,21 +1,29 @@
 package com.gentics.mesh.core.project;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_UNASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_DELETED;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.PROJECT;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -35,30 +43,27 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.StreamSupport;
 
-import io.reactivex.Observable;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -66,25 +71,23 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
-import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonObject;
+import io.reactivex.Observable;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = TestSize.FULL, startServer = true)
 public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@Test
@@ -145,21 +148,24 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		request.setName(name);
 		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
-		CompletableFuture<JsonObject> fut = new CompletableFuture<>();
-		vertx().eventBus().consumer(Project.TYPE_INFO.getOnCreatedAddress(), (Message<JsonObject> rh) -> {
-			fut.complete(rh.body());
+		expect(PROJECT_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName(name).uuidNotNull();
+		});
+
+		// Base node of the project
+		expect(NODE_CREATED).match(1, NodeMeshEventModel.class, event -> {
+			assertThat(event).uuidNotNull();
+			assertNull("No name should be set for the base node.", event.getName());
 		});
 
 		ProjectResponse restProject = call(() -> client().createProject(request));
+
+		awaitEvents();
 
 		// Verify that the new routes have been created
 		NodeResponse response = call(() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParametersImpl()
 			.setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
-
-		JsonObject eventInfo = fut.get(10, TimeUnit.SECONDS);
-		assertEquals(name, eventInfo.getString("name"));
-		assertEquals(restProject.getUuid(), eventInfo.getString("uuid"));
 
 		assertThat(restProject).matches(request);
 		try (Tx tx = tx()) {
@@ -300,7 +306,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			// Create a new project
 			ProjectResponse restProject = call(() -> client().createProject(request));
 			assertThat(restProject).matches(request);
-			assertThat(restProject.getPermissions()).hasPerm(Permission.values());
+			assertThat(restProject.getPermissions()).hasPerm(Permission.basicPermissions());
 
 			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 
@@ -324,12 +330,11 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}
 		try (Tx tx = tx()) {
 			for (int i = 0; i < nProjects; i++) {
-				Project extraProject = meshRoot().getProjectRoot().create("extra_project_" + i, null, null, null, user(), schemaContainer("folder")
-					.getLatestVersion());
+				Project extraProject = createProject("extra_project_" + i, "folder");
 				extraProject.setBaseNode(project().getBaseNode());
 				role().grantPermissions(extraProject, READ_PERM);
 			}
-			meshRoot().getProjectRoot().create(noPermProjectName, null, null, null, user(), schemaContainer("folder").getLatestVersion());
+			createProject(noPermProjectName, "folder");
 
 			// Don't grant permissions to no perm project
 			tx.success();
@@ -449,7 +454,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			ProjectResponse response = call(() -> client().findProjectByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
 			assertNotNull(response.getRolePerms());
-			assertThat(response.getRolePerms()).hasPerm(Permission.values());
+			assertThat(response.getRolePerms()).hasPerm(Permission.basicPermissions());
 		}
 	}
 
@@ -469,10 +474,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testUpdateWithBogusNames() {
 		String uuid = projectUuid();
 
-		try (Tx tx = tx()) {
-			MeshInternal.get().boot().meshRoot().getProjectRoot().create("Test234", null, null, null, user(), schemaContainer("folder").getLatestVersion());
-			tx.success();
-		}
+		tx(() -> createProject("Test234", "folder"));
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("Test234");
 		call(() -> client().updateProject(uuid, request), CONFLICT, "project_conflicting_name");
@@ -528,7 +530,15 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName(newName);
 		assertThat(trackingSearchProvider()).hasNoStoreEvents();
+
+		expect(PROJECT_UPDATED).match(1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName(newName).uuidNotNull();
+		});
+
 		ProjectResponse restProject = call(() -> client().updateProject(uuid, request));
+
+		awaitEvents();
+		waitForSearchIdleEvent();
 
 		// Assert that the routerstorage was updates
 		assertTrue("The new project router should have been added", RouterStorage.hasProject(newName));
@@ -547,7 +557,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			expectedCount += project.getTagFamilyRoot().computeCount();
 
 			assertThat(trackingSearchProvider()).hasStore(Project.composeIndexName(), Project.composeDocumentId(uuid));
-			assertThat(trackingSearchProvider()).hasEvents(expectedCount, 0, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(expectedCount, 0, 0, 0, 0);
 
 			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertEquals(newName, reloadedProject.getName());
@@ -595,50 +605,75 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			tx.success();
 		}
 
-		Set<String> indices = new HashSet<>();
-		Set<Tuple<String, String>> documentDeletes = new HashSet<>();
+		Set<String> droppedIndices = new HashSet<>();
+		// Set<Tuple<String, String>> documentDeletes = new HashSet<>();
 		try (Tx tx = tx()) {
 			Project project = project();
-			for (Node node : project.getNodeRoot().findAll()) {
-				for (NodeGraphFieldContainer ngfc : node.getGraphFieldContainersIt(initialBranchUuid(), PUBLISHED)) {
-					String idx = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
-						ngfc.getSchemaContainerVersion().getUuid(), PUBLISHED);
-					String did = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), ngfc.getLanguageTag());
-					documentDeletes.add(Tuple.tuple(idx, did));
-				}
-				for (NodeGraphFieldContainer ngfc : node.getGraphFieldContainersIt(initialBranchUuid(), DRAFT)) {
-					String idx = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
-						ngfc.getSchemaContainerVersion().getUuid(), DRAFT);
-					String did = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), ngfc.getLanguageTag());
-					documentDeletes.add(Tuple.tuple(idx, did));
-				}
-			}
+			// for (Node node : project.getNodeRoot().findAll()) {
+			// for (NodeGraphFieldContainer ngfc : node.getGraphFieldContainersIt(initialBranchUuid(), PUBLISHED)) {
+			// String idx = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
+			// ngfc.getSchemaContainerVersion().getUuid(), PUBLISHED);
+			// String did = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), ngfc.getLanguageTag());
+			// documentDeletes.add(Tuple.tuple(idx, did));
+			// }
+			// for (NodeGraphFieldContainer ngfc : node.getGraphFieldContainersIt(initialBranchUuid(), DRAFT)) {
+			// String idx = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
+			// ngfc.getSchemaContainerVersion().getUuid(), DRAFT);
+			// String did = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), ngfc.getLanguageTag());
+			// documentDeletes.add(Tuple.tuple(idx, did));
+			// }
+			// }
+
+			droppedIndices.add(TagFamily.composeIndexName(projectUuid()));
+			droppedIndices.add(Tag.composeIndexName(projectUuid()));
 
 			// 1. Determine a list all project indices which must be dropped
-			for (Branch branch : project.getBranchRoot().findAll()) {
-				for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
-					String schemaContainerVersionUuid = version.getUuid();
-					indices.add(NodeGraphFieldContainer.composeIndexName(uuid, branch.getUuid(), schemaContainerVersionUuid, PUBLISHED));
-					indices.add(NodeGraphFieldContainer.composeIndexName(uuid, branch.getUuid(), schemaContainerVersionUuid, DRAFT));
-				}
-			}
+			droppedIndices.add(NodeGraphFieldContainer.composeIndexName(uuid, "*", "*", PUBLISHED));
+			droppedIndices.add(NodeGraphFieldContainer.composeIndexName(uuid, "*", "*", DRAFT));
+			// for (Branch branch : project.getBranchRoot().findAll()) {
+			// for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
+			// String schemaContainerVersionUuid = version.getUuid();
+			// }
+			// }
 		}
+
+		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
+		expect(PROJECT_DELETED).match(1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName(PROJECT_NAME).hasUuid(projectUuid());
+		}).one();
+
+		expect(NODE_DELETED).match(1, NodeMeshEventModel.class, event -> {
+			assertThat(event).hasUuid(baseNodeUuid);
+		});
+
+		// The default branch should be deleted
+		expect(BRANCH_DELETED).one();
+		// The schemas: folder, content should be unassigned from the project
+		expect(PROJECT_SCHEMA_UNASSIGNED).total(3);
+		// Colors and basic should be deleted
+		expect(TAG_FAMILY_DELETED).total(2);
 
 		// 2. Delete the project
 		call(() -> client().deleteProject(uuid));
 
+		awaitEvents();
+		waitForSearchIdleEvent();
+
 		// 3. Assert that the indices have been dropped and the project has been
 		// deleted from the project index
-		for (Tuple<String, String> entry : documentDeletes) {
-			assertThat(trackingSearchProvider()).hasDelete(entry.v1(), entry.v2());
-		}
+		// for (Tuple<String, String> entry : documentDeletes) {
+		// assertThat(trackingSearchProvider()).hasDelete(entry.v1(), entry.v2());
+		// }
+
 		assertThat(trackingSearchProvider()).hasDelete(Project.composeIndexName(), Project.composeDocumentId(uuid));
 		assertThat(trackingSearchProvider()).hasDrop(TagFamily.composeIndexName(uuid));
 		assertThat(trackingSearchProvider()).hasDrop(Tag.composeIndexName(uuid));
-		for (String index : indices) {
+		for (String index : droppedIndices) {
 			assertThat(trackingSearchProvider()).hasDrop(index);
 		}
-		assertThat(trackingSearchProvider()).hasEvents(0, 1 + 8, 2 + indices.size(), 0);
+		// 1 project
+		long deleted = 1;
+		assertThat(trackingSearchProvider()).hasEvents(0, 0, deleted, droppedIndices.size(), 0);
 
 		try (Tx tx = tx()) {
 			assertElement(meshRoot().getProjectRoot(), uuid, false);
@@ -656,8 +691,9 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			tx.success();
 		}
 
-		call(() -> client().deleteProject(uuid), FORBIDDEN, "error_missing_perm", uuid, DELETE_PERM.getRestPerm().getName(), DELETE_PERM.getRestPerm().getName());
-		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
+		call(() -> client().deleteProject(uuid), FORBIDDEN, "error_missing_perm", uuid, DELETE_PERM.getRestPerm().getName(),
+			DELETE_PERM.getRestPerm().getName());
+		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
 			Project project = meshRoot().getProjectRoot().findByUuid(uuid);
@@ -705,7 +741,6 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		int nJobs = 100;
 		long nProjectsBefore = meshRoot().getProjectRoot().computeCount();
 
-
 		validateCreation(nJobs, i -> {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("test12345_" + i);
@@ -730,6 +765,13 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		Observable.range(0, nJobs)
 			.flatMapCompletable(i -> client().findProjectByUuid(projectUuid()).toCompletable())
 			.blockingAwait();
+	}
+
+	@Test
+	@Override
+	public void testPermissionResponse() {
+		ProjectResponse project = client().findProjects().blockingGet().getData().get(0);
+		assertThat(project.getPermissions()).hasNoPublishPermsSet();
 	}
 
 	@Test

@@ -7,6 +7,11 @@
 | Description
 
 
+| autoPurge
+| false
+| boolean
+| Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update.
+
 | container
 | true
 | boolean
@@ -68,7 +73,7 @@
 | Flag which indicates whether the delete permission is granted.
 
 | permissions.publish
-| true
+| false
 | boolean
 | Flag which indicates whether the publish permission is granted.
 
@@ -78,7 +83,7 @@
 | Flag which indicates whether the read permission is granted.
 
 | permissions.readPublished
-| true
+| false
 | boolean
 | Flag which indicates whether the read published permission is granted.
 

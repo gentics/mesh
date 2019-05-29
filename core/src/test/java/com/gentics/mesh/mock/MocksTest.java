@@ -1,5 +1,7 @@
 package com.gentics.mesh.mock;
 
+import static com.gentics.mesh.test.TestSize.PROJECT;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -7,16 +9,15 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.MultiMap;
 import io.vertx.ext.web.RoutingContext;
-import static com.gentics.mesh.test.TestSize.PROJECT;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = false)
+@MeshTestSetting(elasticsearch = NONE, testSize = PROJECT, startServer = false)
 public class MocksTest extends AbstractMeshTest {
 
 	@Test

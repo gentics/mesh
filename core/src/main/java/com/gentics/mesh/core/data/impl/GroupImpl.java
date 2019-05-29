@@ -6,6 +6,10 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CRE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_ROLE_ASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_ROLE_UNASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_ASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_UNASSIGNED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -19,7 +23,6 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
@@ -28,12 +31,15 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
+import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.Assignment;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.handler.VersionHandler;
@@ -180,12 +186,13 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	@Override
 	public void delete(BulkActionContext bac) {
 		// TODO don't allow deletion of the admin group
-		bac.batch().delete(this, true);
+		bac.batch().add(onDeleted());
 
 		Set<? extends User> affectedUsers = getUsers().stream().collect(Collectors.toSet());
 		getElement().remove();
 		for (User user : affectedUsers) {
 			user.updateShortcutEdges();
+			bac.add(user.onUpdated());
 			bac.inc();
 		}
 		bac.process();
@@ -193,7 +200,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
 		BootstrapInitializer boot = MeshInternal.get().boot();
 		GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 
@@ -208,15 +215,15 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 			}
 
 			setName(requestModel.getName());
-			batch.store(this, true);
+
+			batch.add(onUpdated());
 			return true;
-		} else {
-			return false;
 		}
+		return false;
 	}
 
 	@Override
-	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
 		Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (User user : getUsers()) {
@@ -224,15 +231,6 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 			}
 		}
 		super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
-	}
-
-	@Override
-	public void handleRelatedEntries(HandleElementAction action) {
-		for (User user : getUsers()) {
-			// We need to store users as well since users list their groups -
-			// See {@link UserTransformer#toDocument(User)}
-			action.call(user, null);
-		}
 	}
 
 	@Override
@@ -263,6 +261,38 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		return DB.get().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
+	}
+
+	@Override
+	public GroupRoleAssignModel createRoleAssignmentEvent(Role role, Assignment assignment) {
+		GroupRoleAssignModel model = new GroupRoleAssignModel();
+		model.setGroup(transformToReference());
+		model.setRole(role.transformToReference());
+		switch (assignment) {
+		case ASSIGNED:
+			model.setEvent(GROUP_ROLE_ASSIGNED);
+			break;
+		case UNASSIGNED:
+			model.setEvent(GROUP_ROLE_UNASSIGNED);
+			break;
+		}
+		return model;
+	}
+
+	@Override
+	public GroupUserAssignModel createUserAssignmentEvent(User user, Assignment assignment) {
+		GroupUserAssignModel model = new GroupUserAssignModel();
+		model.setGroup(transformToReference());
+		model.setUser(user.transformToReference());
+		switch (assignment) {
+		case ASSIGNED:
+			model.setEvent(GROUP_USER_ASSIGNED);
+			break;
+		case UNASSIGNED:
+			model.setEvent(GROUP_USER_UNASSIGNED);
+			break;
+		}
+		return model;
 	}
 
 }

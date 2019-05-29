@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Interface for HTTP-Methods in Test-Classes to test requests/responses which are not covered/allowed via the API.
  */
-public interface TestHttpMethods extends TestHelperMethods {
+public interface TestHttpMethods extends TestHelper {
 
 	OkHttpClient httpClient();
 

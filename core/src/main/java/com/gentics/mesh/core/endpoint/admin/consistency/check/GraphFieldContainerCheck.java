@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 import static com.gentics.mesh.core.rest.admin.consistency.RepairAction.DELETE;
 
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
@@ -15,6 +14,7 @@ import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
 import com.gentics.mesh.core.endpoint.admin.consistency.repair.NodeDeletionGraphFieldContainerFix;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
 import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
@@ -78,7 +78,9 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 		} else {
 			VersionNumber previousVersion = previous.getVersion();
 			if (previousVersion != null && version != null) {
-				if (!version.equals(previousVersion.nextDraft()) && !version.equals(previousVersion.nextPublished())) {
+				boolean notSameDraft = !version.equals(previousVersion.nextDraft());
+				boolean notLargerVersion = version.compareTo(previousVersion.nextPublished()) > 1;
+				if (notSameDraft && notLargerVersion) {
 					String nodeInfo = "unknown";
 					try {
 						Node node = container.getParentNode();

@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.endpoint.migration;
 
 import com.gentics.mesh.core.data.branch.BranchVersionEdge;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.job.JobStatus;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
@@ -48,7 +48,7 @@ public interface MigrationStatusHandler {
 	 * 
 	 * @param status
 	 */
-	void setStatus(MigrationStatus status);
+	void setStatus(JobStatus status);
 
 	/**
 	 * Set the current completion count.

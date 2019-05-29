@@ -27,7 +27,7 @@ public class SchemaModelImpl implements SchemaModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether nodes which use this schema store additional child nodes.")
-	private boolean container = false;
+	private Boolean container;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Additional elasticsearch index configuration. This can be used to setup custom analyzers and filters.")
@@ -64,6 +64,10 @@ public class SchemaModelImpl implements SchemaModel {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("List of schema fields")
 	private List<FieldSchema> fields = new ArrayList<>();
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Auto purge flag of the schema. Controls whether contents of this schema should create new versions.")
+	private Boolean autoPurge;
 
 	@Override
 	public String getVersion() {
@@ -132,12 +136,12 @@ public class SchemaModelImpl implements SchemaModel {
 	}
 
 	@Override
-	public boolean isContainer() {
+	public Boolean getContainer() {
 		return container;
 	}
 
 	@Override
-	public SchemaModelImpl setContainer(boolean flag) {
+	public SchemaModelImpl setContainer(Boolean flag) {
 		this.container = flag;
 		return this;
 	}
@@ -161,6 +165,17 @@ public class SchemaModelImpl implements SchemaModel {
 	@Override
 	public SchemaModelImpl setElasticsearch(JsonObject elasticsearch) {
 		this.elasticsearch = elasticsearch;
+		return this;
+	}
+
+	@Override
+	public Boolean getAutoPurge() {
+		return autoPurge;
+	}
+
+	@Override
+	public SchemaModelImpl setAutoPurge(Boolean autoPurge) {
+		this.autoPurge = autoPurge;
 		return this;
 	}
 

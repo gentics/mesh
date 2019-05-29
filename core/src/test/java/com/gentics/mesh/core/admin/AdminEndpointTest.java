@@ -14,7 +14,7 @@ import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true, inMemoryDB = true)
+@MeshTestSetting(testSize = PROJECT, startServer = true, inMemoryDB = true)
 public class AdminEndpointTest extends AbstractMeshTest {
 
 	@Test

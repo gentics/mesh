@@ -6,7 +6,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>0.31.5-SNAPSHOT</version>
+	<version>0.34.1-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Gentics Mesh</name>
@@ -14,17 +14,19 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<projectRoot>${project.basedir}</projectRoot>
-		<mesh.admin-ui.version>0.9.3</mesh.admin-ui.version>
+		<mesh.admin-ui.version>0.9.4</mesh.admin-ui.version>
 
-                <!-- when updating version, don't forget to update administration-guide.asciidoc -->
+		<!-- when updating version, don't forget to update administration-guide.asciidoc -->
 		<asm.version>3.3.1</asm.version>
-		<spring.security.version>4.2.3.RELEASE</spring.security.version>
+		<spring.security.version>4.2.12.RELEASE</spring.security.version>
 		<ferma.version>2.4.0-MIG</ferma.version>
-		<elasticsearch.client.version>0.5.0</elasticsearch.client.version>
-		<orientdb.version>3.0.18</orientdb.version>
+		<elasticsearch.client.version>0.5.2</elasticsearch.client.version>
+		<orientdb.version>3.0.19</orientdb.version>
 		<dagger.version>2.11</dagger.version>
 		<hazelcast.version>3.10.4</hazelcast.version>
 		<jackson.version>2.9.8</jackson.version>
+		<netty.version>4.1.30.Final</netty.version>
+		<tika.version>1.21</tika.version>
 
 		<surefire.forkcount>3</surefire.forkcount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>
@@ -46,7 +48,7 @@
 	<parent>
 		<groupId>com.gentics.vertx</groupId>
 		<artifactId>maven-vertx-parent</artifactId>
-		<version>3.5.7</version>
+		<version>3.7.0</version>
 	</parent>
 
 	<developers>
@@ -175,6 +177,12 @@
 				<version>20.0-rc1</version>
 			</dependency>
 
+			<!-- Tika -->
+			<dependency>
+				<groupId>org.apache.tika</groupId>
+				<artifactId>tika-parsers</artifactId>
+				<version>${tika.version}</version>
+			</dependency>
 
 			<!-- Spring - bcrypt -->
 			<dependency>
@@ -350,7 +358,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>	
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>

@@ -1,8 +1,35 @@
 package com.gentics.mesh.graphql.type;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_PAGE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_TYPE_NAME;
+import static graphql.Scalars.GraphQLBoolean;
+import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLInterfaceType.newInterface;
+import static graphql.schema.GraphQLObjectType.newObject;
+import static graphql.schema.GraphQLUnionType.newUnionType;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Stack;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
@@ -11,6 +38,7 @@ import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -35,32 +63,6 @@ import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
 import graphql.schema.GraphQLUnionType;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Stack;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
-import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_PAGE_TYPE_NAME;
-import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_TYPE_NAME;
-import static graphql.Scalars.GraphQLBoolean;
-import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static graphql.schema.GraphQLInterfaceType.newInterface;
-import static graphql.schema.GraphQLObjectType.newObject;
-import static graphql.schema.GraphQLUnionType.newUnionType;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-
 /**
  * Type provider for the node type. Internally this will map partially to {@link Node} and {@link NodeGraphFieldContainer} vertices.
  */
@@ -70,6 +72,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	public static final String NODE_TYPE_NAME = "Node";
 
 	public static final String NODE_PAGE_TYPE_NAME = "NodesPage";
+
+	public static final String NODE_CONTENT_VERSION_TYPE_NAME = "ContentVersion";
 
 	public static final String NODE_FIELDS_TYPE_NAME = "Fields";
 
@@ -112,7 +116,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		}
 		gc.requiresPerm(parentNode, READ_PERM, READ_PUBLISHED_PERM);
 
-		List<String> languageTags =  getLanguageArgument(env, content);
+		List<String> languageTags = getLanguageArgument(env, content);
 		return new NodeContent(parentNode, parentNode.findVersion(gc, languageTags), languageTags);
 	}
 
@@ -151,7 +155,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		}
 
 		return content.getNode().getBreadcrumbNodes(gc).stream().map(node -> {
-			List<String> languageTags =  getLanguageArgument(env, content);
+			List<String> languageTags = getLanguageArgument(env, content);
 			return new NodeContent(node, node.findVersion(gc, languageTags), languageTags);
 		}).collect(Collectors.toList());
 	}
@@ -325,7 +329,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					return null;
 				}
 				Node node = content.getNode();
-				return node.getSchemaContainer().getLatestVersion().getSchema().isContainer();
+				return node.getSchemaContainer().getLatestVersion().getSchema().getContainer();
 			}).build(),
 
 			// Content specific fields
@@ -422,6 +426,23 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				return container.getVersion().getFullVersion();
 			}).build(),
 
+			// .versions
+			newFieldDefinition().name("versions").description("List of versions of the node.")
+				.argument(createSingleLanguageTagArg(true))
+				.type(new GraphQLList(createVersionInfoType())).dataFetcher(env -> {
+					GraphQLContext gc = env.getContext();
+					String languageTag = getSingleLanguageArgument(env);
+					NodeContent content = env.getSource();
+					Node node = content.getNode();
+					if (node == null) {
+						return null;
+					}
+					return node.getGraphFieldContainersIt(gc.getBranch(), DRAFT).stream().filter(c -> {
+						String lang = c.getLanguageTag();
+						return lang.equals(languageTag);
+					}).findFirst().map(NodeGraphFieldContainer::versions).orElse(null);
+			}).build(),
+
 			// .language
 			newFieldDefinition().name("language").description("The language of this content.").type(GraphQLString).dataFetcher(env -> {
 				NodeContent content = env.getSource();
@@ -432,6 +453,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				return container.getLanguageTag();
 			}).build(),
 
+			// .displayName
 			newFieldDefinition().name("displayName").description("The value of the display field.").type(GraphQLString).dataFetcher(env -> {
 				NodeContent content = env.getSource();
 				NodeGraphFieldContainer container = content.getContainer();
@@ -463,6 +485,61 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			.since(1, withNodeFieldsSupplier)
 			.since(2, baseFields)
 			.build();
+	}
+
+	public GraphQLObjectType createVersionInfoType() {
+		GraphQLObjectType.Builder builder = newObject();
+		builder.name(NODE_CONTENT_VERSION_TYPE_NAME);
+		builder.description("Content version information");
+
+		// .version
+		builder.field(newFieldDefinition().name("version").description("Version of the content").type(GraphQLString).dataFetcher((env) -> {
+			NodeGraphFieldContainer version = env.getSource();
+			return version.getVersion();
+		}));
+
+		// .draft
+		builder.field(newFieldDefinition().name("draft").description("Flag that indicates whether the version is used as a draft.")
+			.type(GraphQLBoolean).dataFetcher((env) -> {
+				GraphQLContext gc = env.getContext();
+				String branchUuid = gc.getBranch().getUuid();
+				NodeGraphFieldContainer version = env.getSource();
+				return version.isDraft(branchUuid);
+			}));
+
+		// .published
+		builder.field(newFieldDefinition().name("published").description("Flag that indicates whether the version is used as a published version.")
+			.type(GraphQLBoolean).dataFetcher((env) -> {
+				GraphQLContext gc = env.getContext();
+				String branchUuid = gc.getBranch().getUuid();
+				NodeGraphFieldContainer version = env.getSource();
+				return version.isPublished(branchUuid);
+			}));
+
+		// .branchRoot
+		builder.field(newFieldDefinition().name("branchRoot")
+			.description("Flag that indicates whether the version is used as a branch root version for a branch.").type(GraphQLBoolean)
+			.dataFetcher((env) -> {
+				NodeGraphFieldContainer version = env.getSource();
+				return version.isInitial();
+			}));
+
+		// .created
+		builder.field(
+			newFieldDefinition().name("created").description("ISO8601 formatted created date string").type(GraphQLString).dataFetcher(env -> {
+				NodeGraphFieldContainer source = env.getSource();
+				return source.getLastEditedDate();
+			}));
+
+		// .creator
+		builder.field(
+			newFieldDefinition().name("creator").description("Creator of the version").type(new GraphQLTypeReference("User")).dataFetcher(env -> {
+				GraphQLContext gc = env.getContext();
+				NodeGraphFieldContainer source = env.getSource();
+				return gc.requiresPerm(source.getEditor(), READ_PERM);
+			}));
+
+		return builder.build();
 	}
 
 	public Object editorFetcher(DataFetchingEnvironment env) {

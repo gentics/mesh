@@ -41,6 +41,7 @@ public class RunnerNodeB {
 		options.getAuthenticationOptions().setKeystorePath(basePath + "/keystore.jkms");
 		// options.getSearchOptions().setHttpEnabled(true);
 		options.getClusterOptions().setEnabled(true);
+		options.getClusterOptions().setClusterName("testcluster");
 
 		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {

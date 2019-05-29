@@ -8,5 +8,9 @@
     "startY" : 20,
     "width" : 170,
     "height" : 150
+  },
+  "focalPoint" : {
+    "x" : 0.3,
+    "y" : 0.6
   }
 }

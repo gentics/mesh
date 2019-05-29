@@ -6,7 +6,6 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.gentics.mesh.MeshEvent;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -17,16 +16,14 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
-
-@MeshTestSetting(useElasticsearch = true, testSize = TestSize.FULL, startServer = true)
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.FULL, startServer = true)
 public class NodeIndexSyncTest extends AbstractMeshTest {
 
 	@Test
 	public void testNodeSync() throws Exception {
 
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		String oldContent = "supersonic";
 		String newContent = "urschnell";
@@ -41,6 +38,8 @@ public class NodeIndexSyncTest extends AbstractMeshTest {
 		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
 		call(() -> client().publishNode(PROJECT_NAME, uuid));
 
+		waitForSearchIdleEvent();
+
 		// "supersonic" found in published nodes
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent)));
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
@@ -54,10 +53,11 @@ public class NodeIndexSyncTest extends AbstractMeshTest {
 		// Now clear all data
 		searchProvider().clear().blockingAwait();
 
-		waitForEvent(MeshEvent.INDEX_SYNC, () -> {
-			GenericMessageResponse message = call(() -> client().invokeIndexSync());
-			assertThat(message).matches("search_admin_index_sync_invoked");
-		});
+		GenericMessageResponse message = call(() -> client().invokeIndexSync());
+		assertThat(message).matches("search_admin_index_sync_invoked");
+
+		waitForSearchIdleEvent();
+
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent)));
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);

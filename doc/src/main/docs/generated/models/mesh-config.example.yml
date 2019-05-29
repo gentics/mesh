@@ -39,12 +39,18 @@ search:
     \ -Dfile.encoding=UTF-8 -Djna.nosys=true -XX:-OmitStackTraceInFastThrow -Dio.netty.noUnsafe=true\
     \ -Dio.netty.noKeySetOptimization=true -Dio.netty.recycler.maxCapacityPerThread=0\
     \ -Dlog4j.shutdownHookEnabled=false -Dlog4j2.disable.jmx=true -XX:+HeapDumpOnOutOfMemoryError"
-  bulkLimit: 2000
   prefix: "mesh-"
+  bulkLimit: 2000
+  eventBufferSize: 1000
+  bulkDebounceTime: 2000
+  idleDebounceTime: 100
+  retryInterval: 5000
+  waitForIdle: true
 upload:
   byteLimit: 262144000
   directory: "data/binaryFiles"
   tempDirectory: "/opt/mesh/data/tmp/temp-uploads"
+  parserLimit: 40000
 security:
   tokenExpirationTime: 3600
   keystorePassword: "<Your Password>"
@@ -69,3 +75,5 @@ image:
   maxHeight: 2048
   jpegQuality: 0.95
   resampleFilter: "LANCZOS"
+content:
+  autoPurge: true

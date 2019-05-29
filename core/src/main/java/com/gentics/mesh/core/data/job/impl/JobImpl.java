@@ -1,11 +1,11 @@
 package com.gentics.mesh.core.data.job.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FROM_VERSION;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.STARTING;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.UNKNOWN;
+import static com.gentics.mesh.core.rest.job.JobStatus.STARTING;
+import static com.gentics.mesh.core.rest.job.JobStatus.UNKNOWN;
 
 import java.util.Map;
 
@@ -27,12 +27,12 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
-import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.dagger.DB;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.ETag;
 
@@ -51,7 +51,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 		"For further details concerning this error please refer to the logs.";
 
 	@Override
-	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
 		throw new NotImplementedException("Jobs can't be updated");
 	}
 
@@ -144,17 +144,17 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	}
 
 	@Override
-	public void setType(MigrationType type) {
+	public void setType(JobType type) {
 		property(TYPE_PROPERTY_KEY, type.name());
 	}
 
 	@Override
-	public MigrationType getType() {
+	public JobType getType() {
 		String type = property(TYPE_PROPERTY_KEY);
 		if (type == null) {
 			return null;
 		} else {
-			return MigrationType.valueOf(type);
+			return JobType.valueOf(type);
 		}
 	}
 
@@ -196,7 +196,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public void setBranch(Branch branch) {
-		setUniqueLinkOutTo(branch, HAS_BRANCH);
+		setSingleLinkOutTo(branch, HAS_BRANCH);
 	}
 
 	@Override
@@ -206,7 +206,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public void setFromSchemaVersion(SchemaContainerVersion version) {
-		setUniqueLinkOutTo(version, HAS_FROM_VERSION);
+		setSingleLinkOutTo(version, HAS_FROM_VERSION);
 	}
 
 	@Override
@@ -216,7 +216,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public void setToSchemaVersion(SchemaContainerVersion version) {
-		setUniqueLinkOutTo(version, HAS_TO_VERSION);
+		setSingleLinkOutTo(version, HAS_TO_VERSION);
 	}
 
 	@Override
@@ -226,7 +226,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public void setFromMicroschemaVersion(MicroschemaContainerVersion fromVersion) {
-		setUniqueLinkOutTo(fromVersion, HAS_FROM_VERSION);
+		setSingleLinkOutTo(fromVersion, HAS_FROM_VERSION);
 	}
 
 	@Override
@@ -236,7 +236,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public void setToMicroschemaVersion(MicroschemaContainerVersion toVersion) {
-		setUniqueLinkOutTo(toVersion, HAS_TO_VERSION);
+		setSingleLinkOutTo(toVersion, HAS_TO_VERSION);
 	}
 
 	@Override
@@ -245,16 +245,16 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	}
 
 	@Override
-	public MigrationStatus getStatus() {
+	public JobStatus getStatus() {
 		String status = property(STATUS_PROPERTY_KEY);
 		if (status == null) {
 			return UNKNOWN;
 		}
-		return MigrationStatus.valueOf(status);
+		return JobStatus.valueOf(status);
 	}
 
 	@Override
-	public void setStatus(MigrationStatus status) {
+	public void setStatus(JobStatus status) {
 		property(STATUS_PROPERTY_KEY, status.name());
 	}
 
@@ -304,7 +304,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 		setStopTimestamp(null);
 		setErrorDetail(null);
 		setErrorMessage(null);
-		setStatus(MigrationStatus.QUEUED);
+		setStatus(JobStatus.QUEUED);
 	}
 
 	@Override

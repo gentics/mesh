@@ -5,6 +5,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_DELETED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
@@ -12,6 +14,7 @@ import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -22,7 +25,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-import io.reactivex.Observable;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -30,6 +32,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -49,9 +52,12 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+import io.reactivex.Observable;
+
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@Ignore("Not yet implemented")
@@ -118,8 +124,15 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		request.setName("new_microschema_name");
 		request.setDescription("microschema description");
 
+		expect(MICROSCHEMA_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName("new_microschema_name").uuidNotNull();
+		}).one();
+
 		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(request));
+		awaitEvents();
+		waitForSearchIdleEvent();
+
 		assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 		assertThat(microschemaResponse.getPermissions()).hasPerm(READ, CREATE, DELETE, UPDATE);
 		assertThat((Microschema) microschemaResponse).isEqualToComparingOnlyGivenFields(request, "name", "description");
@@ -145,19 +158,21 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		request.setName("new_microschema_name");
 		request.setDescription("microschema description");
 
-		String microschemaRootUuid = db().tx(() -> meshRoot().getMicroschemaContainerRoot().getUuid());
+		String microschemaRootUuid = tx(() -> meshRoot().getMicroschemaContainerRoot().getUuid());
 		try (Tx tx = tx()) {
 			role().revokePermissions(meshRoot().getMicroschemaContainerRoot(), CREATE_PERM);
 			tx.success();
 		}
 		call(() -> client().createMicroschema(request), FORBIDDEN, "error_missing_perm", microschemaRootUuid, CREATE_PERM.getRestPerm().getName());
-
 	}
 
 	@Test
 	@Override
-	@Ignore("Not yet implemented")
 	public void testCreateWithUuid() throws Exception {
+		MicroschemaCreateRequest microschema = FieldUtil.createMinimalValidMicroschemaCreateRequest();
+		String uuid = UUIDUtil.randomUUID();
+		MicroschemaResponse resp = call(() -> client().createMicroschema(uuid, microschema));
+		assertEquals("The created microschema did not contain the expected uuid.", uuid, resp.getUuid());
 	}
 
 	@Test
@@ -236,7 +251,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			MicroschemaResponse microschema = call(
 				() -> client().findMicroschemaByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
 			assertNotNull(microschema.getRolePerms());
-			assertThat(microschema.getRolePerms()).hasPerm(Permission.values());
+			assertThat(microschema.getRolePerms()).hasPerm(Permission.basicPermissions());
 		}
 	}
 
@@ -284,6 +299,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
 		request.setName("new-name");
 		call(() -> client().updateMicroschema(uuid, request), FORBIDDEN, "error_missing_perm", uuid, UPDATE_PERM.getRestPerm().getName());
+
 	}
 
 	@Test
@@ -305,9 +321,15 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		String uuid = db().tx(() -> microschemaContainers().get("vcard").getUuid());
+		String uuid = tx(() -> microschemaContainer("vcard").getUuid());
+
+		expect(MICROSCHEMA_DELETED).match(1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName("vcard").hasUuid(uuid);
+		}).one();
+
 		call(() -> client().deleteMicroschema(uuid));
 
+		awaitEvents();
 		// schema_delete_still_in_use
 
 		try (Tx tx = tx()) {
@@ -447,4 +469,19 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		}
 	}
 
+	@Test
+	@Override
+	public void testPermissionResponse() {
+		MicroschemaResponse microschema = client().findMicroschemas().blockingGet().getData().get(0);
+		assertThat(microschema.getPermissions()).hasNoPublishPermsSet();
+	}
+
+	@Test
+	public void testConflictingNameWithSchema() throws InterruptedException {
+		MicroschemaCreateRequest microSchemaRequest = new MicroschemaCreateRequest().setName("test");
+		SchemaCreateRequest schemaRequest = new SchemaCreateRequest().setName("test");
+
+		client().createSchema(schemaRequest).blockingAwait();
+		call(() -> client().createMicroschema(microSchemaRequest), CONFLICT, "schema_conflicting_name", "test");
+	}
 }
