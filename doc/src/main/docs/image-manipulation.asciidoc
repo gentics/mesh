@@ -1,0 +1,158 @@
+---
+title: Image Manipulation
+---
+
+:icons: font
+:source-highlighter: prettify
+:toc:
+
+Images can be resized and/or cropped by appending the <<imagemanipulationparams,image manipulation query parameters>> on the relevant API endpoints.
+The following image formats are supported: `png`, `jpg`, `bmp` and `gif`
+
+== Fetch and Resize an Image with UUID
+
+Endpoint: ```/api/v1/:projectName/nodes/:uuid/binary/:fieldname?w=220```
+
+.Try the example
+[TIP]
+https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=300
+
+.via UUID
+image::https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=300&version=1.0[Example Image,role="img-responsive"] 
+
+== Fetch and Crop an Image with WebRoot Path
+
+Images can be loaded similar to regular contents. It is also possible to load them using the path.
+
+TIP: By Path: https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?w=500
+
+.via webroot path
+image::https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?w=500[Image By Path]
+
+== Placeholders
+
+NOTE: You can use the `dominantColor`, `width` and `height` properties of the image fields to generate colored placeholder areas for your images. The `dominantColor` of the image will  automatically be computed for each uploaded image.
+
+It is also possible to use the image manipulation in combination with the WebRoot endpoint.
+
+Endpoint: ```/api/v1/:projectName/webroot/:path?rect=10,100,800,400&crop=rect```
+
+.Try the example
+[TIP]
+https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?rect=10,100,800,400&crop=rect
+
+NOTE: It is mandatory to specify all four crop parameters when cropping an image.
+
+== Focal Point Handling
+
+Responsive designs often suggest the usage of https://developer.mozilla.org/en-US/docs/Learn/HTML/Multimedia_and_embedding/Responsive_images[srcset images for responsive images].
+Sometimes those designs require image sizes which lead to cropped images. This could result in images which seem chopped off at the worst possible place or images which miss the important part.
+
+You can however use the focal point feature in order to influence how the image should be cropped. 
+Gentics Mesh will use the focal point information when cropping the image so that the focused area will remain in the image.
+
+First you need to specify a focal point along with your image.
+You can store the focal point information within the binary field of your image or use the `fpx` and the `fpy` query parameters when loading the image.
+You can also use these parameters to override the stored focal point.
+
+The width and height information via `w` and `h` parameter are also needed when loading the image. 
+Otherwise Gentics Mesh can't tell which area of the image needs to be cropped. 
+
+Finally the `fpdebug` parameter can be used to visualize the focal point. This is useful when testing designs and resize parameters.
+
+.Try the example
+[TIP]
+https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?fpx=0.5&fpy=0.4&w=800&h=600&crop=fp&fpdebug=true
+
+In some cases you may want to show just a single area of the image. In this case you can use the `fpz` zoom parameter to zoom to the focal point area.
+
+.Try the example
+[TIP]
+https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?fpx=0.5&fpy=0.35&fpz=3.0&w=800&h=600&crop=fp&fpdebug=true
+
+It is also possible to store focal point information along with the binary field. This way you can set the focal point once and omit it within the image request. 
+In those cases it is not needed to specify the `fpx` and `fpy` parameter. Gentics Mesh will automatically load the missing parameter from the binary field if possible.
+
+.Try the example
+[TIP]
+https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?fpz=1.2&w=800&h=600&crop=fp&fpdebug=true
+
+
+=== Responsive Design
+
+You can use the focal point feature to mark the point of interest in your images. That information can be used to generate different size sets of your images. Different image sizes may be required by your responsive design. The focal point will be used by Gentics Mesh to crop the image in the desired way.
+
+image::https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=600&h=300&crop=fp&fpdebug=true&version=1.0[Image with FP]
+
+image::https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=200&h=200&crop=fp&fpdebug=true&version=1.0[Image with FP]
+
+image::https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=100&h=300&crop=fp&fpdebug=true&version=1.0[Image with FP]
+
+=== Updating Focalpoint
+
+The focal point can be updated by updating the node which contains the binary field.
+
+.Example Request:
+[source,bash]
+----
+POST /api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6
+
+{
+  "language": "en",
+	"version": "draft",
+  "fields": {
+    "image": {
+      "focalPoint": {
+        "x": 0.9,
+        "y": 0.7
+      }
+    }
+  }
+}
+----
+
+Alternatively the focal can also be set when transforming the binary field.
+
+*Example Request:*
+[source,bash]
+----
+POST /api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binaryTransform/image
+
+{
+  "version" : "1.0",
+  "language" : "en",
+  "width" : 300,
+  "focalPoint": {
+    "x": 0.2,
+    "y": 0.4
+  }
+}
+----
+
+
+== Transform and Update an Image
+
+Gentics Mesh also allows you to transform (i.e, crop and/or resize) and overwrite an image in a single step. 
+The image manipulation parameters then are part of the request body. 
+This will effectively override the currently stored image with the image of the resulting operation.
+
+Endpoint: ```POST /api/v1/:projectName/nodes/:uuid/binaryTransform/:fieldname```
+
+*Example Request:*
+[source,bash]
+----
+POST /api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binaryTransform/image
+
+{
+  "version" : "1.0",
+  "language" : "en",
+  "width" : 300
+}
+----
+
+[imagemanipulationparams]
+=== Image Manipulation Query Parameters
+
+include::content/docs/examples/tables/ImageManipulationParametersImpl.adoc-include[]
+
+Find out more about this topic in our blog post about https://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].

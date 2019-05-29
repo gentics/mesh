@@ -194,7 +194,7 @@ ul.doc-toc h2 {
                                 <a href="features#_link_resolving">Link Resolving</a>
                             </li>
                             <li>
-                                <a href="features#imagemanipulation">Image Manipulation</a>
+                                <a href="image-manipulation">Image Manipulation</a>
                             </li>
                             <li>
                                 <a href="features#_file_upload">File Upload</a>

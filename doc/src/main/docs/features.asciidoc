@@ -908,7 +908,8 @@ https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg
 TIP: When using a routing framework, in order to find out if a requested resource is binary data or JSON data you need to check the HTTP Content-Disposition response header. If it is set, it’s binary data.
 
 === Image manipulation by path
-In case, the binary data is an image, the WebRoot API allows to directly perform <<imagemanipulation, image manipulation>> such as cropping and resizing.
+In case, the binary data is an image, the WebRoot API allows to directly perform 
+link:{{<relref "image-manipulation.asciidoc">}}[Image Manipulation] such as cropping and resizing.
 
 ==== Crop and resize an image with UUID
 
@@ -1003,93 +1004,9 @@ Valid links:
 
 * {{mesh.link(2f2de9297c8143e8ade9297c8193e8fc)}} (link to default language)
 
+
 [[imagemanipulation]]
-== Image Manipulation
-
-Images can be resized and/or cropped by appending the <<imagemanipulationparams,image manipulation query parameters>> on the relevant API endpoints.
-The following image formats are supported: `png`, `jpg`, `bmp` and `gif`
-
-=== Fetch and Resize an Image with UUID
-
-Endpoint: ```/api/v1/:projectName/nodes/:uuid/binary/:fieldname?w=220```
-
-.Try the example
-[TIP]
-https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=300
-
-=== Fetch and Crop an Image with WebRoot Path
-
-It is also possible to use the image manipulation in combination with the WebRoot endpoint.
-
-Endpoint: ```/api/v1/:projectName/webroot/:path?rect=10,100,800,400&crop=rect```
-
-.Try the example
-[TIP]
-https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?rect=10,100,800,400&crop=rect
-
-NOTE: It is mandatory to specify all four crop parameters when cropping an image.
-
-=== Focal Point Handling
-
-Responsive designs often suggest the usage of https://developer.mozilla.org/en-US/docs/Learn/HTML/Multimedia_and_embedding/Responsive_images[srcset images for responsive images].
-Sometimes those designs require image sizes which lead to cropped images. This could result in images which seem chopped off at the worst possible place or images which miss the important part.
-
-You can however use the focal point feature in order to influence how the image should be cropped. 
-Gentics Mesh will use the focal point information when cropping the image so that the focused area will remain in the image.
-
-First you need to specify a focal point along with your image.
-You can store the focal point information within the binary field of your image or use the `fpx` and the `fpy` query parameters when loading the image.
-You can also use these parameters to override the stored focal point.
-
-The width and height information via `w` and `h` parameter are also needed when loading the image. 
-Otherwise Gentics Mesh can't tell which area of the image needs to be cropped. 
-
-Finally the `fpdebug` parameter can be used to visualize the focal point. This is useful when testing designs and resize parameters.
-
-.Try the example
-[TIP]
-https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?fpx=0.5&fpy=0.4&w=800&h=600&crop=fp&fpdebug=true
-
-In some cases you may want to show just a single area of the image. In this case you can use the `fpz` zoom parameter to zoom to the focal point area.
-
-.Try the example
-[TIP]
-https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?fpx=0.5&fpy=0.35&fpz=3.0&w=800&h=600&crop=fp&fpdebug=true
-
-It is also possible to store focal point information along with the binary field. This way you can set the focal point once and omit it within the image request. 
-In those cases it is not needed to specify the `fpx` and `fpy` parameter. Gentics Mesh will automatically load the missing parameter from the binary field if possible.
-
-.Try the example
-[TIP]
-https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?fpz=1.2&w=800&h=600&crop=fp&fpdebug=true
-
-
-=== Transform and Update an Image
-
-Gentics Mesh also allows you to transform (i.e, crop and/or resize) and overwrite an image in a single step. 
-The image manipulation parameters then are part of the request body. 
-This will effectively override the currently stored image with the image of the resulting operation.
-
-Endpoint: ```POST /api/v1/:projectName/nodes/:uuid/binaryTransform/:fieldname```
-
-*Example Request:*
-[source,bash]
-----
-POST /api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binaryTransform/image
-...
-{
-  "version" : "1.0",
-  "language" : "en",
-  "width" : 300
-}
-----
-
-[imagemanipulationparams]
-=== Image Manipulation Query Parameters
-
-include::content/docs/examples/tables/ImageManipulationParametersImpl.adoc-include[]
-
-Find out more about this topic in our blog post about https://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].
+== link:{{<relref "image-manipulation.asciidoc">}}[Image Manipulation]
 
 == File Upload
 
