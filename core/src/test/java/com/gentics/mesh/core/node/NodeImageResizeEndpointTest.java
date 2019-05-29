@@ -137,7 +137,6 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 		NodeResponse response3 = call(() -> client().findNodeByUuid(projectName(), nodeUuid));
 
-		System.out.println(response3.toJson());
 		assertEquals("Focalpoint X did not match.", 0.3f, response3.getFields().getBinaryField("image").getFocalPoint().getX(), 0);
 		assertEquals("Focalpoint Y did not match.", 0.4f, response3.getFields().getBinaryField("image").getFocalPoint().getY(), 0);
 	}
