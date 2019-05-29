@@ -13,10 +13,11 @@ import org.junit.Test;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(elasticsearch = NONE, testSize = PROJECT_AND_NODE, startServer = true)
 public class ForcePasswordChangeTest extends AbstractMeshTest {
 
 	public static final String USERNAME = "joe1";
