@@ -31,6 +31,8 @@ icon:plus[] Core: The core Vert.x library was updated to version 3.7.1
 
 icon:check[] Focal point: It is now possible to use the `/api/v1/:projectName/nodes/:uuid/binaryTransform/:fieldName` to resize and image and set the focal point in one operation.
 
+icon:check[] The `content-disposition` header will now contain the UTF-8 and ISO-8859-1 encoded filename. link:https://github.com/gentics/mesh/issues/702[#702]
+
 [[v0.34.0]]
 == 0.34.0 (28.05.2019)
 
