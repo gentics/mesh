@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.root;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -21,8 +20,8 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -175,6 +174,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 		Iterator<Vertex> it = database().getVertices(getPersistanceClass(), new String[] { MeshVertex.UUID_KEY }, new String[] { uuid });
 		if (it.hasNext()) {
 			Vertex potentialElement = it.next();
+			// FIXME Add check again
 			// 2. Use the edge index to determine whether the element is part of this root vertex
 			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(potentialElement
 				.getId(), id()));
@@ -290,7 +290,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Context which is used to load information needed for the object creation
 	 * @param batch
 	 */
-	default T create(InternalActionContext ac, SearchQueueBatch batch) {
+	default T create(InternalActionContext ac, EventQueueBatch batch) {
 		return create(ac, batch, null);
 	}
 
@@ -303,7 +303,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param uuid
 	 *            optional uuid to create the object with a given uuid (null to create a random uuid)
 	 */
-	T create(InternalActionContext ac, SearchQueueBatch batch, String uuid);
+	T create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	/**
 	 * Add the given item to the this root vertex.

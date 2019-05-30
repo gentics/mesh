@@ -83,6 +83,10 @@ public class MeshOptions implements Option {
 	@JsonPropertyDescription("Image handling options.")
 	private ImageManipulatorOptions imageOptions = new ImageManipulatorOptions();
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Content related options.")
+	private ContentConfig contentOptions = new ContentConfig();
+
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Path to the central tmp directory.")
 	@EnvironmentVariable(name = MESH_TEMP_DIR_ENV, description = "Override the configured temp directory.")
@@ -341,6 +345,27 @@ public class MeshOptions implements Option {
 	}
 
 	/**
+	 * Return the content options
+	 * 
+	 * @return
+	 */
+	@JsonProperty("content")
+	public ContentConfig getContentOptions() {
+		return contentOptions;
+	}
+
+	/**
+	 * Set the content options
+	 * 
+	 * @param contentOptions
+	 * @return
+	 */
+	public MeshOptions setContentOptions(ContentConfig contentOptions) {
+		this.contentOptions = contentOptions;
+		return this;
+	}
+
+	/**
 	 * Return update checker flag.
 	 * 
 	 * @return
@@ -432,6 +457,12 @@ public class MeshOptions implements Option {
 		}
 		if (getImageOptions() != null) {
 			getImageOptions().validate(this);
+		}
+		if (getMonitoringOptions() != null) {
+			getMonitoringOptions().validate(this);
+		}
+		if (getContentOptions() != null) {
+			getContentOptions().validate(this);
 		}
 
 		// TODO check for other invalid characters in node name

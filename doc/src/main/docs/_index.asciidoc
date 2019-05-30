@@ -223,9 +223,6 @@ ul.doc-toc h2 {
                             <li>
                                 <a href="features#_schema_microschema_migration">Schema &amp; Microschema Migration</a>
                             </li>
-                            <li>
-                                <a href="features#_eventbus_bridge_websocket">Eventbus Bridge &amp; Web Socket</a>
-                            </li>
                         </ul>
                     </li>
                     <li class="section">
@@ -302,7 +299,13 @@ ul.doc-toc h2 {
                         <h2>Guides</h2>
                         <ul>
                             <li>
-                                <a href="guides/mesh-react">React Guide</a>
+                                <a href="guides/mesh-api-intro">API Introduction</a>
+                            </li>
+                            <li>
+                                <a href="guides/mesh-react">React - Basics</a>
+                            </li>
+                            <li>
+                                <a href="guides/mesh-react-2">React - Event Handling</a>
                             </li>
                             <li>
                                 <a href="guides/mesh-hugo">Hugo Guide</a>
@@ -318,13 +321,38 @@ ul.doc-toc h2 {
                         <h2><a href="references">References</a></h2>
                         <ul>
                             <li>
-                                <a href="references">APIs</a>
+                                <a href="graphql">GraphQL</a>
                                 <ul>
                                     <li>
-                                        <a href="references#_rest_api">REST API</a>
+                                        <a href="graphql#_filtering">Filtering</a>
                                     </li>
                                     <li>
-                                        <a href="graphql">GraphQL</a>
+                                        <a href="graphql#_limitations">Limitations</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="references#_rest_api">REST API</a>
+                                <ul>
+                                    <li>
+                                        <a href="references#_query_parameters">Query parameters</a>
+                                    </li>
+                                    <li>
+                                        <a href="references#_examples">Examples</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="events">Events</a>
+                                <ul>
+                                    <li>
+                                        <a href="events#_addresses">Addresses</a>
+                                    </li>
+                                    <li>
+                                        <a href="events#customevents">Custom Events</a>
+                                    </li>
+                                    <li>
+                                        <a href="events#iot">IoT Example</a>
                                     </li>
                                 </ul>
                             </li>

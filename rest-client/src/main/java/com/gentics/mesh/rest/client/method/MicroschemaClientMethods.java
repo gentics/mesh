@@ -22,6 +22,16 @@ public interface MicroschemaClientMethods {
 	MeshRequest<MicroschemaResponse> createMicroschema(MicroschemaCreateRequest request);
 
 	/**
+	 * Create a new microschema using the given uuid and request.
+	 * 
+	 * @param uuid
+	 *            Uuid of the microschema
+	 * @param request
+	 * @return
+	 */
+	MeshRequest<MicroschemaResponse> createMicroschema(String uuid, MicroschemaCreateRequest request);
+
+	/**
 	 * Load the microschema with the given UUID.
 	 * 
 	 * @param uuid

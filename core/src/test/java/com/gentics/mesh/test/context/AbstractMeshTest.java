@@ -1,46 +1,14 @@
 package com.gentics.mesh.test.context;
 
-import com.gentics.mesh.MeshEvent;
-import com.gentics.mesh.cli.BootstrapInitializerImpl;
-import com.gentics.mesh.cli.CoreVerticleLoader;
-import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.search.IndexHandler;
-import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
-import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
-import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
-import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
-import com.gentics.mesh.core.rest.branch.BranchResponse;
-import com.gentics.mesh.core.rest.job.JobListResponse;
-import com.gentics.mesh.core.rest.job.JobResponse;
-import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.parameter.client.PagingParametersImpl;
-import com.gentics.mesh.router.ProjectsRouter;
-import com.gentics.mesh.search.impl.ElasticSearchProvider;
-import com.gentics.mesh.test.TestDataProvider;
-import com.gentics.mesh.test.util.TestUtils;
-import com.gentics.mesh.util.VersionNumber;
-import com.syncleus.ferma.tx.Tx;
-import io.reactivex.Completable;
-import io.reactivex.Single;
-import io.reactivex.functions.Action;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.logging.SLF4JLogDelegateFactory;
-import io.vertx.ext.web.RoutingContext;
-import okhttp3.OkHttpClient;
-import org.apache.commons.io.IOUtils;
-import org.junit.After;
-import org.junit.ClassRule;
-import org.junit.Rule;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.util.TestUtils.sleep;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -53,21 +21,70 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.util.TestUtils.sleep;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.After;
+import org.junit.ClassRule;
+import org.junit.Rule;
 
-public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMethods {
+import com.gentics.mesh.cli.BootstrapInitializerImpl;
+import com.gentics.mesh.cli.CoreVerticleLoader;
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
+import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
+import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.common.ListResponse;
+import com.gentics.mesh.core.rest.job.JobListResponse;
+import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.job.JobStatus;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.parameter.client.PagingParametersImpl;
+import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.router.ProjectsRouter;
+import com.gentics.mesh.search.impl.ElasticSearchProvider;
+import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
+import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
+import com.gentics.mesh.test.TestDataProvider;
+import com.gentics.mesh.test.context.event.EventAsserter;
+import com.gentics.mesh.test.context.event.EventAsserterChain;
+import com.gentics.mesh.test.docker.ElasticsearchContainer;
+import com.gentics.mesh.test.util.TestUtils;
+import com.gentics.mesh.util.VersionNumber;
+import com.syncleus.ferma.tx.Tx;
+
+import eu.rekawek.toxiproxy.model.ToxicList;
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.functions.Action;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.logging.SLF4JLogDelegateFactory;
+import io.vertx.ext.web.RoutingContext;
+import okhttp3.OkHttpClient;
+
+public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelper {
 
 	static {
 		// Use slf4j instead of JUL
@@ -76,6 +93,8 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 
 	private OkHttpClient httpClient;
 
+	private EventAsserter eventAsserter = new EventAsserter();
+
 	@Rule
 	@ClassRule
 	public static MeshTestContext testContext = new MeshTestContext();
@@ -83,6 +102,11 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	@Override
 	public MeshTestContext getTestContext() {
 		return testContext;
+	}
+
+	@After
+	public void clearLatches() {
+		eventAsserter.clear();
 	}
 
 	@After
@@ -98,9 +122,14 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		}
 	}
 
+	@After
+	public void resetSearchVerticle() throws Exception {
+		((BootstrapInitializerImpl) boot()).loader.get().reloadSearchVerticle();
+	}
+
 	public OkHttpClient httpClient() {
 		if (this.httpClient == null) {
-			int timeout = 240;
+			int timeout = 9240;
 			this.httpClient = new OkHttpClient.Builder()
 				.writeTimeout(timeout, TimeUnit.SECONDS)
 				.readTimeout(timeout, TimeUnit.SECONDS)
@@ -117,11 +146,17 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 */
 	protected void recreateIndices() throws Exception {
 		// We potentially modified existing data thus we need to drop all indices and create them and reindex all data
-		MeshInternal.get().searchProvider().clear().blockingAwait();
-		for (IndexHandler<?> handler : MeshInternal.get().indexHandlerRegistry().getHandlers()) {
-			handler.init().blockingAwait();
-			handler.syncIndices().blockingAwait();
-		}
+		SyncEventHandler.invokeClearCompletable().blockingAwait();
+		SyncEventHandler.invokeSyncCompletable().blockingAwait();
+		refreshIndices();
+	}
+
+	protected void refreshIndices() {
+		getSearchVerticle().refresh().blockingAwait();
+	}
+
+	private ElasticsearchProcessVerticle getSearchVerticle() {
+		return ((BootstrapInitializerImpl) boot()).loader.get().getSearchVerticle();
 	}
 
 	public String getJson(Node node) throws Exception {
@@ -220,6 +255,10 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 		return Buffer.buffer(bytes);
 	}
 
+	protected JobListResponse waitForJob(Runnable action) {
+		return waitForJobs(action, COMPLETED, 1);
+	}
+
 	/**
 	 * Execute the action and check that the jobs are executed and yields the given status.
 	 *
@@ -231,7 +270,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 *            Amount of expected jobs
 	 * @return Migration status
 	 */
-	protected JobListResponse waitForJobs(Runnable action, MigrationStatus status, int expectedJobs) {
+	protected JobListResponse waitForJobs(Runnable action, JobStatus status, int expectedJobs) {
 		// Load a status just before the action
 		JobListResponse before = call(() -> client().findJobs());
 
@@ -267,10 +306,10 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	}
 
 	protected void waitForLatestJob(Runnable action) {
-		waitForLatestJob(action, MigrationStatus.COMPLETED);
+		waitForLatestJob(action, JobStatus.COMPLETED);
 	}
 
-	protected void waitForLatestJob(Runnable action, MigrationStatus status) {
+	protected void waitForLatestJob(Runnable action, JobStatus status) {
 		// Load a status just before the action
 		JobListResponse before = call(() -> client().findJobs());
 
@@ -313,7 +352,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 *            Expected job status
 	 * @return Job status
 	 */
-	protected JobResponse waitForJob(Runnable action, String jobUuid, MigrationStatus status) {
+	protected JobResponse waitForJob(Runnable action, String jobUuid, JobStatus status) {
 		// Invoke the action
 		action.run();
 
@@ -360,14 +399,14 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 * @param status
 	 *            Expected status for all jobs
 	 */
-	protected JobListResponse triggerAndWaitForJob(String jobUuid, MigrationStatus status) {
+	protected JobListResponse triggerAndWaitForJob(String jobUuid, JobStatus status) {
 		waitForJob(() -> {
 			MeshEvent.triggerJobWorker();
 		}, jobUuid, status);
 		return call(() -> client().findJobs());
 	}
 
-	protected void triggerAndWaitForAllJobs(MigrationStatus expectedStatus) {
+	protected void triggerAndWaitForAllJobs(JobStatus expectedStatus) {
 		MeshEvent.triggerJobWorker();
 
 		// Now poll the migration status and check the response
@@ -456,9 +495,10 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	}
 
 	protected int upload(Node node, Buffer buffer, String languageTag, String fieldname, String filename, String contentType) throws IOException {
-		String uuid = node.getUuid();
-		VersionNumber version = node.getGraphFieldContainer(languageTag).getVersion();
-		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldname, new ByteArrayInputStream(buffer.getBytes()), buffer.length(),
+		String uuid = tx(() -> node.getUuid());
+		VersionNumber version = tx(() -> node.getGraphFieldContainer(languageTag).getVersion());
+		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldname,
+			new ByteArrayInputStream(buffer.getBytes()), buffer.length(),
 			filename, contentType));
 		assertNotNull(response);
 		return buffer.length();
@@ -471,13 +511,27 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 * @param code
 	 * @throws TimeoutException
 	 */
-	protected void waitForEvent(String address, Action code) throws Exception {
+	protected void waitForEvent(String address, Action code) {
 		CountDownLatch latch = new CountDownLatch(1);
-		vertx().eventBus().consumer(address, handler -> {
-			latch.countDown();
+		MessageConsumer<Object> consumer = vertx().eventBus().consumer(address);
+		consumer.handler(msg -> latch.countDown());
+		// The completion handler will be invoked once the consumer has been registered
+		consumer.completionHandler(res -> {
+			if (res.failed()) {
+				throw new RuntimeException("Could not listen to event", res.cause());
+			}
+			try {
+				code.run();
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
 		});
-		code.run();
-		latch.await(2000, TimeUnit.SECONDS);
+		try {
+			latch.await(10, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+		consumer.unregister();
 	}
 
 	/**
@@ -487,8 +541,19 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 	 * @param code
 	 * @throws TimeoutException
 	 */
-	protected void waitForEvent(MeshEvent event, Action code) throws Exception {
+	protected void waitForEvent(MeshEvent event, Action code) {
 		waitForEvent(event.address, code);
+	}
+
+	/**
+	 * Wait until the given event has been received.
+	 *
+	 * @param event
+	 * @throws TimeoutException
+	 */
+	protected void waitForEvent(MeshEvent event) {
+		waitForEvent(event.address, () -> {
+		});
 	}
 
 	public ElasticSearchProvider getProvider() {
@@ -572,5 +637,113 @@ public abstract class AbstractMeshTest implements TestHelperMethods, TestHttpMet
 
 	protected Completable restartRestVerticle() {
 		return stopRestVerticle().andThen(startRestVerticle());
+	}
+
+	protected void waitForSearchIdleEvent() {
+		testContext.waitForSearchIdleEvent();
+	}
+
+	protected void waitForSearchIdleEvent(Completable completable) {
+		waitForEvent(MeshEvent.SEARCH_IDLE, () -> {
+			completable.subscribe(() -> vertx().eventBus().publish(MeshEvent.SEARCH_FLUSH_REQUEST.address, null));
+		});
+		refreshIndices();
+	}
+
+	protected void waitForSearchIdleEvent(Action action) {
+		waitForSearchIdleEvent(() -> {
+			action.run();
+			return null;
+		});
+	}
+
+	protected <T> T waitForSearchIdleEvent(Callable<T> action) {
+		try {
+			AtomicReference<T> ref = new AtomicReference<>();
+			waitForEvent(MeshEvent.SEARCH_IDLE, () -> {
+				ref.set(action.call());
+				vertx().eventBus().publish(MeshEvent.SEARCH_FLUSH_REQUEST.address, null);
+			});
+			refreshIndices();
+			return ref.get();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Observable<NodeResponse> findNodesBySchema(String schemaName) {
+		return client().findNodes(PROJECT_NAME).toObservable()
+			.flatMap(nodes -> Observable.fromIterable(nodes.getData()))
+			.filter(node -> node.getSchema().getName().equals(schemaName));
+	}
+
+	protected Completable migrateSchema(String schemaName) {
+		return findSchemaByName(schemaName)
+			.flatMapCompletable(schema -> client().updateSchema(schema.getUuid(), addRandomField(schema)).toCompletable())
+			.andThen(MeshEvent.waitForEvent(MeshEvent.SCHEMA_MIGRATION_FINISHED));
+	}
+
+	private SchemaUpdateRequest addRandomField(SchemaResponse schemaResponse) {
+		SchemaUpdateRequest request = schemaResponse.toUpdateRequest();
+		request.getFields().add(new StringFieldSchemaImpl().setName(RandomStringUtils.randomAlphabetic(10)));
+		return request;
+	}
+
+	private Single<SchemaResponse> findSchemaByName(String schemaName) {
+		return fetchList(client().findSchemas())
+			.filter(schema -> schema.getName().equals(schemaName))
+			.singleOrError();
+	}
+
+	private <T> Observable<T> fetchList(MeshRequest<? extends ListResponse<T>> request) {
+		return request.toObservable().flatMap(response -> Observable.fromIterable(response.getData()));
+	}
+
+	/**
+	 * Call the given handler, latch for the future and assert success. Waits for search to be idle, then returns the result.
+	 *
+	 * @param handler
+	 *            handler
+	 * @param <T>
+	 *            type of the returned object
+	 * @return result of the future
+	 */
+	public <T> T callAndWait(ClientHandler<T> handler) {
+		try {
+			return waitForSearchIdleEvent(() -> handler.handle().blockingGet());
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Return the event asserter.
+	 * 
+	 * @return
+	 */
+	public EventAsserterChain expect(MeshEvent event) {
+		return eventAsserter.expect(event);
+	}
+
+	public void awaitEvents() {
+		eventAsserter.await();
+	}
+
+	/**
+	 * Return toxics for ES proxy.
+	 * 
+	 * @return
+	 */
+	public ToxicList toxics() {
+		return MeshTestContext.getProxy().toxics();
+	}
+
+	/**
+	 * Return the used elasticsearch container.
+	 * 
+	 * @return
+	 */
+	public ElasticsearchContainer elasticsearch() {
+		return MeshTestContext.elasticsearchContainer();
 	}
 }

@@ -1,6 +1,7 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,8 +16,7 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
-
-@MeshTestSetting(useElasticsearch = true, startServer = true, testSize = TestSize.PROJECT)
+@MeshTestSetting(elasticsearch = CONTAINER, startServer = true, testSize = TestSize.PROJECT)
 public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
 
 	@Test
@@ -27,6 +27,8 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 			createGroup(groupName + i);
 		}
 
+		waitForSearchIdleEvent();
+
 		GroupListResponse response = call(() -> client().searchGroups(getSimpleTermQuery("name.raw", groupName + 8)));
 		assertEquals(1, response.getData()
 				.size());
@@ -36,6 +38,8 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 	public void testBogusQuery() {
 		String groupName = "testgroup42a";
 		String uuid = createGroup(groupName).getUuid();
+
+		waitForSearchIdleEvent();
 
 		// 1. Search with bogus query
 		call(() -> client().searchGroups("HudriWudri"), BAD_REQUEST, "search_query_not_parsable");
@@ -53,6 +57,8 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 		String groupName = "testgroup42a";
 		String uuid = createGroup(groupName).getUuid();
 
+		waitForSearchIdleEvent();
+
 		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("uuid", uuid)));
 		assertThat(result.getData()).hasSize(1);
 		assertEquals(uuid, result.getData()
@@ -64,6 +70,8 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 	public void testSearchByName() throws InterruptedException, JSONException {
 		String groupName = "test-grou  %!p42a";
 		String uuid = createGroup(groupName).getUuid();
+
+		waitForSearchIdleEvent();
 
 		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("name.raw", groupName)));
 		assertThat(result.getData()).hasSize(1);
@@ -80,6 +88,8 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 		GroupResponse group = createGroup(groupName);
 		deleteGroup(group.getUuid());
 
+		waitForSearchIdleEvent();
+
 		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("name.raw", groupName)));
 		assertThat(result.getData()).hasSize(0);
 	}
@@ -92,6 +102,8 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 
 		String newGroupName = "testgrouprenamed";
 		updateGroup(group.getUuid(), newGroupName);
+
+		waitForSearchIdleEvent();
 
 		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("name.raw", groupName)));
 		assertThat(result.getData()).hasSize(0);

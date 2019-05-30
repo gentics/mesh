@@ -2,10 +2,10 @@ package com.gentics.mesh.core.endpoint.group;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.event.Assignment.ASSIGNED;
+import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-
-import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -17,20 +17,15 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.util.ResultInfo;
-import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.reactivex.Single;
 
 /**
  * Handler for group specific request methods.
@@ -41,13 +36,10 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 	private Lazy<BootstrapInitializer> boot;
 
-	private SearchQueue searchQueue;
-
 	@Inject
-	public GroupCrudHandler(Database db, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue, HandlerUtilities utils) {
+	public GroupCrudHandler(Database db, Lazy<BootstrapInitializer> boot, HandlerUtilities utils) {
 		super(db, utils);
 		this.boot = boot;
-		this.searchQueue = searchQueue;
 	}
 
 	@Override
@@ -63,12 +55,12 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	 *            Group Uuid from which the roles should be loaded
 	 */
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
-		db.asyncTx(() -> {
+		utils.rxSyncTx(ac, tx -> {
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			TransformablePage<? extends Role> rolePage = group.getRoles(ac.getUser(), pagingInfo);
 			return rolePage.transformToRest(ac, 0);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -82,29 +74,24 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(roleUuid, "roleUuid");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 			// Handle idempotency
-			Tuple<Group, SearchQueueBatch> tuple;
 			if (group.hasRole(role)) {
 				if (log.isDebugEnabled()) {
 					log.debug("Role {" + role.getUuid() + "} is already assigned to group {" + group.getUuid() + "}.");
 				}
-				tuple = Tuple.tuple(group, searchQueue.create());
 			} else {
-				tuple = db.tx(() -> {
-					SearchQueueBatch batch = searchQueue.create();
+				utils.eventAction(batch -> {
 					group.addRole(role);
 					group.setEditor(ac.getUser());
 					group.setLastEditedTimestamp();
-					// No need to update users as well. Those documents are not affected by this modification
-					batch.store(group, false);
-					return Tuple.tuple(group, batch);
+					batch.add(group.createRoleAssignmentEvent(role, ASSIGNED));
 				});
 			}
-			return tuple.v2().processAsync().andThen(tuple.v1().transformToRest(ac, 0));
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			return group.transformToRestSync(ac, 0);
+		}, model -> ac.send(model, OK));
 
 	}
 
@@ -121,22 +108,24 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(roleUuid, "roleUuid");
 		validateParameter(groupUuid, "groupUuid");
 
-		db.asyncTx(() -> {
-			// TODO check whether the role is actually part of the group
+		utils.syncTx(ac, () -> {
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
-			return db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+			// No need to update the group if it is not assigned
+			if (!group.hasRole(role)) {
+				return;
+			}
+
+			utils.eventAction(batch -> {
 				group.removeRole(role);
 				group.setEditor(ac.getUser());
 				group.setLastEditedTimestamp();
-				// No need to update users as well. Those documents are not affected by this modification
-				batch.store(group, false);
+				batch.add(group.createRoleAssignmentEvent(role, UNASSIGNED));
 				return batch;
-			}).processAsync().andThen(Single.just(Optional.empty()));
+			});
 
-		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
+		}, () -> ac.send(NO_CONTENT));
 	}
 
 	/**
@@ -171,18 +160,19 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(userUuid, "userUuid");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
-			ResultInfo info = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
-				group.addUser(user);
-				batch.store(group, true);
-				GroupResponse model = group.transformToRestSync(ac, 0);
-				return new ResultInfo(model, batch);
-			});
-			return info.getBatch().processAsync().andThen(Single.just(info.getModel()));
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+
+			// Only add the user if it is not yet assigned
+			if (!group.hasUser(user)) {
+				utils.eventAction(batch -> {
+					group.addUser(user);
+					batch.add(group.createUserAssignmentEvent(user, ASSIGNED));
+				});
+			}
+			return group.transformToRestSync(ac, 0);
+		}, model -> ac.send(model, OK));
 
 	}
 
@@ -199,18 +189,20 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(userUuid, "userUuid");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, () -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
-			return db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
-				batch.store(group, true);
-				batch.store(user, false);
+			// No need to remove the user if it is not assigned
+			if (!group.hasUser(user)) {
+				return;
+			}
+
+			utils.eventAction(batch -> {
 				group.removeUser(user);
-				return batch;
-			}).processAsync().toSingleDefault(Optional.empty());
-		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
+				batch.add(group.createUserAssignmentEvent(user, UNASSIGNED));
+			});
+		}, () -> ac.send(NO_CONTENT));
 	}
 
 }

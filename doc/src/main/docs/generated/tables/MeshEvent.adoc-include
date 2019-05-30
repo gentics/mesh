@@ -1,0 +1,1685 @@
+
+
+
+=== _mesh.project.version_purge.start_
+
+Emitted once a version purge job starts
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "demo",
+  "status" : "RUNNING"
+}
+----
+
+
+
+
+=== _mesh.project.version_purge.finished_
+
+Emitted once a version purge job finishes successully or failed
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "demo",
+  "status" : "RUNNING"
+}
+----
+
+
+
+
+=== _mesh.schema.migration.start_
+
+Emitted once a schema migration starts.
+
+
+
+.Example
+[source,json]
+----
+{
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "status" : "RUNNING",
+  "fromVersion" : {
+    "name" : "folder",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "1",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "toVersion" : {
+    "name" : "folder",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "2",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  }
+}
+----
+
+
+
+
+=== _mesh.schema.migration.finished_
+
+Emitted once the migration finishes successful or failed.
+
+
+
+.Example
+[source,json]
+----
+{
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "status" : "RUNNING",
+  "fromVersion" : {
+    "name" : "folder",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "1",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "toVersion" : {
+    "name" : "folder",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "2",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  }
+}
+----
+
+
+
+
+=== _mesh.schema-branch.assign_
+
+Emitted once a schema has been assigned to a branch.
+
+
+
+.Example
+[source,json]
+----
+{
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "schema" : {
+    "name" : "folder",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "1",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "status" : "COMPLETED"
+}
+----
+
+
+
+
+=== _mesh.schema-branch.unassign_
+
+Emitted once a schema has been unassigned from a branch.
+
+
+
+.Example
+[source,json]
+----
+{
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "schema" : {
+    "name" : "folder",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "1",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "status" : "COMPLETED"
+}
+----
+
+
+
+
+=== _mesh.microschema-branch.assign_
+
+Emitted once a microschema gets assigned to a branch.
+
+
+
+.Example
+[source,json]
+----
+{
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "schema" : {
+    "name" : "vcard",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "1",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "status" : "COMPLETED"
+}
+----
+
+
+
+
+=== _mesh.microschema-branch.unassign_
+
+Emitted once a microschema gets unassigned from a branch.
+
+
+
+.Example
+[source,json]
+----
+{
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "schema" : {
+    "name" : "vcard",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "1",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "status" : "COMPLETED"
+}
+----
+
+
+
+
+=== _mesh.microschema.migration.start_
+
+Emitted when a microschema migration starts.
+
+
+
+.Example
+[source,json]
+----
+{
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "status" : "RUNNING",
+  "fromVersion" : {
+    "name" : "vcard",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "1",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "toVersion" : {
+    "name" : "vcard",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "2",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  }
+}
+----
+
+
+
+
+=== _mesh.microschema.migration.finished_
+
+Emitted when a microschema migration finishes.
+
+
+
+.Example
+[source,json]
+----
+{
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "status" : "RUNNING",
+  "fromVersion" : {
+    "name" : "vcard",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "1",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "toVersion" : {
+    "name" : "vcard",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "2",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  }
+}
+----
+
+
+
+
+=== _mesh.branch.migration.start_
+
+Emitted when a branch migration job starts.
+
+
+
+.Example
+[source,json]
+----
+{
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "status" : "RUNNING"
+}
+----
+
+
+
+
+=== _mesh.branch.migration.finished_
+
+Emitted when a branch migration job finishes.
+
+
+
+.Example
+[source,json]
+----
+{
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "status" : "RUNNING"
+}
+----
+
+
+
+
+=== _mesh.startup-complete_
+
+Emitted once the Gentics Mesh instance is fully started and ready to accept requests.
+
+
+
+
+
+
+=== _job.worker_
+
+Event which will trigger job processing.
+
+
+
+
+
+
+=== _mesh.cluster.node.joining_
+
+Emitted when a node joins the cluster.
+
+
+
+
+
+
+=== _mesh.cluster.node.joined_
+
+Emitted when a node joined the cluster.
+
+
+
+
+
+
+=== _mesh.cluster.node.leaving_
+
+Emitted when a node is leaving the cluster.
+
+
+
+
+
+
+=== _mesh.cluster.node.left_
+
+Emitted when a cluster node left the cluster.
+
+
+
+
+
+
+=== _mesh.cluster.db.status_
+
+Emitted when the database status changes. (e.g. offline, online, backup, syncing)
+
+
+
+
+
+
+=== _mesh.clear-permission-store_
+
+Event which will clear the permission stores.
+
+
+
+
+
+
+=== _mesh.user.created_
+
+Emitted when a user was created.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "joedoe"
+}
+----
+
+
+
+
+=== _mesh.user.updated_
+
+Emitted when a user was updated.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "joedoe"
+}
+----
+
+
+
+
+=== _mesh.user.deleted_
+
+Emitted when a user was deleted.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "joedoe"
+}
+----
+
+
+
+
+=== _mesh.group.created_
+
+Emitted when a group was created.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "guests"
+}
+----
+
+
+
+
+=== _mesh.group.updated_
+
+Emitted when a group was updated.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "guests"
+}
+----
+
+
+
+
+=== _mesh.group.deleted_
+
+Emitted when a group was deleted.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "guests"
+}
+----
+
+
+
+
+=== _mesh.group-user.assigned_
+
+Emitted when a user was assigned to a group.
+
+
+
+.Example
+[source,json]
+----
+{
+  "group" : {
+    "name" : "guests",
+    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "user" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  }
+}
+----
+
+
+
+
+=== _mesh.group-user.unassigned_
+
+Emitted when a user was unassigned from a group.
+
+
+
+.Example
+[source,json]
+----
+{
+  "group" : {
+    "name" : "guests",
+    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "user" : {
+    "firstName" : "Joe",
+    "lastName" : "Doe",
+    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  }
+}
+----
+
+
+
+
+=== _mesh.group-role.assigned_
+
+Emitted when a role was assigned to a group.
+
+
+
+.Example
+[source,json]
+----
+{
+  "group" : {
+    "name" : "guests",
+    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "role" : {
+    "name" : "translator",
+    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  }
+}
+----
+
+
+
+
+=== _mesh.group-role.unassigned_
+
+Emitted when a role was unassigned from a group.
+
+
+
+.Example
+[source,json]
+----
+{
+  "group" : {
+    "name" : "guests",
+    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "role" : {
+    "name" : "translator",
+    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  }
+}
+----
+
+
+
+
+=== _mesh.role.created_
+
+Emitted when a role was created.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "translator"
+}
+----
+
+
+
+
+=== _mesh.role.updated_
+
+Emitted when a role was updated.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "translator"
+}
+----
+
+
+
+
+=== _mesh.role.deleted_
+
+Emitted when a role was deleted.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "translator"
+}
+----
+
+
+
+
+=== _mesh.role.permissions.changed_
+
+Emitted when the role permissions were changed.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "editors",
+  "type" : "GROUP",
+  "role" : {
+    "name" : "translator",
+    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  }
+}
+----
+
+
+
+
+=== _mesh.tag.created_
+
+Emitted when a tag was created.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "red",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "tagFamily" : {
+    "name" : "colors",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f"
+  }
+}
+----
+
+
+
+
+=== _mesh.tag.updated_
+
+Emitted when a tag was updated.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "red",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "tagFamily" : {
+    "name" : "colors",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f"
+  }
+}
+----
+
+
+
+
+=== _mesh.tag.deleted_
+
+Emitted when a tag was deleted.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "red",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "tagFamily" : {
+    "name" : "colors",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f"
+  }
+}
+----
+
+
+
+
+=== _mesh.tagfamily.created_
+
+Emitted when a tag family was created.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "colors",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  }
+}
+----
+
+
+
+
+=== _mesh.tagfamily.updated_
+
+Emitted when a tag family was updated.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "colors",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  }
+}
+----
+
+
+
+
+=== _mesh.tagfamily.deleted_
+
+Emitted when a tag family was deleted.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "colors",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  }
+}
+----
+
+
+
+
+=== _mesh.project.created_
+
+Emitted when a project was created.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "demo"
+}
+----
+
+
+
+
+=== _mesh.project.updated_
+
+Emitted when a project was updated.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "demo"
+}
+----
+
+
+
+
+=== _mesh.project.deleted_
+
+Emitted when a project was deleted.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "demo"
+}
+----
+
+
+
+
+=== _mesh.project-schema.assigned_
+
+Emitted when a schema was assigned to a project.
+
+
+
+
+
+
+=== _mesh.project-schema.unassigned_
+
+Emitted when a schema was unassigned from a project.
+
+
+
+
+
+
+=== _mesh.project-microschema.assigned_
+
+Emitted when a microschema was assigned to a projec.t
+
+
+
+
+
+
+=== _mesh.project-microschema.unassigned_
+
+Emitted when a microschema was unassigned from a project.
+
+
+
+
+
+
+=== _mesh.project-latest-branch.updated_
+
+Emitted when the latest branch reference of a project was updated.
+
+
+
+
+
+
+=== _mesh.node.created_
+
+Emitted when a node was created.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branchUuid" : "cd6b4f2851814773ab4f28518137735f"
+}
+----
+
+
+
+
+=== _mesh.node.updated_
+
+Emitted when a node was updated.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branchUuid" : "cd6b4f2851814773ab4f28518137735f"
+}
+----
+
+
+
+
+=== _mesh.node.deleted_
+
+Emitted when a node was deleted.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branchUuid" : "cd6b4f2851814773ab4f28518137735f"
+}
+----
+
+
+
+
+=== _mesh.node.tagged_
+
+Emitted when a node was tagged.
+
+
+
+.Example
+[source,json]
+----
+{
+  "tag" : {
+    "name" : "red",
+    "uuid" : "e5861ba26b914b21861ba26b91ab211a",
+    "tagFamily" : "colors"
+  },
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  }
+}
+----
+
+
+
+
+=== _mesh.node.untagged_
+
+Emitted when a node was untagged.
+
+
+
+.Example
+[source,json]
+----
+{
+  "tag" : {
+    "name" : "red",
+    "uuid" : "e5861ba26b914b21861ba26b91ab211a",
+    "tagFamily" : "colors"
+  },
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  }
+}
+----
+
+
+
+
+=== _mesh.node.published_
+
+Emitted whena a node or node content was published.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "type" : "PUBLISHED",
+  "branchUuid" : "cd6b4f2851814773ab4f28518137735f",
+  "languageTag" : "en"
+}
+----
+
+
+
+
+=== _mesh.node.unpublished_
+
+Emitted when a node or node content was unpublished.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "type" : "PUBLISHED",
+  "branchUuid" : "cd6b4f2851814773ab4f28518137735f",
+  "languageTag" : "en"
+}
+----
+
+
+
+
+=== _mesh.node.moved_
+
+Emitted when a node was moved.
+
+
+
+.Example
+[source,json]
+----
+{
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branchUuid" : "cd6b4f2851814773ab4f28518137735f",
+  "schema" : {
+    "name" : "folder",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "1",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "target" : {
+    "projectName" : "demo",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "schema" : {
+      "name" : "folder",
+      "uuid" : "cd6b4f2851814773ab4f28518137735f",
+      "version" : "1",
+      "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+    }
+  }
+}
+----
+
+
+
+
+=== _mesh.node-content.deleted_
+
+Emitted when a content of a node was deleted. (e.g. English language was deleted)
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "type" : "PUBLISHED",
+  "branchUuid" : "cd6b4f2851814773ab4f28518137735f",
+  "languageTag" : "en"
+}
+----
+
+
+
+
+=== _mesh.node-content.created_
+
+Emitted when a content of a node was created. (e.g. English translation was added)
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "type" : "PUBLISHED",
+  "branchUuid" : "cd6b4f2851814773ab4f28518137735f",
+  "languageTag" : "en"
+}
+----
+
+
+
+
+=== _mesh.node-reference.updated_
+
+Emitted when a referencing node gets indirectly updated. (e.g. via deleting a node in the node list of the referenced node.)
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branchUuid" : "cd6b4f2851814773ab4f28518137735f"
+}
+----
+
+
+
+
+=== _mesh.schema.created_
+
+Emitted when a schema was created.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "content"
+}
+----
+
+
+
+
+=== _mesh.schema.updated_
+
+Emitted when a schema was updated.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "content"
+}
+----
+
+
+
+
+=== _mesh.schema.deleted_
+
+Emitted when a schema was deleted
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "content"
+}
+----
+
+
+
+
+=== _mesh.microschema.created_
+
+Emitted when a microschema was created.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "vcard"
+}
+----
+
+
+
+
+=== _mesh.microschema.updated_
+
+Emitted when a microschema was updated.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "vcard"
+}
+----
+
+
+
+
+=== _mesh.microschema.deleted_
+
+Emitted when a microschema was deleted.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "vcard"
+}
+----
+
+
+
+
+=== _mesh.branch.created_
+
+Emitted when a branch was created.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "demoV1",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  }
+}
+----
+
+
+
+
+=== _mesh.branch.updated_
+
+Emitted when a branch was updated.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "demoV1",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  }
+}
+----
+
+
+
+
+=== _mesh.branch.deleted_
+
+Emitted when a branch was deleted.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "demoV1",
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  }
+}
+----
+
+
+
+
+=== _mesh.branch.tagged_
+
+Emitted when a branch was tagged.
+
+
+
+.Example
+[source,json]
+----
+{
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "tag" : {
+    "name" : "red",
+    "uuid" : "e5861ba26b914b21861ba26b91ab211a",
+    "tagFamily" : "colors"
+  }
+}
+----
+
+
+
+
+=== _mesh.branch.untagged_
+
+Emitted when a branch was untagged.
+
+
+
+.Example
+[source,json]
+----
+{
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "tag" : {
+    "name" : "red",
+    "uuid" : "e5861ba26b914b21861ba26b91ab211a",
+    "tagFamily" : "colors"
+  }
+}
+----
+
+
+
+
+=== _mesh.search.index.sync.request_
+
+Event address which can be used to trigger the sync process.
+
+
+
+
+
+
+=== _mesh.search.index.sync.start_
+
+Emitted when the index sync process starts.
+
+
+
+
+
+
+=== _mesh.search.index.sync.finished_
+
+Emitted when the index sync process finishes.
+
+
+
+
+
+
+=== _mesh.search.index.clear.request_
+
+Event address which will trigger a index clear.
+
+
+
+
+
+
+=== _mesh.search.index.clear.start_
+
+Emitted when the index clear process starts.
+
+
+
+
+
+
+=== _mesh.search.index.clear.finished_
+
+Emitted when the index clear process finishes.
+
+
+
+
+
+
+=== _mesh.search.process.idle_
+
+Emitted when the search interation process has been working and is now in idle.
+
+
+
+
+
+
+=== _mesh.search.process.isidle_
+
+When emitted, this event will be answered with the current idle status.
+
+
+
+
+
+
+=== _mesh.search.flush.request_
+
+Event which will cause all pending Elasticsearch requests to be sent.
+
+
+
+
+
+
+=== _mesh.search.refresh.request_
+
+Event which will cause all search indices to be refreshed, so that changes can be queried.
+
+
+
+
+
+
+=== _mesh.graph.backup.start_
+
+Emitted once the backup process starts.
+
+
+
+
+
+
+=== _mesh.graph.backup.finished_
+
+Emitted once the backup process finishes.
+
+
+
+
+
+
+=== _mesh.graph.restore.start_
+
+Emitted once the restore process starts.
+
+
+
+
+
+
+=== _mesh.graph.restore.finished_
+
+Emitted once the restore process finishes.
+
+
+
+
+
+
+=== _mesh.graph.export.start_
+
+Emitted once the graph database export process starts.
+
+
+
+
+
+
+=== _mesh.graph.export.finished_
+
+Emitted once the graph database export process finishes
+
+
+
+
+
+
+=== _mesh.graph.import.start_
+
+Emitted once the graph database import process starts.
+
+
+
+
+
+
+=== _mesh.graph.import.finished_
+
+Emitted once the graph database import process finishes.
+
+
+
+
+
+
+=== _mesh.graph.repair.start_
+
+Emitted once the repair operation is started.
+
+
+
+
+
+
+=== _mesh.graph.repair.finished_
+
+Emitted once the repair operation finishes.
+
+
+
+
+
+
+=== _mesh.plugin.deploying_
+
+Emitted once a plugin is being deployed.
+
+
+
+
+
+
+=== _mesh.plugin.deployed_
+
+Emitted once a plugin has been deployed.
+
+
+
+
+
+
+=== _mesh.plugin.undeploying_
+
+Emitted once a plugin is being undeployed.
+
+
+
+
+
+
+=== _mesh.plugin.undeployed_
+
+Emitted once a plugin has been undeployed.
+
+
+
+
+

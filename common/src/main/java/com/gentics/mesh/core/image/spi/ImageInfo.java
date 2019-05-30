@@ -35,4 +35,9 @@ public class ImageInfo {
 		this.dominantColor = dominantColor;
 	}
 
+	@Override
+	public String toString() {
+		return "width:" + width + " height:" + height + " color: " + dominantColor;
+	}
+
 }

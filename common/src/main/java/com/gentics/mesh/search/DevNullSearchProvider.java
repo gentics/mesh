@@ -1,17 +1,18 @@
 package com.gentics.mesh.search;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.Bulkable;
 import com.gentics.mesh.core.rest.schema.Schema;
-
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Search provider which will accept any action without actually doing anything.
@@ -35,11 +36,6 @@ public class DevNullSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable createIndex(IndexInfo info) {
-		return Completable.complete();
-	}
-
-	@Override
-	public Completable registerIngestPipeline(IndexInfo info) {
 		return Completable.complete();
 	}
 
@@ -73,12 +69,22 @@ public class DevNullSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable processBulk(List<? extends BulkEntry> entries) {
+	public Completable processBulk(Collection<? extends Bulkable> entries) {
+		return Completable.complete();
+	}
+
+	@Override
+	public Completable processBulkOld(List<? extends BulkEntry> entries) {
 		return Completable.complete();
 	}
 
 	@Override
 	public Completable storeDocument(String index, String uuid, JsonObject document) {
+		return Completable.complete();
+	}
+
+	@Override
+	public Completable processBulk(String actions) {
 		return Completable.complete();
 	}
 
@@ -122,11 +128,6 @@ public class DevNullSearchProvider implements SearchProvider {
 	@Override
 	public <T> T getClient() {
 		return null;
-	}
-
-	@Override
-	public boolean hasIngestPipelinePlugin() {
-		return true;
 	}
 
 	@Override

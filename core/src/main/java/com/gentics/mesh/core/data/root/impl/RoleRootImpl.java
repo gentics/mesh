@@ -18,8 +18,8 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
@@ -74,7 +74,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 		return role;
 	}
 
-	public Role create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
+	public Role create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		RoleCreateRequest requestModel = ac.fromJson(RoleCreateRequest.class);
 		String roleName = requestModel.getName();
 
@@ -95,7 +95,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 
 		Role role = create(requestModel.getName(), requestUser, uuid);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, role);
-		batch.store(role, true);
+		batch.add(role.onCreated());
 		return role;
 
 	}

@@ -38,7 +38,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 	private Node getTestNode() {
@@ -128,6 +128,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testDeduplicationDuringUpdate() {
+		disableAutoPurge();
 
 		try (Tx trx = tx()) {
 			updateSchema();
@@ -292,6 +293,8 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testConflictInMicronode() {
+		disableAutoPurge();
+
 		try (Tx trx = tx()) {
 			updateSchema();
 			NodeGraphFieldContainer origContainer = getTestNode().getLatestDraftFieldContainer(english());

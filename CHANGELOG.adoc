@@ -24,8 +24,142 @@ title: Changelog
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.34.0]]
+== 0.34.0 (28.05.2019)
+
+icon:bullhorn[] Versioning Enhancements
+
+[quote]
+____
+
+The versioning system has received various enhancements.
+
+link:{{< relref "features.asciidoc" >}}#auto-purge[Auto Purge]
+
+The auto purge feature will now automatically purge the previously no longer needed version of a content. You can control this behaviour using the `autoPurge` flag in the `mesh.yml` file.
+
+Additionally schema's may now contain a `autoPurge` flag to override the setting on a per schema basis.
+
+The documentation contains detailed information about how versioning can be controlled. 
+
+link:{{< relref "features.asciidoc" >}}#_listing_versions[Listing Versions]
+
+Versions of a node can now be listed via REST and GraphQL.
+
+link:{{< relref "features.asciidoc" >}}#_purging_versions[Purging Versions]
+
+Versions can now be purged across projects to reduce disk storage usage.
+____
+
+icon:check[] Java Rest Client: Fixed a bug that prevented automatic reconnection to the eventbus when it did not succeed immediately.
+
+icon:check[] Upload: The document processing library _tika_ has been updated to version `1.21` to fix potential out of memory issues during upload document processing.
+
+icon:check[] Branch Migration: A bug in the branch migration process has been fixed. Previously the wrong version of the content was used as branch root version. The process will now utilize the published version if one exists and otherwise use the draft version. This fix only affected internal data handling.
+
+[[v0.33.1]]
+== 0.33.1 (23.05.2019)
+
+icon:check[] Core: The dependency _hazelcast-kubernetes_ has set to version 1.2.2 to fix a compatibility issue with the used hazelcast version.
+
+[[v0.33.0]]
+== 0.33.0 (20.05.2019)
+
+icon:bullhorn[] Elasticsearch document handling
+
+[quote]
+____
+
+The support for the Elasticsearch ingest plugin has been removed. The same functionality has been replaced with a much more efficient implementation which extracts the plain text of a document during upload processing. The structure of the generated search index has not changed and thus no modifications on existing search queries is required.
+
+The plain text will now also be included in the REST and GraphQL response of binary fields.
+
+An automatic changelog entry has been added which will parse all uploaded documents and extract the plain text. The duration of the execution of this task depends on the amount of documents that need to be parsed.
+
+The new __mesh.yml__ setting `upload.parserLimit` can be used to control the document parser. See link:{{< relref "features.asciidoc" >}}#_text_extraction[Text extraction documentation] for more information. 
+____
+
+icon:plus[] Search: The embedded elastichead interface has been removed. It is recommended to use browser extentions like link:https://chrome.google.com/webstore/detail/elasticsearch-head/ffmkiejjmecolpfloofpjologoblkegm[ElasticSearch Head for Chrome] instead.
+
+icon:check[] Core: Various internal libraries have been updated (logback, hazelcast-kubernetes, tika)
+
+icon:plus[] OrientDB: The included OrientDB version has been updated to version 3.0.19
+
+[[v0.32.0]]
+== 0.32.0 (08.05.2019)
+
+icon:bullhorn[] Event Handling
+
+[quote]
+____
+
+The event handling mechanism has been completely overhauled.
+
+*Changes*
+
+* Additional events have been added
+* Event payload includes more information
+* Java Models for events have been added
+
+*API*
+
+The API class `com.gentics.mesh.MeshEvent` was replaced by `com.gentics.mesh.core.rest.MeshEvent`.
+
+A detailed description of this feature can be found in our link:{{< relref "events.asciidoc" >}}[Event Documentation].
+____
+
+icon:bullhorn[] Elasticsearch Handling
+
+[quote]
+____
+
+The Elasticsearch integration has been overhauled.
+
+*Integration*
+
+Elasticsearch synchronization operations have been decoupled from regular write operations.
+
+This has two main effects. First, regular write operations (e.g. Node Update, Node Create) will not block until the changed data has been synchronized with elasticsearch. This will result in higher overall write performance. Secondly, changes will not be directly visible in Elasticsearch since write operations in Elasticsearch have been decoupled and will be executed asynchronously after a element in Gentics Mesh has been modified. Implementations which highly rely on Gentics Mesh being in sync with ES for each operation may need to be adapted. When using the `/search` or `/rawSearch` endpoints in mesh, you can now provide the `?wait=true` query parameter. See details link:{{< relref "elasticsearch.asciidoc" >}}#endpoints[here]
+
+*Fixes*
+
+Various issues with the previous Elasticsearch synchronization mechanism have been addressed.
+
+* Deletion of nodes will now also update documents in the index which reference the deleted node
+* Tag and Tag Family deletion will now correctly update referenced tags, tag families and nodes
+
+*Startup*
+
+Gentics Mesh will no longer wait for Elasticsearch during start-up.
+
+*Resilience*
+
+The resilience for Elasticsearch server issues has been improved. Failed requests will automatically be retried. If too many issues occur Gentics Mesh will automatically invoke an index sync in order to recover from the issue. This sync will be retried until Elasticsearch becomes responsive again.
+
+*Syncing*
+
+The clear and sync mechanism has been streamlined in order to benefit from other changes like resilience.
+
+____
+
+NOTE: It is not required to reindex documents since the index names and structure has not been changed.
+
+icon:check[] File Handling: The file upload mechanism has been overhauled to address issues with blocked uploads which could occur when uploading multiple files in-parallel.
+
+icon:check[] File Handling: Failed Uploads will now remove temporary files from disk. Previously in some error situations the temporary upload have not been removed.
+
+icon:check[] Permissions: Applying permissions recursively on projects did not affect branches. This has been fixed.
+
+icon:plus[] Permissions: Setting permissions recursively is now done more efficiently.
+
+icon:plus[] Thread Usage: The overall request handling has been refactored to reduce situations in which the event-loop threads could be blocked. The request handling code has been unified.
+
+icon:plus[] Core: The core Vert.x library was updated to version 3.7.0
+
+icon:plus[] Performance: The overall read performance has been improved. The memory usage has been reduced.
+
 [[v0.31.6]]
-== 0.31.6 (TBD)
+== 0.31.6 (27.05.2018)
 
 icon:check[] Java Rest Client: Fixed a bug that prevented automatic reconnection to the eventbus when it did not succeed immediately.
 
@@ -130,6 +264,8 @@ icon:check[] Schema: A bug was fixed which prevented the update of the schema fi
 
 icon:plus[] Docker: Default memory settings for the server and demo docker images were added. Default for server is set to `-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m`. The setting can be changed using the `JAVA_TOOL_OPTIONS` environment variable. See link:https://getmesh.io/docs/administration-guide/#_memory_settings[Memory documentation] for more information.
 
+icon:check[] The `.vertx` cache folder was moved to the configurable `data/tmp` folder.
+
 [[v0.30.2]]
 == 0.30.2 (28.02.2019)
 
@@ -151,7 +287,7 @@ icon:check[] Java Rest Client: Fixed a bug in the MeshRestClient#isOneOf helper 
 [[v0.30.0]]
 == 0.30.0 (12.02.2019)
 
-CAUTION: Java Rest Client: The Gentics Mesh Java REST client which was based on Vert.x was replaced with a OkHttpClient implementation. Some changes to the client interface were necessary to make the client independent of Vert.x. See link:https://getmesh.io/docs/platforms/#_java[this example] and the Javadoc for more information.
+CAUTION: Java Rest Client: The Gentics Mesh Java REST client which was based on Vert.x was replaced with a `OkHttpClient` implementation. Some changes to the client interface were necessary to make the client independent of Vert.x. See link:https://getmesh.io/docs/platforms/#_java[this example] and the Javadoc for more information.
 
 icon:check[] Clustering: The mesh version will no longer be appended  to the node name used for OrientDB clustering. It is recommended to sanitize the `data/graphdb/storage/distributed-db-config.json` file and remove/rename entries which reference older mesh nodes. Only the active nodes should be listed in the file.
 
@@ -250,7 +386,7 @@ CAUTION: The embedded Graph Database was updated from version 2.2.37 to 3.0.13. 
 
 icon:plus[] OrientDB 3.0.x: Existing `orientdb-server-config.xml`, `hazelcast.xml`, `default-distributed-db-config.json` configuration files will automatically be moved away and the new configuration files will be created instead.
 
-icon:plus[] OrientDB 3.0.x: A reindex of all vertices and edges will be triggered during the first startup. This can take some time depending on the database size.
+icon:plus[] OrientDB 3.0.x: A reindex of all vertices and edges will be triggered during the first start-up. This can take some time depending on the database size.
 
 icon:plus[] Memory: The internal overall memory usage has been optimized.
 

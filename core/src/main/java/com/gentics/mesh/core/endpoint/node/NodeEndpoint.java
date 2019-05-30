@@ -1,23 +1,5 @@
 package com.gentics.mesh.core.endpoint.node;
 
-import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
-import static com.gentics.mesh.example.ExampleUuids.TAG_RED_UUID;
-import static com.gentics.mesh.example.ExampleUuids.UUID_1;
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
-import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.vertx.core.http.HttpMethod.DELETE;
-import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.core.http.HttpMethod.POST;
-
-import javax.inject.Inject;
-
-import org.apache.commons.lang3.StringUtils;
-import org.raml.model.Resource;
-
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -33,29 +15,62 @@ import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
-
 import io.vertx.core.MultiMap;
+import org.apache.commons.lang3.StringUtils;
+import org.raml.model.Resource;
+
+import javax.inject.Inject;
+
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNPUBLISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
+import static com.gentics.mesh.example.ExampleUuids.TAG_RED_UUID;
+import static com.gentics.mesh.example.ExampleUuids.UUID_1;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.vertx.core.http.HttpMethod.DELETE;
+import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
 
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
  */
 public class NodeEndpoint extends AbstractProjectEndpoint {
 
-	private NodeCrudHandler crudHandler;
-
 	private Resource resource = new Resource();
 
-	private BinaryFieldHandler binaryFieldHandler;
+	private NodeCrudHandler crudHandler;
+
+	private BinaryUploadHandler binaryUploadHandler;
+
+	private BinaryTransformHandler binaryTransformHandler;
+
+	private BinaryDownloadHandler binaryDownloadHandler;
 
 	public NodeEndpoint() {
 		super("nodes", null, null);
 	}
 
 	@Inject
-	public NodeEndpoint(MeshAuthChain chain, BootstrapInitializer boot, NodeCrudHandler crudHandler, BinaryFieldHandler fieldAPIHandler) {
+	public NodeEndpoint(MeshAuthChain chain, BootstrapInitializer boot, NodeCrudHandler crudHandler, BinaryUploadHandler binaryUploadHandler,
+		BinaryTransformHandler binaryTransformHandler, BinaryDownloadHandler binaryDownloadHandler) {
 		super("nodes", chain, boot);
 		this.crudHandler = crudHandler;
-		this.binaryFieldHandler = fieldAPIHandler;
+		this.binaryUploadHandler = binaryUploadHandler;
+		this.binaryTransformHandler = binaryTransformHandler;
+		this.binaryDownloadHandler = binaryDownloadHandler;
 	}
 
 	@Override
@@ -83,6 +98,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		addLanguageHandlers();
 		addNavigationHandlers();
 		addPublishHandlers();
+		addVersioningHandlers();
 	}
 
 	public Resource getResource() {
@@ -111,6 +127,23 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		});
 	}
 
+	private void addVersioningHandlers() {
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.path("/:nodeUuid/versions");
+		endpoint.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
+		endpoint.method(GET);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.description("Returns a list of versions.");
+		endpoint.displayName("Versions");
+		endpoint.exampleResponse(OK, nodeExamples.createVersionsList(), "Loaded version list.");
+		endpoint.addQueryParameters(NodeParametersImpl.class);
+		endpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = ac.getParameter("nodeUuid");
+			crudHandler.handleListVersions(ac, uuid);
+		});
+	}
+
 	private void addLanguageHandlers() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:nodeUuid/languages/:language");
@@ -121,6 +154,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Delete the language specific content of the node.");
 		endpoint.exampleResponse(NO_CONTENT, "Language variation of the node has been deleted.");
 		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
+		endpoint.events(NODE_CONTENT_DELETED);
 		endpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -140,13 +174,14 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldUpdate.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
 		fieldUpdate.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
 		fieldUpdate.description("Update the binaryfield with the given name.");
+		fieldUpdate.events(NODE_UPDATED);
 		fieldUpdate.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
 			MultiMap attributes = rc.request().formAttributes();
 			InternalActionContext ac = wrap(rc);
-			binaryFieldHandler.handleUpdateField(ac, uuid, fieldName, attributes);
-		}, false);
+			binaryUploadHandler.handleUpdateField(ac, uuid, fieldName, attributes);
+		});
 
 		InternalEndpointRoute imageTransform = createRoute();
 		imageTransform.path("/:nodeUuid/binaryTransform/:fieldName");
@@ -159,10 +194,11 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		imageTransform.exampleRequest(nodeExamples.getBinaryFieldTransformRequest());
 		imageTransform.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "Transformation was executed and updated node was returned.");
 		imageTransform.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
-		imageTransform.handler(rc -> {
+		imageTransform.events(NODE_UPDATED);
+		imageTransform.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
-			binaryFieldHandler.handleTransformImage(rc, uuid, fieldName);
+			binaryTransformHandler.handleTransformImage(rc, uuid, fieldName);
 		});
 
 		InternalEndpointRoute fieldGet = createRoute();
@@ -174,10 +210,10 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldGet.method(GET);
 		fieldGet.description(
 			"Download the binary field with the given name. You can use image query parameters for crop and resize if the binary data represents an image.");
-		fieldGet.handler(rc -> {
+		fieldGet.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
-			binaryFieldHandler.handleReadBinaryField(rc, uuid, fieldName);
+			binaryDownloadHandler.handleReadBinaryField(rc, uuid, fieldName);
 		});
 
 	}
@@ -193,7 +229,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleResponse(NO_CONTENT, "Node was moved.");
 		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The source or target node could not be found.");
 		endpoint.addQueryParameters(VersioningParametersImpl.class);
-		endpoint.handler(rc -> {
+		endpoint.events(NODE_MOVED);
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			String toUuid = ac.getParameter("toUuid");
@@ -214,7 +251,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.addQueryParameters(NodeParametersImpl.class);
 		endpoint.addQueryParameters(VersioningParametersImpl.class);
 		endpoint.addQueryParameters(GenericParametersImpl.class);
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			crudHandler.handleReadChildren(ac, uuid);
@@ -264,6 +301,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		addTag.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or tag could not be found.");
 		addTag.description("Assign the given tag to the node.");
 		addTag.addQueryParameters(VersioningParametersImpl.class);
+		addTag.events(NODE_TAGGED);
 		addTag.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -281,6 +319,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		removeTag.description("Remove the given tag from the node.");
 		removeTag.exampleResponse(NO_CONTENT, "Removal was successful.");
 		removeTag.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or tag could not be found.");
+		removeTag.events(NODE_UNTAGGED);
 		removeTag.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -300,7 +339,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(nodeExamples.getNodeCreateRequest());
 		endpoint.exampleResponse(CREATED, nodeExamples.getNodeResponseWithAllFields(), "Created node.");
-		endpoint.handler(rc -> {
+		endpoint.events(NODE_CREATED);
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			ac.getVersioningParameters().setVersion("draft");
 			crudHandler.handleCreate(ac);
@@ -320,7 +360,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		readOne.addQueryParameters(RolePermissionParametersImpl.class);
 		readOne.addQueryParameters(NodeParametersImpl.class);
 		readOne.addQueryParameters(GenericParametersImpl.class);
-		readOne.handler(rc -> {
+		readOne.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
@@ -341,7 +381,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		readAll.addQueryParameters(NodeParametersImpl.class);
 		readAll.addQueryParameters(GenericParametersImpl.class);
 		readAll.addQueryParameters(PagingParametersImpl.class);
-		readAll.handler(rc -> {
+		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadList(ac);
 		});
@@ -358,6 +398,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.addQueryParameters(DeleteParametersImpl.class);
 		endpoint.exampleResponse(NO_CONTENT, "Deletion was successful.");
 		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
+		endpoint.events(NODE_DELETED);
 		endpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -382,7 +423,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
 		endpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
 		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
-		endpoint.handler(rc -> {
+		endpoint.events(NODE_UPDATED, NODE_CREATED, NODE_CONTENT_CREATED, NODE_UPDATED);
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			ac.getVersioningParameters().setVersion("draft");
@@ -400,7 +442,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		getEndpoint.produces(APPLICATION_JSON);
 		getEndpoint.exampleResponse(OK, versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
 		getEndpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
-		getEndpoint.handler(rc -> {
+		getEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("nodeUuid");
 			crudHandler.handleGetPublishStatus(ac, uuid);
@@ -415,7 +457,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		putEndpoint.exampleResponse(OK, versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
 		putEndpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
 		putEndpoint.addQueryParameters(PublishParametersImpl.class);
-		putEndpoint.handler(rc -> {
+		putEndpoint.events(NODE_PUBLISHED);
+		putEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("nodeUuid");
 			crudHandler.handlePublish(ac, uuid);
@@ -430,7 +473,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		deleteEndpoint.exampleResponse(NO_CONTENT, "Node was unpublished.");
 		deleteEndpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
 		deleteEndpoint.addQueryParameters(PublishParametersImpl.class);
-		deleteEndpoint.handler(rc -> {
+		deleteEndpoint.events(NODE_UNPUBLISHED);
+		deleteEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("nodeUuid");
 			crudHandler.handleTakeOffline(ac, uuid);
@@ -447,7 +491,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		getLanguageRoute.produces(APPLICATION_JSON);
 		getLanguageRoute.exampleResponse(OK, versioningExamples.createPublishStatusModel(), "Publish status of the specific language.");
 		getLanguageRoute.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the language could not be found.");
-		getLanguageRoute.handler(rc -> {
+		getLanguageRoute.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("nodeUuid");
 			String lang = rc.request().getParam("language");
@@ -463,7 +507,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		putLanguageRoute.exampleResponse(OK, versioningExamples.createPublishStatusModel(), "Updated publish status.");
 		putLanguageRoute.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the language could not be found.");
 		putLanguageRoute.produces(APPLICATION_JSON);
-		putLanguageRoute.handler(rc -> {
+		putLanguageRoute.events(NODE_PUBLISHED);
+		putLanguageRoute.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("nodeUuid");
 			String lang = rc.request().getParam("language");
@@ -478,7 +523,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		deleteLanguageRoute.exampleResponse(NO_CONTENT, "Node language was taken offline.");
 		deleteLanguageRoute.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the language could not be found.");
 		deleteLanguageRoute.produces(APPLICATION_JSON);
-		deleteLanguageRoute.handler(rc -> {
+		deleteLanguageRoute.events(NODE_UNPUBLISHED);
+		deleteLanguageRoute.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("nodeUuid");
 			String lang = rc.request().getParam("language");

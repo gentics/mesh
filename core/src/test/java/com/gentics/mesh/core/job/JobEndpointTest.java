@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.job;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
+import static com.gentics.mesh.core.rest.job.JobStatus.QUEUED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -23,13 +23,14 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = true)
 public class JobEndpointTest extends AbstractMeshTest {
 
 	@Test
@@ -207,7 +208,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		// Change the job so that it will no longer fail
 		tx(()-> {
-			Branch branch = project().getBranchRoot().create("testBranch", user(), null, true, initialBranch());
+			Branch branch = project().getBranchRoot().create("testBranch", user(), null, true, initialBranch(), EventQueueBatch.create());
 			job.setBranch(branch);
 		});
 

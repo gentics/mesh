@@ -44,6 +44,10 @@ public class SchemaCreateRequest implements Schema {
 	@JsonPropertyDescription("List of schema fields")
 	private List<FieldSchema> fields = new ArrayList<>();
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Auto purge flag of the schema. Controls whether contents of this schema should create new versions.")
+	private Boolean autoPurge;
+
 	@Override
 	public String getDescription() {
 		return description;
@@ -129,6 +133,17 @@ public class SchemaCreateRequest implements Schema {
 	@Override
 	public SchemaCreateRequest setElasticsearch(JsonObject elasticsearch) {
 		this.elasticsearch = elasticsearch;
+		return this;
+	}
+
+	@Override
+	public Boolean getAutoPurge() {
+		return autoPurge;
+	}
+
+	@Override
+	public SchemaCreateRequest setAutoPurge(Boolean autoPurge) {
+		this.autoPurge = autoPurge;
 		return this;
 	}
 

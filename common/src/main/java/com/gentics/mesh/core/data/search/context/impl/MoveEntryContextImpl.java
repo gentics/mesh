@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.search.context.impl;
 
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
+import com.gentics.mesh.core.rest.common.ContainerType;
 
 public class MoveEntryContextImpl implements MoveEntryContext {
 

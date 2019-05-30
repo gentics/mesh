@@ -22,7 +22,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertNotNull;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 
 	private Microschema getMicroschema() {

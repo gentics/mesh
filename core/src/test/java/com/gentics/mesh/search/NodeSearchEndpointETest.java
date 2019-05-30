@@ -1,5 +1,14 @@
 package com.gentics.mesh.search;
 
+import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeListResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import org.junit.Test;
+
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -9,31 +18,21 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
 
-import org.junit.Test;
-
-import com.syncleus.ferma.tx.Tx;
-import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
-import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.test.context.MeshTestSetting;
-
-@MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = NONE, testSize = FULL, startServer = true)
 public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testDocumentDeletion() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "Concorde"),
 				new PagingParametersImpl().setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));
 		assertEquals(1, response.getData().size());
 		deleteNode(PROJECT_NAME, db().tx(() -> content("concorde").getUuid()));
+
+		waitForSearchIdleEvent();
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "Concorde"), new PagingParametersImpl().setPage(1)
 				.setPerPage(2L), new VersioningParametersImpl().draft()));
@@ -48,9 +47,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testCustomQuery() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("schema.name.raw", "content"),
 				new VersioningParametersImpl().draft()));
@@ -61,9 +58,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchForChildNodes() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		String parentNodeUuid = db().tx(() -> folder("news").getUuid());
 
@@ -80,9 +75,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testDocumentCreation() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		// Invoke a dummy search on an empty index
 		String json = "{";
@@ -111,6 +104,8 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 		create.setParentNodeUuid(db().tx(() -> folder("2015").getUuid()));
 
 		call(() -> client().createNode(PROJECT_NAME, create));
+
+		waitForSearchIdleEvent();
 
 		// Search again and make sure we found our document
 		response = call(() -> client().searchNodes(PROJECT_NAME, search, new PagingParametersImpl().setPage(1).setPerPage(2L),

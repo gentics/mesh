@@ -2,7 +2,7 @@ package com.gentics.mesh.core.schema.field;
 
 import com.gentics.mesh.core.data.branch.BranchVersionEdge;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.core.rest.job.JobStatus;
 
 public class DummyMigrationStatus implements MigrationStatusHandler {
 	private static DummyMigrationStatus instance = new DummyMigrationStatus();
@@ -36,7 +36,7 @@ public class DummyMigrationStatus implements MigrationStatusHandler {
 	}
 
 	@Override
-	public void setStatus(MigrationStatus status) {
+	public void setStatus(JobStatus status) {
 
 	}
 

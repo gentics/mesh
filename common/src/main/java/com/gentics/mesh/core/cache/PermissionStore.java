@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.cache;
 
-import static com.gentics.mesh.MeshEvent.CLEAR_PERMISSION_STORE;
+import static com.gentics.mesh.core.rest.MeshEvent.CLEAR_PERMISSION_STORE;
 
 import java.util.concurrent.TimeUnit;
 

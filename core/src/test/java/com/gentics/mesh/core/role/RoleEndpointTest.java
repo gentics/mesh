@@ -1,43 +1,17 @@
 package com.gentics.mesh.core.role;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.role.RoleCreateRequest;
-import com.gentics.mesh.core.rest.role.RoleListResponse;
-import com.gentics.mesh.core.rest.role.RoleResponse;
-import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
-import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.test.definition.BasicRestTestcases;
-import com.gentics.mesh.util.UUIDUtil;
-import com.syncleus.ferma.tx.Tx;
-import io.reactivex.Single;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_UPDATED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
 import static com.gentics.mesh.test.TestSize.PROJECT;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -49,7 +23,38 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.junit.Ignore;
+import org.junit.Test;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.syncleus.ferma.tx.Tx;
+import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.RoleRoot;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.Permission;
+import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
+import com.gentics.mesh.core.rest.role.RoleCreateRequest;
+import com.gentics.mesh.core.rest.role.RoleListResponse;
+import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
+import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.gentics.mesh.util.UUIDUtil;
+import io.reactivex.Single;
+
+@MeshTestSetting(elasticsearch = TRACKING, testSize = PROJECT, startServer = true)
 public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@Test
@@ -58,9 +63,18 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
 
+		expect(ROLE_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName("new_role").uuidNotNull();
+		}).total(1);
+		expect(ROLE_UPDATED).total(0);
+
 		RoleResponse restRole = call(() -> client().createRole(request));
+
+		awaitEvents();
+		waitForSearchIdleEvent();
+
 		assertThat(trackingSearchProvider()).hasStore(Role.composeIndexName(), restRole.getUuid());
-		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
 			Role createdRole = meshRoot().getRoleRoot().findByUuid(restRole.getUuid());
@@ -148,7 +162,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().createRole(request), FORBIDDEN, "error_missing_perm", meshRoot().getRoleRoot().getUuid(), CREATE_PERM.getRestPerm().getName());
+			call(() -> client().createRole(request), FORBIDDEN, "error_missing_perm", meshRoot().getRoleRoot().getUuid(),
+				CREATE_PERM.getRestPerm().getName());
 		}
 	}
 
@@ -317,15 +332,18 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testUpdate() throws JsonGenerationException, JsonMappingException, IOException, Exception {
-		String extraRoleUuid;
-		try (Tx tx = tx()) {
+		String extraRoleUuid = tx(() -> {
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			Role extraRole = roleRoot.create("extra role", user());
 			group().addRole(extraRole);
-			extraRoleUuid = extraRole.getUuid();
 			role().grantPermissions(extraRole, UPDATE_PERM);
-			tx.success();
-		}
+			return extraRole.getUuid();
+		});
+
+		expect(ROLE_UPDATED).match(1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName("renamed role").hasUuid(extraRoleUuid);
+		}).total(1);
+		expect(ROLE_CREATED).total(0);
 
 		RoleUpdateRequest request = new RoleUpdateRequest();
 		request.setName("renamed role");
@@ -333,6 +351,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		RoleResponse restRole = call(() -> client().updateRole(extraRoleUuid, request));
 		assertEquals(request.getName(), restRole.getName());
 		assertEquals(extraRoleUuid, restRole.getUuid());
+
+		awaitEvents();
 
 		try (Tx tx = tx()) {
 			// Check that the extra role was updated as expected
@@ -407,21 +427,27 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		String extraRoleUuid;
-		try (Tx tx = tx()) {
+
+		String extraRoleUuid = tx(() -> {
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			Role extraRole = roleRoot.create("extra role", user());
 			group().addRole(extraRole);
-			extraRoleUuid = extraRole.getUuid();
 			role().grantPermissions(extraRole, DELETE_PERM);
-			tx.success();
-		}
+			return extraRole.getUuid();
+		});
+
+		expect(ROLE_DELETED).match(1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName("extra role").hasUuid(extraRoleUuid);
+		});
 
 		trackingSearchProvider().clear().blockingAwait();
 		call(() -> client().deleteRole(extraRoleUuid));
-		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), groupUuid());
+
+		awaitEvents();
+		waitForSearchIdleEvent();
+
 		assertThat(trackingSearchProvider()).hasDelete(Role.composeIndexName(), extraRoleUuid);
-		assertThat(trackingSearchProvider()).hasEvents(1, 1, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(0, 0, 1, 0, 0);
 
 		try (Tx tx = tx()) {
 			assertElement(meshRoot().getRoleRoot(), extraRoleUuid, false);

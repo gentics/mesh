@@ -1,11 +1,12 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.MeshEvent.PROJECT_CREATED;
-import static com.gentics.mesh.MeshEvent.PROJECT_DELETED;
-import static com.gentics.mesh.MeshEvent.PROJECT_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
 
 import java.util.Objects;
 
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.BranchRoot;
@@ -14,9 +15,14 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
+import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.madlmigration.TraversalResult;
 
 /**
@@ -26,15 +32,9 @@ import com.gentics.mesh.madlmigration.TraversalResult;
  * (called basenode). Additionally languages and schemas can be assigned to projects to make them available for node creation. Various root vertices (eg.:
  * {@link NodeRoot}, {@link TagRoot}, {@link TagFamilyRoot} ) are linked to the project to store references to basic building blocks.
  */
-public interface Project extends MeshCoreVertex<ProjectResponse, Project>, ReferenceableElement<ProjectReference>, UserTrackingVertex,
-		IndexableElement {
+public interface Project extends MeshCoreVertex<ProjectResponse, Project>, ReferenceableElement<ProjectReference>, UserTrackingVertex {
 
-	/**
-	 * Type Value: {@value #TYPE}
-	 */
-	String TYPE = "project";
-
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, PROJECT_CREATED.address, PROJECT_UPDATED.address, PROJECT_DELETED.address);
+	TypeInfo TYPE_INFO = new TypeInfo(ElementType.PROJECT, PROJECT_CREATED, PROJECT_UPDATED, PROJECT_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {
@@ -47,7 +47,7 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * @return
 	 */
 	static String composeIndexName() {
-		return TYPE.toLowerCase();
+		return "project";
 	}
 
 	/**
@@ -156,5 +156,23 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * @return Branch root element
 	 */
 	BranchRoot getBranchRoot();
+
+	/**
+	 * Create a project schema assignment event.
+	 * 
+	 * @param schema
+	 * @param assigned
+	 * @return
+	 */
+	ProjectSchemaEventModel onSchemaAssignEvent(SchemaContainer schema, Assignment assigned);
+
+	/**
+	 * Create a project microschema assignment event.
+	 * 
+	 * @param microschema
+	 * @param assigned
+	 * @return
+	 */
+	ProjectMicroschemaEventModel onMicroschemaAssignEvent(MicroschemaContainer microschema, Assignment assigned);
 
 }

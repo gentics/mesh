@@ -52,7 +52,6 @@ node("docker") {
 				instanceCap: 10,
 				label: 'mesh',
 				name: 'jenkins-slave-mesh-openjdk8',
-				namespace: 'default', 
 				nodeSelector: 'jenkins_mesh_worker=true',
 				serviceAccount: 'jenkins',
 				volumes: [

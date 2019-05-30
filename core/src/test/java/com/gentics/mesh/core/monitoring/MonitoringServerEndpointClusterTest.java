@@ -13,8 +13,9 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true, inMemoryDB = true, clusterMode = true)
+@MeshTestSetting(elasticsearch = NONE, testSize = PROJECT, startServer = true, inMemoryDB = true, clusterMode = true)
 public class MonitoringServerEndpointClusterTest extends AbstractMeshTest {
 
 	@Test

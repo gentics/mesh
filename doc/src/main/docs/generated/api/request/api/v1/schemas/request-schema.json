@@ -76,6 +76,10 @@
           }
         }
       }
+    },
+    "autoPurge" : {
+      "type" : "boolean",
+      "description" : "Auto purge flag of the schema. Controls whether contents of this schema should create new versions."
     }
   }
 }

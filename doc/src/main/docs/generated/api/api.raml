@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "0.31.6"
+version: "0.34.0"
 baseUri: "http://localhost:8080/api/v1"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -3892,6 +3892,9 @@ mediaType: application/json
                                 "version" : {
                                   "type" : "string"
                                 },
+                                "versionUuid" : {
+                                  "type" : "string"
+                                },
                                 "uuid" : {
                                   "type" : "string"
                                 },
@@ -4014,6 +4017,9 @@ mediaType: application/json
                                           "description" : "Reference to the schema of the node",
                                           "properties" : {
                                             "version" : {
+                                              "type" : "string"
+                                            },
+                                            "versionUuid" : {
                                               "type" : "string"
                                             },
                                             "uuid" : {
@@ -4219,6 +4225,9 @@ mediaType: application/json
                                                 "description" : "Reference to the schema of the node",
                                                 "properties" : {
                                                   "version" : {
+                                                    "type" : "string"
+                                                  },
+                                                  "versionUuid" : {
                                                     "type" : "string"
                                                   },
                                                   "uuid" : {
@@ -4479,6 +4488,9 @@ mediaType: application/json
                                             "version" : {
                                               "type" : "string"
                                             },
+                                            "versionUuid" : {
+                                              "type" : "string"
+                                            },
                                             "uuid" : {
                                               "type" : "string"
                                             },
@@ -4671,6 +4683,9 @@ mediaType: application/json
                                             "version" : {
                                               "type" : "string"
                                             },
+                                            "versionUuid" : {
+                                              "type" : "string"
+                                            },
                                             "uuid" : {
                                               "type" : "string"
                                             },
@@ -4759,6 +4774,27 @@ mediaType: application/json
             responses: 
                 "204": 
                     description: Project was deleted.
+    /{projectUuid}/maintenance/purge: 
+        uriParameters: 
+            projectUuid: 
+                displayName: projectUuid
+                description: Uuid of the project.
+                type: string
+                required: true
+                repeat: false
+                example: "217f8c981ada4642bf8c981adaa642c3"
+        post: 
+            description: Invoke a version purge of the project.
+            queryParameters: 
+                before: 
+                    description: Limit the purge operation to versions which are older than the given date.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: "2019-04-20T18:00Z"
+            responses: 
+                "200": 
+                    description: Project versions purge job added.
 /schemas: 
     displayName: /schemas
     description: Provides endpoints which allow the manipulation of schemas.
@@ -4926,6 +4962,10 @@ mediaType: application/json
                                                 }
                                               }
                                             }
+                                          },
+                                          "autoPurge" : {
+                                            "type" : "boolean",
+                                            "description" : "Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update."
                                           },
                                           "permissions" : {
                                             "type" : "object",
@@ -5205,6 +5245,10 @@ mediaType: application/json
                                   }
                                 }
                               }
+                            },
+                            "autoPurge" : {
+                              "type" : "boolean",
+                              "description" : "Auto purge flag of the schema. Controls whether contents of this schema should create new versions."
                             }
                           }
                         }
@@ -5354,6 +5398,10 @@ mediaType: application/json
                                           }
                                         }
                                       }
+                                    },
+                                    "autoPurge" : {
+                                      "type" : "boolean",
+                                      "description" : "Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update."
                                     },
                                     "permissions" : {
                                       "type" : "object",
@@ -5620,6 +5668,10 @@ mediaType: application/json
                                         }
                                       }
                                     },
+                                    "autoPurge" : {
+                                      "type" : "boolean",
+                                      "description" : "Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update."
+                                    },
                                     "permissions" : {
                                       "type" : "object",
                                       "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfo",
@@ -5821,6 +5873,10 @@ mediaType: application/json
                                   }
                                 }
                               }
+                            },
+                            "autoPurge" : {
+                              "type" : "boolean",
+                              "description" : "Auto purge flag of the schema. Controls whether contents of this schema should create new versions."
                             }
                           }
                         }
@@ -5963,6 +6019,10 @@ mediaType: application/json
                                           }
                                         }
                                       }
+                                    },
+                                    "autoPurge" : {
+                                      "type" : "boolean",
+                                      "description" : "Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update."
                                     },
                                     "permissions" : {
                                       "type" : "object",
@@ -6325,6 +6385,10 @@ mediaType: application/json
                                   }
                                 }
                               }
+                            },
+                            "autoPurge" : {
+                              "type" : "boolean",
+                              "description" : "Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update."
                             },
                             "permissions" : {
                               "type" : "object",
@@ -8057,7 +8121,7 @@ mediaType: application/json
                                             "type" : "string",
                                             "required" : true,
                                             "description" : "The type of the job.",
-                                            "enum" : [ "schema", "microschema", "branch" ]
+                                            "enum" : [ "schema", "microschema", "branch", "versionpurge" ]
                                           },
                                           "status" : {
                                             "type" : "string",
@@ -8238,7 +8302,7 @@ mediaType: application/json
                                       "type" : "string",
                                       "required" : true,
                                       "description" : "The type of the job.",
-                                      "enum" : [ "schema", "microschema", "branch" ]
+                                      "enum" : [ "schema", "microschema", "branch", "versionpurge" ]
                                     },
                                     "status" : {
                                       "type" : "string",
@@ -8867,6 +8931,12 @@ mediaType: application/json
         post: 
             description: Invoke a search query for groups and return a paged list response.
             queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
                 perPage: 
                     description: Number of elements per page.
                     type: number
@@ -9093,6 +9163,12 @@ mediaType: application/json
         post: 
             description: Invoke a search query for microschemas and return a paged list response.
             queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
                 perPage: 
                     description: Number of elements per page.
                     type: number
@@ -9365,6 +9441,12 @@ mediaType: application/json
         post: 
             description: Invoke a search query for nodes and return a paged list response.
             queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
                 perPage: 
                     description: Number of elements per page.
                     type: number
@@ -9511,6 +9593,9 @@ mediaType: application/json
                                                 "description" : "Reference to the schema of the node",
                                                 "properties" : {
                                                   "version" : {
+                                                    "type" : "string"
+                                                  },
+                                                  "versionUuid" : {
                                                     "type" : "string"
                                                   },
                                                   "uuid" : {
@@ -9934,6 +10019,12 @@ mediaType: application/json
         post: 
             description: Invoke a search query for projects and return a paged list response.
             queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
                 perPage: 
                     description: Number of elements per page.
                     type: number
@@ -10045,6 +10136,9 @@ mediaType: application/json
                                                 "description" : "Reference to the schema of the node",
                                                 "properties" : {
                                                   "version" : {
+                                                    "type" : "string"
+                                                  },
+                                                  "versionUuid" : {
                                                     "type" : "string"
                                                   },
                                                   "uuid" : {
@@ -10199,6 +10293,12 @@ mediaType: application/json
         post: 
             description: Invoke a search query for roles and return a paged list response.
             queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
                 perPage: 
                     description: Number of elements per page.
                     type: number
@@ -10440,6 +10540,12 @@ mediaType: application/json
         post: 
             description: Invoke a search query for schemas and return a paged list response.
             queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
                 perPage: 
                     description: Number of elements per page.
                     type: number
@@ -10597,6 +10703,10 @@ mediaType: application/json
                                                 }
                                               }
                                             }
+                                          },
+                                          "autoPurge" : {
+                                            "type" : "boolean",
+                                            "description" : "Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update."
                                           },
                                           "permissions" : {
                                             "type" : "object",
@@ -10943,6 +11053,12 @@ mediaType: application/json
         post: 
             description: Invoke a search query for tagFamilies and return a paged list response.
             queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
                 perPage: 
                     description: Number of elements per page.
                     type: number
@@ -11131,6 +11247,12 @@ mediaType: application/json
         post: 
             description: Invoke a search query for tags and return a paged list response.
             queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
                 perPage: 
                     description: Number of elements per page.
                     type: number
@@ -11369,6 +11491,12 @@ mediaType: application/json
         post: 
             description: Invoke a search query for users and return a paged list response.
             queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
                 perPage: 
                     description: Number of elements per page.
                     type: number
@@ -11678,6 +11806,13 @@ mediaType: application/json
     /groups: 
         post: 
             description: Invoke a search query for groups and return the unmodified Elasticsearch response. Note that the query will be executed using the multi search API of Elasticsearch.
+            queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
             body: 
                 application/json: 
                     example: '{"query":{"query_string":{"query":"some name"}}}'
@@ -11690,6 +11825,13 @@ mediaType: application/json
     /microschemas: 
         post: 
             description: Invoke a search query for microschemas and return the unmodified Elasticsearch response. Note that the query will be executed using the multi search API of Elasticsearch.
+            queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
             body: 
                 application/json: 
                     example: '{"query":{"query_string":{"query":"some name"}}}'
@@ -11702,6 +11844,13 @@ mediaType: application/json
     /nodes: 
         post: 
             description: Invoke a search query for nodes and return the unmodified Elasticsearch response. Note that the query will be executed using the multi search API of Elasticsearch.
+            queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
             body: 
                 application/json: 
                     example: '{"query":{"query_string":{"query":"some name"}}}'
@@ -11714,6 +11863,13 @@ mediaType: application/json
     /projects: 
         post: 
             description: Invoke a search query for projects and return the unmodified Elasticsearch response. Note that the query will be executed using the multi search API of Elasticsearch.
+            queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
             body: 
                 application/json: 
                     example: '{"query":{"query_string":{"query":"some name"}}}'
@@ -11726,6 +11882,13 @@ mediaType: application/json
     /roles: 
         post: 
             description: Invoke a search query for roles and return the unmodified Elasticsearch response. Note that the query will be executed using the multi search API of Elasticsearch.
+            queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
             body: 
                 application/json: 
                     example: '{"query":{"query_string":{"query":"some name"}}}'
@@ -11738,6 +11901,13 @@ mediaType: application/json
     /schemas: 
         post: 
             description: Invoke a search query for schemas and return the unmodified Elasticsearch response. Note that the query will be executed using the multi search API of Elasticsearch.
+            queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
             body: 
                 application/json: 
                     example: '{"query":{"query_string":{"query":"some name"}}}'
@@ -11750,6 +11920,13 @@ mediaType: application/json
     /tagFamilies: 
         post: 
             description: Invoke a search query for tagFamilies and return the unmodified Elasticsearch response. Note that the query will be executed using the multi search API of Elasticsearch.
+            queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
             body: 
                 application/json: 
                     example: '{"query":{"query_string":{"query":"some name"}}}'
@@ -11762,6 +11939,13 @@ mediaType: application/json
     /tags: 
         post: 
             description: Invoke a search query for tags and return the unmodified Elasticsearch response. Note that the query will be executed using the multi search API of Elasticsearch.
+            queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
             body: 
                 application/json: 
                     example: '{"query":{"query_string":{"query":"some name"}}}'
@@ -11774,6 +11958,13 @@ mediaType: application/json
     /users: 
         post: 
             description: Invoke a search query for users and return the unmodified Elasticsearch response. Note that the query will be executed using the multi search API of Elasticsearch.
+            queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
             body: 
                 application/json: 
                     example: '{"query":{"query_string":{"query":"some name"}}}'
@@ -12254,6 +12445,10 @@ mediaType: application/json
                                   }
                                 }
                               }
+                            },
+                            "autoPurge" : {
+                              "type" : "boolean",
+                              "description" : "Auto purge flag of the schema. Controls whether contents of this schema should create new versions."
                             }
                           }
                         }
@@ -12865,13 +13060,13 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "0.31.6",
+                                  "meshVersion" : "0.34.0",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
                                   "searchVendor" : "elasticsearch",
                                   "searchVersion" : "2.4.3",
-                                  "vertxVersion" : "3.5.4"
+                                  "vertxVersion" : "3.7.0"
                                 }
     /raml: 
         get: 
@@ -12978,6 +13173,9 @@ mediaType: application/json
                                           "description" : "Reference to the schema of the node",
                                           "properties" : {
                                             "version" : {
+                                              "type" : "string"
+                                            },
+                                            "versionUuid" : {
                                               "type" : "string"
                                             },
                                             "uuid" : {
@@ -13107,6 +13305,9 @@ mediaType: application/json
                                   "description" : "Reference to the schema of the node",
                                   "properties" : {
                                     "version" : {
+                                      "type" : "string"
+                                    },
+                                    "versionUuid" : {
                                       "type" : "string"
                                     },
                                     "uuid" : {
@@ -13304,6 +13505,9 @@ mediaType: application/json
                                           "description" : "Reference to the schema of the node",
                                           "properties" : {
                                             "version" : {
+                                              "type" : "string"
+                                            },
+                                            "versionUuid" : {
                                               "type" : "string"
                                             },
                                             "uuid" : {
@@ -13805,6 +14009,9 @@ mediaType: application/json
                                                 "description" : "Reference to the schema of the node",
                                                 "properties" : {
                                                   "version" : {
+                                                    "type" : "string"
+                                                  },
+                                                  "versionUuid" : {
                                                     "type" : "string"
                                                   },
                                                   "uuid" : {
@@ -14432,6 +14639,9 @@ mediaType: application/json
                                             "version" : {
                                               "type" : "string"
                                             },
+                                            "versionUuid" : {
+                                              "type" : "string"
+                                            },
                                             "uuid" : {
                                               "type" : "string"
                                             },
@@ -15002,6 +15212,9 @@ mediaType: application/json
                                             "version" : {
                                               "type" : "string"
                                             },
+                                            "versionUuid" : {
+                                              "type" : "string"
+                                            },
                                             "uuid" : {
                                               "type" : "string"
                                             },
@@ -15501,6 +15714,9 @@ mediaType: application/json
                                           "description" : "Reference to the schema of the node",
                                           "properties" : {
                                             "version" : {
+                                              "type" : "string"
+                                            },
+                                            "versionUuid" : {
                                               "type" : "string"
                                             },
                                             "uuid" : {
@@ -16110,6 +16326,9 @@ mediaType: application/json
                                             "version" : {
                                               "type" : "string"
                                             },
+                                            "versionUuid" : {
+                                              "type" : "string"
+                                            },
                                             "uuid" : {
                                               "type" : "string"
                                             },
@@ -16641,6 +16860,9 @@ mediaType: application/json
                                                 "description" : "Reference to the schema of the node",
                                                 "properties" : {
                                                   "version" : {
+                                                    "type" : "string"
+                                                  },
+                                                  "versionUuid" : {
                                                     "type" : "string"
                                                   },
                                                   "uuid" : {
@@ -17604,6 +17826,9 @@ mediaType: application/json
                                               "description" : "Reference to the schema of the node",
                                               "properties" : {
                                                 "version" : {
+                                                  "type" : "string"
+                                                },
+                                                "versionUuid" : {
                                                   "type" : "string"
                                                 },
                                                 "uuid" : {
@@ -18855,6 +19080,9 @@ mediaType: application/json
                                             "version" : {
                                               "type" : "string"
                                             },
+                                            "versionUuid" : {
+                                              "type" : "string"
+                                            },
                                             "uuid" : {
                                               "type" : "string"
                                             },
@@ -19122,6 +19350,156 @@ mediaType: application/json
                                 }
                 "204": 
                     description: Removal was successful.
+    /{nodeUuid}/versions: 
+        uriParameters: 
+            nodeUuid: 
+                displayName: nodeUuid
+                description: Uuid of the node.
+                type: string
+                required: true
+                repeat: false
+                example: adaf48da8c124049af48da8c12a0493e
+        get: 
+            description: Returns a list of versions.
+            displayName: Versions
+            queryParameters: 
+                lang: 
+                    description: ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned.  If omitted or the requested language is not available then the _defaultLanguage_ as configured in _mesh.yml_ will be returned.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: en,de
+                resolveLinks: 
+                    description: 'The resolve links parameter can be set to either _short_, _medium_ or _full_. Stored mesh links will automatically be resolved and replaced by the resolved webroot link. With the parameter set the _path_ property as well as the _languagesPath_ property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved link:{{< relref "features.asciidoc" >}}#_link_resolving[WebRoot path]. No resolving occurs if no link has been specified.'
+                    type: string
+                    required: false
+                    repeat: false
+                    example: medium
+            responses: 
+                "200": 
+                    description: Loaded version list.
+                    body: 
+                        application/json: 
+                            schema: |
+                                {
+                                  "type" : "object",
+                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:version:NodeVersionsResponse",
+                                  "properties" : {
+                                    "versions" : {
+                                      "type" : "object",
+                                      "additionalProperties" : {
+                                        "type" : "array",
+                                        "items" : {
+                                          "type" : "object",
+                                          "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:version:VersionInfo",
+                                          "properties" : {
+                                            "creator" : {
+                                              "type" : "object",
+                                              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReference",
+                                              "required" : true,
+                                              "description" : "User reference of the creator of the element.",
+                                              "properties" : {
+                                                "firstName" : {
+                                                  "type" : "string",
+                                                  "description" : "Firstname of the user"
+                                                },
+                                                "lastName" : {
+                                                  "type" : "string",
+                                                  "description" : "Lastname of the user"
+                                                },
+                                                "uuid" : {
+                                                  "type" : "string",
+                                                  "required" : true,
+                                                  "description" : "Uuid of the user"
+                                                }
+                                              }
+                                            },
+                                            "created" : {
+                                              "type" : "string",
+                                              "required" : true,
+                                              "description" : "ISO8601 formatted created date string."
+                                            },
+                                            "version" : {
+                                              "type" : "string",
+                                              "required" : true,
+                                              "description" : "Version of the content."
+                                            },
+                                            "draft" : {
+                                              "type" : "boolean",
+                                              "required" : true,
+                                              "description" : "Is the content a draft version?"
+                                            },
+                                            "published" : {
+                                              "type" : "boolean",
+                                              "required" : true,
+                                              "description" : "Is the content published version?"
+                                            },
+                                            "branchRoot" : {
+                                              "type" : "boolean",
+                                              "required" : true,
+                                              "description" : "Is the version used as a root version in another branch?"
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                            example: |
+                                {
+                                  "versions" : {
+                                    "de" : [ {
+                                      "creator" : {
+                                        "firstName" : "Joe",
+                                        "lastName" : "Doe",
+                                        "uuid" : "589319933be24ec79319933be24ec7fe"
+                                      },
+                                      "created" : "2018-11-20T20:12:01.084Z",
+                                      "version" : "1.0"
+                                    }, {
+                                      "creator" : {
+                                        "firstName" : "Joe",
+                                        "lastName" : "Doe",
+                                        "uuid" : "589319933be24ec79319933be24ec7fe"
+                                      },
+                                      "created" : "2018-11-20T20:12:01.084Z",
+                                      "version" : "1.1"
+                                    }, {
+                                      "creator" : {
+                                        "firstName" : "Joe",
+                                        "lastName" : "Doe",
+                                        "uuid" : "589319933be24ec79319933be24ec7fe"
+                                      },
+                                      "created" : "2018-11-20T20:12:01.084Z",
+                                      "version" : "2.0"
+                                    } ],
+                                    "en" : [ {
+                                      "creator" : {
+                                        "firstName" : "Joe",
+                                        "lastName" : "Doe",
+                                        "uuid" : "589319933be24ec79319933be24ec7fe"
+                                      },
+                                      "created" : "2018-11-20T20:12:01.084Z",
+                                      "version" : "1.0"
+                                    }, {
+                                      "creator" : {
+                                        "firstName" : "Joe",
+                                        "lastName" : "Doe",
+                                        "uuid" : "589319933be24ec79319933be24ec7fe"
+                                      },
+                                      "created" : "2018-11-20T20:12:01.084Z",
+                                      "version" : "1.1"
+                                    }, {
+                                      "creator" : {
+                                        "firstName" : "Joe",
+                                        "lastName" : "Doe",
+                                        "uuid" : "589319933be24ec79319933be24ec7fe"
+                                      },
+                                      "created" : "2018-11-20T20:12:01.084Z",
+                                      "version" : "2.0"
+                                    } ]
+                                  }
+                                }
 /{project}/tagFamilies: 
     displayName: /{project}/tagFamilies
     description: Provides endpoints which allow the manipulation of tag families and tags.
@@ -19584,7 +19962,7 @@ mediaType: application/json
                                   }
                                 }
         post: 
-            description: Update the tag family with the given uuid.
+            description: Update the tag family with the given uuid. The tag family will be created if it can't be found for the given uuid.
             body: 
                 application/json: 
                     schema: |
@@ -20312,7 +20690,7 @@ mediaType: application/json
                                   }
                                 }
         post: 
-            description: Update the specified tag
+            description: Update the specified tag. The tag is created if no tag with the specified uuid could be found.
             body: 
                 application/json: 
                     schema: |
@@ -20642,6 +21020,9 @@ mediaType: application/json
                                                 "description" : "Reference to the schema of the node",
                                                 "properties" : {
                                                   "version" : {
+                                                    "type" : "string"
+                                                  },
+                                                  "versionUuid" : {
                                                     "type" : "string"
                                                   },
                                                   "uuid" : {
@@ -21220,6 +21601,9 @@ mediaType: application/json
                                               "description" : "Reference to the schema of the node",
                                               "properties" : {
                                                 "version" : {
+                                                  "type" : "string"
+                                                },
+                                                "versionUuid" : {
                                                   "type" : "string"
                                                 },
                                                 "uuid" : {
@@ -22014,6 +22398,9 @@ mediaType: application/json
                                             "version" : {
                                               "type" : "string"
                                             },
+                                            "versionUuid" : {
+                                              "type" : "string"
+                                            },
                                             "uuid" : {
                                               "type" : "string"
                                             },
@@ -22365,6 +22752,9 @@ mediaType: application/json
                                           "description" : "Reference to the schema of the node",
                                           "properties" : {
                                             "version" : {
+                                              "type" : "string"
+                                            },
+                                            "versionUuid" : {
                                               "type" : "string"
                                             },
                                             "uuid" : {
@@ -23884,6 +24274,9 @@ mediaType: application/json
                                           "jobUuid" : {
                                             "type" : "string",
                                             "description" : "Uuid of the migration job."
+                                          },
+                                          "versionUuid" : {
+                                            "type" : "string"
                                           }
                                         }
                                       }
@@ -23940,6 +24333,9 @@ mediaType: application/json
                                   "jobUuid" : {
                                     "type" : "string",
                                     "description" : "Uuid of the migration job."
+                                  },
+                                  "versionUuid" : {
+                                    "type" : "string"
                                   }
                                 }
                               }
@@ -23997,6 +24393,9 @@ mediaType: application/json
                                           "jobUuid" : {
                                             "type" : "string",
                                             "description" : "Uuid of the migration job."
+                                          },
+                                          "versionUuid" : {
+                                            "type" : "string"
                                           }
                                         }
                                       }
@@ -24167,6 +24566,9 @@ mediaType: application/json
                                           "jobUuid" : {
                                             "type" : "string",
                                             "description" : "Uuid of the migration job."
+                                          },
+                                          "versionUuid" : {
+                                            "type" : "string"
                                           }
                                         }
                                       }
@@ -24227,6 +24629,9 @@ mediaType: application/json
                                   "jobUuid" : {
                                     "type" : "string",
                                     "description" : "Uuid of the migration job."
+                                  },
+                                  "versionUuid" : {
+                                    "type" : "string"
                                   }
                                 }
                               }
@@ -24288,6 +24693,9 @@ mediaType: application/json
                                           "jobUuid" : {
                                             "type" : "string",
                                             "description" : "Uuid of the migration job."
+                                          },
+                                          "versionUuid" : {
+                                            "type" : "string"
                                           }
                                         }
                                       }
@@ -25287,6 +25695,9 @@ mediaType: application/json
                                                   "version" : {
                                                     "type" : "string"
                                                   },
+                                                  "versionUuid" : {
+                                                    "type" : "string"
+                                                  },
                                                   "uuid" : {
                                                     "type" : "string"
                                                   },
@@ -26108,6 +26519,13 @@ mediaType: application/json
     /nodes: 
         post: 
             description: Invoke a search query for nodes and return the unmodified Elasticsearch response. Note that the query will be executed using the multi search API of Elasticsearch.
+            queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
             body: 
                 application/json: 
                     example: '{"query":{"query_string":{"query":"some name"}}}'
@@ -26120,6 +26538,13 @@ mediaType: application/json
     /tagFamilies: 
         post: 
             description: Invoke a search query for tagFamilies and return the unmodified Elasticsearch response. Note that the query will be executed using the multi search API of Elasticsearch.
+            queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
             body: 
                 application/json: 
                     example: '{"query":{"query_string":{"query":"some name"}}}'
@@ -26132,6 +26557,13 @@ mediaType: application/json
     /tags: 
         post: 
             description: Invoke a search query for tags and return the unmodified Elasticsearch response. Note that the query will be executed using the multi search API of Elasticsearch.
+            queryParameters: 
+                wait: 
+                    description: Specify whether search should wait for the search to be idle before responding.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
             body: 
                 application/json: 
                     example: '{"query":{"query_string":{"query":"some name"}}}'
@@ -26288,6 +26720,10 @@ mediaType: application/json
                                                 }
                                               }
                                             }
+                                          },
+                                          "autoPurge" : {
+                                            "type" : "boolean",
+                                            "description" : "Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update."
                                           },
                                           "permissions" : {
                                             "type" : "object",
@@ -26629,6 +27065,10 @@ mediaType: application/json
                                         }
                                       }
                                     },
+                                    "autoPurge" : {
+                                      "type" : "boolean",
+                                      "description" : "Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update."
+                                    },
                                     "permissions" : {
                                       "type" : "object",
                                       "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfo",
@@ -26864,6 +27304,10 @@ mediaType: application/json
                                           }
                                         }
                                       }
+                                    },
+                                    "autoPurge" : {
+                                      "type" : "boolean",
+                                      "description" : "Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update."
                                     },
                                     "permissions" : {
                                       "type" : "object",

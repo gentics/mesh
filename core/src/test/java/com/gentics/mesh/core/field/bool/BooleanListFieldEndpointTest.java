@@ -25,7 +25,7 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Override
@@ -113,6 +113,8 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() throws IOException {
+		disableAutoPurge();
+
 		Node node = folder("2015");
 
 		List<List<Boolean>> valueCombinations = Arrays.asList(Arrays.asList(true, false, false), Arrays.asList(false, false, true),
@@ -147,6 +149,8 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		disableAutoPurge();
+
 		BooleanFieldListImpl list = new BooleanFieldListImpl();
 		list.add(true);
 		list.add(false);

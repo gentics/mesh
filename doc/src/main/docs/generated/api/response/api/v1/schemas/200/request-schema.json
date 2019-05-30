@@ -134,6 +134,10 @@
               }
             }
           },
+          "autoPurge" : {
+            "type" : "boolean",
+            "description" : "Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update."
+          },
           "permissions" : {
             "type" : "object",
             "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfo",

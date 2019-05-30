@@ -1,0 +1,415 @@
+---
+title: Gentics Mesh - API Introduction
+---
+
+:icons: font
+:source-highlighter: prettify
+:toc:
+
+== Intro
+
+In this guide we will learn the basics that are needed to work with the Gentics Mesh API.
+
+Before we start lets get our bearings. 
+
+=== Headless CMS
+
+Gentics Mesh is a headless CMS which means it separates presentation of the content from the content itself. A regular CMS also manages the presentation (e.g. Layout/Design) as well as the content. By decoupling the content from the design it is possible to use one system to manage the same content for multiple different presentation channels.
+
+Such channels could be for:
+
+* Regular website
+* Mobile website
+* Single Page Applications
+* Mobile native apps
+* Voice enabled devices (e.g. for Amazon Alexa)
+* Digital Signage
+* Interactive Terminals (e.g. for #Musetech)
+
+=== Building Blocks
+
+Gentics Mesh uses _Schemas_ to define the structure of the content. First a Schema which lists all the content fields has to be created and assigned to the project. This can easily be done via the UI.
+
+The schema we are using here is the vehicle schema. A vehicle the following fields:
+
+* *name* - Name of the vehicle
+* *slug* - Shortname of the vehicle which is used to render paths
+* *price* - Price of the vehicle
+* *weight* - Weight of the vehicle
+* *SKU* - Stock keeping unit of the vehicle
+* *stocklevel* - Current stock level
+* *description* - Description of the vehicle
+* *vehicleImage* - Reference to the image of the vehicle
+
+In this guide we will mainly focus on loading, creating and updating vehicle contents.
+
+=== Setup
+
+We can quickly start-up a Gentics Mesh instance using Docker. Alternativly we can also use `demo.getmesh.io` which will however be reset once a day.
+
+[source,bash]
+----
+docker run -p 8080:8080 --rm gentics/mesh-demo:0.33.1
+----
+
+Now lets set the base so we can reuse it in our examples:
+
+[source,bash]
+----
+export MESH_BASE="http://localhost:8080/api/v1"
+or
+export MESH_BASE="https://demo.getmesh.io/api/v1"
+----
+
+In this guide we only use `curl` and `jq` which is just used to increase readability.
+
+== Authentication
+
+Before we can use the API and load and create contents we should link:{{< relref "authentication.asciidoc" >}}#_overview[authenticate] ourself.
+
+.CURL Example
+[source,bash]
+----
+curl -X POST \
+ -d '{
+    "username":"admin", 
+    "password":"admin"
+    }' \ 
+ -H "Content-Type: application/json" \
+ $MESH_BASE/auth/login
+
+{
+  "token" : "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6ImMyZTkyNTEzZjI3ODQwZDFhOTI1MTNmMjc4MjBkMWM3IiwiaWF0IjoxNTU4OTg3NjQxLCJleHAiOjE1NTg5OTEyNDF9.jOYDqTbaD1QMNWkI8Wu6llg82QXxiGi1A34qYZnUpMc"
+}
+----
+
+Gentics Mesh uses JWT to handle authentication. The token we just got is valid for one hour.
+
+TIP: It is also possible to get link:{{< relref "authentication.asciidoc" >}}#_api_token[API tokens] which will never expire. Long running tasks such as importers should use such tokens.
+
+TIP: Authentication is not mandatory. It is also possible to use most of the Gentics Mesh API using the link:{{< relref "authentication.asciidoc" >}}#_anonymous_access[anonymous access] feature. This is especially useful if you want to use a SPA directly with Gentics Mesh.
+
+Lets now set some environment variables so that the examples get easier to use in your terminal.
+[source,bash]
+----
+export MESH_TOKEN="<TOKEN FROM LOGIN>"
+----
+
+.CURL Example
+[source,bash]
+----
+curl -X GET -H "Authorization: Bearer $MESH_TOKEN" $MESH_BASE/auth/me
+
+{
+  "uuid" : "c2e92513f27840d1a92513f27820d1c7",
+  "creator" : {
+    "uuid" : "c2e92513f27840d1a92513f27820d1c7"
+  },
+  "created" : "2019-05-23T12:37:28Z",
+  "editor" : {
+    "uuid" : "c2e92513f27840d1a92513f27820d1c7"
+  },
+  "edited" : "2019-05-23T12:37:28Z",
+  "username" : "admin",
+  "enabled" : true,
+  "rolesHash" : "33b3d0c2", 
+  "groups" : [ {
+    "name" : "admin",
+    "uuid" : "a539058ac38e4084b9058ac38ea0840c"
+  } ],
+  "permissions" : {
+    "create" : true,
+    "read" : true,
+    "update" : true,
+    "delete" : true
+  }
+}
+----
+
+We should now see `"username": "admin"` in the response which means that we have been authenticated as the admin user.
+
+== Load Contents
+
+In Gentics Mesh each content is called a _Node_. Nodes are link:{{< relref "features.asciidoc" >}}#multilanguage[translateable], link:{{< relref "features.asciidoc" >}}#_moving_nodes[movable], link:{{< relref "features.asciidoc" >}}#contenttree[nestable], link:{{< relref "features.asciidoc" >}}#_versioning[versionable] and link:{{< relref "features.asciidoc" >}}#_tagging_nodes[taggable].
+
+Loading contents can be done via a simple GET request.
+
+The response contains a lot of information which answers the following questions:
+
+* Who was the creator of the node?
+* Who was the last editor of the content?
+* What language is the content using?
+* What other languages was the content translated to?
+* What is the parent node of the node?
+* Was the node tagged?
+* What schema was used for the node?
+* What is the current version of the node?
+* What permissions has the currently used API user on the node?
+* What fields have been added as content?
+* What is the breadcrumb of the node?
+* Has the node any children?
+* To which project does the node belong?
+
+.CURL Example
+[source,bash]
+----
+curl -X GET -H "Authorization: Bearer $MESH_TOKEN" \
+ $MESH_BASE/demo/nodes/f915b16fa68f40e395b16fa68f10e32d?resolveLinks=short
+
+{
+  "uuid" : "f915b16fa68f40e395b16fa68f10e32d",
+  "creator" : {
+    "uuid" : "c2e92513f27840d1a92513f27820d1c7"
+  },
+  "created" : "2019-05-23T12:37:31Z",
+  "editor" : {
+    "uuid" : "c2e92513f27840d1a92513f27820d1c7"
+  },
+  "edited" : "2019-05-23T12:37:32Z",
+  "language" : "en",
+  "availableLanguages" : {
+    "en" : {
+      "published" : true,
+      "version" : "1.0",
+      "publisher" : {
+        "uuid" : "c2e92513f27840d1a92513f27820d1c7"
+      },
+      "publishDate" : "2019-05-23T12:37:32Z"
+    }
+  },
+  "parentNode" : {
+    "projectName" : "demo",
+    "uuid" : "21203632520b4d19a03632520b2d19c1",
+    "displayName" : "Aircraft",
+    "schema" : {
+      "name" : "category",
+      "uuid" : "2ca2362b041247c4a2362b041227c4da"
+    }
+  },
+  "tags" : [ {
+    "name" : "Black",
+    "uuid" : "43bcdbdc6bd84a7bbcdbdc6bd80a7b13",
+    "tagFamily" : "Colors"
+  }, {
+    "name" : "White",
+    "uuid" : "94fec98d6f114e81bec98d6f118e81cc",
+    "tagFamily" : "Colors"
+  }, {
+    "name" : "Hydrogen",
+    "uuid" : "e2c9525ba42e426989525ba42ea2692f",
+    "tagFamily" : "Fuels"
+  } ],
+  "project" : {
+    "name" : "demo",
+    "uuid" : "217f8c981ada4642bf8c981adaa642c3"
+  },
+  "childrenInfo" : { },
+  "schema" : {
+    "name" : "vehicle",
+    "uuid" : "2aa83a2b3cba40a1a83a2b3cba90a1de",
+    "version" : "1.0",
+    "versionUuid" : "f2b0d0e636464c88b0d0e636468c88db"
+  },
+  "container" : false,
+  "displayField" : "name",
+  "displayName" : "Space Shuttle",
+  "fields" : {
+    "slug" : "space-shuttle",
+    "name" : "Space Shuttle",
+    "weight" : 22700,
+    "SKU" : 9,
+    "price" : 1.92E11,
+    "stocklevel" : 0,
+    "description" : "The Space Shuttle was a partially reusable low Earth orbital spacecraft system operated by the U.S. National Aeronautics and Space Administration (NASA).",
+    "vehicleImage" : {
+      "uuid" : "61a0c5efaee349d4a0c5efaee349d4ed"
+    }
+  },
+  "breadcrumb" : [ {
+    "projectName" : "demo",
+    "uuid" : "374599f4490b46858599f4490b86851f",
+    "schema" : {
+      "name" : "folder",
+      "uuid" : "fb4b71ccf41a45918b71ccf41aa591eb"
+    }
+  }, {
+    "projectName" : "demo",
+    "uuid" : "21203632520b4d19a03632520b2d19c1",
+    "displayName" : "Aircraft",
+    "schema" : {
+      "name" : "category",
+      "uuid" : "2ca2362b041247c4a2362b041227c4da"
+    }
+  }, {
+    "projectName" : "demo",
+    "uuid" : "f915b16fa68f40e395b16fa68f10e32d",
+    "displayName" : "Space Shuttle",
+    "schema" : {
+      "name" : "vehicle",
+      "uuid" : "2aa83a2b3cba40a1a83a2b3cba90a1de"
+    }
+  } ],
+  "version" : "1.0",
+  "permissions" : {
+    "create" : false,
+    "read" : true,
+    "update" : false,
+    "delete" : false,
+    "publish" : false,
+    "readPublished" : true
+  }
+}
+----
+
+== Add Contents
+
+Now lets add a new content to Gentics Mesh. We can of course use the UI for this task but it is also possible to use the API to automate this process. Adding a new node to Gentics Mesh requires some information about the content.
+
+* What language is the content?
+* What schema should be used for the new node?
+* Where should the content be created? What is its parent node?
+* What fields should be used as content?
+
+.CURL Example
+[source,bash]
+----
+curl -X POST -H "Authorization: Bearer $MESH_TOKEN" \
+ -d '{
+        "parentNodeUuid": "21203632520b4d19a03632520b2d19c1",
+        "language": "en",
+        "schema": {
+            "name": "vehicle"
+        },
+        "fields": {
+            "slug" : "sr-71",
+            "name" : "SR-71 Blackbird",
+            "weight" : 22700,
+            "SKU" : 10,
+            "price" : 34000000,
+            "stocklevel" : 4,
+            "description" : "The Lockheed SR-71 Blackbird is a long-range, Mach 3+ strategic reconnaissance aircraft."
+        }
+    }' \ 
+ -H "Content-Type: application/json" \
+ $MESH_BASE/demo/nodes
+----
+
+== WebRoot
+
+Now that we created the content we can also use the webroot endpoint to fetch it. This way we don't need to use the Uuid and instead can look it up by a human readable path.
+
+.CURL Example
+[source,bash]
+----
+curl -X GET -H "Authorization: Bearer $MESH_TOKEN" \
+ $MESH_BASE/demo/webroot/aircrafts/sr-71
+----
+
+== GraphQL
+
+We can alternatively also use link:{{< relref "graphql.asciidoc" >}}[GraphQL] to load the data we just created.
+
+.CURL Example
+[source,bash]
+----
+curl -X POST -H "Authorization: Bearer $MESH_TOKEN" \
+ -d '{"query":"{ node(path: \"/aircrafts/sr-71\") { fields { ... on vehicle { name description slug weight }}}}"}' \
+ -H "Content-Type: application/json" \
+ $MESH_BASE/demo/graphql
+----
+
+== Updating Contents
+
+Now lets update the description field of the Space Shuttle node.
+
+.CURL Example
+[source,bash]
+----
+curl -X POST -H "Authorization: Bearer $MESH_TOKEN" \
+ -d '{
+        "language": "en",
+        "version": "draft",
+        "fields": {
+            "description" : "Updated description."
+        }
+    }' \
+ -H "Content-Type: application/json" \
+ $MESH_BASE/demo/nodes/f915b16fa68f40e395b16fa68f10e32d
+----
+
+The GraphQL from before can be altered and used to load and check the space-shuttle content.
+
+.CURL Example
+[source,bash]
+----
+curl -X POST -H "Authorization: Bearer $MESH_TOKEN" \
+ -d '{"query":"{ node(path: \"/aircrafts/space-shuttle\") { fields { ... on vehicle { name description slug }}}}"}' \
+ -H "Content-Type: application/json" \
+ $MESH_BASE/demo/graphql
+----
+
+== Upload Files
+
+In Gentics Mesh the field `binary` can be added to schemas to allow them to store a uploaded file.
+
+The demo already contains a `vehicleImage` schema which contains such field. Before we upload a image we need to create a node that will store the binary.
+
+.CURL Example
+[source,bash]
+----
+curl -X POST -H "Authorization: Bearer $MESH_TOKEN" \
+ -d '{
+        "parentNodeUuid": "15d5ef7a9abf416d95ef7a9abf316d68",
+        "language": "en",
+        "schema": {
+            "name": "vehicleImage"
+        },
+        "fields": {
+            "name": "SR-71 Image"
+        }
+    }' \
+ -H "Content-Type: application/json" \
+ $MESH_BASE/demo/nodes | jq ".uuid"
+----
+
+.Set UUID of created node
+[source,bash]
+----
+export UUID=b7e6e290ce554ebca6e290ce55eebcff
+----
+
+Now we can upload an image to the `image` field of the created node. We'll use the  binary endpoint `/api/v1/demo/nodes/:nodeUuid/*binary*/:fieldName` for this.
+
+.CURL Example
+[source,bash]
+----
+curl -v -X POST -H "Authorization: Bearer $MESH_TOKEN" \
+ -F version=draft \
+ -F language=en \
+ -F binary=@Lockheed_SR-71_Blackbird.jpg \
+ -H "Content-Type: multipart/form-data" \
+ $MESH_BASE/demo/nodes/$UUID/binary/image
+----
+
+The uploaded file is now reachable via the webroot path `/api/v1/demo/webroot/*images/Lockheed_SR-71_Blackbird.jpg*`. We can download the image and resize it to a width of 200px with a simple curl.
+
+.CURL Example
+[source,bash]
+----
+curl -X GET -H "Authorization: Bearer $MESH_TOKEN" \
+ $MESH_BASE/demo/webroot/images/Lockheed_SR-71_Blackbird.jpg?w=200 \
+ --output sr71.jpg
+----
+
+TIP: The link:{{< relref "features.asciidoc" >}}#imagemanipulation[Image Manipulation] feature can also be used to crop images. You can set a focal point to images so that this focal point may be utilized when dynamically cropping image for responsive designs.
+
+== Next
+
+More information about the REST API can be found in our link:/docs/api[API specification].
+
+Other guides:
+
+* link:{{< relref "../guides/mesh-react/index.asciidoc" >}}[Gentics Mesh - React Basics]
+* link:{{< relref "../guides/mesh-react-2/index.asciidoc" >}}[Gentics Mesh - React Event Handling]
+* link:{{< relref "../guides/mesh-hugo/index.asciidoc" >}}[Gentics Mesh - Hugo]
+

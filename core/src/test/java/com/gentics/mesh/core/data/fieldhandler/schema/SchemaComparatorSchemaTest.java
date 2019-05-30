@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.fieldhandler.schema;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.AUTO_PURGE_FLAG_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.CONTAINER_FLAG_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DESCRIPTION_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DISPLAY_FIELD_NAME_KEY;
@@ -27,7 +28,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
 	private SchemaComparator comparator = new SchemaComparator();
@@ -189,6 +190,43 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 		schemaB.setContainer(false);
 		changes = comparator.diff(schemaA, schemaB);
 		assertThat(changes).isEmpty();
+	}
+
+	@Test
+	public void testAutoPurgeFlagUpdated() throws IOException {
+		Schema schemaA = FieldUtil.createMinimalValidSchema();
+		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		schemaA.setAutoPurge(true);
+		schemaB.setAutoPurge(false);
+		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		assertThat(changes).hasSize(1);
+		assertThat(changes.get(0)).is(UPDATESCHEMA).hasProperty(AUTO_PURGE_FLAG_KEY, false);
+	}
+
+	@Test
+	public void testAutoPurgeFlagSame() throws IOException {
+		Schema schemaA = FieldUtil.createMinimalValidSchema();
+		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		schemaA.setAutoPurge(true);
+		schemaB.setAutoPurge(true);
+		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		assertThat(changes).isEmpty();
+
+		schemaA.setAutoPurge(false);
+		schemaB.setAutoPurge(false);
+		changes = comparator.diff(schemaA, schemaB);
+		assertThat(changes).isEmpty();
+	}
+
+	@Test
+	public void testAutoPurgeFlagNull() throws IOException {
+		Schema schemaA = FieldUtil.createMinimalValidSchema();
+		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		schemaA.setAutoPurge(true);
+		schemaB.setAutoPurge(null);
+		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		assertThat(changes).hasSize(1);
+		assertThat(changes.get(0)).is(UPDATESCHEMA).hasProperty(AUTO_PURGE_FLAG_KEY, null);
 	}
 
 	@Test

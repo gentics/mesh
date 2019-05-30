@@ -18,7 +18,7 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class NavRootEndpointTest extends AbstractMeshTest {
 
 	/**

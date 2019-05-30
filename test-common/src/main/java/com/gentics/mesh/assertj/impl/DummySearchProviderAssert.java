@@ -1,25 +1,33 @@
 package com.gentics.mesh.assertj.impl;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.ContainerType;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.search.request.Bulkable;
+import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
+import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.search.TrackingSearchProvider;
+import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.json.JsonObject;
 
@@ -129,15 +137,20 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * Assert that the correct count of events was registered.
 	 * 
 	 * @param storeEvents
+	 * @param updateEvents
 	 * @param deleteEvents
 	 * @param dropIndexEvents
 	 * @param createIndexEvents
 	 * @return Fluent API
 	 */
-	public DummySearchProviderAssert hasEvents(int storeEvents, int deleteEvents, int dropIndexEvents, int createIndexEvents) {
+	public DummySearchProviderAssert hasEvents(long storeEvents, long updateEvents, long deleteEvents, long dropIndexEvents, long createIndexEvents) {
 		String storeInfo = actual.getStoreEvents().keySet().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
 		assertEquals("The search provider did not record the correct amount of store events. Found events: {\n" + storeInfo + "\n}", storeEvents,
 				actual.getStoreEvents().size());
+
+		String updateInfo = actual.getUpdateEvents().keySet().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
+		assertEquals("The search provider did not record the correct amount of update events. Found events: {\n" + updateInfo + "\n}", updateEvents,
+			actual.getUpdateEvents().size());
 
 		String deleteInfo = actual.getDeleteEvents().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
 		assertEquals("The search provider did not record the correct amount of delete events. Found events: {\n" + deleteInfo + "\n}", deleteEvents,
@@ -208,4 +221,57 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 		return this;
 	}
 
+	/**
+	 * Assert that there is a node document delete event for every node document create event.
+	 * @return
+	 */
+	public DummySearchProviderAssert hasSymmetricNodeRequests() {
+		List<Tuple<CreateDocumentRequest, DeleteDocumentRequest>> requests = actual.getBulkRequests()
+			.stream()
+			.filter(this::isNodeRequest)
+			.collect(toPairs(CreateDocumentRequest.class, DeleteDocumentRequest.class));
+		requests.forEach(this::assertMatching);
+		return this;
+	}
+
+	private boolean isNodeRequest(Bulkable request) {
+		if (request instanceof CreateDocumentRequest) {
+			CreateDocumentRequest req = (CreateDocumentRequest) request;
+			return req.getIndex().startsWith("node");
+		} else if (request instanceof DeleteDocumentRequest) {
+			DeleteDocumentRequest req = (DeleteDocumentRequest) request;
+			return req.getIndex().startsWith("node");
+		} else {
+			return false;
+		}
+	}
+
+	private void assertMatching(Tuple<CreateDocumentRequest, DeleteDocumentRequest> requests) {
+		String id1 = requests.v1().getId();
+		String id2 = requests.v2().getId();
+		assertEquals(String.format("Found non-matching pair:\n%s\n%s", id1, id2),
+			id1, id2);
+	}
+
+	private <T, R1, R2> Collector<T, ?, List<Tuple<R1, R2>>> toPairs(Class<R1> r1Class, Class<R2> r2Class) {
+		return Collectors.collectingAndThen(Collectors.toList(), list ->
+			IntStream.iterate(0, i -> i + 2)
+			.limit(list.size() / 2)
+			.mapToObj(i ->
+				Tuple.tuple(
+					requireType(r1Class, list.get(i)),
+					requireType(r2Class, list.get(i+1))
+				)
+			)
+			.collect(Collectors.toList())
+		);
+	}
+
+	private <T> T requireType(Class<T> clazz, Object obj) {
+		if (clazz.isAssignableFrom(obj.getClass())) {
+			return (T) obj;
+		} else {
+			throw new RuntimeException(String.format("Unexpected type. Required {%s}, but got {%s}", clazz.getSimpleName(), obj.getClass().getSimpleName()));
+		}
+	}
 }
