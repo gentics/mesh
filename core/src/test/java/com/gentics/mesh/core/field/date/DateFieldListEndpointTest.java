@@ -122,6 +122,8 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() throws IOException {
+		disableAutoPurge();
+
 		Node node = folder("2015");
 
 		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList(toISO8601(1000L), toISO8601(2000L), toISO8601(3000L)),
@@ -156,6 +158,8 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		disableAutoPurge();
+
 		NodeResponse secondResponse;
 		Node node = folder("2015");
 

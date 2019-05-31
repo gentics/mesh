@@ -7,6 +7,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
@@ -289,5 +290,15 @@ public interface NodeClientMethods {
 	 * @return Mesh request which can be invoked
 	 */
 	MeshRequest<EmptyResponse> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag, ParameterProvider... parameters);
+
+	/**
+	 * Load the version list of the node.
+	 * 
+	 * @param projectName
+	 * @param nodeUuid
+	 * @param parameters
+	 * @return Mesh request which can be invoked
+	 */
+	MeshRequest<NodeVersionsResponse> listNodeVersions(String projectName, String nodeUuid, ParameterProvider...parameters);
 
 }

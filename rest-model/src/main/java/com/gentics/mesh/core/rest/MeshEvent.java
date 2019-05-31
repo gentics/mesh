@@ -9,6 +9,7 @@ import com.gentics.mesh.core.rest.event.branch.BranchTaggedEventModel;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
+import com.gentics.mesh.core.rest.event.job.ProjectVersionPurgeEventModel;
 import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
@@ -41,6 +42,16 @@ import java.util.stream.Stream;
  */
 public enum MeshEvent {
 
+	PROJECT_VERSION_PURGE_START("mesh.project.version_purge.start", 
+		ProjectVersionPurgeEventModel.class, 
+		"Emitted once a version purge job starts", 
+		Examples::versionPurgeEvent),
+
+	PROJECT_VERSION_PURGE_FINISHED("mesh.project.version_purge.finished", 
+		ProjectVersionPurgeEventModel.class, 
+		"Emitted once a version purge job finishes successully or failed", 
+		Examples::versionPurgeEvent),
+	
 	/**
 	 * Schema migration start event.
 	 */
@@ -54,7 +65,7 @@ public enum MeshEvent {
 	 */
 	SCHEMA_MIGRATION_FINISHED("mesh.schema.migration.finished",
 		SchemaMigrationMeshEventModel.class,
-		"Emitted once the migration finishes successful or fails.",
+		"Emitted once the migration finishes successful or failed.",
 		Examples::schemaMigrationEvent),
 
 	/**

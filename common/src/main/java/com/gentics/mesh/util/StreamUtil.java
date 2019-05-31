@@ -14,6 +14,7 @@ import java.util.stream.StreamSupport;
 
 public final class StreamUtil {
 	private StreamUtil() {
+
 	}
 
 	public static <T> Stream<T> toStream(Iterable<T> iterable) {
@@ -65,7 +66,6 @@ public final class StreamUtil {
 			}
 		};
 	}
-
 
 	public static <K, V> Collector<Map<K, V>, Map<K, V>, Map<K, V>> mergeMaps() {
 		return Collector.of(

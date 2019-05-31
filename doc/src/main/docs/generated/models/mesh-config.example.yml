@@ -50,6 +50,7 @@ upload:
   byteLimit: 262144000
   directory: "data/binaryFiles"
   tempDirectory: "/opt/mesh/data/tmp/temp-uploads"
+  parserLimit: 40000
 security:
   tokenExpirationTime: 3600
   keystorePassword: "<Your Password>"
@@ -74,3 +75,5 @@ image:
   maxHeight: 2048
   jpegQuality: 0.95
   resampleFilter: "LANCZOS"
+content:
+  autoPurge: true

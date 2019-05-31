@@ -1,5 +1,26 @@
 package com.gentics.mesh.test.context;
 
+import static com.gentics.mesh.test.context.MeshTestHelper.noopConsumer;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+
+import org.apache.commons.io.FileUtils;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
+import org.testcontainers.containers.Network;
+import org.testcontainers.containers.ToxiproxyContainer;
+import org.testcontainers.containers.ToxiproxyContainer.ContainerProxy;
+import org.testcontainers.containers.wait.strategy.Wait;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.cache.PermissionStore;
@@ -31,31 +52,12 @@ import com.gentics.mesh.test.docker.KeycloakContainer;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import okhttp3.OkHttpClient;
-import org.apache.commons.io.FileUtils;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-import org.testcontainers.containers.Network;
-import org.testcontainers.containers.ToxiproxyContainer;
-import org.testcontainers.containers.ToxiproxyContainer.ContainerProxy;
-import org.testcontainers.containers.wait.strategy.Wait;
-
-import java.io.File;
-import java.io.IOException;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-
-import static com.gentics.mesh.test.context.MeshTestHelper.noopConsumer;
-import static org.junit.Assert.assertTrue;
 
 public class MeshTestContext extends TestWatcher {
 
@@ -128,7 +130,6 @@ public class MeshTestContext extends TestWatcher {
 				listenToSearchIdleEvent();
 				switch (settings.elasticsearch()) {
 				case CONTAINER:
-				case CONTAINER_WITH_INGEST:
 					setupIndexHandlers();
 					break;
 				default:
@@ -175,7 +176,6 @@ public class MeshTestContext extends TestWatcher {
 				case CONTAINER:
 				case CONTAINER_TOXIC:
 				case EMBEDDED:
-				case CONTAINER_WITH_INGEST:
 					meshDagger.searchProvider().clear().blockingAwait();
 					break;
 				case TRACKING:
@@ -393,8 +393,7 @@ public class MeshTestContext extends TestWatcher {
 
 		switch (settings.elasticsearch()) {
 		case CONTAINER:
-		case CONTAINER_WITH_INGEST:
-			elasticsearch = new ElasticsearchContainer(settings.elasticsearch() == ElasticsearchTestMode.CONTAINER_WITH_INGEST);
+			elasticsearch = new ElasticsearchContainer(false);
 			if (!elasticsearch.isRunning()) {
 				elasticsearch.start();
 			}
@@ -438,17 +437,15 @@ public class MeshTestContext extends TestWatcher {
 		}
 
 		if (settings.useKeycloak()) {
-			keycloak = new KeycloakContainer()
-				.withRealmFromClassPath("/keycloak/realm.json");
+			keycloak = new KeycloakContainer("/keycloak/realm.json").waitingFor(Wait.forHttp("/auth/realms/master-test"));
 			if (!keycloak.isRunning()) {
 				keycloak.start();
 			}
-			keycloak.waitingFor(Wait.forListeningPort());
 			OAuth2Options oauth2Options = meshOptions.getAuthenticationOptions().getOauth2();
 			oauth2Options.setEnabled(true);
 
 			OAuth2ServerConfig realmConfig = new OAuth2ServerConfig();
-			realmConfig.setAuthServerUrl("http://localhost:" + keycloak.getFirstMappedPort() + "/auth");
+			realmConfig.setAuthServerUrl("http://localhost:" + keycloak.getMappedPort(8080) + "/auth");
 			realmConfig.setRealm("master-test");
 			realmConfig.setSslRequired("external");
 			realmConfig.setResource("mesh");
@@ -458,6 +455,7 @@ public class MeshTestContext extends TestWatcher {
 			oauth2Options.setConfig(realmConfig);
 		}
 		settings.optionChanger().changer.accept(meshOptions);
+		optionChanger.accept(meshOptions);
 		Mesh.mesh(meshOptions);
 		return meshOptions;
 	}

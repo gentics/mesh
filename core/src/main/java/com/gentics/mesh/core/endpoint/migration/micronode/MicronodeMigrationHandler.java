@@ -1,5 +1,18 @@
 package com.gentics.mesh.core.endpoint.migration.micronode;
 
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.context.MicronodeMigrationContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
@@ -23,18 +36,6 @@ import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING;
-import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
-import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
 @Singleton
 public class MicronodeMigrationHandler extends AbstractMigrationHandler {
@@ -143,7 +144,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 		if (publish) {
 			migrated.setVersion(container.getVersion().nextPublished());
 			// Ensure that the publish edge is also updated correctly
-			node.setPublished(migrated, branchUuid);
+			node.setPublished(ac, migrated, branchUuid);
 		} else {
 			if (nextDraftVersion == null) {
 				nextDraftVersion = container.getVersion().nextDraft();
@@ -176,9 +177,10 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 										   MicroschemaContainerVersion fromVersion,
 										   MicroschemaContainerVersion toVersion, NodeGraphFieldContainer container, Set<String> touchedFields,
 										   List<Exception> errorsDetected) {
+		String containerUuid = container.getUuid();
 
 		if (log.isDebugEnabled()) {
-			log.debug("Migrating container {" + container.getUuid() + "}");
+			log.debug("Migrating container {" + containerUuid + "}");
 		}
 		String branchUuid = branch.getUuid();
 
@@ -201,9 +203,11 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 
 				// 2. Migrate the draft container. This will also update the draft edge.
 				migrateDraftContainer(ac, batch, branch, node, container, fromVersion, toVersion, touchedFields, nextDraftVersion);
+
+				postMigrationPurge(container, oldPublished);
 			});
 		} catch (Exception e1) {
-			log.error("Error while handling container {" + container.getUuid() + "} during schema migration.", e1);
+			log.error("Error while handling container {" + containerUuid + "} during schema migration.", e1);
 			errorsDetected.add(e1);
 		}
 
@@ -235,7 +239,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 
 		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguageTag(), branch, container.getEditor(), container, true);
 		migrated.setVersion(container.getVersion().nextPublished());
-		node.setPublished(migrated, branchUuid);
+		node.setPublished(ac, migrated, branchUuid);
 
 		migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields);
 		sqb.add(migrated.onUpdated(branchUuid, PUBLISHED));

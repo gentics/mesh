@@ -45,6 +45,7 @@ import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.NodeUtil;
 import com.gentics.mesh.util.RxUtil;
+import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
@@ -159,9 +160,14 @@ public class BinaryUploadHandler extends AbstractHandler {
 		ctx.setUpload(ul);
 
 		// First process the upload data
-		Single<List<Consumer<BinaryGraphField>>> modifierOp = postProcessUpload(ul).toList();
-		Single<String> hashOp = hashUpload(ul);
-		RxUtil.flatZip(modifierOp, hashOp, (modifierList, hash) -> {
+		hashUpload(ul).flatMap(hash -> {
+			Single<List<Consumer<BinaryGraphField>>> modifierOp = postProcessUpload(ul, hash).toList();
+			return modifierOp.map(list -> {
+				return Tuple.tuple(hash, list);
+			});
+		}).flatMap(modifierListAndHash -> {
+			String hash = modifierListAndHash.v1();
+			List<Consumer<BinaryGraphField>> modifierList = modifierListAndHash.v2();
 			ctx.setHash(hash);
 
 			// Check whether the binary with the given hashsum was already stored
@@ -348,6 +354,10 @@ public class BinaryUploadHandler extends AbstractHandler {
 					newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
 				}
 
+				if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
+					latestDraftVersion.purge();
+				}
+
 				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
 			});
 			return node.transformToRestSync(ac, 0);
@@ -360,13 +370,15 @@ public class BinaryUploadHandler extends AbstractHandler {
 	 * 
 	 * @param upload
 	 *            Upload to process
+	 * @param hash
+	 *            SHA512 sum of the upload
 	 * @return Consumers which modify the graph field
 	 */
-	private Observable<Consumer<BinaryGraphField>> postProcessUpload(FileUpload upload) {
+	private Observable<Consumer<BinaryGraphField>> postProcessUpload(FileUpload upload, String hash) {
 		String contentType = upload.contentType();
 		List<BinaryDataProcessor> processors = binaryProcessorRegistry.getProcessors(contentType);
 
-		return Observable.fromIterable(processors).flatMapMaybe(p -> p.process(upload)
+		return Observable.fromIterable(processors).flatMapMaybe(p -> p.process(upload, hash)
 			.doOnSuccess(s -> {
 				log.info(
 					"Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass()

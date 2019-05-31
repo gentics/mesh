@@ -62,16 +62,23 @@ public class OkHttpWebsocket implements MeshWebsocket {
 
 		connected.set(false);
 
+		if (log.isDebugEnabled()) {
+			log.debug("Connecting to {}", request.url());
+		}
+
 		currentConnection = client.newWebSocket(request, new WebSocketListener() {
 			@Override
 			public void onOpen(WebSocket webSocket, Response response) {
 				connected.set(true);
 				sendRegisterEvents();
+				log.debug("Connection established, sending connection event");
 				connections.onNext(connectionDummy);
 			}
 
 			@Override
 			public void onMessage(WebSocket webSocket, String text) {
+				log.trace("Received message: {}", text);
+
 				try {
 					events.onNext(new EventbusEvent(text));
 				} catch (IOException e) {
@@ -112,11 +119,15 @@ public class OkHttpWebsocket implements MeshWebsocket {
 	}
 
 	private void reconnect() {
-		if (connected.compareAndSet(true, false)) {
-			Completable.complete()
-				.delay(config.getWebsocketReconnectInterval().toMillis(), TimeUnit.MILLISECONDS)
-				.subscribe(this::connect);
+		connected.set(false);
+
+		if (log.isDebugEnabled()) {
+			log.debug("Attempting reconnect in {}ms", config.getWebsocketReconnectInterval().toMillis());
 		}
+
+		Completable.complete()
+			.delay(config.getWebsocketReconnectInterval().toMillis(), TimeUnit.MILLISECONDS)
+			.subscribe(this::connect);
 	}
 
 	@Override

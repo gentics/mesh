@@ -128,6 +128,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testDeduplicationDuringUpdate() {
+		disableAutoPurge();
 
 		try (Tx trx = tx()) {
 			updateSchema();
@@ -292,6 +293,8 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testConflictInMicronode() {
+		disableAutoPurge();
+
 		try (Tx trx = tx()) {
 			updateSchema();
 			NodeGraphFieldContainer origContainer = getTestNode().getLatestDraftFieldContainer(english());

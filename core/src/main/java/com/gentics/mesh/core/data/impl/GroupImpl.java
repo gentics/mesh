@@ -214,10 +214,6 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 			}
 
 			setName(requestModel.getName());
-			// We also need to update the users in the index - thus a event has to be dispatched
-			getUsers().forEach(user -> {
-				batch.add(user.onUpdated());
-			});
 
 			batch.add(onUpdated());
 			return true;

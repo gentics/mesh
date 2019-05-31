@@ -1,6 +1,44 @@
 
 
 
+=== _mesh.project.version_purge.start_
+
+Emitted once a version purge job starts
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "demo",
+  "status" : "RUNNING"
+}
+----
+
+
+
+
+=== _mesh.project.version_purge.finished_
+
+Emitted once a version purge job finishes successully or failed
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "demo",
+  "status" : "RUNNING"
+}
+----
+
+
+
+
 === _mesh.schema.migration.start_
 
 Emitted once a schema migration starts.
@@ -41,7 +79,7 @@ Emitted once a schema migration starts.
 
 === _mesh.schema.migration.finished_
 
-Emitted once the migration finishes successful or fails.
+Emitted once the migration finishes successful or failed.
 
 
 

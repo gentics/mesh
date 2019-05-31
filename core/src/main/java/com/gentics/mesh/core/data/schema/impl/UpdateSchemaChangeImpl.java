@@ -1,5 +1,17 @@
 package com.gentics.mesh.core.data.schema.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.CONTAINER_FLAG_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DISPLAY_FIELD_NAME_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.SEGMENT_FIELD_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.URLFIELDS_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.AUTO_PURGE_FLAG_KEY;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+import java.util.Arrays;
+import java.util.List;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
@@ -82,6 +94,10 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 			schema.setElasticsearch(options);
 		}
 
+		// .autoPurge
+		Boolean autoPurge = getAutoPurgeFlag();
+		schema.setAutoPurge(autoPurge);
+
 		return (R) schema;
 	}
 
@@ -103,6 +119,16 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 	@Override
 	public Boolean getContainerFlag() {
 		return getRestProperty(CONTAINER_FLAG_KEY);
+	}
+
+	@Override
+	public Boolean getAutoPurgeFlag() {
+		return getRestProperty(AUTO_PURGE_FLAG_KEY);
+	}
+
+	@Override
+	public void setAutoPurgeFlag(Boolean flag) {
+		setRestProperty(AUTO_PURGE_FLAG_KEY, flag);
 	}
 
 	@Override

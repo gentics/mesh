@@ -144,7 +144,7 @@ Please refer to the link:https://www.elastic.co/guide/en/elasticsearch/reference
 == Handling binary data
 
 File uploads are currently not automatically being distributed. This means that it is required to share the data of the upload directory manually.
-One option would be to use a clustering filesystem like link:https://en.wikipedia.org/wiki/GlusterFS[GlusterFS] or link:https://en.wikipedia.org/wiki/Network_File_System[NFS].
+One option would be to use a link:https://en.wikipedia.org/wiki/List_of_file_systems#Distributed_file_systems[distributed file system] like link:https://en.wikipedia.org/wiki/GlusterFS[GlusterFS], link:https://en.wikipedia.org/wiki/Amazon_S3[S3] or link:https://en.wikipedia.org/wiki/Network_File_System[NFS].
 The only directory which needs to be shared across the cluster is the upload directory which can be configured in the `mesh.yml` file.
 
 .mesh.yml
@@ -192,7 +192,7 @@ You can rollback as long as you still have instances which have not yet been mig
 
 == AWS / GCE
 
-There is currently no build-in support for these platforms.
+There is currently no built-in support for these platforms.
 
 == Scaling
 

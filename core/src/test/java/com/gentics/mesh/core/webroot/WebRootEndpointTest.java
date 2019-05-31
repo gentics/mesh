@@ -30,8 +30,8 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -464,7 +464,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			BranchCreateRequest branchCreateRequest = new BranchCreateRequest();
 			branchCreateRequest.setName(newBranchName);
 			call(() -> client().createBranch(PROJECT_NAME, branchCreateRequest));
-		}, MigrationStatus.COMPLETED, 1);
+		}, JobStatus.COMPLETED, 1);
 
 		// Assert name in initial branch after migration
 		MeshWebrootResponse restNode2 = call(() -> client().webroot(PROJECT_NAME, initialPath,

@@ -332,7 +332,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		}
 		JsonObject config = options.getAuthenticationOptions().getOauth2().getConfig().toJson();
 		if (config == null) {
-			log.debug("OAuth config  not specified. Can't setup OAuth2.");
+			log.debug("OAuth config not specified. Can't setup OAuth2.");
 			return null;
 		}
 
@@ -369,12 +369,13 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			.url(protocol + "://" + host + ":" + port + "" + "/auth/realms/" + realmName)
 			.build();
 
-		Response response = client.newCall(request).execute();
-		if (!response.isSuccessful()) {
-			log.error(response.body().toString());
-			throw new RuntimeException("Error while loading realm info. Got code {" + response.code() + "}");
-		}
-		return new JsonObject(response.body().string());
+		try (Response response = client.newCall(request).execute()) {
+			if (!response.isSuccessful()) {
+				log.error(response.body().toString());
 
+				throw new RuntimeException("Error while loading realm info. Got code {" + response.code() + "}");
+			}
+			return new JsonObject(response.body().string());
+		}
 	}
 }

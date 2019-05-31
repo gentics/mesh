@@ -1,5 +1,39 @@
 package com.gentics.mesh.test.context;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.util.TestUtils.sleep;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.management.ManagementFactory;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.After;
+import org.junit.ClassRule;
+import org.junit.Rule;
+
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.cli.CoreVerticleLoader;
 import com.gentics.mesh.context.InternalActionContext;
@@ -12,12 +46,12 @@ import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -48,38 +82,6 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import io.vertx.ext.web.RoutingContext;
 import okhttp3.OkHttpClient;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.After;
-import org.junit.ClassRule;
-import org.junit.Rule;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.management.ManagementFactory;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.util.TestUtils.sleep;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelper {
 
@@ -115,7 +117,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 				response.getInconsistencies().addAll(result.getResults());
 			}
 
-		 	assertThat(response.getInconsistencies()).as("Inconsistencies").isEmpty();
+			assertThat(response.getInconsistencies()).as("Inconsistencies").isEmpty();
 		}
 	}
 
@@ -126,7 +128,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	public OkHttpClient httpClient() {
 		if (this.httpClient == null) {
-			int timeout = 240;
+			int timeout = 9240;
 			this.httpClient = new OkHttpClient.Builder()
 				.writeTimeout(timeout, TimeUnit.SECONDS)
 				.readTimeout(timeout, TimeUnit.SECONDS)
@@ -252,6 +254,10 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		return Buffer.buffer(bytes);
 	}
 
+	protected JobListResponse waitForJob(Runnable action) {
+		return waitForJobs(action, COMPLETED, 1);
+	}
+
 	/**
 	 * Execute the action and check that the jobs are executed and yields the given status.
 	 *
@@ -263,7 +269,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	 *            Amount of expected jobs
 	 * @return Migration status
 	 */
-	protected JobListResponse waitForJobs(Runnable action, MigrationStatus status, int expectedJobs) {
+	protected JobListResponse waitForJobs(Runnable action, JobStatus status, int expectedJobs) {
 		// Load a status just before the action
 		JobListResponse before = call(() -> client().findJobs());
 
@@ -299,10 +305,10 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	}
 
 	protected void waitForLatestJob(Runnable action) {
-		waitForLatestJob(action, MigrationStatus.COMPLETED);
+		waitForLatestJob(action, JobStatus.COMPLETED);
 	}
 
-	protected void waitForLatestJob(Runnable action, MigrationStatus status) {
+	protected void waitForLatestJob(Runnable action, JobStatus status) {
 		// Load a status just before the action
 		JobListResponse before = call(() -> client().findJobs());
 
@@ -345,7 +351,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	 *            Expected job status
 	 * @return Job status
 	 */
-	protected JobResponse waitForJob(Runnable action, String jobUuid, MigrationStatus status) {
+	protected JobResponse waitForJob(Runnable action, String jobUuid, JobStatus status) {
 		// Invoke the action
 		action.run();
 
@@ -392,14 +398,14 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	 * @param status
 	 *            Expected status for all jobs
 	 */
-	protected JobListResponse triggerAndWaitForJob(String jobUuid, MigrationStatus status) {
+	protected JobListResponse triggerAndWaitForJob(String jobUuid, JobStatus status) {
 		waitForJob(() -> {
 			MeshEvent.triggerJobWorker();
 		}, jobUuid, status);
 		return call(() -> client().findJobs());
 	}
 
-	protected void triggerAndWaitForAllJobs(MigrationStatus expectedStatus) {
+	protected void triggerAndWaitForAllJobs(JobStatus expectedStatus) {
 		MeshEvent.triggerJobWorker();
 
 		// Now poll the migration status and check the response
@@ -733,6 +739,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	/**
 	 * Return the used elasticsearch container.
+	 *
 	 * @return
 	 */
 	public ElasticsearchContainer elasticsearch() {

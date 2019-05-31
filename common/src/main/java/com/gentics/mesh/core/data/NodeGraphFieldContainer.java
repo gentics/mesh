@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
@@ -12,6 +13,8 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.version.VersionInfo;
+import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
@@ -465,4 +468,47 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 */
 	NodeMeshEventModel onPublish(String branchUuid);
 
+	/**
+	 * Transform the container into a version info object.
+	 * 
+	 * @param ac
+	 * @return
+	 */
+	VersionInfo transformToVersionInfo(InternalActionContext ac);
+
+	/**
+	 * A container is purgeable when it is not being utilized as draft, published or initial version in any branch.
+	 * 
+	 * @return
+	 */
+	boolean isPurgeable();
+
+	/**
+	 * Check whether auto purge is enabled globally or for the schema of the container.
+	 * 
+	 * @return
+	 */
+	boolean isAutoPurgeEnabled();
+
+	/**
+	 * Purge the container from the version history and ensure that the links between versions are consistent.
+	 * 
+	 * @param bac
+	 *            Action context for the deletion process
+	 */
+	void purge(BulkActionContext bac);
+
+	/**
+	 * Purge the container from the version without the use of a Bulk Action Context.
+	 */
+	default void purge() {
+		purge(new DummyBulkActionContext());
+	}
+
+	/**
+	 * Return all versions.
+	 * 
+	 * @return
+	 */
+	TraversalResult<NodeGraphFieldContainer> versions();
 }

@@ -46,6 +46,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
@@ -589,13 +590,12 @@ public interface TestHelper {
 			prepareSchema(node, "image/.*", fieldName);
 			tx.success();
 		}
-
+		String uuid = tx(() -> node.getUuid());
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);
 		Buffer buffer = Buffer.buffer(bytes);
-		VersionNumber version = node.getGraphFieldContainer(languageTag).getVersion();
 
-		return call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, version.toString(), fieldName,
+		return call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, "draft", fieldName,
 			new ByteArrayInputStream(buffer.getBytes()), buffer.length(), fileName,
 			contentType));
 	}
@@ -683,4 +683,22 @@ public interface TestHelper {
 			throw new RuntimeException(e);
 		}
 	}
+
+	default void assertVersions(String nodeUuid, String lang, String versions, String branchName) {
+		VersioningParametersImpl param = new VersioningParametersImpl();
+		if (branchName != null) {
+			param.setBranch(branchName);
+		}
+		NodeVersionsResponse response = call(() -> client().listNodeVersions(projectName(), nodeUuid, param));
+		assertEquals("The versions did not match", versions, response.listVersions(lang));
+	}
+
+	default void assertVersions(String nodeUuid, String lang, String versions) {
+		assertVersions(nodeUuid, lang, versions, null);
+	}
+
+	default void disableAutoPurge() {
+		Mesh.mesh().getOptions().getContentOptions().setAutoPurge(false);
+	}
+
 }

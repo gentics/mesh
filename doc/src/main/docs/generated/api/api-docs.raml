@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "0.32.0"
+version: "0.34.0"
 baseUri: "http://localhost:8080/api/v1"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -1993,6 +1993,27 @@ mediaType: application/json
             responses: 
                 "204": 
                     description: Project was deleted.
+    /{projectUuid}/maintenance/purge: 
+        uriParameters: 
+            projectUuid: 
+                displayName: projectUuid
+                description: Uuid of the project.
+                type: string
+                required: true
+                repeat: false
+                example: "217f8c981ada4642bf8c981adaa642c3"
+        post: 
+            description: Invoke a version purge of the project.
+            queryParameters: 
+                before: 
+                    description: Limit the purge operation to versions which are older than the given date.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: "2019-04-20T18:00Z"
+            responses: 
+                "200": 
+                    description: Project versions purge job added.
 /schemas: 
     displayName: /schemas
     description: Provides endpoints which allow the manipulation of schemas.
@@ -2158,6 +2179,7 @@ mediaType: application/json
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
+                        | autoPurge | false | boolean | Auto purge flag of the schema. Controls whether contents of this schema should create new versions. |
                         | container | false | boolean | Flag which indicates whether nodes which use this schema store additional child nodes. |
                         | description | false | string | Description of the schema |
                         | displayField | false | string | Name of the display field. |
@@ -2187,6 +2209,7 @@ mediaType: application/json
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
+                                | autoPurge | false | boolean | Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update. |
                                 | container | true | boolean | Flag which indicates whether nodes which use this schema store additional child nodes. |
                                 | created | true | string | ISO8601 formatted created date string. |
                                 | creator | true | object | User reference of the creator of the element. |
@@ -2305,6 +2328,7 @@ mediaType: application/json
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
+                                | autoPurge | false | boolean | Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update. |
                                 | container | true | boolean | Flag which indicates whether nodes which use this schema store additional child nodes. |
                                 | created | true | string | ISO8601 formatted created date string. |
                                 | creator | true | object | User reference of the creator of the element. |
@@ -2404,6 +2428,7 @@ mediaType: application/json
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
+                        | autoPurge | false | boolean | Auto purge flag of the schema. Controls whether contents of this schema should create new versions. |
                         | container | false | boolean | Flag which indicates whether nodes which use this schema store additional child nodes. |
                         | description | false | string | New description of the schema. |
                         | displayField | false | string | Name of the display field. |
@@ -2427,6 +2452,7 @@ mediaType: application/json
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
+                                | autoPurge | false | boolean | Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update. |
                                 | container | true | boolean | Flag which indicates whether nodes which use this schema store additional child nodes. |
                                 | created | true | string | ISO8601 formatted created date string. |
                                 | creator | true | object | User reference of the creator of the element. |
@@ -2595,6 +2621,7 @@ mediaType: application/json
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
+                        | autoPurge | false | boolean | Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update. |
                         | container | true | boolean | Flag which indicates whether nodes which use this schema store additional child nodes. |
                         | created | true | string | ISO8601 formatted created date string. |
                         | creator | true | object | User reference of the creator of the element. |
@@ -5289,6 +5316,7 @@ mediaType: application/json
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
+                        | autoPurge | false | boolean | Auto purge flag of the schema. Controls whether contents of this schema should create new versions. |
                         | container | false | boolean | Flag which indicates whether nodes which use this schema store additional child nodes. |
                         | description | false | string | New description of the schema. |
                         | displayField | false | string | Name of the display field. |
@@ -5678,7 +5706,7 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "0.32.0",
+                                  "meshVersion" : "0.34.0",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
@@ -8352,6 +8380,100 @@ mediaType: application/json
                                 }
                 "204": 
                     description: Removal was successful.
+    /{nodeUuid}/versions: 
+        uriParameters: 
+            nodeUuid: 
+                displayName: nodeUuid
+                description: Uuid of the node.
+                type: string
+                required: true
+                repeat: false
+                example: adaf48da8c124049af48da8c12a0493e
+        get: 
+            description: Returns a list of versions.
+            displayName: Versions
+            queryParameters: 
+                lang: 
+                    description: ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned.  If omitted or the requested language is not available then the _defaultLanguage_ as configured in _mesh.yml_ will be returned.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: en,de
+                resolveLinks: 
+                    description: 'The resolve links parameter can be set to either _short_, _medium_ or _full_. Stored mesh links will automatically be resolved and replaced by the resolved webroot link. With the parameter set the _path_ property as well as the _languagesPath_ property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved link:{{< relref "features.asciidoc" >}}#_link_resolving[WebRoot path]. No resolving occurs if no link has been specified.'
+                    type: string
+                    required: false
+                    repeat: false
+                    example: medium
+            responses: 
+                "200": 
+                    description: Loaded version list.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | versions.additionalProperties.items.branchRoot | true | boolean | Is the version used as a root version in another branch? |
+                                | versions.additionalProperties.items.created | true | string | ISO8601 formatted created date string. |
+                                | versions.additionalProperties.items.creator | true | object | User reference of the creator of the element. |
+                                | versions.additionalProperties.items.draft | true | boolean | Is the content a draft version? |
+                                | versions.additionalProperties.items.published | true | boolean | Is the content published version? |
+                                | versions.additionalProperties.items.version | true | string | Version of the content. |
+                            example: |
+                                {
+                                  "versions" : {
+                                    "de" : [ {
+                                      "creator" : {
+                                        "firstName" : "Joe",
+                                        "lastName" : "Doe",
+                                        "uuid" : "589319933be24ec79319933be24ec7fe"
+                                      },
+                                      "created" : "2018-11-20T20:12:01.084Z",
+                                      "version" : "1.0"
+                                    }, {
+                                      "creator" : {
+                                        "firstName" : "Joe",
+                                        "lastName" : "Doe",
+                                        "uuid" : "589319933be24ec79319933be24ec7fe"
+                                      },
+                                      "created" : "2018-11-20T20:12:01.084Z",
+                                      "version" : "1.1"
+                                    }, {
+                                      "creator" : {
+                                        "firstName" : "Joe",
+                                        "lastName" : "Doe",
+                                        "uuid" : "589319933be24ec79319933be24ec7fe"
+                                      },
+                                      "created" : "2018-11-20T20:12:01.084Z",
+                                      "version" : "2.0"
+                                    } ],
+                                    "en" : [ {
+                                      "creator" : {
+                                        "firstName" : "Joe",
+                                        "lastName" : "Doe",
+                                        "uuid" : "589319933be24ec79319933be24ec7fe"
+                                      },
+                                      "created" : "2018-11-20T20:12:01.084Z",
+                                      "version" : "1.0"
+                                    }, {
+                                      "creator" : {
+                                        "firstName" : "Joe",
+                                        "lastName" : "Doe",
+                                        "uuid" : "589319933be24ec79319933be24ec7fe"
+                                      },
+                                      "created" : "2018-11-20T20:12:01.084Z",
+                                      "version" : "1.1"
+                                    }, {
+                                      "creator" : {
+                                        "firstName" : "Joe",
+                                        "lastName" : "Doe",
+                                        "uuid" : "589319933be24ec79319933be24ec7fe"
+                                      },
+                                      "created" : "2018-11-20T20:12:01.084Z",
+                                      "version" : "2.0"
+                                    } ]
+                                  }
+                                }
 /{project}/tagFamilies: 
     displayName: /{project}/tagFamilies
     description: Provides endpoints which allow the manipulation of tag families and tags.
@@ -11491,6 +11613,7 @@ mediaType: application/json
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
+                                | autoPurge | false | boolean | Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update. |
                                 | container | true | boolean | Flag which indicates whether nodes which use this schema store additional child nodes. |
                                 | created | true | string | ISO8601 formatted created date string. |
                                 | creator | true | object | User reference of the creator of the element. |
@@ -11580,6 +11703,7 @@ mediaType: application/json
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
+                                | autoPurge | false | boolean | Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update. |
                                 | container | true | boolean | Flag which indicates whether nodes which use this schema store additional child nodes. |
                                 | created | true | string | ISO8601 formatted created date string. |
                                 | creator | true | object | User reference of the creator of the element. |

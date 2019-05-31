@@ -62,6 +62,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
@@ -316,6 +317,11 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<NodeVersionsResponse> listNodeVersions(String projectName, String nodeUuid, ParameterProvider... parameters) {
+		return null;
+	}
+
+	@Override
 	public MeshRequest<TagListResponse> findTagsForNode(String projectName, String nodeUuid, ParameterProvider... parameters) {
 		LocalActionContextImpl<TagListResponse> ac = createContext(TagListResponse.class, parameters);
 		ac.setProject(projectName);
@@ -443,6 +449,13 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public MeshRequest<EmptyResponse> deleteProject(String uuid) {
 		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class);
 		projectCrudHandler.handleDelete(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> purgeProject(String uuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+		projectCrudHandler.handlePurge(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 

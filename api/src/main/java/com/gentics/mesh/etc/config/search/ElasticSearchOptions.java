@@ -247,4 +247,5 @@ public class ElasticSearchOptions implements Option {
 		this.waitForIdle = waitForIdle;
 		return this;
 	}
+
 }

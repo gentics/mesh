@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.endpoint.migration.impl;
 
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 
 import java.lang.management.ManagementFactory;
 
@@ -12,8 +12,8 @@ import javax.management.ObjectName;
 import com.gentics.mesh.core.data.branch.BranchVersionEdge;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
-import com.gentics.mesh.core.rest.admin.migration.MigrationType;
+import com.gentics.mesh.core.rest.job.JobType;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.Vertx;
@@ -37,9 +37,9 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 
 	private long completionCount = 0;
 
-	private MigrationStatus status;
+	private JobStatus status;
 
-	public MigrationStatusHandlerImpl(Job job, Vertx vertx, MigrationType type) {
+	public MigrationStatusHandlerImpl(Job job, Vertx vertx, JobType type) {
 		this.vertx = vertx;
 		this.job = job;
 	}
@@ -127,7 +127,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	}
 
 	@Override
-	public void setStatus(MigrationStatus status) {
+	public void setStatus(JobStatus status) {
 		this.status = status;
 	}
 

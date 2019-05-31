@@ -1,5 +1,20 @@
 package com.gentics.mesh.core.endpoint.migration.node;
 
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
+import static com.gentics.mesh.metric.Metrics.NODE_MIGRATION_PENDING;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -22,19 +37,6 @@ import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING;
-import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
-import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
-import static com.gentics.mesh.metric.Metrics.NODE_MIGRATION_PENDING;
 
 /**
  * Handler for node migrations after schema updates.
@@ -147,8 +149,10 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 								  GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaModel newSchema, List<Exception> errorsDetected,
 								  Set<String> touchedFields) {
 
+		String containerUuid = container.getUuid();
+		String parentNodeUuid = container.getParentNode().getUuid();
 		if (log.isDebugEnabled()) {
-			log.debug("Migrating container {" + container.getUuid() + "}");
+			log.debug("Migrating container {" + containerUuid + "} of node {" + parentNodeUuid + "}");
 		}
 
 		Branch branch = ac.getBranch();
@@ -161,6 +165,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 
 			VersionNumber nextDraftVersion = null;
 			NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, branch.getUuid(), PUBLISHED);
+
 			// 1. Check whether there is any other published container which we need to handle separately
 			if (oldPublished != null && !oldPublished.equals(container)) {
 				// We only need to migrate the container if the container's schema version is also "old"
@@ -173,12 +178,12 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				}
 
 			}
-
 			// 2. Migrate the draft container. This will also update the draft edge.
 			migrateDraftContainer(ac, batch, branch, node, container, fromVersion, toVersion, touchedFields, newSchema, nextDraftVersion);
+
+			postMigrationPurge(container, oldPublished);
 		} catch (Exception e1) {
-			log.error("Error while handling container {" + container.getUuid() + "} of node {" + container.getParentNode().getUuid()
-				+ "} during schema migration.", e1);
+			log.error("Error while handling container {" + containerUuid + "} of node {" + parentNodeUuid + "} during schema migration.", e1);
 			errorsDetected.add(e1);
 		}
 
@@ -230,7 +235,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		// Ensure that the migrated version is also published since the old version was
 		if (publish) {
 			migrated.setVersion(container.getVersion().nextPublished());
-			node.setPublished(migrated, branchUuid);
+			node.setPublished(ac, migrated, branchUuid);
 		} else {
 			if (nextDraftVersion == null) {
 				nextDraftVersion = container.getVersion().nextDraft();
@@ -279,7 +284,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguageTag(), branch, container.getEditor(), container, true);
 
 		migrated.setVersion(container.getVersion().nextPublished());
-		node.setPublished(migrated, branchUuid);
+		node.setPublished(ac, migrated, branchUuid);
 
 		migrate(ac, migrated, restModel, fromVersion, toVersion, touchedFields);
 		sqb.add(migrated.onUpdated(branchUuid, PUBLISHED));

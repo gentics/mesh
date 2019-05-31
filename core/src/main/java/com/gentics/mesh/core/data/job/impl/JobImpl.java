@@ -1,11 +1,11 @@
 package com.gentics.mesh.core.data.job.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FROM_VERSION;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.STARTING;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.UNKNOWN;
+import static com.gentics.mesh.core.rest.job.JobStatus.STARTING;
+import static com.gentics.mesh.core.rest.job.JobStatus.UNKNOWN;
 
 import java.util.Map;
 
@@ -27,10 +27,10 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
-import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
@@ -144,17 +144,17 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	}
 
 	@Override
-	public void setType(MigrationType type) {
+	public void setType(JobType type) {
 		property(TYPE_PROPERTY_KEY, type.name());
 	}
 
 	@Override
-	public MigrationType getType() {
+	public JobType getType() {
 		String type = property(TYPE_PROPERTY_KEY);
 		if (type == null) {
 			return null;
 		} else {
-			return MigrationType.valueOf(type);
+			return JobType.valueOf(type);
 		}
 	}
 
@@ -245,16 +245,16 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	}
 
 	@Override
-	public MigrationStatus getStatus() {
+	public JobStatus getStatus() {
 		String status = property(STATUS_PROPERTY_KEY);
 		if (status == null) {
 			return UNKNOWN;
 		}
-		return MigrationStatus.valueOf(status);
+		return JobStatus.valueOf(status);
 	}
 
 	@Override
-	public void setStatus(MigrationStatus status) {
+	public void setStatus(JobStatus status) {
 		property(STATUS_PROPERTY_KEY, status.name());
 	}
 
@@ -304,7 +304,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 		setStopTimestamp(null);
 		setErrorDetail(null);
 		setErrorMessage(null);
-		setStatus(MigrationStatus.QUEUED);
+		setStatus(JobStatus.QUEUED);
 	}
 
 	@Override

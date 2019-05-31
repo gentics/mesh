@@ -112,6 +112,8 @@ import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
+import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
+import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -392,7 +394,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String branchUuid = branch.getUuid();
 
 		// check whether there is a current draft version
-
 		if (handleDraftEdge) {
 			draftEdge = getGraphFieldContainerEdgeFrame(languageTag, branchUuid, DRAFT);
 			if (draftEdge != null) {
@@ -476,14 +477,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param type
 	 * @return
 	 */
-	protected Iterable<? extends EdgeFrame> getGraphFieldContainerEdges(String branchUuid, ContainerType type) {
-		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).has(
-			GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
-		return edgeTraversal.frameExplicit(GraphFieldContainerEdgeImpl.class);
-	}
-
-	protected Iterable<GraphFieldContainerEdgeImpl> getGraphFieldContainerEdges(ContainerType type) {
-		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
+	protected Iterable<? extends GraphFieldContainerEdgeImpl> getGraphFieldContainerEdges(String branchUuid, ContainerType type) {
+		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER)
+			.has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid)
+			.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
 		return edgeTraversal.frameExplicit(GraphFieldContainerEdgeImpl.class);
 	}
 
@@ -967,6 +964,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		});
 	}
 
+	@Override
+	public NodeVersionsResponse transformToVersionList(InternalActionContext ac) {
+		NodeVersionsResponse response = new NodeVersionsResponse();
+		Map<String, List<VersionInfo>> versions = new HashMap<>();
+		getGraphFieldContainersIt(ac.getBranch(), DRAFT).forEach(c -> {
+			versions.put(c.getLanguageTag(), c.versions().stream()
+				.map(v -> v.transformToVersionInfo(ac))
+				.collect(Collectors.toList()));
+		});
+
+		response.setVersions(versions);
+		return response;
+	}
+
 	/**
 	 * Generate the etag key for the requested navigation.
 	 * 
@@ -1172,7 +1183,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// publish all unpublished containers and handle recursion
 		unpublishedContainers.stream().forEach(c -> {
-			NodeGraphFieldContainer newVersion = publish(c.getLanguageTag(), branch, ac.getUser());
+			NodeGraphFieldContainer newVersion = publish(ac, c.getLanguageTag(), branch, ac.getUser());
 			bac.add(newVersion.onPublish(branchUuid));
 		});
 		assertPublishConsistency(ac, branch);
@@ -1203,12 +1214,18 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		String branchUuid = branch.getUuid();
 
+		TraversalResult<? extends GraphFieldContainerEdgeImpl> publishEdges = new TraversalResult<>(
+			getGraphFieldContainerEdges(branchUuid, PUBLISHED));
+
 		// Remove the published edge for each found container
-		TraversalResult<? extends NodeGraphFieldContainer> publishedContainers = getGraphFieldContainers(branchUuid, PUBLISHED);
-		for (NodeGraphFieldContainer container : publishedContainers) {
-			bac.add(container.onTakenOffline(branchUuid));
-		}
-		getGraphFieldContainerEdges(branchUuid, PUBLISHED).forEach(EdgeFrame::remove);
+		publishEdges.forEach(edge -> {
+			NodeGraphFieldContainer content = edge.getNodeContainer();
+			bac.add(content.onTakenOffline(branchUuid));
+			edge.remove();
+			if (content.isAutoPurgeEnabled() && content.isPurgeable()) {
+				content.purge(bac);
+			}
+		});
 
 		assertPublishConsistency(ac, branch);
 
@@ -1266,7 +1283,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		// TODO check whether all required fields are filled, if not -> unable to publish
-		NodeGraphFieldContainer publishedContainer = publish(draftVersion.getLanguageTag(), branch, ac.getUser());
+		NodeGraphFieldContainer publishedContainer = publish(ac, draftVersion.getLanguageTag(), branch, ac.getUser());
 		// Invoke a store of the document since it must now also be added to the published index
 		bac.add(publishedContainer.onPublish(branchUuid));
 	}
@@ -1290,8 +1307,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void setPublished(NodeGraphFieldContainer container, String branchUuid) {
+	public void setPublished(InternalActionContext ac, NodeGraphFieldContainer container, String branchUuid) {
 		String languageTag = container.getLanguageTag();
+		boolean isAutoPurgeEnabled = container.isAutoPurgeEnabled();
 
 		// Remove an existing published edge
 		EdgeFrame currentPublished = getGraphFieldContainerEdgeFrame(languageTag, branchUuid, PUBLISHED);
@@ -1300,9 +1318,18 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// check the published edge again
 			NodeGraphFieldContainerImpl oldPublishedContainer = currentPublished.inV().nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
 			currentPublished.remove();
-			// TODO: Remove this once https://www.prjhub.com/#/issues/10542 has been fixed
-			// Tx.getActive().getGraph().commit();
 			oldPublishedContainer.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_publish");
+			if (ac.isPurgeAllowed() && isAutoPurgeEnabled && oldPublishedContainer.isPurgeable()) {
+				oldPublishedContainer.purge();
+			}
+		}
+
+		if (ac.isPurgeAllowed()) {
+			// Check whether a previous draft can be purged.
+			NodeGraphFieldContainer prev = container.getPreviousVersion();
+			if (isAutoPurgeEnabled && prev != null && prev.isPurgeable()) {
+				prev.purge();
+			}
 		}
 
 		// create new published edge
@@ -1314,14 +1341,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer publish(String languageTag, Branch branch, User user) {
+	public NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, Branch branch, User user) {
 		String branchUuid = branch.getUuid();
 
 		// create published version
 		NodeGraphFieldContainer newVersion = createGraphFieldContainer(languageTag, branch, user);
 		newVersion.setVersion(newVersion.getVersion().nextPublished());
 
-		setPublished(newVersion, branchUuid);
+		setPublished(ac, newVersion, branchUuid);
 		return newVersion;
 	}
 
@@ -1752,6 +1779,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					latestDraftVersion, true);
 				// Update the existing fields
 				newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
+
+				// Purge the old draft
+				if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
+					latestDraftVersion.purge();
+				}
+
 				latestDraftVersion = newDraftVersion;
 				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
 				return true;

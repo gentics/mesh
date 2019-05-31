@@ -19,6 +19,7 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -116,6 +117,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUploadMultipleToBinaryNode() throws IOException {
+		disableAutoPurge();
+
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;
 		Node node = folder("news");
@@ -220,6 +223,43 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		}
 	}
 
+	/**
+	 * Test parallel upload of the same binary data - thus the same binary vertex should be used.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void testParallelDupUpload() throws IOException {
+
+		String folderUuid = tx(() -> folder("news").getUuid());
+		// Prepare schema
+		try (Tx tx = tx()) {
+			Node node = folder("news");
+			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			schema.addField(FieldUtil.createBinaryFieldSchema("image"));
+			node.getSchemaContainer().getLatestVersion().setSchema(schema);
+		}
+
+		Buffer buffer = getBuffer("/pictures/blume.jpg");
+		Observable.range(0, 200).flatMapSingle(number -> {
+			NodeCreateRequest request = new NodeCreateRequest();
+			request.setLanguage("en");
+			request.setParentNodeUuid(folderUuid);
+			request.setSchemaName("folder");
+			request.getFields().put("slug", FieldUtil.createStringField("folder" + number));
+			return client().createNode(PROJECT_NAME, request).toSingle()
+				.flatMap(node -> {
+					byte[] data = buffer.getBytes();
+					int size = data.length;
+					InputStream ins = new ByteArrayInputStream(data);
+					return client()
+						.updateNodeBinaryField(projectName(), node.getUuid(), "en", node.getVersion(), "image", ins, size, "blume.jpg", "image/jpeg")
+						.toSingle();
+				});
+		}).lastOrError().toCompletable().blockingAwait();
+
+	}
+
 	@Test
 	public void testUploadBrokenImage() throws IOException {
 		String contentType = "image/jpeg";
@@ -277,11 +317,14 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			buffer.length(), "test.jpg", "image/jpeg"));
 
 		NodeResponse node2 = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
-		BinaryMetadata metadata2 = node2.getFields().getBinaryField("binary").getMetadata();
+		System.out.println(node2.toJson());
+		BinaryField binaryField = node2.getFields().getBinaryField("binary");
+		BinaryMetadata metadata2 = binaryField.getMetadata();
 		assertEquals(13.920556, metadata2.getLocation().getLon().doubleValue(), 0.01);
 		assertEquals(47.6725, metadata2.getLocation().getLat().doubleValue(), 0.01);
 		assertEquals(1727, metadata2.getLocation().getAlt().intValue());
 		assertEquals("4.2 mm", metadata2.get("Focal_Length"));
+		assertNull("The jpeg should not have any extracted content.", binaryField.getPlainText());
 
 		NodeUpdateRequest nodeUpdateRequest = node2.toRequest();
 		BinaryField field = nodeUpdateRequest.getFields().getBinaryField("binary");
@@ -317,6 +360,27 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 				node2.getFields().getBinaryField("binary").getMetadata().getMap().isEmpty());
 		}
 
+	}
+
+	@Test
+	public void testPlainTextExtractionForDocuments() throws IOException {
+		expectPlainText("test.pdf", "application/pdf", "Enemenemu");
+		expectPlainText("test.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+			"Das ist ein Word Dokument für den Johannes");
+		expectPlainText("small.mp4", "application/pdf", "HandBrake 0.9.4 2009112300");
+	}
+
+
+	private void expectPlainText(String fileName, String mimeType, String plainText) throws IOException {
+		String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
+
+		Buffer buffer = getBuffer("/testfiles/" + fileName);
+		NodeResponse node = createNode(parentNodeUuid);
+		NodeResponse node2 = call(
+			() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", new ByteArrayInputStream(buffer.getBytes()),
+				buffer.length(), fileName, mimeType));
+		BinaryField binaryField = node2.getFields().getBinaryField("binary");
+		assertEquals("The plain text of file {" + fileName + "} did not match", plainText, binaryField.getPlainText());
 	}
 
 	@Test
