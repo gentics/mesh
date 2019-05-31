@@ -429,7 +429,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			// .versions
 			newFieldDefinition().name("versions").description("List of versions of the node.")
 				.argument(createSingleLanguageTagArg(true))
-				.type(new GraphQLList(createVersionInfoType())).dataFetcher(env -> {
+				.type(GraphQLList.list(GraphQLTypeReference.typeRef(NODE_CONTENT_VERSION_TYPE_NAME))).dataFetcher(env -> {
 					GraphQLContext gc = env.getContext();
 					String languageTag = getSingleLanguageArgument(env);
 					NodeContent content = env.getSource();
