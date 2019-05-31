@@ -67,8 +67,7 @@ public class DateListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	@Test
 	public void testChangeToBooleanList() throws Exception {
 		changeType(CREATEDATELIST, FILL, FETCH, CREATEBOOLEANLIST, (container, name) -> {
-			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getBooleanList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
+			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNull();
 		});
 	}
 
@@ -154,7 +153,7 @@ public class DateListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	public void testChangeToNumberList() throws Exception {
 		changeType(CREATEDATELIST, FILL, FETCH, CREATENUMBERLIST, (container, name) -> {
 			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).contains(castToInt(DATEVALUE), castToInt(OTHERDATEVALUE));
+			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).contains(DATEVALUE, OTHERDATEVALUE);
 		});
 	}
 

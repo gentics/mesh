@@ -71,8 +71,7 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest imp
 		});
 
 		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATEBOOLEANLIST, (container, name) -> {
-			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getBooleanList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
+			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNull();
 		});
 	}
 
@@ -100,8 +99,7 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest imp
 		});
 
 		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATEDATELIST, (container, name) -> {
-			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
+			assertThat(container.getDateList(name)).as(NEWFIELD).isNull();
 		});
 	}
 
@@ -160,7 +158,7 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest imp
 	public void testChangeToNumber() throws Exception {
 		changeType(CREATESTRINGLIST, FILLNUMBERS, FETCH, CREATENUMBER, (container, name) -> {
 			assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(1);
+			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(1L);
 		});
 
 		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATENUMBER, (container, name) -> {
@@ -174,7 +172,7 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest imp
 	public void testChangeToNumberList() throws Exception {
 		changeType(CREATESTRINGLIST, FILLNUMBERS, FETCH, CREATENUMBERLIST, (container, name) -> {
 			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1, 0);
+			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1L, 0L);
 		});
 
 		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATENUMBERLIST, (container, name) -> {
