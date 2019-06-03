@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.branch;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
@@ -74,6 +75,17 @@ public class BranchResponse extends AbstractGenericRestResponse {
 	// public void setActive(boolean active) {
 	// this.active = active;
 	// }
+
+	/**
+	 * Get the migration status for the branch.
+	 * @return
+	 * @deprecated Use {@link #getMigrated()} instead.
+	 */
+	@JsonIgnore
+	@Deprecated
+	public boolean isMigrated() {
+		return migrated != null ? migrated : false;
+	}
 
 	public Boolean getMigrated() {
 		return migrated;
