@@ -226,7 +226,7 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 		FieldSchema fieldSchema = oldSchema.getField(fieldName);
 		TypeConverter typeConverter = new TypeConverter();
 
-		if (isUuidType(fieldSchema)) {
+		if (isNonNodeUuidType(fieldSchema)) {
 			return null;
 		}
 		return new HtmlFieldImpl().setHTML(typeConverter.toString(oldContent.getFields().getField(fieldName, fieldSchema).getValue()));
@@ -237,7 +237,7 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 		FieldSchema fieldSchema = oldSchema.getField(fieldName);
 		TypeConverter typeConverter = new TypeConverter();
 
-		if (isUuidType(fieldSchema)) {
+		if (isNonNodeUuidType(fieldSchema)) {
 			return null;
 		}
 		return new StringFieldImpl().setString(typeConverter.toString(oldContent.getFields().getField(fieldName, fieldSchema).getValue()));
@@ -282,13 +282,13 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 			case "date":
 				return typeConverter.toDateList(oldValue);
 			case "html":
-				if (isUuidType(fieldSchema)) {
+				if (isNonNodeUuidType(fieldSchema)) {
 					return null;
 				} else {
 					return typeConverter.toHtmlList(oldValue);
 				}
 			case "string":
-				if (isUuidType(fieldSchema)) {
+				if (isNonNodeUuidType(fieldSchema)) {
 					return null;
 				} else {
 					return typeConverter.toStringList(oldValue);
@@ -300,6 +300,10 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 			default:
 				throw error(BAD_REQUEST, "Unknown list type {" + listType + "} for change " + getUuid());
 		}
+	}
+
+	private boolean isNonNodeUuidType(FieldSchema fieldSchema) {
+		return isUuidType(fieldSchema) && !fieldSchema.getType().equals("node");
 	}
 
 	private boolean isUuidType(FieldSchema fieldSchema) {

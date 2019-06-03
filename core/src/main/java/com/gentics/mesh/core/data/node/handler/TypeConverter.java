@@ -249,6 +249,7 @@ public class TypeConverter {
 	 * @return Micronode object or null if the value could not be converted
 	 */
 	public MicronodeField toMicronode(Object value) {
+		value = firstIfList(value);
 		if (value instanceof MicronodeField) {
 			return (MicronodeField) value;
 		} else {
@@ -280,8 +281,6 @@ public class TypeConverter {
 			return (NodeField) value;
 		} else if (value instanceof NodeFieldListItem) {
 			return new NodeFieldImpl().setUuid(((NodeFieldListItem) value).getUuid());
-		} else if (value instanceof String) {
-			return new NodeFieldImpl().setUuid((String) value);
 		} else {
 			return null;
 		}

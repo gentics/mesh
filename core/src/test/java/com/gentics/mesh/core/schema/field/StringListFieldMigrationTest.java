@@ -176,8 +176,7 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest imp
 		});
 
 		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATENUMBERLIST, (container, name) -> {
-			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
+			assertThat(container.getNumberList(name)).as(NEWFIELD).isNull();
 		});
 	}
 
