@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphql.filter;
 
+import com.gentics.graphqlfilter.filter.BooleanFilter;
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.StartMainFilter;
@@ -55,6 +56,7 @@ public class UserFilter extends StartMainFilter<User> {
 		filters.add(new MappedFilter<>("firstname", "Filters by first name", StringFilter.filter(), User::getFirstname));
 		filters.add(new MappedFilter<>("lastname", "Filters by last name", StringFilter.filter(), User::getLastname));
 		filters.add(new MappedFilter<>("emailAddress", "Filters by email address", StringFilter.filter(), User::getEmailAddress));
+		filters.add(new MappedFilter<>("forcedPasswordChange", "Filters by forced password change flag", BooleanFilter.filter(), User::isForcedPasswordChange));
 		return filters;
 	}
 }

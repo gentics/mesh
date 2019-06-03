@@ -25,11 +25,15 @@ include::content/docs/variables.adoc-include[]
 [[v0.34.1]]
 == 0.34.1 (TBD)
 
-CAUTION: Fetching fields of a node/micronode in GraphQL requires a different syntax. Please refer to the link:https://github.com/gentics/mesh/issues/428[#428] and link:https://github.com/gentics/mesh/issues/317[#317] for details.
+icon:check[] Backup: Fixed `NullPointerException` which happend when the backup directory was missing and the backup endpoint was invoked. link:https://github.com/gentics/mesh/issues/463[#463]
 
 icon:plus[] Core: The core Vert.x library was updated to version 3.7.1
 
 icon:check[] Focal point: It is now possible to use the `:apiLatest:/:projectName/nodes/:uuid/binaryTransform/:fieldName` to resize and image and set the focal point in one operation.
+
+icon:check[] The `content-disposition` header will now contain the UTF-8 and ISO-8859-1 encoded filename. link:https://github.com/gentics/mesh/issues/702[#702]
+
+icon:plus[] REST: It is now possible to set a flag that forces a user to change their password on the next login. Take a look at link:{{< relref "authentication.asciidoc" >}}#_forcing_user_to_change_password[the documentation] for more information.
 
 [[v0.34.0]]
 == 0.34.0 (28.05.2019)

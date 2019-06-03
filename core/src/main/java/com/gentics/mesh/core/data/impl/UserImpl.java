@@ -50,6 +50,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Predicate;
@@ -99,6 +100,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	public static final String RESET_TOKEN_ISSUE_TIMESTAMP_KEY = "resetTokenTimestamp";
 
+	public static final String FORCE_PASSWORD_CHANGE_KEY = "forcePasswordChange";
+
 	public static void init(Database database) {
 		database.addVertexType(UserImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(ASSIGNED_TO_ROLE, false, false, true);
@@ -138,6 +141,17 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	@Override
 	public String getResetToken() {
 		return property(RESET_TOKEN_KEY);
+	}
+
+	@Override
+	public boolean isForcedPasswordChange() {
+		return Optional.<Boolean>ofNullable(property(FORCE_PASSWORD_CHANGE_KEY)).orElse(false);
+	}
+
+	@Override
+	public User setForcedPasswordChange(boolean force) {
+		property(FORCE_PASSWORD_CHANGE_KEY, force);
+		return this;
 	}
 
 	@Override
@@ -396,6 +410,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		if (fields.has("rolesHash")) {
 			restUser.setRolesHash(getRolesHash());
 		}
+		if (fields.has("forcedPasswordChange")) {
+			restUser.setForcedPasswordChange(isForcedPasswordChange());
+		}
 		fillCommonRestFields(ac, fields, restUser);
 		setRolePermissions(ac, restUser);
 
@@ -459,6 +476,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	@Override
 	public User setPasswordHash(String hash) {
 		property(PASSWORD_HASH_PROPERTY_KEY, hash);
+		// Password has changed, the user is not forced to change their password anymore.
+		setForcedPasswordChange(false);
 		return this;
 	}
 
@@ -553,6 +572,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 		if (shouldUpdate(requestModel.getEmailAddress(), getEmailAddress())) {
 			setEmailAddress(requestModel.getEmailAddress());
+			modified = true;
+		}
+
+		if (shouldUpdate(requestModel.getForcedPasswordChange(), isForcedPasswordChange())) {
+			setForcedPasswordChange(requestModel.getForcedPasswordChange());
 			modified = true;
 		}
 

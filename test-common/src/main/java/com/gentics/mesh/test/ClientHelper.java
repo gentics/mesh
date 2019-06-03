@@ -10,6 +10,7 @@ import com.gentics.mesh.test.context.ClientHandler;
 import com.gentics.mesh.util.ETag;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 
 import java.util.Locale;
 import java.util.function.Function;
@@ -123,6 +124,47 @@ public final class ClientHelper {
 				}
 			} else {
 				error = (MeshRestClientMessageException) e;
+			}
+			if (bodyMessageI18nKey == null) {
+				expectFailureMessage(error, status, null);
+			} else {
+				expectException(error, status, bodyMessageI18nKey, i18nParams);
+			}
+			if (error instanceof MeshRestClientMessageException) {
+				return (MeshRestClientMessageException) e.getCause();
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Call the given handler, latch for the future and expect the given failure in the future.
+	 *
+	 * @param handler
+	 *            handler
+	 * @param status
+	 *            expected response status
+	 * @param bodyMessageI18nKey
+	 *            i18n of the expected response message
+	 * @param i18nParams
+	 *            parameters of the expected response message
+	 * @return
+	 */
+	public static <T> MeshRestClientMessageException call(Single<GenericMessageResponse> request, HttpResponseStatus status, String bodyMessageI18nKey,
+														  String... i18nParams) {
+		try {
+			request.blockingGet();
+			fail("We expected the future to have failed but it succeeded.");
+		} catch (RuntimeException e) {
+			MeshRestClientMessageException error;
+			Throwable cause = e.getCause();
+			if (cause instanceof MeshRestClientMessageException) {
+				error = (MeshRestClientMessageException) e.getCause();
+			} else {
+				throw e;
 			}
 			if (bodyMessageI18nKey == null) {
 				expectFailureMessage(error, status, null);

@@ -1,7 +1,6 @@
 package com.gentics.mesh.rest;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshRequest;
 import io.reactivex.Completable;
@@ -17,7 +16,15 @@ public interface MeshRestClientAuthenticationProvider {
 	 * @param password
 	 */
 	void setLogin(String username, String password);
-	
+
+	/**
+	 * Sets the credentials used to authenticate the user
+	 * Also sets a new password for the user when {@link #login(AbstractMeshRestHttpClient)} is called
+	 * @param username
+	 * @param password
+	 */
+	void setLogin(String username, String password, String newPassword);
+
 	/**
 	 * Modifies the provided request by adding authentication information.
 	 * @param request

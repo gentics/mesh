@@ -99,6 +99,8 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 
 		ws.registerEvents(NODE_CONTENT_DELETED);
 
+		ws.errors().subscribe(context::fail);
+
 		// Handle msgs
 		ws.events().firstOrError().subscribe(event -> {
 			NodeMeshEventModel body = JsonUtil.readValue(event.getBodyAsJson().toString(), NodeMeshEventModel.class);

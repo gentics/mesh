@@ -20,33 +20,6 @@ You can either place the path or uuid to your content in a fragment `/demo#categ
 
 If you choose to use a server side webframework like link:https://laravel.com/[Laravel] or link:https://expressjs.com/de/[Express] you can setup routes to handle the inbound request. The request path can be used to build the webroot path for Gentics Mesh. Using that path you can query Gentics Mesh and check whether content for the given path can be found.
 
-== Images
-
-Images can be loaded similar to regular contents. It is possible to load them using the path or the uuid:
-
-TIP: By Path: https://demo.getmesh.io/{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500
-
-image::https://demo.getmesh.io/{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500[Image By Path]
-
-
-TIP: By Uuid: https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=500
-
-image::https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=500[Image by Uuid]
-
-== Placeholders
-
-NOTE: You can use the `dominantColor`, `width` and `height` properties of the image fields to generate colored placeholder areas for your images. The `dominantColor` of the image will  automatically be computed for each uploaded image.
-
-== Responsive Design
-
-You can use the focal point feature to mark the point of interest in your images. That information can be used to generate different size sets of your images. Different image sizes may be required by your responsive design. The focal point will be used by Gentics Mesh to crop the image in the desired way.
-
-image::https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=600&h=300&crop=fp&fpdebug=true[Image with FP]
-
-image::https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=200&h=200&crop=fp&fpdebug=true[Image with FP]
-
-
-image::https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=100&h=300&crop=fp&fpdebug=true[Image with FP]
 
 == Binaries
 

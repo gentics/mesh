@@ -50,7 +50,7 @@ __Features:__
 * link:{{< relref "references.asciidoc" >}}#_rest_api[REST API]
 * link:{{< relref "graphql.asciidoc" >}}[GraphQL API]
 * link:{{< relref "features.asciidoc" >}}#_file_upload[File Upload]
-* link:{{< relref "features.asciidoc" >}}#imagemanipulation[Image Manipulation]
+* link:{{< relref "image-manipulation.asciidoc" >}}[Image Manipulation]
 * link:{{< relref "features.asciidoc" >}}#_link_resolving[Link handling]
 * link:{{< relref "elasticsearch.asciidoc" >}}[Powerful search]
 * link:{{< relref "building-blocks.asciidoc" >}}#_user[Users, Groups, Roles]

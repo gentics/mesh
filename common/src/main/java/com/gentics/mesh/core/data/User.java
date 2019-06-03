@@ -145,6 +145,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Set the password hash.
+	 * This will also set {@link #setForcedPasswordChange(boolean)} to false.
 	 *
 	 * @param hash
 	 *            Password hash
@@ -156,6 +157,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Set the plaintext password. Internally the password string will be hashed and the password hash will be set.
+	 * This will also set {@link #setForcedPasswordChange(boolean)} to false.
 	 *
 	 * @param password
 	 * @return Fluent API
@@ -380,6 +382,19 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	String getResetToken();
 
 	/**
+	 * Return true if the user needs to change their password on next login.
+	 * @return
+	 */
+	boolean isForcedPasswordChange();
+
+	/**
+	 * Set whether the user needs to change their password on next login.
+	 * @param force
+	 * @return
+	 */
+	User setForcedPasswordChange(boolean force);
+
+	/**
 	 * Return the timestamp on which the token code was issued.
 	 *
 	 * @return
@@ -390,7 +405,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * Set the token code issue timestamp. This is used to influence the token expire moment.
 	 *
 	 * @param timestamp
-	 * @return
+	 * @return Fluent API
 	 */
 	User setResetTokenIssueTimestamp(Long timestamp);
 
@@ -415,11 +430,12 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @return
 	 */
 	default boolean isResetTokenValid(String token, int maxTokenAgeMins) {
-		if (token == null) {
+		Long resetTokenIssueTimestamp = getResetTokenIssueTimestamp();
+		if (token == null || resetTokenIssueTimestamp == null) {
 			return false;
 		}
 		long maxTokenAge = 1000 * 60 * maxTokenAgeMins;
-		long tokenAge = System.currentTimeMillis() - getResetTokenIssueTimestamp();
+		long tokenAge = System.currentTimeMillis() - resetTokenIssueTimestamp;
 		boolean isExpired = tokenAge > maxTokenAge;
 		boolean isTokenMatch = token.equals(getResetToken());
 

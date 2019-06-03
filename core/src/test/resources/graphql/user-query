@@ -7,6 +7,8 @@
 		# [$.data.user.username=admin]
 		username
 		emailAddress
+		# [$.data.user.forcedPasswordChange=false]
+		forcedPasswordChange
 	}
 	users {
 		elements {
