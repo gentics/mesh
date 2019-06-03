@@ -122,7 +122,7 @@ public class AdminGUIEndpoint extends AbstractInternalEndpoint {
 				Map<String, Object> model = new HashMap<>();
 				int httpPort = Mesh.mesh().getOptions().getHttpServerOptions().getPort();
 				model.put("mesh_http_port", httpPort);
-				model.put("apiPath", VersionHandler.CURRENT_API_BASE_PATH);
+				model.put("apiPath", VersionHandler.CURRENT_API_BASE_PATH + "/");
 
 				// Prepare render context
 				Context context = Context.newBuilder(model).resolver(MapValueResolver.INSTANCE).build();
