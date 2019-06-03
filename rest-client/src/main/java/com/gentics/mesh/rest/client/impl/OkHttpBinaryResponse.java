@@ -1,12 +1,17 @@
 package com.gentics.mesh.rest.client.impl;
 
-import com.gentics.mesh.rest.client.MeshBinaryResponse;
-import okhttp3.Response;
-
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+
+import com.gentics.mesh.rest.client.MeshBinaryResponse;
+
+import okhttp3.Response;
 
 public class OkHttpBinaryResponse implements MeshBinaryResponse {
 	private final Response response;
+
+	public static final String FILENAME_DISPOSITION_ATTR = "filename*=utf-8''";
 
 	public OkHttpBinaryResponse(Response response) {
 		this.response = response;
@@ -20,8 +25,13 @@ public class OkHttpBinaryResponse implements MeshBinaryResponse {
 	@Override
 	public String getFilename() {
 		String disposition = response.header("Content-Disposition");
-		// TODO Use proper parser
-		return disposition.substring(disposition.indexOf("=") + 1);
+		try {
+			int start = disposition.indexOf(FILENAME_DISPOSITION_ATTR);
+			String encodedName = disposition.substring(start + FILENAME_DISPOSITION_ATTR.length());
+			return URLDecoder.decode(encodedName, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
