@@ -46,7 +46,6 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 	 * Migrate all nodes from one branch to the other
 	 * 
 	 * @param context
-	 * @param status
 	 * @return
 	 */
 	public Completable migrateBranch(BranchMigrationContext context) {

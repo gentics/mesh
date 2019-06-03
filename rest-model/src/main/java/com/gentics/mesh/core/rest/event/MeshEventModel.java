@@ -36,7 +36,7 @@ public interface MeshEventModel extends RestModel {
 	/**
 	 * Set the event to which the model belongs.
 	 * 
-	 * @param address
+	 * @param event
 	 */
 	void setEvent(MeshEvent event);
 

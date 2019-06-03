@@ -115,20 +115,13 @@ import com.gentics.mesh.rest.client.MeshWebsocket;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
 import com.gentics.mesh.search.index.AdminIndexHandler;
 import com.gentics.mesh.util.UUIDUtil;
+
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.ext.web.FileUpload;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Local client implementation. This client will invoke endpoint handlers instead of sending http rest requests. Please note that is implementation is not very
@@ -1158,9 +1151,11 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String nodeVersion, String fieldKey, InputStream fileData, long fileSize, String fileName, String contentType, ParameterProvider... parameters) {
+	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String nodeVersion,
+		String fieldKey, InputStream fileData, long fileSize, String fileName, String contentType, ParameterProvider... parameters) {
 		try {
-			return updateNodeBinaryField(projectName, nodeUuid, languageTag, nodeVersion, fieldKey, IOUtils.toByteArray(fileData), fileName, contentType, parameters);
+			return updateNodeBinaryField(projectName, nodeUuid, languageTag, nodeVersion, fieldKey, IOUtils.toByteArray(fileData), fileName,
+				contentType, parameters);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -1168,14 +1163,15 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
-															   ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		// LocalActionContextImpl<NodeResponse> ac = createContext();
 		// return new MeshLocalRequestImpl<>( ac.getFuture());
 		return null;
 	}
 
 	@Override
-	public MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey, long from, long to, ParameterProvider... parameters) {
+	public MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey, long from,
+		long to, ParameterProvider... parameters) {
 		return null;
 	}
 
@@ -1290,7 +1286,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<EmptyResponse> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag, ParameterProvider... parameters) {
+	public MeshRequest<EmptyResponse> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag,
+		ParameterProvider... parameters) {
 		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleTakeOffline(ac, nodeUuid, languageTag);
