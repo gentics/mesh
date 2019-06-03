@@ -20,8 +20,6 @@ import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.StreamUtil;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import jdk.nashorn.api.scripting.ClassFilter;
-import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.io.IOException;
@@ -34,11 +32,6 @@ import java.util.Set;
 public abstract class AbstractMigrationHandler extends AbstractHandler implements MigrationHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractMigrationHandler.class);
-
-	/**
-	 * Script engine factory.
-	 */
-	protected NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
 
 	protected Database db;
 
@@ -178,15 +171,4 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 			container.purge();
 		}
 	}
-
-	/**
-	 * Sandbox classfilter that filters all classes
-	 */
-	protected static class Sandbox implements ClassFilter {
-		@Override
-		public boolean exposeToScripts(String className) {
-			return false;
-		}
-	}
-
 }

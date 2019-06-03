@@ -39,7 +39,6 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 /**
  * Type converter for the script engine used by the node migration handler.
@@ -50,16 +49,6 @@ public class TypeConverter {
 	private static final Logger log = LoggerFactory.getLogger(TypeConverter.class);
 
 	private NumberFormat format = NumberFormat.getInstance();
-
-	/**
-	 * Convert the given value into a binary value.
-	 *
-	 * @param value
-	 * @return
-	 */
-	public Object toBinary(Object value) {
-		return isBinary(value) ? value : null;
-	}
 
 	/**
 	 * Convert the given value to a string.
@@ -304,100 +293,6 @@ public class TypeConverter {
 	 */
 	public NodeFieldList toNodeList(Object value) {
 		return listField(NodeFieldListImpl::new, this::toNodeFieldListItem, value);
-	}
-
-	/**
-	 * Check whether the object represents a javascript array.
-	 *
-	 * @param value
-	 *            Value to check
-	 * @return true, if the provided value is an javascript array. Otherwise false.
-	 */
-	protected boolean isJSArray(Object value) {
-		if (value instanceof ScriptObjectMirror) {
-			return ((ScriptObjectMirror) value).isArray();
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * Check whether the object represents a javascript object.
-	 *
-	 * @param value
-	 *            Value to be checked
-	 * @return true if the provided value is an javascript object. Otherwise false.
-	 */
-	protected boolean isJSObject(Object value) {
-		if (value instanceof ScriptObjectMirror) {
-			return !(isJSArray(value));
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * Get array values as list.
-	 *
-	 * @param value
-	 *            Value to be checked
-	 * @return List of javascript objects or empty list if the value could not be converted
-	 */
-	protected List<Object> getJSArray(Object value) {
-		if (isJSArray(value)) {
-			ScriptObjectMirror arrayValue = (ScriptObjectMirror) value;
-			return arrayValue.values().stream().collect(Collectors.toList());
-		} else {
-			return Collections.emptyList();
-		}
-	}
-
-	/**
-	 * Check whether the given object is a binary.
-	 *
-	 * @param value
-	 *            Value to be checked
-	 * @return true if the provided value is a binary field. Otherwise false.
-	 */
-	protected boolean isBinary(Object value) {
-		if (!isJSObject(value)) {
-			return false;
-		} else {
-			ScriptObjectMirror object = ((ScriptObjectMirror) value);
-			return object.containsKey("sha512sum") && object.containsKey("fileName");
-		}
-	}
-
-	/**
-	 * Check whether the given object is a node.
-	 *
-	 * @param value
-	 *            Value to be checked
-	 * @return true if the value is a node. Otherwise false.
-	 */
-	protected boolean isNode(Object value) {
-		if (!isJSObject(value)) {
-			return false;
-		} else {
-			ScriptObjectMirror object = ((ScriptObjectMirror) value);
-			return object.containsKey("uuid") && !object.containsKey("microschema");
-		}
-	}
-
-	/**
-	 * Check whether the given object is a micronode.
-	 *
-	 * @param value
-	 *            Value to be checked
-	 * @return true if the provided value is a micronode. Otherwise false.
-	 */
-	protected boolean isMicronode(Object value) {
-		if (!isJSObject(value)) {
-			return false;
-		} else {
-			ScriptObjectMirror object = ((ScriptObjectMirror) value);
-			return object.containsKey("uuid") && object.containsKey("microschema");
-		}
 	}
 
 	private Object firstIfList(Object value) {
