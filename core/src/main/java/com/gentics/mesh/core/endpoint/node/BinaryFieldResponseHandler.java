@@ -20,6 +20,7 @@ import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.ETag;
+import com.gentics.mesh.util.EncodeUtil;
 import com.gentics.mesh.util.RxUtil;
 
 import io.reactivex.Flowable;
@@ -101,9 +102,8 @@ public class BinaryFieldResponseHandler {
 		}
 
 		response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
-		// TODO encode filename?
-		// TODO images and pdf files should be shown in inline format
-		response.putHeader("content-disposition", "attachment; filename=" + fileName);
+
+		addContentDispositionHeader(response, fileName, "attachment");
 
 		// Set to IDENTITY to avoid gzip compression
 		response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
@@ -148,12 +148,23 @@ public class BinaryFieldResponseHandler {
 				// Set to IDENTITY to avoid gzip compression
 				response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
 
-				// TODO encode filename?
-				response.putHeader("content-disposition", "inline; filename=" + fileName);
+				addContentDispositionHeader(response, fileName, "inline");
+
 				return fileWithProps.getFile();
 			}).flatMap(RxUtil::toBufferFlow);
 		resizedData.subscribe(response::write, rc::fail, response::end);
 
+	}
+
+	private void addContentDispositionHeader(HttpServerResponse response, String fileName, String type) {
+		String encodedFileNameUTF8 = EncodeUtil.encodeForRFC5597(fileName);
+		String encodedFileNameISO = EncodeUtil.toISO88591(fileName);
+
+		StringBuilder value = new StringBuilder();
+		value.append(type + ";");
+		value.append(" filename=\"" + encodedFileNameISO + "\";");
+		value.append(" filename*=" + encodedFileNameUTF8);
+		response.putHeader("content-disposition", value.toString());
 	}
 
 }

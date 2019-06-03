@@ -27,7 +27,13 @@ title: Changelog
 [[v0.34.1]]
 == 0.34.1 (TBD)
 
+icon:check[] Backup: Fixed `NullPointerException` which happend when the backup directory was missing and the backup endpoint was invoked. link:https://github.com/gentics/mesh/issues/463[#463]
+
+icon:plus[] Core: The core Vert.x library was updated to version 3.7.1
+
 icon:check[] Focal point: It is now possible to use the `/api/v1/:projectName/nodes/:uuid/binaryTransform/:fieldName` to resize and image and set the focal point in one operation.
+
+icon:check[] The `content-disposition` header will now contain the UTF-8 and ISO-8859-1 encoded filename. link:https://github.com/gentics/mesh/issues/702[#702]
 
 icon:plus[] REST: It is now possible to set a flag that forces a user to change their password on the next login. Take a look at link:{{< relref "authentication.asciidoc" >}}#_forcing_user_to_change_password[the documentation] for more information.
 
@@ -188,7 +194,6 @@ icon:check[] REST: Creating a schema with a micronode field and the allow option
 icon:check[] Core: Fixed a bug that caused an internal server error when applying changes to a microschema. link:https://github.com/gentics/mesh/issues/591[#591]
 
 icon:check[] UI: Fixed validation issues in microschema lists when updating nodes. Previously validation issues would not be detected by the UI and the node update would fail. link:https://github.com/gentics/mesh-ui/pull/202[#202]
-
 
 [[v0.31.4]]
 == 0.31.4 (11.04.2019)
