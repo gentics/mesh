@@ -1,0 +1,6 @@
+:icons: font
+:source-highlighter: prettify
+:toc:
+:api1: /api/v1
+:api2: /api/v2
+:apiLatest: {api2}

@@ -2,9 +2,7 @@
 title: Gentics Mesh Cookbook
 ---
 
-:icons: font
-:source-highlighter: prettify
-:toc:
+include::content/docs/variables.adoc-include[]
 
 == Introduction
 
@@ -14,9 +12,9 @@ This document aims to provide you with suggestions and hints on how to deal with
 
 Handling contents is fairly easy. You can either identify and load content using the UUIDs or a regular web path. 
 
-By Path: https://demo.getmesh.io/api/v1/demo/webroot/yachts/indian-empress
+By Path: https://demo.getmesh.io{apiLatest}/demo/webroot/yachts/indian-empress
 
-By Uuid: https://demo.getmesh.io/api/v1/demo/nodes/079ae5d5467447b99ae5d5467447b934
+By Uuid: https://demo.getmesh.io{apiLatest}/demo/nodes/079ae5d5467447b99ae5d5467447b934
 
 You can either place the path or uuid to your content in a fragment `/demo#category/079ae5d5467447b99ae5d5467447b934` or in the regular web path `/demo/category/079ae5d5467447b99ae5d5467447b934`. Most modern single page application frameworks like angular or react support both variations.
 

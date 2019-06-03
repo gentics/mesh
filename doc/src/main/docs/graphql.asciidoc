@@ -2,8 +2,7 @@
 title: GraphQL
 ---
 
-:icons: font
-:source-highlighter: prettify
+include::content/docs/variables.adoc-include[]
 
 Gentics Mesh is also able to process http://graphql.org/[GraphQL] queries. You can use GraphQL to directly specify what fields should be retrieved and retrieve deeply nested data sets.
 Internally, Gentics Mesh will resolve your query and traverse your content graph to fetch only the data you specified.
@@ -48,9 +47,10 @@ The search query is an escaped JSON object which represents the a regular https:
 
 include::content/docs/examples/graphql/node-search-query[]
 
-+++
-<a href="https://demo.getmesh.io/api/v1/demo/graphql/browser/#query=query%20stuff(%24esQuery%3A%20String)%20%7B%0A%20%20nodes(query%3A%20%24esQuery)%20%7B%0A%20%20%20%20elements%20%7B%0A%20%20%20%20%20%20uuid%0A%20%20%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20%20%20...%20on%20vehicle%20%7B%0A%20%20%20%20%20%20%20%20%20%20slug%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%20%20totalCount%0A%20%20%7D%0A%7D%0A&variables=%7B%0A%20%20%22esQuery%22%3A%20%20%22%7B%5C%22query%5C%22%3A%7B%5C%22query_string%5C%22%3A%7B%5C%22query%5C%22%3A%5C%22car%5C%22%7D%7D%7D%22%0A%7D&operationName=stuff" target="_blank">Example using variables</a>
-+++
+[subs=attributes]
+++++
+<a href="https://demo.getmesh.io{apiLatest}/demo/graphql/browser/#query=query%20stuff(%24esQuery%3A%20String)%20%7B%0A%20%20nodes(query%3A%20%24esQuery)%20%7B%0A%20%20%20%20elements%20%7B%0A%20%20%20%20%20%20uuid%0A%20%20%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20%20%20...%20on%20vehicle%20%7B%0A%20%20%20%20%20%20%20%20%20%20slug%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%20%20totalCount%0A%20%20%7D%0A%7D%0A&variables=%7B%0A%20%20%22esQuery%22%3A%20%20%22%7B%5C%22query%5C%22%3A%7B%5C%22query_string%5C%22%3A%7B%5C%22query%5C%22%3A%5C%22car%5C%22%7D%7D%7D%22%0A%7D&operationName=stuff" target="_blank">Example using variables</a>
+++++
 
 === Using pagination
 
@@ -118,10 +118,10 @@ We have integrated the interactive https://github.com/graphql/graphiql[GraphiQL]
 
 .Try the example
 [TIP]
-https://demo.getmesh.io/api/v1/demo/graphql/browser/[Live Demo]
+https://demo.getmesh.io{apiLatest}/demo/graphql/browser/[Live Demo]
 
 Alternatively, you can download Gentics Mesh and test the API locally.
-Once authenticated you can access the interactive GraphiQL browser at ```/api/v1/:projectName/graphql/browser/``` .
+Once authenticated you can access the interactive GraphiQL browser at ```{apiLatest}/:projectName/graphql/browser/``` .
 
 NOTE: The GraphiQL browser currently does not support the `branch` or `version` query parameter.
 

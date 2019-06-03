@@ -2,8 +2,7 @@
 title: Logging
 ---
 
-:icons: font
-:source-highlighter: prettify
+include::content/docs/variables.adoc-include[]
 
 Gentics Mesh uses https://logback.qos.ch/[logback] as the main logging facility. Logging can be configured using the `config/logback.xml` file.
 

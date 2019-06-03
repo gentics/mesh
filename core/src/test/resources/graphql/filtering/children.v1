@@ -1,0 +1,41 @@
+{
+	rootContent: node(path:"/") {
+		children(filter: {
+			schema: {is: content}
+		}) {
+			# [$.data.rootContent.children.elements.length()=1]
+			elements {
+				uuid
+				schema {
+					name
+				}
+				fields {
+					... on content {
+						title
+						content
+					}
+				}
+			}
+		}
+	}
+
+	rootFolders: node(path:"/") {
+		children(filter: {
+			schema: {is: folder}
+		}) {
+			# [$.data.rootFolders.children.elements.length()=4]
+			elements {
+				uuid
+				schema {
+					name
+				}
+				fields {
+					... on folder {
+						name
+					}
+				}
+			}
+		}
+	}
+}
+# [$.errors=<is-undefined>]

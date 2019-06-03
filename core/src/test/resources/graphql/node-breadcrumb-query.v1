@@ -1,0 +1,18 @@
+{
+	node(path:"/Neuigkeiten/2015/News_2015.en.html") {
+		path
+		# [$.data.node.breadcrumb[0].path=/]
+		# [$.data.node.breadcrumb[1].path=/News]
+		# [$.data.node.breadcrumb[2].path=/News/2015]
+		# [$.data.node.breadcrumb[3].path=/News/2015/News_2015.en.html]
+		breadcrumb {
+			uuid
+			path
+			fields {
+				... on content { slug }
+				... on folder {slug }
+			}
+		}
+	}
+}
+# [$.errors=<is-undefined>]

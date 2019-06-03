@@ -1,0 +1,16 @@
+{
+  "version" : "1.0",
+  "language" : "en",
+  "width" : 100,
+  "height" : 200,
+  "cropRect" : {
+    "startX" : 50,
+    "startY" : 20,
+    "width" : 170,
+    "height" : 150
+  },
+  "focalPoint" : {
+    "x" : 0.3,
+    "y" : 0.6
+  }
+}

@@ -1,32 +1,29 @@
 package com.gentics.mesh.core.link;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import com.gentics.mesh.parameter.VersioningParameters;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.parameter.LinkType;
-import com.gentics.mesh.router.APIRouter;
-
+import com.gentics.mesh.parameter.VersioningParameters;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * This class will resolve mesh link placeholders.
@@ -161,7 +158,7 @@ public class WebRootLinkReplacer {
 			case MEDIUM:
 				return "/" + projectName + "/error/404";
 			case FULL:
-				return APIRouter.API_MOUNTPOINT + "/" + projectName + "/webroot/error/404";
+				return VersionHandler.baseRoute(ac.getApiVersion()) + "/" + projectName + "/webroot/error/404";
 			default:
 				throw error(BAD_REQUEST, "Cannot render link with type " + type);
 			}
@@ -232,7 +229,7 @@ public class WebRootLinkReplacer {
 		case MEDIUM:
 			return "/" + node.getProject().getName() + path;
 		case FULL:
-			return APIRouter.API_MOUNTPOINT + "/" + node.getProject().getName() + "/webroot" + path + branchQueryParameter(theirProject.getBranchRoot().findByUuid(branchUuid));
+			return VersionHandler.baseRoute(ac.getApiVersion()) + "/" + node.getProject().getName() + "/webroot" + path + branchQueryParameter(theirProject.getBranchRoot().findByUuid(branchUuid));
 		default:
 			throw error(BAD_REQUEST, "Cannot render link with type " + type);
 		}

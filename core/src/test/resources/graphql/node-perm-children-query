@@ -19,9 +19,7 @@
 				# [$.data.node.children.elements[0].path=/Deals]
 				# [$.data.node.children.elements[1].path=/Products]
 				path
-				fields {
-					... on folder { slug }
-				}
+                ... on folder { fields { slug }}
 			}
 		}
 		# [$.data.node.parent=<is-null>]

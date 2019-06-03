@@ -51,6 +51,10 @@ public class MeshRestClientConfig {
 			getBasePath();
 	}
 
+	public static Builder newConfig() {
+		return new Builder();
+	}
+
 	public static class Builder {
 		private String host;
 		private String basePath = "/api/v1";
@@ -132,8 +136,6 @@ public class MeshRestClientConfig {
 
 		/**
 		 * Sets the base uri that is prepended to all paths when making requests to mesh.
-		 *
-		 * <p>Default: "/api/v1"</p>
 		 *
 		 * @param basePath
 		 * @return

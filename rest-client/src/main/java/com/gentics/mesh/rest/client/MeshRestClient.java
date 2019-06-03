@@ -33,11 +33,6 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	NavRootClientMethods, EventbusClientMethods, BranchClientMethods, ApiInfoClientMethods, GraphQLClientMethods, JobClientMethods {
 
 	/**
-	 * The default base URI path to the Mesh-API.
-	 */
-	String DEFAULT_BASEURI = "/api/v1";
-
-	/**
 	 * Create a new mesh rest client.
 	 *
 	 * @param host

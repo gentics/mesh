@@ -16,8 +16,8 @@ import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.VersionHandler;
 import com.syncleus.ferma.tx.Tx;
-
 import dagger.Lazy;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
@@ -64,16 +64,19 @@ public class RouterStorage {
 
 	public BodyHandler bodyHandler;
 
+	public final VersionHandler versionHandler;
+
 	private MeshAuthChain authChain;
 
 	@Inject
 	public RouterStorage(Vertx vertx, MeshAuthChain authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler, Lazy<BootstrapInitializer> boot,
-		Lazy<Database> db) {
+						 Lazy<Database> db, VersionHandler versionHandler) {
 		this.boot = boot;
 		this.db = db;
 		this.corsHandler = corsHandler;
 		this.bodyHandler = bodyHandler;
 		this.authChain = authChain;
+		this.versionHandler = versionHandler;
 
 		// Initialize the router chain. The root router will create additional routers which will be mounted.
 		rootRouter = new RootRouter(vertx, this);

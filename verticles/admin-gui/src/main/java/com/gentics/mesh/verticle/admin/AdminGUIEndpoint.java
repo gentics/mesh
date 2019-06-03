@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.github.jknack.handlebars.Context;
@@ -121,6 +122,7 @@ public class AdminGUIEndpoint extends AbstractInternalEndpoint {
 				Map<String, Object> model = new HashMap<>();
 				int httpPort = Mesh.mesh().getOptions().getHttpServerOptions().getPort();
 				model.put("mesh_http_port", httpPort);
+				model.put("apiPath", VersionHandler.CURRENT_API_BASE_PATH);
 
 				// Prepare render context
 				Context context = Context.newBuilder(model).resolver(MapValueResolver.INSTANCE).build();

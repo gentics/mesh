@@ -1,0 +1,78 @@
+# NOTE that the assertions in this file will not be evaluated, because custom assertions are used for this
+# test case. The assertions have been left to give a hint what this test is about.
+{
+	# Load the news folder in german. This will be our starting point
+	node(uuid: "4b1346a2163a4ff89346a2163a9ff883", lang: ["de", "en"]) {
+		# [$.data.node.language=de]
+		language
+		c1: children {
+			totalCount
+			elements {
+				uuid
+				# [$.data.node.c1.elements[0].language=en]
+				# [$.data.node.c1.elements[1].language=en]
+				# [$.data.node.c1.elements[2].language=de]
+				# [$.data.node.c1.elements[3].language=de]
+
+				language
+				fields {
+					... on folder {
+						slug
+					}
+				}
+			}
+		}
+		c2: children(lang: ["de","en"]) {
+			totalCount
+			elements {
+				uuid
+				# [$.data.node.c2.elements[0].language=en]
+				# [$.data.node.c2.elements[1].language=en]
+				# [$.data.node.c2.elements[2].language=de]
+				# [$.data.node.c2.elements[3].language=de]
+				language
+				fields {
+					... on folder {
+						slug
+					}
+				}
+			}
+		}
+		
+		hip: children {
+			elements {
+				uuid
+				language
+				parent {
+					uuid
+					language
+					children {
+						elements {
+							# [$.data.node.hip.elements[0].parent.children.elements[0].language=en]
+							# [$.data.node.hip.elements[0].parent.children.elements[1].language=en]
+							# [$.data.node.hip.elements[0].parent.children.elements[2].language=de]
+							# [$.data.node.hip.elements[0].parent.children.elements[3].language=de]
+
+							# [$.data.node.hip.elements[1].parent.children.elements[0].language=en]
+							# [$.data.node.hip.elements[1].parent.children.elements[1].language=en]
+							# [$.data.node.hip.elements[1].parent.children.elements[2].language=de]
+							# [$.data.node.hip.elements[1].parent.children.elements[3].language=de]
+
+							# [$.data.node.hip.elements[2].parent.children.elements[0].language=en]
+							# [$.data.node.hip.elements[2].parent.children.elements[1].language=en]
+							# [$.data.node.hip.elements[2].parent.children.elements[2].language=de]
+							# [$.data.node.hip.elements[2].parent.children.elements[3].language=de]
+
+							# [$.data.node.hip.elements[3].parent.children.elements[0].language=en]
+							# [$.data.node.hip.elements[3].parent.children.elements[1].language=en]
+							# [$.data.node.hip.elements[3].parent.children.elements[2].language=de]
+							# [$.data.node.hip.elements[3].parent.children.elements[3].language=de]
+							language
+						}
+					}
+				}
+			}
+		}
+	}
+}
+# [$.errors=<is-undefined>]

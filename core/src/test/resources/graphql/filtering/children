@@ -9,8 +9,8 @@
 				schema {
 					name
 				}
-				fields {
-					... on content {
+				... on content {
+					fields {
 						title
 						content
 					}
@@ -29,8 +29,8 @@
 				schema {
 					name
 				}
-				fields {
-					... on folder {
+				... on folder {
+					fields {
 						name
 					}
 				}

@@ -6,7 +6,7 @@ import com.gentics.mesh.router.RouterStorage;
 
 /**
  * A endpoint which provides more REST endpoints for all registered projects. The router for this endpoint will automatically be mounted for all registered
- * projects. E.g: /api/v1/yourproject/endpoint_basePath
+ * projects. E.g: :apibase:/yourproject/endpoint_basePath
  */
 public abstract class AbstractProjectEndpoint extends AbstractInternalEndpoint {
 

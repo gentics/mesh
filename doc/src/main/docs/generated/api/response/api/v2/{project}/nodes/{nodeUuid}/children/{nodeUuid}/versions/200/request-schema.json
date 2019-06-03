@@ -1,0 +1,64 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:version:NodeVersionsResponse",
+  "properties" : {
+    "versions" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "array",
+        "items" : {
+          "type" : "object",
+          "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:version:VersionInfo",
+          "properties" : {
+            "creator" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReference",
+              "required" : true,
+              "description" : "User reference of the creator of the element.",
+              "properties" : {
+                "firstName" : {
+                  "type" : "string",
+                  "description" : "Firstname of the user"
+                },
+                "lastName" : {
+                  "type" : "string",
+                  "description" : "Lastname of the user"
+                },
+                "uuid" : {
+                  "type" : "string",
+                  "required" : true,
+                  "description" : "Uuid of the user"
+                }
+              }
+            },
+            "created" : {
+              "type" : "string",
+              "required" : true,
+              "description" : "ISO8601 formatted created date string."
+            },
+            "version" : {
+              "type" : "string",
+              "required" : true,
+              "description" : "Version of the content."
+            },
+            "draft" : {
+              "type" : "boolean",
+              "required" : true,
+              "description" : "Is the content a draft version?"
+            },
+            "published" : {
+              "type" : "boolean",
+              "required" : true,
+              "description" : "Is the content published version?"
+            },
+            "branchRoot" : {
+              "type" : "boolean",
+              "required" : true,
+              "description" : "Is the version used as a root version in another branch?"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -12,6 +12,7 @@ import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.endpoint.admin.AdminHandler;
+import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.metric.MetricsHandler;
 import com.gentics.mesh.router.route.DefaultNotFoundHandler;
 import com.gentics.mesh.router.route.FailureHandler;
@@ -40,7 +41,8 @@ public class MonitoringRoutes {
 	public MonitoringRoutes(Vertx vertx, MetricsHandler metrics, AdminHandler adminHandler) {
 		this.router = new RouterImpl(vertx);
 		this.apiRouter = new RouterImpl(vertx);
-		router.mountSubRouter("/api/v1", apiRouter);
+		VersionHandler.generateVersionMountpoints()
+			.forEach(mountPoint -> router.mountSubRouter(mountPoint, apiRouter));
 		this.metrics = metrics;
 		this.adminHandler = adminHandler;
 		init();

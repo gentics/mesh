@@ -56,9 +56,9 @@ Now lets set the base so we can reuse it in our examples:
 
 [source,bash]
 ----
-export MESH_BASE="http://localhost:8080/api/v1"
+export MESH_BASE="http://localhost:8080/api/:apiLatest:"
 or
-export MESH_BASE="https://demo.getmesh.io/api/v1"
+export MESH_BASE="https://demo.getmesh.io/api/:apiLatest:"
 ----
 
 In this guide we only use `curl` and `jq` which is just used to increase readability.
@@ -289,7 +289,7 @@ curl -X POST -H "Authorization: Bearer $MESH_TOKEN" \
             "stocklevel" : 4,
             "description" : "The Lockheed SR-71 Blackbird is a long-range, Mach 3+ strategic reconnaissance aircraft."
         }
-    }' \ 
+    }' \
  -H "Content-Type: application/json" \
  $MESH_BASE/demo/nodes
 ----

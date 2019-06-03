@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.container.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -65,7 +66,7 @@ public class MicroschemaContainerImpl extends
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return "/api/v1/microschemas/" + getUuid();
+		return CURRENT_API_BASE_PATH + "/microschemas/" + getUuid();
 	}
 
 	@Override
