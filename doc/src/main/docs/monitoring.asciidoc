@@ -2,8 +2,7 @@
 title: Monitoring
 ---
 
-:icons: font
-:source-highlighter: prettify
+include::content/docs/variables.adoc-include[]
 
 Gentics Mesh exposes monitoring data via an un-authenticated monitoring server. In addition to the default API server which runs on default port `8080` an additional monitoring server will be started which listens on `localhost:8081` by default.
 
@@ -32,15 +31,15 @@ This can be done via the environment http host setting: `MESH_MONITORING_HTTP_HO
 
 === Liveness Probe
 
-The healthcheck liveness probe endpoint `GET /api/v1/health/live` indicates if server is working as expected when status code `200` is returned.
+The healthcheck liveness probe endpoint `GET {apiLatest}/health/live` indicates if server is working as expected when status code `200` is returned.
 
 === Readiness Probe
 
-The readines probe endpoint `GET /api/v1/health/ready` returns status code `200` if the server is accepting connections. This endpoint can be used to check when the server instance if ready to accept requests once it has been started. This is especially useful if you run rolling cluster upgrades.
+The readiness probe endpoint `GET {apiLatest}/health/ready` returns status code `200` if the server is accepting connections. This endpoint can be used to check when the server instance if ready to accept requests once it has been started. This is especially useful if you run rolling cluster upgrades.
 
 === Status
 
-The current Gentics Mesh server status can be checked against the `GET /api/v1/status`.
+The current Gentics Mesh server status can be checked against the `GET {apiLatest}/status`.
 
 [options="header",cols="2*"]
 |======
@@ -70,11 +69,11 @@ The current Gentics Mesh server status can be checked against the `GET /api/v1/s
 
 === Cluster Status
 
-The `GET /api/v1/cluster/status` endpoint returns the status of all cluster nodes to which the queries instance has establishes a connection.
+The `GET {apiLatest}/cluster/status` endpoint returns the status of all cluster nodes to which the queries instance has establishes a connection.
 
 === Version Info
 
-The version information can be retrieved via the `GET /api/v1/versions` endpoint.
+The version information can be retrieved via the `GET {apiLatest}/versions` endpoint.
 
 [source,json]
 ----
@@ -92,7 +91,7 @@ The version information can be retrieved via the `GET /api/v1/versions` endpoint
 
 === Prometheus Metrics
 
-Gentics Mesh server exposes link:https://prometheus.io/[Prometheus] compatible data on the `/api/v1/metrics` endpoint.
+Gentics Mesh server exposes link:https://prometheus.io/[Prometheus] compatible data on the `{apiLatest}/metrics` endpoint.
 
 The link:https://prometheus.io/[Prometheus] server can scrape metric data from this endpoint. Using link:https://grafana.com/[Grafana] in combination with Prometheus is a typical usecase to display metric data.
 
@@ -101,13 +100,13 @@ The link:https://prometheus.io/[Prometheus] server can scrape metric data from t
 Example Prometheus configuration:
 
 .prometheus.yml
-[source,yaml]
+[source,yaml,subs=attributes]
 ----
 …
 scrape_configs:
   - job_name: 'mesh'
     scrape_interval: 30s
-    metrics_path: '/api/v1/metrics'
+    metrics_path: '{apiLatest}/metrics'
     static_configs:
         - targets: ['mesh:8081']
 …

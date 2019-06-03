@@ -12,6 +12,11 @@
 | object
 | Crop area.
 
+| focalPoint
+| false
+| object
+| Optional new focal point for the transformed image.
+
 | height
 | false
 | integer

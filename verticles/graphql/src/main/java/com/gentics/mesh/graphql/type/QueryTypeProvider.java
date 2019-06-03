@@ -1,5 +1,53 @@
 package com.gentics.mesh.graphql.type;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
+import com.gentics.mesh.core.data.root.NodeRoot;
+import com.gentics.mesh.core.data.service.WebRootService;
+import com.gentics.mesh.core.rest.error.PermissionException;
+import com.gentics.mesh.core.rest.error.UuidNotFoundException;
+import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.filter.GroupFilter;
+import com.gentics.mesh.graphql.filter.NodeFilter;
+import com.gentics.mesh.graphql.filter.RoleFilter;
+import com.gentics.mesh.graphql.filter.UserFilter;
+import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
+import com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider;
+import com.gentics.mesh.handler.Versioned;
+import com.gentics.mesh.path.Path;
+import com.gentics.mesh.search.index.group.GroupSearchHandler;
+import com.gentics.mesh.search.index.project.ProjectSearchHandler;
+import com.gentics.mesh.search.index.role.RoleSearchHandler;
+import com.gentics.mesh.search.index.tag.TagSearchHandler;
+import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
+import com.gentics.mesh.search.index.user.UserSearchHandler;
+import graphql.ExceptionWhileDataFetching;
+import graphql.execution.ExecutionContext;
+import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLObjectType.Builder;
+import graphql.schema.GraphQLSchema;
+import graphql.schema.GraphQLType;
+import graphql.schema.GraphQLTypeReference;
+import org.apache.commons.lang3.tuple.Pair;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
+
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.graphql.type.BranchTypeProvider.BRANCH_TYPE_NAME;
@@ -30,57 +78,6 @@ import static graphql.Scalars.GraphQLLong;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import org.apache.commons.lang3.tuple.Pair;
-
-import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
-import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.data.service.WebRootService;
-import com.gentics.mesh.core.rest.error.PermissionException;
-import com.gentics.mesh.core.rest.error.UuidNotFoundException;
-import com.gentics.mesh.graphql.context.GraphQLContext;
-import com.gentics.mesh.graphql.filter.GroupFilter;
-import com.gentics.mesh.graphql.filter.NodeFilter;
-import com.gentics.mesh.graphql.filter.RoleFilter;
-import com.gentics.mesh.graphql.filter.UserFilter;
-import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
-import com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider;
-import com.gentics.mesh.graphql.type.field.NodeFieldTypeProvider;
-import com.gentics.mesh.path.Path;
-import com.gentics.mesh.search.index.group.GroupSearchHandler;
-import com.gentics.mesh.search.index.project.ProjectSearchHandler;
-import com.gentics.mesh.search.index.role.RoleSearchHandler;
-import com.gentics.mesh.search.index.tag.TagSearchHandler;
-import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
-import com.gentics.mesh.search.index.user.UserSearchHandler;
-
-import graphql.ExceptionWhileDataFetching;
-import graphql.execution.ExecutionContext;
-import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLList;
-import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLObjectType.Builder;
-import graphql.schema.GraphQLSchema;
-import graphql.schema.GraphQLType;
-import graphql.schema.GraphQLTypeReference;
-
 /**
  * The {@link QueryTypeProvider} provides as the name suggests the query type for the GraphQL schema. This type is the starting point for all GraphQL queries.
  * Various other schema types are located in dedicated classes for each type. Dependency injection is used to load those dependencies and thus make these types
@@ -99,9 +96,6 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 	@Inject
 	public InterfaceTypeProvider interfaceTypeProvider;
-
-	@Inject
-	public NodeFieldTypeProvider nodeFieldTypeProvider;
 
 	@Inject
 	public MicronodeFieldTypeProvider micronodeFieldTypeProvider;
@@ -536,10 +530,11 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		additionalTypes.add(microschemaTypeProvider.createType());
 		additionalTypes.add(newPageType(MICROSCHEMA_PAGE_TYPE_NAME, MICROSCHEMA_TYPE_NAME));
 
-		additionalTypes.add(nodeTypeProvider.createType(context));
+		additionalTypes.add(nodeTypeProvider.createVersionInfoType());
+		additionalTypes.add(nodeTypeProvider.createType(context).forVersion(context));
 		additionalTypes.add(newPageType(NODE_PAGE_TYPE_NAME, NODE_TYPE_NAME));
 
-		additionalTypes.add(micronodeFieldTypeProvider.createType(context));
+		additionalTypes.add(micronodeFieldTypeProvider.createType(context).forVersion(context));
 
 		additionalTypes.add(projectTypeProvider.createType(project));
 		additionalTypes.add(newPageType(PROJECT_PAGE_TYPE_NAME, PROJECT_TYPE_NAME));
@@ -572,6 +567,11 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		additionalTypes.add(fieldDefProvider.createBinaryFieldType());
 
 		additionalTypes.add(createLinkEnumType());
+
+		Versioned.doSince(2, context, () -> {
+			additionalTypes.addAll(nodeTypeProvider.generateSchemaFieldTypes(context).forVersion(context));
+			additionalTypes.addAll(micronodeFieldTypeProvider.generateMicroschemaFieldTypes(context).forVersion(context));
+		});
 
 		GraphQLSchema schema = builder.query(getRootType(context)).additionalTypes(additionalTypes).build();
 		return schema;

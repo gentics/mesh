@@ -1,20 +1,5 @@
 package com.gentics.mesh.core.node;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.INITIAL_BRANCH_NAME;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static java.util.stream.Collectors.toList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-
-import java.util.List;
-import org.junit.Test;
-
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
@@ -31,6 +16,21 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
+import org.junit.Test;
+
+import java.util.List;
+
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.INITIAL_BRANCH_NAME;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static java.util.stream.Collectors.toList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class NodeNavigationEndpointTest extends AbstractMeshTest {
@@ -243,10 +243,10 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 		NavigationResponse navResponse = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid,
 			new NavigationParametersImpl().setMaxDepth(42), new NodeParametersImpl().setLanguages("de").setResolveLinks(LinkType.FULL)));
 
-		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1/german%20folder-2",
+		assertEquals(CURRENT_API_BASE_PATH + "/dummy/webroot/english%20folder-0/english%20folder-1/german%20folder-2",
 			findFolder(navResponse, germanFolderResponse.getUuid()).getPath());
-		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1", findFolder(navResponse, englishFolder1.getUuid()).getPath());
-		assertEquals("/api/v1/dummy/webroot/english%20folder-0", findFolder(navResponse, englishFolder0.getUuid()).getPath());
+		assertEquals(CURRENT_API_BASE_PATH + "/dummy/webroot/english%20folder-0/english%20folder-1", findFolder(navResponse, englishFolder1.getUuid()).getPath());
+		assertEquals(CURRENT_API_BASE_PATH + "/dummy/webroot/english%20folder-0", findFolder(navResponse, englishFolder0.getUuid()).getPath());
 
 	}
 

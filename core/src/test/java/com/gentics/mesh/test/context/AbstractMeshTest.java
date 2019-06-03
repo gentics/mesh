@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.util.TestUtils.sleep;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -206,6 +205,20 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	protected String getGraphQLQuery(String name) throws IOException {
 		return IOUtils.toString(getClass().getResourceAsStream("/graphql/" + name));
 	}
+
+	/**
+	 * Return the graphql query for the given name and version.
+	 *
+	 * @param name
+	 * @return
+	 * @throws IOException
+	 */
+	protected String getGraphQLQuery(String name, String version) throws IOException {
+		InputStream stream = Optional.ofNullable(getClass().getResourceAsStream("/graphql/" + name + "." + version))
+			.orElseGet(() -> getClass().getResourceAsStream("/graphql/" + name));
+		return IOUtils.toString(stream);
+	}
+
 
 	/**
 	 * Return the es text for the given name.
@@ -717,7 +730,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	/**
 	 * Return the event asserter.
-	 * 
+	 *
 	 * @return
 	 */
 	public EventAsserterChain expect(MeshEvent event) {
@@ -730,7 +743,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	/**
 	 * Return toxics for ES proxy.
-	 * 
+	 *
 	 * @return
 	 */
 	public ToxicList toxics() {

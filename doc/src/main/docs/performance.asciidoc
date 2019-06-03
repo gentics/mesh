@@ -2,9 +2,7 @@
 title: Performance Guide
 ---
 
-:icons: font
-:source-highlighter: prettify
-:toc:
+include::content/docs/variables.adoc-include[]
 
 This document contains useful information about performance related topics. 
 It will help you make the right modelling choices when using Gentics Mesh.

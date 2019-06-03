@@ -44,7 +44,7 @@ Next we create the `eventbus.js` file which contains the needed code to register
 import EventBus from 'vertx3-eventbus-client';
 import { useEffect } from 'react';
 
-let eb = new EventBus("/api/v1/eventbus")
+let eb = new EventBus(":apiLatest:/eventbus")
 eb.enableReconnect(true);
 
 let callbacks = [];

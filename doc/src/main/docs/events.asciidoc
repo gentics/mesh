@@ -32,9 +32,9 @@ Typical workflow:
 
 == Eventbus Bridge & Websocket
 
-The ```/api/v1/eventbus``` endpoint allows clients to access the eventbus. This is useful if you want to react on specific events.
+The ```:apiLatest:/eventbus``` endpoint allows clients to access the eventbus. This is useful if you want to react on specific events.
 
-The endpoint is https://github.com/sockjs[SockJS] compliant. It is also possible to access the websocket directly via: ```/api/v1/eventbus/websocket```.
+The endpoint is https://github.com/sockjs[SockJS] compliant. It is also possible to access the websocket directly via: ```:apiLatest:/eventbus/websocket```.
 
 Javascript projects can use the link:https://www.npmjs.com/package/vertx3-eventbus-client[vertx3-eventbus-client] library to connect to the eventbus bridge.
 
@@ -160,7 +160,7 @@ void setup() {
   Serial.println(WiFi.localIP());
  
   // Set the connection details to the Gentics Mesh Server
-  webSocket.begin("1.2.3.4", 8080, "/api/v1/eventbus/websocket");
+  webSocket.begin("1.2.3.4", 8080, ":apiLatest:/eventbus/websocket");
   webSocket.setReconnectInterval(2000);
   // Register the interrupt pin
   pinMode(interruptPin, INPUT_PULLUP);

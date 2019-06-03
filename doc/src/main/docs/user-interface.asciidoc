@@ -2,10 +2,7 @@
 title: User Interface
 ---
 
-:icons: font
-:source-highlighter: prettify
-:toc:
-
+include::content/docs/variables.adoc-include[]
 
 The Gentics Mesh user interface is a web-based administration tool for the Gentics Mesh server. 
 By default it can be reached via ```http://localhost:8080/mesh-ui/```.
@@ -49,7 +46,7 @@ The Gentics Mesh user interface can be configured using the mesh-ui-config.js fi
      */
     var meshUiConfig = {
         // The URL to the Mesh API
-        apiUrl: '/api/v1/',
+        apiUrl: '/api/v2/',
 
         // The ISO-639-1 code of the default language
         defaultLanguage: 'en',

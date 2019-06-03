@@ -31,6 +31,7 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.NodeParameters;
@@ -49,6 +50,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Predicate;
@@ -98,6 +100,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	public static final String RESET_TOKEN_ISSUE_TIMESTAMP_KEY = "resetTokenTimestamp";
 
+	public static final String FORCE_PASSWORD_CHANGE_KEY = "forcePasswordChange";
+
 	public static void init(Database database) {
 		database.addVertexType(UserImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(ASSIGNED_TO_ROLE, false, false, true);
@@ -137,6 +141,17 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	@Override
 	public String getResetToken() {
 		return property(RESET_TOKEN_KEY);
+	}
+
+	@Override
+	public boolean isForcedPasswordChange() {
+		return Optional.<Boolean>ofNullable(property(FORCE_PASSWORD_CHANGE_KEY)).orElse(false);
+	}
+
+	@Override
+	public User setForcedPasswordChange(boolean force) {
+		property(FORCE_PASSWORD_CHANGE_KEY, force);
+		return this;
 	}
 
 	@Override
@@ -395,6 +410,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		if (fields.has("rolesHash")) {
 			restUser.setRolesHash(getRolesHash());
 		}
+		if (fields.has("forcedPasswordChange")) {
+			restUser.setForcedPasswordChange(isForcedPasswordChange());
+		}
 		fillCommonRestFields(ac, fields, restUser);
 		setRolePermissions(ac, restUser);
 
@@ -458,6 +476,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	@Override
 	public User setPasswordHash(String hash) {
 		property(PASSWORD_HASH_PROPERTY_KEY, hash);
+		// Password has changed, the user is not forced to change their password anymore.
+		setForcedPasswordChange(false);
 		return this;
 	}
 
@@ -555,6 +575,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			modified = true;
 		}
 
+		if (shouldUpdate(requestModel.getForcedPasswordChange(), isForcedPasswordChange())) {
+			setForcedPasswordChange(requestModel.getForcedPasswordChange());
+			modified = true;
+		}
+
 		if (!isEmpty(requestModel.getPassword())) {
 			BCryptPasswordEncoder encoder = MeshInternal.get().passwordEncoder();
 			setPasswordHash(encoder.encode(requestModel.getPassword()));
@@ -636,7 +661,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return "/api/v1/users/" + getUuid();
+		return VersionHandler.baseRoute(ac) + "/users/" + getUuid();
 	}
 
 	@Override

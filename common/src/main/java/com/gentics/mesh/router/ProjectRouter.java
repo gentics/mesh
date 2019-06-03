@@ -1,16 +1,15 @@
 package com.gentics.mesh.router;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.gentics.mesh.Mesh;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * This class manages the project routers (e.g. routers for endpoints like /api/v1/:projectName/nodes)
+ * This class manages the project routers (e.g. routers for endpoints like :apibase:/:projectName/nodes)
  */
 public class ProjectRouter {
 
@@ -21,7 +20,7 @@ public class ProjectRouter {
 	private final Router router;
 
 	/**
-	 * Project routers are routers that are mounted by project routers. E.g: /api/v1/dummy/nodes, /api/v1/yourprojectname/tagFamilies
+	 * Project routers are routers that are mounted by project routers. E.g: :apibase:/dummy/nodes, :apibase:/yourprojectname/tagFamilies
 	 */
 	private Map<String, Router> projectRouters = new HashMap<>();
 

@@ -1,0 +1,127 @@
+{
+	node(path:"/Neuigkeiten/2015") {
+		fields {
+		... on content { title },
+		... on folder { 
+				# [$.data.node.fields.name=2015]
+				name
+
+				nodeRef {
+					# [$.data.node.fields.nodeRef.uuid=<is-uuid>]
+					uuid
+
+					# [$.data.node.fields.nodeRef.isContainer=false]
+					isContainer
+
+					# [$.data.node.fields.nodeRef.path=/News/News%20Overview.en.html]
+					path
+
+					node(lang: "en") {
+						# [$.data.node.fields.nodeRef.node.isPublished=true]
+						isPublished
+
+						# [$.data.node.fields.nodeRef.node.isDraft=true]
+						isDraft
+
+						fields {
+						# [$.data.node.fields.nodeRef.node.fields.title=News Overview english title]
+						... on content { title }
+						... on folder { name }
+						}
+					}
+				}
+				deRef: nodeRef(lang: "de") {
+					fields {
+					... on content { title }
+					... on folder { name }
+					}
+				}
+				binary {
+					# [$.data.node.fields.binary.binaryUuid=<is-uuid>]
+					binaryUuid
+					# [$.data.node.fields.binary.sha512sum=<is-not-null>]
+					sha512sum
+					# [$.data.node.fields.binary.height=10]
+					height
+					# [$.data.node.fields.binary.width=20]
+					width
+					# [$.data.node.fields.binary.mimeType=image/jpeg]
+					mimeType
+					# [$.data.node.fields.binary.dominantColor=00FF00]
+					dominantColor
+					# [$.data.node.fields.binary.fileSize=2048]
+					fileSize
+
+					focalPoint {
+						# [$.data.node.fields.binary.focalPoint.x=0.2]
+						x
+						# [$.data.node.fields.binary.focalPoint.y=0.3]
+						y
+					}
+				}
+				stringList
+				dateList
+				nodeList { uuid }
+				booleanList
+				numberList
+
+				# [$.data.node.fields.boolean=true]
+				boolean
+
+				# [$.data.node.fields.number=42.1]
+				number
+
+				# [$.data.node.fields.date=2012-07-11T08:55:21Z]
+				date
+				htmlList
+
+				# [$.data.node.fields.html=some html]
+				html
+
+				# [$.data.node.fields.htmlLink=Link: {{mesh.link("43ee8f9ff71e4016ae8f9ff71e10161c", "en")}}]
+				htmlLink
+
+				# [$.data.node.fields.string=some string]
+				string
+
+				# [$.data.node.fields.stringLink=Link: {{mesh.link("43ee8f9ff71e4016ae8f9ff71e10161c", "en")}}]
+				stringLink
+
+				micronode {
+					... on vcard {
+						firstName
+						lastName
+					}
+				}
+
+				micronodeList {
+					... on vcard {
+						# [$.data.node.fields.micronodeList[0].firstName=Joe]
+						firstName
+						# [$.data.node.fields.micronodeList[0].lastName=Doe]
+						lastName
+					}
+					... on TestMicroschema {
+						text
+						nodeRef {
+							path
+						}
+						nodeList {
+							# [$.data.node.fields.micronodeList[1].nodeList[0].uuid=<is-uuid>]
+							# [$.data.node.fields.micronodeList[1].nodeList[1].uuid=<is-uuid>]
+							uuid
+							# [$.data.node.fields.micronodeList[1].nodeList[0].language=en]
+							# [$.data.node.fields.micronodeList[1].nodeList[1].language=en]
+							language
+						}
+					}
+				}
+			}
+		}
+		# [$.data.node.uuid=<is-uuid>]
+		uuid
+		# [$.data.node.availableLanguages[0]=en]
+		availableLanguages
+	}
+}
+# [$.errors=<is-undefined>]

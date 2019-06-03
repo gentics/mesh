@@ -18,8 +18,8 @@
 			node(lang: "en") {
 				# [$.data.project.rootNode.node.language=en]
 				language
-				fields {
-					...on folder {
+                ...on folder {
+				    fields {
 						# The root node has initially no fields thus the name is null
 						# [$.data.project.rootNode.node.fields.name=<is-null>]
 						name

@@ -32,7 +32,7 @@ public class MonitoringClientConfig {
 
 	public static class Builder {
 		private String host;
-		private String basePath = "/api/v1";
+		private String basePath = "/api/v2";
 		private int port = 8080;
 
 		public MonitoringClientConfig build() {
@@ -71,7 +71,7 @@ public class MonitoringClientConfig {
 		 * Sets the base uri that is prepended to all paths when making requests to mesh.
 		 *
 		 * <p>
-		 * Default: "/api/v1"
+		 * Default: "/api/v2"
 		 * </p>
 		 *
 		 * @param basePath

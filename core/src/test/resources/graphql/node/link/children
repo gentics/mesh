@@ -15,8 +15,8 @@
 				# [$.data.node.c1.elements[3].language=de]
 
 				language
-				fields {
-					... on folder {
+                ... on folder {
+				    fields {
 						slug
 					}
 				}
@@ -31,8 +31,8 @@
 				# [$.data.node.c2.elements[2].language=de]
 				# [$.data.node.c2.elements[3].language=de]
 				language
-				fields {
-					... on folder {
+                ... on folder {
+				    fields {
 						slug
 					}
 				}

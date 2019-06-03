@@ -2,6 +2,7 @@
 [![Stack Overflow](http://img.shields.io/:stack%20overflow-genticsmesh-brightgreen.svg)](http://stackoverflow.com/questions/tagged/gentics-mesh)
 [![Join the chat at https://gitter.im/gentics/mesh](https://badges.gitter.im/gentics/mesh.svg)](https://gitter.im/gentics/mesh?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gentics_mesh&metric=alert_status)](https://sonarcloud.io/dashboard?id=gentics_mesh)
+<a href="https://cla-assistant.io/gentics/mesh"><img src="https://cla-assistant.io/readme/badge/gentics/mesh" alt="CLA assistant" /></a>
 
 
 # [Gentics Mesh](https://getmesh.io)
@@ -13,27 +14,27 @@ Gentics Mesh is an Open Source API-first CMS for developers. All contents can be
 ### [Docker](https://getmesh.io/docs/administration-guide/#_run_with_docker)
 
 ```bash
-docker run -p 8080:8080 gentics/mesh-demo:0.31.4
+docker run -p 8080:8080 gentics/mesh-demo:0.34.0
 ```
 
 ### [CLI](https://getmesh.io/docs/cli)
 
 ```bash
 npm install mesh-cli -g
-mesh docker start -t 0.31.4 -p 8080
+mesh docker start -t 0.34.0 -p 8080
 ```
 
 ### [Java](https://getmesh.io/docs/administration-guide/#_run_with_jar_file)
 
 ```bash
-java -jar mesh-demo-0.31.4.jar
+java -jar mesh-demo-0.34.0.jar
 ```
 
 ## Demo
 
 ### GraphQL API
 
-* [GraphQL Example](https://demo.getmesh.io/api/v1/demo/graphql/browser/#query=query%20webroot(%24path%3A%20String)%20%7B%0A%20%20node(path%3A%20%24path)%20%7B%0A%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20...%20on%20vehicle%20%7B%0A%20%20%20%20%20%20%20%20name%0A%20%20%20%20%20%20%20%20description%0A%20%20%20%20%20%20%20%20vehicleImage%20%7B%0A%20%20%20%20%20%20%20%20%20%20uuid%0A%20%20%20%20%20%20%20%20%20%20path%0A%20%20%20%20%20%20%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20...%20on%20vehicleImage%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20image%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20height%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20width%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20dominantColor%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D%0A)
+* [GraphQL Example](https://demo.getmesh.io/api/v2/demo/graphql/browser/#query=query%20webroot(%24path%3A%20String)%20%7B%0A%20%20node(path%3A%20%24path)%20%7B%0A%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20...%20on%20vehicle%20%7B%0A%20%20%20%20%20%20%20%20name%0A%20%20%20%20%20%20%20%20description%0A%20%20%20%20%20%20%20%20vehicleImage%20%7B%0A%20%20%20%20%20%20%20%20%20%20uuid%0A%20%20%20%20%20%20%20%20%20%20path%0A%20%20%20%20%20%20%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20...%20on%20vehicleImage%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20image%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20height%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20width%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20dominantColor%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D%0A)
 
 ```
 query webroot($path: String) {
@@ -67,10 +68,10 @@ query webroot($path: String) {
 
 ### [REST API](https://getmesh.io/docs/api/)
 
-* List users [/users](https://demo.getmesh.io/api/v1/users)
-* List nodes [/demo/nodes?perPage=5](https://demo.getmesh.io/api/v1/demo/nodes?perPage=5)
-* Load by path [/demo/webroot/yachts/indian-empress](https://demo.getmesh.io/api/v1/demo/webroot/yachts/indian-empress)
-* Load Image [/demo/webroot/images/yacht-pelorus.jpg?w=700](https://demo.getmesh.io/api/v1/demo/webroot/images/yacht-pelorus.jpg?w=700)
+* List users [/users](https://demo.getmesh.io/api/v2/users)
+* List nodes [/demo/nodes?perPage=5](https://demo.getmesh.io/api/v2/demo/nodes?perPage=5)
+* Load by path [/demo/webroot/yachts/indian-empress](https://demo.getmesh.io/api/v2/demo/webroot/yachts/indian-empress)
+* Load Image [/demo/webroot/images/yacht-pelorus.jpg?w=700](https://demo.getmesh.io/api/v2/demo/webroot/images/yacht-pelorus.jpg?w=700)
 
 ### UI
 
@@ -112,7 +113,7 @@ You can retrieve stored contents via the REST or GraphQL API.
 
 First things first: you need to authenticate, otherwise you will not be able to access your data.
 
-* http://localhost:8080/api/v1/auth/login
+* http://localhost:8080/api/v2/auth/login
 
 You can post your credentials via JSON, use basic auth or send a JWT header - the choice is yours. If you open that URL in a browser, you will most likely authenticate using basic auth.
 

@@ -1,0 +1,24 @@
+{
+	nodes(filter: {
+    schema: {is: folder}
+    fields: {
+      folder: {
+        name: {regex: "^[0-9]+$"}
+      }
+    }
+  }) {
+    # [$.data.nodes.elements.length()=2]
+    elements {
+      uuid
+      schema {
+        name
+      }
+      fields {
+        ... on folder {
+          name
+        }
+      }
+    }
+	}
+}
+# [$.errors=<is-undefined>]

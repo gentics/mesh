@@ -14,6 +14,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.graphql.type.GroupTypeProvider.GROUP_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.RoleTypeProvider.ROLE_PAGE_TYPE_NAME;
+import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
@@ -60,6 +61,15 @@ public class UserTypeProvider extends AbstractTypeProvider {
 		root.field(newFieldDefinition().name("emailAddress").description("The email of the user").type(GraphQLString).dataFetcher((env) -> {
 			User user = env.getSource();
 			return user.getEmailAddress();
+		}));
+
+		// .forcedPasswordChange
+		root.field(newFieldDefinition()
+		.name("forcedPasswordChange")
+		.description("When true, the user needs to change their password on the next login.")
+		.type(GraphQLBoolean).dataFetcher((env) -> {
+			User user = env.getSource();
+			return user.isForcedPasswordChange();
 		}));
 
 		// .groups

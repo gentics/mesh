@@ -10,8 +10,8 @@
     # [$.data.nodes.elements.length()=0]
     elements {
       uuid
-      fields {
-        ... on folder {
+      ... on folder {
+        fields {
           name
         }
       }

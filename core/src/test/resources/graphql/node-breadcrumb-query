@@ -8,10 +8,8 @@
 		breadcrumb {
 			uuid
 			path
-			fields {
-				... on content { slug }
-				... on folder {slug }
-			}
+			... on content { fields { slug }}
+			... on folder { fields { slug }}
 		}
 	}
 }

@@ -2,10 +2,7 @@
 title: Authentication
 ---
 
-:icons: font
-:source-highlighter: prettify
-:toc:
-
+include::content/docs/variables.adoc-include[]
 
 == Overview
 
@@ -53,7 +50,7 @@ The JWT will be automatically renewed with every request on the Gentics Mesh API
 
 === Login
 
-A user can be logged in via a basic authentication request to `GET /api/v1/auth/login`.
+A user can be logged in via a basic authentication request to `GET {apiLatest}/auth/login`.
 
 ==== Basic Authentication Header
 In basic authentication, when a client requests a URL that requires authentication, the server requests the client to authenticate itself by sending a `401-Not Authorized` code. The client, in return, answers with login credentials sent in the ```authorization``` header:
@@ -63,13 +60,13 @@ In basic authentication, when a client requests a URL that requires authenticati
 authorization: Basic {base64_encode(username:password)}
 ----
 
-In Gentics Mesh, a user can be authenticated by invoking a regular ```GET``` request to the ```/api/v1/auth/login``` endpoint including a basic authentication HTTP header.
+In Gentics Mesh, a user can be authenticated by invoking a regular ```GET``` request to the ```{apiLatest}/auth/login``` endpoint including a basic authentication HTTP header.
 
 Example:
 
 [source,bash]
 ----
-curl -v -X GET   http://localhost:8080/api/v1/auth/login   -H 'authorization: Basic YWRtaW46YWRtaW4='
+curl -v -X GET   http://localhost:8080{apiLatest}/auth/login   -H 'authorization: Basic YWRtaW46YWRtaW4='
 ----
 
 The response will be a valid JWT as well as set a cookie with the token.
@@ -82,7 +79,7 @@ The response will be a valid JWT as well as set a cookie with the token.
 ----
 
 ==== POST JSON Data
-Alternatively, the user can ```POST``` his or her credentials to the ```/api/v1/auth/login``` endpoint in order to retrieve a token.
+Alternatively, the user can ```POST``` his or her credentials to the ```{apiLatest}/auth/login``` endpoint in order to retrieve a token.
 The JSON object must contain the following fields:
 
 * ```username```: The username of the user
@@ -98,7 +95,7 @@ Example:
 [source,bash]
 ----
 curl -v -X POST \
-  http://localhost:8080/api/v1/auth/login \
+  http://localhost:8080{apiLatest}/auth/login \
   -H 'content-type: application/json' \
   -d '{
   "username" : "admin",
@@ -112,7 +109,7 @@ curl -v -X POST \
 *   Trying ::1...
 * TCP_NODELAY set
 * Connected to localhost (::1) port 8080 (#0)
-> POST /api/v1/auth/login HTTP/1.1
+> POST {apiLatest}/auth/login HTTP/1.1
 > Host: localhost:8080
 > User-Agent: curl/7.50.3
 > Accept: */*
@@ -141,19 +138,19 @@ Alternatively, the token can be passed along within the ```Authorization``` head
 [source,bash]
 ----
 curl -X GET \
-  http://localhost:8080/api/v1/demo/nodes \
+  http://localhost:8080{apiLatest}/demo/nodes \
   -H 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzY1NDEzLCJleHAiOjE0OTE3NjkwMTN9.UY8OgjiK5qyZobAWt6X1Vd1Z-zg68BeJgGZKbW4Ucj0=' \
 ----
 
 === API Token
 
-An API token will never expire. This is different from regular tokens which will be issued when calling `/api/v1/auth/login`. 
+An API token will never expire. This is different from regular tokens which will be issued when calling `{apiLatest}/auth/login`. 
 
 WARNING: Leaking an API token is potentially dangerous and thus the API token should only be used in combination with a secure connection.
 
 Typical use cases for API tokens are backend implementations which constantly communicate with Gentics Mesh using a secure or local connection.
 
-The token can be issued per user with ```POST /api/v1/users/:userUuid/token```.
+The token can be issued per user with ```POST {apiLatest}/users/:userUuid/token```.
 
 NOTE: Creating a new API token will automatically invalidate a previously issued token.
 
@@ -162,11 +159,11 @@ Since the token is just a regular JWT you just need to add it to your request `A
 [source,bash]
 ----
 curl -X GET \
-  http://localhost:8080/api/v1/demo/nodes \
+  http://localhost:8080{apiLatest}/demo/nodes \
   -H 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzY1NDEzLCJleHAiOjE0OTE3NjkwMTN9.UY8OgjiK5qyZobAWt6X1Vd1Z-zg68BeJgGZKbW4Ucj0=' \
 ----
 
-It is possible to manually revoke a previously issued token via ```DELETE /api/v1/users/:userUuid/token```. Once the token is invalidated it can no longer be used for authentication.
+It is possible to manually revoke a previously issued token via ```DELETE {apiLatest}/users/:userUuid/token```. Once the token is invalidated it can no longer be used for authentication.
 
 === Anonymous Access 
 
@@ -175,7 +172,7 @@ Gentics Mesh first and foremost keeps your content safe - all data including med
 That is why Gentics Mesh instances ship with an included ```anonymous``` user/role/group set. 
 If no authentication details are provided Gentics Mesh will automatically try to authenticate with the user ```anonymous```.
 
-TIP: Try our Gentics Mesh demo instance without authenticating yourself: ```https://demo.getmesh.io/api/v1/auth/me```. This link:/docs/api#auth[API endpoint] shows the currently authenticated user - which is ```anonymous```.
+TIP: Try our Gentics Mesh demo instance without authenticating yourself: ```https://demo.getmesh.io{apiLatest}/auth/me```. This link:/docs/api#auth[API endpoint] shows the currently authenticated user - which is ```anonymous```.
 
 You can assign ```readPublished``` permissions to the ```anonymous``` role for all elements you want to be publicly available.
 
@@ -191,6 +188,14 @@ security:
 
 WARNING: Recreating a previously deleted ```anonymous``` user would automatically re-enable the feature if the configuration setting ```enableAnonymousAccess``` is set to ```true```.
 
+=== Forcing user to change password
+
+Since Gentics Mesh `0.31.5` it is possible to force a user to change their password on their next login.
+This is useful in situations when you want to create a user for someone else but want the user to set their password for themselves.
+
+To do so, link:/docs/api#users__post[create] or link:/docs/api#users__userUuid__post[update] a user and make sure to set the `forcedPasswordChange` flag to `true`.
+Now, when the user tries to login in regularly they will receive an error message with status code `400` telling them to provide a new password in the login request.
+The user has to additionally set the `newPassword` property when sending the link:/docs/api#auth_login_post[login request]. Then the password is changed and the user is logged in.
 
 == OAuth2
 

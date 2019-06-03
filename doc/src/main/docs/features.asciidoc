@@ -2,9 +2,7 @@
 title: Features
 ---
 
-:icons: font
-:source-highlighter: prettify
-:toc:
+include::content/docs/variables.adoc-include[]
 
 This section will be about the features of Gentics Mesh. Each will be described in detail including examples and references to relevant parts of the API or related tutorials.
 
@@ -45,14 +43,14 @@ The ```segmentField``` is used to build the path of a specific node. According t
 
 image::../images/GenticsMesh-PrettyURL-Example.png[Gentics Mesh Example for Building Pretty URLs,role="img-responsive"]
 
-The ```path``` property as well as the ```languagesPath``` property (for available contents) of a node can be queried using the ```/api/v1/projectName/nodes/:nodeUuid``` endpoint together with the query parameter ```resolveLinks```. Alternatively, the WebRoot API can be used ```/api/v1/:projectName/webroot/:path```
+The ```path``` property as well as the ```languagesPath``` property (for available contents) of a node can be queried using the ```{apiLatest}/projectName/nodes/:nodeUuid``` endpoint together with the query parameter ```resolveLinks```. Alternatively, the WebRoot API can be used ```{apiLatest}/:projectName/webroot/:path```
 For more details see the documentation on link:{{< relref "building-blocks.asciidoc" >}}#_node[node] and <<webroot,WebRoot API>>, respectively.
 
 You can also specify dedicated paths for nodes using the ```urlFields``` schema property. You can add string or string list fields to your schema and list them via the ```urlFields``` property. Gentics Mesh will utilize these fields in nodes in order to retrieve the node.
 
 .Try the example
 [TIP]
-https://demo.getmesh.io/api/v1/demo/webroot/cars/outatime
+https://demo.getmesh.io{apiLatest}/demo/webroot/cars/outatime
 
 === API endpoints
 
@@ -63,7 +61,7 @@ https://demo.getmesh.io/api/v1/demo/webroot/cars/outatime
 | API endpoint
 
 | Get the node with the given UUID.
-| ```GET /api/v1/:projectName/nodes/:nodeUuid```
+| ```GET {apiLatest}/:projectName/nodes/:nodeUuid```
 
 |======
 
@@ -71,7 +69,7 @@ https://demo.getmesh.io/api/v1/demo/webroot/cars/outatime
 
 .Try the example
 [TIP]
-https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
+https://demo.getmesh.io{apiLatest}/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
 
 [source,json]
 ----
@@ -196,7 +194,7 @@ https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resol
 == Navigation Menus
 When organizing your content in terms of a node tree, Gentics Mesh offers two ways of generating a nested navigation response.
 
-The API endpoint ```/api/v1/:projectName/nodes/:nodeUuid/navigation``` returns a navigation object for the provided node, while the ```/api/v1/:projectName/navroot/:path``` API endpoint returns a navigation object for a node which is located using a given path.
+The API endpoint ```{apiLatest}/:projectName/nodes/:nodeUuid/navigation``` returns a navigation object for the provided node, while the ```{apiLatest}/:projectName/navroot/:path``` API endpoint returns a navigation object for a node which is located using a given path.
 Each endpoint will return a navigation response which contains the nested navigation tree structure.
 
 By default, only container nodes are included in a navigation response. The `includeAll` query parameter will include all nodes, if set to `true`.
@@ -204,7 +202,7 @@ The `maxDepth` parameter may be used to limit the navigation depth. In order to 
 
 image::../images/GenticsMesh-Navigation-Example.png[Gentics Mesh Example for Building Navigation Menus,role="img-responsive"]
 
-The demo app includes a navigation object showing just the top-level elements _Automobiles_, _Aircraft_, and _Yachts_ as well as the _Home_ link. All the elements can be easily queried using the available navigation endpoints. In particular, the example uses the ```/api/v1/:projectName/navroot/:path``` API endpoint, with the URL parameter ```:path``` querying the project root node, i.e., ```/``` together with query parameter ```?maxDepth``` limiting the resulting nested JSON object to the top-level nodes.
+The demo app includes a navigation object showing just the top-level elements _Automobiles_, _Aircraft_, and _Yachts_ as well as the _Home_ link. All the elements can be easily queried using the available navigation endpoints. In particular, the example uses the ```{apiLatest}/:projectName/navroot/:path``` API endpoint, with the URL parameter ```:path``` querying the project root node, i.e., ```/``` together with query parameter ```?maxDepth``` limiting the resulting nested JSON object to the top-level nodes.
 
 
 === API endpoints
@@ -216,10 +214,10 @@ The demo app includes a navigation object showing just the top-level elements _A
 | API endpoint
 
 | Returns a navigation object for the provided node.
-| ```GET /api/v1/:projectName/nodes/:nodeUuid/navigation```
+| ```GET {apiLatest}/:projectName/nodes/:nodeUuid/navigation```
 
 | Return a navigation for the node which is located using the given path.
-| ```GET /api/v1/:projectName/navroot/:path```
+| ```GET {apiLatest}/:projectName/navroot/:path```
 
 |======
 
@@ -229,13 +227,13 @@ Retrieving a navigation object using the projects root node ```/``` including th
 
 .Try the example
 [TIP]
-https://demo.getmesh.io/api/v1/demo/navroot/?resolveLinks=short&maxDepth=1
+https://demo.getmesh.io{apiLatest}/demo/navroot/?resolveLinks=short&maxDepth=1
 
 The same can be achieved using the node specific navigation endpoint. In this case you can specify the root node of your navigation by providing the node uuid.
 
 .Try the example
 [TIP]
-https://demo.getmesh.io/api/v1/demo/nodes/688f7beae8d240bf8f7beae8d2a0bf2e/navigation?resolveLinks=short&maxDepth=1
+https://demo.getmesh.io{apiLatest}/demo/nodes/688f7beae8d240bf8f7beae8d2a0bf2e/navigation?resolveLinks=short&maxDepth=1
 
 [source,json]
 ----
@@ -680,13 +678,13 @@ The ```breadcrumb``` property will be returned in all API responses containing n
 | API endpoint
 
 | Get all nodes of a project and return a paged list response.
-| ```GET /api/v1/projectName/nodes```
+| ```GET {apiLatest}/projectName/nodes```
 
 | Get the node with the given UUID.
-| ```GET /api/v1/:projectName/nodes/:nodeUuid```
+| ```GET {apiLatest}/:projectName/nodes/:nodeUuid```
 
 | Load the node or the node's binary data, which is located using the provided path.
-| ```GET /api/v1/:projectName/webroot/:path```
+| ```GET {apiLatest}/:projectName/webroot/:path```
 
 |======
 
@@ -694,7 +692,7 @@ The ```breadcrumb``` property will be returned in all API responses containing n
 
 .Try the example
 [TIP]
-https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
+https://demo.getmesh.io{apiLatest}/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
 
 [source,json]
 ----
@@ -859,7 +857,7 @@ Using the WebRoot API it is possible to easily integrate Gentics Mesh with many 
 | API endpoint
 
 | Load the node or the node's binary data, which is located using the provided path.
-| link:++/docs/api#project__webroot__path__get[```GET /api/v1/:projectName/webroot/:path```]
+| link:++/docs/api#project__webroot__path__get[```GET {apiLatest}/:projectName/webroot/:path```]
 
 
 |======
@@ -874,15 +872,15 @@ NOTE: Each segment of the URL must be URL-encoded. A node's contents must provid
 
 .Try the example
 [TIP]
-https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
+https://demo.getmesh.io{apiLatest}/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
 
-Loading the node with the given UUID using API endpoint ```GET /api/v1/:projectName/nodes/:nodeUuid```.
+Loading the node with the given UUID using API endpoint ```GET {apiLatest}/:projectName/nodes/:nodeUuid```.
 
 ==== Fetch node with WebRoot path
 
 .Try the example
 [TIP]
-https://demo.getmesh.io/api/v1/demo/webroot/automobiles/ford-gt?resolveLinks=short
+https://demo.getmesh.io{apiLatest}/demo/webroot/automobiles/ford-gt?resolveLinks=short
 
 === Query binary content by path
 The WebRoot API, furthermore, directly supports delivering binary content (e.g., images, documents, etc.) using the ```fileName``` meta-data field of the ```binary``` field.
@@ -895,32 +893,33 @@ NOTE: Downloads of resized images currently do not support byte range requests.
 
 .Try the example
 [TIP]
-https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image
+https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image
 
-Downloading a node's binary field with the given name using API endpoint ```GET /api/v1/:projectName/nodes/:nodeUuid/binary/:fieldName```.
+Downloading a node's binary field with the given name using API endpoint ```GET {apiLatest}/:projectName/nodes/:nodeUuid/binary/:fieldName```.
 
 ==== Fetch an image with WebRoot path
 
 .Try the example
 [TIP]
-https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg
+https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg
 
 TIP: When using a routing framework, in order to find out if a requested resource is binary data or JSON data you need to check the HTTP Content-Disposition response header. If it is set, it’s binary data.
 
 === Image manipulation by path
-In case, the binary data is an image, the WebRoot API allows to directly perform <<imagemanipulation, image manipulation>> such as cropping and resizing.
+In case, the binary data is an image, the WebRoot API allows to directly perform
+link:{{<relref "image-manipulation.asciidoc">}}[Image Manipulation] such as cropping and resizing.
 
 ==== Crop and resize an image with UUID
 
 .Try the example
 [TIP]
-https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?rect=10,100,800,400&w=300&crop=rect
+https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?rect=10,100,800,400&w=300&crop=rect
 
 ==== Crop and resize an image with WebRoot path
 
 .Try the example
 [TIP]
-https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?rect=10,100,800,400&w=300&crop=rect
+https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?rect=10,100,800,400&w=300&crop=rect
 
 Find out more about this topic in our blog post about https://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].
 
@@ -933,12 +932,12 @@ image::../images/GenticsMesh-LinkResolver-Utility-Example.png[Gentics Mesh Examp
 
 Typically, editors create content including internal links to other nodes. When fetching content for your apps, however, Gentics Mesh will resolve these internal links for you and return a WebRoot path.
 
-For example, ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}``` will be transformed into ```/api/v1/demo/webroot/images/ford-gt.jpg``` when using the ```?resolveLinks=full``` query parameter.
+For example, ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}``` will be transformed into ```{apiLatest}/demo/webroot/images/ford-gt.jpg``` when using the ```?resolveLinks=full``` query parameter.
 
 The ```?resolveLinks``` query parameter defines if and how links are resolved:
 
 * `off` -  links will not be resolved. This is the default.
-* `full` - the resolved links will contain the WebRoot prefix and project name (```/api/v1/:projectName/webRoot/:path```).
+* `full` - the resolved links will contain the WebRoot prefix and project name (```{apiLatest}/:projectName/webRoot/:path```).
 * `medium` - the resolved links will contain the project name (```/:projectName/:path```).
 * `short` - will contain neither WebRoot prefix nor project name, just the path (```:path```).
 
@@ -967,25 +966,25 @@ NOTE: Foreign links currently don't contain any branch reference thus it is not 
 | API endpoint
 
 | Get all nodes of a project and return a paged list response.
-| ```GET /api/v1/projectName/nodes```
+| ```GET {apiLatest}/projectName/nodes```
 
 | Get the node with the given UUID.
-| ```GET /api/v1/:projectName/nodes/:nodeUuid```
+| ```GET {apiLatest}/:projectName/nodes/:nodeUuid```
 
 | Load the node or the node's binary data, which is located using the provided path.
-| ```GET /api/v1/:projectName/webroot/:path```
+| ```GET {apiLatest}/:projectName/webroot/:path```
 
 | Get a navigation object for the provided node.
-| ```GET /api/v1/:projectName/nodes/:nodeUuid/navigation```
+| ```GET {apiLatest}/:projectName/nodes/:nodeUuid/navigation```
 
 | Return a navigation for the node which is located using the given path.
-| ```GET /api/v1/:projectName/navroot/:path```
+| ```GET {apiLatest}/:projectName/navroot/:path```
 
 |======
 
 === Link Resolver Utility
 
-In addition to the above, Gentics Mesh offers the ```/api/v1/utilities/linkResolver``` endpoint that can be used to resolve Gentics Mesh links within the posted text data. This is useful when resolving links for a preview page.
+In addition to the above, Gentics Mesh offers the ```{apiLatest}/utilities/linkResolver``` endpoint that can be used to resolve Gentics Mesh links within the posted text data. This is useful when resolving links for a preview page.
 
 It’s necessary to send the content in which links should get resolved to the API endpoint in plain text or JSON. The query parameter ```?resolveLinks``` is used to specify how links shall be resolved.
 
@@ -1003,97 +1002,13 @@ Valid links:
 
 * {{mesh.link(2f2de9297c8143e8ade9297c8193e8fc)}} (link to default language)
 
+
 [[imagemanipulation]]
-== Image Manipulation
-
-Images can be resized and/or cropped by appending the <<imagemanipulationparams,image manipulation query parameters>> on the relevant API endpoints.
-The following image formats are supported: `png`, `jpg`, `bmp` and `gif`
-
-=== Fetch and Resize an Image with UUID
-
-Endpoint: ```/api/v1/:projectName/nodes/:uuid/binary/:fieldname?w=220```
-
-.Try the example
-[TIP]
-https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=300
-
-=== Fetch and Crop an Image with WebRoot Path
-
-It is also possible to use the image manipulation in combination with the WebRoot endpoint.
-
-Endpoint: ```/api/v1/:projectName/webroot/:path?rect=10,100,800,400&crop=rect```
-
-.Try the example
-[TIP]
-https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?rect=10,100,800,400&crop=rect
-
-NOTE: It is mandatory to specify all four crop parameters when cropping an image.
-
-=== Focal Point Handling
-
-Responsive designs often suggest the usage of https://developer.mozilla.org/en-US/docs/Learn/HTML/Multimedia_and_embedding/Responsive_images[srcset images for responsive images].
-Sometimes those designs require image sizes which lead to cropped images. This could result in images which seem chopped off at the worst possible place or images which miss the important part.
-
-You can however use the focal point feature in order to influence how the image should be cropped. 
-Gentics Mesh will use the focal point information when cropping the image so that the focused area will remain in the image.
-
-First you need to specify a focal point along with your image.
-You can store the focal point information within the binary field of your image or use the `fpx` and the `fpy` query parameters when loading the image.
-You can also use these parameters to override the stored focal point.
-
-The width and height information via `w` and `h` parameter are also needed when loading the image. 
-Otherwise Gentics Mesh can't tell which area of the image needs to be cropped. 
-
-Finally the `fpdebug` parameter can be used to visualize the focal point. This is useful when testing designs and resize parameters.
-
-.Try the example
-[TIP]
-https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?fpx=0.5&fpy=0.4&w=800&h=600&crop=fp&fpdebug=true
-
-In some cases you may want to show just a single area of the image. In this case you can use the `fpz` zoom parameter to zoom to the focal point area.
-
-.Try the example
-[TIP]
-https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?fpx=0.5&fpy=0.35&fpz=3.0&w=800&h=600&crop=fp&fpdebug=true
-
-It is also possible to store focal point information along with the binary field. This way you can set the focal point once and omit it within the image request. 
-In those cases it is not needed to specify the `fpx` and `fpy` parameter. Gentics Mesh will automatically load the missing parameter from the binary field if possible.
-
-.Try the example
-[TIP]
-https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?fpz=1.2&w=800&h=600&crop=fp&fpdebug=true
-
-
-=== Transform and Update an Image
-
-Gentics Mesh also allows you to transform (i.e, crop and/or resize) and overwrite an image in a single step. 
-The image manipulation parameters then are part of the request body. 
-This will effectively override the currently stored image with the image of the resulting operation.
-
-Endpoint: ```POST /api/v1/:projectName/nodes/:uuid/binaryTransform/:fieldname```
-
-*Example Request:*
-[source,bash]
-----
-POST /api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binaryTransform/image
-...
-{
-  "version" : "1.0",
-  "language" : "en",
-  "width" : 300
-}
-----
-
-[imagemanipulationparams]
-=== Image Manipulation Query Parameters
-
-include::content/docs/examples/tables/ImageManipulationParametersImpl.adoc-include[]
-
-Find out more about this topic in our blog post about https://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].
+== link:{{<relref "image-manipulation.asciidoc">}}[Image Manipulation]
 
 == File Upload
 
-Binary data can be attached to node binary fields. The ```/api/v1/nodes/:uuid/binary/:fieldName``` endpoint can be used to POST binary data and thus update the stored binary field.
+Binary data can be attached to node binary fields. The ```{apiLatest}/nodes/:uuid/binary/:fieldName``` endpoint can be used to POST binary data and thus update the stored binary field.
 
 NOTE: This endpoint is accepting ```multipart/form-data```, only.
 
@@ -1324,7 +1239,7 @@ You can query individual contents by appending the ```?lang``` query parameter. 
 
 Requests for nodes should contain the requested languages (as comma separated list)as query parameter:
 
-Endpoint: ```/api/v1/:projectName/nodes/:uuid?lang=en,de```
+Endpoint: ```{apiLatest}/:projectName/nodes/:uuid?lang=en,de```
 
 If the requested node is available in any of the languages, the response will contain the fields in that language (first language found).
 
@@ -1381,14 +1296,14 @@ Most API responses within Gentics Mesh contain a list of permissions. This list 
 .Try the example
 [TIP]
 Permission of user ```anonymous``` on node ```Delorean```
-https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?version=published
+https://demo.getmesh.io{apiLatest}/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?version=published
 // TODO provide new example node, remove read permission for this example node only, add ?version=published to example code
 // TODO provide image with user - group - role for anonymous and permissions to specified node
 
 
-[source,json]
+[source,json,subs=attributes]
 -----
-// permissions for node https://demo.getmesh.io/api/v1/demo/nodes/fd58237c79d64bf198237c79d6bbf107?version=published
+// permissions for node https://demo.getmesh.io{apiLatest}/demo/nodes/fd58237c79d64bf198237c79d6bbf107?version=published
 ...
   "permissions" : {
     "create" : false,        //create other nodes
@@ -1426,13 +1341,13 @@ Following, we will discuss how to query, assign and revoke permissions in Gentic
 | API endpoint
 
 | Read the user permissions on element(s) that can be located by the specified path.
-| link:/docs/api/#users__userUuid__permissions__path__get[```GET /api/v1/users/:userUuid/permissions/:path```]
+| link:/docs/api/#users__userUuid__permissions__path__get[```GET {apiLatest}/users/:userUuid/permissions/:path```]
 
 | Load the permissions between given role and the targeted element(s).
-| link:/docs/api/#roles__roleUuid__permissions__pathToElement__get[```GET /api/v1/roles/:roleUuid/permissions/:path```]
+| link:/docs/api/#roles__roleUuid__permissions__pathToElement__get[```GET {apiLatest}/roles/:roleUuid/permissions/:path```]
 
 | Set the permissions between role and the targeted element(s).
-| link:/docs/api#roles__roleUuid__permissions__pathToElement__post[```POST /api/v1/roles/:roleUuid/permissions/:path```]
+| link:/docs/api#roles__roleUuid__permissions__pathToElement__post[```POST {apiLatest}/roles/:roleUuid/permissions/:path```]
 
 |======
 
@@ -1445,19 +1360,19 @@ There are dedicated API endpoints for querying permissions on elements.
 NOTE: The following example links, require prior authentication with user ```admin``` (credentials: admin/admin). Please refer to the link:{{< relref "authentication.asciidoc" >}}[authentication section] to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
 ==== Querying Role Permissions
-The link:/docs/api/#roles__roleUuid__permissions__pathToElement__get[```GET /api/v1/roles/:roleUuid/permissions/:path```] endpoint can be used to query a role's permission on a specific element or set of elements.
+The link:/docs/api/#roles__roleUuid__permissions__pathToElement__get[```GET {apiLatest}/roles/:roleUuid/permissions/:path```] endpoint can be used to query a role's permission on a specific element or set of elements.
 
 For example, the link:{{< relref "references.asciidoc" >}}#_authentication[authenticated] ```admin``` user is able to find out the configured permissions for role ```Public User``` on node ```fc3c85be82584ae2bc85be82588ae2b0```.
 
 .Try the example with user ```admin```
 [TIP]
-https://demo.getmesh.io/api/v1/roles/10447951fd264e6a847951fd266e6ae6/permissions/projects/217f8c981ada4642bf8c981adaa642c3/nodes/88fac3fbc61041c1bac3fbc610d1c182
+https://demo.getmesh.io{apiLatest}/roles/10447951fd264e6a847951fd266e6ae6/permissions/projects/217f8c981ada4642bf8c981adaa642c3/nodes/88fac3fbc61041c1bac3fbc610d1c182
 Note, that a request with user ```anonymous``` will yield a _Missing object permissions_ error response.
 
 
-[source,bash]
+[source,bash,subs=attributes]
 -----
-GET https://demo.getmesh.io/api/v1/roles/10447951fd264e6a847951fd266e6ae6/permissions/projects/217f8c981ada4642bf8c981adaa642c3/nodes/88fac3fbc61041c1bac3fbc610d1c182
+GET https://demo.getmesh.io{apiLatest}/roles/10447951fd264e6a847951fd266e6ae6/permissions/projects/217f8c981ada4642bf8c981adaa642c3/nodes/88fac3fbc61041c1bac3fbc610d1c182
 
 RESPONSE
 {
@@ -1470,15 +1385,15 @@ RESPONSE
 } 
 -----
 
-Alternatively, you can use query the element using the respective API endpoint (e.g. link:++/docs/api#project__nodes__get++[```GET /api/v1/projectName/nodes```]) and use the ```role``` query parameter to find out another role's (i.e. ```anonymous```) permissions on the element:
+Alternatively, you can use query the element using the respective API endpoint (e.g. link:++/docs/api#project__nodes__get++[```GET {apiLatest}/projectName/nodes```]) and use the ```role``` query parameter to find out another role's (i.e. ```anonymous```) permissions on the element:
 
 .Try the example with user ```admin```
 [TIP]
-https://demo.getmesh.io/api/v1/demo/nodes/88fac3fbc61041c1bac3fbc610d1c182?role=10447951fd264e6a847951fd266e6ae6
+https://demo.getmesh.io{apiLatest}/demo/nodes/88fac3fbc61041c1bac3fbc610d1c182?role=10447951fd264e6a847951fd266e6ae6
 
-[source,bash]
+[source,bash,subs=attributes]
 -----
-GET https://demo.getmesh.io/api/v1/roles/10447951fd264e6a847951fd266e6ae6/permissions/projects/217f8c981ada4642bf8c981adaa642c3/nodes/88fac3fbc61041c1bac3fbc610d1c182
+GET https://demo.getmesh.io{apiLatest}/roles/10447951fd264e6a847951fd266e6ae6/permissions/projects/217f8c981ada4642bf8c981adaa642c3/nodes/88fac3fbc61041c1bac3fbc610d1c182
 
 RESPONSE
 ...
@@ -1502,15 +1417,15 @@ RESPONSE
 -----
 
 ==== Querying User Permissions
-The endpoint link:/docs/api/#users__userUuid__permissions__path__get[```GET /api/v1/users/:userUuid/permissions/:path```] provides a shortcut for querying permissions for specific users directly, e.g., for user ```anonymous```, which is essentially inheriting all permissions from role ```anonymous```.
+The endpoint link:/docs/api/#users__userUuid__permissions__path__get[```GET {apiLatest}/users/:userUuid/permissions/:path```] provides a shortcut for querying permissions for specific users directly, e.g., for user ```anonymous```, which is essentially inheriting all permissions from role ```anonymous```.
 
 .Try the example
 [TIP]
-https://demo.getmesh.io/api/v1/users/5fb9654c0b734e87b9654c0b736e8701/permissions/projects/217f8c981ada4642bf8c981adaa642c3/nodes/88fac3fbc61041c1bac3fbc610d1c182
+https://demo.getmesh.io{apiLatest}/users/5fb9654c0b734e87b9654c0b736e8701/permissions/projects/217f8c981ada4642bf8c981adaa642c3/nodes/88fac3fbc61041c1bac3fbc610d1c182
 
 === Assigning & Revoking Permissions 
 
-The link:/docs/api#roles__roleUuid__permissions__pathToElement__post[```POST /api/v1/roles/:roleUuid/permissions/:path```] API endpoint can be used to assign or revoke permissions to/from a role. 
+The link:/docs/api#roles__roleUuid__permissions__pathToElement__post[```POST {apiLatest}/roles/:roleUuid/permissions/:path```] API endpoint can be used to assign or revoke permissions to/from a role.
 
 * It is important to note that permissions can be granted on individual elements and onto a set of elements, which is identified by the element path name (e.g.: ```/users/:uuid``` and ```/users```).
 
@@ -1541,14 +1456,11 @@ TIP: If you need to grant permission on users of a specific group, please use th
 ===== Example
 The following example shows how to grant the ```Editor Role``` role the permission to read all users. Since this is an operation to be performed on a set of users, the element path ```/users``` needs to be used together with property ```recursive=true```.
 
-
 NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:{{< relref "references.asciidoc" >}}#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
-[source,bash]
+[source,bash,subs=attributes]
 -----
-POST https://demo.getmesh.io/api/v1/roles/6754d83b086244d894d83b086204d87f/permissions/users
-
-BODY
+POST https://demo.getmesh.io{apiLatest}/roles/6754d83b086244d894d83b086204d87f/permissions/users
 {
   "permissions": {
     "create": false,
@@ -1560,8 +1472,10 @@ BODY
   },
   "recursive": true
 }
+-----
 
-RESPONSE
+[source,json]
+-----
 {
     "message": "Permission for role Editor Role updated."
 }
@@ -1569,7 +1483,7 @@ RESPONSE
 
 You can query the updated permissions with user ```admin```:
 
-https://demo.getmesh.io/api/v1/roles/6754d83b086244d894d83b086204d87f/permissions/users
+https://demo.getmesh.io{apiLatest}/roles/6754d83b086244d894d83b086204d87f/permissions/users
 
 ===== Role permissions
 All possible role permissions on users are summarized in the following table.
@@ -1601,11 +1515,9 @@ The following example shows how to grant the ```Editor Role``` role the permissi
 
 NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:{{< relref "references.asciidoc" >}}#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
-[source,bash]
+[source,bash,subs=attributes]
 -----
-POST https://demo.getmesh.io/api/v1/roles/6754d83b086244d894d83b086204d87f/permissions/groups/df81c23d9ff1450081c23d9ff195005e
-
-BODY
+POST https://demo.getmesh.io{apiLatest}/roles/6754d83b086244d894d83b086204d87f/permissions/groups/df81c23d9ff1450081c23d9ff195005e
 {
   "permissions": {
     "create": false,
@@ -1617,8 +1529,11 @@ BODY
   },
   "recursive": true
 }
+-----
 
-RESPONSE
+
+[source,json]
+-----
 {
     "message": "Permission for role Editor Role updated."
 }
@@ -1626,12 +1541,12 @@ RESPONSE
 
 You can query the updated permissions with user ```admin```:
 
-* https://demo.getmesh.io/api/v1/roles/6754d83b086244d894d83b086204d87f/permissions/groups/df81c23d9ff1450081c23d9ff195005e
-* https://demo.getmesh.io/api/v1/roles/6754d83b086244d894d83b086204d87f/permissions/users
+* https://demo.getmesh.io{apiLatest}/roles/6754d83b086244d894d83b086204d87f/permissions/groups/df81c23d9ff1450081c23d9ff195005e
+* https://demo.getmesh.io{apiLatest}/roles/6754d83b086244d894d83b086204d87f/permissions/users
 
 * or alternatively with
-https://demo.getmesh.io/api/v1/groups/df81c23d9ff1450081c23d9ff195005e?role=6754d83b086244d894d83b086204d87f
-https://demo.getmesh.io/api/v1/groups/df81c23d9ff1450081c23d9ff195005e/users?role=6754d83b086244d894d83b086204d87f
+https://demo.getmesh.io{apiLatest}/groups/df81c23d9ff1450081c23d9ff195005e?role=6754d83b086244d894d83b086204d87f
+https://demo.getmesh.io{apiLatest}/groups/df81c23d9ff1450081c23d9ff195005e/users?role=6754d83b086244d894d83b086204d87f
 
 ===== Role permissions
 All possible role permissions on groups are summarized in the following table.
@@ -1665,11 +1580,9 @@ The following example shows how to grant the ```Editor Role``` role permissions 
 
 NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:{{< relref "references.asciidoc" >}}#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
-[source,bash]
+[source,bash,subs=attributes]
 -----
-POST https://demo.getmesh.io/api/v1/roles/6754d83b086244d894d83b086204d87f/permissions/roles
-
-BODY
+POST https://demo.getmesh.io{apiLatest}/roles/6754d83b086244d894d83b086204d87f/permissions/roles
 {
   "permissions": {
     "create": true,
@@ -1681,8 +1594,10 @@ BODY
   },
   "recursive": false
 }
+-----
 
-RESPONSE
+[source,json,subs=attributes]
+-----
 {
     "message": "Permission for role Editor Role updated."
 }
@@ -1690,10 +1605,10 @@ RESPONSE
 
 You can query the updated permissions with user ```admin```:
 
-* https://demo.getmesh.io/api/v1/roles/6754d83b086244d894d83b086204d87f/permissions/roles
+* https://demo.getmesh.io{apiLatest}/roles/6754d83b086244d894d83b086204d87f/permissions/roles
 
 * or alternatively with
-https://demo.getmesh.io/api/v1/roles?role=6754d83b086244d894d83b086204d87f
+https://demo.getmesh.io{apiLatest}/roles?role=6754d83b086244d894d83b086204d87f
 
 ===== Role permissions
 All possible role permissions on roles are summarized in the following table.
@@ -1867,7 +1782,7 @@ Permissions on a single or multiple nodes are applied via ```/:projectName/nodes
 
 ==== How to Grant Permissions on project branches
 
-Permissions on a single or multiple branches are applied via ```/api/v1/:projectName/branches/:uuid``` path and ```/api/v1/:projectName/branches``` path respectively.
+Permissions on a single or multiple branches are applied via ```{apiLatest}/:projectName/branches/:uuid``` path and ```{apiLatest}/:projectName/branches``` path respectively.
 
 NOTE: Branches can not be deleted. Hence, permissions for deleting do not apply.
 
@@ -1876,11 +1791,11 @@ NOTE: Branches can not be deleted. Hence, permissions for deleting do not apply.
 [options="header"]
 |======
 | Role permission                     | Element path                               | Permission     | Recursive
-| Can create new branch               | ```/api/v1/:projectName/branches```        | Create         | false 
-| Can read all branches               | ```/api/v1/:projectName/branches```        | Read           | true 
-| Can update all branches             | ```/api/v1/:projectName/branches```        | Update         | true 
-| Can read the branch                 | ```/api/v1/:projectName/branches/:uuid```  | Read           | false 
-| Can update the branch               | ```/api/v1/:projectName/branches/:uuid```  | Update         | false 
+| Can create new branch               | ```{apiLatest}/:projectName/branches```        | Create         | false
+| Can read all branches               | ```{apiLatest}/:projectName/branches```        | Read           | true
+| Can update all branches             | ```{apiLatest}/:projectName/branches```        | Update         | true
+| Can read the branch                 | ```{apiLatest}/:projectName/branches/:uuid```  | Read           | false
+| Can update the branch               | ```{apiLatest}/:projectName/branches/:uuid```  | Update         | false
 |======
 
 [[versioning]]
@@ -1917,26 +1832,26 @@ The latest version which was created using an update request is called the ```dr
 
 Node contents can be published and taken offline. This is particularly useful if you want to first work on a draft, then review it and publish it at a later point in time.
 
-Publishing requires a ```POST``` request on the ```/api/v1/:projectName/nodes/:uuid/published``` endpoint, which will publish all contents of the node.
-It is also possible to just publish specific contents with dedicated ```POST``` requests on ```/api/v1/:projectName/nodes/:uuid/languages/:languageTag/published```.
+Publishing requires a ```POST``` request on the ```{apiLatest}/:projectName/nodes/:uuid/published``` endpoint, which will publish all contents of the node.
+It is also possible to just publish specific contents with dedicated ```POST``` requests on ```{apiLatest}/:projectName/nodes/:uuid/languages/:languageTag/published```.
 
 Gentics Mesh will automatically create a new major version when publishing a node language variant (e.g.: 1.0, 2.0). The ```draft``` reference will also be updated to point to the major version, e.g. 1.0.
 
-Furthermore, it is possible to retrieve information about the published status via a ```GET``` request on ```/api/v1/:/nodes/:uuid/published```.
+Furthermore, it is possible to retrieve information about the published status via a ```GET``` request on ```{apiLatest}/:/nodes/:uuid/published```.
 
 NOTE: Publishing node contents requires the user to be assigned to a group with a role which provides the ```publish``` permission.
 
-[source,json]
+[source,json,csubs=attributes]
 ----
-include::content/docs/api/response/api/v1/\{project\}/nodes/\{nodeUuid\}/published/200/example.json[]
+include::content/docs/api/response{apiLatest}/\{project\}/nodes/\{nodeUuid\}/published/200/example.json[]
 ----
 
 NOTE: It is not possible to publish a specific version. Publish always affects the latest draft version of the language variant.
 
 === Taking Nodes Offline
 
-Similarly to publishing, the contents of a node can be taken offline via a ```DELETE``` request on ```/api/v1/:projectName/nodes/:uuid/published```.
-E.g., taking a specific node language variant with version 1.0 offline using ```DELETE /api/v1/:projectName/nodes/:uuid/languages/:languageTag/published``` will just change the node's publish state. Version 1.0 will still be available.
+Similarly to publishing, the contents of a node can be taken offline via a ```DELETE``` request on ```{apiLatest}/:projectName/nodes/:uuid/published```.
+E.g., taking a specific node language variant with version 1.0 offline using ```DELETE {apiLatest}/:projectName/nodes/:uuid/languages/:languageTag/published``` will just change the node's publish state. Version 1.0 will still be available.
 
 NOTE: Taking node contents offline requires the user have ```publish``` permissions on the node.
 
@@ -1950,7 +1865,7 @@ NOTE: Reading published nodes requires the user to be assigned to a role which g
 
 === Listing versions
 
-Versions of a node can be listed via the ```/api/v1/:projectName/nodes/:uuid/versions``` endpoint.
+Versions of a node can be listed via the ```:apiLatest:/:projectName/nodes/:uuid/versions``` endpoint.
 
 ```
 "versions" : {
@@ -2014,13 +1929,13 @@ The default behaviour can be configured via the environment variable `MESH_CONTE
 
 === Purging versions
 
-The `POST /api/v1/projects/:projectUuid/maintenance/purge` endpoint can be used to purge older versions from the system.
+The `POST :apiLatest:/projects/:projectUuid/maintenance/purge` endpoint can be used to purge older versions from the system.
 
 When invoked a new job will be triggered which purges all possible content versions from the given project.
 
-The `?before` query parameter can be used to control what versions should be purged. 
+The `?before` query parameter can be used to control what versions should be purged.
 
-The call `POST /api/v1/projects/:projectUuid/maintenance/purge?before=2019-04-20T18:00Z` will thus only purge versions which are older than the given date. Omitting the parameter will purge all versions.
+The call `POST :apiLatest:/projects/:projectUuid/maintenance/purge?before=2019-04-20T18:00Z` will thus only purge versions which are older than the given date. Omitting the parameter will purge all versions.
 
 Draft and publish versions will not be purged since they are still required. Additionally when the initial version of a node can also not be purged since it is bound to the _Branch_ of the node. Gentics Mesh requires this version to keep track of the branch starting point. The version lists endpoint will mark those versions using the `branchRoot` flag.
 
@@ -2060,7 +1975,7 @@ Please note the started *node migration* will be processed asynchronously and th
 This migration is different from a schema version migration. The branch node migration just takes care of making all nodes from the previous branch available in the newly created branch.
 Unlike the schema migration the node migration will not create new language variant versions.
 
-You can use the eventbus bridge or the dedicated ```/api/v1/admin/status/migrations``` endpoint to query the migration status.
+You can use the eventbus bridge or the dedicated ```{apiLatest}/admin/status/migrations``` endpoint to query the migration status.
 The ```migrated``` JSON property within the branch response also indicates whether the node migration has been completed.
 
 Note: Migrated nodes will still have the same _uuid_ as before.
@@ -2071,18 +1986,18 @@ A branch can be _renamed_ and new schema/microschema versions can be _assigned_ 
 
 Renaming is useful if you want to change your development branch to be the current production branch.
 
-Assigning schema versions to the branch via a ```PUT``` request to ```/api/v1/:projectName/branches/:uuid/schemas``` will automatically trigger a schema migration of the affected nodes contents within the branch.
+Assigning schema versions to the branch via a ```PUT``` request to ```{apiLatest}/:projectName/branches/:uuid/schemas``` will automatically trigger a schema migration of the affected nodes contents within the branch.
 
 [source,json]
 ----
-include::content/docs/api/request/api/v1/\{project\}/branches/\{branchUuid\}/schemas/request-body.json[]
+include::content/docs/api/request{apiLatest}/\{project\}/branches/\{branchUuid\}/schemas/request-body.json[]
 ----
 
-It is also possible to assign microschemas via a ```PUT``` request to ```/api/v1/:projectName/branches/:uuid/microschemas``` to the branch.
+It is also possible to assign microschemas via a ```PUT``` request to ```{apiLatest}/:projectName/branches/:uuid/microschemas``` to the branch.
 
 [source,json]
 ----
-include::content/docs/api/request/api/v1/\{project\}/branches/\{branchUuid\}/microschemas/request-body.json[]
+include::content/docs/api/request{apiLatest}/\{project\}/branches/\{branchUuid\}/microschemas/request-body.json[]
 ----
 
 All nodes which reference the branch via the updated schema version will automatically be migrated to use the newer schema version.
@@ -2112,10 +2027,10 @@ NOTE: Taggings to nodes are not versioned.
 
 === Deleting Nodes
 
-Deleting nodes is also branch specific. Deleting a node via ```DELETE``` to ```/api/v1/:projectName/node/:uuid?branch=winter2016``` will delete the node and all its sub nodes from the _winter2016_ branch.
+Deleting nodes is also branch specific. Deleting a node via ```DELETE``` to ```{apiLatest}/:projectName/node/:uuid?branch=winter2016``` will delete the node and all its sub nodes from the _winter2016_ branch.
 The node will be completely removed from the system if no more contents are referenced within any branch.
 
-It is also possible to just delete a specific language variant via ```DELETE``` to ```/api/v1/:projectName/node/:uuid/languages/en?branch=winter2016``` from branch _winter2016_.
+It is also possible to just delete a specific language variant via ```DELETE``` to ```{apiLatest}/:projectName/node/:uuid/languages/en?branch=winter2016``` from branch _winter2016_.
 
 === Updating Nodes
 
@@ -2146,11 +2061,11 @@ The post request will contain the node JSON data of the current editing state. T
 == Password Recovery
 
 A user who lost his password is able to recover it using a reset token. This token, typically, is issued by a user or service having permissions to create new users.
-The ```/api/v1/users/:userUuid/reset_token``` endpoint will return a token code which then can be passed along to an email service sending a recovery email to the user including named token.
+The ```{apiLatest}/users/:userUuid/reset_token``` endpoint will return a token code which then can be passed along to an email service sending a recovery email to the user including named token.
 
 NOTE: A token is valid for 30 minutes and will be invalidated once it has been used.
 
-The user can use this token to update his user record by issuing a POST request to the ```/api/v1/users/:userUuid?token=TOKENCODE``` endpoint. E.g., this can be done by presenting the user a form for updating his password. This works even if the user is not authenticated.
+The user can use this token to update his user record by issuing a POST request to the ```{apiLatest}/users/:userUuid?token=TOKENCODE``` endpoint. E.g., this can be done by presenting the user a form for updating his password. This works even if the user is not authenticated.
 
 == Schema & Microschema Migration
 
@@ -2254,16 +2169,16 @@ Each change may also provide a migration script. The migration script can be use
 Typical usecases for migration scripts are for example dynamic field removal or even custom reformatting of field data.
 It is also possible to split a single field value into values for two new fields.
 
-The ```/api/v1/schemas/:uuid/diff``` and ```/api/v1/microschemas/:uuid/diff``` endpoints can be used to generate a list of changes by comparing the stored and posted schema.
+The ```{apiLatest}/schemas/:uuid/diff``` and ```{apiLatest}/microschemas/:uuid/diff``` endpoints can be used to generate a list of changes by comparing the stored and posted schema.
 
-This list of changes can be modified and posted to ```/api/v1/schemas/:uuid/changes``` for schemas or ```/api/v1/microschemas/:uuid/changes``` for microschemas.
+This list of changes can be modified and posted to ```{apiLatest}/schemas/:uuid/changes``` for schemas or ```{apiLatest}/microschemas/:uuid/changes``` for microschemas.
 The posted list of changes will be validated and stored when valid. A schema migration process will be started which runs in the background.
 
-The https://github.com/sockjs[SockJS] compliant ```/api/v1/eventbus``` endpoint can be used to register to migration specific messages.
+The https://github.com/sockjs[SockJS] compliant ```{apiLatest}/eventbus``` endpoint can be used to register to migration specific messages.
 
-Additionally to websocket it is possible to query whether a migration is running via the ```/api/v1/admin/status/migrations``` endpoint.
+Additionally to websocket it is possible to query whether a migration is running via the ```{apiLatest}/admin/status/migrations``` endpoint.
 
-Sending a schema to ```/api/v1/schemas:uuid``` using the ```PUT``` method will conveniently combine the diff generation and invocation of the schema migration.
+Sending a schema to ```{apiLatest}/schemas:uuid``` using the ```PUT``` method will conveniently combine the diff generation and invocation of the schema migration.
 
 Please note that by default conflicting data will be *removed* and this action can only be avoided by specifying a custom migration script.
 
@@ -2320,11 +2235,11 @@ function migrate(node, fieldname, convert) {
 ----
 
 
-Finally the changes can be applied by sending the request to ```/api/v1/schemas/:uuid/changes```.
+Finally the changes can be applied by sending the request to ```{apiLatest}/schemas/:uuid/changes```.
 
-[source,json]
+[source,json,subs=attributes]
 ----
-include::content/docs/api/request/api/v1/schemas/\{schemaUuid\}/changes/request-body.json[]
+include::content/docs/api/request{apiLatest}/schemas/\{schemaUuid\}/changes/request-body.json[]
 ----
 
 == Executing migrations
@@ -2332,22 +2247,22 @@ include::content/docs/api/request/api/v1/schemas/\{schemaUuid\}/changes/request-
 Migrations can potentially affect a huge amount of nodes depending on the size of your project. As such the migration could take some time to complete. 
 This is why we designed migrations in ways that they can be executed asynchronously.
 Various operations in Gentics Mesh (e.g. Schema update, assigning versions to branches, creating branches) may trigger migrations. 
-Before the migration is being executed a job is added to the job queue. You can view the queue via the `/api/v1/admin/jobs` endpoint. 
+Before the migration is being executed a job is added to the job queue. You can view the queue via the `{apiLatest}/admin/jobs` endpoint.
 These jobs will be processed and execute the actual migration.
 
 By default updating a schema will create a new schema version and the nodes will be migrated to that new version. 
 If you want to defer this operation you can set the `updateAssignedBranches` query parameter to false when updating a schema/microschema. 
 This leads to a new schema version being created but the version would not be linked to your current branch and no migration would be invoked.
 
-Once a job has been queued and a migration has been invoked the status can be checked via the `/api/v1/admin/status/migrations` endpoint.
+Once a job has been queued and a migration has been invoked the status can be checked via the `{apiLatest}/admin/status/migrations` endpoint.
 
 A job will only be removed from the job list when the job completed without any error. Erroneous jobs will stay in the job list.
 This way interrupted migrations can be picked up and executed once again.
 
-Intermediate errors may cause a job to fail. In those cases it is possible to reset the error flag of a job by executing `DELETE /api/v1/admin/jobs/:jobUuid/error`.
-The job can run again once the error flag has been cleared. It is possible to invoke `POST /api/v1/admin/processJobs` to trigger a manual event which will start the job processing.
+Intermediate errors may cause a job to fail. In those cases it is possible to reset the error flag of a job by executing `DELETE {apiLatest}/admin/jobs/:jobUuid/error`.
+The job can run again once the error flag has been cleared. It is possible to invoke `POST {apiLatest}/admin/processJobs` to trigger a manual event which will start the job processing.
 
-Jobs which keep failing can be permanently removed from the job queue via the `DELETE /api/v1/admin/jobs/:jobUuid` endpoint. 
+Jobs which keep failing can be permanently removed from the job queue via the `DELETE {apiLatest}/admin/jobs/:jobUuid` endpoint.
 Please note that it is only possible to remove jobs which have failed. Jobs which don't fail will automatically be removed from the list.
 
 == Clustering

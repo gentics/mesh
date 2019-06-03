@@ -2,8 +2,7 @@
 title: Getting Started Guide
 ---
 
-:icons: font
-:source-highlighter: prettify
+include::content/docs/variables.adoc-include[]
 
 Here you will find everything to get you started with Gentics Mesh. 
 
@@ -21,7 +20,7 @@ If you don't have much time:
 * Changes can be viewed in the link:https://demo.getmesh.io/demo/[demo front-end]
 * You can also 
 +++
-<a href="https://demo.getmesh.io/api/v1/demo/graphql/browser/#query=%7B%0A%20%20node(path%3A%20%22%2Fyachts%2Fpelorus%22)%20%7B%0A%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20...%20on%20vehicle%20%7B%0A%20%20%20%20%20%20%20%20name%0A%20%20%20%20%20%20%20%20description%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D" target="_blank">explore the GraphQL API</a>
+<a href="https://demo.getmesh.io{apiLatest}/demo/graphql/browser/#query=%7B%0A%20%20node(path%3A%20%22%2Fyachts%2Fpelorus%22)%20%7B%0A%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20...%20on%20vehicle%20%7B%0A%20%20%20%20%20%20%20%20name%0A%20%20%20%20%20%20%20%20description%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D" target="_blank">explore the GraphQL API</a>
 +++
 * Head over to the <<tldr,TL;DR>> section to find out everything you need to know and what makes Gentics Mesh special.
 
@@ -51,7 +50,7 @@ __Features:__
 * link:{{< relref "references.asciidoc" >}}#_rest_api[REST API]
 * link:{{< relref "graphql.asciidoc" >}}[GraphQL API]
 * link:{{< relref "features.asciidoc" >}}#_file_upload[File Upload]
-* link:{{< relref "features.asciidoc" >}}#imagemanipulation[Image Manipulation]
+* link:{{< relref "image-manipulation.asciidoc" >}}[Image Manipulation]
 * link:{{< relref "features.asciidoc" >}}#_link_resolving[Link handling]
 * link:{{< relref "elasticsearch.asciidoc" >}}[Powerful search]
 * link:{{< relref "building-blocks.asciidoc" >}}#_user[Users, Groups, Roles]
@@ -86,7 +85,7 @@ be created and an AngularJS demo project is deployed automatically.
 
 Once the demo setup is completed you will be able to access the following urls
 
-* Mesh API ```http://localhost:8080/api/v1/```
+* Mesh API ```http://localhost:8080{apiLatest}/```
 * Mesh UI on ```http://localhost:8080/mesh-ui/```
 * Demo App on ```http://localhost:8080/demo/```
 

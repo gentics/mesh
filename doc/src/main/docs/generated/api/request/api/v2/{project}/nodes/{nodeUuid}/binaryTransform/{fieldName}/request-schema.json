@@ -1,0 +1,58 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:BinaryFieldTransformRequest",
+  "properties" : {
+    "version" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Version number which must be provided in order to handle and detect concurrent changes to the node content."
+    },
+    "language" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "ISO 639-1 language tag of the node which provides the image which should be transformed."
+    },
+    "width" : {
+      "type" : "integer",
+      "description" : "New width of the image."
+    },
+    "height" : {
+      "type" : "integer",
+      "description" : "New height of the image."
+    },
+    "cropRect" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:com:gentics:mesh:parameter:image:ImageRect",
+      "description" : "Crop area.",
+      "properties" : {
+        "startX" : {
+          "type" : "integer"
+        },
+        "startY" : {
+          "type" : "integer"
+        },
+        "width" : {
+          "type" : "integer"
+        },
+        "height" : {
+          "type" : "integer"
+        }
+      }
+    },
+    "focalPoint" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:FocalPoint",
+      "description" : "Optional new focal point for the transformed image.",
+      "properties" : {
+        "x" : {
+          "type" : "number",
+          "description" : "The horizontal position of the focal point. The value is a factor of the image width. The value 0.5 is the center of the image."
+        },
+        "y" : {
+          "type" : "number",
+          "description" : "The vertical position of the focal point. The value is a factor of the image height. The value 0.5 is the center of the image."
+        }
+      }
+    }
+  }
+}

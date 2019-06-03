@@ -1,0 +1,32 @@
+{
+	node(path:"/") {
+		# [$.data.node.uuid=<is-uuid>]
+		uuid
+		children(lang: ["en","de"]) {
+			# [$.data.node.children.elements.length()=3]
+			elements {
+				# [$.data.node.children.elements[0].uuid=<is-uuid>]
+				# [$.data.node.children.elements[1].uuid=<is-uuid>]
+				# [$.data.node.children.elements[2].uuid=<is-uuid>]
+				uuid
+				# [$.data.node.children.elements[0].language=en]
+				# [$.data.node.children.elements[1].language=en]
+				# [$.data.node.children.elements[2].language=en]
+				language
+				
+				# [$.data.node.children.elements[0].path=<is-not-null>]
+				# [$.data.node.children.elements[1].path=<is-not-null>]
+				# [$.data.node.children.elements[2].path=<is-not-null>]
+				path
+				fields {
+					... on folder { slug }
+				}
+			}
+		}
+		# [$.data.node.parent=<is-null>]
+		parent {
+			uuid
+		}
+	}
+}
+# [$.errors=<is-undefined>]

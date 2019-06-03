@@ -127,6 +127,9 @@ public class AdminHandler extends AbstractHandler {
 		if (inMemory) {
 			throw error(SERVICE_UNAVAILABLE, "restore_error_not_supported_in_memory_mode");
 		}
+		if (!backupDir.exists()) {
+			throw error(INTERNAL_SERVER_ERROR, "error_backup", backupDir.getAbsolutePath());
+		}
 
 		db.tx((tx) -> {
 			if (!ac.getUser().hasAdminRole()) {

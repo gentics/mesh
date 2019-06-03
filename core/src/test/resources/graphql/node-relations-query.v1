@@ -1,0 +1,70 @@
+{
+	deNode: node(path:"/Neuigkeiten") {
+		# [$.data.deNode.uuid=<is-uuid>]
+		uuid
+		children(lang: ["en","de"]) {
+			elements {
+				# [$.data.deNode.children.elements[0].uuid=<is-uuid>]
+				# [$.data.deNode.children.elements[1].uuid=<is-uuid>]
+				# [$.data.deNode.children.elements[2].uuid=<is-uuid>]
+				uuid
+				# [$.data.deNode.children.elements[0].language=en]
+				# [$.data.deNode.children.elements[1].language=en]
+				# [$.data.deNode.children.elements[2].language=en]
+				language
+				breadcrumb {
+					# [$.data.deNode.children.elements[0].breadcrumb[1].path=/News]
+					# [$.data.deNode.children.elements[1].breadcrumb[1].path=/News]
+					# [$.data.deNode.children.elements[2].breadcrumb[1].path=/News]
+					path
+					language
+				}
+			}
+		}
+		p1: parent {
+			# [$.data.deNode.parent.uuid=<is-uuid>]
+			uuid
+			# The english fallback is utilized in order to load the node content
+			# [$.data.deNode.p1.language=<is-null>]
+			language
+		}
+		parent(lang: ["en", "de"]) {
+			# [$.data.deNode.parent.uuid=<is-uuid>]
+			uuid
+			# The english fallback is utilized in order to load the node content
+			# [$.data.deNode.parent.language=en]
+			language
+			# Load the node again in a different language
+			node(lang: "en") {
+				# [$.data.deNode.parent.node.language=en]
+				language 
+			}
+		}
+		child(path: "2015") {
+			# [$.data.deNode.child.language=en]
+			language
+			# [$.data.deNode.child.uuid=<is-uuid>]
+			uuid
+			parent {
+				fields {
+					# [$.data.deNode.child.parent.fields.slug=News]
+					... on folder { slug }
+				}
+			}
+		}
+
+		# [$.data.deNode.nullChild=<is-null>]
+		nullChild: child(path: "20sfdhsfh15") {
+			node {uuid}
+		}
+	}
+	rootNode {
+		# [$.data.rootNode.uuid=<is-uuid>]
+		uuid
+	}
+	project {
+		# [$.data.project.name=dummy]
+		name
+	}
+}
+# [$.errors=<is-undefined>]

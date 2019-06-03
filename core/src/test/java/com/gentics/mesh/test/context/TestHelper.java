@@ -91,13 +91,27 @@ import com.syncleus.ferma.tx.TxAction;
 import com.syncleus.ferma.tx.TxAction0;
 import com.syncleus.ferma.tx.TxAction1;
 import com.syncleus.ferma.tx.TxAction2;
-
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.test.core.TestUtils;
+import org.apache.commons.io.IOUtils;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Map;
+
+import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
+import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public interface TestHelper {
 
@@ -208,6 +222,10 @@ public interface TestHelper {
 
 	default MeshRestClient client() {
 		return getTestContext().getClient();
+	}
+
+	default MeshRestClient client(String version) {
+		return getTestContext().getClient(version);
 	}
 
 	default TrackingSearchProvider trackingSearchProvider() {

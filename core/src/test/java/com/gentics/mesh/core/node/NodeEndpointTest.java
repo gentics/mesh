@@ -90,15 +90,59 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
-
+import io.reactivex.Observable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static com.gentics.mesh.FieldUtil.createStringField;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.rest.client.MeshRestClientUtil.onErrorCodeResumeNext;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.validateDeletion;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
+import static com.gentics.mesh.test.util.MeshAssert.assertElement;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static java.lang.System.currentTimeMillis;
+import static java.lang.System.out;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -1357,9 +1401,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx = tx()) {
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setResolveLinks(
 				LinkType.FULL), new VersioningParametersImpl().draft()));
-			assertEquals("/api/v1/dummy/webroot/error/404", response.getPath());
-			assertThat(response.getLanguagePaths()).containsEntry("en", "/api/v1/dummy/webroot/error/404");
-			assertThat(response.getLanguagePaths()).containsEntry("de", "/api/v1/dummy/webroot/error/404");
+			assertEquals(CURRENT_API_BASE_PATH + "/dummy/webroot/error/404", response.getPath());
+			assertThat(response.getLanguagePaths()).containsEntry("en", CURRENT_API_BASE_PATH + "/dummy/webroot/error/404");
+			assertThat(response.getLanguagePaths()).containsEntry("de", CURRENT_API_BASE_PATH + "/dummy/webroot/error/404");
 		}
 
 	}
@@ -1371,8 +1415,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft(),
 				new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
 			assertThat(response.getAvailableLanguages().keySet()).containsExactly("de", "en");
-			assertThat(response.getLanguagePaths()).containsEntry("en", "/api/v1/dummy/webroot/News");
-			assertThat(response.getLanguagePaths()).containsEntry("de", "/api/v1/dummy/webroot/Neuigkeiten");
+			assertThat(response.getLanguagePaths()).containsEntry("en", CURRENT_API_BASE_PATH + "/dummy/webroot/News");
+			assertThat(response.getLanguagePaths()).containsEntry("de", CURRENT_API_BASE_PATH + "/dummy/webroot/Neuigkeiten");
 		}
 	}
 
@@ -1408,11 +1452,11 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			new VersioningParametersImpl().setVersion("draft")));
 
 		List<NodeReference> breadcrumb = response.getBreadcrumb();
-		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1/german%20folder-2", response.getPath());
-		assertEquals("/api/v1/dummy/webroot/", breadcrumb.get(0).getPath());
-		assertEquals("/api/v1/dummy/webroot/english%20folder-0", breadcrumb.get(1).getPath());
-		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1", breadcrumb.get(2).getPath());
-		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1/german%20folder-2", breadcrumb.get(3).getPath());
+		assertEquals(CURRENT_API_BASE_PATH + "/dummy/webroot/english%20folder-0/english%20folder-1/german%20folder-2", response.getPath());
+		assertEquals(CURRENT_API_BASE_PATH + "/dummy/webroot/", breadcrumb.get(0).getPath());
+		assertEquals(CURRENT_API_BASE_PATH + "/dummy/webroot/english%20folder-0", breadcrumb.get(1).getPath());
+		assertEquals(CURRENT_API_BASE_PATH + "/dummy/webroot/english%20folder-0/english%20folder-1", breadcrumb.get(2).getPath());
+		assertEquals(CURRENT_API_BASE_PATH + "/dummy/webroot/english%20folder-0/english%20folder-1/german%20folder-2", breadcrumb.get(3).getPath());
 
 	}
 
@@ -1429,10 +1473,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertEquals("2014", response.getBreadcrumb().get(2).getDisplayName());
 			assertEquals(response.getBreadcrumb().get(3).getUuid(), node.getUuid());
 			assertEquals("News_2014 english title", response.getBreadcrumb().get(3).getDisplayName());
-			assertEquals("/api/v1/dummy/webroot/", response.getBreadcrumb().get(0).getPath());
-			assertEquals("/api/v1/dummy/webroot/News", response.getBreadcrumb().get(1).getPath());
-			assertEquals("/api/v1/dummy/webroot/News/2014", response.getBreadcrumb().get(2).getPath());
-			assertEquals("/api/v1/dummy/webroot/News/2014/News_2014.en.html", response.getBreadcrumb().get(3).getPath());
+			assertEquals(CURRENT_API_BASE_PATH + "/dummy/webroot/", response.getBreadcrumb().get(0).getPath());
+			assertEquals(CURRENT_API_BASE_PATH + "/dummy/webroot/News", response.getBreadcrumb().get(1).getPath());
+			assertEquals(CURRENT_API_BASE_PATH + "/dummy/webroot/News/2014", response.getBreadcrumb().get(2).getPath());
+			assertEquals(CURRENT_API_BASE_PATH + "/dummy/webroot/News/2014/News_2014.en.html", response.getBreadcrumb().get(3).getPath());
 			assertEquals("Only four items should be listed in the breadcrumb", 4, response.getBreadcrumb().size());
 
 			response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
@@ -1463,7 +1507,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
 			assertNotNull(response);
 			assertEquals("folder", response.getSchema().getName());
-			assertEquals("/api/v1/dummy/webroot/", response.getLanguagePaths().get("en"));
+			assertEquals(CURRENT_API_BASE_PATH + "/dummy/webroot/", response.getLanguagePaths().get("en"));
 		}
 	}
 

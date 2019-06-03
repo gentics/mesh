@@ -2,6 +2,7 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -160,9 +161,9 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			request.setLanguage("en");
 			NodeResponse nodeResponse = call(
 				() -> client().createNode(PROJECT_NAME, request, new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
-			assertEquals("The node has no segmentfield value and thus a 404 path should be returned.", "/api/v1/dummy/webroot/error/404",
+			assertEquals("The node has no segmentfield value and thus a 404 path should be returned.", CURRENT_API_BASE_PATH + "/dummy/webroot/error/404",
 				nodeResponse.getPath());
-			assertEquals("The node has no segmentfield value and thus a 404 path should be returned.", "/api/v1/dummy/webroot/error/404",
+			assertEquals("The node has no segmentfield value and thus a 404 path should be returned.", CURRENT_API_BASE_PATH + "/dummy/webroot/error/404",
 				nodeResponse.getLanguagePaths().get("en"));
 
 			// 4. Now move the node to folder 2014

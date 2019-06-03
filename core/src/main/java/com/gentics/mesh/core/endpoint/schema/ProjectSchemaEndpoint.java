@@ -21,7 +21,7 @@ import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
 /**
- * Verticle for /api/v1/PROJECTNAME/schemas
+ * Verticle for :apiBase:/PROJECTNAME/schemas
  */
 public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 
