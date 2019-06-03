@@ -7,6 +7,7 @@ import com.gentics.mesh.rest.client.method.AdminClientMethods;
 import com.gentics.mesh.rest.client.method.AdminPluginClientMethods;
 import com.gentics.mesh.rest.client.method.ApiInfoClientMethods;
 import com.gentics.mesh.rest.client.method.AuthClientMethods;
+import com.gentics.mesh.rest.client.method.BranchClientMethods;
 import com.gentics.mesh.rest.client.method.EventbusClientMethods;
 import com.gentics.mesh.rest.client.method.GraphQLClientMethods;
 import com.gentics.mesh.rest.client.method.GroupClientMethods;
@@ -17,7 +18,6 @@ import com.gentics.mesh.rest.client.method.NavigationClientMethods;
 import com.gentics.mesh.rest.client.method.NodeBinaryFieldClientMethods;
 import com.gentics.mesh.rest.client.method.NodeClientMethods;
 import com.gentics.mesh.rest.client.method.ProjectClientMethods;
-import com.gentics.mesh.rest.client.method.BranchClientMethods;
 import com.gentics.mesh.rest.client.method.RoleClientMethods;
 import com.gentics.mesh.rest.client.method.SchemaClientMethods;
 import com.gentics.mesh.rest.client.method.SearchClientMethods;
@@ -85,6 +85,16 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 * @return Fluent API
 	 */
 	MeshRestClient setLogin(String username, String password);
+
+	/**
+	 * Set the login that is used to authenticate the requests. This will also set a new password when {@link #login()}
+	 * is called. Should be used when the user has to change the password.
+	 *
+	 * @param username
+	 * @param password
+	 * @return Fluent API
+	 */
+	MeshRestClient setLogin(String username, String password, String newPassword);
 
 	/**
 	 * Close the client.

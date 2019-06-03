@@ -5,7 +5,6 @@ import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshRequest;
-
 import com.gentics.mesh.rest.client.impl.HttpMethod;
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -50,6 +49,7 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 			LoginRequest loginRequest = new LoginRequest();
 			loginRequest.setUsername(getUsername());
 			loginRequest.setPassword(getPassword());
+			loginRequest.setNewPassword(getNewPassword());
 
 			return meshRestClient.prepareRequest(HttpMethod.POST, "/auth/login", TokenResponse.class, loginRequest).toSingle();
 		}).doOnSuccess(response -> token = response.getToken())

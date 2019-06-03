@@ -35,6 +35,8 @@ icon:check[] Focal point: It is now possible to use the `/api/v1/:projectName/no
 
 icon:check[] The `content-disposition` header will now contain the UTF-8 and ISO-8859-1 encoded filename. link:https://github.com/gentics/mesh/issues/702[#702]
 
+icon:plus[] REST: It is now possible to set a flag that forces a user to change their password on the next login. Take a look at link:{{< relref "authentication.asciidoc" >}}#_forcing_user_to_change_password[the documentation] for more information.
+
 [[v0.34.0]]
 == 0.34.0 (28.05.2019)
 

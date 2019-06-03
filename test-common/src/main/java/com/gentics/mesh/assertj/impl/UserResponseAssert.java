@@ -1,13 +1,14 @@
 package com.gentics.mesh.assertj.impl;
 
-import org.assertj.core.api.AbstractAssert;
-
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static org.junit.Assert.*;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import org.assertj.core.api.AbstractAssert;
+
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class UserResponseAssert extends AbstractAssert<UserResponseAssert, UserResponse> {
 
@@ -67,6 +68,26 @@ public class UserResponseAssert extends AbstractAssert<UserResponseAssert, UserR
 
 	public UserResponseAssert hasUuid(String uuid) {
 		assertThat(actual.getUuid()).as("User uuid").isEqualTo(uuid);
+		return this;
+	}
+
+	public UserResponseAssert doesNotHaveToChangePassword() {
+		assertThat(actual.getForcedPasswordChange()).as("User does not have to change their password").isFalse();
+		return this;
+	}
+
+	public UserResponseAssert hasToChangePassword() {
+		assertThat(actual.getForcedPasswordChange()).as("User has to change their password").isTrue();
+		return this;
+	}
+
+	public UserResponseAssert isAnonymous() {
+		assertThat(actual.getUsername()).as("User is anonymous").isEqualTo("anonymous");
+		return this;
+	}
+
+	public UserResponseAssert hasName(String name) {
+		assertThat(actual.getUsername()).as(String.format("User has name %s", name)).isEqualTo(name);
 		return this;
 	}
 }
