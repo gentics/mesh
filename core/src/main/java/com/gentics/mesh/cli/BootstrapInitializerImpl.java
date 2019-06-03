@@ -100,6 +100,7 @@ import dagger.Lazy;
 import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.eventbus.EventBusOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.dropwizard.DropwizardMetricsOptions;
@@ -326,11 +327,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	public void initVertx(MeshOptions options, boolean isClustered) {
 		VertxOptions vertxOptions = new VertxOptions();
-		vertxOptions.setClustered(options.getClusterOptions().isEnabled());
+		vertxOptions.getEventBusOptions().setClustered(options.getClusterOptions().isEnabled());
 		vertxOptions.setWorkerPoolSize(options.getVertxOptions().getWorkerPoolSize());
 		vertxOptions.setEventLoopPoolSize(options.getVertxOptions().getEventPoolSize());
-//		vertxOptions.setWorkerPoolSize(1);
-//		vertxOptions.setEventLoopPoolSize(1);
+		// vertxOptions.setWorkerPoolSize(1);
+		// vertxOptions.setEventLoopPoolSize(1);
 
 		MonitoringConfig monitorinOptions = options.getMonitoringOptions();
 		if (monitorinOptions != null && monitorinOptions.isEnabled()) {
@@ -348,7 +349,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// vertxOptions.setFileResolverCachingEnabled(false);
 		vertxOptions.setBlockedThreadCheckInterval(Integer.MAX_VALUE);
 		Vertx vertx = null;
-		if (vertxOptions.isClustered()) {
+		if (vertxOptions.getEventBusOptions().isClustered()) {
 			log.info("Creating clustered Vert.x instance");
 			vertx = createClusteredVertx(options, vertxOptions, (HazelcastInstance) db.getHazelcast());
 		} else {
@@ -379,28 +380,28 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		manager = new HazelcastClusterManager(hazelcast);
 		vertxOptions.setClusterManager(manager);
 		String localIp = options.getClusterOptions().getNetworkHost();
-		vertxOptions.getEventBusOptions().setHost(localIp);
-		vertxOptions.getEventBusOptions().setClusterPublicHost(localIp);
-		vertxOptions.setClusterHost(localIp);
-		vertxOptions.setClusterPublicHost(localIp);
 
 		Integer clusterPort = options.getClusterOptions().getVertxPort();
 		int vertxClusterPort = clusterPort == null ? 0 : clusterPort;
-		vertxOptions.setClusterPort(vertxClusterPort);
-		vertxOptions.setClusterPublicPort(vertxClusterPort);
+
+		EventBusOptions eventbus = vertxOptions.getEventBusOptions();
+		eventbus.setHost(localIp);
+		eventbus.setPort(vertxClusterPort);
+		eventbus.setClusterPublicHost(localIp);
+		eventbus.setClusterPublicPort(vertxClusterPort);
 
 		if (log.isDebugEnabled()) {
-			log.debug("Using vert.x cluster port {" + vertxClusterPort + "}");
-			log.debug("Using vert.x cluster public port {" + vertxClusterPort + "}");
-			log.debug("Binding vert.x on host {" + localIp + "}");
+			log.debug("Using Vert.x cluster port {" + vertxClusterPort + "}");
+			log.debug("Using Vert.x cluster public port {" + vertxClusterPort + "}");
+			log.debug("Binding Vert.x on host {" + localIp + "}");
 		}
 		CompletableFuture<Vertx> fut = new CompletableFuture<>();
 		Vertx.clusteredVertx(vertxOptions, rh -> {
 			log.info("Created clustered Vert.x instance");
 			if (rh.failed()) {
 				Throwable cause = rh.cause();
-				log.error("Failed to create clustered vert.x instance", cause);
-				fut.completeExceptionally(new RuntimeException("Error while creating clusterd vert.x instance", cause));
+				log.error("Failed to create clustered Vert.x instance", cause);
+				fut.completeExceptionally(new RuntimeException("Error while creating clusterd Vert.x instance", cause));
 				return;
 			}
 			Vertx vertx = rh.result();
@@ -409,7 +410,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		try {
 			return fut.get(10, SECONDS);
 		} catch (Exception e) {
-			throw new RuntimeException("Error while creating clusterd vert.x instance");
+			throw new RuntimeException("Error while creating clusterd Vert.x instance");
 		}
 
 	}
