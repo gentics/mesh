@@ -209,7 +209,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		NodeResponse responseA = call(
 			() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(INITIAL_BRANCH_NAME)));
 		assertNull(responseA.getLanguage());
-		assertTrue(responseA.getFields().isEmpty());
+		assertThat(responseA.getFields()).isNull();
 
 		NodeListResponse childrenA = call(
 			() -> client().findNodeChildren(PROJECT_NAME, parentNodeUuid, new VersioningParametersImpl().setBranch(INITIAL_BRANCH_NAME)));

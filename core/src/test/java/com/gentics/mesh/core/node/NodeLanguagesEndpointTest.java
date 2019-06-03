@@ -41,7 +41,7 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 		// Loading is still be possible but the node will contain no fields
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new NodeParametersImpl().setLanguages("en")));
 		assertThat(response.getAvailableLanguages().keySet()).contains("de");
-		assertThat(response.getFields()).isEmpty();
+		assertThat(response.getFields()).isNull();
 
 		response = call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new NodeParametersImpl().setLanguages("de")));
 
