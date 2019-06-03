@@ -27,6 +27,8 @@ include::content/docs/variables.adoc-include[]
 [[v0.35.0]]
 == 0.35.0 (TBD)
 
+CAUTION: Custom node migration scripts have been removed. The script system was a source of possible errors and performance problems. The nashorn javascript engine has been deprecated with the release of Java 11. To change for a migration, use the REST api instead.
+
 NOTE: Fetching fields of a node/micronode in GraphQL requires a different query in /api/v2. Please refer to the link:https://github.com/gentics/mesh/issues/428[#428] and link:https://github.com/gentics/mesh/issues/317[#317] for details.
 
 icon:check[] Backup: Fixed `NullPointerException` which happend when the backup directory was missing and the backup endpoint was invoked. link:https://github.com/gentics/mesh/issues/463[#463]
