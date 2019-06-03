@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -46,7 +47,10 @@ public class RestModelTest extends AbstractMeshTest {
 		NodeResponse response = new NodeResponse();
 		StringField stringField = new StringFieldImpl();
 		stringField.setString("some text");
-		response.getFields().put("name", stringField);
+		
+		FieldMap fields = new FieldMapImpl();
+		fields.put("name", stringField);
+		response.setFields(fields);
 		response.setSchema(new SchemaReferenceImpl().setName("content").setUuid(UUIDUtil.randomUUID()));
 		String json = response.toJson();
 		assertNotNull(json);
@@ -124,14 +128,19 @@ public class RestModelTest extends AbstractMeshTest {
 			SchemaModel contentSchema = schemaContainer("content").getLatestVersion().getSchema();
 
 			NodeResponse folder = new NodeResponse();
+			FieldMap folderFields = new FieldMapImpl();
 			folder.setSchema(new SchemaReferenceImpl().setName(folderSchema.getName()));
-			folder.getFields().put("name", FieldUtil.createStringField("folder name"));
+			folderFields.put("name", FieldUtil.createStringField("folder name"));
+			folder.setFields(folderFields);
 			// folder.getFields().put("displayName", FieldUtil.createStringField("folder display name"));
 
 			NodeResponse content = new NodeResponse();
 			content.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()));
-			content.getFields().put("name", FieldUtil.createStringField("content name"));
-			content.getFields().put("content", FieldUtil.createStringField("some content"));
+			FieldMap contentFields = new FieldMapImpl();
+			
+			contentFields.put("name", FieldUtil.createStringField("content name"));
+			contentFields.put("content", FieldUtil.createStringField("some content"));
+			content.setFields(contentFields);
 
 			SchemaStorage storage = new ClientSchemaStorage();
 			storage.addSchema(folderSchema);
