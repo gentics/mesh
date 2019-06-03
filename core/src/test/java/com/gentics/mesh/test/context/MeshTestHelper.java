@@ -36,7 +36,7 @@ public final class MeshTestHelper {
 		Set<String> uuids = new HashSet<>();
 		for (String currentUuid : uuidList) {
 			assertFalse("The rest api returned a response with a uuid that was returned before. Each create request must always be atomic.",
-					uuids.contains(currentUuid));
+				uuids.contains(currentUuid));
 			uuids.add(currentUuid);
 		}
 	}
@@ -58,8 +58,14 @@ public final class MeshTestHelper {
 
 	public static String getSimpleQuery(String field, String text) {
 		JsonObject json = new JsonObject(
-				"{\"query\":{\"query_string\":{\"query\":\"supersonic\",\"fields\":[\"fields.content^1.0\"],\"type\":\"phrase\"}}}");
+			"{\"query\":{\"query_string\":{\"query\":\"supersonic\",\"fields\":[\"fields.content^1.0\"],\"type\":\"phrase\"}}}");
 		json.getJsonObject("query").getJsonObject("query_string").put("query", text).put("fields", new JsonArray().add(field)).put("type", "phrase");
+		return json.encodePrettily();
+	}
+
+	public static String getUuidQuery(String uuid) {
+		JsonObject json = new JsonObject(
+			"{\"query\":{\"query_string\":{\"query\":\"" + uuid + "\",\"fields\":[\"uuid^1.0\"],\"type\":\"phrase\"}}}");
 		return json.encodePrettily();
 	}
 
@@ -79,11 +85,12 @@ public final class MeshTestHelper {
 	public static String getRangeQuery(String fieldName, double from, double to) {
 		JsonObject json = new JsonObject();
 		json.put("query", new JsonObject().put("range", new JsonObject().put(fieldName,
-				new JsonObject().put("from", from).put("to", to).put("include_lower", true).put("include_upper", true).put("boost", 1))));
+			new JsonObject().put("from", from).put("to", to).put("include_lower", true).put("include_upper", true).put("boost", 1))));
 		return json.encodePrettily();
 	}
 
 	public static <T> Consumer<T> noopConsumer() {
-		return t -> {};
+		return t -> {
+		};
 	}
 }
