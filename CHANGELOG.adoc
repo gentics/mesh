@@ -17,13 +17,17 @@ include::content/docs/variables.adoc-include[]
 [[expected]]
 == Planned Future Changes
 
+* With the release of `/api/v2` of the API, v1 has been deprecated. Version 2 introduced changes in the GraphQL API only. See the note in the changelog for link:#v0.35.0[v0.35.0] for details. The `/api/v1` still works like before, we will however cease support for `/api/v1` in the future. The Java REST client still uses v1 per default but can be set to v2. We advise to do so while `/api/v1` is still supported to prevent failures in the future.
+
 * The `html` field type will be **removed** in the future. Instead the `string` should be used in combination with an additional configuration property for this field in the schema.
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
-[[v0.34.1]]
-== 0.34.1 (TBD)
+[[v0.35.0]]
+== 0.35.0 (TBD)
+
+NOTE: Fetching fields of a node/micronode in GraphQL requires a different query in /api/v2. Please refer to the link:https://github.com/gentics/mesh/issues/428[#428] and link:https://github.com/gentics/mesh/issues/317[#317] for details.
 
 icon:check[] Backup: Fixed `NullPointerException` which happend when the backup directory was missing and the backup endpoint was invoked. link:https://github.com/gentics/mesh/issues/463[#463]
 
