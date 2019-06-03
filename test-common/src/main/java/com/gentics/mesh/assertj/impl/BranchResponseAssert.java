@@ -111,7 +111,7 @@ public class BranchResponseAssert extends AbstractAssert<BranchResponseAssert, B
 	 * @return fluent API
 	 */
 	public BranchResponseAssert isMigrated() {
-		assertThat(actual.isMigrated()).as(descriptionText() + " migrated").isTrue();
+		assertThat(actual.getMigrated()).as(descriptionText() + " migrated").isTrue();
 		return this;
 	}
 
@@ -121,7 +121,7 @@ public class BranchResponseAssert extends AbstractAssert<BranchResponseAssert, B
 	 * @return fluent API
 	 */
 	public BranchResponseAssert isNotMigrated() {
-		assertThat(actual.isMigrated()).as(descriptionText() + " migrated").isFalse();
+		assertThat(actual.getMigrated()).as(descriptionText() + " migrated").isFalse();
 		return this;
 	}
 

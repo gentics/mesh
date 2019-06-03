@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.util.HttpQueryUtils;
@@ -250,4 +251,8 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 		return true;
 	}
 
+	@Override
+	public int getApiVersion() {
+		return VersionHandler.CURRENT_API_VERSION;
+	}
 }
