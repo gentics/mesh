@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.branch;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
@@ -32,7 +33,7 @@ public class BranchResponse extends AbstractGenericRestResponse {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Flag which indicates whether any active node migration for this branch is still running or whether all nodes have been migrated to this branch.")
-	private boolean migrated;
+	private Boolean migrated;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Flag which indicates whether this is the latest branch. Requests that do not specify a specific branch will be performed in the scope of the latest branch.")
@@ -75,11 +76,22 @@ public class BranchResponse extends AbstractGenericRestResponse {
 	// this.active = active;
 	// }
 
+	/**
+	 * Get the migration status for the branch.
+	 * @return
+	 * @deprecated Use {@link #getMigrated()} instead.
+	 */
+	@JsonIgnore
+	@Deprecated
 	public boolean isMigrated() {
+		return migrated != null ? migrated : false;
+	}
+
+	public Boolean getMigrated() {
 		return migrated;
 	}
 
-	public void setMigrated(boolean migrated) {
+	public void setMigrated(Boolean migrated) {
 		this.migrated = migrated;
 	}
 
