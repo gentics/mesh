@@ -39,10 +39,10 @@ public class ElasticsearchContainerTest {
 	}
 
 	private String getStatus() throws IOException {
-		URL testUrl = new URL("http://localhost:" + server.getFirstMappedPort() + "/_cluster/health");
+		URL testUrl = new URL("http://" + server.getHost() + ":" + server.getFirstMappedPort() + "/_cluster/health");
 		URLConnection conn = testUrl.openConnection();
-		conn.setConnectTimeout(500);
-		conn.setReadTimeout(500);
+		conn.setConnectTimeout(1500);
+		conn.setReadTimeout(1500);
 		try (InputStream ins = conn.getInputStream()) {
 			try (Scanner scanner = new Scanner(ins, "UTF-8")) {
 				return scanner.useDelimiter("\\A").next();

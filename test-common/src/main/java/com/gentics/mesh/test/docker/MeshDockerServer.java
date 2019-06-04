@@ -240,4 +240,23 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 		return this;
 	}
 
+	@Override
+	public String getContainerIpAddress() {
+		String containerHost = System.getenv("CONTAINER_HOST");
+		if (containerHost != null) {
+			return containerHost;
+		} else {
+			return super.getContainerIpAddress();
+		}
+	}
+
+	public String getHost() {
+		String containerHost = System.getenv("CONTAINER_HOST");
+		if (containerHost != null) {
+			return containerHost;
+		} else {
+			return "localhost";
+		}
+	}
+
 }
