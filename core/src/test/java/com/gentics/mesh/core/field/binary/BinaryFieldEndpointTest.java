@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -14,6 +15,9 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
+import com.gentics.mesh.parameter.image.CropMode;
+import com.gentics.mesh.rest.client.MeshRequest;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
@@ -253,19 +257,11 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	public void testBinaryDisplayField() throws Exception {
 		String fileName = "blume.jpg";
-		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
-		byte[] bytes = IOUtils.toByteArray(ins);
-		Buffer buffer = Buffer.buffer(bytes);
-		String parentUuid = tx(() -> folder("2015").getUuid());
-
-		tx(() -> group().addRole(roles().get("admin")));
-
-		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-		nodeCreateRequest.setLanguage("en").setParentNodeUuid(parentUuid).setSchemaName("binary_content");
-		NodeResponse nodeResponse1 = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+		byte[] bytes = getBinary("/pictures/blume.jpg");
+		NodeResponse nodeResponse1 = createBinaryNode();
 
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeResponse1.getUuid(), "en", nodeResponse1.getVersion(), "binary",
-			new ByteArrayInputStream(buffer.getBytes()), buffer.length(), fileName,
+			new ByteArrayInputStream(bytes), bytes.length, fileName,
 			"application/binary"));
 
 		SchemaResponse binarySchema = call(() -> client().findSchemas(PROJECT_NAME)).getData().stream().filter(s -> s.getName().equals(
@@ -291,19 +287,11 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	public void testSvgTransformation() throws Exception {
 		String fileName = "laptop-2.svg";
-		InputStream ins = getClass().getResourceAsStream("/pictures/laptop-2.svg");
-		byte[] inputBytes = IOUtils.toByteArray(ins);
-		Buffer buffer = Buffer.buffer(inputBytes);
-		String parentUuid = tx(() -> folder("2015").getUuid());
-
-		tx(() -> group().addRole(roles().get("admin")));
-
-		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-		nodeCreateRequest.setLanguage("en").setParentNodeUuid(parentUuid).setSchemaName("binary_content");
-		NodeResponse nodeResponse1 = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+		byte[] inputBytes = getBinary("/pictures/laptop-2.svg");
+		NodeResponse nodeResponse1 = createBinaryNode();
 
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeResponse1.getUuid(), "en", nodeResponse1.getVersion(), "binary",
-			new ByteArrayInputStream(buffer.getBytes()), buffer.length(), fileName,
+			new ByteArrayInputStream(inputBytes), inputBytes.length, fileName,
 			"image/svg"));
 
 		MeshBinaryResponse download = call(() -> client().downloadBinaryField(PROJECT_NAME, nodeResponse1.getUuid(), "en", "binary",
@@ -313,6 +301,58 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		download.close();
 
 		assertThat(downloadBytes).containsExactly(inputBytes);
+	}
+
+	/**
+	 * Test for https://github.com/gentics/mesh/issues/669
+	 */
+	@Test
+	public void testSimilarManipulationParameters() throws IOException {
+		String fileName = "blume.jpg";
+		byte[] bytes = getBinary("/pictures/blume.jpg");
+
+		NodeResponse nodeResponse = createBinaryNode();
+
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeResponse.getUuid(), "en", nodeResponse.getVersion(), "binary",
+			new ByteArrayInputStream(bytes), bytes.length, fileName,"image/jpg"));
+
+		String hash = hashBinary(client().downloadBinaryField(
+			PROJECT_NAME, nodeResponse.getUuid(), "en", "binary",
+			new ImageManipulationParametersImpl()
+				.setWidth(300).setHeight(400)
+				.setFocalPoint(0.46f, 0.35f)
+				.setCropMode(CropMode.FOCALPOINT)
+				.setFocalPointZoom(2f)
+		));
+
+		String hash2 = hashBinary(client().downloadBinaryField(
+			PROJECT_NAME, nodeResponse.getUuid(), "en", "binary",
+			new ImageManipulationParametersImpl()
+				.setWidth(300).setHeight(400)
+				.setFocalPoint(0.46f, 0.35f)
+				.setCropMode(CropMode.FOCALPOINT)
+		));
+
+		assertNotEquals("Downloaded binary must be different", hash, hash2);
+	}
+
+	private String hashBinary(MeshRequest<MeshBinaryResponse> downloadBinaryField) throws IOException {
+		return DigestUtils.md5Hex(downloadBinaryField.blockingGet().getStream());
+	}
+
+	private NodeResponse createBinaryNode() {
+		String parentUuid = tx(() -> folder("2015").getUuid());
+
+		tx(() -> group().addRole(roles().get("admin")));
+
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("en").setParentNodeUuid(parentUuid).setSchemaName("binary_content");
+		return call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+	}
+
+	private byte[] getBinary(String name) throws IOException {
+		InputStream ins = getClass().getResourceAsStream(name);
+		return IOUtils.toByteArray(ins);
 	}
 
 	@Override
