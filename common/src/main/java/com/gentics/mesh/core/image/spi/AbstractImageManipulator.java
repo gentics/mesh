@@ -2,6 +2,7 @@ package com.gentics.mesh.core.image.spi;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.apache.commons.io.FilenameUtils.removeExtension;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -51,7 +52,7 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 		}
 
 		String baseName = "image-" + parameters.getCacheKey();
-		File[] foundFiles = baseFolder.listFiles((dir, name) -> name.startsWith(baseName));
+		File[] foundFiles = baseFolder.listFiles((dir, name) -> removeExtension(name).equals(baseName));
 		int numFiles = foundFiles.length;
 
 		if (numFiles == 0) {
