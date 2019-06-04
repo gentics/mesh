@@ -77,12 +77,13 @@ stage("Setup Build Environment") {
 										echo "Setting correct inclusions file ${postfix}"
 										sh "mv includes-${postfix} inclusions.txt"
 										sshagent(["git"]) {
-											try {
-												sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -e -pl '!ferma,!demo,!doc,!performance-tests' test"
-												stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
-											} finally {
-												step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
-											}
+											// try {
+											//	sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -e -pl '!ferma,!demo,!doc,!performance-tests' test"
+												echo "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -e -pl '!ferma,!demo,!doc,!performance-tests' test"
+												//stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
+											//} finally {
+											//	step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+											//}
 										}
 									}
 								}
