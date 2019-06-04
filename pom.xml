@@ -275,6 +275,7 @@
 								<goal>instrument</goal>
 							</goals>
 							<configuration>
+								<skip>true</skip>
 								<excludes>
 									<exclude>*OrientSqlTokenManager*</exclude>
 								</excludes>
