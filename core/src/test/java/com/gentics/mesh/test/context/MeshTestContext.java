@@ -1,5 +1,6 @@
 package com.gentics.mesh.test.context;
 
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ELASTICSEARCH_KEY;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
 import static com.gentics.mesh.test.context.MeshTestHelper.noopConsumer;
@@ -421,7 +422,7 @@ public class MeshTestContext extends TestWatcher {
 			elasticsearch.waitingFor(Wait.forHttp("/"));
 
 			searchOptions.setStartEmbedded(false);
-			searchOptions.setUrl("http://localhost:" + elasticsearch.getMappedPort(9200));
+			searchOptions.setUrl("http://" + elasticsearch.getHost() + ":" + elasticsearch.getMappedPort(9200));
 			break;
 		case CONTAINER_TOXIC:
 			network = Network.newNetwork();
@@ -466,7 +467,7 @@ public class MeshTestContext extends TestWatcher {
 			oauth2Options.setEnabled(true);
 
 			OAuth2ServerConfig realmConfig = new OAuth2ServerConfig();
-			realmConfig.setAuthServerUrl("http://localhost:" + keycloak.getMappedPort(8080) + "/auth");
+			realmConfig.setAuthServerUrl("http://" + keycloak.getHost() + ":" + keycloak.getMappedPort(8080) + "/auth");
 			realmConfig.setRealm("master-test");
 			realmConfig.setSslRequired("external");
 			realmConfig.setResource("mesh");

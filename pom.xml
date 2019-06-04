@@ -270,6 +270,17 @@
 					<version>0.8.2</version>
 					<executions>
 						<execution>
+							<id>instrument-jacoco</id>
+							<goals>
+								<goal>instrument</goal>
+							</goals>
+							<configuration>
+								<excludes>
+									<exclude>*OrientSqlTokenManager*</exclude>
+								</excludes>
+							</configuration>
+						</execution>
+						<execution>
 							<id>merge-all-jacoco</id>
 							<goals>
 								<goal>merge</goal>

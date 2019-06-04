@@ -33,7 +33,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 		withTmpFs(Collections.singletonMap("/usr/share/elasticsearch/data", "rw,size=64m"));
 		// addEnv("xpack.security.enabled", "false");
 		withExposedPorts(9200);
-		withStartupTimeout(Duration.ofSeconds(250L));
+		withStartupTimeout(Duration.ofSeconds(30L));
 		waitingFor(new HttpWaitStrategy().forPath("/"));
 	}
 
@@ -88,6 +88,25 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 		logger().debug("stdout: " + result.getStdout());
 		logger().debug("stderr: " + result.getStderr());
 		return result;
+	}
+
+	@Override
+	public String getContainerIpAddress() {
+		String containerHost = System.getenv("CONTAINER_HOST");
+		if (containerHost != null) {
+			return containerHost;
+		} else {
+			return super.getContainerIpAddress();
+		}
+	}
+
+	public String getHost() {
+		String containerHost = System.getenv("CONTAINER_HOST");
+		if (containerHost != null) {
+			return containerHost;
+		} else {
+			return "localhost";
+		}
 	}
 
 }
