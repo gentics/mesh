@@ -41,6 +41,8 @@ icon:check[] The `Content-Disposition` header will now contain the UTF-8 and ISO
 
 icon:plus[] REST: It is now possible to set a flag that forces a user to change their password on the next login. Take a look at link:{{< relref "authentication.asciidoc" >}}#_forcing_user_to_change_password[the documentation] for more information.
 
+icon:check[] REST: Fixed a bug that sometimes caused a wrong image to be responded when using image manipulation. link:https://github.com/gentics/mesh/issues/669[#669]
+
 [[v0.34.0]]
 == 0.34.0 (28.05.2019)
 
