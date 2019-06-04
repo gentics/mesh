@@ -74,7 +74,7 @@ stage("Setup Build Environment") {
 										sh "mv includes-${postfix} inclusions.txt"
 										sshagent(["git"]) {
 											try {
-												sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -U -e -pl '!demo,!doc,!performance-tests' clean install"
+												sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -U -e -pl '!ferma,!demo,!doc,!performance-tests' clean install"
 												stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
 											} finally {
 												step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
