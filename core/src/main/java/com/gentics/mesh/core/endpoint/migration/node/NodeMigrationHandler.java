@@ -6,14 +6,10 @@ import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
 import static com.gentics.mesh.metric.Metrics.NODE_MIGRATION_PENDING;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
@@ -33,10 +29,13 @@ import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.ResettableCounter;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.common.collect.Lists;
+
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * Handler for node migrations after schema updates.

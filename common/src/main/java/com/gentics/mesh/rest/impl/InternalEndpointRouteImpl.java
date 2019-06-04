@@ -1,25 +1,8 @@
 package com.gentics.mesh.rest.impl;
 
-import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.ParameterProvider;
-import com.gentics.mesh.rest.InternalEndpointRoute;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.Handler;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.Route;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
-import org.codehaus.jettison.json.JSONObject;
-import org.raml.model.MimeType;
-import org.raml.model.Response;
-import org.raml.model.parameter.FormParameter;
-import org.raml.model.parameter.Header;
-import org.raml.model.parameter.QueryParameter;
-import org.raml.model.parameter.UriParameter;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,9 +15,28 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
+import org.codehaus.jettison.json.JSONObject;
+import org.raml.model.MimeType;
+import org.raml.model.Response;
+import org.raml.model.parameter.FormParameter;
+import org.raml.model.parameter.Header;
+import org.raml.model.parameter.QueryParameter;
+import org.raml.model.parameter.UriParameter;
+
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.ParameterProvider;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.Route;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 
 /**
  * @see InternalEndpointRoute

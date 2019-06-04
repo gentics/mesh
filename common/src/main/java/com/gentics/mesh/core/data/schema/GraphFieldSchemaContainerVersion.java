@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.schema;
 
+import java.util.stream.Stream;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -13,8 +15,6 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.VersionUtil;
-
-import java.util.stream.Stream;
 
 /**
  * A {@link GraphFieldSchemaContainerVersion} stores the versioned data for a {@link GraphFieldSchemaContainer} element.

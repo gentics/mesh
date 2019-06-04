@@ -1,22 +1,23 @@
 package com.gentics.mesh.core.admin;
 
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
-import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import org.junit.Before;
-import org.junit.Test;
-import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
-
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
+
+import java.io.File;
+import java.io.IOException;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
+
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(elasticsearch = NONE, testSize = FULL, startServer = true, inMemoryDB = false, clusterMode = true)
 public class AdminEndpointBackupClusteredTest extends AbstractMeshTest {

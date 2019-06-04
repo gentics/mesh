@@ -1,5 +1,11 @@
 package com.gentics.mesh.core.data;
 
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_UPDATED;
+
+import java.util.Objects;
+
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -10,12 +16,6 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
-
-import java.util.Objects;
-
-import static com.gentics.mesh.core.rest.MeshEvent.GROUP_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.GROUP_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.GROUP_UPDATED;
 
 /**
  * Graph domain model interface for groups.

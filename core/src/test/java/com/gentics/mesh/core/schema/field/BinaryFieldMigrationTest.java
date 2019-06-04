@@ -1,20 +1,5 @@
 package com.gentics.mesh.core.schema.field;
 
-import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.binary.BinaryRoot;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.field.DataProvider;
-import com.gentics.mesh.core.field.binary.BinaryFieldTestHelper;
-import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.storage.BinaryStorage;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.FileUtils;
-import com.gentics.mesh.util.RxUtil;
-import com.gentics.mesh.util.UUIDUtil;
-import io.reactivex.Flowable;
-import io.vertx.core.buffer.Buffer;
-import org.junit.Test;
-
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEANLIST;
@@ -32,6 +17,23 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.Test;
+
+import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.BinaryRoot;
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.field.DataProvider;
+import com.gentics.mesh.core.field.binary.BinaryFieldTestHelper;
+import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.storage.BinaryStorage;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.FileUtils;
+import com.gentics.mesh.util.RxUtil;
+import com.gentics.mesh.util.UUIDUtil;
+
+import io.reactivex.Flowable;
+import io.vertx.core.buffer.Buffer;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest implements BinaryFieldTestHelper {

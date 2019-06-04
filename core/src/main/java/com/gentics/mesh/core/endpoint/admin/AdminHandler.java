@@ -1,5 +1,24 @@
 package com.gentics.mesh.core.endpoint.admin;
 
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_START;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_START;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_START;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.rest.Messages.message;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
+import static java.util.Comparator.comparing;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -18,33 +37,15 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.SearchProvider;
 import com.syncleus.ferma.tx.Tx;
+
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_FINISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_START;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_FINISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_START;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_FINISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_START;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.rest.Messages.message;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
-import static java.util.Comparator.comparing;
 
 /**
  * Handler for admin request methods.

@@ -1,11 +1,5 @@
 package com.gentics.mesh.core.schema.field;
 
-import com.gentics.mesh.core.field.DataProvider;
-import com.gentics.mesh.core.field.node.NodeFieldTestHelper;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import org.junit.Before;
-import org.junit.Test;
-
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
@@ -23,6 +17,13 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.test.TestSize.FULL;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import com.gentics.mesh.core.field.DataProvider;
+import com.gentics.mesh.core.field.node.NodeFieldTestHelper;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implements NodeFieldTestHelper {

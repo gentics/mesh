@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.schema;
 
+import java.io.IOException;
+import java.util.Map;
+
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -8,10 +11,8 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
-import io.vertx.core.json.JsonObject;
 
-import java.io.IOException;
-import java.util.Map;
+import io.vertx.core.json.JsonObject;
 
 /**
  * A schema change represents a single manipulation of a field container (e.g.: {@link Schema}, {@link Microschema}).

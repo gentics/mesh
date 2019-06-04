@@ -1,18 +1,18 @@
 package com.gentics.mesh.core.data.schema;
 
+import static com.gentics.mesh.ElementType.SCHEMA;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_UPDATED;
+
+import java.util.Objects;
+
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.madlmigration.TraversalResult;
-
-import java.util.Objects;
-
-import static com.gentics.mesh.ElementType.SCHEMA;
-import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_UPDATED;
 
 /**
  * A schema container is a graph element which stores the JSON schema data.

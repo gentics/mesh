@@ -7,7 +7,6 @@ import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 
 import java.io.IOException;
 
-import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;

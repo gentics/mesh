@@ -1,13 +1,10 @@
 package com.gentics.mesh.core.data.schema.impl;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import com.gentics.mesh.core.data.schema.SchemaFieldChange;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.util.Tuple;
 
 /**
  * @see SchemaFieldChange

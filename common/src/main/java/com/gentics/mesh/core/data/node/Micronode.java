@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.node;
 
+import java.util.List;
+
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -9,8 +11,6 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.madlmigration.TraversalResult;
-
-import java.util.List;
 
 /**
  * A micronodes is similar to a node but instead of nodes these elements can't be directly accessed via the REST API. A micronode can have it's own set of

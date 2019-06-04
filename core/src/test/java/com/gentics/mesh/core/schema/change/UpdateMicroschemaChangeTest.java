@@ -2,15 +2,10 @@ package com.gentics.mesh.core.schema.change;
 
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 
 import org.junit.Test;
-
-import com.syncleus.ferma.tx.Tx;
-
-import io.vertx.core.json.JsonObject;
 
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -20,6 +15,9 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
+
+import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class UpdateMicroschemaChangeTest extends AbstractChangeTest {

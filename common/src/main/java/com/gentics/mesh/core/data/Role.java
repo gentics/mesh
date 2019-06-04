@@ -1,5 +1,12 @@
 package com.gentics.mesh.core.data;
 
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_UPDATED;
+
+import java.util.Objects;
+import java.util.Set;
+
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.page.Page;
@@ -8,13 +15,6 @@ import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
-
-import java.util.Objects;
-import java.util.Set;
-
-import static com.gentics.mesh.core.rest.MeshEvent.ROLE_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.ROLE_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.ROLE_UPDATED;
 
 /**
  * Graph domain model interface for a role.

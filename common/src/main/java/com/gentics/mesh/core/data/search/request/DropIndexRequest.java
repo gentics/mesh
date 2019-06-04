@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.search.request;
 
 import com.gentics.mesh.search.SearchProvider;
+
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;

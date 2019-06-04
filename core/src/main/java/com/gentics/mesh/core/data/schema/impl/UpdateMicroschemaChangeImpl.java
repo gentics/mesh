@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.schema.impl;
 
+import java.util.Collections;
+import java.util.Map;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.UpdateMicroschemaChange;
@@ -9,9 +12,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.graphdb.spi.Database;
-
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * @see UpdateMicroschemaChange

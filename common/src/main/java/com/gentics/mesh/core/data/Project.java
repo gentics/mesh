@@ -1,5 +1,11 @@
 package com.gentics.mesh.core.data;
 
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
+
+import java.util.Objects;
+
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.Node;
@@ -18,12 +24,6 @@ import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.madlmigration.TraversalResult;
-
-import java.util.Objects;
-
-import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
 
 /**
  * The Project Domain Model interface.

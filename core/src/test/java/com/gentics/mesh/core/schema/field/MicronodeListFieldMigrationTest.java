@@ -1,12 +1,5 @@
 package com.gentics.mesh.core.schema.field;
 
-import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
-import com.gentics.mesh.core.field.DataProvider;
-import com.gentics.mesh.core.field.FieldFetcher;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import org.junit.Test;
-
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
@@ -24,6 +17,14 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.test.TestSize.FULL;
+
+import org.junit.Test;
+
+import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
+import com.gentics.mesh.core.field.DataProvider;
+import com.gentics.mesh.core.field.FieldFetcher;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest {

@@ -1,15 +1,8 @@
 package com.gentics.mesh.verticle.admin;
 
-import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.router.EndpointRegistry;
-import com.gentics.mesh.test.TestSize;
-import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientRequest;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static io.vertx.core.http.HttpMethod.GET;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
@@ -17,9 +10,18 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static io.vertx.core.http.HttpMethod.GET;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.router.EndpointRegistry;
+import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
+
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientRequest;
 
 @MeshTestSetting(testSize = TestSize.EMPTY, startServer = false)
 public class AdminGUIEndpointTest extends AbstractMeshTest {

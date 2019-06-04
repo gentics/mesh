@@ -1,15 +1,5 @@
 package com.gentics.mesh.core.data;
 
-import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
-import com.gentics.mesh.core.rest.tag.TagReference;
-import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.json.JsonUtil;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -17,6 +7,16 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
+import com.gentics.mesh.core.rest.tag.TagReference;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.json.JsonUtil;
 
 /**
  * A taggable element is a graph element that can reference Tags

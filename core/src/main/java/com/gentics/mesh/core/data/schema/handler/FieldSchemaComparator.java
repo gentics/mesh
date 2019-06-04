@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.schema.handler;
 
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.EMPTY;
-
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 

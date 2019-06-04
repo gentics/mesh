@@ -1,8 +1,5 @@
 package com.gentics.mesh.core.schema.field;
 
-import com.gentics.mesh.test.context.MeshTestSetting;
-import org.junit.Test;
-
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
@@ -22,6 +19,10 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.FILL;
 import static com.gentics.mesh.test.TestSize.FULL;
+
+import org.junit.Test;
+
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class MicronodeFieldMigrationTest extends AbstractFieldMigrationTest {

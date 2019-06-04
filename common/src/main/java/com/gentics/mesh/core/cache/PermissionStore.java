@@ -1,16 +1,17 @@
 package com.gentics.mesh.core.cache;
 
+import static com.gentics.mesh.core.rest.MeshEvent.CLEAR_PERMISSION_STORE;
+
+import java.util.concurrent.TimeUnit;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import java.util.concurrent.TimeUnit;
-
-import static com.gentics.mesh.core.rest.MeshEvent.CLEAR_PERMISSION_STORE;
 
 /**
  * Central LRU permission cache which is used to quickly lookup cached permissions.

@@ -1,15 +1,5 @@
 package com.gentics.mesh.core.schema.field;
 
-import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.node.field.HtmlGraphField;
-import com.gentics.mesh.core.field.html.HtmlFieldTestHelper;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.IndexOptionHelper;
-import org.junit.Test;
-
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
@@ -29,6 +19,17 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static org.junit.Assert.assertEquals;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+
+import org.junit.Test;
+
+import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.node.field.HtmlGraphField;
+import com.gentics.mesh.core.field.html.HtmlFieldTestHelper;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.IndexOptionHelper;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = false)
 public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implements HtmlFieldTestHelper {

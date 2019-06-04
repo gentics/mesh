@@ -1,9 +1,9 @@
 package com.gentics.mesh.util;
 
-import com.gentics.mesh.core.rest.common.RestModel;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
  * Result container which can be used to return information from within a transaction handler.

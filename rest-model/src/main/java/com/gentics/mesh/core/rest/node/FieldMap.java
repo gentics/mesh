@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.rest.node;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -21,10 +25,6 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * A field map stores all fields of a node or micronode.

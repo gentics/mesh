@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.schema;
 
+import java.util.Map;
+
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;
@@ -9,8 +11,6 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
-
-import java.util.Map;
 
 /**
  * Common graph model interface for schema field containers.

@@ -1,5 +1,16 @@
 package com.gentics.mesh.core.data.node;
 
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+import java.util.stream.Stream;
+
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -39,18 +50,8 @@ import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.syncleus.ferma.EdgeFrame;
+
 import io.reactivex.Single;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-import java.util.stream.Stream;
-
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
-import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 
 /**
  * The Node Domain Model interface.

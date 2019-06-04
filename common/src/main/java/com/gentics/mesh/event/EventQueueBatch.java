@@ -1,13 +1,13 @@
 package com.gentics.mesh.event;
 
+import java.util.List;
+import java.util.Objects;
+
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.rest.event.EventCauseAction;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
-
-import java.util.List;
-import java.util.Objects;
 
 /**
  * A batch of event queue entries.

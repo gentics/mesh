@@ -1,9 +1,5 @@
 package com.gentics.mesh.core.schema.field;
 
-import com.gentics.mesh.core.field.html.HtmlListFieldHelper;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import org.junit.Test;
-
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEANLIST;
@@ -21,6 +17,11 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.Test;
+
+import com.gentics.mesh.core.field.html.HtmlListFieldHelper;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest implements HtmlListFieldHelper {

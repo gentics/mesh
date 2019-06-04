@@ -1,5 +1,11 @@
 package com.gentics.mesh.core.data;
 
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_UPDATED;
+
+import java.util.Objects;
+
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
@@ -10,12 +16,6 @@ import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
-
-import java.util.Objects;
-
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_UPDATED;
 
 /**
  * The TagFamily domain model interface.

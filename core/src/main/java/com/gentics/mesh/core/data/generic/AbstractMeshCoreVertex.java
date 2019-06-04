@@ -4,6 +4,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.ROLE_PERMISSIONS_CHANGED;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.Set;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
@@ -28,10 +30,9 @@ import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEven
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.value.FieldsSet;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import java.util.Set;
 
 /**
  * Abstract class for mesh core vertices that includes methods which are commonly used when transforming the vertices into REST POJO's.

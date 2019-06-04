@@ -1,21 +1,22 @@
 package com.gentics.mesh.core.image.spi;
 
-import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.parameter.ImageManipulationParameters;
-import io.reactivex.Maybe;
-import io.reactivex.Single;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.reactivex.core.Vertx;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import com.gentics.mesh.etc.config.ImageManipulatorOptions;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
+
+import io.reactivex.Maybe;
+import io.reactivex.Single;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.Vertx;
+import javax.imageio.ImageIO;
 
 /**
  * Abstract image manipulator implementation.

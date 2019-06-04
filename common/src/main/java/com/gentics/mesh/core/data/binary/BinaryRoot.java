@@ -1,12 +1,12 @@
 package com.gentics.mesh.core.data.binary;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BINARY;
+
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Edge;
-
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BINARY;
 
 /**
  * Aggregation vertex for vertices which represent the binary.

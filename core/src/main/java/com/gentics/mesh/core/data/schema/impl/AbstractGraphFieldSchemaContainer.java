@@ -1,5 +1,15 @@
 package com.gentics.mesh.core.data.schema.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_VERSION;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.lang.NotImplementedException;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -11,16 +21,8 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.util.ETag;
+
 import io.reactivex.Single;
-import org.apache.commons.lang.NotImplementedException;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_VERSION;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 /**
  * The {@link AbstractGraphFieldSchemaContainer} contains the abstract graph element implementation for {@link GraphFieldSchemaContainer} implementations (e.g.:

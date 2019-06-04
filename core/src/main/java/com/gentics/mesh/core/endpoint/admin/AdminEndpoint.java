@@ -1,15 +1,5 @@
 package com.gentics.mesh.core.endpoint.admin;
 
-import com.gentics.mesh.MeshStatus;
-import com.gentics.mesh.auth.MeshAuthChain;
-import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
-import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
-import com.gentics.mesh.rest.InternalEndpointRoute;
-import com.gentics.mesh.router.route.AbstractInternalEndpoint;
-
-import javax.inject.Inject;
-
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_START;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_FINISHED;
@@ -31,6 +21,16 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
+
+import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
+import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
+
+import javax.inject.Inject;
 
 /**
  * The admin verticle provides core administration rest endpoints.

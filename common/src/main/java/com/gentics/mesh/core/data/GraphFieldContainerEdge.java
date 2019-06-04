@@ -1,11 +1,11 @@
 package com.gentics.mesh.core.data;
 
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.rest.common.ContainerType;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 
 import java.util.Set;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.rest.common.ContainerType;
 
 /**
  * Interface for edges between i18n field containers and the node. Edges are language specific, are bound to branches and are either of type "Initial, Draft or
