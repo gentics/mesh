@@ -169,37 +169,6 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 
 	@Override
 	public Map<String, Field> createFields(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
-		String newType = getType();
-//		Field newField;
-//		switch (newType) {
-//			case "boolean":
-//				newField = new BooleanFieldImpl();
-//				break;
-//			case "number":
-//				newField = new NumberFieldImpl();
-//				break;
-//			case "date":
-//				newField = new DateFieldImpl();
-//				break;
-//			case "html":
-//				newField = new HtmlFieldImpl();
-//				break;
-//			case "string":
-//				newField = new StringFieldImpl();
-//				break;
-//			case "list":
-//				break;
-//			case "micronode":
-//				newField = new MicronodeResponse();
-//				break;
-//			case "node":
-//				newField = new Nodefield();
-//				break;
-//			default:
-//				throw error(BAD_REQUEST, "Unknown type {" + newType + "} for change " + getUuid());
-//		}
-
-
 		return Collections.singletonMap(getFieldName(), null);
 	}
 

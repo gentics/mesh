@@ -78,6 +78,11 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 */
 	SchemaChange<?> getNextChange();
 
+	/**
+	 * Retrieves all changes for the next version.
+	 *
+	 * @return
+	 */
 	default Stream<SchemaChange<FieldSchemaContainer>> getChanges() {
 		return StreamUtil.untilNull(
 			() -> (SchemaChange<FieldSchemaContainer>)getNextChange(),
