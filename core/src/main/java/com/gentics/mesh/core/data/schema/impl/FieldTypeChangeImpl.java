@@ -83,6 +83,8 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 		setRestProperty(SchemaChangeModel.LIST_TYPE_KEY, listType);
 	}
 
+	private static TypeConverter typeConverter = new TypeConverter();
+
 	/**
 	 * Apply the field type change to the specified schema.
 	 */
@@ -182,7 +184,6 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 	private BooleanField changeToBoolean(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
 		String fieldName = getFieldName();
 		FieldSchema fieldSchema = oldSchema.getField(fieldName);
-		TypeConverter typeConverter = new TypeConverter();
 
 		return new BooleanFieldImpl().setValue(typeConverter.toBoolean(oldContent.getFields().getField(fieldName, fieldSchema).getValue()));
 	}
@@ -190,7 +191,6 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 	private NumberField changeToNumber(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
 		String fieldName = getFieldName();
 		FieldSchema fieldSchema = oldSchema.getField(fieldName);
-		TypeConverter typeConverter = new TypeConverter();
 
 		String oldType = fieldSchema.getType();
 		Object oldValue = oldContent.getFields().getField(fieldName, fieldSchema).getValue();
@@ -210,7 +210,6 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 	private DateField changeToDate(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
 		String fieldName = getFieldName();
 		FieldSchema fieldSchema = oldSchema.getField(fieldName);
-		TypeConverter typeConverter = new TypeConverter();
 
 		return new DateFieldImpl().setDate(typeConverter.toDate(oldContent.getFields().getField(fieldName, fieldSchema).getValue()));
 	}
@@ -218,7 +217,6 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 	private HtmlField changeToHtml(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
 		String fieldName = getFieldName();
 		FieldSchema fieldSchema = oldSchema.getField(fieldName);
-		TypeConverter typeConverter = new TypeConverter();
 
 		if (isNonNodeUuidType(fieldSchema)) {
 			return null;
@@ -229,7 +227,6 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 	private StringField changeToString(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
 		String fieldName = getFieldName();
 		FieldSchema fieldSchema = oldSchema.getField(fieldName);
-		TypeConverter typeConverter = new TypeConverter();
 
 		if (isNonNodeUuidType(fieldSchema)) {
 			return null;
@@ -240,7 +237,6 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 	private BinaryField changeToBinary(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
 		String fieldName = getFieldName();
 		FieldSchema fieldSchema = oldSchema.getField(fieldName);
-		TypeConverter typeConverter = new TypeConverter();
 
 		String oldType = fieldSchema.getType();
 		switch (oldType) {
@@ -254,7 +250,6 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 	private FieldList changeToList(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
 		String fieldName = getFieldName();
 		FieldSchema fieldSchema = oldSchema.getField(fieldName);
-		TypeConverter typeConverter = new TypeConverter();
 		String listType = getListType();
 		Field oldField = oldContent.getFields().getField(fieldName, fieldSchema);
 		Object oldValue = oldField.getValue();
@@ -322,7 +317,6 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 	private MicronodeField changeToMicronode(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
 		String fieldName = getFieldName();
 		FieldSchema fieldSchema = oldSchema.getField(fieldName);
-		TypeConverter typeConverter = new TypeConverter();
 
 		return typeConverter.toMicronode(oldContent.getFields().getField(fieldName, fieldSchema));
 	}
@@ -330,7 +324,6 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 	private NodeField changeToNode(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
 		String fieldName = getFieldName();
 		FieldSchema fieldSchema = oldSchema.getField(fieldName);
-		TypeConverter typeConverter = new TypeConverter();
 
 		return typeConverter.toNode(oldContent.getFields().getField(fieldName, fieldSchema));
 	}

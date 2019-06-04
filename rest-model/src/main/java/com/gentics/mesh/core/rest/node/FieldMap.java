@@ -40,10 +40,21 @@ public interface FieldMap extends RestModel {
 	 */
 	Field put(String fieldKey, Field field);
 
+	/**
+	 * Add or update the field in the given entry.
+	 * @param entry
+	 * @return
+	 */
 	default Field put(Map.Entry<String, Field> entry) {
 		return put(entry.getKey(), entry.getValue());
 	}
 
+	/**
+	 * Puts a string field in the map.
+	 * @param fieldKey
+	 * @param string
+	 * @return
+	 */
 	default Field putString(String fieldKey, String string) {
 		return put(fieldKey, new StringFieldImpl().setString(string));
 	}
@@ -263,5 +274,8 @@ public interface FieldMap extends RestModel {
 	@JsonIgnore
 	Set<String> getUrlFieldValues(Schema schema);
 
+	/**
+	 * Delete all fields in this map.
+	 */
 	void clear();
 }

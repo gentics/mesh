@@ -29,7 +29,7 @@ include::content/docs/variables.adoc-include[]
 
 CAUTION: Rest Model: The `BranchResponse#isMigrated` method has been changed to `BranchResponse#getMigrated`.
 
-CAUTION: Custom node migration scripts have been removed. The script system was a source of possible errors and performance problems. The nashorn javascript engine has been deprecated with the release of Java 11. To change for a migration, use the REST api instead.
+CAUTION: Custom node migration scripts have been removed. The script system was a source of possible errors and performance problems. Also, the nashorn javascript engine has been deprecated with the release of Java 11. If you need to change data for a migration, use the REST Api instead.
 
 NOTE: Fetching fields of a node/micronode in GraphQL requires a different query in /api/v2. Please refer to the link:https://github.com/gentics/mesh/issues/428[#428] and link:https://github.com/gentics/mesh/issues/317[#317] for details.
 
