@@ -11,6 +11,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -34,8 +37,6 @@ import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import javax.inject.Inject;
-import javax.inject.Singleton;
 
 /**
  * Handler for node migrations after schema updates.

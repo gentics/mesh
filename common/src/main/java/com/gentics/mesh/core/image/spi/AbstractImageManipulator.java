@@ -8,6 +8,8 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import javax.imageio.ImageIO;
+
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 
@@ -16,7 +18,6 @@ import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
-import javax.imageio.ImageIO;
 
 /**
  * Abstract image manipulator implementation.

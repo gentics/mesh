@@ -8,6 +8,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.inject.Inject;
+import javax.naming.InvalidNameException;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -26,8 +29,6 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
-import javax.inject.Inject;
-import javax.naming.InvalidNameException;
 
 /**
  * Central storage for all Vert.x web request routers.

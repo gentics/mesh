@@ -13,6 +13,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -36,8 +39,6 @@ import com.syncleus.ferma.tx.TxAction1;
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import javax.inject.Inject;
-import javax.inject.Singleton;
 
 /**
  * Common request handler methods which can be used for CRUD operations.

@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -26,7 +28,6 @@ import com.gentics.mesh.util.StreamUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import javax.annotation.ParametersAreNonnullByDefault;
 
 @SuppressWarnings("restriction")
 public abstract class AbstractMigrationHandler extends AbstractHandler implements MigrationHandler {
