@@ -270,18 +270,6 @@
 					<version>0.8.2</version>
 					<executions>
 						<execution>
-							<id>instrument-jacoco</id>
-							<goals>
-								<goal>instrument</goal>
-							</goals>
-							<configuration>
-								<skip>true</skip>
-								<excludes>
-									<exclude>*OrientSqlTokenManager*</exclude>
-								</excludes>
-							</configuration>
-						</execution>
-						<execution>
 							<id>merge-all-jacoco</id>
 							<goals>
 								<goal>merge</goal>
@@ -364,7 +352,11 @@
 							<goal>prepare-agent</goal>
 						</goals>
 						<configuration>
+							<skip>true</skip>
 							<destFile>${project.build.directory}/jacoco-partial.exec</destFile>
+							<excludes>
+								<exclude>*OrientSqlTokenManager*</exclude>
+							</excludes>
 						</configuration>
 					</execution>
 				</executions>
