@@ -1,7 +1,11 @@
 #!/bin/bash
-echo "Generating batches for $1 splits"
+
 BASEDIR=$(dirname "$0")
+
+echo "Generating batches for $1 splits"
 cd $BASEDIR/..
+
+rm includes*
 
 echo
 echo  "Collecting all tests"
