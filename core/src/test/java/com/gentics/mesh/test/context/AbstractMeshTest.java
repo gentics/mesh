@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.util.TestUtils.sleep;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -128,7 +129,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	public OkHttpClient httpClient() {
 		if (this.httpClient == null) {
-			int timeout = 9240;
+			int timeout = 45;
 			this.httpClient = new OkHttpClient.Builder()
 				.writeTimeout(timeout, TimeUnit.SECONDS)
 				.readTimeout(timeout, TimeUnit.SECONDS)
@@ -145,13 +146,13 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	 */
 	protected void recreateIndices() throws Exception {
 		// We potentially modified existing data thus we need to drop all indices and create them and reindex all data
-		SyncEventHandler.invokeClearCompletable().blockingAwait();
-		SyncEventHandler.invokeSyncCompletable().blockingAwait();
+		SyncEventHandler.invokeClearCompletable().blockingAwait(10, TimeUnit.SECONDS);
+		SyncEventHandler.invokeSyncCompletable().blockingAwait(30, TimeUnit.SECONDS);
 		refreshIndices();
 	}
 
 	protected void refreshIndices() {
-		getSearchVerticle().refresh().blockingAwait();
+		getSearchVerticle().refresh().blockingAwait(15, TimeUnit.SECONDS);
 	}
 
 	private ElasticsearchProcessVerticle getSearchVerticle() {
