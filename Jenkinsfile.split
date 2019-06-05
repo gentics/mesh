@@ -74,9 +74,6 @@ stage("Setup Build Environment") {
 										if (current <= 9) {
 											postfix = "0" + current
 										}
-										echo "Setting correct inclusions file ${postfix}"
-										sh "mv includes-${postfix} inclusions.txt"
-
 										sshagent(["git"]) {
 											 try {
 												sh ".jenkins/run-splits.sh includes-${postfix}"
