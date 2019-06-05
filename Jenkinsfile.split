@@ -63,12 +63,12 @@ stage("Setup Build Environment") {
 						def branches = [:]
 						for (int i = 0; i < runs; i++) {
 							def current = i
-							branches["split${i}"] = {
+							branches["split${current}"] = {
 								node('mesh-worker') {
 									echo "Preparing slave environment for ${current}"
-									sh "rm -rf split${i}"
-									sh "mkdir split${i}"
-									dir("split${i}") {
+									sh "rm -rf split${current}"
+									sh "mkdir split${current}"
+									dir("split${current}") {
 										unstash 'project'
 										def postfix = current;
 										if (current <= 9) {
