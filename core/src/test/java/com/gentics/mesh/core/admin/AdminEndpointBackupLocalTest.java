@@ -9,10 +9,8 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.junit.Ignore;
@@ -27,25 +25,10 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 @MeshTestSetting(elasticsearch = NONE, testSize = FULL, startServer = true, inMemoryDB = false)
 public class AdminEndpointBackupLocalTest extends AbstractMeshTest {
 
-	/**
-	 * Test what happens when invoking restore without backup
-	 * 
-	 * @throws IOException
-	 */
-	@Test
-	public void testRestoreWithoutBackup() throws IOException {
-		final String backupDir = testContext.getOptions().getStorageOptions().getBackupDirectory();
-		org.apache.commons.io.FileUtils.deleteDirectory(new File(backupDir));
-		new File(backupDir).delete();
-		grantAdminRole();
-		call(() -> client().invokeRestore(), INTERNAL_SERVER_ERROR, "error_backup", new File(backupDir).getAbsolutePath());
-	}
-
 	@Test
 	public void testBackupRestore() throws IOException {
 		final String NEW_PROJECT_NAME = "enemenemuh";
 		final String backupDir = testContext.getOptions().getStorageOptions().getBackupDirectory();
-
 		assertFilesInDir(backupDir, 0);
 		grantAdminRole();
 
