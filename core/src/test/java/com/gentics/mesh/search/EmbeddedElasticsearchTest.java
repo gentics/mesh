@@ -28,7 +28,7 @@ public class EmbeddedElasticsearchTest extends AbstractMeshTest {
 			.doOnNext(ignore -> log.info("Waiting for ES..."))
 			.flatMapSingle(ignore -> client().searchStatus().toSingle())
 			.takeWhile(status -> !status.isAvailable())
-			.ignoreElements().blockingAwait();
+			.ignoreElements().blockingAwait(20, TimeUnit.SECONDS);
 		log.info("Done waiting for ES");
 	}
 
