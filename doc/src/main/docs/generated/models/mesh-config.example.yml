@@ -4,7 +4,7 @@ defaultLanguage: "en"
 updateCheck: true
 vertxOptions:
   workerPoolSize: 20
-  eventPoolSize: 16
+  eventPoolSize: 8
 tempDirectory: "/opt/mesh/data/tmp"
 pluginDirectory: "plugins"
 httpServer:

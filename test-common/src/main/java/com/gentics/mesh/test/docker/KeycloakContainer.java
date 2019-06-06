@@ -90,4 +90,13 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
 			throw new RuntimeException("Could not loadrealm server config file.", e);
 		}
 	}
+
+	public String getHost() {
+		String containerHost = System.getenv("CONTAINER_HOST");
+		if (containerHost != null) {
+			return containerHost;
+		} else {
+			return "localhost";
+		}
+	}
 }

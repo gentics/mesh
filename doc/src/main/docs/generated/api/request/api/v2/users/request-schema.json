@@ -37,6 +37,10 @@
           "type" : "string"
         }
       }
+    },
+    "forcedPasswordChange" : {
+      "type" : "boolean",
+      "description" : "When true, the user needs to change their password on the next login."
     }
   }
 }

@@ -10,7 +10,10 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperatio
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -31,7 +34,9 @@ import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -117,6 +122,29 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 		changes = call(() -> client().diffSchema(schemaUuid, request));
 		assertThat(changes.getChanges()).hasSize(1);
 		assertThat(changes.getChanges().get(0)).is(UPDATESCHEMA).hasProperty(AUTO_PURGE_FLAG_KEY, true);
+
+	}
+
+	@Test
+	public void testDiffDescription() {
+		final String SCHEMA_NAME = "TestSchema";
+
+		// 1. Create empty schema
+		SchemaCreateRequest request = new SchemaCreateRequest();
+		request.setName(SCHEMA_NAME);
+		SchemaResponse response = call(() -> client().createSchema(request));
+		assertNull(response.getDescription());
+
+		// 2. Diff the schema with itself
+		SchemaChangesListModel changes = call(() -> client().diffSchema(response.getUuid(), response));
+		assertThat(changes.getChanges()).isEmpty();
+
+		// 3. Diff with description set
+		response.setDescription("SetToSomething");
+		changes = call(() -> client().diffSchema(response.getUuid(), response));
+		assertThat(changes.getChanges()).hasSize(1);
+		SchemaChangeModel change = changes.getChanges().get(0);
+		assertEquals("SetToSomething", change.getProperty("description"));
 
 	}
 

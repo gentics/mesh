@@ -1,11 +1,15 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
+import static com.gentics.mesh.test.context.MeshTestHelper.getUuidQuery;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
 import static org.junit.Assert.assertEquals;
+
+import java.util.Arrays;
 
 import org.codehaus.jettison.json.JSONException;
 import org.junit.After;
@@ -13,8 +17,14 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeListResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -22,6 +32,7 @@ import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.DeploymentOptions;
+
 @MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
 public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
 
@@ -38,6 +49,49 @@ public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicS
 	}
 
 	@Test
+	public void testEmptySchema() throws Exception {
+		final String SCHEMA_NAME = "TestSchema";
+		final String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
+		grantAdminRole();
+		try (Tx tx = tx()) {
+			recreateIndices();
+		}
+
+		// 1. Create empty schema
+		SchemaCreateRequest request = new SchemaCreateRequest();
+		request.setName(SCHEMA_NAME);
+		SchemaResponse response = call(() -> client().createSchema(request));
+		String uuid = response.getUuid();
+		call(() -> client().assignSchemaToProject(projectName(), uuid));
+
+		// 2. Create a test node
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setSchemaName(SCHEMA_NAME);
+		nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
+		NodeResponse nodeResponse = call(() -> client().createNode(projectName(), nodeCreateRequest));
+
+		// 3. Update the schema and add a field
+		waitForJob(() -> {
+			SchemaUpdateRequest updateRequest = response.toUpdateRequest();
+			updateRequest.setDescription("Some Description");
+			updateRequest.setFields(Arrays.asList(FieldUtil.createStringFieldSchema("test")));
+			call(() -> client().updateSchema(uuid, updateRequest));
+		});
+
+		// Wait and reload the node
+		waitForSearchIdleEvent();
+		String version = call(() -> client().findNodeByUuid(projectName(), nodeResponse.getUuid())).getVersion();
+		System.out.println("version:" + version);
+		assertEquals("The version should be bumped via the migration.", "0.2", version);
+
+		// Search for the node
+		NodeListResponse searchResponse = client().searchNodes(getUuidQuery(nodeResponse.getUuid())).blockingGet();
+		assertEquals(1, searchResponse.getData().size());
+		assertEquals(nodeResponse.getUuid(), searchResponse.getData().get(0).getUuid());
+	}
+
+	@Test
 	public void testSearchSchema() throws Exception {
 		try (Tx tx = tx()) {
 			recreateIndices();
@@ -50,7 +104,8 @@ public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicS
 		response = client().searchSchemas(getSimpleQuery("name", "blub"), new PagingParametersImpl().setPage(1).setPerPage(2L)).blockingGet();
 		assertEquals(0, response.getData().size());
 
-		response = client().searchSchemas(getSimpleTermQuery("name.raw", "folder"), new PagingParametersImpl().setPage(1).setPerPage(2L)).blockingGet();
+		response = client().searchSchemas(getSimpleTermQuery("name.raw", "folder"), new PagingParametersImpl().setPage(1).setPerPage(2L))
+			.blockingGet();
 		assertEquals(1, response.getData().size());
 	}
 
@@ -81,7 +136,8 @@ public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicS
 		assertEquals(1, response.getData().size());
 
 		deleteSchema(schema.getUuid());
-		response = client().searchSchemas(getSimpleTermQuery("name.raw", schemaName), new PagingParametersImpl().setPage(1).setPerPage(2L)).blockingGet();
+		response = client().searchSchemas(getSimpleTermQuery("name.raw", schemaName), new PagingParametersImpl().setPage(1).setPerPage(2L))
+			.blockingGet();
 		assertEquals(0, response.getData().size());
 	}
 
@@ -107,7 +163,8 @@ public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicS
 			response.getData().size());
 
 		// 4. Search for the updated schema
-		response = client().searchSchemas(getSimpleTermQuery("name", newSchemaName), new PagingParametersImpl().setPage(1).setPerPage(2L)).blockingGet();
+		response = client().searchSchemas(getSimpleTermQuery("name", newSchemaName), new PagingParametersImpl().setPage(1).setPerPage(2L))
+			.blockingGet();
 		assertEquals("The schema with the updated name was not found.", 1, response.getData().size());
 	}
 }
