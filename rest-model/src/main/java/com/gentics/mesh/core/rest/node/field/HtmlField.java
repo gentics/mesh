@@ -18,4 +18,8 @@ public interface HtmlField extends ListableField, MicroschemaListableField {
 	 */
 	HtmlField setHTML(String html);
 
+	@Override
+	default Object getValue() {
+		return getHTML();
+	}
 }

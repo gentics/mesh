@@ -24,6 +24,11 @@ include::content/docs/variables.adoc-include[]
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.36.0]]
+== 0.36.0 (TBD)
+
+CAUTION: Custom node migration scripts have been removed. The script system was a source of possible errors and performance problems. Also, the nashorn javascript engine has been deprecated with the release of Java 11. If you need to change data for a migration, use the REST Api instead.
+
 [[v0.35.0]]
 == 0.35.0 (06.06.2019)
 

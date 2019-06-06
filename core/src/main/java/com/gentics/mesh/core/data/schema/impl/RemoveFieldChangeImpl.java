@@ -1,10 +1,13 @@
 package com.gentics.mesh.core.data.schema.impl;
 
-import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
+import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -24,14 +27,14 @@ public class RemoveFieldChangeImpl extends AbstractSchemaFieldChange implements 
 	}
 
 	@Override
-	public FieldSchemaContainer apply(FieldSchemaContainer container) {
-		container.removeField(getFieldName());
-		return container;
+	public Map<String, Field> createFields(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
+		return Collections.emptyMap();
 	}
 
 	@Override
-	public String getAutoMigrationScript() throws IOException {
-		return OPERATION.getAutoMigrationScript(null);
+	public FieldSchemaContainer apply(FieldSchemaContainer container) {
+		container.removeField(getFieldName());
+		return container;
 	}
 
 	@Override

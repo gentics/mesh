@@ -18,13 +18,10 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
-
-import javax.script.ScriptException;
 
 import org.junit.Test;
 
@@ -41,15 +38,6 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 	@Override
 	public void testRemove() throws Exception {
 		removeField(CREATEHTML, FILLTEXT, FETCH);
-	}
-
-	@Test
-	@Override
-	public void testRename() throws Exception {
-		renameField(CREATEHTML, FILLTEXT, FETCH, (container, name) -> {
-			assertThat(container.getHtml(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getHtml(name).getHTML()).as(NEWFIELDVALUE).isEqualTo("<b>HTML</b> content");
-		});
 	}
 
 	@Test
@@ -209,12 +197,12 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 	public void testChangeToNumber() throws Exception {
 		changeType(CREATEHTML, FILL0, FETCH, CREATENUMBER, (container, name) -> {
 			assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(0);
+			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(0L);
 		});
 
 		changeType(CREATEHTML, FILL1, FETCH, CREATENUMBER, (container, name) -> {
 			assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(1);
+			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(1L);
 		});
 
 		changeType(CREATEHTML, FILLTEXT, FETCH, CREATENUMBER, (container, name) -> {
@@ -227,12 +215,12 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 	public void testChangeToNumberList() throws Exception {
 		changeType(CREATEHTML, FILL0, FETCH, CREATENUMBERLIST, (container, name) -> {
 			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(0);
+			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(0L);
 		});
 
 		changeType(CREATEHTML, FILL1, FETCH, CREATENUMBERLIST, (container, name) -> {
 			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1);
+			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1L);
 		});
 
 		changeType(CREATEHTML, FILLTEXT, FETCH, CREATENUMBERLIST, (container, name) -> {
@@ -269,26 +257,4 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 				});
 	}
 
-	@Test
-	@Override
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEHTML, FILLTEXT, FETCH,
-				"function migrate(node, fieldname) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}",
-				(container, name) -> {
-					assertThat(container.getHtml(name)).as(NEWFIELD).isNotNull();
-					assertThat(container.getHtml(name).getHTML()).as(NEWFIELDVALUE).isEqualTo("modified <b>HTML</b> content");
-				});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATEHTML, FILLTEXT, INVALIDSCRIPT);
-	}
-
-	@Override
-	@Test(expected = ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		invalidMigrationScript(CREATEHTML, FILLTEXT, KILLERSCRIPT);
-	}
 }

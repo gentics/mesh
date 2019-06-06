@@ -28,12 +28,6 @@ public abstract class AbstractChangeTest extends AbstractMeshTest {
 	abstract public void testApply();
 
 	/**
-	 * Assert that the expected migration script is loaded.
-	 * @throws IOException 
-	 */
-	abstract public void testGetMigrationScript() throws IOException;
-
-	/**
 	 * Assert that the {@link SchemaChange#updateFromRest(com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel)} method will correctly populate the graph
 	 * object.
 	 * @throws IOException 

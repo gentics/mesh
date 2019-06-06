@@ -15,16 +15,13 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import javax.script.ScriptException;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
 import com.gentics.mesh.core.field.html.HtmlListFieldHelper;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest implements HtmlListFieldHelper {
@@ -33,15 +30,6 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	@Override
 	public void testRemove() throws Exception {
 		removeField(CREATEHTMLLIST, FILLTEXT, FETCH);
-	}
-
-	@Test
-	@Override
-	public void testRename() throws Exception {
-		renameField(CREATEHTMLLIST, FILLTEXT, FETCH, (container, name) -> {
-			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getHTMLList(name).getValues()).as(NEWFIELDVALUE).containsExactly(TEXT1, TEXT2, TEXT3);
-		});
 	}
 
 	@Test
@@ -84,8 +72,7 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 		});
 
 		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATEBOOLEANLIST, (container, name) -> {
-			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getBooleanList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
+			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNull();
 		});
 	}
 
@@ -113,8 +100,7 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 		});
 
 		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATEDATELIST, (container, name) -> {
-			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
+			assertThat(container.getDateList(name)).as(NEWFIELD).isNull();
 		});
 	}
 
@@ -173,7 +159,7 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	public void testChangeToNumber() throws Exception {
 		changeType(CREATEHTMLLIST, FILLNUMBERS, FETCH, CREATENUMBER, (container, name) -> {
 			assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(1);
+			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(1L);
 		});
 
 		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATENUMBER, (container, name) -> {
@@ -187,12 +173,11 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	public void testChangeToNumberList() throws Exception {
 		changeType(CREATEHTMLLIST, FILLNUMBERS, FETCH, CREATENUMBERLIST, (container, name) -> {
 			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1, 0);
+			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1L, 0L);
 		});
 
 		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATENUMBERLIST, (container, name) -> {
-			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
+			assertThat(container.getNumberList(name)).as(NEWFIELD).isNull();
 		});
 	}
 
@@ -214,26 +199,4 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 		});
 	}
 
-	@Test
-	@Override
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEHTMLLIST, FILLTEXT, FETCH,
-				"function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
-					HtmlGraphFieldList field = container.getHTMLList(name);
-					assertThat(field).as(NEWFIELD).isNotNull();
-					assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(TEXT3, TEXT2, TEXT1);
-				});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATEHTMLLIST, FILLTEXT, INVALIDSCRIPT);
-	}
-
-	@Override
-	@Test(expected = ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		invalidMigrationScript(CREATEHTMLLIST, FILLTEXT, KILLERSCRIPT);
-	}
 }

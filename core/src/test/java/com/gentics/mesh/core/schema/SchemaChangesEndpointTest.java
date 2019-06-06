@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.Objects;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.testcontainers.shaded.com.google.common.collect.Iterators;
@@ -37,7 +36,6 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
-import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
@@ -115,46 +113,6 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		assertEquals("pub_dir", response.getDisplayField());
 		assertEquals("name", response.getSegmentField());
 		assertEquals(2, response.getFields().size());
-	}
-
-	@Test
-	public void testBlockingMigrationStatus() throws InterruptedException, IOException {
-		SchemaContainer container = schemaContainer("content");
-		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-
-		try (Tx tx = tx()) {
-			assertNull("The schema should not yet have any changes", container.getLatestVersion().getNextChange());
-
-			SchemaChangeModel change = SchemaChangeModel.createChangeFieldTypeChange("content", "boolean");
-
-			// Update a single node field in order to trigger a single blocking
-			// migration script
-			content().getLatestDraftFieldContainer(english()).getHtml("content").setHtml("triggerWait");
-
-			String blockingScript = IOUtils.toString(getClass().getResourceAsStream("/testscripts/longMigrate.js"));
-			change.setMigrationScript(blockingScript);
-			listOfChanges.getChanges().add(change);
-			tx.success();
-		}
-
-		try (Tx tx = tx()) {
-			// Assert that all jobs have been completed
-			JobListResponse migrationStatus = call(() -> client().findJobs());
-			assertThat(migrationStatus).listsAll(COMPLETED);
-
-			GenericMessageResponse status = call(() -> client().applyChangesToSchema(container.getUuid(), listOfChanges));
-			assertThat(status).matches("schema_changes_applied", "content");
-
-			SchemaResponse schema = call(() -> client().findSchemaByUuid(container.getUuid()));
-			assertEquals("2.0", schema.getVersion());
-
-			// Trigger migration
-			waitForJobs(() -> {
-				call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, project().getLatestBranch().getUuid(),
-					new SchemaReferenceImpl().setName("content").setVersion(schema.getVersion())));
-			}, COMPLETED, 1);
-		}
-
 	}
 
 	@Test

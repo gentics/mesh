@@ -404,11 +404,11 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(firstNode).as("Migrated Node").isOf(container).hasTranslation("en");
 			assertThat(firstNode.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
 			assertThat(firstNode.getGraphFieldContainer("en").getString(fieldName).getString()).as("Migrated field value").isEqualTo(
-				"modified first content");
+				"first content");
 			assertThat(secondNode).as("Migrated Node").isOf(container).hasTranslation("en");
 			assertThat(secondNode.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
 			assertThat(secondNode.getGraphFieldContainer("en").getString(fieldName).getString()).as("Migrated field value").isEqualTo(
-				"modified second content");
+				"second content");
 
 			// Two containers are moved from on index to another -> 2 Store / 2 Delete
 			// The old indices are dropped -> 2 Deleted
@@ -525,7 +525,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(firstNode).as("Migrated Node").isOf(container).hasTranslation("en");
 			assertThat(firstNode.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
 			assertThat(firstNode.getGraphFieldContainer("en").getString(fieldName).getString()).as("Migrated field value").isEqualTo(
-				"modified first content");
+				"first content");
 		}
 
 		JobListResponse status = call(() -> client().findJobs());
@@ -902,8 +902,6 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			// link the schemas with the changes in between
 			UpdateFieldChangeImpl updateFieldChange = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			updateFieldChange.setFieldName(fieldName);
-			updateFieldChange.setCustomMigrationScript(
-				"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
 
 			updateFieldChange.setPreviousContainerVersion(versionA);
 			updateFieldChange.setNextSchemaContainerVersion(versionB);
@@ -941,7 +939,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(firstNode.getGraphFieldContainer("en").getMicronode(micronodeFieldName).getMicronode()).as("Migrated Micronode").isOf(
 				versionB);
 			assertThat(firstNode.getGraphFieldContainer("en").getMicronode(micronodeFieldName).getMicronode().getString(fieldName).getString()).as(
-				"Migrated field value").isEqualTo("modified first content");
+				"Migrated field value").isEqualTo("first content");
 
 			assertThat(secondMicronodeField.getMicronode()).as("Old Micronode").isOf(versionA);
 			assertThat(secondMicronodeField.getMicronode().getString(fieldName).getString()).as("Old field value").isEqualTo("second content");
@@ -950,7 +948,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(secondNode.getGraphFieldContainer("en").getMicronode(micronodeFieldName).getMicronode()).as("Migrated Micronode").isOf(
 				versionB);
 			assertThat(secondNode.getGraphFieldContainer("en").getMicronode(micronodeFieldName).getMicronode().getString(fieldName).getString()).as(
-				"Migrated field value").isEqualTo("modified second content");
+				"Migrated field value").isEqualTo("second content");
 		}
 
 		JobListResponse status = call(() -> client().findJobs());
@@ -1002,8 +1000,6 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			// link the schemas with the changes in between
 			UpdateFieldChangeImpl updateFieldChange = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			updateFieldChange.setFieldName(fieldName);
-			updateFieldChange.setCustomMigrationScript(
-				"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
 
 			updateFieldChange.setPreviousContainerVersion(versionA);
 			updateFieldChange.setNextSchemaContainerVersion(versionB);
@@ -1057,7 +1053,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode()).as(
 				"Migrated Micronode").isOf(versionB);
 			assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode().getString(
-				fieldName).getString()).as("Migrated field value").isEqualTo("modified first content");
+				fieldName).getString()).as("Migrated field value").isEqualTo("first content");
 
 			assertThat(secondMicronodeListField.getList().get(0).getMicronode()).as("Old Micronode").isOf(versionA);
 			assertThat(secondMicronodeListField.getList().get(0).getMicronode().getString(fieldName).getString()).as("Old field value").isEqualTo(
@@ -1070,11 +1066,11 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(secondNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode()).as(
 				"Migrated Micronode").isOf(versionB);
 			assertThat(secondNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode().getString(
-				fieldName).getString()).as("Migrated field value").isEqualTo("modified second content");
+				fieldName).getString()).as("Migrated field value").isEqualTo("second content");
 			assertThat(secondNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(1).getMicronode()).as(
 				"Migrated Micronode").isOf(versionB);
 			assertThat(secondNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(1).getMicronode().getString(
-				fieldName).getString()).as("Migrated field value").isEqualTo("modified third content");
+				fieldName).getString()).as("Migrated field value").isEqualTo("third content");
 		}
 
 		JobListResponse status = call(() -> client().findJobs());
@@ -1126,8 +1122,6 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			// link the schemas with the changes in between
 			UpdateFieldChangeImpl updateFieldChange = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			updateFieldChange.setFieldName(fieldName);
-			updateFieldChange.setCustomMigrationScript(
-				"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
 
 			updateFieldChange.setPreviousContainerVersion(versionA);
 			updateFieldChange.setNextSchemaContainerVersion(versionB);
@@ -1178,7 +1172,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode()).as(
 				"Migrated Micronode").isOf(versionB);
 			assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode().getString(
-				fieldName).getString()).as("Migrated field value").isEqualTo("modified first content");
+				fieldName).getString()).as("Migrated field value").isEqualTo("first content");
 
 			assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(1).getMicronode()).as(
 				"Not migrated Micronode").isOf(microschemaContainer("vcard").getLatestVersion());
@@ -1237,8 +1231,6 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// link the schemas with the changes in between
 		UpdateFieldChangeImpl updateFieldChange = Tx.getActive().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(fieldName);
-		updateFieldChange.setCustomMigrationScript(
-			"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
 
 		updateFieldChange.setPreviousContainerVersion(versionA);
 		updateFieldChange.setNextSchemaContainerVersion(versionB);

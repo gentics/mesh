@@ -21,4 +21,9 @@ public interface MicronodeField extends ListableField, FieldContainer {
 	 * @return microschema reference
 	 */
 	MicroschemaReference getMicroschema();
+
+	@Override
+	default Object getValue() {
+		return getUuid();
+	}
 }

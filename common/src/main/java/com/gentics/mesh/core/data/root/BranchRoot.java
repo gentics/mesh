@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.root;
 
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.event.EventQueueBatch;

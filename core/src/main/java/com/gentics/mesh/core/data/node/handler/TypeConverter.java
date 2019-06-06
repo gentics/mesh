@@ -11,15 +11,34 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.gentics.mesh.core.rest.node.field.ListField;
+import com.gentics.mesh.core.rest.node.field.MicronodeField;
+import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
+import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.FieldList;
+import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
+import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
+import com.gentics.mesh.core.rest.node.field.list.impl.AbstractFieldList;
+import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
-import jdk.nashorn.api.scripting.ScriptUtils;
 
 /**
  * Type converter for the script engine used by the node migration handler.
@@ -32,58 +51,49 @@ public class TypeConverter {
 	private NumberFormat format = NumberFormat.getInstance();
 
 	/**
-	 * Convert the given value into a binary value.
-	 *
-	 * @param value
-	 * @return
-	 */
-	public Object toBinary(Object value) {
-		return isBinary(value) ? value : null;
-	}
-
-	/**
 	 * Convert the given value to a string.
 	 *
 	 * @param value
 	 * @return
 	 */
 	public String toString(Object value) {
-		if (value == null || isJSObject(value)) {
+		if (value == null) {
 			return null;
 		}
-		if (isJSArray(value)) {
-			String combined = getJSArray(value).stream().map(e -> toString(e)).filter(s -> s != null)
+		if (value instanceof List) {
+			List<?> listValue = (List) value;
+			if (listValue.isEmpty()) {
+				return null;
+			} else {
+				return listValue.stream()
+					.map(Object::toString)
 					.collect(Collectors.joining(","));
-			return combined.length() > 0 ? combined : null;
+			}
 		} else {
 			return value.toString();
 		}
 	}
 
 	/**
-	 * Convert the given value to a string array
+	 * Convert the given value to a string list
 	 *
 	 * @param value
 	 *            Value to be converted
 	 * @return String array
 	 */
-	public String[] toStringList(Object value) {
-		if (value == null || isJSObject(value)) {
-			return null;
-		}
+	public StringFieldListImpl toStringList(Object value) {
+		return listField(StringFieldListImpl::new, this::toString, value);
+	}
 
-		if (isJSArray(value)) {
-			List<String> list = getJSArray(value).stream().map(e -> toString(e)).filter(s -> s != null)
-					.collect(Collectors.toList());
-			return list.toArray(new String[list.size()]);
-		} else {
-			String stringValue = toString(value);
-			if (stringValue == null) {
-				return null;
-			} else {
-				return new String[] { stringValue };
-			}
-		}
+	/**
+	 * Convert the given value to an HTML list
+	 *
+	 * @param value
+	 *            Value to be converted
+	 * @return String array
+	 */
+	public HtmlFieldListImpl toHtmlList(Object value) {
+		return listField(HtmlFieldListImpl::new, this::toString, value);
 	}
 
 	/**
@@ -94,13 +104,13 @@ public class TypeConverter {
 	 * @return Boolean value
 	 */
 	public Boolean toBoolean(Object value) {
-		if (value == null || isJSObject(value)) {
+		value = firstIfList(value);
+
+		if (value == null) {
 			return null;
 		}
 
-		if (isJSArray(value)) {
-			return getJSArray(value).stream().findFirst().map(e -> toBoolean(e)).orElse(null);
-		} else if (Arrays.asList("true", "1").contains(value.toString().toLowerCase())) {
+		if (Arrays.asList("true", "1").contains(value.toString().toLowerCase())) {
 			return true;
 		} else if (Arrays.asList("false", "0").contains(value.toString().toLowerCase())) {
 			return false;
@@ -116,23 +126,8 @@ public class TypeConverter {
 	 *            Value to be converted
 	 * @return Boolean array
 	 */
-	public Boolean[] toBooleanList(Object value) {
-		if (value == null || isJSObject(value)) {
-			return null;
-		}
-
-		if (isJSArray(value)) {
-			List<Boolean> list = getJSArray(value).stream().map(e -> toBoolean(e)).filter(b -> b != null)
-					.collect(Collectors.toList());
-			return list.toArray(new Boolean[list.size()]);
-		} else {
-			Boolean booleanValue = toBoolean(value);
-			if (booleanValue == null) {
-				return null;
-			} else {
-				return new Boolean[] { booleanValue };
-			}
-		}
+	public BooleanFieldListImpl toBooleanList(Object value) {
+		return listField(BooleanFieldListImpl::new, this::toBoolean, value);
 	}
 
 	/**
@@ -143,13 +138,13 @@ public class TypeConverter {
 	 * @return Date string or null if the value could not be converted
 	 */
 	public String toDate(Object value) {
-		if (value == null || isJSObject(value)) {
+		if (value == null) {
 			return null;
 		}
 
-		if (isJSArray(value)) {
-			return getJSArray(value).stream().findFirst().map(e -> toDate(e)).orElse(null);
-		} else if (value instanceof Number) {
+		value = firstIfList(value);
+
+		if (value instanceof Number) {
 			// We assume that the input string is timestamp in seconds. Thus we need to multiple by 1000
 			return toISO8601(((Number) value).longValue() * 1000);
 		} else {
@@ -181,23 +176,8 @@ public class TypeConverter {
 	 *            Value to be converted
 	 * @return String array of dates or null if the value could not be converted
 	 */
-	public String[] toDateList(Object value) {
-		if (value == null || isJSObject(value)) {
-			return null;
-		}
-
-		if (isJSArray(value)) {
-			List<String> list = getJSArray(value).stream().map(e -> toDate(e)).filter(d -> d != null)
-					.collect(Collectors.toList());
-			return list.toArray(new String[list.size()]);
-		} else {
-			String dateValue = toDate(value);
-			if (dateValue == null) {
-				return null;
-			} else {
-				return new String[] { dateValue };
-			}
-		}
+	public DateFieldListImpl toDateList(Object value) {
+		return listField(DateFieldListImpl::new, this::toDate, value);
 	}
 
 	/**
@@ -208,13 +188,13 @@ public class TypeConverter {
 	 * @return Number or null if the number could not be converted
 	 */
 	public Number toNumber(Object value) {
-		if (value == null || isJSObject(value)) {
+		value = firstIfList(value);
+
+		if (value == null) {
 			return null;
 		}
 
-		if (isJSArray(value)) {
-			return getJSArray(value).stream().findFirst().map(e -> toNumber(e)).orElse(null);
-		} else if (value instanceof Number) {
+		if (value instanceof Number) {
 			return (Number) value;
 		} else if (value instanceof Boolean) {
 			return ((Boolean) value).booleanValue() ? 1 : 0;
@@ -246,23 +226,8 @@ public class TypeConverter {
 	 *            Value to be converted
 	 * @return Array of numbers or null if the value could not be converted
 	 */
-	public Number[] toNumberList(Object value) {
-		if (value == null || isJSObject(value)) {
-			return null;
-		}
-
-		if (isJSArray(value)) {
-			List<Number> list = getJSArray(value).stream().map(e -> toNumber(e)).filter(n -> n != null)
-					.collect(Collectors.toList());
-			return list.toArray(new Number[list.size()]);
-		} else {
-			Number numberValue = toNumber(value);
-			if (numberValue == null) {
-				return null;
-			} else {
-				return new Number[] { numberValue };
-			}
-		}
+	public NumberFieldListImpl toNumberList(Object value) {
+		return listField(NumberFieldListImpl::new, this::toNumber, value);
 	}
 
 	/**
@@ -272,12 +237,10 @@ public class TypeConverter {
 	 *            Value to be converted
 	 * @return Micronode object or null if the value could not be converted
 	 */
-	public Object toMicronode(Object value) {
-		if (isMicronode(value)) {
-			return ScriptUtils.unwrap(value);
-		} else if (isJSArray(value)) {
-			return getJSArray(value).stream().findFirst().filter(o -> isMicronode(o)).map(o -> ScriptUtils.unwrap(o))
-					.orElse(null);
+	public MicronodeField toMicronode(Object value) {
+		value = firstIfList(value);
+		if (value instanceof MicronodeField) {
+			return (MicronodeField) value;
 		} else {
 			return null;
 		}
@@ -290,16 +253,8 @@ public class TypeConverter {
 	 *            Value to be converted
 	 * @return List of micronodes or null if the value could not be converted
 	 */
-	public Object[] toMicronodeList(Object value) {
-		if (isMicronode(value)) {
-			return new Object[] { ScriptUtils.unwrap(value) };
-		} else if (isJSArray(value) && getJSArray(value).stream().anyMatch(o -> isMicronode(o))) {
-			List<Object> list = getJSArray(value).stream().map(e -> toMicronode(e)).filter(s -> s != null)
-					.collect(Collectors.toList());
-			return list.toArray(new Object[list.size()]);
-		} else {
-			return null;
-		}
+	public MicronodeFieldList toMicronodeList(Object value) {
+		return listField(MicronodeFieldListImpl::new, this::toMicronode, value);
 	}
 
 	/**
@@ -309,14 +264,23 @@ public class TypeConverter {
 	 *            Value to be converted
 	 * @return Node or null if the value could not be converted
 	 */
-	public Object toNode(Object value) {
-		if (isNode(value)) {
-			return ScriptUtils.unwrap(value);
-		} else if (isJSArray(value)) {
-			return getJSArray(value).stream().findFirst().filter(o -> isNode(o)).map(o -> ScriptUtils.unwrap(o))
-					.orElse(null);
+	public NodeField toNode(Object value) {
+		value = firstIfList(value);
+		if (value instanceof NodeField) {
+			return (NodeField) value;
+		} else if (value instanceof NodeFieldListItem) {
+			return new NodeFieldImpl().setUuid(((NodeFieldListItem) value).getUuid());
 		} else {
 			return null;
+		}
+	}
+
+	private NodeFieldListItem toNodeFieldListItem(Object value) {
+		NodeField field = toNode(value);
+		if (field == null) {
+			return null;
+		} else {
+			return new NodeFieldListItemImpl().setUuid(field.getUuid());
 		}
 	}
 
@@ -327,109 +291,48 @@ public class TypeConverter {
 	 *            Value to be converted
 	 * @return Array of nodes or null if the value could not be converted
 	 */
-	public Object[] toNodeList(Object value) {
-		if (isNode(value)) {
-			return new Object[] { ScriptUtils.unwrap(value) };
-		} else if (isJSArray(value) && getJSArray(value).stream().anyMatch(o -> isNode(o))) {
-			List<Object> list = getJSArray(value).stream().map(e -> toNode(e)).filter(s -> s != null)
-					.collect(Collectors.toList());
-			return list.toArray(new Object[list.size()]);
-		} else {
+	public NodeFieldList toNodeList(Object value) {
+		return listField(NodeFieldListImpl::new, this::toNodeFieldListItem, value);
+	}
+
+	private Object firstIfList(Object value) {
+		return toStream(value).findFirst().orElse(null);
+	}
+
+	private <T, L extends AbstractFieldList<T>> L listField(Supplier<L> listFieldSupplier, Function<Object, T> valueMapper, Object value) {
+		List<T> list = toList(valueMapper, value);
+		if (list == null) {
 			return null;
+		} else {
+			L listField = listFieldSupplier.get();
+			listField.setItems(list);
+			return listField;
 		}
 	}
 
-	/**
-	 * Check whether the object represents a javascript array.
-	 *
-	 * @param value
-	 *            Value to check
-	 * @return true, if the provided value is an javascript array. Otherwise false.
-	 */
-	protected boolean isJSArray(Object value) {
-		if (value instanceof ScriptObjectMirror) {
-			return ((ScriptObjectMirror) value).isArray();
-		} else {
-			return false;
-		}
+	private <T> List<T> toList(Function<Object, T> valueMapper, Object value) {
+		List<T> list = toStream(value)
+			.map(valueMapper)
+			.filter(Objects::nonNull)
+			.collect(Collectors.toList());
+		return list.isEmpty()
+			? null
+			: list;
 	}
 
-	/**
-	 * Check whether the object represents a javascript object.
-	 *
-	 * @param value
-	 *            Value to be checked
-	 * @return true if the provided value is an javascript object. Otherwise false.
-	 */
-	protected boolean isJSObject(Object value) {
-		if (value instanceof ScriptObjectMirror) {
-			return !(isJSArray(value));
-		} else {
-			return false;
+	private Stream<Object> toStream(Object value) {
+		if (value instanceof ListField) {
+			value = ((ListField) value).getItems();
+		} else if (value instanceof FieldList) {
+			value = ((FieldList) value).getItems();
 		}
-	}
 
-	/**
-	 * Get array values as list.
-	 *
-	 * @param value
-	 *            Value to be checked
-	 * @return List of javascript objects or empty list if the value could not be converted
-	 */
-	protected List<Object> getJSArray(Object value) {
-		if (isJSArray(value)) {
-			ScriptObjectMirror arrayValue = (ScriptObjectMirror) value;
-			return arrayValue.values().stream().collect(Collectors.toList());
+		if (value == null) {
+			return Stream.empty();
+		} else if (value instanceof List) {
+			return ((List) value).stream();
 		} else {
-			return Collections.emptyList();
-		}
-	}
-
-	/**
-	 * Check whether the given object is a binary.
-	 *
-	 * @param value
-	 *            Value to be checked
-	 * @return true if the provided value is a binary field. Otherwise false.
-	 */
-	protected boolean isBinary(Object value) {
-		if (!isJSObject(value)) {
-			return false;
-		} else {
-			ScriptObjectMirror object = ((ScriptObjectMirror) value);
-			return object.containsKey("sha512sum") && object.containsKey("fileName");
-		}
-	}
-
-	/**
-	 * Check whether the given object is a node.
-	 *
-	 * @param value
-	 *            Value to be checked
-	 * @return true if the value is a node. Otherwise false.
-	 */
-	protected boolean isNode(Object value) {
-		if (!isJSObject(value)) {
-			return false;
-		} else {
-			ScriptObjectMirror object = ((ScriptObjectMirror) value);
-			return object.containsKey("uuid") && !object.containsKey("microschema");
-		}
-	}
-
-	/**
-	 * Check whether the given object is a micronode.
-	 *
-	 * @param value
-	 *            Value to be checked
-	 * @return true if the provided value is a micronode. Otherwise false.
-	 */
-	protected boolean isMicronode(Object value) {
-		if (!isJSObject(value)) {
-			return false;
-		} else {
-			ScriptObjectMirror object = ((ScriptObjectMirror) value);
-			return object.containsKey("uuid") && object.containsKey("microschema");
+			return Stream.of(value);
 		}
 	}
 }

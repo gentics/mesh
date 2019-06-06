@@ -5,8 +5,6 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperatio
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.CHANGEFIELDTYPE;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.util.List;
@@ -115,7 +113,6 @@ public abstract class AbstractSchemaComparatorTest<T extends FieldSchema, C exte
 
 		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
 		assertThat(changes.get(0)).is(REMOVEFIELD).forField("test");
-		assertNotNull("A migration script should have been set.", changes.get(0).getMigrationScript());
 	}
 
 	/**
@@ -185,8 +182,6 @@ public abstract class AbstractSchemaComparatorTest<T extends FieldSchema, C exte
 		if ("list".equals(newType)) {
 			assertThat(changes.get(0)).hasProperty(SchemaChangeModel.LIST_TYPE_KEY, "html");
 		}
-		assertNotNull("A migration script should have been set.", changes.get(0).getMigrationScript());
-
 	}
 
 }

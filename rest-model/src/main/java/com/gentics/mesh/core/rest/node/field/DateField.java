@@ -21,4 +21,8 @@ public interface DateField extends ListableField, MicroschemaListableField {
 	 */
 	DateField setDate(String date);
 
+	@Override
+	default Object getValue() {
+		return getDate();
+	}
 }

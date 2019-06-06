@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
 import static com.gentics.mesh.metric.Metrics.NODE_MIGRATION_PENDING;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -19,19 +18,18 @@ import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.endpoint.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.ResettableCounter;
-import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.common.collect.Lists;
 
@@ -73,13 +71,12 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			MigrationStatusHandler status = context.getStatus();
 
 			// Prepare the migration - Collect the migration scripts
-			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
 			Set<String> touchedFields = new HashSet<>();
-			SchemaModel newSchema = db.tx(() -> toVersion.getSchema());
+		SchemaModel newSchema = db.tx(() -> toVersion.getSchema());
 
 			try {
 				db.tx(() -> {
-					prepareMigration(fromVersion, migrationScripts, touchedFields);
+					prepareMigration(fromVersion, touchedFields);
 					if (status != null) {
 						status.setStatus(RUNNING);
 						status.commit();
@@ -113,12 +110,12 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				return Completable.complete();
 			}
 
-			List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, container, errors) -> {
-				migrateContainer(context, batch, container, migrationScripts, newSchema, errors, touchedFields);
-				if (metrics.isEnabled()) {
-					migrationCounter.dec();
-				}
-			});
+		List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, container, errors) -> {
+			migrateContainer(context, batch, container, fromVersion, newSchema, errors, touchedFields);
+			if (metrics.isEnabled()) {
+				migrationCounter.dec();
+			}
+		});
 
 			// TODO prepare errors. They should be easy to understand and to grasp
 			Completable result = Completable.complete();
@@ -142,17 +139,15 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @param batch
 	 * @param container
 	 *            Container to be migrated
-	 * @param toVersion
-	 * @param migrationScripts
-	 * @param branch
+	 * @param fromVersion
 	 * @param newSchema
 	 * @param errorsDetected
 	 * @param touchedFields
 	 * @return
 	 */
 	private void migrateContainer(NodeMigrationActionContextImpl ac, EventQueueBatch batch, NodeGraphFieldContainer container,
-		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, SchemaModel newSchema, List<Exception> errorsDetected,
-		Set<String> touchedFields) {
+								  GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaModel newSchema, List<Exception> errorsDetected,
+								  Set<String> touchedFields) {
 
 		String containerUuid = container.getUuid();
 		String parentNodeUuid = container.getParentNode().getUuid();
@@ -177,18 +172,16 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				boolean hasSameOldSchemaVersion = container != null
 					&& container.getSchemaContainerVersion().id().equals(container.getSchemaContainerVersion().id());
 				if (hasSameOldSchemaVersion) {
-					nextDraftVersion = migratePublishedContainer(ac, batch, branch, node, oldPublished, toVersion, touchedFields,
-						migrationScripts,
+					nextDraftVersion = migratePublishedContainer(ac, batch, branch, node, oldPublished, fromVersion, toVersion, touchedFields,
 						newSchema);
 					nextDraftVersion = nextDraftVersion.nextDraft();
 				}
 
 			}
 			// 2. Migrate the draft container. This will also update the draft edge.
-			migrateDraftContainer(ac, batch, branch, node, container, toVersion, touchedFields, migrationScripts, newSchema, nextDraftVersion);
+			migrateDraftContainer(ac, batch, branch, node, container, fromVersion, toVersion, touchedFields, newSchema, nextDraftVersion);
 
 			postMigrationPurge(container, oldPublished);
-
 		} catch (Exception e1) {
 			log.error("Error while handling container {" + containerUuid + "} of node {" + parentNodeUuid + "} during schema migration.", e1);
 			errorsDetected.add(e1);
@@ -208,9 +201,9 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 *            Node of the container
 	 * @param container
 	 *            Container to be migrated
+	 * @param fromVersion
 	 * @param toVersion
 	 * @param touchedFields
-	 * @param migrationScripts
 	 * @param newSchema
 	 *            new schema used to serialize the REST model
 	 * @param nextDraftVersion
@@ -218,8 +211,8 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @throws Exception
 	 */
 	private void migrateDraftContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, Branch branch, Node node,
-		NodeGraphFieldContainer container, SchemaContainerVersion toVersion, Set<String> touchedFields,
-		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, SchemaModel newSchema, VersionNumber nextDraftVersion)
+									   NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaContainerVersion toVersion, Set<String> touchedFields,
+									   SchemaModel newSchema, VersionNumber nextDraftVersion)
 		throws Exception {
 
 		String branchUuid = branch.getUuid();
@@ -251,7 +244,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		}
 
 		// Pass the new version through the migration scripts and update the version
-		migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
+		migrate(ac, migrated, restModel, fromVersion, toVersion, touchedFields);
 
 		// Ensure the search index is updated accordingly
 		sqb.add(migrated.onUpdated(branchUuid, DRAFT));
@@ -271,16 +264,15 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 *            Node of the container
 	 * @param container
 	 *            Container to be migrated
+	 * @param fromVersion
 	 * @param toVersion
 	 * @param touchedFields
-	 * @param migrationScripts
 	 * @param newSchema
 	 * @return Version of the new published container
 	 * @throws Exception
 	 */
 	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, Branch branch, Node node,
-		NodeGraphFieldContainer container, SchemaContainerVersion toVersion, Set<String> touchedFields,
-		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, SchemaModel newSchema) throws Exception {
+													NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaContainerVersion toVersion, Set<String> touchedFields, SchemaModel newSchema) throws Exception {
 
 		String languageTag = container.getLanguageTag();
 		String branchUuid = branch.getUuid();
@@ -294,7 +286,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		migrated.setVersion(container.getVersion().nextPublished());
 		node.setPublished(ac, migrated, branchUuid);
 
-		migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
+		migrate(ac, migrated, restModel, fromVersion, toVersion, touchedFields);
 		sqb.add(migrated.onUpdated(branchUuid, PUBLISHED));
 		return migrated.getVersion();
 	}

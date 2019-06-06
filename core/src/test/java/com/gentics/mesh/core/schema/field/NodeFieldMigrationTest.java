@@ -17,10 +17,8 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.script.ScriptException;
-
+import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.field.DataProvider;
@@ -31,20 +29,17 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implements NodeFieldTestHelper {
 
 	final DataProvider FILL = (container, name) -> container.createNode(name, folder("2015"));
+	String nodeUuid;
+
+	@Before
+	public void setUp() throws Exception {
+		nodeUuid = tx(() -> folder("2015").getUuid());
+	}
 
 	@Test
 	@Override
 	public void testRemove() throws Exception {
 		removeField(CREATENODE, FILL, FETCH);
-	}
-
-	@Test
-	@Override
-	public void testRename() throws Exception {
-		renameField(CREATENODE, FILL, FETCH, (container, name) -> {
-			assertThat(container.getNode(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNode(name).getNode()).as(NEWFIELDVALUE).isEqualTo(folder("2015"));
-		});
 	}
 
 	@Test
@@ -91,7 +86,7 @@ public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implement
 	@Override
 	public void testChangeToHtml() throws Exception {
 		changeType(CREATENODE, FILL, FETCH, CREATEHTML, (container, name) -> {
-			assertThat(container.getHtml(name)).as(NEWFIELD).isNull();
+			assertThat(container.getHtml(name).getHTML()).as(NEWFIELD).isEqualTo(nodeUuid);
 		});
 	}
 
@@ -99,7 +94,7 @@ public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implement
 	@Override
 	public void testChangeToHtmlList() throws Exception {
 		changeType(CREATENODE, FILL, FETCH, CREATEHTMLLIST, (container, name) -> {
-			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNull();
+			assertThat(container.getHTMLList(name).getValues()).as(NEWFIELD).containsExactly(nodeUuid);
 		});
 	}
 
@@ -157,7 +152,7 @@ public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implement
 	@Override
 	public void testChangeToString() throws Exception {
 		changeType(CREATENODE, FILL, FETCH, CREATESTRING, (container, name) -> {
-			assertThat(container.getString(name)).as(NEWFIELD).isNull();
+			assertThat(container.getString(name).getString()).as(NEWFIELD).isEqualTo(nodeUuid);
 		});
 	}
 
@@ -165,30 +160,8 @@ public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implement
 	@Override
 	public void testChangeToStringList() throws Exception {
 		changeType(CREATENODE, FILL, FETCH, CREATESTRINGLIST, (container, name) -> {
-			assertThat(container.getStringList(name)).as(NEWFIELD).isNull();
+			assertThat(container.getStringList(name).getValues()).as(NEWFIELD).containsExactly(nodeUuid);
 		});
 	}
 
-	@Test
-	@Override
-	public void testCustomMigrationScript() throws Exception {
-		String uuid = db().tx(() -> folder("news").getUuid());
-		customMigrationScript(CREATENODE, FILL, FETCH,
-				"function migrate(node, fieldname) {node.fields[fieldname].uuid = '" + uuid + "'; return node;}", (container, name) -> {
-					assertThat(container.getNode(name)).as(NEWFIELD).isNotNull();
-					assertThat(container.getNode(name).getNode()).as(NEWFIELDVALUE).isEqualTo(folder("news"));
-				});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATENODE, FILL, INVALIDSCRIPT);
-	}
-
-	@Override
-	@Test(expected = ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		invalidMigrationScript(CREATENODE, FILL, KILLERSCRIPT);
-	}
 }

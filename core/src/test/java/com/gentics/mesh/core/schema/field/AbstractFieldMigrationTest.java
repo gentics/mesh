@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.schema.field;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.lang.annotation.ElementType;
@@ -309,8 +308,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		AddFieldChangeImpl addFieldChange = Tx.getActive().getGraph().addFramedVertex(AddFieldChangeImpl.class);
 		addFieldChange.setFieldName(newFieldName);
 		addFieldChange.setType(newField.getType());
-		addFieldChange.setCustomMigrationScript(
-			"function migrate(node, fieldname) {node.fields[fieldname] = node.fields[\"oldname\"]; return node;}");
 
 		RemoveFieldChange removeFieldChange = Tx.getActive().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 		removeFieldChange.setFieldName(oldFieldName);
@@ -387,8 +384,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		AddFieldChangeImpl addFieldChange = Tx.getActive().getGraph().addFramedVertex(AddFieldChangeImpl.class);
 		addFieldChange.setFieldName(newFieldName);
 		addFieldChange.setType(newField.getType());
-		addFieldChange.setCustomMigrationScript(
-			"function migrate(node, fieldname) {node.fields[fieldname] = node.fields[\"oldname\"]; return node;}");
 
 		RemoveFieldChange removeFieldChange = Tx.getActive().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 		removeFieldChange.setFieldName(oldFieldName);
@@ -696,7 +691,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// Link the schemas with the changes in between
 		UpdateFieldChangeImpl updateFieldChange = Tx.getActive().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(fieldName);
-		updateFieldChange.setCustomMigrationScript(migrationScript);
 
 		updateFieldChange.setPreviousContainerVersion(versionA);
 		updateFieldChange.setNextSchemaContainerVersion(versionB);
@@ -767,7 +761,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// link the schemas with the changes in between
 		UpdateFieldChangeImpl updateFieldChange = Tx.getActive().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(fieldName);
-		updateFieldChange.setCustomMigrationScript(migrationScript);
 
 		updateFieldChange.setPreviousContainerVersion(versionA);
 		updateFieldChange.setNextSchemaContainerVersion(versionB);
@@ -868,7 +861,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// link the schemas with the changes in between
 		UpdateFieldChangeImpl updateFieldChange = Tx.getActive().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(fieldName);
-		updateFieldChange.setCustomMigrationScript(script);
 
 		updateFieldChange.setPreviousContainerVersion(versionA);
 		updateFieldChange.setNextSchemaContainerVersion(versionB);
@@ -929,7 +921,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// link the schemas with the changes in between
 		UpdateFieldChangeImpl updateFieldChange = Tx.getActive().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(fieldName);
-		updateFieldChange.setCustomMigrationScript(script);
 
 		updateFieldChange.setPreviousContainerVersion(versionA);
 		updateFieldChange.setNextSchemaContainerVersion(versionB);

@@ -134,8 +134,6 @@ public class SchemaExamples extends AbstractExamples {
 		// Update field
 		SchemaChangeModel updateFieldChange = new SchemaChangeModel(UPDATEFIELD, "fieldToBeUpdated");
 		updateFieldChange.setProperty(SchemaChangeModel.LABEL_KEY, "newLabel");
-		updateFieldChange.setMigrationScript(
-				"function migrate(node, fieldname) {node.fields[fieldname] = new Date(new Date(node.fields[fieldname]).getTime() + 864000).toISOString(); return node;}");
 		model.getChanges().add(updateFieldChange);
 
 		// Update schema

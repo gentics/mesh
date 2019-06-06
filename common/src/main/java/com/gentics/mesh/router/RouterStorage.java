@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.VersionHandler;
 import com.syncleus.ferma.tx.Tx;
+
 import dagger.Lazy;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;

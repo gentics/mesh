@@ -18,14 +18,10 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.script.ScriptException;
-
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.field.bool.BooleanListFieldHelper;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest implements BooleanListFieldHelper {
@@ -34,15 +30,6 @@ public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest im
 	@Test
 	public void testRemove() throws Exception {
 		removeField(CREATEBOOLEANLIST, FILL, FETCH);
-	}
-
-	@Override
-	@Test
-	public void testRename() throws Exception {
-		renameField(CREATEBOOLEANLIST, FILL, FETCH, (container, name) -> {
-			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getBooleanList(name).getValues()).as(NEWFIELDVALUE).containsExactly(true, false);
-		});
 	}
 
 	@Override
@@ -83,8 +70,7 @@ public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest im
 	@Test
 	public void testChangeToDateList() throws Exception {
 		changeType(CREATEBOOLEANLIST, FILL, FETCH, CREATEDATELIST, (container, name) -> {
-			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
+			assertThat(container.getDateList(name)).as(NEWFIELD).isNull();
 		});
 	}
 
@@ -174,28 +160,4 @@ public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest im
 		});
 	}
 
-	@Override
-	@Test
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEBOOLEANLIST, FILL, FETCH,
-				"function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
-					BooleanGraphFieldList field = container.getBooleanList(name);
-					assertThat(field).as(NEWFIELD).isNotNull();
-					assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(false, true);
-				});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATEBOOLEANLIST, FILL, INVALIDSCRIPT);
-	}
-
-	@Override
-	@Test(expected = ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		try (Tx tx = tx()) {
-			invalidMigrationScript(CREATEBOOLEANLIST, FILL, KILLERSCRIPT);
-		}
-	}
 }

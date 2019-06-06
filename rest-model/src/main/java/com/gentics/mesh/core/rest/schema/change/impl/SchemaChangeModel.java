@@ -55,9 +55,6 @@ public class SchemaChangeModel implements RestModel {
 	@JsonPropertyDescription("Type of operation for this change")
 	private SchemaChangeOperation operation;
 
-	@JsonPropertyDescription("Optional migation script")
-	private String migrationScript;
-
 	private Map<String, Object> properties = new HashMap<>();
 
 	public SchemaChangeModel() {
@@ -137,31 +134,6 @@ public class SchemaChangeModel implements RestModel {
 	 */
 	public void setProperty(String key, Object value) {
 		properties.put(key, value);
-	}
-
-	/**
-	 * Return the custom migration script.
-	 * 
-	 * @return
-	 */
-	public String getMigrationScript() {
-		return migrationScript;
-	}
-
-	/**
-	 * Set the custom migration script.
-	 * 
-	 * @param migrationScript
-	 */
-	public void setMigrationScript(String migrationScript) {
-		this.migrationScript = migrationScript;
-	}
-
-	/**
-	 * Load the default (auto) migration script for the operation of the change.
-	 */
-	public void loadMigrationScript() {
-		setMigrationScript(getOperation().getAutoMigrationScript(getProperties()));
 	}
 
 	/**

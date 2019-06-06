@@ -1,11 +1,14 @@
 package com.gentics.mesh.util;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -14,33 +17,12 @@ public final class StreamUtil {
 
 	}
 
-	public static <T> Stream<T> toStream(Iterator<T> iterator) {
-		return toStream(() -> iterator);
-	}
-
 	public static <T> Stream<T> toStream(Iterable<T> iterable) {
 		return StreamSupport.stream(iterable.spliterator(), false);
 	}
 
-	public static <T> Stream<T> ofNullable(T... elements) {
-		return Arrays.stream(elements)
-			.filter(Objects::nonNull);
-	}
-
-	public static <T> Supplier<T> lazy(Supplier<T> supplier) {
-		return new Supplier<T>() {
-			T value;
-			boolean hasBeenCalled;
-
-			@Override
-			public T get() {
-				if (!hasBeenCalled) {
-					hasBeenCalled = true;
-					value = supplier.get();
-				}
-				return value;
-			}
-		};
+	public static <T> Stream<T> toStream(Iterator<T> iterator) {
+		return toStream(() -> iterator);
 	}
 
 	/**
@@ -67,6 +49,38 @@ public final class StreamUtil {
 				return returnedValue;
 			}
 		});
+	}
+
+	public static <T> Supplier<T> lazy(Supplier<T> supplier) {
+		return new Supplier<T>() {
+			T value;
+			boolean hasBeenCalled;
+
+			@Override
+			public T get() {
+				if (!hasBeenCalled) {
+					hasBeenCalled = true;
+					value = supplier.get();
+				}
+				return value;
+			}
+		};
+	}
+
+	public static <K, V> Collector<Map<K, V>, Map<K, V>, Map<K, V>> mergeMaps() {
+		return Collector.of(
+			HashMap::new,
+			Map::putAll,
+			(m1, m2) -> {
+				m1.putAll(m2);
+				return m1;
+			}
+		);
+	}
+
+	public static <T> Stream<T> ofNullable(T... elements) {
+		return Arrays.stream(elements)
+			.filter(Objects::nonNull);
 	}
 
 	public static <T> Predicate<T> not(Predicate<T> predicate) {

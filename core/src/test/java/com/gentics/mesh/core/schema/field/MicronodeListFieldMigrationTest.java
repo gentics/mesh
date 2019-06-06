@@ -16,9 +16,7 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import javax.script.ScriptException;
+import static com.gentics.mesh.test.TestSize.FULL;
 
 import org.junit.Test;
 
@@ -27,7 +25,6 @@ import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest {
@@ -55,19 +52,6 @@ public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest 
 
 	@Override
 	@Test
-	public void testRename() throws Exception {
-		renameField(CREATEMICRONODELIST, FILL, FETCH, (container, name) -> {
-			assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getMicronodeList(name).getValues()).as(NEWFIELDVALUE).hasSize(2);
-			assertThat(container.getMicronodeList(name).getValues().get(0)).as(NEWFIELDVALUE)
-					.containsStringField("firstName", "Donald").containsStringField("lastName", "Duck");
-			assertThat(container.getMicronodeList(name).getValues().get(1)).as(NEWFIELDVALUE)
-					.containsStringField("firstName", "Mickey").containsStringField("lastName", "Mouse");
-		});
-	}
-
-	@Override
-	@Test
 	public void testChangeToBinary() throws Exception {
 		changeType(CREATEMICRONODELIST, FILL, FETCH, CREATEBINARY, (container, name) -> {
 			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
@@ -86,8 +70,7 @@ public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest 
 	@Test
 	public void testChangeToBooleanList() throws Exception {
 		changeType(CREATEMICRONODELIST, FILL, FETCH, CREATEBOOLEANLIST, (container, name) -> {
-			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getBooleanList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
+			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNull();
 		});
 	}
 
@@ -103,8 +86,7 @@ public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest 
 	@Test
 	public void testChangeToDateList() throws Exception {
 		changeType(CREATEMICRONODELIST, FILL, FETCH, CREATEDATELIST, (container, name) -> {
-			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
+			assertThat(container.getDateList(name)).as(NEWFIELD).isNull();
 		});
 	}
 
@@ -120,8 +102,7 @@ public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest 
 	@Test
 	public void testChangeToHtmlList() throws Exception {
 		changeType(CREATEMICRONODELIST, FILL, FETCH, CREATEHTMLLIST, (container, name) -> {
-			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getHTMLList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
+			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNull();
 		});
 	}
 
@@ -176,8 +157,7 @@ public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest 
 	@Test
 	public void testChangeToNumberList() throws Exception {
 		changeType(CREATEMICRONODELIST, FILL, FETCH, CREATENUMBERLIST, (container, name) -> {
-			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
+			assertThat(container.getNumberList(name)).as(NEWFIELD).isNull();
 		});
 	}
 
@@ -193,34 +173,8 @@ public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest 
 	@Test
 	public void testChangeToStringList() throws Exception {
 		changeType(CREATEMICRONODELIST, FILL, FETCH, CREATESTRINGLIST, (container, name) -> {
-			assertThat(container.getStringList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getStringList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
+			assertThat(container.getStringList(name)).as(NEWFIELD).isNull();
 		});
 	}
 
-	@Override
-	@Test
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEMICRONODELIST, FILL, FETCH, "function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
-			MicronodeGraphFieldList field = container.getMicronodeList(name);
-			assertThat(field).as(NEWFIELD).isNotNull();
-			assertThat(field.getValues()).as(NEWFIELDVALUE).hasSize(2);
-			assertThat(field.getValues().get(0)).as(NEWFIELDVALUE)
-					.containsStringField("firstName", "Mickey").containsStringField("lastName", "Mouse");
-			assertThat(field.getValues().get(1)).as(NEWFIELDVALUE)
-					.containsStringField("firstName", "Donald").containsStringField("lastName", "Duck");
-		});
-	}
-
-	@Override
-	@Test(expected=ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATEMICRONODELIST, FILL, INVALIDSCRIPT);
-	}
-
-	@Override
-	@Test(expected=ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		invalidMigrationScript(CREATEMICRONODELIST, FILL, KILLERSCRIPT);
-	}
 }

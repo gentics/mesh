@@ -18,8 +18,6 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.script.ScriptException;
-
 import org.junit.Test;
 
 import com.gentics.mesh.core.field.bool.BooleanFieldTestHelper;
@@ -32,20 +30,6 @@ public class BooleanFieldMigrationTest extends AbstractFieldMigrationTest implem
 	@Override
 	public void testRemove() throws Exception {
 		removeField(CREATEBOOLEAN, FILLTRUE, FETCH);
-	}
-
-	@Test
-	@Override
-	public void testRename() throws Exception {
-		renameField(CREATEBOOLEAN, FILLTRUE, FETCH, (container, name) -> {
-			assertThat(container.getBoolean(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getBoolean(name).getBoolean()).as(NEWFIELDVALUE).isEqualTo(true);
-		});
-
-		renameField(CREATEBOOLEAN, FILLFALSE, FETCH, (container, name) -> {
-			assertThat(container.getBoolean(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getBoolean(name).getBoolean()).as(NEWFIELDVALUE).isEqualTo(false);
-		});
 	}
 
 	@Test
@@ -245,31 +229,4 @@ public class BooleanFieldMigrationTest extends AbstractFieldMigrationTest implem
 		});
 	}
 
-	@Test
-	@Override
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEBOOLEAN, FILLTRUE, FETCH,
-				"function migrate(node, fieldname) {node.fields[fieldname] = !node.fields[fieldname]; return node;}", (container, name) -> {
-					assertThat(container.getBoolean(name)).as(NEWFIELD).isNotNull();
-					assertThat(container.getBoolean(name).getBoolean()).as(NEWFIELDVALUE).isEqualTo(false);
-				});
-
-		customMigrationScript(CREATEBOOLEAN, FILLFALSE, FETCH,
-				"function migrate(node, fieldname) {node.fields[fieldname] = !node.fields[fieldname]; return node;}", (container, name) -> {
-					assertThat(container.getBoolean(name)).as(NEWFIELD).isNotNull();
-					assertThat(container.getBoolean(name).getBoolean()).as(NEWFIELDVALUE).isEqualTo(true);
-				});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATEBOOLEAN, FILLTRUE, INVALIDSCRIPT);
-	}
-
-	@Override
-	@Test(expected = ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		invalidMigrationScript(CREATEBOOLEAN, FILLTRUE, KILLERSCRIPT);
-	}
 }

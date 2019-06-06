@@ -15,17 +15,14 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.script.ScriptException;
-
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.field.date.DateListFieldHelper;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class DateListFieldMigrationTest extends AbstractFieldMigrationTest implements DateListFieldHelper {
@@ -53,15 +50,6 @@ public class DateListFieldMigrationTest extends AbstractFieldMigrationTest imple
 
 	@Override
 	@Test
-	public void testRename() throws Exception {
-		renameField(CREATEDATELIST, FILL, FETCH, (container, name) -> {
-			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(DATEVALUE, OTHERDATEVALUE);
-		});
-	}
-
-	@Override
-	@Test
 	public void testChangeToBinary() throws Exception {
 		changeType(CREATEDATELIST, FILL, FETCH, CREATEBINARY, (container, name) -> {
 			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
@@ -80,8 +68,7 @@ public class DateListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	@Test
 	public void testChangeToBooleanList() throws Exception {
 		changeType(CREATEDATELIST, FILL, FETCH, CREATEBOOLEANLIST, (container, name) -> {
-			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getBooleanList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
+			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNull();
 		});
 	}
 
@@ -167,7 +154,7 @@ public class DateListFieldMigrationTest extends AbstractFieldMigrationTest imple
 	public void testChangeToNumberList() throws Exception {
 		changeType(CREATEDATELIST, FILL, FETCH, CREATENUMBERLIST, (container, name) -> {
 			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).contains(castToInt(DATEVALUE), castToInt(OTHERDATEVALUE));
+			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).contains(DATEVALUE, OTHERDATEVALUE);
 		});
 	}
 
@@ -189,26 +176,4 @@ public class DateListFieldMigrationTest extends AbstractFieldMigrationTest imple
 		});
 	}
 
-	@Override
-	@Test
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEDATELIST, FILL, FETCH,
-				"function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
-					DateGraphFieldList field = container.getDateList(name);
-					assertThat(field).as(NEWFIELD).isNotNull();
-					assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(OTHERDATEVALUE, DATEVALUE);
-				});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATEDATELIST, FILL, INVALIDSCRIPT);
-	}
-
-	@Override
-	@Test(expected = ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		invalidMigrationScript(CREATEDATELIST, FILL, KILLERSCRIPT);
-	}
 }

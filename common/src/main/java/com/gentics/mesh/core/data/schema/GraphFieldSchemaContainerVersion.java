@@ -1,9 +1,11 @@
 package com.gentics.mesh.core.data.schema;
 
+import java.util.stream.Stream;
+
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
@@ -11,6 +13,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madlmigration.TraversalResult;
+import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.VersionUtil;
 
 /**
@@ -74,6 +77,18 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 * @return Can be null if no further changes exist
 	 */
 	SchemaChange<?> getNextChange();
+
+	/**
+	 * Retrieves all changes for the next version.
+	 *
+	 * @return
+	 */
+	default Stream<SchemaChange<FieldSchemaContainer>> getChanges() {
+		return StreamUtil.untilNull(
+			() -> (SchemaChange<FieldSchemaContainer>)getNextChange(),
+			change -> (SchemaChange<FieldSchemaContainer>)change.getNextChange()
+		);
+	}
 
 	/**
 	 * Set the next change for the schema. The next change is the first change in the chain of changes that lead to the new schema version.

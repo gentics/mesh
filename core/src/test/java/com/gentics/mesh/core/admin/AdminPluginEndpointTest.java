@@ -27,7 +27,6 @@ import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.plugin.ClonePlugin;
 import com.gentics.mesh.plugin.ManifestInjectorPlugin;

@@ -3,13 +3,11 @@ package com.gentics.mesh.core.schema.change;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.UpdateFieldChange;
@@ -19,6 +17,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 /**
  * Test {@link UpdateFieldChangeImpl} methods.
@@ -66,19 +65,6 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 			UpdateFieldChange change = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			change.updateFromRest(model);
 			assertEquals("someField", change.getFieldName());
-		}
-	}
-
-	@Test
-	@Override
-	public void testGetMigrationScript() throws IOException {
-		try (Tx tx = tx()) {
-			UpdateFieldChange change = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
-			assertNull("Update field changes have no auto migation script.", change.getAutoMigrationScript());
-
-			assertNull("Intitially no migration script should be set.", change.getMigrationScript());
-			change.setCustomMigrationScript("test");
-			assertEquals("The custom migration script was not changed.", "test", change.getMigrationScript());
 		}
 	}
 

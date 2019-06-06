@@ -18,8 +18,6 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.script.ScriptException;
-
 import org.junit.Test;
 
 import com.gentics.mesh.core.field.number.NumberFieldTestHelper;
@@ -32,15 +30,6 @@ public class NumberFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	@Test
 	public void testRemove() throws Exception {
 		removeField(CREATENUMBER, FILL, FETCH);
-	}
-
-	@Override
-	@Test
-	public void testRename() throws Exception {
-		renameField(CREATENUMBER, FILL, FETCH, (container, name) -> {
-			assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(NUMBERVALUE);
-		});
 	}
 
 	@Override
@@ -190,27 +179,5 @@ public class NumberFieldMigrationTest extends AbstractFieldMigrationTest impleme
 			assertThat(container.getStringList(name)).as(NEWFIELD).isNotNull();
 			assertThat(container.getStringList(name).getValues()).as(NEWFIELDVALUE).containsExactly(Long.toString(NUMBERVALUE));
 		});
-	}
-
-	@Override
-	@Test
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATENUMBER, FILL, FETCH,
-				"function migrate(node, fieldname) {node.fields[fieldname] = node.fields[fieldname] * 12; return node;}", (container, name) -> {
-					assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
-					assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo((int) (NUMBERVALUE * 12));
-				});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATENUMBER, FILL, INVALIDSCRIPT);
-	}
-
-	@Override
-	@Test(expected = ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		invalidMigrationScript(CREATENUMBER, FILL, KILLERSCRIPT);
 	}
 }

@@ -27,4 +27,9 @@ public interface NodeField extends ListableField, MicroschemaListableField {
 	 * @return
 	 */
 	Map<String, String> getLanguagePaths();
+
+	@Override
+	default Object getValue() {
+		return getUuid();
+	}
 }

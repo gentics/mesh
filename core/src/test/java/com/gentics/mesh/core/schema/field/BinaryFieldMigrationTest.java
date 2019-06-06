@@ -18,8 +18,6 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.script.ScriptException;
-
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.binary.Binary;
@@ -74,19 +72,6 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	@Override
 	public void testRemove() throws Exception {
 		removeField(CREATEBINARY, FILL, FETCH);
-	}
-
-	@Test
-	@Override
-	public void testRename() throws Exception {
-		renameField(CREATEBINARY, FILL, FETCH, (container, name) -> {
-			assertThat(container.getBinary(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getBinary(name).getFileName()).as(NEWFIELDVALUE).isEqualTo(FILENAME);
-			assertThat(container.getBinary(name).getMimeType()).as(NEWFIELDVALUE).isEqualTo(MIMETYPE);
-			assertThat(container.getBinary(name).getBinary().getSHA512Sum()).as(NEWFIELDVALUE).isEqualTo(hash);
-			Buffer contents = RxUtil.readEntireData(container.getBinary(name).getBinary().getStream()).blockingGet();
-			assertThat(contents.toString()).as(NEWFIELDVALUE).isEqualTo(FILECONTENTS);
-		});
 	}
 
 	@Test
@@ -214,31 +199,4 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		});
 	}
 
-	@Test
-	@Override
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEBINARY, FILL, FETCH,
-			"function migrate(node, fieldname, convert) {node.fields[fieldname].fileName = 'bla' + node.fields[fieldname].fileName; return node;}",
-			(container, name) -> {
-				BinaryGraphField newField = container.getBinary(name);
-				assertThat(newField).as(NEWFIELD).isNotNull();
-				assertThat(newField.getFileName()).as(NEWFIELDVALUE).isEqualTo("bla" + FILENAME);
-				assertThat(newField.getMimeType()).as(NEWFIELDVALUE).isEqualTo(MIMETYPE);
-				assertThat(newField.getBinary().getSHA512Sum()).as(NEWFIELDVALUE).isEqualTo(hash);
-				Buffer contents = RxUtil.readEntireData(container.getBinary(name).getBinary().getStream()).blockingGet();
-				assertThat(contents.toString()).as(NEWFIELDVALUE).isEqualTo(FILECONTENTS);
-			});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATEBINARY, FILL, INVALIDSCRIPT);
-	}
-
-	@Override
-	@Test(expected = ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		invalidMigrationScript(CREATEBINARY, FILL, KILLERSCRIPT);
-	}
 }

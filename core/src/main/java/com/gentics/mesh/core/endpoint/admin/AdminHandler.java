@@ -21,14 +21,15 @@ import java.util.Arrays;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -40,13 +41,12 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.SearchProvider;
 import com.syncleus.ferma.tx.Tx;
+
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import javax.naming.InvalidNameException;
 
 /**
  * Handler for admin request methods.

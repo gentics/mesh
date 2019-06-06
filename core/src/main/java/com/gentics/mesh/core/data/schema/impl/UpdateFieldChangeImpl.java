@@ -4,12 +4,15 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ELASTICSEARCH_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.UpdateFieldChange;
+import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -69,6 +72,11 @@ public class UpdateFieldChangeImpl extends AbstractSchemaFieldChange implements 
 			restChange.setProperty(ELASTICSEARCH_KEY, "{}");
 		}
 		super.updateFromRest(restChange);
+	}
+
+	@Override
+	public Map<String, Field> createFields(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
+		return Collections.emptyMap();
 	}
 
 	@Override
