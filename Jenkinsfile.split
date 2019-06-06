@@ -53,7 +53,8 @@ stage("Setup Build Environment") {
 
 			stage("Prebuild") {
 				if (Boolean.valueOf(params.runTests)) {
-					sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -DskipTests clean package"
+					// Install is needed to provide deps for the test plugin build
+					sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -DskipTests clean install"
 				} else {
 				        echo "Omitted since we don't execute tests"
 				}
