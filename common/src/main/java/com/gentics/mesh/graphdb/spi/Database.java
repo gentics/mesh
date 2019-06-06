@@ -1,5 +1,12 @@
 package com.gentics.mesh.graphdb.spi;
 
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
@@ -9,6 +16,9 @@ import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.ElementFrame;
 import com.syncleus.ferma.VertexFrame;
+import com.syncleus.ferma.index.IndexDefinition;
+import com.syncleus.ferma.index.impl.EdgeIndexDefinitionImpl.EdgeIndexDefinitonBuilder;
+import com.syncleus.ferma.index.impl.VertexIndexDefinitionImpl.VertexIndexDefinitonBuilder;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.tx.TxAction;
 import com.syncleus.ferma.tx.TxAction0;
@@ -18,6 +28,7 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
+
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.functions.BiFunction;
@@ -25,13 +36,6 @@ import io.reactivex.functions.Function;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Main description of a graph database.
@@ -605,11 +609,11 @@ public interface Database extends TxFactory {
 				return tx(this::runInExistingTx);
 			}
 
-//			@Override
-//			public <R> Transactional<R> map(Function<T, R> mapper) {
-//				// TODO run map outside Tx (needs MappingTransactional)
-//				return transactional(tx -> mapper.apply(txFunction.apply(tx)));
-//			}
+			// @Override
+			// public <R> Transactional<R> map(Function<T, R> mapper) {
+			// // TODO run map outside Tx (needs MappingTransactional)
+			// return transactional(tx -> mapper.apply(txFunction.apply(tx)));
+			// }
 
 			@Override
 			public <R> Transactional<R> mapInTx(BiFunction<Tx, T, R> mapper) {
@@ -625,4 +629,14 @@ public interface Database extends TxFactory {
 			}
 		};
 	}
+
+	default void createIndex(VertexIndexDefinitonBuilder builder) {
+		createIndex(builder.build());
+	}
+
+	default void createIndex(EdgeIndexDefinitonBuilder builder) {
+		createIndex(builder.build());
+	}
+
+	void createIndex(IndexDefinition def);
 }

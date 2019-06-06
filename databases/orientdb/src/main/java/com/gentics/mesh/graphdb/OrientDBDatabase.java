@@ -85,6 +85,7 @@ import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.syncleus.ferma.ext.orientdb3.OrientDBTx;
+import com.syncleus.ferma.index.IndexDefinition;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.tx.TxAction;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
@@ -1137,5 +1138,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 	// "Removing server {" + iNode + "} from distributed configuration on server {" + getNodeName() + "} in cluster {" + getClusterName() + "}");
 	// server.getDistributedManager().removeServer(iNode, true);
 	// }
+
+	@Override
+	public void createIndex(IndexDefinition def) {
+		// TODO Auto-generated method stub
+	}
 
 }

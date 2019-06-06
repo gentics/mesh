@@ -149,6 +149,8 @@ import com.gentics.mesh.util.URIUtils;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.index.IndexDefinition;
+import com.syncleus.ferma.index.impl.VertexIndexDefinitionImpl.VertexIndexDefinitonBuilder;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.syncleus.ferma.tx.Tx;
@@ -169,6 +171,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
 	public static void init(Database database) {
+		VertexIndexDefinitonBuilder builder = IndexDefinition.vertex();
+		database.createIndex(builder);
+		
+		// TODO type def
+
 		database.addVertexType(NodeImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_PARENT_NODE);
 		database.addCustomEdgeIndex(HAS_PARENT_NODE, "branch_out", FieldMap.create("out", LINK, BRANCH_UUID_KEY, STRING), false);
