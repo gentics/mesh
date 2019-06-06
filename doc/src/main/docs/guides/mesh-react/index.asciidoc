@@ -2,7 +2,7 @@
 title: Gentics Mesh React - Basics
 ---
 
-include::/content/docs/variables.adoc-include[]
+include::content/docs/variables.adoc-include[]
 
 == Intro
 
