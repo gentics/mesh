@@ -42,6 +42,11 @@
 | string
 | Firstname of the user.
 
+| forcedPasswordChange
+| true
+| boolean
+| When true, the user needs to change their password on the next login.
+
 | groups
 | true
 | array

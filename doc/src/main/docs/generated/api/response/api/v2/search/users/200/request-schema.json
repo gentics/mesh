@@ -108,6 +108,11 @@
               }
             }
           },
+          "forcedPasswordChange" : {
+            "type" : "boolean",
+            "required" : true,
+            "description" : "When true, the user needs to change their password on the next login."
+          },
           "permissions" : {
             "type" : "object",
             "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfo",

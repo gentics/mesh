@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "0.34.1-SNAPSHOT"
+version: "0.35.0"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -17,6 +17,7 @@ mediaType: application/json
                         |----------|-----------|------|-------------|
                         | emailAddress | false | string | Email address of the user. |
                         | firstname | false | string | Firstname of the user. |
+                        | forcedPasswordChange | false | boolean | When true, the user needs to change their password on the next login. |
                         | groupUuid | false | string | Optional group id for the user. If provided the user will automatically be assigned to the identified group. |
                         | lastname | false | string | Lastname of the user. |
                         | nodeReference | false | object | New node reference of the user. This can also explicitly set to null in order to remove the assigned node from the user |
@@ -56,6 +57,7 @@ mediaType: application/json
                                 | emailAddress | false | string | Email address of the user |
                                 | enabled | true | boolean | Flag which indicates whether the user is enabled or disabled. Disabled users can no longer log into Gentics Mesh. Deleting a user user will not remove it. Instead the user will just be disabled. |
                                 | firstname | false | string | Firstname of the user. |
+                                | forcedPasswordChange | true | boolean | When true, the user needs to change their password on the next login. |
                                 | groups | true | array | List of group references to which the user belongs. |
                                 | lastname | false | string | Lastname of the user. |
                                 | nodeReference | false | object | Optional node reference of the user. Users can directly reference a single node. This can be used to store additional data that is user related. |
@@ -301,6 +303,7 @@ mediaType: application/json
                         |----------|-----------|------|-------------|
                         | emailAddress | false | string | New email address of the user |
                         | firstname | false | string | New firstname of the user |
+                        | forcedPasswordChange | false | boolean | When true, the user needs to change their password on the next login. |
                         | lastname | false | string | New lastname of the user |
                         | nodeReference | false | object | New node reference of the user. This can also explicitly set to null in order to remove the assigned node from the user |
                         | password | false | string | New password of the user |
@@ -338,6 +341,7 @@ mediaType: application/json
                                 | emailAddress | false | string | Email address of the user |
                                 | enabled | true | boolean | Flag which indicates whether the user is enabled or disabled. Disabled users can no longer log into Gentics Mesh. Deleting a user user will not remove it. Instead the user will just be disabled. |
                                 | firstname | false | string | Firstname of the user. |
+                                | forcedPasswordChange | true | boolean | When true, the user needs to change their password on the next login. |
                                 | groups | true | array | List of group references to which the user belongs. |
                                 | lastname | false | string | Lastname of the user. |
                                 | nodeReference | false | object | Optional node reference of the user. Users can directly reference a single node. This can be used to store additional data that is user related. |
@@ -452,6 +456,7 @@ mediaType: application/json
                                 | emailAddress | false | string | Email address of the user |
                                 | enabled | true | boolean | Flag which indicates whether the user is enabled or disabled. Disabled users can no longer log into Gentics Mesh. Deleting a user user will not remove it. Instead the user will just be disabled. |
                                 | firstname | false | string | Firstname of the user. |
+                                | forcedPasswordChange | true | boolean | When true, the user needs to change their password on the next login. |
                                 | groups | true | array | List of group references to which the user belongs. |
                                 | lastname | false | string | Lastname of the user. |
                                 | nodeReference | false | object | Optional node reference of the user. Users can directly reference a single node. This can be used to store additional data that is user related. |
@@ -5577,6 +5582,7 @@ mediaType: application/json
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
+                        | newPassword | false | string | New password that will be set after successful login. |
                         | password | true | string | Password of the user which should be logged in. |
                         | username | true | string | Username of the user which should be logged in. |
                     example: |
@@ -5626,6 +5632,7 @@ mediaType: application/json
                                 | emailAddress | false | string | Email address of the user |
                                 | enabled | true | boolean | Flag which indicates whether the user is enabled or disabled. Disabled users can no longer log into Gentics Mesh. Deleting a user user will not remove it. Instead the user will just be disabled. |
                                 | firstname | false | string | Firstname of the user. |
+                                | forcedPasswordChange | true | boolean | When true, the user needs to change their password on the next login. |
                                 | groups | true | array | List of group references to which the user belongs. |
                                 | lastname | false | string | Lastname of the user. |
                                 | nodeReference | false | object | Optional node reference of the user. Users can directly reference a single node. This can be used to store additional data that is user related. |
@@ -5710,13 +5717,13 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "0.34.1-SNAPSHOT",
+                                  "meshVersion" : "0.35.0",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
                                   "searchVendor" : "elasticsearch",
                                   "searchVersion" : "2.4.3",
-                                  "vertxVersion" : "3.7.0"
+                                  "vertxVersion" : "3.7.1"
                                 }
     /raml: 
         get: 

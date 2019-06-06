@@ -17,6 +17,11 @@
 | string
 | New firstname of the user
 
+| forcedPasswordChange
+| false
+| boolean
+| When true, the user needs to change their password on the next login.
+
 | lastname
 | false
 | string
