@@ -52,7 +52,11 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Prebuild") {
-				sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -DskipTests clean package"
+				if (Boolean.valueOf(params.runTests)) {
+					sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -DskipTests clean package"
+				} else {
+				        echo "Omitted since we don't execute tests"
+				}
 			}
 
 			stage("Test") {
