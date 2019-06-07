@@ -12,7 +12,6 @@
 
 	<artifactId>ferma</artifactId>
 	<packaging>jar</packaging>
-	<version>2.4.0-MIG</version>
 
 	<name>Ferma</name>
 	<description>An ORM for the Tinkerpop3 graph stack.</description>
