@@ -29,6 +29,8 @@ include::content/docs/variables.adoc-include[]
 
 CAUTION: Custom node migration scripts have been removed. The script system was a source of possible errors and performance problems. Also, the nashorn javascript engine has been deprecated with the release of Java 11. If you need to change data for a migration, use the REST Api instead.
 
+icon:check[] REST: Fixed a bug that sometimes caused a wrong image to be responded when using image manipulation. link:https://github.com/gentics/mesh/issues/669[#669]
+
 [[v0.35.0]]
 == 0.35.0 (06.06.2019)
 
@@ -45,6 +47,8 @@ icon:check[] Focal point: It is now possible to use the `:apiLatest:/:projectNam
 icon:check[] The `Content-Disposition` header will now contain the UTF-8 and ISO-8859-1 encoded filename. link:https://github.com/gentics/mesh/issues/702[#702]
 
 icon:plus[] REST: It is now possible to set a flag that forces a user to change their password on the next login. Take a look at link:{{< relref "authentication.asciidoc" >}}#_forcing_user_to_change_password[the documentation] for more information.
+
+icon:check[] REST: Fixed a bug that sometimes caused a wrong image to be responded when using image manipulation. link:https://github.com/gentics/mesh/issues/669[#669]
 
 [[v0.34.0]]
 == 0.34.0 (28.05.2019)
