@@ -45,6 +45,8 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -62,17 +64,12 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyImpl.class);
 
-	/**
-	 * Initialise the indices and type.
-	 * 
-	 * @param database
-	 */
-	public static void init(Database database) {
-		database.createVertexType(TagFamilyImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(TagFamilyImpl.class, MeshVertexImpl.class);
 		// TODO why was the branch key omitted? TagEdgeImpl.BRANCH_UUID_KEY
-		database.createIndex(edgeIndex(HAS_TAG));
-		database.createIndex(edgeIndex(HAS_TAG));
-		database.createIndex(edgeIndex(HAS_TAG).withInOut().withOut());
+		index.createIndex(edgeIndex(HAS_TAG));
+		index.createIndex(edgeIndex(HAS_TAG));
+		index.createIndex(edgeIndex(HAS_TAG).withInOut().withOut());
 	}
 
 	@Override

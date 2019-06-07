@@ -126,6 +126,8 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.json.JsonUtil;
@@ -169,21 +171,21 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
-	public static void init(Database database) {
-		database.createType(vertexType(NodeImpl.class, MeshVertexImpl.class));
-		database.createIndex(edgeIndex(HAS_PARENT_NODE));
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createType(vertexType(NodeImpl.class, MeshVertexImpl.class));
+		index.createIndex(edgeIndex(HAS_PARENT_NODE));
 
-		database.createIndex(edgeIndex(HAS_PARENT_NODE)
+		index.createIndex(edgeIndex(HAS_PARENT_NODE)
 			.withPostfix("branch_out")
 			.withField("out", LINK)
 			.withField(BRANCH_UUID_KEY, STRING));
 
-		database.createIndex(edgeIndex(HAS_PARENT_NODE)
+		index.createIndex(edgeIndex(HAS_PARENT_NODE)
 			.withPostfix("branch")
 			.withField("in", LINK)
 			.withField(BRANCH_UUID_KEY, STRING));
 
-		database.createIndex(edgeIndex(HAS_FIELD_CONTAINER)
+		index.createIndex(edgeIndex(HAS_FIELD_CONTAINER)
 			.withPostfix("field")
 			.withField("out", LINK)
 			.withField(GraphFieldContainerEdge.BRANCH_UUID_KEY, STRING)

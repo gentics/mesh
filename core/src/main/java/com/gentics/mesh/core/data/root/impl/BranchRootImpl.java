@@ -37,16 +37,18 @@ import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 /**
  * @see BranchRoot
  */
 public class BranchRootImpl extends AbstractRootVertex<Branch> implements BranchRoot {
 
-	public static void init(Database database) {
-		database.createVertexType(BranchRootImpl.class, MeshVertexImpl.class);
-		database.createType(edgeType(HAS_BRANCH));
-		database.createIndex(edgeIndex(HAS_BRANCH).withInOut().withOut());
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(BranchRootImpl.class, MeshVertexImpl.class);
+		type.createType(edgeType(HAS_BRANCH));
+		index.createIndex(edgeIndex(HAS_BRANCH).withInOut().withOut());
 	}
 
 	@Override
@@ -130,7 +132,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		}
 
 		// Check for uniqueness of branch name (per project)
-		Branch conflictingBranch = db.checkIndexUniqueness(BranchImpl.UNIQUENAME_INDEX_NAME, BranchImpl.class, getUniqueNameKey(request
+		Branch conflictingBranch = db.index().checkIndexUniqueness(BranchImpl.UNIQUENAME_INDEX_NAME, BranchImpl.class, getUniqueNameKey(request
 			.getName()));
 		if (conflictingBranch != null) {
 			throw conflict(conflictingBranch.getUuid(), conflictingBranch.getName(), "branch_conflicting_name", request.getName());

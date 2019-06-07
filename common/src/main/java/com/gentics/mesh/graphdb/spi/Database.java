@@ -1,10 +1,7 @@
 package com.gentics.mesh.graphdb.spi;
 
-import static com.syncleus.ferma.type.VertexTypeDefinition.vertexType;
-
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -16,22 +13,12 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.EdgeFrame;
-import com.syncleus.ferma.ElementFrame;
-import com.syncleus.ferma.VertexFrame;
-import com.syncleus.ferma.index.ElementIndexDefinition;
-import com.syncleus.ferma.index.field.FieldMap;
-import com.syncleus.ferma.index.impl.EdgeIndexDefinitionImpl.EdgeIndexDefinitonBuilder;
-import com.syncleus.ferma.index.impl.VertexIndexDefinitionImpl.VertexIndexDefinitionBuilder;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.tx.TxAction;
 import com.syncleus.ferma.tx.TxAction0;
 import com.syncleus.ferma.tx.TxAction1;
 import com.syncleus.ferma.tx.TxFactory;
-import com.syncleus.ferma.type.ElementTypeDefinition;
-import com.syncleus.ferma.type.impl.EdgeTypeDefinitionImpl.EdgeTypeDefinitionBuilder;
-import com.syncleus.ferma.type.impl.VertexTypeDefinitionImpl.VertexTypeDefinitionBuilder;
 import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -271,79 +258,6 @@ public interface Database extends TxFactory {
 	void restoreGraph(String backupFile) throws IOException;
 
 	/**
-	 * Add edge index for the given fields.
-	 * 
-	 * The index name will be constructed using the label and the index postfix (e.g: has_node_postfix)
-	 * 
-	 * @param label
-	 * @param indexPostfix
-	 *            postfix of the index
-	 * @param fields
-	 * @param unique
-	 *            Whether to create a unique key index or not
-	 */
-	void addCustomEdgeIndex(String label, String indexPostfix, FieldMap fields, boolean unique);
-
-	/**
-	 * Create a composed index key
-	 * 
-	 * @param keys
-	 * @return
-	 */
-	Object createComposedIndexKey(Object... keys);
-
-	/**
-	 * Check whether the values can be put into the given index for the given element.
-	 * 
-	 * @param indexName
-	 *            index name
-	 * @param element
-	 *            element
-	 * @param key
-	 *            index key to check
-	 * @return the conflicting element or null if no conflict exists
-	 */
-	<T extends ElementFrame> T checkIndexUniqueness(String indexName, T element, Object key);
-
-	/**
-	 * Check whether the value can be put into the given index for a new element of given class.
-	 * 
-	 * @param indexName
-	 *            index name
-	 * @param classOfT
-	 *            class of the proposed new element
-	 * @param key
-	 *            index key to check
-	 * @return the conflicting element or null if no conflict exists
-	 */
-	<T extends MeshElement> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key);
-
-	/**
-	 * Create a new vertex type.
-	 * 
-	 * @param clazzOfVertex
-	 * @param superClazzOfVertex
-	 *            Super vertex type. If null "V" will be used.
-	 */
-	void addVertexType(String clazzOfVertex, String superClazzOfVertex);
-
-	/**
-	 * Remove the vertex type with the given name.
-	 * 
-	 * @param string
-	 */
-	@Deprecated
-	void removeVertexType(String typeName);
-
-	/**
-	 * Remove the edge type with the given name.
-	 * 
-	 * @param typeName
-	 */
-	@Deprecated
-	void removeEdgeType(String typeName);
-
-	/**
 	 * Utilize the index and locate the matching vertices.
 	 * 
 	 * @param classOfVertex
@@ -360,14 +274,6 @@ public interface Database extends TxFactory {
 	 * @return
 	 */
 	<T extends MeshVertex> Iterator<? extends T> getVerticesForType(Class<T> classOfVertex);
-
-	/**
-	 * Update the vertex type for the given element using the class type.
-	 * 
-	 * @param element
-	 * @param classOfVertex
-	 */
-	void setVertexType(Element element, Class<?> classOfVertex);
 
 	/**
 	 * Get the underlying raw transaction.
@@ -404,18 +310,6 @@ public interface Database extends TxFactory {
 	 * Tell the graph database that a mass insert will follow.
 	 */
 	void setMassInsertIntent();
-
-	/**
-	 * Perform an edge SB-Tree index lookup. This method will load the index for the given edge label and postfix and return a list of all inbound vertex ids
-	 * for the found edges. The key defines the outbound edge vertex id which is used to filter the edges.
-	 * 
-	 * @param edgeLabel
-	 * @param indexPostfix
-	 * @param key
-	 *            outbound vertex id of the edge to be checked
-	 * @return List of found inbound vertex ids for the found edges
-	 */
-	List<Object> edgeLookup(String edgeLabel, String indexPostfix, Object key);
 
 	/**
 	 * Join the cluster and block until the graph database has been received.
@@ -485,30 +379,7 @@ public interface Database extends TxFactory {
 	 */
 	String getElementVersion(Element element);
 
-	/**
-	 * Change the element type.
-	 * 
-	 * @param vertex
-	 * @param newType
-	 * @param tx
-	 * @return
-	 */
-	Vertex changeType(Vertex vertex, String newType, Graph tx);
-
-	/**
-	 * Remove the index.
-	 * 
-	 * @param indexName
-	 * @param clazz
-	 */
-	void removeVertexIndex(String indexName, Class<? extends VertexFrame> clazz);
-
 	void shutdown();
-
-	/**
-	 * Invoke a reindex of the graph database indices.
-	 */
-	void reindex();
 
 	/**
 	 * Reload the given element.
@@ -562,35 +433,24 @@ public interface Database extends TxFactory {
 		};
 	}
 
-	default void createIndex(VertexIndexDefinitionBuilder builder) {
-		createIndex(builder.build());
-	}
-
-	default void createIndex(EdgeIndexDefinitonBuilder builder) {
-		createIndex(builder.build());
-	}
-
-	void createIndex(ElementIndexDefinition def);
-
-	default void createType(VertexTypeDefinitionBuilder builder) {
-		createType(builder.build());
-	}
-
-	default void createType(EdgeTypeDefinitionBuilder builder) {
-		createType(builder.build());
-	}
-
-	void createType(ElementTypeDefinition def);
+	/*
+	 * Return the type handler for the database.
+	 */
+	TypeHandler type();
 
 	/**
-	 * Create a new vertex type for the given vertex class type.
+	 * Return the index handler for the database.
 	 * 
-	 * @param clazzOfVertex
-	 * @param superClazzOfVertex
-	 *            Super vertex type. If null "V" will be used.
+	 * @return
 	 */
-	default void createVertexType(Class<?> clazz, Class<?> superClazz) {
-		createType(vertexType(clazz, superClazz));
+	IndexHandler index();
+
+	/**
+	 * Use index()
+	 */
+	@Deprecated
+	default Object createComposedIndexKey(Object... keys) {
+		return index().createComposedIndexKey(keys);
 	}
 
 }

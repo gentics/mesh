@@ -45,6 +45,8 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.ContentConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
@@ -65,8 +67,8 @@ public class SchemaContainerVersionImpl extends
 
 	private static final Logger log = LoggerFactory.getLogger(SchemaContainerVersionImpl.class);
 
-	public static void init(Database database) {
-		database.createVertexType(SchemaContainerVersionImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(SchemaContainerVersionImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

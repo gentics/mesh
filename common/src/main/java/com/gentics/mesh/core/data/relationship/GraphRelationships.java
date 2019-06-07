@@ -2,7 +2,8 @@ package com.gentics.mesh.core.data.relationship;
 
 import static com.syncleus.ferma.type.EdgeTypeDefinition.edgeType;
 
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 /**
  * Main class that holds all the graph relationship names.
@@ -14,70 +15,70 @@ public class GraphRelationships {
 	 * 
 	 * @param db
 	 */
-	public static void init(Database db) {
+	public static void init(TypeHandler type, IndexHandler index) {
 
-		db.createType(edgeType(HAS_INITIAL_BRANCH));
-		db.createType(edgeType(HAS_LATEST_BRANCH));
-		db.createType(edgeType(HAS_NEXT_BRANCH));
-		db.createType(edgeType(HAS_NODE));
-		db.createType(edgeType(HAS_NODE_REFERENCE));
-		db.createType(edgeType(ASSIGNED_TO_PROJECT));
-		db.createType(edgeType(HAS_GROUP_ROOT));
-		db.createType(edgeType(HAS_USER));
-		db.createType(edgeType(HAS_ROLE));
-		db.createType(edgeType(ASSIGNED_TO_ROLE));
+		type.createType(edgeType(HAS_INITIAL_BRANCH));
+		type.createType(edgeType(HAS_LATEST_BRANCH));
+		type.createType(edgeType(HAS_NEXT_BRANCH));
+		type.createType(edgeType(HAS_NODE));
+		type.createType(edgeType(HAS_NODE_REFERENCE));
+		type.createType(edgeType(ASSIGNED_TO_PROJECT));
+		type.createType(edgeType(HAS_GROUP_ROOT));
+		type.createType(edgeType(HAS_USER));
+		type.createType(edgeType(HAS_ROLE));
+		type.createType(edgeType(ASSIGNED_TO_ROLE));
 
-		db.createType(edgeType(HAS_TAG_ROOT));
-		db.createType(edgeType(HAS_TAG_FAMILY));
+		type.createType(edgeType(HAS_TAG_ROOT));
+		type.createType(edgeType(HAS_TAG_FAMILY));
 
-		db.createType(edgeType(HAS_CREATOR));
-		db.createType(edgeType(HAS_EDITOR));
-		db.createType(edgeType(HAS_LANGUAGE));
-		db.createType(edgeType(HAS_PARENT_NODE));
-		db.createType(edgeType(HAS_ROOT_NODE));
-		db.createType(edgeType(HAS_JOB_ROOT));
+		type.createType(edgeType(HAS_CREATOR));
+		type.createType(edgeType(HAS_EDITOR));
+		type.createType(edgeType(HAS_LANGUAGE));
+		type.createType(edgeType(HAS_PARENT_NODE));
+		type.createType(edgeType(HAS_ROOT_NODE));
+		type.createType(edgeType(HAS_JOB_ROOT));
 
-		db.createType(edgeType(HAS_SCHEMA_TYPE));
+		type.createType(edgeType(HAS_SCHEMA_TYPE));
 
-		db.createType(edgeType(HAS_SCHEMA_CONTAINER));
-		db.createType(edgeType(HAS_MICROSCHEMA_CONTAINER));
-		db.createType(edgeType(HAS_MICROSCHEMA_ROOT));
+		type.createType(edgeType(HAS_SCHEMA_CONTAINER));
+		type.createType(edgeType(HAS_MICROSCHEMA_CONTAINER));
+		type.createType(edgeType(HAS_MICROSCHEMA_ROOT));
 
-		db.createType(edgeType(HAS_NODE_ROOT));
-		db.createType(edgeType(HAS_TAGFAMILY_ROOT));
-		db.createType(edgeType(HAS_ROLE_ROOT));
-		db.createType(edgeType(HAS_USER_ROOT));
-		db.createType(edgeType(HAS_LANGUAGE_ROOT));
-		db.createType(edgeType(HAS_PROJECT_ROOT));
-		db.createType(edgeType(HAS_BRANCH_ROOT));
+		type.createType(edgeType(HAS_NODE_ROOT));
+		type.createType(edgeType(HAS_TAGFAMILY_ROOT));
+		type.createType(edgeType(HAS_ROLE_ROOT));
+		type.createType(edgeType(HAS_USER_ROOT));
+		type.createType(edgeType(HAS_LANGUAGE_ROOT));
+		type.createType(edgeType(HAS_PROJECT_ROOT));
+		type.createType(edgeType(HAS_BRANCH_ROOT));
 
-		// db.createType(edgeType(HAS_FIELD);
-		db.createType(edgeType(HAS_ITEM));
-		db.createType(edgeType(HAS_LIST));
+		// type.createType(edgeType(HAS_FIELD);
+		type.createType(edgeType(HAS_ITEM));
+		type.createType(edgeType(HAS_LIST));
 
 		// Versioning
-		db.createType(edgeType(HAS_CHANGE));
-		db.createType(edgeType(HAS_VERSION));
-		db.createType(edgeType(HAS_LATEST_VERSION));
-		db.createType(edgeType(HAS_PARENT_CONTAINER));
-		db.createType(edgeType(HAS_SCHEMA_CONTAINER_VERSION));
+		type.createType(edgeType(HAS_CHANGE));
+		type.createType(edgeType(HAS_VERSION));
+		type.createType(edgeType(HAS_LATEST_VERSION));
+		type.createType(edgeType(HAS_PARENT_CONTAINER));
+		type.createType(edgeType(HAS_SCHEMA_CONTAINER_VERSION));
 
 		// Branches
-		db.createType(edgeType(HAS_SCHEMA_VERSION));
-		db.createType(edgeType(HAS_MICROSCHEMA_VERSION));
-		db.createType(edgeType(HAS_BRANCH_TAG));
+		type.createType(edgeType(HAS_SCHEMA_VERSION));
+		type.createType(edgeType(HAS_MICROSCHEMA_VERSION));
+		type.createType(edgeType(HAS_BRANCH_TAG));
 
 		// Jobs
-		db.createType(edgeType(HAS_JOB));
-		db.createType(edgeType(HAS_FROM_VERSION));
-		db.createType(edgeType(HAS_TO_VERSION));
+		type.createType(edgeType(HAS_JOB));
+		type.createType(edgeType(HAS_FROM_VERSION));
+		type.createType(edgeType(HAS_TO_VERSION));
 
 		// Changelog
-		db.createType(edgeType(HAS_CHANGELOG_ROOT));
+		type.createType(edgeType(HAS_CHANGELOG_ROOT));
 
 		// Binary
-		db.createType(edgeType(HAS_BINARY_ROOT));
-		db.createType(edgeType(HAS_BINARY));
+		type.createType(edgeType(HAS_BINARY_ROOT));
+		type.createType(edgeType(HAS_BINARY));
 
 	}
 

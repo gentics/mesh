@@ -31,6 +31,8 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
@@ -40,8 +42,8 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 
 	private static final Logger log = LoggerFactory.getLogger(MicronodeMigrationJobImpl.class);
 
-	public static void init(Database database) {
-		database.createVertexType(MicronodeMigrationJobImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(MicronodeMigrationJobImpl.class, MeshVertexImpl.class);
 	}
 
 	public MicroschemaMigrationMeshEventModel createEvent(MeshEvent event, JobStatus status) {

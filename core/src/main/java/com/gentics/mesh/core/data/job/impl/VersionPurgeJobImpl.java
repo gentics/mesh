@@ -19,6 +19,8 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.util.DateUtils;
 
 import io.reactivex.Completable;
@@ -31,8 +33,8 @@ public class VersionPurgeJobImpl extends JobImpl {
 
 	private static final String MAX_AGE_PROPERTY = "maxAge";
 
-	public static void init(Database database) {
-		database.createVertexType(VersionPurgeJobImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(VersionPurgeJobImpl.class, MeshVertexImpl.class);
 	}
 
 	public Project getProject() {

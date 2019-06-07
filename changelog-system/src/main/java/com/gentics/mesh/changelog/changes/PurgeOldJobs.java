@@ -34,7 +34,7 @@ public class PurgeOldJobs extends AbstractChange {
 			}
 		}
 		// 2. Remove JobImpl type since we have now specific job vertices
-		getDb().removeVertexType("JobImpl");
+		getDb().type().removeVertexType("JobImpl");
 
 	}
 

@@ -17,6 +17,8 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -31,11 +33,11 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	 * 
 	 * @param database
 	 */
-	public static void init(Database database) {
-		database.createVertexType(TagRootImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(TagRootImpl.class, MeshVertexImpl.class);
 		//TODO why was the branch key omitted? TagEdgeImpl.BRANCH_UUID_KEY
-		database.createIndex(edgeIndex(HAS_TAG));
-		database.createIndex(edgeIndex(HAS_TAG).withInOut().withOut());
+		index.createIndex(edgeIndex(HAS_TAG));
+		index.createIndex(edgeIndex(HAS_TAG).withInOut().withOut());
 	}
 
 	private static final Logger log = LoggerFactory.getLogger(TagRootImpl.class);

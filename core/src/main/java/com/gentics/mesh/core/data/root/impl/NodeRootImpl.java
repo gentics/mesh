@@ -50,7 +50,8 @@ import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedTransactionalGraph;
@@ -69,9 +70,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeRootImpl.class);
 
-	public static void init(Database database) {
-		database.createVertexType(NodeRootImpl.class, MeshVertexImpl.class);
-		database.createIndex(edgeIndex(HAS_NODE).withInOut().withOut());
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(NodeRootImpl.class, MeshVertexImpl.class);
+		index.createIndex(edgeIndex(HAS_NODE).withInOut().withOut());
 	}
 
 	@Override

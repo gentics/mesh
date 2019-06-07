@@ -46,6 +46,8 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -74,8 +76,8 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	private static BinaryRoot binaryRoot;
 	private static ChangelogRoot changelogRoot;
 
-	public static void init(Database database) {
-		database.createVertexType(MeshRootImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(MeshRootImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

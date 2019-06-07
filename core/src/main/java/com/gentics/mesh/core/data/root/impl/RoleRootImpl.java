@@ -21,7 +21,8 @@ import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -33,9 +34,9 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(RoleRootImpl.class);
 
-	public static void init(Database database) {
-		database.createVertexType(RoleRootImpl.class, MeshVertexImpl.class);
-		database.createIndex(edgeIndex(HAS_ROLE).withInOut().withOut());
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(RoleRootImpl.class, MeshVertexImpl.class);
+		index.createIndex(edgeIndex(HAS_ROLE).withInOut().withOut());
 	}
 
 	@Override

@@ -49,10 +49,10 @@ public class DatabaseTest extends AbstractMeshTest {
 	@Test
 	public void testIndex() {
 		try (Tx tx = tx()) {
-			db().createIndex(vertexIndex(LanguageImpl.class)
+			db().index().createIndex(vertexIndex(LanguageImpl.class)
 				.withField("languageTag", FieldType.STRING)
 				.unique());
-			db().createIndex(edgeIndex(ASSIGNED_TO_ROLE)
+			db().index().createIndex(edgeIndex(ASSIGNED_TO_ROLE)
 				.withOut());
 		}
 	}

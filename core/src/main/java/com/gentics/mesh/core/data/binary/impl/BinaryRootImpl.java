@@ -10,6 +10,8 @@ import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Edge;
@@ -20,9 +22,9 @@ import com.tinkerpop.blueprints.Vertex;
  */
 public class BinaryRootImpl extends MeshVertexImpl implements BinaryRoot {
 
-	public static void init(Database database) {
-		database.createVertexType(BinaryRootImpl.class, MeshVertexImpl.class);
-		database.createIndex(edgeIndex(HAS_BINARY).withInOut().withOut());
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(BinaryRootImpl.class, MeshVertexImpl.class);
+		index.createIndex(edgeIndex(HAS_BINARY).withInOut().withOut());
 	}
 
 	@Override

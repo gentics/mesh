@@ -32,6 +32,8 @@ import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.NodeUtil;
 
@@ -47,8 +49,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 
 	private static final Logger log = LoggerFactory.getLogger(BinaryGraphFieldImpl.class);
 
-	public static void init(Database database) {
-		// database.addVertexType(BinaryGraphFieldImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
 	}
 
 	public static FieldTransformer<BinaryField> BINARY_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {

@@ -45,6 +45,8 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -54,8 +56,8 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 
 	public static Set<String> UUID_TYPES = ImmutableSet.of("binary", "node", "micronode");
 
-	public static void init(Database database) {
-		database.createVertexType(FieldTypeChangeImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(FieldTypeChangeImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

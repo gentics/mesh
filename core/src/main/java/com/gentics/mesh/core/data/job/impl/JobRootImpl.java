@@ -36,6 +36,8 @@ import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
@@ -50,9 +52,9 @@ import io.reactivex.Completable;
  */
 public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
-	public static void init(Database database) {
-		database.createVertexType(JobRootImpl.class, MeshVertexImpl.class);
-		database.createIndex(edgeIndex(HAS_JOB).withInOut().withOut());
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(JobRootImpl.class, MeshVertexImpl.class);
+		index.createIndex(edgeIndex(HAS_JOB).withInOut().withOut());
 	}
 
 	@Override

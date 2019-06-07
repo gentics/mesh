@@ -14,6 +14,8 @@ import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.util.ETag;
 
 import io.reactivex.Single;
@@ -27,9 +29,9 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	public static final String LANGUAGE_NATIVE_NAME_PROPERTY_KEY = "nativeName";
 	public static final String LANGUAGE_NAME_PROPERTY_KEY = "name";
 
-	public static void init(Database database) {
-		database.createVertexType(LanguageImpl.class, MeshVertexImpl.class);
-		database.createIndex(vertexIndex(LanguageImpl.class)
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(LanguageImpl.class, MeshVertexImpl.class);
+		index.createIndex(vertexIndex(LanguageImpl.class)
 			.withField(LANGUAGE_TAG_PROPERTY_KEY, STRING)
 			.unique());
 	}

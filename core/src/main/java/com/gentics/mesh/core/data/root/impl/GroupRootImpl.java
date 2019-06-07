@@ -24,17 +24,18 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 /**
  * @see GroupRoot
  */
 public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoot {
 
-	public static void init(Database database) {
-		database.createVertexType(GroupRootImpl.class, MeshVertexImpl.class);
-		database.createType(edgeType(HAS_GROUP));
-		database.createIndex(edgeIndex(HAS_GROUP).withInOut().withOut());
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(GroupRootImpl.class, MeshVertexImpl.class);
+		type.createType(edgeType(HAS_GROUP));
+		index.createIndex(edgeIndex(HAS_GROUP).withInOut().withOut());
 	}
 
 	@Override

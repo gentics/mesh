@@ -30,6 +30,8 @@ import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.util.CompareUtils;
 
 import io.reactivex.Observable;
@@ -88,8 +90,8 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 		return container.getMicronodeList(fieldSchema.getName());
 	};
 
-	public static void init(Database database) {
-		database.createVertexType(MicronodeGraphFieldListImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(MicronodeGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

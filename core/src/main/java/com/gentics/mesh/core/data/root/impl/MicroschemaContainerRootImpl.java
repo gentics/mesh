@@ -30,7 +30,8 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.json.JsonUtil;
 
 /**
@@ -38,10 +39,10 @@ import com.gentics.mesh.json.JsonUtil;
  */
 public class MicroschemaContainerRootImpl extends AbstractRootVertex<MicroschemaContainer> implements MicroschemaContainerRoot {
 
-	public static void init(Database database) {
-		database.createVertexType(MicroschemaContainerRootImpl.class, MeshVertexImpl.class);
-		database.createType(edgeType(HAS_SCHEMA_CONTAINER_ITEM));
-		database.createIndex(edgeIndex(HAS_SCHEMA_CONTAINER_ITEM).withInOut().withOut());
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(MicroschemaContainerRootImpl.class, MeshVertexImpl.class);
+		type.createType(edgeType(HAS_SCHEMA_CONTAINER_ITEM));
+		index.createIndex(edgeIndex(HAS_SCHEMA_CONTAINER_ITEM).withInOut().withOut());
 	}
 
 	@Override

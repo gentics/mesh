@@ -31,6 +31,8 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.madlmigration.TraversalResult;
 
 /**
@@ -50,8 +52,8 @@ public class SchemaContainerImpl extends
 		return SchemaContainerVersionImpl.class;
 	}
 
-	public static void init(Database database) {
-		database.createVertexType(SchemaContainerImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(SchemaContainerImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

@@ -81,6 +81,8 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -110,8 +112,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	public static final String EDITOR_UUID_PROPERTY_KEY = "editor";
 
-	public static void init(Database database) {
-		database.createVertexType(NodeGraphFieldContainerImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(NodeGraphFieldContainerImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
@@ -265,7 +267,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			// Individually check each url
 			for (String urlFieldValue : urlFieldValues) {
 				Object key = GraphFieldContainerEdgeImpl.composeWebrootUrlFieldIndexKey(urlFieldValue, branchUuid, type);
-				GraphFieldContainerEdge conflictingEdge = MeshInternal.get().database().checkIndexUniqueness(WEBROOT_URLFIELD_INDEX_NAME, edge, key);
+				GraphFieldContainerEdge conflictingEdge = MeshInternal.get().database().index().checkIndexUniqueness(WEBROOT_URLFIELD_INDEX_NAME, edge, key);
 				if (conflictingEdge != null) {
 					NodeGraphFieldContainer conflictingContainer = conflictingEdge.getNodeContainer();
 					Node conflictingNode = conflictingEdge.getNode();
@@ -377,7 +379,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			String segmentInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(parentNode, segment);
 			Object webRootIndexKey = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(segmentInfo, branchUuid, type);
 			// check for uniqueness of webroot path
-			GraphFieldContainerEdge conflictingEdge = MeshInternal.get().database().checkIndexUniqueness(WEBROOT_INDEX_NAME, edge, webRootIndexKey);
+			GraphFieldContainerEdge conflictingEdge = MeshInternal.get().database().index().checkIndexUniqueness(WEBROOT_INDEX_NAME, edge, webRootIndexKey);
 			if (conflictingEdge != null) {
 				Node conflictingNode = conflictingEdge.getNode();
 				NodeGraphFieldContainer conflictingContainer = conflictingEdge.getNodeContainer();

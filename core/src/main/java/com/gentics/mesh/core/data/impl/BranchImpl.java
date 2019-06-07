@@ -76,6 +76,8 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.parameter.GenericParameters;
@@ -101,9 +103,9 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	public static final String MIGRATED_PROPERTY_KEY = "migrated";
 
-	public static void init(Database database) {
-		database.createVertexType(BranchImpl.class, MeshVertexImpl.class);
-		database.createIndex(vertexIndex(BranchImpl.class)
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(BranchImpl.class, MeshVertexImpl.class);
+		index.createIndex(vertexIndex(BranchImpl.class)
 			.withName(UNIQUENAME_INDEX_NAME)
 			.withField(UNIQUENAME_PROPERTY_KEY, STRING)
 			.unique());
@@ -123,7 +125,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 		if (shouldUpdate(requestModel.getName(), getName())) {
 			// Check for conflicting project name
-			Branch conflictingBranch = db.checkIndexUniqueness(UNIQUENAME_INDEX_NAME, this, getRoot().getUniqueNameKey(requestModel.getName()));
+			Branch conflictingBranch = db.index().checkIndexUniqueness(UNIQUENAME_INDEX_NAME, this, getRoot().getUniqueNameKey(requestModel.getName()));
 			if (conflictingBranch != null) {
 				throw conflict(conflictingBranch.getUuid(), conflictingBranch.getName(), "branch_conflicting_name", requestModel.getName());
 			}

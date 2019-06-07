@@ -1,18 +1,19 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.MeshVertex.UUID_KEY;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
+import static com.syncleus.ferma.type.EdgeTypeDefinition.edgeType;
+
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagEdge;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.annotations.GraphElement;
 import com.syncleus.ferma.index.field.FieldType;
 import com.syncleus.ferma.traversals.VertexTraversal;
-
-import static com.gentics.mesh.core.data.MeshVertex.UUID_KEY;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
-import static com.syncleus.ferma.type.EdgeTypeDefinition.edgeType;
 
 /**
  * @see TagEdge
@@ -21,10 +22,10 @@ import static com.syncleus.ferma.type.EdgeTypeDefinition.edgeType;
 public class TagEdgeImpl extends MeshEdgeImpl implements TagEdge {
 	public static final String BRANCH_UUID_KEY = "branchUuid";
 
-	public static void init(Database db) {
-		db.createType(edgeType(TagEdgeImpl.class.getSimpleName())
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createType(edgeType(TagEdgeImpl.class.getSimpleName())
 			.withField(TagEdgeImpl.BRANCH_UUID_KEY, FieldType.STRING));
-		db.createType(edgeType(HAS_TAG).withSuperClazz(TagEdgeImpl.class));
+		type.createType(edgeType(HAS_TAG).withSuperClazz(TagEdgeImpl.class));
 	}
 
 	/**

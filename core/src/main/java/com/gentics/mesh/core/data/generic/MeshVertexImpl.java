@@ -15,7 +15,8 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.AbstractVertexFrame;
 import com.syncleus.ferma.FramedGraph;
@@ -38,9 +39,9 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	private Object id;
 	private String uuid;
 
-	public static void init(Database database) {
-		database.createVertexType(MeshVertexImpl.class, null);
-		database.createIndex(vertexIndex(MeshVertexImpl.class)
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(MeshVertexImpl.class, null);
+		index.createIndex(vertexIndex(MeshVertexImpl.class)
 			.withField("uuid", FieldType.STRING)
 			.unique());
 	}
@@ -213,5 +214,6 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		Vertex vertex = getElement();
 		return MeshInternal.get().database().getElementVersion(vertex);
 	}
+
 
 }

@@ -20,6 +20,8 @@ import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Vertex;
@@ -29,9 +31,9 @@ import com.tinkerpop.blueprints.Vertex;
  */
 public class LanguageRootImpl extends AbstractRootVertex<Language> implements LanguageRoot {
 
-	public static void init(Database database) {
-		database.createVertexType(LanguageRootImpl.class, MeshVertexImpl.class);
-		database.createIndex(edgeIndex(HAS_LANGUAGE).withInOut());
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(LanguageRootImpl.class, MeshVertexImpl.class);
+		index.createIndex(edgeIndex(HAS_LANGUAGE).withInOut());
 		// TODO add unique index
 	}
 

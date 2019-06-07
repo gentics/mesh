@@ -62,7 +62,7 @@ public class DatabaseRevisionTableGenerator extends AbstractRenderingGenerator {
 		String version = Mesh.getPlainVersion();
 		if (!version.endsWith("-SNAPSHOT")) {
 			local.put("version", version);
-			local.put("revision", new OrientDBDatabase(null).getDatabaseRevision());
+			local.put("revision", new OrientDBDatabase(null, null, null).getDatabaseRevision());
 			entries.add(local);
 		}
 

@@ -32,6 +32,8 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.json.JsonUtil;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;
@@ -47,9 +49,9 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	 * 
 	 * @param database
 	 */
-	public static void init(Database database) {
-		database.createVertexType(UserRootImpl.class, MeshVertexImpl.class);
-		database.createIndex(edgeIndex(HAS_USER).withInOut().withOut());
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(UserRootImpl.class, MeshVertexImpl.class);
+		index.createIndex(edgeIndex(HAS_USER).withInOut().withOut());
 	}
 
 	@Override

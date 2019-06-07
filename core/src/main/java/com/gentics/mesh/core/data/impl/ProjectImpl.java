@@ -58,7 +58,8 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
@@ -78,10 +79,10 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectImpl.class);
 
-	public static void init(Database database) {
+	public static void init(TypeHandler type, IndexHandler index) {
 		// TODO index to name + unique constraint
-		database.createVertexType(ProjectImpl.class, MeshVertexImpl.class);
-		database.createIndex(vertexIndex(ProjectImpl.class)
+		type.createVertexType(ProjectImpl.class, MeshVertexImpl.class);
+		index.createIndex(vertexIndex(ProjectImpl.class)
 			.withField("name", FieldType.STRING)
 			.unique());
 	}

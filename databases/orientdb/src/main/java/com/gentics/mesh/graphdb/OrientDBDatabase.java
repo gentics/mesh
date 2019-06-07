@@ -2,8 +2,6 @@ package com.gentics.mesh.graphdb;
 
 import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.graphdb.FieldTypeMapper.toSubType;
-import static com.gentics.mesh.graphdb.FieldTypeMapper.toType;
 import static com.gentics.mesh.metric.Metrics.TX_RETRY;
 import static com.gentics.mesh.metric.Metrics.TX_TIME;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -17,13 +15,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 
 import javax.inject.Inject;
@@ -44,6 +39,8 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.index.OrientDBIndexHandler;
+import com.gentics.mesh.graphdb.index.OrientDBTypeHandler;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
@@ -59,16 +56,8 @@ import com.orientechnologies.common.concur.ONeedRetryException;
 import com.orientechnologies.orient.core.OConstants;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.config.OGlobalConfiguration;
-import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.exception.OSchemaException;
-import com.orientechnologies.orient.core.id.ORID;
-import com.orientechnologies.orient.core.index.OCompositeKey;
-import com.orientechnologies.orient.core.index.OIndex;
-import com.orientechnologies.orient.core.index.OIndexCursor;
-import com.orientechnologies.orient.core.index.OIndexManager;
 import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
-import com.orientechnologies.orient.core.metadata.schema.OClass;
-import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
 import com.orientechnologies.orient.server.OServer;
@@ -78,34 +67,20 @@ import com.orientechnologies.orient.server.distributed.ODistributedServerManager
 import com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin;
 import com.orientechnologies.orient.server.plugin.OServerPluginManager;
 import com.syncleus.ferma.EdgeFrame;
-import com.syncleus.ferma.ElementFrame;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.syncleus.ferma.ext.orientdb3.OrientDBTx;
-import com.syncleus.ferma.index.EdgeIndexDefinition;
-import com.syncleus.ferma.index.ElementIndexDefinition;
-import com.syncleus.ferma.index.VertexIndexDefinition;
-import com.syncleus.ferma.index.field.FieldMap;
-import com.syncleus.ferma.index.field.FieldType;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.tx.TxAction;
-import com.syncleus.ferma.type.EdgeTypeDefinition;
-import com.syncleus.ferma.type.ElementTypeDefinition;
-import com.syncleus.ferma.type.VertexTypeDefinition;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientElement;
-import com.tinkerpop.blueprints.impls.orient.OrientElementType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
-import com.tinkerpop.blueprints.impls.orient.OrientVertex;
-import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 import com.tinkerpop.pipes.util.FastNoSuchElementException;
 
@@ -152,13 +127,19 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private Counter txRetryCounter;
 
+	private OrientDBIndexHandler indexHandler;
+
+	private OrientDBTypeHandler typeHandler;
+
 	@Inject
-	public OrientDBDatabase(MetricsService metrics) {
+	public OrientDBDatabase(MetricsService metrics, OrientDBTypeHandler typeHandler, OrientDBIndexHandler indexHandler) {
 		this.metrics = metrics;
 		if (metrics != null) {
 			txTimer = metrics.timer(TX_TIME);
 			txRetryCounter = metrics.counter(TX_RETRY);
 		}
+		this.typeHandler = typeHandler;
+		this.indexHandler = indexHandler;
 	}
 
 	@Override
@@ -225,17 +206,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public OrientGraph rawTx() {
 		return txProvider.rawTx();
-	}
-
-	@Override
-	public void reindex() {
-		OrientGraph tx = txProvider.rawTx();
-		try {
-			OIndexManager manager = tx.getRawGraph().getMetadata().getIndexManager();
-			manager.getIndexes().forEach(i -> i.rebuild());
-		} finally {
-			tx.shutdown();
-		}
 	}
 
 	protected OrientGraphNoTx rawNoTx() {
@@ -550,77 +520,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	@Deprecated
-	public void addCustomEdgeIndex(String label, String indexPostfix, FieldMap fields, boolean unique) {
-		OrientGraphNoTx noTx = rawNoTx();
-		try {
-			OrientEdgeType e = noTx.getEdgeType(label);
-			if (e == null) {
-				throw new RuntimeException("Could not find edge type {" + label + "}. Create edge type before creating indices.");
-			}
-
-			for (String key : fields.keySet()) {
-				if (e.getProperty(key) == null) {
-					FieldType type = fields.get(key);
-					OType otype = toType(type);
-					OType osubType = toSubType(type);
-					if (osubType != null) {
-						e.createProperty(key, otype, osubType);
-					} else {
-						e.createProperty(key, otype);
-					}
-				}
-			}
-			String name = "e." + label + "_" + indexPostfix;
-			name = name.toLowerCase();
-			if (fields.size() != 0 && e.getClassIndex(name) == null) {
-				String[] fieldArray = fields.keySet().stream().toArray(String[]::new);
-				OIndex<?> idx = e.createIndex(name,
-					unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX.toString() : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX.toString(), null,
-					new ODocument().fields("ignoreNullValues", true), fieldArray);
-				if (idx == null) {
-					new RuntimeException("Index for {" + label + "/" + indexPostfix + "} was not created.");
-				}
-			}
-
-		} finally {
-			noTx.shutdown();
-		}
-	}
-
-	@Override
-	public List<Object> edgeLookup(String edgeLabel, String indexPostfix, Object key) {
-		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
-		List<Object> ids = new ArrayList<>();
-
-		// Load the edge type in order to access the indices of the edge
-		OrientEdgeType edgeType = orientBaseGraph.getEdgeType(edgeLabel);
-		if (edgeType != null) {
-			// Fetch the required index
-			OIndex<?> index = edgeType.getClassIndex("e." + edgeLabel.toLowerCase() + "_" + indexPostfix);
-			if (index != null) {
-				// Iterate over the sb-tree index entries
-				OIndexCursor cursor = index.iterateEntriesMajor(new OCompositeKey(key), true, false);
-				while (cursor.hasNext()) {
-					Entry<Object, OIdentifiable> entry = cursor.nextEntry();
-					if (entry != null) {
-						OCompositeKey entryKey = (OCompositeKey) entry.getKey();
-						// The index returns all entries. We thus need to filter it manually
-						if (entryKey.getKeys().get(1).equals(key)) {
-							Object inId = entryKey.getKeys().get(0);
-							// Only add the inbound vertex id to the list of ids
-							ids.add(inId);
-						}
-					} else {
-						break;
-					}
-				}
-			}
-		}
-		return ids;
-	}
-
-	@Override
 	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		return orientBaseGraph.getVertices(classOfVertex.getSimpleName(), fieldNames, fieldValues).iterator();
@@ -639,7 +538,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 * 
 	 * @return
 	 */
-	private OrientBaseGraph unwrapCurrentGraph() {
+	public OrientBaseGraph unwrapCurrentGraph() {
 		FramedGraph graph = Tx.getActive().getGraph();
 		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
 		OrientBaseGraph tx = ((OrientBaseGraph) baseGraph);
@@ -651,101 +550,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 		OrientBaseGraph tx = unwrapCurrentGraph();
 		tx.getRawGraph().getTransaction().setUsingLog(false);
 		tx.declareIntent(new OIntentMassiveInsert().setDisableHooks(true).setDisableValidation(true));
-	}
-
-	@Override
-	public void addVertexType(String clazzOfVertex, String superClazzOfVertex) {
-
-		if (log.isDebugEnabled()) {
-			log.debug("Adding vertex type for class {" + clazzOfVertex + "}");
-		}
-		OrientGraphNoTx noTx = rawNoTx();
-		try {
-			OrientVertexType vertexType = noTx.getVertexType(clazzOfVertex);
-			if (vertexType == null) {
-				String superClazz = "V";
-				if (superClazzOfVertex != null) {
-					superClazz = superClazzOfVertex;
-				}
-				vertexType = noTx.createVertexType(clazzOfVertex, superClazz);
-			} else {
-				// Update the existing vertex type and set the super class
-				if (superClazzOfVertex != null) {
-					OrientVertexType superType = noTx.getVertexType(superClazzOfVertex);
-					if (superType == null) {
-						throw new RuntimeException("The supertype for vertices of type {" + clazzOfVertex + "} can't be set since the supertype {"
-							+ superClazzOfVertex + "} was not yet added to orientdb.");
-					}
-					vertexType.setSuperClass(superType);
-				}
-			}
-		} finally {
-			noTx.shutdown();
-		}
-
-	}
-
-	@Override
-	public void createVertexType(Class<?> clazzOfVertex, Class<?> superClazzOfVertex) {
-		String superClazz = superClazzOfVertex == null ? null : superClazzOfVertex.getSimpleName();
-		addVertexType(clazzOfVertex.getSimpleName(), superClazz);
-	}
-
-	@Override
-	public void removeEdgeType(String typeName) {
-		if (log.isDebugEnabled()) {
-			log.debug("Removing vertex type with name {" + typeName + "}");
-		}
-		OrientGraphNoTx noTx = txProvider.rawNoTx();
-		try {
-			noTx.dropEdgeType(typeName);
-		} finally {
-			noTx.shutdown();
-		}
-	}
-
-	@Override
-	public void removeVertexType(String typeName) {
-		if (log.isDebugEnabled()) {
-			log.debug("Removing vertex type with name {" + typeName + "}");
-		}
-		OrientGraphNoTx noTx = rawNoTx();
-		try {
-			OrientVertexType type = noTx.getVertexType(typeName);
-			if (type != null) {
-				noTx.dropVertexType(typeName);
-			}
-		} finally {
-			noTx.shutdown();
-		}
-	}
-
-	@Override
-	public Vertex changeType(Vertex vertex, String newType, Graph tx) {
-		OrientVertex v = (OrientVertex) vertex;
-		ORID newId = v.moveToClass(newType);
-		return tx.getVertex(newId);
-	}
-
-	@Override
-	public void removeVertexIndex(String indexName, Class<? extends VertexFrame> clazz) {
-		if (log.isDebugEnabled()) {
-			log.debug("Removing vertex index for class {" + clazz.getName() + "}");
-		}
-		OrientGraphNoTx noTx = rawNoTx();
-		try {
-			String name = clazz.getSimpleName();
-			OrientVertexType v = noTx.getVertexType(name);
-			if (v == null) {
-				throw new RuntimeException("Vertex type {" + name + "} is unknown. Can't remove index {" + indexName + "}");
-			}
-			OIndex<?> index = v.getClassIndex(indexName);
-			if (index != null) {
-				noTx.dropIndex(index.getName());
-			}
-		} finally {
-			noTx.shutdown();
-		}
 	}
 
 	@Override
@@ -766,65 +570,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 		Iterator<Edge> it = orientBaseGraph.getEdges(fieldKey, fieldValue).iterator();
 		if (it.hasNext()) {
 			return graph.frameNewElementExplicit(it.next(), clazz);
-		}
-		return null;
-	}
-
-	@Override
-	public <T extends ElementFrame> T checkIndexUniqueness(String indexName, T element, Object key) {
-		FramedGraph graph = Tx.getActive().getGraph();
-		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
-
-		OrientElementType elementType = null;
-		if (element instanceof EdgeFrame) {
-			String label = ((EdgeFrame) element).getLabel();
-			elementType = orientBaseGraph.getEdgeType(label);
-		} else {
-			elementType = orientBaseGraph.getVertexType(element.getClass().getSimpleName());
-		}
-		if (elementType != null) {
-			OIndex<?> index = elementType.getClassIndex(indexName);
-			if (index != null) {
-				Object recordId = index.get(key);
-				if (recordId != null) {
-					if (recordId.equals(element.getElement().getId())) {
-						return null;
-					} else {
-						if (element instanceof EdgeFrame) {
-							Edge edge = graph.getEdge(recordId);
-							if (edge == null) {
-								if (log.isDebugEnabled()) {
-									log.debug("Did not find element with id {" + recordId + "} in graph from index {" + indexName + "}");
-								}
-								return null;
-							} else {
-								return (T) graph.frameElementExplicit(edge, element.getClass());
-							}
-						} else {
-							return (T) graph.getFramedVertexExplicit(element.getClass(), recordId);
-						}
-					}
-				}
-			}
-		}
-		return null;
-	}
-
-	@Override
-	public <T extends MeshElement> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key) {
-		FramedGraph graph = Tx.getActive().getGraph();
-		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
-		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
-
-		OrientVertexType vertexType = orientBaseGraph.getVertexType(classOfT.getSimpleName());
-		if (vertexType != null) {
-			OIndex<?> index = vertexType.getClassIndex(indexName);
-			if (index != null) {
-				Object recordId = index.get(key);
-				if (recordId != null) {
-					return (T) graph.getFramedVertexExplicit(classOfT, recordId);
-				}
-			}
 		}
 		return null;
 	}
@@ -939,19 +684,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public Object createComposedIndexKey(Object... keys) {
-		return new OCompositeKey(keys);
-	}
-
-	@Override
-	public void setVertexType(Element element, Class<?> classOfVertex) {
-		if (element instanceof WrappedVertex) {
-			element = ((WrappedVertex) element).getBaseElement();
-		}
-		((OrientVertex) element).moveToClass(classOfVertex.getSimpleName());
-	}
-
-	@Override
 	public String getElementVersion(Element element) {
 		if (element instanceof WrappedVertex) {
 			element = ((WrappedVertex) element).getBaseElement();
@@ -1031,202 +763,17 @@ public class OrientDBDatabase extends AbstractDatabase {
 	// }
 
 	@Override
-	public void createIndex(ElementIndexDefinition def) {
-		if (def instanceof VertexIndexDefinition) {
-			VertexIndexDefinition vertexDef = (VertexIndexDefinition) def;
-			addVertexIndex(vertexDef);
-		} else if (def instanceof EdgeIndexDefinition) {
-			EdgeIndexDefinition edgeDef = (EdgeIndexDefinition) def;
-			addEdgeIndex(edgeDef);
-		}
-	}
-
-	private void addEdgeIndex(EdgeIndexDefinition def) {
-
-		String label = def.getName();
-		FieldMap fields = def.getFields();
-		String indexPostfix = def.getPostfix();
-		boolean unique = def.isUnique();
-		boolean includeIn = def.isIncludeIn();
-		boolean includeOut = def.isIncludeOut();
-		boolean includeInOut = def.isIncludeInOut();
-		String[] extraFields = {};
-
-		OrientGraphNoTx noTx = rawNoTx();
-		try {
-
-			// 1. Type handling
-			OrientEdgeType e = noTx.getEdgeType(label);
-			if (e == null) {
-				throw new RuntimeException("Could not find edge type {" + label + "}. Create edge type before creating indices.");
-			}
-
-			if (fields != null) {
-				for (String key : fields.keySet()) {
-					if (e.getProperty(key) == null) {
-						FieldType type = fields.get(key);
-						OType otype = toType(type);
-						OType osubType = toSubType(type);
-						if (osubType != null) {
-							e.createProperty(key, otype, osubType);
-						} else {
-							e.createProperty(key, otype);
-						}
-					}
-				}
-			}
-
-			if ((includeIn || includeInOut) && e.getProperty("in") == null) {
-				e.createProperty("in", OType.LINK);
-			}
-			if ((includeOut || includeInOut) && e.getProperty("out") == null) {
-				e.createProperty("out", OType.LINK);
-			}
-			for (String key : extraFields) {
-				if (e.getProperty(key) == null) {
-					e.createProperty(key, OType.STRING);
-				}
-			}
-
-			// 2. Index handling - (in/out/extra)
-			String indexName = "e." + label.toLowerCase();
-			String name = indexName + "_inout";
-			if (includeInOut && e.getClassIndex(name) == null) {
-				e.createIndex(name, OClass.INDEX_TYPE.NOTUNIQUE, new String[] { "in", "out" });
-			}
-			name = indexName + "_out";
-			if (includeOut && e.getClassIndex(name) == null) {
-				e.createIndex(name, OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX, new String[] { "out" });
-			}
-			name = indexName + "_in";
-			if (includeIn && e.getClassIndex(name) == null) {
-				e.createIndex(name, OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX, new String[] { "in" });
-			}
-			name = indexName + "_extra";
-			if (extraFields.length != 0 && e.getClassIndex(name) == null) {
-				e.createIndex(name, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, extraFields);
-			}
-
-			// 3. Index Handling - regular (with/without postfix)
-			name = indexName;
-			if (indexPostfix != null) {
-				name += "_" + indexPostfix;
-			}
-			name = name.toLowerCase();
-			if (fields != null && fields.size() != 0 && e.getClassIndex(name) == null) {
-				String[] fieldArray = fields.keySet().stream().toArray(String[]::new);
-				String indexType = unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX.toString() : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX.toString();
-				OIndex<?> idx = e.createIndex(name, indexType, null, new ODocument().fields("ignoreNullValues", true), fieldArray);
-				if (idx == null) {
-					new RuntimeException("Index for {" + label + "/" + indexPostfix + "} was not created.");
-				}
-			}
-
-		} finally {
-			noTx.shutdown();
-		}
-
-	}
-
-	private void addVertexIndex(VertexIndexDefinition def) {
-		String name = def.getClazz().getSimpleName();
-		String indexName = def.getName();
-		FieldMap fields = def.getFields();
-		boolean unique = def.isUnique();
-
-		if (log.isDebugEnabled()) {
-			log.debug("Adding vertex index for class {" + name + "}");
-		}
-		OrientGraphNoTx noTx = rawNoTx();
-		try {
-			OrientVertexType v = noTx.getVertexType(name);
-			if (v == null) {
-				throw new RuntimeException("Vertex type {" + name + "} is unknown. Can't create index {" + indexName + "}");
-			}
-			if (fields != null) {
-				for (String key : fields.keySet()) {
-					if (v.getProperty(key) == null) {
-						FieldType fieldType = fields.get(key);
-						OType type = toType(fieldType);
-						OType subType = toSubType(fieldType);
-						if (subType != null) {
-							v.createProperty(key, type, subType);
-						} else {
-							v.createProperty(key, type);
-						}
-					}
-				}
-			}
-
-			if (fields != null && fields.size() != 0 && v.getClassIndex(indexName) == null) {
-				String[] fieldArray = fields.keySet().stream().toArray(String[]::new);
-				v.createIndex(indexName, unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX.toString() : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX.toString(),
-					null, new ODocument().fields("ignoreNullValues", true), fieldArray);
-			}
-		} finally {
-			noTx.shutdown();
-		}
-
+	public OrientDBTypeHandler type() {
+		return typeHandler;
 	}
 
 	@Override
-	public void createType(ElementTypeDefinition def) {
-		if (def instanceof VertexTypeDefinition) {
-			VertexTypeDefinition vertexType = (VertexTypeDefinition) def;
-			createVertexType(vertexType.getClazz(), vertexType.getSuperClazz());
-		} else if (def instanceof EdgeTypeDefinition) {
-			EdgeTypeDefinition edgeType = (EdgeTypeDefinition) def;
-			createEdgeType(edgeType);
-		}
+	public OrientDBIndexHandler index() {
+		return indexHandler;
 	}
 
-	private void createEdgeType(EdgeTypeDefinition def) {
-		String label = def.getLabel();
-		Class<?> superClazzOfEdge = def.getSuperClazz();
-
-		FieldMap fields = def.getFields();
-		if (log.isDebugEnabled()) {
-			log.debug("Adding edge type for label {" + label + "}");
-		}
-		OrientGraphNoTx noTx = txProvider.rawNoTx();
-		try {
-			OrientEdgeType e = noTx.getEdgeType(label);
-			if (e == null) {
-				String superClazz = "E";
-				if (superClazzOfEdge != null) {
-					superClazz = superClazzOfEdge.getSimpleName();
-				}
-				e = noTx.createEdgeType(label, superClazz);
-			} else {
-				// Update the existing edge type and set the super class
-				if (superClazzOfEdge != null) {
-					OrientEdgeType superType = noTx.getEdgeType(superClazzOfEdge.getSimpleName());
-					if (superType == null) {
-						throw new RuntimeException("The supertype for edges with label {" + label + "} can't be set since the supertype {"
-							+ superClazzOfEdge.getSimpleName() + "} was not yet added to orientdb.");
-					}
-					e.setSuperClass(superType);
-				}
-			}
-
-			if (fields != null) {
-				for (String key : fields.keySet()) {
-					if (e.getProperty(key) == null) {
-						FieldType fieldType = fields.get(key);
-						OType type = toType(fieldType);
-						OType subType = toSubType(fieldType);
-						if (subType != null) {
-							e.createProperty(key, type, subType);
-						} else {
-							e.createProperty(key, type);
-						}
-					}
-				}
-			}
-		} finally {
-			noTx.shutdown();
-		}
-
+	public OrientStorage getTxProvider() {
+		return txProvider;
 	}
 
 }
