@@ -1,14 +1,17 @@
 package com.gentics.mesh.core.data.relationship;
 
-import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.graphdb.spi.Database;
-
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
+import static com.syncleus.ferma.type.EdgeTypeDefinition.edgeType;
+
+import com.gentics.mesh.core.rest.common.Permission;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 /**
  * Internal enum which provides labels for graph permission edges that are created between the target element and a role.
@@ -27,9 +30,10 @@ public enum GraphPermission {
 
 	PUBLISH_PERM("HAS_PUBLISH_PERMISSION", PUBLISH);
 
-	public static void init(Database database) {
+	public static void init(TypeHandler type, IndexHandler index) {
 		for (String label : GraphPermission.labels()) {
-			database.addEdgeIndex(label, true, false, false);
+			type.createType(edgeType(label));
+			index.createIndex(edgeIndex(label).withInOut());
 		}
 	}
 

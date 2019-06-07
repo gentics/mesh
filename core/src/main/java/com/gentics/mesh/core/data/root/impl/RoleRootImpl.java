@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -20,7 +21,8 @@ import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -32,9 +34,9 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(RoleRootImpl.class);
 
-	public static void init(Database database) {
-		database.addVertexType(RoleRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_ROLE, true, false, true);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(RoleRootImpl.class, MeshVertexImpl.class);
+		index.createIndex(edgeIndex(HAS_ROLE).withInOut().withOut());
 	}
 
 	@Override

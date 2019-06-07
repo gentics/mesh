@@ -8,7 +8,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.search.ElasticsearchProcessManager;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.verticle.eventhandler.SingleCacheSuccess;
 import com.gentics.mesh.util.UUIDUtil;
 import dagger.Lazy;
 import io.reactivex.Completable;

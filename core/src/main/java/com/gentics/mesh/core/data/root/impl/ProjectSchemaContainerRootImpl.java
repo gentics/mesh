@@ -10,14 +10,16 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 /**
  * Project specific implementation of schema container root
  */
 public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 
-	public static void init(Database database) {
-		database.addVertexType(ProjectSchemaContainerRootImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(ProjectSchemaContainerRootImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

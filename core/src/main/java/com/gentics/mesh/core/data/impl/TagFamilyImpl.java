@@ -11,6 +11,7 @@ import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
+import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -44,6 +45,8 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -61,15 +64,12 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyImpl.class);
 
-	/**
-	 * Initialise the indices and type.
-	 * 
-	 * @param database
-	 */
-	public static void init(Database database) {
-		database.addVertexType(TagFamilyImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_TAG, TagEdgeImpl.BRANCH_UUID_KEY);
-		database.addEdgeIndex(HAS_TAG, true, false, true);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(TagFamilyImpl.class, MeshVertexImpl.class);
+		// TODO why was the branch key omitted? TagEdgeImpl.BRANCH_UUID_KEY
+		index.createIndex(edgeIndex(HAS_TAG));
+		index.createIndex(edgeIndex(HAS_TAG));
+		index.createIndex(edgeIndex(HAS_TAG).withInOut().withOut());
 	}
 
 	@Override

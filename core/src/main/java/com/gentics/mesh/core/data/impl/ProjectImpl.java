@@ -15,6 +15,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_ASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_UNASSIGNED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.syncleus.ferma.index.VertexIndexDefinition.vertexIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Set;
@@ -57,14 +58,15 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.FieldType;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.util.ETag;
+import com.syncleus.ferma.index.field.FieldType;
 
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
@@ -77,10 +79,12 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectImpl.class);
 
-	public static void init(Database database) {
+	public static void init(TypeHandler type, IndexHandler index) {
 		// TODO index to name + unique constraint
-		database.addVertexType(ProjectImpl.class, MeshVertexImpl.class);
-		database.addVertexIndex(ProjectImpl.class, true, "name", FieldType.STRING);
+		type.createVertexType(ProjectImpl.class, MeshVertexImpl.class);
+		index.createIndex(vertexIndex(ProjectImpl.class)
+			.withField("name", FieldType.STRING)
+			.unique());
 	}
 
 	@Override

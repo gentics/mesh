@@ -1,6 +1,9 @@
 package com.gentics.mesh.graphdb;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
+import static com.syncleus.ferma.index.VertexIndexDefinition.vertexIndex;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
@@ -18,11 +21,10 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
-import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.index.field.FieldType;
 import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
@@ -47,8 +49,11 @@ public class DatabaseTest extends AbstractMeshTest {
 	@Test
 	public void testIndex() {
 		try (Tx tx = tx()) {
-			db().addVertexIndex(LanguageImpl.class, true, "languageTag", FieldType.STRING);
-			db().addEdgeIndex(GraphRelationships.ASSIGNED_TO_ROLE, false, false, true);
+			db().index().createIndex(vertexIndex(LanguageImpl.class)
+				.withField("languageTag", FieldType.STRING)
+				.unique());
+			db().index().createIndex(edgeIndex(ASSIGNED_TO_ROLE)
+				.withOut());
 		}
 	}
 

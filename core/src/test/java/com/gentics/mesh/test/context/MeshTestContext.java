@@ -1,6 +1,5 @@
 package com.gentics.mesh.test.context;
 
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ELASTICSEARCH_KEY;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
 import static com.gentics.mesh.test.context.MeshTestHelper.noopConsumer;
@@ -12,14 +11,13 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.Map;
 import java.util.stream.IntStream;
 
-import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import org.apache.commons.io.FileUtils;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
@@ -47,6 +45,7 @@ import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.monitoring.MonitoringClientConfig;
 import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 import com.gentics.mesh.router.RouterStorage;

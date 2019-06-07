@@ -109,10 +109,10 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 
 	@Override
 	public void applyNoTx() {
-		db.removeVertexIndex("webrootPathInfoIndex", NodeGraphFieldContainerImpl.class);
-		db.removeVertexIndex("publishedWebrootPathInfoIndex", NodeGraphFieldContainerImpl.class);
-		db.removeVertexIndex("webrootUrlInfoIndex", NodeGraphFieldContainerImpl.class);
-		db.removeVertexIndex("publishedWebrootInfoIndex", NodeGraphFieldContainerImpl.class);
+		db.index().removeVertexIndex("webrootPathInfoIndex", NodeGraphFieldContainerImpl.class);
+		db.index().removeVertexIndex("publishedWebrootPathInfoIndex", NodeGraphFieldContainerImpl.class);
+		db.index().removeVertexIndex("webrootUrlInfoIndex", NodeGraphFieldContainerImpl.class);
+		db.index().removeVertexIndex("publishedWebrootInfoIndex", NodeGraphFieldContainerImpl.class);
 	}
 
 }

@@ -8,6 +8,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_INI
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_BRANCH;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
+import static com.syncleus.ferma.type.EdgeTypeDefinition.edgeType;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -35,16 +37,18 @@ import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 /**
  * @see BranchRoot
  */
 public class BranchRootImpl extends AbstractRootVertex<Branch> implements BranchRoot {
 
-	public static void init(Database database) {
-		database.addVertexType(BranchRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeType(HAS_BRANCH);
-		database.addEdgeIndex(HAS_BRANCH, true, false, true);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(BranchRootImpl.class, MeshVertexImpl.class);
+		type.createType(edgeType(HAS_BRANCH));
+		index.createIndex(edgeIndex(HAS_BRANCH).withInOut().withOut());
 	}
 
 	@Override
@@ -57,7 +61,8 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		return create(name, creator, uuid, setLatest, baseBranch, true, batch);
 	}
 
-	private Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch, boolean assignSchemas, EventQueueBatch batch) {
+	private Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch, boolean assignSchemas,
+		EventQueueBatch batch) {
 		Branch branch = getGraph().addFramedVertex(BranchImpl.class);
 		if (uuid != null) {
 			branch.setUuid(uuid);
@@ -127,7 +132,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		}
 
 		// Check for uniqueness of branch name (per project)
-		Branch conflictingBranch = db.checkIndexUniqueness(BranchImpl.UNIQUENAME_INDEX_NAME, BranchImpl.class, getUniqueNameKey(request
+		Branch conflictingBranch = db.index().checkIndexUniqueness(BranchImpl.UNIQUENAME_INDEX_NAME, BranchImpl.class, getUniqueNameKey(request
 			.getName()));
 		if (conflictingBranch != null) {
 			throw conflict(conflictingBranch.getUuid(), conflictingBranch.getName(), "branch_conflicting_name", request.getName());
@@ -162,12 +167,14 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	}
 
 	/**
-	 * Assigns schemas and microschemas to the new branch, which will cause a node migration if there is a newer
-	 * schema version.
+	 * Assigns schemas and microschemas to the new branch, which will cause a node migration if there is a newer schema version.
 	 *
-	 * @param creator The creator of the branch
-	 * @param baseBranch The branch which the new branch is based on
-	 * @param newBranch The newly created branch
+	 * @param creator
+	 *            The creator of the branch
+	 * @param baseBranch
+	 *            The branch which the new branch is based on
+	 * @param newBranch
+	 *            The newly created branch
 	 * @param batch
 	 */
 	private void assignSchemas(User creator, Branch baseBranch, Branch newBranch, boolean migrate, EventQueueBatch batch) {

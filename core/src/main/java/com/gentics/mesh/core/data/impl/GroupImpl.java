@@ -12,6 +12,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_ASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_UNASSIGNED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.syncleus.ferma.index.VertexIndexDefinition.vertexIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -40,14 +41,15 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.FieldType;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
+import com.syncleus.ferma.index.field.FieldType;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.reactivex.Single;
@@ -57,9 +59,11 @@ import io.reactivex.Single;
  */
 public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> implements Group {
 
-	public static void init(Database database) {
-		database.addVertexType(GroupImpl.class, MeshVertexImpl.class);
-		database.addVertexIndex(GroupImpl.class, true, "name", FieldType.STRING);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(GroupImpl.class, MeshVertexImpl.class);
+		index.createIndex(vertexIndex(GroupImpl.class)
+			.withField("name", FieldType.STRING)
+			.unique());
 	}
 
 	@Override

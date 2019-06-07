@@ -1,20 +1,21 @@
-package com.gentics.mesh.graphdb;
-
-import com.gentics.mesh.Mesh;
-import com.orientechnologies.orient.server.distributed.ODistributedLifecycleListener;
-import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+package com.gentics.mesh.graphdb.cluster;
 
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINING;
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_LEFT;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import com.gentics.mesh.Mesh;
+import com.orientechnologies.orient.server.distributed.ODistributedLifecycleListener;
+import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
+
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Listener for OrientDB cluster specific events. The listener relays the events via messages to the eventbus.
@@ -23,12 +24,12 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 
 	private static final Logger log = LoggerFactory.getLogger(TopologyEventBridge.class);
 
-	private OrientDBDatabase db;
+	private OrientDBClusterManager manager;
 
 	private CountDownLatch nodeJoinLatch = new CountDownLatch(1);
 
-	public TopologyEventBridge(OrientDBDatabase db) {
-		this.db = db;
+	public TopologyEventBridge(OrientDBClusterManager manager) {
+		this.manager = manager;
 	}
 
 	EventBus getEventBus() {
@@ -77,7 +78,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 			statusInfo.put("status", iNewStatus.name());
 			getEventBus().publish(CLUSTER_DATABASE_CHANGE_STATUS.address, statusInfo);
 		}
-		if ("storage".equals(iDatabaseName) && iNewStatus == DB_STATUS.ONLINE && iNode.equals(db.getNodeName())) {
+		if ("storage".equals(iDatabaseName) && iNewStatus == DB_STATUS.ONLINE && iNode.equals(manager.getNodeName())) {
 			nodeJoinLatch.countDown();
 		}
 	}

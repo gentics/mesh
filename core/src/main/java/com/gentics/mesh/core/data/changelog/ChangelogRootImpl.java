@@ -4,21 +4,14 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CHA
 
 import java.util.Iterator;
 
-import com.gentics.mesh.core.data.changelog.Change;
-import com.gentics.mesh.core.data.changelog.ChangeMarkerVertex;
-import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 public class ChangelogRootImpl extends MeshVertexImpl implements ChangelogRoot {
 
-	/**
-	 * Initialise the type and indices for this type.
-	 * 
-	 * @param database
-	 */
-	public static void init(Database database) {
-		database.addVertexType(ChangelogRootImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(ChangelogRootImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

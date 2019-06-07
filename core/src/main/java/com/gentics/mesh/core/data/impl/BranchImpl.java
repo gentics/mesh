@@ -22,8 +22,9 @@ import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.QUEUED;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
-import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
+import static com.syncleus.ferma.index.VertexIndexDefinition.vertexIndex;
+import static com.syncleus.ferma.index.field.FieldType.STRING;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -75,6 +76,8 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.parameter.GenericParameters;
@@ -100,9 +103,13 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	public static final String MIGRATED_PROPERTY_KEY = "migrated";
 
-	public static void init(Database database) {
-		database.addVertexType(BranchImpl.class, MeshVertexImpl.class);
-		database.addVertexIndex(UNIQUENAME_INDEX_NAME, BranchImpl.class, true, UNIQUENAME_PROPERTY_KEY, STRING);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(BranchImpl.class, MeshVertexImpl.class);
+		index.createIndex(vertexIndex(BranchImpl.class)
+			.withName(UNIQUENAME_INDEX_NAME)
+			.withField(UNIQUENAME_PROPERTY_KEY, STRING)
+			.unique());
+		// database.addVertexIndex(UNIQUENAME_INDEX_NAME, BranchImpl.class, true, UNIQUENAME_PROPERTY_KEY, STRING);
 	}
 
 	@Override
@@ -118,7 +125,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 		if (shouldUpdate(requestModel.getName(), getName())) {
 			// Check for conflicting project name
-			Branch conflictingBranch = db.checkIndexUniqueness(UNIQUENAME_INDEX_NAME, this, getRoot().getUniqueNameKey(requestModel.getName()));
+			Branch conflictingBranch = db.index().checkIndexUniqueness(UNIQUENAME_INDEX_NAME, this, getRoot().getUniqueNameKey(requestModel.getName()));
 			if (conflictingBranch != null) {
 				throw conflict(conflictingBranch.getUuid(), conflictingBranch.getName(), "branch_conflicting_name", requestModel.getName());
 			}
@@ -433,12 +440,12 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 		BranchSchemaAssignEventModel model = new BranchSchemaAssignEventModel();
 		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
 		switch (assigned) {
-			case ASSIGNED:
-				model.setEvent(SCHEMA_BRANCH_ASSIGN);
-				break;
-			case UNASSIGNED:
-				model.setEvent(SCHEMA_BRANCH_UNASSIGN);
-				break;
+		case ASSIGNED:
+			model.setEvent(SCHEMA_BRANCH_ASSIGN);
+			break;
+		case UNASSIGNED:
+			model.setEvent(SCHEMA_BRANCH_UNASSIGN);
+			break;
 		}
 		model.setSchema(schemaContainerVersion.transformToReference());
 		model.setStatus(status);
@@ -448,16 +455,17 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion, Assignment assigned, JobStatus status) {
+	public BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion, Assignment assigned,
+		JobStatus status) {
 		BranchMicroschemaAssignModel model = new BranchMicroschemaAssignModel();
 		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
 		switch (assigned) {
-			case ASSIGNED:
-				model.setEvent(MICROSCHEMA_BRANCH_ASSIGN);
-				break;
-			case UNASSIGNED:
-				model.setEvent(MICROSCHEMA_BRANCH_UNASSIGN);
-				break;
+		case ASSIGNED:
+			model.setEvent(MICROSCHEMA_BRANCH_ASSIGN);
+			break;
+		case UNASSIGNED:
+			model.setEvent(MICROSCHEMA_BRANCH_UNASSIGN);
+			break;
 		}
 		model.setSchema(microschemaContainerVersion.transformToReference());
 		model.setStatus(status);
@@ -660,7 +668,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public TransformablePage<? extends Tag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
 		List<Tag> tags = getTagsToSet(ac, batch);
-		//TODO Rework this code. We should only add the needed tags and don't dispatch all events.
+		// TODO Rework this code. We should only add the needed tags and don't dispatch all events.
 		removeAllTags();
 		tags.forEach(tag -> {
 			batch.add(onTagged(tag, ASSIGNED));

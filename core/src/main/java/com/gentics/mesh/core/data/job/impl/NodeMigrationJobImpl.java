@@ -22,14 +22,15 @@ import com.gentics.mesh.core.endpoint.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
-import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
@@ -39,8 +40,8 @@ public class NodeMigrationJobImpl extends JobImpl {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeMigrationJobImpl.class);
 
-	public static void init(Database database) {
-		database.addVertexType(NodeMigrationJobImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(NodeMigrationJobImpl.class, MeshVertexImpl.class);
 	}
 
 	private SchemaMigrationMeshEventModel createEvent(MeshEvent event, JobStatus status) {

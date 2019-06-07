@@ -27,9 +27,11 @@ import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
-import static com.gentics.mesh.graphdb.spi.FieldType.LINK;
-import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
+import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
+import static com.syncleus.ferma.index.field.FieldType.LINK;
+import static com.syncleus.ferma.index.field.FieldType.STRING;
+import static com.syncleus.ferma.type.VertexTypeDefinition.vertexType;
 import static com.tinkerpop.blueprints.Direction.IN;
 import static com.tinkerpop.blueprints.Direction.OUT;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -124,7 +126,8 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.FieldMap;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.json.JsonUtil;
@@ -168,17 +171,25 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
-	public static void init(Database database) {
-		database.addVertexType(NodeImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_PARENT_NODE);
-		database.addCustomEdgeIndex(HAS_PARENT_NODE, "branch_out", FieldMap.create("out", LINK, BRANCH_UUID_KEY, STRING), false);
-		database.addCustomEdgeIndex(HAS_PARENT_NODE, "branch", FieldMap.create("in", LINK, BRANCH_UUID_KEY, STRING), false);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createType(vertexType(NodeImpl.class, MeshVertexImpl.class));
+		index.createIndex(edgeIndex(HAS_PARENT_NODE));
 
-		FieldMap fields = new FieldMap();
-		fields.put("out", LINK);
-		fields.put(GraphFieldContainerEdge.BRANCH_UUID_KEY, STRING);
-		fields.put(GraphFieldContainerEdge.EDGE_TYPE_KEY, STRING);
-		database.addCustomEdgeIndex(HAS_FIELD_CONTAINER, "field", fields, false);
+		index.createIndex(edgeIndex(HAS_PARENT_NODE)
+			.withPostfix("branch_out")
+			.withField("out", LINK)
+			.withField(BRANCH_UUID_KEY, STRING));
+
+		index.createIndex(edgeIndex(HAS_PARENT_NODE)
+			.withPostfix("branch")
+			.withField("in", LINK)
+			.withField(BRANCH_UUID_KEY, STRING));
+
+		index.createIndex(edgeIndex(HAS_FIELD_CONTAINER)
+			.withPostfix("field")
+			.withField("out", LINK)
+			.withField(GraphFieldContainerEdge.BRANCH_UUID_KEY, STRING)
+			.withField(GraphFieldContainerEdge.EDGE_TYPE_KEY, STRING));
 	}
 
 	@Override

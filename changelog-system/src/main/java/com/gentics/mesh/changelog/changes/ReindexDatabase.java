@@ -6,7 +6,7 @@ public class ReindexDatabase extends AbstractChange {
 
 	@Override
 	public void applyOutsideTx() {
-		getDb().reindex();
+		getDb().index().reindex();
 	}
 
 	@Override

@@ -20,14 +20,15 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 /**
  * See {@link MicroschemaContainer}
  */
 public class MicroschemaContainerImpl extends
-		AbstractGraphFieldSchemaContainer<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainer, MicroschemaContainerVersion>
-		implements MicroschemaContainer {
+	AbstractGraphFieldSchemaContainer<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainer, MicroschemaContainerVersion>
+	implements MicroschemaContainer {
 
 	@Override
 	protected Class<MicroschemaContainerImpl> getContainerClass() {
@@ -39,8 +40,8 @@ public class MicroschemaContainerImpl extends
 		return MicroschemaContainerVersionImpl.class;
 	}
 
-	public static void init(Database database) {
-		database.addVertexType(MicroschemaContainerImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(MicroschemaContainerImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

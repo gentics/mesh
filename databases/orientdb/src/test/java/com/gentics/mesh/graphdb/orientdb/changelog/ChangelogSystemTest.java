@@ -31,6 +31,7 @@ import com.gentics.mesh.changelog.Change;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
+import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.maven.MavenMetadata;
 import com.gentics.mesh.maven.MavenUtilities;
@@ -128,7 +129,7 @@ public class ChangelogSystemTest {
 		Mockito.when(metrics.counter(Mockito.any())).thenReturn(Mockito.mock(Counter.class));
 		Mockito.when(metrics.meter(Mockito.any())).thenReturn(Mockito.mock(Meter.class));
 		Mockito.when(metrics.resetableCounter(Mockito.any())).thenReturn(Mockito.mock(ResettableCounter.class));
-		Database database = new OrientDBDatabase(metrics);
+		Database database = new OrientDBDatabase(metrics, null, null, new OrientDBClusterManager(options, null));
 		try {
 			database.init(options, null);
 			return database;

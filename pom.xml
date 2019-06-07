@@ -18,7 +18,7 @@
 		<!-- when updating version, don't forget to update administration-guide.asciidoc -->
 		<asm.version>3.3.1</asm.version>
 		<spring.security.version>4.2.12.RELEASE</spring.security.version>
-		<ferma.version>2.4.0-MIG</ferma.version>
+		<ferma.version>${project.version}</ferma.version>
 		<elasticsearch.client.version>0.5.2</elasticsearch.client.version>
 		<orientdb.version>3.0.19</orientdb.version>
 		<dagger.version>2.11</dagger.version>

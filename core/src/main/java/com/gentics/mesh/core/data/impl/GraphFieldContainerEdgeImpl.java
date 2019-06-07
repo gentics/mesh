@@ -1,9 +1,10 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.gentics.mesh.graphdb.spi.FieldType.LINK;
-import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
-import static com.gentics.mesh.graphdb.spi.FieldType.STRING_SET;
+import static com.syncleus.ferma.index.field.FieldType.LINK;
+import static com.syncleus.ferma.index.field.FieldType.STRING;
+import static com.syncleus.ferma.index.field.FieldType.STRING_SET;
+import static com.syncleus.ferma.type.EdgeTypeDefinition.edgeType;
 
 import java.util.List;
 
@@ -18,10 +19,12 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.FieldMap;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.annotations.GraphElement;
+import com.syncleus.ferma.index.field.FieldMap;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.Traversal;
 import com.syncleus.ferma.traversals.TraversalFunction;
@@ -35,30 +38,30 @@ import com.tinkerpop.blueprints.Edge;
 @GraphElement
 public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFieldContainerEdge {
 
-	public static void init(Database db) {
-		db.addEdgeType(GraphFieldContainerEdgeImpl.class.getSimpleName());
-		db.addEdgeType(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createType(edgeType(GraphFieldContainerEdgeImpl.class.getSimpleName()));
+		type.createType(edgeType(HAS_FIELD_CONTAINER).withSuperClazz(GraphFieldContainerEdgeImpl.class));
 
 		FieldMap fields = new FieldMap();
 		fields.put("out", LINK);
 		fields.put(BRANCH_UUID_KEY, STRING);
 		fields.put(EDGE_TYPE_KEY, STRING);
 		fields.put(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, STRING);
-		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, "branch_type_lang", fields, false);
+		index.addCustomEdgeIndex(HAS_FIELD_CONTAINER, "branch_type_lang", fields, false);
 
 		// Webroot index:
 		fields = new FieldMap();
 		fields.put(BRANCH_UUID_KEY, STRING);
 		fields.put(EDGE_TYPE_KEY, STRING);
 		fields.put(WEBROOT_PROPERTY_KEY, STRING);
-		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, WEBROOT_INDEX_POSTFIX_NAME, fields, true);
+		index.addCustomEdgeIndex(HAS_FIELD_CONTAINER, WEBROOT_INDEX_POSTFIX_NAME, fields, true);
 
 		// Webroot url field index:
 		fields = new FieldMap();
 		fields.put(BRANCH_UUID_KEY, STRING);
 		fields.put(EDGE_TYPE_KEY, STRING);
 		fields.put(WEBROOT_URLFIELD_PROPERTY_KEY, STRING_SET);
-		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, WEBROOT_URLFIELD_INDEX_POSTFIX_NAME, fields, true);
+		index.addCustomEdgeIndex(HAS_FIELD_CONTAINER, WEBROOT_URLFIELD_INDEX_POSTFIX_NAME, fields, true);
 
 	}
 
@@ -79,7 +82,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 */
 	public static Object composeWebrootIndexKey(String segmentInfo, String branchUuid, ContainerType type) {
 		Database db = MeshInternal.get().database();
-		return db.createComposedIndexKey(branchUuid, type.getCode(), segmentInfo);
+		return db.index().createComposedIndexKey(branchUuid, type.getCode(), segmentInfo);
 	}
 
 	public static String composeSegmentInfo(Node parentNode, String segment) {
@@ -88,7 +91,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 
 	public static Object composeWebrootUrlFieldIndexKey(String path, String branchUuid, ContainerType type) {
 		Database db = MeshInternal.get().database();
-		return db.createComposedIndexKey(branchUuid, type.getCode(), path);
+		return db.index().createComposedIndexKey(branchUuid, type.getCode(), path);
 	}
 
 	/**
@@ -187,7 +190,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	public static boolean matchesBranchAndType(Object nodeId, String branchUuid, String code) {
 		FramedGraph graph = Tx.getActive().getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
-				MeshInternal.get().database().createComposedIndexKey(nodeId, branchUuid, code));
+				MeshInternal.get().database().index().createComposedIndexKey(nodeId, branchUuid, code));
 		return edges.iterator().hasNext();
 	}
 

@@ -48,6 +48,8 @@ import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
@@ -70,8 +72,8 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	public static final String TAG_VALUE_KEY = "tagValue";
 
-	public static void init(Database database) {
-		database.addVertexType(TagImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(TagImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

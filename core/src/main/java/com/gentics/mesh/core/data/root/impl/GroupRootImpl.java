@@ -4,6 +4,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
+import static com.syncleus.ferma.type.EdgeTypeDefinition.edgeType;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
@@ -22,16 +24,18 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 /**
  * @see GroupRoot
  */
 public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoot {
 
-	public static void init(Database database) {
-		database.addVertexType(GroupRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_GROUP, true, false, true);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(GroupRootImpl.class, MeshVertexImpl.class);
+		type.createType(edgeType(HAS_GROUP));
+		index.createIndex(edgeIndex(HAS_GROUP).withInOut().withOut());
 	}
 
 	@Override

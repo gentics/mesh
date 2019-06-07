@@ -7,13 +7,13 @@ import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 import static com.gentics.mesh.core.rest.job.JobStatus.QUEUED;
 import static com.gentics.mesh.core.rest.job.JobStatus.UNKNOWN;
+import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Stack;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -32,10 +32,12 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.root.impl.AbstractRootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobStatus;
+import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
@@ -50,9 +52,9 @@ import io.reactivex.Completable;
  */
 public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
-	public static void init(Database database) {
-		database.addVertexType(JobRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_JOB, true, false, true);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(JobRootImpl.class, MeshVertexImpl.class);
+		index.createIndex(edgeIndex(HAS_JOB).withInOut().withOut());
 	}
 
 	@Override

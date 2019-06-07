@@ -244,9 +244,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				db.closeConnectionPool();
 				db.shutdown();
 
-				db.startServer();
+				db.clusterManager().startServer();
 				initVertx(options, isClustered);
-				db.registerEventHandlers();
+				db.clusterManager().registerEventHandlers();
 				db.setupConnectionPool();
 				searchProvider.init();
 				searchProvider.start();
@@ -255,11 +255,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				}
 			} else {
 				// We need to wait for other nodes and receive the graphdb
-				db.startServer();
+				db.clusterManager().startServer();
 				initVertx(options, isClustered);
 				mesh.setStatus(MeshStatus.WAITING_FOR_CLUSTER);
-				db.joinCluster();
-				db.registerEventHandlers();
+				db.clusterManager().joinCluster();
+				db.clusterManager().registerEventHandlers();
 				isInitialSetup = false;
 				db.setupConnectionPool();
 				searchProvider.init();
@@ -285,7 +285,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			initLocalData(options, false);
 			if (startOrientServer) {
 				db.closeConnectionPool();
-				db.startServer();
+				db.clusterManager().startServer();
 				db.setupConnectionPool();
 			}
 		}
@@ -351,7 +351,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		Vertx vertx = null;
 		if (vertxOptions.getEventBusOptions().isClustered()) {
 			log.info("Creating clustered Vert.x instance");
-			vertx = createClusteredVertx(options, vertxOptions, (HazelcastInstance) db.getHazelcast());
+			vertx = createClusteredVertx(options, vertxOptions, (HazelcastInstance) db.clusterManager().getHazelcast());
 		} else {
 			log.info("Creating non-clustered Vert.x instance");
 			vertx = Vertx.vertx(vertxOptions);

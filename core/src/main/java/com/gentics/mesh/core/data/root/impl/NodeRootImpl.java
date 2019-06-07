@@ -9,6 +9,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NOD
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -49,7 +50,8 @@ import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedTransactionalGraph;
@@ -68,9 +70,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeRootImpl.class);
 
-	public static void init(Database database) {
-		database.addVertexType(NodeRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_NODE, true, false, true);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(NodeRootImpl.class, MeshVertexImpl.class);
+		index.createIndex(edgeIndex(HAS_NODE).withInOut().withOut());
 	}
 
 	@Override

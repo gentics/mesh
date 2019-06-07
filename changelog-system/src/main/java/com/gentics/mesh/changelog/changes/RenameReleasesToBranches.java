@@ -22,9 +22,9 @@ public class RenameReleasesToBranches extends AbstractChange {
 
 	@Override
 	public void applyOutsideTx() {
-		getDb().addVertexType("BranchImpl", "MeshVertexImpl");
-		getDb().addVertexType("BranchRootImpl", "MeshVertexImpl");
-		getDb().addVertexType("BranchMigrationJobImpl", "MeshVertexImpl");
+		getDb().type().addVertexType("BranchImpl", "MeshVertexImpl");
+		getDb().type().addVertexType("BranchRootImpl", "MeshVertexImpl");
+		getDb().type().addVertexType("BranchMigrationJobImpl", "MeshVertexImpl");
 	}
 
 	@Override

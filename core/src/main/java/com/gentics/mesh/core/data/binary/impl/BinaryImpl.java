@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.binary.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.syncleus.ferma.index.VertexIndexDefinition.vertexIndex;
 
 import java.util.Base64;
 
@@ -11,9 +12,11 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.FieldType;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.storage.BinaryStorage;
+import com.syncleus.ferma.index.field.FieldType;
 
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
@@ -25,9 +28,11 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 
 	private static final Base64.Encoder BASE64 = Base64.getEncoder();
 
-	public static void init(Database database) {
-		database.addVertexType(BinaryImpl.class, MeshVertexImpl.class);
-		database.addVertexIndex(BinaryImpl.class, true, Binary.SHA512SUM_KEY, FieldType.STRING);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(BinaryImpl.class, MeshVertexImpl.class);
+		index.createIndex(vertexIndex(BinaryImpl.class)
+			.withField(Binary.SHA512SUM_KEY, FieldType.STRING)
+			.unique());
 	}
 
 	@Override

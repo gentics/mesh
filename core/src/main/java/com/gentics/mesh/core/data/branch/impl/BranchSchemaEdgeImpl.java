@@ -1,11 +1,13 @@
 package com.gentics.mesh.core.data.branch.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
+import static com.syncleus.ferma.type.EdgeTypeDefinition.edgeType;
 
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.syncleus.ferma.annotations.GraphElement;
 
 /**
@@ -14,9 +16,9 @@ import com.syncleus.ferma.annotations.GraphElement;
 @GraphElement
 public class BranchSchemaEdgeImpl extends AbstractVersionEdge implements BranchSchemaEdge {
 
-	public static void init(Database db) {
-		db.addEdgeType(BranchSchemaEdgeImpl.class.getSimpleName());
-		db.addEdgeType(HAS_SCHEMA_VERSION, BranchSchemaEdgeImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createType(edgeType(BranchSchemaEdgeImpl.class.getSimpleName()));
+		type.createType(edgeType(HAS_SCHEMA_VERSION).withSuperClazz(BranchSchemaEdgeImpl.class));
 	}
 
 	@Override

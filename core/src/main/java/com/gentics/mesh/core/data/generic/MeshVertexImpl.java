@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.generic;
 
+import static com.syncleus.ferma.index.VertexIndexDefinition.vertexIndex;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -13,13 +15,14 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.FieldType;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.AbstractVertexFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.annotations.GraphElement;
+import com.syncleus.ferma.index.field.FieldType;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Element;
@@ -36,9 +39,11 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	private Object id;
 	private String uuid;
 
-	public static void init(Database database) {
-		database.addVertexType(MeshVertexImpl.class, null);
-		database.addVertexIndex(MeshVertexImpl.class, true, "uuid", FieldType.STRING);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(MeshVertexImpl.class, null);
+		index.createIndex(vertexIndex(MeshVertexImpl.class)
+			.withField("uuid", FieldType.STRING)
+			.unique());
 	}
 
 	@Override
@@ -169,7 +174,8 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke);
 	}
 
-	protected void applyVertexPermissions(EventQueueBatch batch, Role role, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
+	protected void applyVertexPermissions(EventQueueBatch batch, Role role, Set<GraphPermission> permissionsToGrant,
+		Set<GraphPermission> permissionsToRevoke) {
 		role.grantPermissions(this, permissionsToGrant.toArray(new GraphPermission[permissionsToGrant.size()]));
 		role.revokePermissions(this, permissionsToRevoke.toArray(new GraphPermission[permissionsToRevoke.size()]));
 
@@ -179,7 +185,6 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		}
 		// TODO Also handle RootVertex - We need to add a dedicated event in those cases.
 	}
-
 
 	@Override
 	public Vertex getElement() {
@@ -209,5 +214,6 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		Vertex vertex = getElement();
 		return MeshInternal.get().database().getElementVersion(vertex);
 	}
+
 
 }
