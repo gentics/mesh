@@ -13,6 +13,7 @@ properties([
 	parameters([
 		booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests"),
 		booleanParam(name: 'splitTests',          defaultValue: true,  description: "Whether to split tests or not"),
+		booleanParam(name: 'skipSearchTests',     defaultValue: false, description: "Whether to skip search tests or not"),
 		booleanParam(name: 'runSonar',            defaultValue: false, description: "Whether to run the sonarqube checks"),
 		booleanParam(name: 'runPerformanceTests', defaultValue: false, description: "Whether to run performance tests."),
 		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
@@ -63,7 +64,11 @@ stage("Setup Build Environment") {
 			stage("Test") {
 				if (Boolean.valueOf(params.runTests)) {
 					if (Boolean.valueOf(params.splitTests)) {
-						sh ".jenkins/split-tests.sh ${splits}"
+						if (Boolean.valueOf(params.skipSearchTests)) {
+							sh ".jenkins/split-tests.sh ${splits} nosearch"
+						} else {
+							sh ".jenkins/split-tests.sh ${splits}"
+						}
 						stash includes: '**', name: 'project'
 						def branches = [:]
 						for (int i = 0; i < runs; i++) {

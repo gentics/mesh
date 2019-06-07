@@ -22,12 +22,20 @@ split -a 2 -d -n l/$1 nonsearchtests includes-nonsearch-
 split -a 2 -d -n l/$1 searchtests includes-search-
 ls -l includes-*
 
+if [ "$2" == "nosearch" ] ; then
+  echo "Removing search tests"
+  rm includes-search*
+fi
+TO=`expr $1 - 1`
+
 echo "Combining splits"
-for i in $(seq -w 00 $1) ; do
+for i in $(seq -w 00 $TO) ; do
   echo "Combining: $i"
   if [ -e includes-search-$i ] ; then
     cat includes-search-$i includes-nonsearch-$i > includes-$i
     rm includes-nonsearch-$i includes-search-$i
+  else
+    mv includes-nonsearch-$i  includes-$i
   fi
 done
 
