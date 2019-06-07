@@ -150,7 +150,6 @@ import com.gentics.mesh.util.URIUtils;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.index.field.FieldMap;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.syncleus.ferma.tx.Tx;
@@ -176,19 +175,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		database.createIndex(edgeIndex(HAS_PARENT_NODE)
 			.withPostfix("branch_out")
-			.withFields(FieldMap.create("out", LINK, BRANCH_UUID_KEY, STRING)));
+			.withField("out", LINK)
+			.withField(BRANCH_UUID_KEY, STRING));
 
 		database.createIndex(edgeIndex(HAS_PARENT_NODE)
 			.withPostfix("branch")
-			.withFields(FieldMap.create("in", LINK, BRANCH_UUID_KEY, STRING)));
+			.withField("in", LINK)
+			.withField(BRANCH_UUID_KEY, STRING));
 
-		FieldMap fields = new FieldMap();
-		fields.put("out", LINK);
-		fields.put(GraphFieldContainerEdge.BRANCH_UUID_KEY, STRING);
-		fields.put(GraphFieldContainerEdge.EDGE_TYPE_KEY, STRING);
 		database.createIndex(edgeIndex(HAS_FIELD_CONTAINER)
 			.withPostfix("field")
-			.withFields(fields));
+			.withField("out", LINK)
+			.withField(GraphFieldContainerEdge.BRANCH_UUID_KEY, STRING)
+			.withField(GraphFieldContainerEdge.EDGE_TYPE_KEY, STRING));
 	}
 
 	@Override

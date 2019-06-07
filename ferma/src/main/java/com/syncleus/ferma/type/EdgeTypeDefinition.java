@@ -21,4 +21,5 @@ public interface EdgeTypeDefinition extends ElementTypeDefinition {
 	 * @return
 	 */
 	String getLabel();
+
 }

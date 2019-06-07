@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.branch.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
+import static com.syncleus.ferma.type.EdgeTypeDefinition.edgeType;
 
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
@@ -15,8 +16,8 @@ import com.syncleus.ferma.annotations.GraphElement;
 public class BranchMicroschemaEdgeImpl extends AbstractVersionEdge implements BranchMicroschemaEdge {
 
 	public static void init(Database db) {
-		db.addEdgeType(BranchMicroschemaEdgeImpl.class.getSimpleName());
-		db.addEdgeType(HAS_MICROSCHEMA_VERSION, BranchMicroschemaEdgeImpl.class);
+		db.createType(edgeType(BranchMicroschemaEdgeImpl.class.getSimpleName()));
+		db.createType(edgeType(HAS_MICROSCHEMA_VERSION).withSuperClazz(BranchMicroschemaEdgeImpl.class));
 	}
 
 	@Override

@@ -15,6 +15,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_ASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_UNASSIGNED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.syncleus.ferma.index.VertexIndexDefinition.vertexIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Set;
@@ -80,7 +81,9 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	public static void init(Database database) {
 		// TODO index to name + unique constraint
 		database.createVertexType(ProjectImpl.class, MeshVertexImpl.class);
-		database.addVertexIndex(ProjectImpl.class, true, "name", FieldType.STRING);
+		database.createIndex(vertexIndex(ProjectImpl.class)
+			.withField("name", FieldType.STRING)
+			.unique());
 	}
 
 	@Override

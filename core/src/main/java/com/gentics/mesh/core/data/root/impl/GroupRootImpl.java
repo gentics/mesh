@@ -4,6 +4,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
+import static com.syncleus.ferma.type.EdgeTypeDefinition.edgeType;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
@@ -31,7 +33,8 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 
 	public static void init(Database database) {
 		database.createVertexType(GroupRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_GROUP, true, false, true);
+		database.createType(edgeType(HAS_GROUP));
+		database.createIndex(edgeIndex(HAS_GROUP).withInOut().withOut());
 	}
 
 	@Override

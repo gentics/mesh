@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 import static com.gentics.mesh.core.rest.job.JobStatus.QUEUED;
 import static com.gentics.mesh.core.rest.job.JobStatus.UNKNOWN;
+import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.time.ZonedDateTime;
@@ -51,7 +52,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
 	public static void init(Database database) {
 		database.createVertexType(JobRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_JOB, true, false, true);
+		database.createIndex(edgeIndex(HAS_JOB).withInOut().withOut());
 	}
 
 	@Override

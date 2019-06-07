@@ -32,6 +32,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
+import static com.syncleus.ferma.type.EdgeTypeDefinition.edgeType;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -46,9 +48,9 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 	public static void init(Database database) {
 		database.createVertexType(SchemaContainerRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeType(HAS_SCHEMA_ROOT);
-		database.addEdgeType(HAS_SCHEMA_CONTAINER_ITEM);
-		database.addEdgeIndex(HAS_SCHEMA_CONTAINER_ITEM, true, false, true);
+		database.createType(edgeType(HAS_SCHEMA_ROOT));
+		database.createType(edgeType(HAS_SCHEMA_CONTAINER_ITEM));
+		database.createIndex(edgeIndex(HAS_SCHEMA_CONTAINER_ITEM).withInOut().withOut());
 	}
 
 	@Override

@@ -20,7 +20,6 @@ import com.syncleus.ferma.ElementFrame;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.index.ElementIndexDefinition;
 import com.syncleus.ferma.index.field.FieldMap;
-import com.syncleus.ferma.index.field.FieldType;
 import com.syncleus.ferma.index.impl.EdgeIndexDefinitionImpl.EdgeIndexDefinitonBuilder;
 import com.syncleus.ferma.index.impl.VertexIndexDefinitionImpl.VertexIndexDefinitionBuilder;
 import com.syncleus.ferma.tx.Tx;
@@ -272,34 +271,6 @@ public interface Database extends TxFactory {
 	void restoreGraph(String backupFile) throws IOException;
 
 	/**
-	 * Add an edge index for the given label.
-	 * 
-	 * @param label
-	 *            Label for which the edge index should be created
-	 * @param includeInOut
-	 *            If set to true the in/out information will be added to the edge index with postfix _inout
-	 * @param includeIn
-	 *            If set to true the in information will be added to the edge index with postfix _in
-	 * @param includeOut
-	 *            If set to true the in information will be added to the edge index with postfix _out
-	 * @param extraFields
-	 *            Additional fields that should be indexed. All fields will be to an index with postfix _extra.
-	 */
-	void addEdgeIndex(String label, boolean includeInOut, boolean includeIn, boolean includeOut, String... extraFields);
-
-	/**
-	 * Add an edge index for the given label.
-	 * 
-	 * @param label
-	 * @param extraFields
-	 *            Additional fields that should be indexed. All fields will be to an index with postfix _extra.
-	 */
-	@Deprecated
-	default void addEdgeIndex(String label, String... extraFields) {
-		addEdgeIndex(label, false, false, false);
-	}
-
-	/**
 	 * Add edge index for the given fields.
 	 * 
 	 * The index name will be constructed using the label and the index postfix (e.g: has_node_postfix)
@@ -320,29 +291,6 @@ public interface Database extends TxFactory {
 	 * @return
 	 */
 	Object createComposedIndexKey(Object... keys);
-
-	/**
-	 * Add a vertex index for the given type of vertex and fields.
-	 * 
-	 * @param clazzOfVertices
-	 * @param unique
-	 *            true to create unique key
-	 * @param fieldKey
-	 */
-	default void addVertexIndex(Class<?> clazzOfVertices, boolean unique, String fieldKey, FieldType fieldType) {
-		addVertexIndex(clazzOfVertices.getSimpleName(), clazzOfVertices, unique, fieldKey, fieldType);
-	}
-
-	/**
-	 * Add a named vertex index for the given type of vertex and fields.
-	 * 
-	 * @param indexName
-	 *            index name
-	 * @param clazzOfVertices
-	 * @param unique
-	 * @param fieldKey
-	 */
-	void addVertexIndex(String indexName, Class<?> clazzOfVertices, boolean unique, String fieldKey, FieldType fieldType);
 
 	/**
 	 * Check whether the values can be put into the given index for the given element.
@@ -371,32 +319,12 @@ public interface Database extends TxFactory {
 	<T extends MeshElement> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key);
 
 	/**
-	 * Create a new edge type for the given label.
-	 * 
-	 * @param label
-	 * @param superClazzOfEdge
-	 * @param stringPropertyKeys
-	 */
-	@Deprecated
-	void addEdgeType(String label, Class<?> superClazzOfEdge, String... stringPropertyKeys);
-
-	/**
-	 * Create a new edge type for the given label.
-	 * 
-	 * @param label
-	 * @param stringPropertyKeys
-	 */
-	@Deprecated
-	void addEdgeType(String label, String... stringPropertyKeys);
-
-	/**
 	 * Create a new vertex type.
 	 * 
 	 * @param clazzOfVertex
 	 * @param superClazzOfVertex
 	 *            Super vertex type. If null "V" will be used.
 	 */
-	@Deprecated
 	void addVertexType(String clazzOfVertex, String superClazzOfVertex);
 
 	/**
@@ -662,7 +590,7 @@ public interface Database extends TxFactory {
 	 *            Super vertex type. If null "V" will be used.
 	 */
 	default void createVertexType(Class<?> clazz, Class<?> superClazz) {
-		vertexType(clazz, superClazz);
+		createType(vertexType(clazz, superClazz));
 	}
 
 }

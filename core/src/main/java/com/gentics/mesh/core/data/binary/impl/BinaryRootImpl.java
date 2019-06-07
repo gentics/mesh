@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.binary.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BINARY;
+import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
 
 import java.util.Iterator;
 
@@ -21,7 +22,7 @@ public class BinaryRootImpl extends MeshVertexImpl implements BinaryRoot {
 
 	public static void init(Database database) {
 		database.createVertexType(BinaryRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_BINARY, true, false, true);
+		database.createIndex(edgeIndex(HAS_BINARY).withInOut().withOut());
 	}
 
 	@Override

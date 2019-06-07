@@ -23,6 +23,7 @@ import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.QUEUED;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
+import static com.syncleus.ferma.index.VertexIndexDefinition.vertexIndex;
 import static com.syncleus.ferma.index.field.FieldType.STRING;
 
 import java.util.List;
@@ -102,7 +103,11 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	public static void init(Database database) {
 		database.createVertexType(BranchImpl.class, MeshVertexImpl.class);
-		database.addVertexIndex(UNIQUENAME_INDEX_NAME, BranchImpl.class, true, UNIQUENAME_PROPERTY_KEY, STRING);
+		database.createIndex(vertexIndex(BranchImpl.class)
+			.withName(UNIQUENAME_INDEX_NAME)
+			.withField(UNIQUENAME_PROPERTY_KEY, STRING)
+			.unique());
+		// database.addVertexIndex(UNIQUENAME_INDEX_NAME, BranchImpl.class, true, UNIQUENAME_PROPERTY_KEY, STRING);
 	}
 
 	@Override
@@ -433,12 +438,12 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 		BranchSchemaAssignEventModel model = new BranchSchemaAssignEventModel();
 		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
 		switch (assigned) {
-			case ASSIGNED:
-				model.setEvent(SCHEMA_BRANCH_ASSIGN);
-				break;
-			case UNASSIGNED:
-				model.setEvent(SCHEMA_BRANCH_UNASSIGN);
-				break;
+		case ASSIGNED:
+			model.setEvent(SCHEMA_BRANCH_ASSIGN);
+			break;
+		case UNASSIGNED:
+			model.setEvent(SCHEMA_BRANCH_UNASSIGN);
+			break;
 		}
 		model.setSchema(schemaContainerVersion.transformToReference());
 		model.setStatus(status);
@@ -448,16 +453,17 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion, Assignment assigned, JobStatus status) {
+	public BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion, Assignment assigned,
+		JobStatus status) {
 		BranchMicroschemaAssignModel model = new BranchMicroschemaAssignModel();
 		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
 		switch (assigned) {
-			case ASSIGNED:
-				model.setEvent(MICROSCHEMA_BRANCH_ASSIGN);
-				break;
-			case UNASSIGNED:
-				model.setEvent(MICROSCHEMA_BRANCH_UNASSIGN);
-				break;
+		case ASSIGNED:
+			model.setEvent(MICROSCHEMA_BRANCH_ASSIGN);
+			break;
+		case UNASSIGNED:
+			model.setEvent(MICROSCHEMA_BRANCH_UNASSIGN);
+			break;
 		}
 		model.setSchema(microschemaContainerVersion.transformToReference());
 		model.setStatus(status);
@@ -660,7 +666,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public TransformablePage<? extends Tag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
 		List<Tag> tags = getTagsToSet(ac, batch);
-		//TODO Rework this code. We should only add the needed tags and don't dispatch all events.
+		// TODO Rework this code. We should only add the needed tags and don't dispatch all events.
 		removeAllTags();
 		tags.forEach(tag -> {
 			batch.add(onTagged(tag, ASSIGNED));

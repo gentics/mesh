@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.relationship;
 import static com.syncleus.ferma.type.EdgeTypeDefinition.edgeType;
 
 import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.type.EdgeTypeDefinition;
 
 /**
  * Main class that holds all the graph relationship names.

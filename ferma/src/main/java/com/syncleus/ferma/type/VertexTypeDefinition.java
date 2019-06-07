@@ -3,17 +3,20 @@ package com.syncleus.ferma.type;
 import com.syncleus.ferma.type.impl.VertexTypeDefinitionImpl;
 import com.syncleus.ferma.type.impl.VertexTypeDefinitionImpl.VertexTypeDefinitionBuilder;
 
+/**
+ * Type definition for a vertex.
+ */
 public interface VertexTypeDefinition extends ElementTypeDefinition {
 
 	/**
 	 * Create a new vertex type definition builder for the given vertex class type.
 	 * 
-	 * @param clazzOfVertex
-	 * @param superClazzOfVertex
+	 * @param clazz
+	 * @param superClazz
 	 *            Super vertex type. If null "V" will be used.
 	 */
-	public static VertexTypeDefinitionBuilder vertexType(Class<?> clazzOfVertex, Class<?> superClazzOfVertex) {
-		return new VertexTypeDefinitionImpl.VertexTypeDefinitionBuilder(clazzOfVertex, superClazzOfVertex);
+	public static VertexTypeDefinitionBuilder vertexType(Class<?> clazz, Class<?> superClazz) {
+		return new VertexTypeDefinitionImpl.VertexTypeDefinitionBuilder(clazz, superClazz);
 	}
 
 	/**
@@ -22,12 +25,5 @@ public interface VertexTypeDefinition extends ElementTypeDefinition {
 	 * @return
 	 */
 	Class<?> getClazz();
-
-	/***
-	 * Return the super class of the vertex type.
-	 * 
-	 * @return
-	 */
-	Class<?> getSuperClazz();
 
 }

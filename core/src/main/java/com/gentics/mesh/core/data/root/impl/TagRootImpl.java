@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
+import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
 
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -11,7 +12,6 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.impl.TagEdgeImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -33,8 +33,9 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	 */
 	public static void init(Database database) {
 		database.createVertexType(TagRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_TAG, TagEdgeImpl.BRANCH_UUID_KEY);
-		database.addEdgeIndex(HAS_TAG, true, false, true);
+		//TODO why was the branch key omitted? TagEdgeImpl.BRANCH_UUID_KEY
+		database.createIndex(edgeIndex(HAS_TAG));
+		database.createIndex(edgeIndex(HAS_TAG).withInOut().withOut());
 	}
 
 	private static final Logger log = LoggerFactory.getLogger(TagRootImpl.class);

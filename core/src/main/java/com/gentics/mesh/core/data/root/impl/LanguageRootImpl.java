@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Iterator;
@@ -30,7 +31,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 
 	public static void init(Database database) {
 		database.createVertexType(LanguageRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_LANGUAGE, true, false, false);
+		database.createIndex(edgeIndex(HAS_LANGUAGE).withInOut());
 		// TODO add unique index
 	}
 

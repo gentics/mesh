@@ -69,7 +69,8 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	 */
 	public static void init(Database database) {
 		database.createVertexType(TagFamilyImpl.class, MeshVertexImpl.class);
-		//database.addEdgeIndex(HAS_TAG, TagEdgeImpl.BRANCH_UUID_KEY);
+		// TODO why was the branch key omitted? TagEdgeImpl.BRANCH_UUID_KEY
+		database.createIndex(edgeIndex(HAS_TAG));
 		database.createIndex(edgeIndex(HAS_TAG));
 		database.createIndex(edgeIndex(HAS_TAG).withInOut().withOut());
 	}

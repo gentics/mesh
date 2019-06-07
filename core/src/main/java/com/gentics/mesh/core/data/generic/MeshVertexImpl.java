@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.generic;
 
+import static com.syncleus.ferma.index.VertexIndexDefinition.vertexIndex;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -38,7 +40,9 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	public static void init(Database database) {
 		database.createVertexType(MeshVertexImpl.class, null);
-		database.addVertexIndex(MeshVertexImpl.class, true, "uuid", FieldType.STRING);
+		database.createIndex(vertexIndex(MeshVertexImpl.class)
+			.withField("uuid", FieldType.STRING)
+			.unique());
 	}
 
 	@Override
@@ -169,7 +173,8 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke);
 	}
 
-	protected void applyVertexPermissions(EventQueueBatch batch, Role role, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
+	protected void applyVertexPermissions(EventQueueBatch batch, Role role, Set<GraphPermission> permissionsToGrant,
+		Set<GraphPermission> permissionsToRevoke) {
 		role.grantPermissions(this, permissionsToGrant.toArray(new GraphPermission[permissionsToGrant.size()]));
 		role.revokePermissions(this, permissionsToRevoke.toArray(new GraphPermission[permissionsToRevoke.size()]));
 
@@ -179,7 +184,6 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		}
 		// TODO Also handle RootVertex - We need to add a dedicated event in those cases.
 	}
-
 
 	@Override
 	public Vertex getElement() {

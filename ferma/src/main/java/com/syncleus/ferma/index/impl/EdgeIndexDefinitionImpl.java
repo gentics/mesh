@@ -1,14 +1,10 @@
 package com.syncleus.ferma.index.impl;
 
 import com.syncleus.ferma.index.AbstractIndexDefinition;
+import com.syncleus.ferma.index.AbstractIndexDefinitionBuilder;
 import com.syncleus.ferma.index.EdgeIndexDefinition;
-import com.syncleus.ferma.index.field.FieldMap;
 
 public class EdgeIndexDefinitionImpl extends AbstractIndexDefinition implements EdgeIndexDefinition {
-
-	private String label;
-
-	private String postfix;
 
 	private boolean includeIn = false;
 
@@ -19,15 +15,7 @@ public class EdgeIndexDefinitionImpl extends AbstractIndexDefinition implements 
 	private EdgeIndexDefinitionImpl() {
 	}
 
-	public static class EdgeIndexDefinitonBuilder {
-
-		private String label;
-
-		private String postfix;
-
-		private boolean unique = false;
-
-		private FieldMap fields;
+	public static class EdgeIndexDefinitonBuilder extends AbstractIndexDefinitionBuilder<EdgeIndexDefinitonBuilder> {
 
 		private boolean includeIn = false;
 
@@ -36,12 +24,12 @@ public class EdgeIndexDefinitionImpl extends AbstractIndexDefinition implements 
 		private boolean includeInOut = false;
 
 		public EdgeIndexDefinitonBuilder(String label) {
-			this.label = label;
+			this.name = label;
 		}
 
 		public EdgeIndexDefinition build() {
 			EdgeIndexDefinitionImpl def = new EdgeIndexDefinitionImpl();
-			def.label = label;
+			def.name = name;
 			def.postfix = postfix;
 			def.unique = unique;
 			def.fields = fields;
@@ -49,38 +37,6 @@ public class EdgeIndexDefinitionImpl extends AbstractIndexDefinition implements 
 			def.includeOut = includeOut;
 			def.includeInOut = includeInOut;
 			return def;
-		}
-
-		/**
-		 * Set the index postfix.
-		 * 
-		 * @param postfix
-		 * @return Fluent API
-		 */
-		public EdgeIndexDefinitonBuilder withPostfix(String postfix) {
-			this.postfix = postfix;
-			return this;
-		}
-
-		/**
-		 * Set the unique flag on the index
-		 * 
-		 * @return Fluent API
-		 */
-		public EdgeIndexDefinitonBuilder unique() {
-			this.unique = true;
-			return this;
-		}
-
-		/**
-		 * Set the fields for the index.
-		 * 
-		 * @param fields
-		 * @return
-		 */
-		public EdgeIndexDefinitonBuilder withFields(FieldMap fields) {
-			this.fields = fields;
-			return this;
 		}
 
 		/**
@@ -112,16 +68,6 @@ public class EdgeIndexDefinitionImpl extends AbstractIndexDefinition implements 
 			this.includeInOut = true;
 			return this;
 		}
-	}
-
-	@Override
-	public String getLabel() {
-		return label;
-	}
-
-	@Override
-	public String getPostfix() {
-		return postfix;
 	}
 
 	@Override

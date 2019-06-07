@@ -8,6 +8,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_INI
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_BRANCH;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
+import static com.syncleus.ferma.type.EdgeTypeDefinition.edgeType;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -43,8 +45,8 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 
 	public static void init(Database database) {
 		database.createVertexType(BranchRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeType(HAS_BRANCH);
-		database.addEdgeIndex(HAS_BRANCH, true, false, true);
+		database.createType(edgeType(HAS_BRANCH));
+		database.createIndex(edgeIndex(HAS_BRANCH).withInOut().withOut());
 	}
 
 	@Override
@@ -57,7 +59,8 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		return create(name, creator, uuid, setLatest, baseBranch, true, batch);
 	}
 
-	private Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch, boolean assignSchemas, EventQueueBatch batch) {
+	private Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch, boolean assignSchemas,
+		EventQueueBatch batch) {
 		Branch branch = getGraph().addFramedVertex(BranchImpl.class);
 		if (uuid != null) {
 			branch.setUuid(uuid);
@@ -162,12 +165,14 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	}
 
 	/**
-	 * Assigns schemas and microschemas to the new branch, which will cause a node migration if there is a newer
-	 * schema version.
+	 * Assigns schemas and microschemas to the new branch, which will cause a node migration if there is a newer schema version.
 	 *
-	 * @param creator The creator of the branch
-	 * @param baseBranch The branch which the new branch is based on
-	 * @param newBranch The newly created branch
+	 * @param creator
+	 *            The creator of the branch
+	 * @param baseBranch
+	 *            The branch which the new branch is based on
+	 * @param newBranch
+	 *            The newly created branch
 	 * @param batch
 	 */
 	private void assignSchemas(User creator, Branch baseBranch, Branch newBranch, boolean migrate, EventQueueBatch batch) {

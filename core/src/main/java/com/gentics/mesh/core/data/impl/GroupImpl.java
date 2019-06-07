@@ -12,6 +12,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_ASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_UNASSIGNED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.syncleus.ferma.index.VertexIndexDefinition.vertexIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -59,7 +60,9 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	public static void init(Database database) {
 		database.createVertexType(GroupImpl.class, MeshVertexImpl.class);
-		database.addVertexIndex(GroupImpl.class, true, "name", FieldType.STRING);
+		database.createIndex(vertexIndex(GroupImpl.class)
+			.withField("name", FieldType.STRING)
+			.unique());
 	}
 
 	@Override

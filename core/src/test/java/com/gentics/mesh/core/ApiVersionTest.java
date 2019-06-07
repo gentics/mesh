@@ -1,7 +1,6 @@
 package com.gentics.mesh.core;
 
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import org.junit.Test;
 

@@ -7,10 +7,12 @@ import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.annotations.GraphElement;
+import com.syncleus.ferma.index.field.FieldType;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import static com.gentics.mesh.core.data.MeshVertex.UUID_KEY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
+import static com.syncleus.ferma.type.EdgeTypeDefinition.edgeType;
 
 /**
  * @see TagEdge
@@ -20,8 +22,9 @@ public class TagEdgeImpl extends MeshEdgeImpl implements TagEdge {
 	public static final String BRANCH_UUID_KEY = "branchUuid";
 
 	public static void init(Database db) {
-		db.addEdgeType(TagEdgeImpl.class.getSimpleName(), (Class<?>) null, TagEdgeImpl.BRANCH_UUID_KEY);
-		db.addEdgeType(HAS_TAG, TagEdgeImpl.class);
+		db.createType(edgeType(TagEdgeImpl.class.getSimpleName())
+			.withField(TagEdgeImpl.BRANCH_UUID_KEY, FieldType.STRING));
+		db.createType(edgeType(HAS_TAG).withSuperClazz(TagEdgeImpl.class));
 	}
 
 	/**

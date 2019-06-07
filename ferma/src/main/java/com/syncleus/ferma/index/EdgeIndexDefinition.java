@@ -10,13 +10,6 @@ public interface EdgeIndexDefinition extends ElementIndexDefinition {
 	}
 
 	/**
-	 * Return the label for the edge index.
-	 * 
-	 * @return
-	 */
-	String getLabel();
-
-	/**
 	 * Return the postfix for the index.
 	 * 
 	 * @return

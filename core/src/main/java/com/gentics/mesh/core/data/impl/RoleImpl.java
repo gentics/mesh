@@ -44,6 +44,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CRE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.syncleus.ferma.index.VertexIndexDefinition.vertexIndex;
 
 /**
  * @see Role
@@ -52,7 +53,9 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	public static void init(Database database) {
 		database.createVertexType(RoleImpl.class, MeshVertexImpl.class);
-		database.addVertexIndex(RoleImpl.class, true, "name", FieldType.STRING);
+		database.createIndex(vertexIndex(RoleImpl.class)
+			.withField("name", FieldType.STRING)
+			.unique());
 	}
 
 	@Override
@@ -232,6 +235,5 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}
-
 
 }

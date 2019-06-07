@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.syncleus.ferma.index.VertexIndexDefinition.vertexIndex;
 import static com.syncleus.ferma.index.field.FieldType.STRING;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -28,7 +29,9 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 
 	public static void init(Database database) {
 		database.createVertexType(LanguageImpl.class, MeshVertexImpl.class);
-		database.addVertexIndex(LanguageImpl.class, true, LANGUAGE_TAG_PROPERTY_KEY, STRING);
+		database.createIndex(vertexIndex(LanguageImpl.class)
+			.withField(LANGUAGE_TAG_PROPERTY_KEY, STRING)
+			.unique());
 	}
 
 	@Override

@@ -5,6 +5,13 @@ import com.syncleus.ferma.index.field.FieldMap;
 public interface ElementIndexDefinition {
 
 	/**
+	 * Name of the index (either based on label or vertex type/class)
+	 * 
+	 * @return
+	 */
+	String getName();
+
+	/**
 	 * Whether the index elements should be unique.
 	 * 
 	 * @return
@@ -17,5 +24,12 @@ public interface ElementIndexDefinition {
 	 * @return
 	 */
 	FieldMap getFields();
+
+	/**
+	 * Return the postfix of the index.
+	 * 
+	 * @return
+	 */
+	String getPostfix();
 
 }

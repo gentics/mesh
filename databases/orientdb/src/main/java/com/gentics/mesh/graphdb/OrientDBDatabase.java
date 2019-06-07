@@ -589,49 +589,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	@Deprecated
-	public void addEdgeIndex(String label, boolean includeInOut, boolean includeIn, boolean includeOut, String... extraFields) {
-		OrientGraphNoTx noTx = rawNoTx();
-		try {
-			OrientEdgeType e = noTx.getEdgeType(label);
-			if (e == null) {
-				e = noTx.createEdgeType(label);
-			}
-			if ((includeIn || includeInOut) && e.getProperty("in") == null) {
-				e.createProperty("in", OType.LINK);
-			}
-			if ((includeOut || includeInOut) && e.getProperty("out") == null) {
-				e.createProperty("out", OType.LINK);
-			}
-			for (String key : extraFields) {
-				if (e.getProperty(key) == null) {
-					e.createProperty(key, OType.STRING);
-				}
-			}
-			String indexName = "e." + label.toLowerCase();
-			String name = indexName + "_inout";
-			if (includeInOut && e.getClassIndex(name) == null) {
-				e.createIndex(name, OClass.INDEX_TYPE.NOTUNIQUE, new String[] { "in", "out" });
-			}
-			name = indexName + "_out";
-			if (includeOut && e.getClassIndex(name) == null) {
-				e.createIndex(name, OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX, new String[] { "out" });
-			}
-			name = indexName + "_in";
-			if (includeIn && e.getClassIndex(name) == null) {
-				e.createIndex(name, OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX, new String[] { "in" });
-			}
-			name = indexName + "_extra";
-			if (extraFields.length != 0 && e.getClassIndex(name) == null) {
-				e.createIndex(name, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, extraFields);
-			}
-
-		} finally {
-			noTx.shutdown();
-		}
-	}
-
-	@Override
 	public List<Object> edgeLookup(String edgeLabel, String indexPostfix, Object key) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		List<Object> ids = new ArrayList<>();
@@ -694,47 +651,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 		OrientBaseGraph tx = unwrapCurrentGraph();
 		tx.getRawGraph().getTransaction().setUsingLog(false);
 		tx.declareIntent(new OIntentMassiveInsert().setDisableHooks(true).setDisableValidation(true));
-	}
-
-	@Override
-	public void addEdgeType(String label, String... stringPropertyKeys) {
-		addEdgeType(label, null, stringPropertyKeys);
-	}
-
-	@Override
-	public void addEdgeType(String label, Class<?> superClazzOfEdge, String... stringPropertyKeys) {
-		if (log.isDebugEnabled()) {
-			log.debug("Adding edge type for label {" + label + "}");
-		}
-		OrientGraphNoTx noTx = txProvider.rawNoTx();
-		try {
-			OrientEdgeType e = noTx.getEdgeType(label);
-			if (e == null) {
-				String superClazz = "E";
-				if (superClazzOfEdge != null) {
-					superClazz = superClazzOfEdge.getSimpleName();
-				}
-				e = noTx.createEdgeType(label, superClazz);
-			} else {
-				// Update the existing edge type and set the super class
-				if (superClazzOfEdge != null) {
-					OrientEdgeType superType = noTx.getEdgeType(superClazzOfEdge.getSimpleName());
-					if (superType == null) {
-						throw new RuntimeException("The supertype for edges with label {" + label + "} can't be set since the supertype {"
-							+ superClazzOfEdge.getSimpleName() + "} was not yet added to orientdb.");
-					}
-					e.setSuperClass(superType);
-				}
-			}
-
-			for (String key : stringPropertyKeys) {
-				if (e.getProperty(key) == null) {
-					e.createProperty(key, OType.STRING);
-				}
-			}
-		} finally {
-			noTx.shutdown();
-		}
 	}
 
 	@Override
@@ -809,38 +725,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 		OrientVertex v = (OrientVertex) vertex;
 		ORID newId = v.moveToClass(newType);
 		return tx.getVertex(newId);
-	}
-
-	@Override
-	public void addVertexIndex(String indexName, Class<?> clazzOfVertices, boolean unique, String fieldKey, FieldType fieldType) {
-		if (log.isDebugEnabled()) {
-			log.debug("Adding vertex index for class {" + clazzOfVertices.getName() + "}");
-		}
-		OrientGraphNoTx noTx = rawNoTx();
-		try {
-			String name = clazzOfVertices.getSimpleName();
-			OrientVertexType v = noTx.getVertexType(name);
-			if (v == null) {
-				throw new RuntimeException("Vertex type {" + name + "} is unknown. Can't create index {" + indexName + "}");
-			}
-
-			if (v.getProperty(fieldKey) == null) {
-				OType type = toType(fieldType);
-				OType subType = toSubType(fieldType);
-				if (subType != null) {
-					v.createProperty(fieldKey, type, subType);
-				} else {
-					v.createProperty(fieldKey, type);
-				}
-			}
-
-			if (v.getClassIndex(indexName) == null) {
-				v.createIndex(indexName, unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX.toString() : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX.toString(),
-					null, new ODocument().fields("ignoreNullValues", true), new String[] { fieldKey });
-			}
-		} finally {
-			noTx.shutdown();
-		}
 	}
 
 	@Override
@@ -1159,7 +1043,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private void addEdgeIndex(EdgeIndexDefinition def) {
 
-		String label = def.getLabel();
+		String label = def.getName();
 		FieldMap fields = def.getFields();
 		String indexPostfix = def.getPostfix();
 		boolean unique = def.isUnique();
@@ -1229,7 +1113,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				name += "_" + indexPostfix;
 			}
 			name = name.toLowerCase();
-			if (fields !=null && fields.size() != 0 && e.getClassIndex(name) == null) {
+			if (fields != null && fields.size() != 0 && e.getClassIndex(name) == null) {
 				String[] fieldArray = fields.keySet().stream().toArray(String[]::new);
 				String indexType = unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX.toString() : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX.toString();
 				OIndex<?> idx = e.createIndex(name, indexType, null, new ODocument().fields("ignoreNullValues", true), fieldArray);
@@ -1245,6 +1129,44 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	private void addVertexIndex(VertexIndexDefinition def) {
+		String name = def.getClazz().getSimpleName();
+		String indexName = def.getName();
+		FieldMap fields = def.getFields();
+		boolean unique = def.isUnique();
+
+		if (log.isDebugEnabled()) {
+			log.debug("Adding vertex index for class {" + name + "}");
+		}
+		OrientGraphNoTx noTx = rawNoTx();
+		try {
+			OrientVertexType v = noTx.getVertexType(name);
+			if (v == null) {
+				throw new RuntimeException("Vertex type {" + name + "} is unknown. Can't create index {" + indexName + "}");
+			}
+			if (fields != null) {
+				for (String key : fields.keySet()) {
+					if (v.getProperty(key) == null) {
+						FieldType fieldType = fields.get(key);
+						OType type = toType(fieldType);
+						OType subType = toSubType(fieldType);
+						if (subType != null) {
+							v.createProperty(key, type, subType);
+						} else {
+							v.createProperty(key, type);
+						}
+					}
+				}
+			}
+
+			if (fields != null && fields.size() != 0 && v.getClassIndex(indexName) == null) {
+				String[] fieldArray = fields.keySet().stream().toArray(String[]::new);
+				v.createIndex(indexName, unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX.toString() : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX.toString(),
+					null, new ODocument().fields("ignoreNullValues", true), fieldArray);
+			}
+		} finally {
+			noTx.shutdown();
+		}
+
 	}
 
 	@Override
@@ -1254,8 +1176,57 @@ public class OrientDBDatabase extends AbstractDatabase {
 			createVertexType(vertexType.getClazz(), vertexType.getSuperClazz());
 		} else if (def instanceof EdgeTypeDefinition) {
 			EdgeTypeDefinition edgeType = (EdgeTypeDefinition) def;
-			addEdgeType(edgeType.getLabel());
+			createEdgeType(edgeType);
 		}
+	}
+
+	private void createEdgeType(EdgeTypeDefinition def) {
+		String label = def.getLabel();
+		Class<?> superClazzOfEdge = def.getSuperClazz();
+
+		FieldMap fields = def.getFields();
+		if (log.isDebugEnabled()) {
+			log.debug("Adding edge type for label {" + label + "}");
+		}
+		OrientGraphNoTx noTx = txProvider.rawNoTx();
+		try {
+			OrientEdgeType e = noTx.getEdgeType(label);
+			if (e == null) {
+				String superClazz = "E";
+				if (superClazzOfEdge != null) {
+					superClazz = superClazzOfEdge.getSimpleName();
+				}
+				e = noTx.createEdgeType(label, superClazz);
+			} else {
+				// Update the existing edge type and set the super class
+				if (superClazzOfEdge != null) {
+					OrientEdgeType superType = noTx.getEdgeType(superClazzOfEdge.getSimpleName());
+					if (superType == null) {
+						throw new RuntimeException("The supertype for edges with label {" + label + "} can't be set since the supertype {"
+							+ superClazzOfEdge.getSimpleName() + "} was not yet added to orientdb.");
+					}
+					e.setSuperClass(superType);
+				}
+			}
+
+			if (fields != null) {
+				for (String key : fields.keySet()) {
+					if (e.getProperty(key) == null) {
+						FieldType fieldType = fields.get(key);
+						OType type = toType(fieldType);
+						OType subType = toSubType(fieldType);
+						if (subType != null) {
+							e.createProperty(key, type, subType);
+						} else {
+							e.createProperty(key, type);
+						}
+					}
+				}
+			}
+		} finally {
+			noTx.shutdown();
+		}
+
 	}
 
 }

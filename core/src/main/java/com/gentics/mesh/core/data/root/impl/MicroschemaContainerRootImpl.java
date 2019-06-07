@@ -4,6 +4,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
+import static com.syncleus.ferma.type.EdgeTypeDefinition.edgeType;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -38,8 +40,8 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 
 	public static void init(Database database) {
 		database.createVertexType(MicroschemaContainerRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeType(HAS_SCHEMA_CONTAINER_ITEM);
-		database.addEdgeIndex(HAS_SCHEMA_CONTAINER_ITEM, true, false, true);
+		database.createType(edgeType(HAS_SCHEMA_CONTAINER_ITEM));
+		database.createIndex(edgeIndex(HAS_SCHEMA_CONTAINER_ITEM).withInOut().withOut());
 	}
 
 	@Override

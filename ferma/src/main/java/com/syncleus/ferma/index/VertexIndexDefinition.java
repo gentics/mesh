@@ -5,7 +5,15 @@ import com.syncleus.ferma.index.impl.VertexIndexDefinitionImpl.VertexIndexDefini
 
 public interface VertexIndexDefinition extends ElementIndexDefinition {
 
-	public static VertexIndexDefinitionBuilder builder() {
-		return new VertexIndexDefinitionImpl.VertexIndexDefinitionBuilder();
+	public static VertexIndexDefinitionBuilder vertexIndex(Class<?> clazz) {
+		return new VertexIndexDefinitionImpl.VertexIndexDefinitionBuilder(clazz);
 	}
+
+	/**
+	 * Return the vertex class which the index should be created.
+	 * 
+	 * @return
+	 */
+	Class<?> getClazz();
+
 }

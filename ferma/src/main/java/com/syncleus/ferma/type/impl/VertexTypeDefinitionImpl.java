@@ -1,33 +1,34 @@
 package com.syncleus.ferma.type.impl;
 
+import com.syncleus.ferma.type.AbstractTypeDefinition;
+import com.syncleus.ferma.type.AbstractTypeDefinitionBuilder;
 import com.syncleus.ferma.type.VertexTypeDefinition;
 
-public class VertexTypeDefinitionImpl implements VertexTypeDefinition {
+public class VertexTypeDefinitionImpl extends AbstractTypeDefinition implements VertexTypeDefinition {
 
 	private Class<?> clazz;
-	private Class<?> superClazz;
 
-	public static class VertexTypeDefinitionBuilder {
+	public static class VertexTypeDefinitionBuilder extends AbstractTypeDefinitionBuilder<VertexTypeDefinitionBuilder> {
 
-		private Class<?> clazzOfVertex;
-		private Class<?> superClazzOfVertex;
+		private Class<?> clazz;
 
 		/**
 		 * Create a new vertex type definition builder for the given vertex class type.
 		 * 
-		 * @param clazzOfVertex
-		 * @param superClazzOfVertex
+		 * @param clazz
+		 * @param superClazz
 		 *            Super vertex type. If null "V" will be used.
 		 */
-		public VertexTypeDefinitionBuilder(Class<?> clazzOfVertex, Class<?> superClazzOfVertex) {
-			this.clazzOfVertex = clazzOfVertex;
-			this.superClazzOfVertex = superClazzOfVertex;
+		public VertexTypeDefinitionBuilder(Class<?> clazz, Class<?> superClazz) {
+			this.clazz = clazz;
+			this.superClazz = superClazz;
 		}
 
 		public VertexTypeDefinition build() {
 			VertexTypeDefinitionImpl def = new VertexTypeDefinitionImpl();
-			def.clazz = clazzOfVertex;
-			def.superClazz = superClazzOfVertex;
+			def.clazz = clazz;
+			def.fields = fields;
+			def.superClazz = superClazz;
 			return def;
 		}
 	}
@@ -37,8 +38,4 @@ public class VertexTypeDefinitionImpl implements VertexTypeDefinition {
 		return clazz;
 	}
 
-	@Override
-	public Class<?> getSuperClazz() {
-		return superClazz;
-	}
 }

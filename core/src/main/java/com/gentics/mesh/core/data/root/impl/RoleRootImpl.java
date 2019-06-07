@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -34,7 +35,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 
 	public static void init(Database database) {
 		database.createVertexType(RoleRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_ROLE, true, false, true);
+		database.createIndex(edgeIndex(HAS_ROLE).withInOut().withOut());
 	}
 
 	@Override

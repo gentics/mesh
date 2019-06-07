@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import static com.syncleus.ferma.index.field.FieldType.LINK;
 import static com.syncleus.ferma.index.field.FieldType.STRING;
 import static com.syncleus.ferma.index.field.FieldType.STRING_SET;
+import static com.syncleus.ferma.type.EdgeTypeDefinition.edgeType;
 
 import java.util.List;
 
@@ -36,8 +37,8 @@ import com.tinkerpop.blueprints.Edge;
 public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFieldContainerEdge {
 
 	public static void init(Database db) {
-		db.addEdgeType(GraphFieldContainerEdgeImpl.class.getSimpleName());
-		db.addEdgeType(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class);
+		db.createType(edgeType(GraphFieldContainerEdgeImpl.class.getSimpleName()));
+		db.createType(edgeType(HAS_FIELD_CONTAINER).withSuperClazz(GraphFieldContainerEdgeImpl.class));
 
 		FieldMap fields = new FieldMap();
 		fields.put("out", LINK);
