@@ -128,7 +128,7 @@ public class ChangelogSystemTest {
 		Mockito.when(metrics.counter(Mockito.any())).thenReturn(Mockito.mock(Counter.class));
 		Mockito.when(metrics.meter(Mockito.any())).thenReturn(Mockito.mock(Meter.class));
 		Mockito.when(metrics.resetableCounter(Mockito.any())).thenReturn(Mockito.mock(ResettableCounter.class));
-		Database database = new OrientDBDatabase(metrics, null, null);
+		Database database = new OrientDBDatabase(metrics, null, null, null);
 		try {
 			database.init(options, null);
 			return database;

@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
-import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.syncleus.ferma.tx.Tx;
 
@@ -43,15 +42,6 @@ public abstract class AbstractDatabase implements Database {
 		this.options = options;
 		this.meshVersion = meshVersion;
 		this.basePaths = basePaths;
-	}
-
-	/**
-	 * Return the graph database storage options.
-	 * 
-	 * @return
-	 */
-	public GraphStorageOptions storageOptions() {
-		return options.getStorageOptions();
 	}
 
 	@Override

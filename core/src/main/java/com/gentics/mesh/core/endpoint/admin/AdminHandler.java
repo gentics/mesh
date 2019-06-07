@@ -234,7 +234,7 @@ public class AdminHandler extends AbstractHandler {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			if (options.getClusterOptions() != null && options.getClusterOptions().isEnabled()) {
-				return db.getClusterStatus();
+				return db.clusterManager().getClusterStatus();
 			} else {
 				throw error(BAD_REQUEST, "error_cluster_status_only_aviable_in_cluster_mode");
 			}

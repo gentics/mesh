@@ -47,7 +47,7 @@ public class DatabaseRevisionTableGenerator extends AbstractRenderingGenerator {
 			// 0.16.1 introduced the revision artifact
 			System.out.println("Checking: " + version);
 			VersionNumber parsedVersion = VersionNumber.parse(version);
-			if (parsedVersion!=null && parsedVersion.compareTo(VersionNumber.parse("0.16.1")) >= 0) {
+			if (parsedVersion != null && parsedVersion.compareTo(VersionNumber.parse("0.16.1")) >= 0) {
 				URL revisionFileUrl = new URL(BASE_PATH + version + "/" + "mesh-orientdb-" + version + "-revision.txt");
 				String hash = IOUtils.readStringFromStream(revisionFileUrl.openStream());
 				System.out.println("Found version {" + version + "} with hash {" + hash + "}");
@@ -62,7 +62,7 @@ public class DatabaseRevisionTableGenerator extends AbstractRenderingGenerator {
 		String version = Mesh.getPlainVersion();
 		if (!version.endsWith("-SNAPSHOT")) {
 			local.put("version", version);
-			local.put("revision", new OrientDBDatabase(null, null, null).getDatabaseRevision());
+			local.put("revision", new OrientDBDatabase(null, null, null, null).getDatabaseRevision());
 			entries.add(local);
 		}
 

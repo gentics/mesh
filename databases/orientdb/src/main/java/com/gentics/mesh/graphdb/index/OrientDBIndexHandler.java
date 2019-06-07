@@ -49,6 +49,7 @@ import io.vertx.core.logging.LoggerFactory;
 public class OrientDBIndexHandler implements IndexHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(OrientDBIndexHandler.class);
+
 	private Lazy<OrientDBDatabase> db;
 
 	@Inject
@@ -61,7 +62,6 @@ public class OrientDBIndexHandler implements IndexHandler {
 		return new OCompositeKey(keys);
 	}
 
-	
 	@Override
 	public void reindex() {
 		OrientGraph tx = db.get().getTxProvider().rawTx();

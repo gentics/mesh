@@ -8,9 +8,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.cluster.ClusterManager;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.tx.Tx;
@@ -312,34 +312,6 @@ public interface Database extends TxFactory {
 	void setMassInsertIntent();
 
 	/**
-	 * Join the cluster and block until the graph database has been received.
-	 * 
-	 * @throws InterruptedException
-	 */
-	void joinCluster() throws InterruptedException;
-
-	/**
-	 * Start the graph database server which will provide cluster support.
-	 * 
-	 * @throws Exception
-	 */
-	void startServer() throws Exception;
-
-	/**
-	 * Return the hazelcast instance which was started by the graph database server.
-	 * 
-	 * @return
-	 */
-	Object getHazelcast();
-
-	/**
-	 * Return the database cluster status.
-	 * 
-	 * @return
-	 */
-	ClusterStatusResponse getClusterStatus();
-
-	/**
 	 * Find the vertex with the given key/value setup. Indices which provide this information will automatically be utilized.
 	 * 
 	 * @param propertyKey
@@ -367,11 +339,6 @@ public interface Database extends TxFactory {
 	String getDatabaseRevision();
 
 	/**
-	 * Register event handlers which are used to invoke operations on the database server.
-	 */
-	void registerEventHandlers();
-
-	/**
 	 * Return the element version.
 	 * 
 	 * @param vertex
@@ -387,13 +354,6 @@ public interface Database extends TxFactory {
 	 * @param element
 	 */
 	void reload(Element element);
-
-	/**
-	 * Initialize the configuration files.
-	 * 
-	 * @throws IOException
-	 */
-	void initConfigurationFiles() throws IOException;
 
 	default <T> Transactional<T> transactional(Function<Tx, T> txFunction) {
 		return new Transactional<T>() {
@@ -444,6 +404,13 @@ public interface Database extends TxFactory {
 	 * @return
 	 */
 	IndexHandler index();
+
+	/**
+	 * Return the cluster manager of the database.
+	 * 
+	 * @return
+	 */
+	ClusterManager clusterManager();
 
 	/**
 	 * Use index()
