@@ -10,6 +10,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MIC
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
 
 import java.util.Iterator;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -47,7 +48,7 @@ public class MicroschemaContainerVersionImpl extends
 	implements MicroschemaContainerVersion {
 
 	public static void init(Database database) {
-		database.addVertexType(MicroschemaContainerVersionImpl.class, MeshVertexImpl.class);
+		database.createVertexType(MicroschemaContainerVersionImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

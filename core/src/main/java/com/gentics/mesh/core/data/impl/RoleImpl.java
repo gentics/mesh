@@ -20,7 +20,6 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
@@ -28,6 +27,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.index.field.FieldType;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Edge;
@@ -51,7 +51,7 @@ import static com.gentics.mesh.core.rest.error.Errors.conflict;
 public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> implements Role {
 
 	public static void init(Database database) {
-		database.addVertexType(RoleImpl.class, MeshVertexImpl.class);
+		database.createVertexType(RoleImpl.class, MeshVertexImpl.class);
 		database.addVertexIndex(RoleImpl.class, true, "name", FieldType.STRING);
 	}
 

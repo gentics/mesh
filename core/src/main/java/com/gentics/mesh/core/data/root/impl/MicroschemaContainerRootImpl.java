@@ -37,7 +37,7 @@ import com.gentics.mesh.json.JsonUtil;
 public class MicroschemaContainerRootImpl extends AbstractRootVertex<MicroschemaContainer> implements MicroschemaContainerRoot {
 
 	public static void init(Database database) {
-		database.addVertexType(MicroschemaContainerRootImpl.class, MeshVertexImpl.class);
+		database.createVertexType(MicroschemaContainerRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeType(HAS_SCHEMA_CONTAINER_ITEM);
 		database.addEdgeIndex(HAS_SCHEMA_CONTAINER_ITEM, true, false, true);
 	}

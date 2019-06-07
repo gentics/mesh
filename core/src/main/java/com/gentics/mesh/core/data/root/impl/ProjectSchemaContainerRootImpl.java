@@ -17,7 +17,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 
 	public static void init(Database database) {
-		database.addVertexType(ProjectSchemaContainerRootImpl.class, MeshVertexImpl.class);
+		database.createVertexType(ProjectSchemaContainerRootImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

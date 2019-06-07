@@ -18,7 +18,7 @@ public class ChangelogRootImpl extends MeshVertexImpl implements ChangelogRoot {
 	 * @param database
 	 */
 	public static void init(Database database) {
-		database.addVertexType(ChangelogRootImpl.class, MeshVertexImpl.class);
+		database.createVertexType(ChangelogRootImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

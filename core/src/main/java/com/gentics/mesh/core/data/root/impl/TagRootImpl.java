@@ -32,7 +32,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	 * @param database
 	 */
 	public static void init(Database database) {
-		database.addVertexType(TagRootImpl.class, MeshVertexImpl.class);
+		database.createVertexType(TagRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_TAG, TagEdgeImpl.BRANCH_UUID_KEY);
 		database.addEdgeIndex(HAS_TAG, true, false, true);
 	}

@@ -82,7 +82,7 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 	};
 
 	public static void init(Database database) {
-		database.addVertexType(NumberGraphFieldListImpl.class, MeshVertexImpl.class);
+		database.createVertexType(NumberGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

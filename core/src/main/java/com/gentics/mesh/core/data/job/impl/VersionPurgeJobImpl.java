@@ -32,7 +32,7 @@ public class VersionPurgeJobImpl extends JobImpl {
 	private static final String MAX_AGE_PROPERTY = "maxAge";
 
 	public static void init(Database database) {
-		database.addVertexType(VersionPurgeJobImpl.class, MeshVertexImpl.class);
+		database.createVertexType(VersionPurgeJobImpl.class, MeshVertexImpl.class);
 	}
 
 	public Project getProject() {

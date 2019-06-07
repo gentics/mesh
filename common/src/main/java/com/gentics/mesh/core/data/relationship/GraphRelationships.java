@@ -1,6 +1,9 @@
 package com.gentics.mesh.core.data.relationship;
 
+import static com.syncleus.ferma.type.EdgeTypeDefinition.edgeType;
+
 import com.gentics.mesh.graphdb.spi.Database;
+import com.syncleus.ferma.type.EdgeTypeDefinition;
 
 /**
  * Main class that holds all the graph relationship names.
@@ -14,67 +17,68 @@ public class GraphRelationships {
 	 */
 	public static void init(Database db) {
 
-		db.addEdgeType(HAS_INITIAL_BRANCH);
-		db.addEdgeType(HAS_LATEST_BRANCH);
-		db.addEdgeType(HAS_NEXT_BRANCH);
-		db.addEdgeType(HAS_NODE);
-		db.addEdgeType(HAS_NODE_REFERENCE);
-		db.addEdgeType(ASSIGNED_TO_PROJECT);
-		db.addEdgeType(HAS_GROUP_ROOT);
-		db.addEdgeType(HAS_USER);
-		db.addEdgeType(HAS_ROLE);
+		db.createType(edgeType(HAS_INITIAL_BRANCH));
+		db.createType(edgeType(HAS_LATEST_BRANCH));
+		db.createType(edgeType(HAS_NEXT_BRANCH));
+		db.createType(edgeType(HAS_NODE));
+		db.createType(edgeType(HAS_NODE_REFERENCE));
+		db.createType(edgeType(ASSIGNED_TO_PROJECT));
+		db.createType(edgeType(HAS_GROUP_ROOT));
+		db.createType(edgeType(HAS_USER));
+		db.createType(edgeType(HAS_ROLE));
+		db.createType(edgeType(ASSIGNED_TO_ROLE));
 
-		db.addEdgeType(HAS_TAG_ROOT);
-		db.addEdgeType(HAS_TAG_FAMILY);
+		db.createType(edgeType(HAS_TAG_ROOT));
+		db.createType(edgeType(HAS_TAG_FAMILY));
 
-		db.addEdgeType(HAS_CREATOR);
-		db.addEdgeType(HAS_EDITOR);
-		db.addEdgeType(HAS_LANGUAGE);
-		db.addEdgeType(HAS_PARENT_NODE);
-		db.addEdgeType(HAS_ROOT_NODE);
-		db.addEdgeType(HAS_JOB_ROOT);
+		db.createType(edgeType(HAS_CREATOR));
+		db.createType(edgeType(HAS_EDITOR));
+		db.createType(edgeType(HAS_LANGUAGE));
+		db.createType(edgeType(HAS_PARENT_NODE));
+		db.createType(edgeType(HAS_ROOT_NODE));
+		db.createType(edgeType(HAS_JOB_ROOT));
 
-		db.addEdgeType(HAS_SCHEMA_TYPE);
+		db.createType(edgeType(HAS_SCHEMA_TYPE));
 
-		db.addEdgeType(HAS_SCHEMA_CONTAINER);
-		db.addEdgeType(HAS_MICROSCHEMA_CONTAINER);
-		db.addEdgeType(HAS_MICROSCHEMA_ROOT);
+		db.createType(edgeType(HAS_SCHEMA_CONTAINER));
+		db.createType(edgeType(HAS_MICROSCHEMA_CONTAINER));
+		db.createType(edgeType(HAS_MICROSCHEMA_ROOT));
 
-		db.addEdgeType(HAS_NODE_ROOT);
-		db.addEdgeType(HAS_TAGFAMILY_ROOT);
-		db.addEdgeType(HAS_ROLE_ROOT);
-		db.addEdgeType(HAS_USER_ROOT);
-		db.addEdgeType(HAS_LANGUAGE_ROOT);
-		db.addEdgeType(HAS_PROJECT_ROOT);
-		db.addEdgeType(HAS_BRANCH_ROOT);
+		db.createType(edgeType(HAS_NODE_ROOT));
+		db.createType(edgeType(HAS_TAGFAMILY_ROOT));
+		db.createType(edgeType(HAS_ROLE_ROOT));
+		db.createType(edgeType(HAS_USER_ROOT));
+		db.createType(edgeType(HAS_LANGUAGE_ROOT));
+		db.createType(edgeType(HAS_PROJECT_ROOT));
+		db.createType(edgeType(HAS_BRANCH_ROOT));
 
-		// db.addEdgeType(HAS_FIELD);
-		db.addEdgeType(HAS_ITEM);
-		db.addEdgeType(HAS_LIST);
+		// db.createType(edgeType(HAS_FIELD);
+		db.createType(edgeType(HAS_ITEM));
+		db.createType(edgeType(HAS_LIST));
 
 		// Versioning
-		db.addEdgeType(HAS_CHANGE);
-		db.addEdgeType(HAS_VERSION);
-		db.addEdgeType(HAS_LATEST_VERSION);
-		db.addEdgeType(HAS_PARENT_CONTAINER);
-		db.addEdgeType(HAS_SCHEMA_CONTAINER_VERSION);
+		db.createType(edgeType(HAS_CHANGE));
+		db.createType(edgeType(HAS_VERSION));
+		db.createType(edgeType(HAS_LATEST_VERSION));
+		db.createType(edgeType(HAS_PARENT_CONTAINER));
+		db.createType(edgeType(HAS_SCHEMA_CONTAINER_VERSION));
 
 		// Branches
-		db.addEdgeType(HAS_SCHEMA_VERSION);
-		db.addEdgeType(HAS_MICROSCHEMA_VERSION);
-		db.addEdgeType(HAS_BRANCH_TAG);
+		db.createType(edgeType(HAS_SCHEMA_VERSION));
+		db.createType(edgeType(HAS_MICROSCHEMA_VERSION));
+		db.createType(edgeType(HAS_BRANCH_TAG));
 
 		// Jobs
-		db.addEdgeType(HAS_JOB);
-		db.addEdgeType(HAS_FROM_VERSION);
-		db.addEdgeType(HAS_TO_VERSION);
+		db.createType(edgeType(HAS_JOB));
+		db.createType(edgeType(HAS_FROM_VERSION));
+		db.createType(edgeType(HAS_TO_VERSION));
 
 		// Changelog
-		db.addEdgeType(HAS_CHANGELOG_ROOT);
+		db.createType(edgeType(HAS_CHANGELOG_ROOT));
 
 		// Binary
-		db.addEdgeType(HAS_BINARY_ROOT);
-		db.addEdgeType(HAS_BINARY);
+		db.createType(edgeType(HAS_BINARY_ROOT));
+		db.createType(edgeType(HAS_BINARY));
 
 	}
 

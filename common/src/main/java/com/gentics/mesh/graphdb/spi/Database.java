@@ -1,5 +1,7 @@
 package com.gentics.mesh.graphdb.spi;
 
+import static com.syncleus.ferma.type.VertexTypeDefinition.vertexType;
+
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -16,14 +18,19 @@ import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.ElementFrame;
 import com.syncleus.ferma.VertexFrame;
-import com.syncleus.ferma.index.IndexDefinition;
+import com.syncleus.ferma.index.ElementIndexDefinition;
+import com.syncleus.ferma.index.field.FieldMap;
+import com.syncleus.ferma.index.field.FieldType;
 import com.syncleus.ferma.index.impl.EdgeIndexDefinitionImpl.EdgeIndexDefinitonBuilder;
-import com.syncleus.ferma.index.impl.VertexIndexDefinitionImpl.VertexIndexDefinitonBuilder;
+import com.syncleus.ferma.index.impl.VertexIndexDefinitionImpl.VertexIndexDefinitionBuilder;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.tx.TxAction;
 import com.syncleus.ferma.tx.TxAction0;
 import com.syncleus.ferma.tx.TxAction1;
 import com.syncleus.ferma.tx.TxFactory;
+import com.syncleus.ferma.type.ElementTypeDefinition;
+import com.syncleus.ferma.type.impl.EdgeTypeDefinitionImpl.EdgeTypeDefinitionBuilder;
+import com.syncleus.ferma.type.impl.VertexTypeDefinitionImpl.VertexTypeDefinitionBuilder;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.TransactionalGraph;
@@ -287,6 +294,7 @@ public interface Database extends TxFactory {
 	 * @param extraFields
 	 *            Additional fields that should be indexed. All fields will be to an index with postfix _extra.
 	 */
+	@Deprecated
 	default void addEdgeIndex(String label, String... extraFields) {
 		addEdgeIndex(label, false, false, false);
 	}
@@ -369,6 +377,7 @@ public interface Database extends TxFactory {
 	 * @param superClazzOfEdge
 	 * @param stringPropertyKeys
 	 */
+	@Deprecated
 	void addEdgeType(String label, Class<?> superClazzOfEdge, String... stringPropertyKeys);
 
 	/**
@@ -377,16 +386,8 @@ public interface Database extends TxFactory {
 	 * @param label
 	 * @param stringPropertyKeys
 	 */
+	@Deprecated
 	void addEdgeType(String label, String... stringPropertyKeys);
-
-	/**
-	 * Create a new vertex type for the given vertex class type.
-	 * 
-	 * @param clazzOfVertex
-	 * @param superClazzOfVertex
-	 *            Super vertex type. If null "V" will be used.
-	 */
-	void addVertexType(Class<?> clazzOfVertex, Class<?> superClazzOfVertex);
 
 	/**
 	 * Create a new vertex type.
@@ -395,6 +396,7 @@ public interface Database extends TxFactory {
 	 * @param superClazzOfVertex
 	 *            Super vertex type. If null "V" will be used.
 	 */
+	@Deprecated
 	void addVertexType(String clazzOfVertex, String superClazzOfVertex);
 
 	/**
@@ -402,6 +404,7 @@ public interface Database extends TxFactory {
 	 * 
 	 * @param string
 	 */
+	@Deprecated
 	void removeVertexType(String typeName);
 
 	/**
@@ -409,6 +412,7 @@ public interface Database extends TxFactory {
 	 * 
 	 * @param typeName
 	 */
+	@Deprecated
 	void removeEdgeType(String typeName);
 
 	/**
@@ -630,7 +634,7 @@ public interface Database extends TxFactory {
 		};
 	}
 
-	default void createIndex(VertexIndexDefinitonBuilder builder) {
+	default void createIndex(VertexIndexDefinitionBuilder builder) {
 		createIndex(builder.build());
 	}
 
@@ -638,5 +642,27 @@ public interface Database extends TxFactory {
 		createIndex(builder.build());
 	}
 
-	void createIndex(IndexDefinition def);
+	void createIndex(ElementIndexDefinition def);
+
+	default void createType(VertexTypeDefinitionBuilder builder) {
+		createType(builder.build());
+	}
+
+	default void createType(EdgeTypeDefinitionBuilder builder) {
+		createType(builder.build());
+	}
+
+	void createType(ElementTypeDefinition def);
+
+	/**
+	 * Create a new vertex type for the given vertex class type.
+	 * 
+	 * @param clazzOfVertex
+	 * @param superClazzOfVertex
+	 *            Super vertex type. If null "V" will be used.
+	 */
+	default void createVertexType(Class<?> clazz, Class<?> superClazz) {
+		vertexType(clazz, superClazz);
+	}
+
 }

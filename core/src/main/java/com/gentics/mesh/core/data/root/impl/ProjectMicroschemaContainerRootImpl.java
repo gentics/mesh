@@ -19,7 +19,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class ProjectMicroschemaContainerRootImpl extends MicroschemaContainerRootImpl {
 
 	public static void init(Database database) {
-		database.addVertexType(ProjectMicroschemaContainerRootImpl.class, MeshVertexImpl.class);
+		database.createVertexType(ProjectMicroschemaContainerRootImpl.class, MeshVertexImpl.class);
 	}
 
 	/**

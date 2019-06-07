@@ -40,7 +40,7 @@ public class MicroschemaContainerImpl extends
 	}
 
 	public static void init(Database database) {
-		database.addVertexType(MicroschemaContainerImpl.class, MeshVertexImpl.class);
+		database.createVertexType(MicroschemaContainerImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

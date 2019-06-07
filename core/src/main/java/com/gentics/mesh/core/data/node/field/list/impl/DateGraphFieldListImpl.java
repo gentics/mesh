@@ -82,7 +82,7 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 	};
 
 	public static void init(Database database) {
-		database.addVertexType(DateGraphFieldListImpl.class, MeshVertexImpl.class);
+		database.createVertexType(DateGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

@@ -11,6 +11,7 @@ import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
+import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -67,9 +68,10 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	 * @param database
 	 */
 	public static void init(Database database) {
-		database.addVertexType(TagFamilyImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_TAG, TagEdgeImpl.BRANCH_UUID_KEY);
-		database.addEdgeIndex(HAS_TAG, true, false, true);
+		database.createVertexType(TagFamilyImpl.class, MeshVertexImpl.class);
+		//database.addEdgeIndex(HAS_TAG, TagEdgeImpl.BRANCH_UUID_KEY);
+		database.createIndex(edgeIndex(HAS_TAG));
+		database.createIndex(edgeIndex(HAS_TAG).withInOut().withOut());
 	}
 
 	@Override

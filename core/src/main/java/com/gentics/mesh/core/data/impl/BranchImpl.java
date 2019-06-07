@@ -22,8 +22,8 @@ import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.QUEUED;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
-import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
+import static com.syncleus.ferma.index.field.FieldType.STRING;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -101,7 +101,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	public static final String MIGRATED_PROPERTY_KEY = "migrated";
 
 	public static void init(Database database) {
-		database.addVertexType(BranchImpl.class, MeshVertexImpl.class);
+		database.createVertexType(BranchImpl.class, MeshVertexImpl.class);
 		database.addVertexIndex(UNIQUENAME_INDEX_NAME, BranchImpl.class, true, UNIQUENAME_PROPERTY_KEY, STRING);
 	}
 

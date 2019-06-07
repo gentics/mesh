@@ -45,7 +45,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	private static final Logger log = LoggerFactory.getLogger(SchemaContainerRootImpl.class);
 
 	public static void init(Database database) {
-		database.addVertexType(SchemaContainerRootImpl.class, MeshVertexImpl.class);
+		database.createVertexType(SchemaContainerRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeType(HAS_SCHEMA_ROOT);
 		database.addEdgeType(HAS_SCHEMA_CONTAINER_ITEM);
 		database.addEdgeIndex(HAS_SCHEMA_CONTAINER_ITEM, true, false, true);

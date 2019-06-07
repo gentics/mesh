@@ -20,9 +20,9 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.index.field.FieldType;
 import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(testSize = FULL, startServer = false)

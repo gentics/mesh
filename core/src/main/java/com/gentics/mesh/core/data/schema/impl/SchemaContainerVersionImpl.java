@@ -66,7 +66,7 @@ public class SchemaContainerVersionImpl extends
 	private static final Logger log = LoggerFactory.getLogger(SchemaContainerVersionImpl.class);
 
 	public static void init(Database database) {
-		database.addVertexType(SchemaContainerVersionImpl.class, MeshVertexImpl.class);
+		database.createVertexType(SchemaContainerVersionImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

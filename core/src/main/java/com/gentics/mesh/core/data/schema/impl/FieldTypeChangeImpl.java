@@ -55,7 +55,7 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 	public static Set<String> UUID_TYPES = ImmutableSet.of("binary", "node", "micronode");
 
 	public static void init(Database database) {
-		database.addVertexType(FieldTypeChangeImpl.class, MeshVertexImpl.class);
+		database.createVertexType(FieldTypeChangeImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

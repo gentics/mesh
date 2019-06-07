@@ -73,6 +73,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROL
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -103,8 +104,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	public static final String FORCE_PASSWORD_CHANGE_KEY = "forcePasswordChange";
 
 	public static void init(Database database) {
-		database.addVertexType(UserImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(ASSIGNED_TO_ROLE, false, false, true);
+		database.createVertexType(UserImpl.class, MeshVertexImpl.class);
+		database.createIndex(edgeIndex(ASSIGNED_TO_ROLE).withOut());
 	}
 
 	@Override

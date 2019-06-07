@@ -75,7 +75,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	private static ChangelogRoot changelogRoot;
 
 	public static void init(Database database) {
-		database.addVertexType(MeshRootImpl.class, MeshVertexImpl.class);
+		database.createVertexType(MeshRootImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

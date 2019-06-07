@@ -78,7 +78,7 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 	};
 
 	public static void init(Database database) {
-		database.addVertexType(HtmlGraphFieldListImpl.class, MeshVertexImpl.class);
+		database.createVertexType(HtmlGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

@@ -71,7 +71,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	public static final String TAG_VALUE_KEY = "tagValue";
 
 	public static void init(Database database) {
-		database.addVertexType(TagImpl.class, MeshVertexImpl.class);
+		database.createVertexType(TagImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

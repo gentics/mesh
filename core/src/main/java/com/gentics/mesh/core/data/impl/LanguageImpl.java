@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
+import static com.syncleus.ferma.index.field.FieldType.STRING;
 
 import org.apache.commons.lang.NotImplementedException;
 
@@ -27,7 +27,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	public static final String LANGUAGE_NAME_PROPERTY_KEY = "name";
 
 	public static void init(Database database) {
-		database.addVertexType(LanguageImpl.class, MeshVertexImpl.class);
+		database.createVertexType(LanguageImpl.class, MeshVertexImpl.class);
 		database.addVertexIndex(LanguageImpl.class, true, LANGUAGE_TAG_PROPERTY_KEY, STRING);
 	}
 

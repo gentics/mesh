@@ -1,4 +1,4 @@
-package com.gentics.mesh.graphdb.spi;
+package com.syncleus.ferma.index.field;
 
 import java.util.LinkedHashMap;
 

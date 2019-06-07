@@ -20,7 +20,7 @@ import com.tinkerpop.blueprints.Vertex;
 public class BinaryRootImpl extends MeshVertexImpl implements BinaryRoot {
 
 	public static void init(Database database) {
-		database.addVertexType(BinaryRootImpl.class, MeshVertexImpl.class);
+		database.createVertexType(BinaryRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_BINARY, true, false, true);
 	}
 

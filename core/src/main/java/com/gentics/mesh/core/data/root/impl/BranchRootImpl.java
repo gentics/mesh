@@ -42,7 +42,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class BranchRootImpl extends AbstractRootVertex<Branch> implements BranchRoot {
 
 	public static void init(Database database) {
-		database.addVertexType(BranchRootImpl.class, MeshVertexImpl.class);
+		database.createVertexType(BranchRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeType(HAS_BRANCH);
 		database.addEdgeIndex(HAS_BRANCH, true, false, true);
 	}

@@ -44,7 +44,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 public class ProjectRootImpl extends AbstractRootVertex<Project> implements ProjectRoot {
 
 	public static void init(Database database) {
-		database.addVertexType(ProjectRootImpl.class, MeshVertexImpl.class);
+		database.createVertexType(ProjectRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeType(HAS_PROJECT);
 		database.addEdgeIndex(HAS_PROJECT, true, false, true);
 	}

@@ -35,7 +35,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 	private static final Logger log = LoggerFactory.getLogger(BranchMigrationJobImpl.class);
 
 	public static void init(Database database) {
-		database.addVertexType(BranchMigrationJobImpl.class, MeshVertexImpl.class);
+		database.createVertexType(BranchMigrationJobImpl.class, MeshVertexImpl.class);
 	}
 
 	public BranchMigrationMeshEventModel createEvent(MeshEvent event, JobStatus status) {

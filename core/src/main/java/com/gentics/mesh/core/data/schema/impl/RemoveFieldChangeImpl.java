@@ -18,7 +18,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class RemoveFieldChangeImpl extends AbstractSchemaFieldChange implements RemoveFieldChange {
 
 	public static void init(Database database) {
-		database.addVertexType(RemoveFieldChangeImpl.class, MeshVertexImpl.class);
+		database.createVertexType(RemoveFieldChangeImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

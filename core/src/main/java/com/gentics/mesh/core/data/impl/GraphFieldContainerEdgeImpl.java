@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.gentics.mesh.graphdb.spi.FieldType.LINK;
-import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
-import static com.gentics.mesh.graphdb.spi.FieldType.STRING_SET;
+import static com.syncleus.ferma.index.field.FieldType.LINK;
+import static com.syncleus.ferma.index.field.FieldType.STRING;
+import static com.syncleus.ferma.index.field.FieldType.STRING_SET;
 
 import java.util.List;
 
@@ -18,10 +18,10 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.FieldMap;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.annotations.GraphElement;
+import com.syncleus.ferma.index.field.FieldMap;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.Traversal;
 import com.syncleus.ferma.traversals.TraversalFunction;

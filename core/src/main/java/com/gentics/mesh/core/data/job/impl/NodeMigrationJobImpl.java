@@ -40,7 +40,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 	private static final Logger log = LoggerFactory.getLogger(NodeMigrationJobImpl.class);
 
 	public static void init(Database database) {
-		database.addVertexType(NodeMigrationJobImpl.class, MeshVertexImpl.class);
+		database.createVertexType(NodeMigrationJobImpl.class, MeshVertexImpl.class);
 	}
 
 	private SchemaMigrationMeshEventModel createEvent(MeshEvent event, JobStatus status) {

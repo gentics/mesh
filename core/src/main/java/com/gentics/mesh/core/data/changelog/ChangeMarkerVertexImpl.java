@@ -12,7 +12,7 @@ public class ChangeMarkerVertexImpl extends MeshVertexImpl implements ChangeMark
 	 * @param database
 	 */
 	public static void init(Database database) {
-		database.addVertexType(ChangeMarkerVertexImpl.class, MeshVertexImpl.class);
+		database.createVertexType(ChangeMarkerVertexImpl.class, MeshVertexImpl.class);
 	}
 
 }

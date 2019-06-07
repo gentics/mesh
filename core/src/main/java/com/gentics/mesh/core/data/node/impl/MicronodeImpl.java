@@ -54,7 +54,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	private static final Logger log = LoggerFactory.getLogger(MicronodeImpl.class);
 
 	public static void init(Database database) {
-		database.addVertexType(MicronodeImpl.class, MeshVertexImpl.class);
+		database.createVertexType(MicronodeImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

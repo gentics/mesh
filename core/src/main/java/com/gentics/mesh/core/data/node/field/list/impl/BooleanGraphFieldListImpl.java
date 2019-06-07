@@ -82,7 +82,7 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 	};
 
 	public static void init(Database database) {
-		database.addVertexType(BooleanGraphFieldListImpl.class, MeshVertexImpl.class);
+		database.createVertexType(BooleanGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

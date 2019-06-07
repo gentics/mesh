@@ -89,7 +89,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 	};
 
 	public static void init(Database database) {
-		database.addVertexType(MicronodeGraphFieldListImpl.class, MeshVertexImpl.class);
+		database.createVertexType(MicronodeGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

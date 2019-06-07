@@ -58,13 +58,13 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.util.ETag;
+import com.syncleus.ferma.index.field.FieldType;
 
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
@@ -79,7 +79,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	public static void init(Database database) {
 		// TODO index to name + unique constraint
-		database.addVertexType(ProjectImpl.class, MeshVertexImpl.class);
+		database.createVertexType(ProjectImpl.class, MeshVertexImpl.class);
 		database.addVertexIndex(ProjectImpl.class, true, "name", FieldType.STRING);
 	}
 

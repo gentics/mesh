@@ -51,7 +51,7 @@ public class SchemaContainerImpl extends
 	}
 
 	public static void init(Database database) {
-		database.addVertexType(SchemaContainerImpl.class, MeshVertexImpl.class);
+		database.createVertexType(SchemaContainerImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

@@ -80,7 +80,7 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 	};
 
 	public static void init(Database database) {
-		database.addVertexType(StringGraphFieldListImpl.class, MeshVertexImpl.class);
+		database.createVertexType(StringGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

@@ -14,12 +14,12 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.AbstractVertexFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.annotations.GraphElement;
+import com.syncleus.ferma.index.field.FieldType;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Element;
@@ -37,7 +37,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	private String uuid;
 
 	public static void init(Database database) {
-		database.addVertexType(MeshVertexImpl.class, null);
+		database.createVertexType(MeshVertexImpl.class, null);
 		database.addVertexIndex(MeshVertexImpl.class, true, "uuid", FieldType.STRING);
 	}
 

@@ -33,7 +33,7 @@ import io.vertx.core.json.JsonObject;
 public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateChange<Schema> implements UpdateSchemaChange {
 
 	public static void init(Database database) {
-		database.addVertexType(UpdateSchemaChangeImpl.class, MeshVertexImpl.class);
+		database.createVertexType(UpdateSchemaChangeImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

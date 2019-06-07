@@ -41,13 +41,13 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madlmigration.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
+import com.syncleus.ferma.index.field.FieldType;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.reactivex.Single;
@@ -58,7 +58,7 @@ import io.reactivex.Single;
 public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> implements Group {
 
 	public static void init(Database database) {
-		database.addVertexType(GroupImpl.class, MeshVertexImpl.class);
+		database.createVertexType(GroupImpl.class, MeshVertexImpl.class);
 		database.addVertexIndex(GroupImpl.class, true, "name", FieldType.STRING);
 	}
 

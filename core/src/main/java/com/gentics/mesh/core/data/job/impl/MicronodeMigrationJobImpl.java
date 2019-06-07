@@ -41,7 +41,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 	private static final Logger log = LoggerFactory.getLogger(MicronodeMigrationJobImpl.class);
 
 	public static void init(Database database) {
-		database.addVertexType(MicronodeMigrationJobImpl.class, MeshVertexImpl.class);
+		database.createVertexType(MicronodeMigrationJobImpl.class, MeshVertexImpl.class);
 	}
 
 	public MicroschemaMigrationMeshEventModel createEvent(MeshEvent event, JobStatus status) {

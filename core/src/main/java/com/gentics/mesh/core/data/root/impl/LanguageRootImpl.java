@@ -29,7 +29,7 @@ import com.tinkerpop.blueprints.Vertex;
 public class LanguageRootImpl extends AbstractRootVertex<Language> implements LanguageRoot {
 
 	public static void init(Database database) {
-		database.addVertexType(LanguageRootImpl.class, MeshVertexImpl.class);
+		database.createVertexType(LanguageRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_LANGUAGE, true, false, false);
 		// TODO add unique index
 	}

@@ -13,7 +13,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Stack;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -32,8 +31,8 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.root.impl.AbstractRootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobStatus;
+import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madlmigration.TraversalResult;
@@ -51,7 +50,7 @@ import io.reactivex.Completable;
 public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
 	public static void init(Database database) {
-		database.addVertexType(JobRootImpl.class, MeshVertexImpl.class);
+		database.createVertexType(JobRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_JOB, true, false, true);
 	}
 

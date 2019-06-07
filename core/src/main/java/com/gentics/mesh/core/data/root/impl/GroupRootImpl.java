@@ -30,7 +30,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoot {
 
 	public static void init(Database database) {
-		database.addVertexType(GroupRootImpl.class, MeshVertexImpl.class);
+		database.createVertexType(GroupRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_GROUP, true, false, true);
 	}
 

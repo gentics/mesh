@@ -95,7 +95,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 	};
 
 	public static void init(Database database) {
-		database.addVertexType(NodeGraphFieldListImpl.class, MeshVertexImpl.class);
+		database.createVertexType(NodeGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

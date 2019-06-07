@@ -33,7 +33,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 	private static final Logger log = LoggerFactory.getLogger(RoleRootImpl.class);
 
 	public static void init(Database database) {
-		database.addVertexType(RoleRootImpl.class, MeshVertexImpl.class);
+		database.createVertexType(RoleRootImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_ROLE, true, false, true);
 	}
 
