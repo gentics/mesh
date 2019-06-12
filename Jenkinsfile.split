@@ -38,9 +38,6 @@ stage("Setup Build Environment") {
 			def branchName = GitHelper.fetchCurrentBranchName()
 			def version = MavenHelper.getVersion()
 
-			echo "PR: $GITHUB_PR_NUMBER"
-			echo "BR: $branchName"
-
 			stage("Set Version") {
 				if (Boolean.valueOf(params.runDeploy)) {
 					if (version) {
