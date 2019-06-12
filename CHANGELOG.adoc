@@ -27,7 +27,12 @@ include::content/docs/variables.adoc-include[]
 [[v0.36.0]]
 == 0.36.0 (12.06.2019)
 
-CAUTION: Java Rest Client: The default field values for `NodeResponse` and `AbstractGenericRestResponse` has been updated. 
+CAUTION: Java Rest Client
+
+[quote]
+____
+
+The default field values for `NodeResponse` and `AbstractGenericRestResponse` has been updated. 
 
 The following values have been changed:
 
@@ -41,12 +46,19 @@ The following values have been changed:
 The `NodeResponse#isContainer` method has been deprecated and was replaced by `NodeResponse#getContainer`
 
 Applications which use affected models will most likely not need to updated since the returned response will always set the affected fields.
+____
 
 icon:plus[] REST: The `?fields` query parameter which can be used to filter response properties will now work more granularly on node responses.
 
-CAUTION: Custom node migration scripts have been removed. The script system was a source of possible errors and performance problems. Also, the nashorn javascript engine has been deprecated with the release of Java 11. If you need to change data for a migration, use the REST Api instead.
+CAUTION: Custom node migration scripts have been removed.
 
-icon:check[] REST: Fixed a bug that sometimes caused a wrong image to be responded when using image manipulation. link:https://github.com/gentics/mesh/issues/669[#669]
+[quote]
+____
+
+The script system was a source of possible errors and performance problems. Also, the nashorn javascript engine has been deprecated with the release of Java 11. If you need to change data for a migration, use the REST Api instead.
+____
+
+icon:check[] REST: Fixed a bug that sometimes caused a wrong image to be sent to the client when using image manipulation. link:https://github.com/gentics/mesh/issues/669[#669]
 
 icon:plus[] REST: Error messages now contain the property `i18nKey`. This allows for easy identification of different errors.
 
