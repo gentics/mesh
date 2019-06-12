@@ -17,9 +17,12 @@ import com.gentics.mesh.graphdb.cluster.ClusterManager;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.neo4j.tx.Neo4jTx;
+import com.gentics.mesh.neo4j.type.Neo4jTypeResolver;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.tx.TxAction;
+import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
@@ -34,6 +37,7 @@ public class Neo4jDatabase extends AbstractDatabase {
 	private Neo4jIndexHandler indexHandler;
 	private Neo4jStorage txProvider;
 	private Neo4jClusterManager clusterManager;
+	private TypeResolver resolver;
 
 	@Inject
 	public Neo4jDatabase(MetricsService metrics, Neo4jTypeHandler typeHandler, Neo4jIndexHandler indexHandler, Neo4jClusterManager clusterManager) {
@@ -46,6 +50,7 @@ public class Neo4jDatabase extends AbstractDatabase {
 	@Override
 	public void init(MeshOptions options, String meshVersion, String... basePaths) throws Exception {
 		super.init(options, meshVersion);
+		resolver = new Neo4jTypeResolver(basePaths);
 	}
 
 	@Override
@@ -189,14 +194,18 @@ public class Neo4jDatabase extends AbstractDatabase {
 
 	@Override
 	public Tx tx() {
-		// TODO Auto-generated method stub
-		return null;
+		return new Neo4jTx(txProvider, resolver);
 	}
 
 	@Override
 	public <T> T tx(TxAction<T> txHandler) {
-		// TODO Auto-generated method stub
-		return null;
+		try (Tx tx = tx()) {
+			T handlerResult = txHandler.handle(tx);
+			tx.success();
+			return handlerResult;
+		} catch (Exception e) {
+			throw new RuntimeException("Transaction error", e);
+		}
 	}
 
 }

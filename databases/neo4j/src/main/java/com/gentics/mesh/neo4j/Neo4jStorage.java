@@ -50,4 +50,8 @@ public class Neo4jStorage implements GraphStorage {
 		}
 	}
 
+	public GraphDatabaseService getGraphDb() {
+		return graphDb;
+	}
+
 }
