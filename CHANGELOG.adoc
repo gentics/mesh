@@ -49,6 +49,8 @@ CAUTION: Custom node migration scripts have been removed. The script system was 
 
 icon:check[] REST: Fixed a bug that sometimes caused a wrong image to be responded when using image manipulation. link:https://github.com/gentics/mesh/issues/669[#669]
 
+icon:plus[] REST: Error messages now contain the property `i18nKey`. This allows for easy identification of different errors.
+
 [[v0.35.0]]
 == 0.35.0 (06.06.2019)
 
