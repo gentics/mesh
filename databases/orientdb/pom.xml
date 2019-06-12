@@ -77,7 +77,8 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>ferma</artifactId>
+			<artifactId>ferma-madl</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 
 		<!-- Common Tools -->
