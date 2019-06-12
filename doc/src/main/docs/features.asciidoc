@@ -1865,7 +1865,7 @@ NOTE: Reading published nodes requires the user to be assigned to a role which g
 
 === Listing versions
 
-Versions of a node can be listed via the ```:apiLatest:/:projectName/nodes/:uuid/versions``` endpoint.
+Versions of a node can be listed via the ```{apiLatest}/:projectName/nodes/:uuid/versions``` endpoint.
 
 ```
 "versions" : {
@@ -1929,13 +1929,13 @@ The default behaviour can be configured via the environment variable `MESH_CONTE
 
 === Purging versions
 
-The `POST :apiLatest:/projects/:projectUuid/maintenance/purge` endpoint can be used to purge older versions from the system.
+The `POST {apiLatest}/projects/:projectUuid/maintenance/purge` endpoint can be used to purge older versions from the system.
 
 When invoked a new job will be triggered which purges all possible content versions from the given project.
 
 The `?before` query parameter can be used to control what versions should be purged.
 
-The call `POST :apiLatest:/projects/:projectUuid/maintenance/purge?before=2019-04-20T18:00Z` will thus only purge versions which are older than the given date. Omitting the parameter will purge all versions.
+The call `POST {apiLatest}/projects/:projectUuid/maintenance/purge?before=2019-04-20T18:00Z` will thus only purge versions which are older than the given date. Omitting the parameter will purge all versions.
 
 Draft and publish versions will not be purged since they are still required. Additionally when the initial version of a node can also not be purged since it is bound to the _Branch_ of the node. Gentics Mesh requires this version to keep track of the branch starting point. The version lists endpoint will mark those versions using the `branchRoot` flag.
 

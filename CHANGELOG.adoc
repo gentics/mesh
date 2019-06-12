@@ -25,8 +25,7 @@ include::content/docs/variables.adoc-include[]
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 [[v0.36.0]]
-== 0.36.0 (TBD)
-
+== 0.36.0 (12.06.2019)
 
 CAUTION: Java Rest Client: The default field values for `NodeResponse` and `AbstractGenericRestResponse` has been updated. 
 
@@ -58,11 +57,11 @@ CAUTION: Rest Model: The `BranchResponse#isMigrated` method has been changed to 
 
 NOTE: Fetching fields of a node/micronode in GraphQL requires a different query in `/api/v2`. Please refer to the link:https://github.com/gentics/mesh/issues/428[#428] and link:https://github.com/gentics/mesh/issues/317[#317] for details.
 
-icon:check[] Backup: Fixed `NullPointerException` which occured when the backup directory was missing and the backup endpoint was invoked. link:https://github.com/gentics/mesh/issues/463[#463]
+icon:check[] Backup: Fixed `NullPointerException` which occurred when the backup directory was missing and the backup endpoint was invoked. link:https://github.com/gentics/mesh/issues/463[#463]
 
 icon:plus[] Core: The core Vert.x library was updated to version `3.7.1`.
 
-icon:check[] Focal point: It is now possible to use the `:apiLatest:/:projectName/nodes/:uuid/binaryTransform/:fieldName` to resize and image and set the focal point in one operation.
+icon:check[] Focal point: It is now possible to use the `{apiLatest}/:projectName/nodes/:uuid/binaryTransform/:fieldName` to resize and image and set the focal point in one operation.
 
 icon:check[] The `Content-Disposition` header will now contain the UTF-8 and ISO-8859-1 encoded filename. link:https://github.com/gentics/mesh/issues/702[#702]
 
@@ -218,7 +217,7 @@ icon:check[] Core: Creation of schemas with the same name of an existing microsc
 
 icon:check[] Core: A bug in the image transform endpoint has been fixed. Previously nodes which were updated using that endpoint could not be found via webroot anymore. link:https://github.com/gentics/mesh/issues/599[#599]
 
-icon:plus[] Job: The endpoint `POST :apiLatest:/admin/jobs/:jobUuid/process` has been added. It can be used to trigger job processing. The endpoint will also automatically reset a failed job to be queued again. The endpoints `DELETE :apiLatest:/admin/jobs/:jobUuid/error` and `POST :apiLatest:/admin/processJobs` will be removed in a future release. link:https://github.com/gentics/mesh/issues/171[#171]
+icon:plus[] Job: The endpoint `POST {apiLatest}/admin/jobs/:jobUuid/process` has been added. It can be used to trigger job processing. The endpoint will also automatically reset a failed job to be queued again. The endpoints `DELETE {apiLatest}/admin/jobs/:jobUuid/error` and `POST {apiLatest}/admin/processJobs` will be removed in a future release. link:https://github.com/gentics/mesh/issues/171[#171]
 
 icon:check[] Plugins: A `NullPointerException` has been fixed which has happened when accessing `rc.user().principal()` within a plugin. link:https://github.com/gentics/mesh/issues/516[#516]
 
@@ -256,7 +255,7 @@ icon:plus[] Docker: Default memory settings for the server and demo docker image
 
 icon:plus[] OrientDB: The included OrientDB version has been updated to version 3.0.18.
 
-icon:check[] REST: The `GET :apiLatest:/:projectName/nodes/:nodeUuid/binary/:fieldName` endpoint will now always include the `accept-ranges: bytes` header to indicate to the client that it supports range requests. link:https://github.com/gentics/mesh/issues/643[#643]
+icon:check[] REST: The `GET {apiLatest}/:projectName/nodes/:nodeUuid/binary/:fieldName` endpoint will now always include the `accept-ranges: bytes` header to indicate to the client that it supports range requests. link:https://github.com/gentics/mesh/issues/643[#643]
 
 icon:check[] Configuration: The elasticsearch bulk limit can now be configured using the `MESH_ELASTICSEARCH_BULK_LIMIT` environment variable.
 
@@ -267,7 +266,7 @@ icon:check[] Permissions: A bug in the permission handling of the nav root endpo
 [[v0.31.1]]
 == 0.31.1 (18.03.2019)
 
-icon:plus[] GraphDB Import/Export: The endpoints `POST :apiLatest:/admin/graphdb/export` and `POST :apiLatest:/admin/graphdb/import` have been added.
+icon:plus[] GraphDB Import/Export: The endpoints `POST {apiLatest}/admin/graphdb/export` and `POST {apiLatest}/admin/graphdb/import` have been added.
 
 [[v0.31.0]]
 == 0.31.0 (13.03.2019)
@@ -287,8 +286,8 @@ ____
 
 CAUTION: In a future release the following endpoints will be removed from the regular API (Port 8080) since they were moved to the new  monitoring server API (Port 8081).
 
-* `GET :apiLatest:/admin/status` (Server Status)
-* `GET :apiLatest:/admin/cluster/status` (Cluster Status)
+* `GET {apiLatest}/admin/status` (Server Status)
+* `GET {apiLatest}/admin/cluster/status` (Cluster Status)
 
 CAUTION: Because of a change in the image resizer, the change below might not apply when an image is already in the cache. To make sure that the changes take effect, the cache in `data/binaryImageCache/` must be cleared.
 
@@ -388,7 +387,7 @@ icon:check[] Demo: The demo has been fixed. Previously some of the demo files we
 
 icon:plus[] OrientDB: The included OrientDB version has been updated to version 3.0.14
 
-icon:check[] Core: The job processing will no longer be invoked in an interval in order to reduce cluster operation contention. Instead the `:apiLatest:/admin/processJobs` endpoint can be used to manually trigger job processing.
+icon:check[] Core: The job processing will no longer be invoked in an interval in order to reduce cluster operation contention. Instead the `{apiLatest}/admin/processJobs` endpoint can be used to manually trigger job processing.
 
 icon:check[] Core: Fixed a bug that caused nodes with a slash in their segment field to not be found via webroot.
 
@@ -403,7 +402,7 @@ icon:plus[] Changelog: The changelog execution performance has been increased.
 
 icon:plus[] Consistency Checks: Additional consistency checks and repair actions have been added.
 
-icon:check[] Restore: An error will be returned when `:apiLatest:/admin/graphdb/restore` is being invoked in clustered mode. Restoring the database is not possible in this mode.
+icon:check[] Restore: An error will be returned when `{apiLatest}/admin/graphdb/restore` is being invoked in clustered mode. Restoring the database is not possible in this mode.
 
 icon:check[] Elasticsearch: Fixed a bug that caused a schema migration to never be finished. This affected nodes with binaries that are readable by the Elasticsearch Ingest Attachment Processor Plugin.
 
@@ -473,7 +472,7 @@ icon:plus[] Java Rest Client: The `version` property of the `NodeUpdateRequest` 
 
 icon:plus[] Java Rest Client: The `upsertNode` method has been added to the REST client which can be used to create or update a node.
 
-icon:plus[] Demo: The example uuids and dates in the `:apiLatest:/raml` response and the documentation are now static and will no longer change between releases. link:https://github.com/gentics/mesh/issues/477[#477]
+icon:plus[] Demo: The example uuids and dates in the `{apiLatest}/raml` response and the documentation are now static and will no longer change between releases. link:https://github.com/gentics/mesh/issues/477[#477]
 
 icon:plus[] Core: Deletion of micronode and list field data has been implemented in the core. Previously these elements were not removed from the graph. link:https://github.com/gentics/mesh/issues/192[#192]
 
@@ -488,7 +487,7 @@ icon:check[] Core: Fixed a bug that prevented moving a published node in one lan
 [[v0.28.0]]
 == 0.28.0 (20.11.2018)
 
-CAUTION: The property `meshNodeId` of the `:apiLatest:/` response was renamed to `meshNodeName` to be more consistent.
+CAUTION: The property `meshNodeId` of the `{apiLatest}/` response was renamed to `meshNodeName` to be more consistent.
 
 icon:plus[] REST: It is now possible to set existing or new tags during node creation and node update. Tags that are listed in both of those requests will be created if not found and assigned to the updated or created node.
 
@@ -825,8 +824,8 @@ icon:check[] UI: In some cases the UI did not load fast. We updated the caching 
 [[v0.19.1]]
 == 0.19.1 (30.04.2018)
 
-icon:plus[] REST: The `:apiLatest:/admin/consistency/repair` endpoint has been added. The endpoint can be used to verify and directly repair found inconsistencies.
-                  The `:apiLatest:/admin/consistency/check` endpoint response has been updated to also include information about the action which will be performed by `/repair` in order to repair the inconsistency.
+icon:plus[] REST: The `{apiLatest}/admin/consistency/repair` endpoint has been added. The endpoint can be used to verify and directly repair found inconsistencies.
+                  The `{apiLatest}/admin/consistency/check` endpoint response has been updated to also include information about the action which will be performed by `/repair` in order to repair the inconsistency.
                   You can read more about these endpoints in the link:{{< relref "administration-guide.asciidoc" >}}#_database_consistency[database consistency] section in our administration documentation.
 
 [[v0.19.0]]
@@ -858,7 +857,7 @@ CAUTION: Database revision was updated due to OrientDB update. Thus only an link
 CAUTION: The generation of the search index document version has been reworked in order to increase index sync performance.
          A triggered index sync will thus re-sync all documents. Triggering the sync action is not required and can be executed at any time.
 
-icon:plus[] Backup/Restore: It is now no longer required to restart the server after a backup has been restored via the `:apiLatest:/admin/graphdb/restore` endpoint. link:https://github.com/gentics/mesh/issues/387[#387]
+icon:plus[] Backup/Restore: It is now no longer required to restart the server after a backup has been restored via the `{apiLatest}/admin/graphdb/restore` endpoint. link:https://github.com/gentics/mesh/issues/387[#387]
 
 icon:plus[] OrientDB: The included OrientDB version has been updated to version 2.2.34
 
@@ -903,20 +902,20 @@ ____
 
 ---
 
-CAUTION: Search: The  `:apiLatest:/search/reindex` endpoint was replaced by `:apiLatest:/search/sync`.
+CAUTION: Search: The  `{apiLatest}/search/reindex` endpoint was replaced by `{apiLatest}/search/sync`.
 
 icon:plus[] Docs: The link:{{< relref "contributing.asciidoc" >}}[Contribution Guide] has been added.
 
-icon:plus[] The `:apiLatest:/search/sync` endpoint can now be used to trigger the differential synchronization of search indices.
+icon:plus[] The `{apiLatest}/search/sync` endpoint can now be used to trigger the differential synchronization of search indices.
             The indices will no longer be dropped and re-populated. Instead only needed actions will be executed to sync the index with the Gentics Mesh data.
 
-icon:plus[] The `:apiLatest:/search/clear` endpoint has been added. It can be used to re-create all Elasticsearch indices which are managed by Gentics Mesh.
+icon:plus[] The `{apiLatest}/search/clear` endpoint has been added. It can be used to re-create all Elasticsearch indices which are managed by Gentics Mesh.
             Note that this operation does not invoke the index sync.
 
 icon:plus[] Docker: A new volume location for the data directory of the embedded elasticsearch has been added.
                     You can now use the `/elasticsearch/data` folder to mount your elasticsearch data files. link:https://github.com/gentics/mesh/issues/348[#348]
 
-icon:plus[] REST: The `:apiLatest:/search/status` endpoint has been enhanced. The endpoint will now also return the current elasticsearch sync progress.
+icon:plus[] REST: The `{apiLatest}/search/status` endpoint has been enhanced. The endpoint will now also return the current elasticsearch sync progress.
 
 icon:plus[] Logging: The logging verbosity has been further decreased.
 
@@ -928,7 +927,7 @@ icon:check[] Java Rest Client: Fix webroot requests never returns when containin
 
 icon:check[] GraphQL: Fixed language parameter in nodes query method was ignored in some cases. link:https://github.com/gentics/mesh/issues/365[#365]
 
-icon:check[] REST: The `:apiLatest:/microschemas` endpoint will now correctly detect name conflicts during microschema creation.
+icon:check[] REST: The `{apiLatest}/microschemas` endpoint will now correctly detect name conflicts during microschema creation.
 
 [[v0.17.3]]
 == 0.17.3 (15.03.2018)
@@ -956,7 +955,7 @@ icon:plus[] Search: The reindex endpoint will now execute the reindex operation 
 
 icon:plus[] Search: Two new reindex specific events have been added: `mesh.search.reindex.failed`, `mesh.search.reindex.completed`.
 
-icon:plus[] REST: The `GET :apiLatest:/search/status` endpoint response has been updated. The `reindexRunning` flag has been added.
+icon:plus[] REST: The `GET {apiLatest}/search/status` endpoint response has been updated. The `reindexRunning` flag has been added.
 
 icon:check[] Config: Fixed a bug which prevented optional boolean environment variables (e.g. `MESH_HTTP_CORS_ENABLE_ENV`) from being handled correctly.
 
@@ -966,7 +965,7 @@ icon:check[] Core: The server will now shutdown if an error has been detected du
 
 icon:check[] REST: Fixed an error which led to inconsistent properties being shown in the job endpoint response.
 
-icon:check[] Search: When calling reindex via the `POST :apiLatest:/search/reindex` endpoint the reindexing stopped after a certain amount of
+icon:check[] Search: When calling reindex via the `POST {apiLatest}/search/reindex` endpoint the reindexing stopped after a certain amount of
   time because of a timeout in the database transaction. This has been fixed now.
 
 icon:check[] REST: In some cases parallel file uploads of multiple images could cause the upload process to never finish. This has been fixed now. 
@@ -983,7 +982,7 @@ icon:plus[] Core: Gentics Mesh can now be downgraded if the link:{{< relref "adm
 icon:plus[] Clustering: Gentics Mesh is now able to form cluster between different server versions. 
 			A database revision hash will now be used to determine which versions of Gentics Mesh can form a cluster.
 			Only instances with the same database revision hash are allowed to form a cluster.
-			The current revision hash info is included in the `:apiLatest:` endpoint response.
+			The current revision hash info is included in the `{apiLatest}` endpoint response.
 
 icon:plus[] Various settings can now be overridden via link:{{< relref "administration-guide.asciidoc" >}}#_environment_variables[environment variables]. This is useful when dealing with docker based deployments.
 
@@ -1015,7 +1014,7 @@ icon:plus[] REST: It is now possible use custom `HttpClientOptions` upon instant
 
 icon:check[] REST: The node response ETag now incorporates the uuids of all node references.
 
-icon:check[] REST: The `:apiLatest:/auth/logout` endpoint will now correctly delete the `mesh.token` cookie. link:https://github.com/gentics/mesh/issues/282[#282]
+icon:check[] REST: The `{apiLatest}/auth/logout` endpoint will now correctly delete the `mesh.token` cookie. link:https://github.com/gentics/mesh/issues/282[#282]
 
 [[v0.16.0]]
 == 0.16.0 (07.02.2018)
@@ -1034,7 +1033,7 @@ search:
 
 icon:plus[] GraphQL: The underlying graphql-java library was updated to version 7.0.
 
-icon:check[] REST: An error which prevented the `:apiLatest:` info endpoint from returning version information has been fixed.
+icon:check[] REST: An error which prevented the `{apiLatest}` info endpoint from returning version information has been fixed.
 
 icon:plus[] OrientDB: The included OrientDB Studio has been updated to version 2.2.32.
 
@@ -1163,7 +1162,7 @@ icon:plus[] Core: The internal RxJava code has been migrated to version 2.
 [[v0.12.0]]
 == 0.12.0 (21.12.2017)
 
-CAUTION: The `search.httpEnabled` option within the `mesh.yml` has been removed. The embedded elasticsearch API can no longer be directly accessed via HTTP. The existing endpoint `:apiLatest:/:projectName/search` is unaffected by this change.
+CAUTION: The `search.httpEnabled` option within the `mesh.yml` has been removed. The embedded elasticsearch API can no longer be directly accessed via HTTP. The existing endpoint `{apiLatest}/:projectName/search` is unaffected by this change.
 
 icon:plus[] Core: The core Vert.x library was updated to version 3.5.0
 
@@ -1360,14 +1359,14 @@ The specified field mapping will be added to the generated fields property of th
 }
 ```
 
-You can use the `POST :apiLatest:/utilities/validateSchema` endpoint to validate and inspect the effective index configuration.
+You can use the `POST {apiLatest}/utilities/validateSchema` endpoint to validate and inspect the effective index configuration.
 
-icon:plus[] REST: The `POST :apiLatest:/utilities/validateSchema` and `POST :apiLatest:/utilities/validateMicroschema` endpoints can now be used to validate a schema/microschema JSON without actually storing it.
+icon:plus[] REST: The `POST {apiLatest}/utilities/validateSchema` and `POST {apiLatest}/utilities/validateMicroschema` endpoints can now be used to validate a schema/microschema JSON without actually storing it.
                      The validation response will also contain the generated Elasticsearch index configuration.
 
 icon:plus[] GraphQL: Nodes can now be loaded in the context of a schema. This will return all nodes which use the schema.
 
-icon:plus[] Search: The `:apiLatest:/rawSearch/..` and `:apiLatest:/:projectName/rawSearch/..` endpoints have been added. These can be used to invoke search requests which will return the raw elasticsearch response JSON.
+icon:plus[] Search: The `{apiLatest}/rawSearch/..` and `{apiLatest}/:projectName/rawSearch/..` endpoints have been added. These can be used to invoke search requests which will return the raw elasticsearch response JSON.
                        The needed indices will automatically be selected in order to only return the type specific documents. Read permissions on the document will also be automatically checked.
 
 icon:plus[] Search: Error information for failed Elasticsearch queries will now be added to the response.
@@ -1401,9 +1400,9 @@ icon:plus[] UI: The Mesh UI was updated.
 
 icon:plus[] Config: It is now possible to configure the host to which the Gentics Mesh http server should bind to via the `httpServer.host` setting in the `mesh.yml` file. Default is still 0.0.0.0 (all interfaces).
 
-icon:plus[] REST: The `:apiLatest:/:projectName/releases/:releaseUuid/migrateSchemas` and `:apiLatest:/:projectName/releases/:releaseUuid/migrateMicroschemas` endpoints have been changed from `GET` to `POST`.
+icon:plus[] REST: The `{apiLatest}/:projectName/releases/:releaseUuid/migrateSchemas` and `{apiLatest}/:projectName/releases/:releaseUuid/migrateMicroschemas` endpoints have been changed from `GET` to `POST`.
 
-icon:plus[] REST: The `:apiLatest:/admin/reindex` and `:apiLatest:/admin/createMappings` endpoints have been changed from `GET` to `POST`.
+icon:plus[] REST: The `{apiLatest}/admin/reindex` and `{apiLatest}/admin/createMappings` endpoints have been changed from `GET` to `POST`.
 
 icon:plus[] CLI: It is now possible to reset the admin password using the `-resetAdminPassword` command line argument.
 
@@ -1419,7 +1418,7 @@ icon:plus[] Configuration: It is now possible to set custom properties within th
 
 icon:plus[] Core: The OrientDB graph database was updated to version 2.2.27
 
-icon:plus[] REST: It is now possible to set and read permissions using paths which contain the project name. Example:  `GET :apiLatest:/roles/:roleUuid/permissions/:projectName/...`
+icon:plus[] REST: It is now possible to set and read permissions using paths which contain the project name. Example:  `GET {apiLatest}/roles/:roleUuid/permissions/:projectName/...`
 
 icon:check[] Search: A potential race condition has been fixed. This condition previously caused the elasticsearch to no longer accept any changes.
 
@@ -1431,10 +1430,10 @@ icon:book[] Documentation: The new link:{{< relref "security.asciidoc" >}}[secur
 
 icon:plus[] The *Webroot-Response-Type* header can now be used to differentiate between a webroot binary and node responses. The values of this header can either be *binary* or *node*.
 
-icon:plus[] The `:apiLatest:/admin/status/migrations` endpoint was removed.
-            The status of a migration job can now be obtained via the `:apiLatest:/admin/jobs` endpoint. Successfully executed jobs will no longer be removed from the job list.
+icon:plus[] The `{apiLatest}/admin/status/migrations` endpoint was removed.
+            The status of a migration job can now be obtained via the `{apiLatest}/admin/jobs` endpoint. Successfully executed jobs will no longer be removed from the job list.
 
-icon:plus[] The `:apiLatest:/:projectName/release/:releaseUuid/schemas` and `:apiLatest:/:projectName/release/:releaseUuid/microschemas` endpoint has been reworked.
+icon:plus[] The `{apiLatest}/:projectName/release/:releaseUuid/schemas` and `{apiLatest}/:projectName/release/:releaseUuid/microschemas` endpoint has been reworked.
             The response format has been updated. The status and uuid of the job which has been invoked when the migration was started will now also be included in this response. 
 
 icon:check[] Java REST Client: A potential threading issue within the Java REST Client has been fixed. Vert.x http clients will no longer be shared across multiple threads.
@@ -1449,12 +1448,12 @@ icon:plus[] Clustering: Added link:{{< relref "clustering.asciidoc" >}}#_node_di
 
 icon:plus[] Node Migration: The node migration performance has been increased.
 
-icon:plus[] REST: Added new endpoints `:apiLatest:/admin/jobs` to list and check queued migration jobs. The new endpoints are described in the link:{{< relref "features.asciidoc" >}}#_executing_migrations[feature documentation].
+icon:plus[] REST: Added new endpoints `{apiLatest}/admin/jobs` to list and check queued migration jobs. The new endpoints are described in the link:{{< relref "features.asciidoc" >}}#_executing_migrations[feature documentation].
 
 icon:check[] Search: The `raw` field will no longer be added by default to the search index. Instead it can be added using the new `searchIndex.addRaw` flag within the schema field.
              Please note that the raw field value in the search index will be automatically truncated to a size of 32KB. Otherwise the value can't be added to search index.
 
-icon:check[] Migration: Interrupted migrations will now automatically be started again after the server has been started. Failed migration jobs can be purged or reset via the `:apiLatest:/admin/jobs` endpoint.
+icon:check[] Migration: Interrupted migrations will now automatically be started again after the server has been started. Failed migration jobs can be purged or reset via the `{apiLatest}/admin/jobs` endpoint.
 
 icon:check[] Migration: Migrations will no longer fail if a required field was added. The field will be created and no value will be set. Custom migration scripts can still be used to add a custom default value during migration.
 
@@ -1511,7 +1510,7 @@ icon:plus[] Clustering: This release introduces the master-master clustering sup
 
 icon:plus[] Core: The OrientDB graph database was updated to version 2.2.26
 
-icon:plus[] REST: The `:apiLatest:/admin/consistency/check` endpoint has been added. The endpoint can be used to verify the database integrity.
+icon:plus[] REST: The `{apiLatest}/admin/consistency/check` endpoint has been added. The endpoint can be used to verify the database integrity.
 
 icon:check[] Core: Fixed missing OrientDB roles and users for some older graph databases. Some graph databases did not create the needed OrientDB user and roles. These roles and users are needed for the OrientDB server and are different from Gentics Mesh users and roles.
 
@@ -1528,7 +1527,7 @@ icon:check[] Core: The permission check system has been updated. The elements wh
 
 icon:check[] Java REST Client: The classes `NodeResponse` and `MicronodeField` now correctly implement the interface `FieldContainer`.
 
-icon:check[] REST: The endpoint `:apiLatest:/{projectName}/nodes/{nodeUuid}/binary/{fieldName}` did not correctly handle the read published nodes permission. This has been fixed now. link:https://github.com/gentics/mesh/issues/111[#111]
+icon:check[] REST: The endpoint `{apiLatest}/{projectName}/nodes/{nodeUuid}/binary/{fieldName}` did not correctly handle the read published nodes permission. This has been fixed now. link:https://github.com/gentics/mesh/issues/111[#111]
 
 == 0.9.27 (23.08.2017)
 
@@ -1691,12 +1690,12 @@ icon:plus[] Core: The OrientDB graph database was updated to version 2.2.20.
 
 icon:plus[] API: The following endpoints were moved:
 
- * `:apiLatest:/admin/backup`  ⟶  `:apiLatest:/admin/graphdb/backup`
- * `:apiLatest:/admin/export`  ⟶  `:apiLatest:/admin/graphdb/export`
- * `:apiLatest:/admin/import`  ⟶  `:apiLatest:/admin/graphdb/import`
- * `:apiLatest:/admin/restore` ⟶  `:apiLatest:/admin/graphdb/restore`
+ * `{apiLatest}/admin/backup`  ⟶  `{apiLatest}/admin/graphdb/backup`
+ * `{apiLatest}/admin/export`  ⟶  `{apiLatest}/admin/graphdb/export`
+ * `{apiLatest}/admin/import`  ⟶  `{apiLatest}/admin/graphdb/import`
+ * `{apiLatest}/admin/restore` ⟶  `{apiLatest}/admin/graphdb/restore`
 
-icon:plus[] Core: Added `:apiLatest:/:projectName/releases/:releaseUuid/migrateMicroschemas` endpoint which can be used to resume previously unfinished micronode migrations.
+icon:plus[] Core: Added `{apiLatest}/:projectName/releases/:releaseUuid/migrateMicroschemas` endpoint which can be used to resume previously unfinished micronode migrations.
 
 icon:plus[] Performance: The startup performance has been increased when dealing with huge datasets.
 
@@ -1750,7 +1749,7 @@ icon:plus[] Auth: Support for anonymous access has been added to mesh. Requests 
 
 icon:plus[] GraphQL: It is now possible to retrieve the path for a content using the `path` field. The `Node.languagePaths` has been removed in favour of this new field.
 
-icon:plus[] Auth: It is now possible to issue API tokens via the `GET :apiLatest:/users/:userUuid/token` endpoint. API tokens do not expire and work in conjunction with the regular JWT authentication mechanism. These tokens should only be used when SSL is enabled. The `DELETE :apiLatest:/users/:userUuid/token` endpoint can be used to revoke the issued API token. Only one API token is supported for one user. Generating a new API token will invalidate the previously issued token.
+icon:plus[] Auth: It is now possible to issue API tokens via the `GET {apiLatest}/users/:userUuid/token` endpoint. API tokens do not expire and work in conjunction with the regular JWT authentication mechanism. These tokens should only be used when SSL is enabled. The `DELETE {apiLatest}/users/:userUuid/token` endpoint can be used to revoke the issued API token. Only one API token is supported for one user. Generating a new API token will invalidate the previously issued token.
 
 icon:check[] GraphQL: An error was fixed which occurred when loading a node using a bogus uuid.
 
@@ -1758,7 +1757,7 @@ icon:check[] Auth: An error which caused the keystore loading process to fail wa
 
 == 0.9.6 (14.04.2017)
 
-icon:plus[] It is now possible to resume previously aborted schema migrations via the `:apiLatest:/:projectName/releases/:releaseUuid/migrateSchemas` endpoint.
+icon:plus[] It is now possible to resume previously aborted schema migrations via the `{apiLatest}/:projectName/releases/:releaseUuid/migrateSchemas` endpoint.
 
 icon:plus[] Auth: The Java keystore file will now automatically be created if none could be found. The keystore password will be taken from the `mesh.yml` file or randomly generated and stored in the config.
 
@@ -1808,7 +1807,7 @@ icon:plus[] GraphQL: It is no longer possible to resolve nodes using the provide
 
 == 0.9.2 (04.04.2017)
 
-icon:plus[] The `:apiLatest:/admin/backup`, `:apiLatest:/admin/restore`, `:apiLatest:/admin/import`, `:apiLatest:/admin/export` endpoints were added to the REST API. These endpoint allow the creation of backup dumps.
+icon:plus[] The `{apiLatest}/admin/backup`, `{apiLatest}/admin/restore`, `{apiLatest}/admin/import`, `{apiLatest}/admin/export` endpoints were added to the REST API. These endpoint allow the creation of backup dumps.
 
 icon:plus[] GraphQL: It is now possible to execute elasticsearch queries. within the GraphQL query.
 
@@ -1838,7 +1837,7 @@ icon:plus[] Schema name validation - Schema and microschema names must only cont
 
 icon:plus[] Node Tag Endpoint
 
-The endpoint `:apiLatest:/:projectName/nodes/:nodeUuid/tags` was enhanced. It is now possible to post a list of tag references which will be applied to the node. Tags which are not part of the list will removed from the node. Tags which do not exist will be created. Please note that tag families will not automatically be created.
+The endpoint `{apiLatest}/:projectName/nodes/:nodeUuid/tags` was enhanced. It is now possible to post a list of tag references which will be applied to the node. Tags which are not part of the list will removed from the node. Tags which do not exist will be created. Please note that tag families will not automatically be created.
 
 The `tags` field within the node response was updated accordingly.
 
@@ -1860,12 +1859,12 @@ icon:plus[] Names, string fields and html field values will now be indexed using
 
 icon:plus[] Binary Endpoint Overhaul
 
-The field API endpoint `:apiLatest:/:projectName/nodes/:nodeUuid/languages/:language/fields/:field` was removed and replaced by the binary `:apiLatest:/:projectName/nodes/:nodeUuid/binary` endpoint.
+The field API endpoint `{apiLatest}/:projectName/nodes/:nodeUuid/languages/:language/fields/:field` was removed and replaced by the binary `{apiLatest}/:projectName/nodes/:nodeUuid/binary` endpoint.
 The binary endpoints are now also versioning aware and handle conflict detection. It is thus required to add the `language` and `version` form data parameters to the upload request. 
 
 icon:plus[] Transform Endpoint Overhaul
 
-The endpoint `:apiLatest:/:projectName/nodes/:nodeUuid/languages/:language/fields/:field/transform` was renamed to `:apiLatest:/:projectName/nodes/:nodeUuid/binaryTransform`.
+The endpoint `{apiLatest}/:projectName/nodes/:nodeUuid/languages/:language/fields/:field/transform` was renamed to `{apiLatest}/:projectName/nodes/:nodeUuid/binaryTransform`.
 The transform endpoint will now return the updated node.  
 
 icon:plus[] The no longer needed schemaReference property was removed from node update requests.
@@ -1983,9 +1982,9 @@ icon:plus[] The missing *availableLanguages* and *defaultLanguage* parameters ha
 
 icon:plus[] Image Property Support - The binary field will now automatically contain properties for image *width*, image *height* and the main *dominant color* in the image.
 
-icon:plus[] API Version endpoint -  It is now possible to load the mesh version information via a `GET` request to `:apiLatest:/`.
+icon:plus[] API Version endpoint -  It is now possible to load the mesh version information via a `GET` request to `{apiLatest}/`.
 
-icon:plus[] Project endpoint - The current project information can now be loaded via a `GET` request to `:apiLatest:/:projectName`.
+icon:plus[] Project endpoint - The current project information can now be loaded via a `GET` request to `{apiLatest}/:projectName`.
 
 icon:check[] When the search indices where recreated with the reindex endpoint, the mapping for the raw fields was not added. This has been fixed now.
 
@@ -2111,7 +2110,7 @@ icon:bullhorn[] Public open beta release
 
 icon:check[] A bug within the reindex changelog entry was fixed. The bug prevented the node index to be recreated.
 
-icon:check[] The mesh-ui-config.js default apiUrl parameter was changed to :apiLatest: in order to allow access from hosts other than localhost.
+icon:check[] The mesh-ui-config.js default apiUrl parameter was changed to {apiLatest} in order to allow access from hosts other than localhost.
 
 == 0.6.5 (05.04.2016)
 
