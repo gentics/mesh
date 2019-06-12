@@ -139,7 +139,6 @@ public abstract class AbstractRestException extends RuntimeException {
 		}
 	}
 
-	@JsonIgnore
 	public String getI18nKey() {
 		return this.i18nKey;
 	}
