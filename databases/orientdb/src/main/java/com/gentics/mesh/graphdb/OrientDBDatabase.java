@@ -7,13 +7,14 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Timer;
-import com.gentics.mesh.changelog.Change;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -195,19 +196,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public void shutdown() {
 		Orient.instance().shutdown();
-	}
-
-	@Override
-	public String getDatabaseRevision() {
-		String overrideRev = System.getProperty("mesh.internal.dbrev");
-		if (overrideRev != null) {
-			return overrideRev;
-		}
-		StringBuilder builder = new StringBuilder();
-		for (Change change : ChangesList.getList()) {
-			builder.append(change.getUuid());
-		}
-		return ETag.hash(builder.toString() + getVersion());
 	}
 
 	@Override
@@ -410,6 +398,11 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	public OrientDBClusterManager clusterManager() {
 		return clusterManager;
+	}
+
+	@Override
+	public List<String> getChangeUuidList() {
+		return ChangesList.getList().stream().map(c -> c.getUuid()).collect(Collectors.toList());
 	}
 
 }

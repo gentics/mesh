@@ -19,6 +19,7 @@
 
 	<modules>
 		<module>orientdb</module>
+		<module>neo4j</module>
 	</modules>
 
 	<dependencies>

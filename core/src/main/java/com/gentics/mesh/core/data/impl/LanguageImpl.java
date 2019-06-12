@@ -13,7 +13,6 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.IndexHandler;
 import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.util.ETag;

@@ -2,6 +2,7 @@ package com.gentics.mesh.graphdb.spi;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -420,4 +421,5 @@ public interface Database extends TxFactory {
 		return index().createComposedIndexKey(keys);
 	}
 
+	List<String> getChangeUuidList();
 }
