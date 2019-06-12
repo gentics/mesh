@@ -20,7 +20,6 @@
     }
   }, {
     "operation" : "UPDATEFIELD",
-    "migrationScript" : "function migrate(node, fieldname) {node.fields[fieldname] = new Date(new Date(node.fields[fieldname]).getTime() + 864000).toISOString(); return node;}",
     "properties" : {
       "field" : "fieldToBeUpdated",
       "displayFieldname" : "newDisplayField",

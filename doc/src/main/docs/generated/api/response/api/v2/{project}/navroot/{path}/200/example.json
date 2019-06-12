@@ -44,10 +44,6 @@
       "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
       "tagFamily" : "colors"
     }, {
-      "name" : "red",
-      "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
-      "tagFamily" : "colors"
-    }, {
       "name" : "green",
       "uuid" : "8931caed445d4d1cb1caed445d0d1c8c",
       "tagFamily" : "colors"
@@ -73,7 +69,6 @@
       "uuid" : "e287e8a7497940ac87e8a7497940ac82",
       "version" : "1.0"
     },
-    "container" : false,
     "fields" : {
       "name" : "Name for language tag de-DE",
       "filename" : "dummy-content.de.html",
@@ -199,10 +194,6 @@
         "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
         "tagFamily" : "colors"
       }, {
-        "name" : "red",
-        "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
-        "tagFamily" : "colors"
-      }, {
         "name" : "green",
         "uuid" : "8931caed445d4d1cb1caed445d0d1c8c",
         "tagFamily" : "colors"
@@ -228,7 +219,6 @@
         "uuid" : "e287e8a7497940ac87e8a7497940ac82",
         "version" : "1.0"
       },
-      "container" : false,
       "fields" : {
         "name" : "Name for language tag de-DE",
         "filename" : "dummy-content.de.html",

@@ -17,10 +17,6 @@
             "description" : "Type of operation for this change",
             "enum" : [ "ADDFIELD", "REMOVEFIELD", "CHANGEFIELDTYPE", "UPDATEFIELD", "UPDATESCHEMA", "UPDATEMICROSCHEMA", "EMPTY" ]
           },
-          "migrationScript" : {
-            "type" : "string",
-            "description" : "Optional migation script"
-          },
           "properties" : {
             "type" : "object",
             "additionalProperties" : {

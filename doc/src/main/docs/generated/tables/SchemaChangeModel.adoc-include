@@ -7,11 +7,6 @@
 | Description
 
 
-| migrationScript
-| false
-| string
-| Optional migation script
-
 | operation
 | false
 | string

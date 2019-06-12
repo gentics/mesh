@@ -7,11 +7,6 @@
 | Description
 
 
-| changes.items.migrationScript
-| false
-| string
-| Optional migation script
-
 | changes.items.operation
 | false
 | string

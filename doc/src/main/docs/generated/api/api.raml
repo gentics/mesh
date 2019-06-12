@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "0.35.0"
+version: "0.36.0"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -4972,9 +4972,6 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
-                                                "required" : {
-                                                  "type" : "boolean"
-                                                },
                                                 "label" : {
                                                   "type" : "string",
                                                   "description" : "Label of the field."
@@ -4982,6 +4979,9 @@ mediaType: application/json
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                                },
+                                                "required" : {
+                                                  "type" : "boolean"
                                                 },
                                                 "name" : {
                                                   "type" : "string",
@@ -5255,9 +5255,6 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
-                                  "required" : {
-                                    "type" : "boolean"
-                                  },
                                   "label" : {
                                     "type" : "string",
                                     "description" : "Label of the field."
@@ -5265,6 +5262,9 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                  },
+                                  "required" : {
+                                    "type" : "boolean"
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -5408,9 +5408,6 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
-                                          "required" : {
-                                            "type" : "boolean"
-                                          },
                                           "label" : {
                                             "type" : "string",
                                             "description" : "Label of the field."
@@ -5418,6 +5415,9 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                          },
+                                          "required" : {
+                                            "type" : "boolean"
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -5677,9 +5677,6 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
-                                          "required" : {
-                                            "type" : "boolean"
-                                          },
                                           "label" : {
                                             "type" : "string",
                                             "description" : "Label of the field."
@@ -5687,6 +5684,9 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                          },
+                                          "required" : {
+                                            "type" : "boolean"
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -5883,9 +5883,6 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
-                                  "required" : {
-                                    "type" : "boolean"
-                                  },
                                   "label" : {
                                     "type" : "string",
                                     "description" : "Label of the field."
@@ -5893,6 +5890,9 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                  },
+                                  "required" : {
+                                    "type" : "boolean"
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -6029,9 +6029,6 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
-                                          "required" : {
-                                            "type" : "boolean"
-                                          },
                                           "label" : {
                                             "type" : "string",
                                             "description" : "Label of the field."
@@ -6039,6 +6036,9 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                          },
+                                          "required" : {
+                                            "type" : "boolean"
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -6195,10 +6195,6 @@ mediaType: application/json
                                     "description" : "Type of operation for this change",
                                     "enum" : [ "ADDFIELD", "REMOVEFIELD", "CHANGEFIELDTYPE", "UPDATEFIELD", "UPDATESCHEMA", "UPDATEMICROSCHEMA", "EMPTY" ]
                                   },
-                                  "migrationScript" : {
-                                    "type" : "string",
-                                    "description" : "Optional migation script"
-                                  },
                                   "properties" : {
                                     "type" : "object",
                                     "additionalProperties" : {
@@ -6233,7 +6229,6 @@ mediaType: application/json
                             }
                           }, {
                             "operation" : "UPDATEFIELD",
-                            "migrationScript" : "function migrate(node, fieldname) {node.fields[fieldname] = new Date(new Date(node.fields[fieldname]).getTime() + 864000).toISOString(); return node;}",
                             "properties" : {
                               "field" : "fieldToBeUpdated",
                               "displayFieldname" : "newDisplayField",
@@ -6395,9 +6390,6 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
-                                  "required" : {
-                                    "type" : "boolean"
-                                  },
                                   "label" : {
                                     "type" : "string",
                                     "description" : "Label of the field."
@@ -6405,6 +6397,9 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                  },
+                                  "required" : {
+                                    "type" : "boolean"
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -6548,10 +6543,6 @@ mediaType: application/json
                                             "description" : "Type of operation for this change",
                                             "enum" : [ "ADDFIELD", "REMOVEFIELD", "CHANGEFIELDTYPE", "UPDATEFIELD", "UPDATESCHEMA", "UPDATEMICROSCHEMA", "EMPTY" ]
                                           },
-                                          "migrationScript" : {
-                                            "type" : "string",
-                                            "description" : "Optional migation script"
-                                          },
                                           "properties" : {
                                             "type" : "object",
                                             "additionalProperties" : {
@@ -6586,7 +6577,6 @@ mediaType: application/json
                                     }
                                   }, {
                                     "operation" : "UPDATEFIELD",
-                                    "migrationScript" : "function migrate(node, fieldname) {node.fields[fieldname] = new Date(new Date(node.fields[fieldname]).getTime() + 864000).toISOString(); return node;}",
                                     "properties" : {
                                       "field" : "fieldToBeUpdated",
                                       "displayFieldname" : "newDisplayField",
@@ -6642,9 +6632,6 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
-                                  "required" : {
-                                    "type" : "boolean"
-                                  },
                                   "label" : {
                                     "type" : "string",
                                     "description" : "Label of the field."
@@ -6652,6 +6639,9 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                  },
+                                  "required" : {
+                                    "type" : "boolean"
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -6773,9 +6763,6 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
-                                          "required" : {
-                                            "type" : "boolean"
-                                          },
                                           "label" : {
                                             "type" : "string",
                                             "description" : "Label of the field."
@@ -6783,6 +6770,9 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                          },
+                                          "required" : {
+                                            "type" : "boolean"
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -6978,9 +6968,6 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
-                                                "required" : {
-                                                  "type" : "boolean"
-                                                },
                                                 "label" : {
                                                   "type" : "string",
                                                   "description" : "Label of the field."
@@ -6988,6 +6975,9 @@ mediaType: application/json
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                                },
+                                                "required" : {
+                                                  "type" : "boolean"
                                                 },
                                                 "name" : {
                                                   "type" : "string",
@@ -7247,9 +7237,6 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
-                                          "required" : {
-                                            "type" : "boolean"
-                                          },
                                           "label" : {
                                             "type" : "string",
                                             "description" : "Label of the field."
@@ -7257,6 +7244,9 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                          },
+                                          "required" : {
+                                            "type" : "boolean"
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -7383,9 +7373,6 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
-                                  "required" : {
-                                    "type" : "boolean"
-                                  },
                                   "label" : {
                                     "type" : "string",
                                     "description" : "Label of the field."
@@ -7393,6 +7380,9 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                  },
+                                  "required" : {
+                                    "type" : "boolean"
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -7485,10 +7475,6 @@ mediaType: application/json
                                     "description" : "Type of operation for this change",
                                     "enum" : [ "ADDFIELD", "REMOVEFIELD", "CHANGEFIELDTYPE", "UPDATEFIELD", "UPDATESCHEMA", "UPDATEMICROSCHEMA", "EMPTY" ]
                                   },
-                                  "migrationScript" : {
-                                    "type" : "string",
-                                    "description" : "Optional migation script"
-                                  },
                                   "properties" : {
                                     "type" : "object",
                                     "additionalProperties" : {
@@ -7523,7 +7509,6 @@ mediaType: application/json
                             }
                           }, {
                             "operation" : "UPDATEFIELD",
-                            "migrationScript" : "function migrate(node, fieldname) {node.fields[fieldname] = new Date(new Date(node.fields[fieldname]).getTime() + 864000).toISOString(); return node;}",
                             "properties" : {
                               "field" : "fieldToBeUpdated",
                               "displayFieldname" : "newDisplayField",
@@ -7617,9 +7602,6 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
-                                  "required" : {
-                                    "type" : "boolean"
-                                  },
                                   "label" : {
                                     "type" : "string",
                                     "description" : "Label of the field."
@@ -7627,6 +7609,9 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                  },
+                                  "required" : {
+                                    "type" : "boolean"
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -7684,10 +7669,6 @@ mediaType: application/json
                                             "description" : "Type of operation for this change",
                                             "enum" : [ "ADDFIELD", "REMOVEFIELD", "CHANGEFIELDTYPE", "UPDATEFIELD", "UPDATESCHEMA", "UPDATEMICROSCHEMA", "EMPTY" ]
                                           },
-                                          "migrationScript" : {
-                                            "type" : "string",
-                                            "description" : "Optional migation script"
-                                          },
                                           "properties" : {
                                             "type" : "object",
                                             "additionalProperties" : {
@@ -7722,7 +7703,6 @@ mediaType: application/json
                                     }
                                   }, {
                                     "operation" : "UPDATEFIELD",
-                                    "migrationScript" : "function migrate(node, fieldname) {node.fields[fieldname] = new Date(new Date(node.fields[fieldname]).getTime() + 864000).toISOString(); return node;}",
                                     "properties" : {
                                       "field" : "fieldToBeUpdated",
                                       "displayFieldname" : "newDisplayField",
@@ -9315,9 +9295,6 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
-                                                "required" : {
-                                                  "type" : "boolean"
-                                                },
                                                 "label" : {
                                                   "type" : "string",
                                                   "description" : "Label of the field."
@@ -9325,6 +9302,9 @@ mediaType: application/json
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                                },
+                                                "required" : {
+                                                  "type" : "boolean"
                                                 },
                                                 "name" : {
                                                   "type" : "string",
@@ -9871,10 +9851,6 @@ mediaType: application/json
                                       "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
                                       "tagFamily" : "colors"
                                     }, {
-                                      "name" : "red",
-                                      "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
-                                      "tagFamily" : "colors"
-                                    }, {
                                       "name" : "green",
                                       "uuid" : "8931caed445d4d1cb1caed445d0d1c8c",
                                       "tagFamily" : "colors"
@@ -9900,7 +9876,6 @@ mediaType: application/json
                                       "uuid" : "e287e8a7497940ac87e8a7497940ac82",
                                       "version" : "1.0"
                                     },
-                                    "container" : false,
                                     "fields" : {
                                       "name" : "Name for language tag de-DE",
                                       "filename" : "dummy-content.de.html",
@@ -10014,13 +9989,11 @@ mediaType: application/json
                                       "uuid" : "86c0a2b6435d434280a2b6435da34247",
                                       "tagFamily" : "vehicles"
                                     } ],
-                                    "childrenInfo" : { },
                                     "schema" : {
                                       "name" : "content",
                                       "uuid" : "e287e8a7497940ac87e8a7497940ac82",
                                       "version" : "1.0"
                                     },
-                                    "container" : false,
                                     "fields" : {
                                       "name" : "Name for language tag en",
                                       "filename" : "dummy-content.en.html",
@@ -10717,9 +10690,6 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
-                                                "required" : {
-                                                  "type" : "boolean"
-                                                },
                                                 "label" : {
                                                   "type" : "string",
                                                   "description" : "Label of the field."
@@ -10727,6 +10697,9 @@ mediaType: application/json
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                                },
+                                                "required" : {
+                                                  "type" : "boolean"
                                                 },
                                                 "name" : {
                                                   "type" : "string",
@@ -12083,9 +12056,6 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
-                                  "required" : {
-                                    "type" : "boolean"
-                                  },
                                   "label" : {
                                     "type" : "string",
                                     "description" : "Label of the field."
@@ -12093,6 +12063,9 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                  },
+                                  "required" : {
+                                    "type" : "boolean"
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -12464,9 +12437,6 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
-                                  "required" : {
-                                    "type" : "boolean"
-                                  },
                                   "label" : {
                                     "type" : "string",
                                     "description" : "Label of the field."
@@ -12474,6 +12444,9 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                  },
+                                  "required" : {
+                                    "type" : "boolean"
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -13111,7 +13084,7 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "0.35.0",
+                                  "meshVersion" : "0.36.0",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
@@ -13769,10 +13742,6 @@ mediaType: application/json
                                     "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
                                     "tagFamily" : "colors"
                                   }, {
-                                    "name" : "red",
-                                    "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
-                                    "tagFamily" : "colors"
-                                  }, {
                                     "name" : "green",
                                     "uuid" : "8931caed445d4d1cb1caed445d0d1c8c",
                                     "tagFamily" : "colors"
@@ -13798,7 +13767,6 @@ mediaType: application/json
                                     "uuid" : "e287e8a7497940ac87e8a7497940ac82",
                                     "version" : "1.0"
                                   },
-                                  "container" : false,
                                   "fields" : {
                                     "name" : "Name for language tag de-DE",
                                     "filename" : "dummy-content.de.html",
@@ -14309,10 +14277,6 @@ mediaType: application/json
                                       "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
                                       "tagFamily" : "colors"
                                     }, {
-                                      "name" : "red",
-                                      "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
-                                      "tagFamily" : "colors"
-                                    }, {
                                       "name" : "green",
                                       "uuid" : "8931caed445d4d1cb1caed445d0d1c8c",
                                       "tagFamily" : "colors"
@@ -14338,7 +14302,6 @@ mediaType: application/json
                                       "uuid" : "e287e8a7497940ac87e8a7497940ac82",
                                       "version" : "1.0"
                                     },
-                                    "container" : false,
                                     "fields" : {
                                       "name" : "Name for language tag de-DE",
                                       "filename" : "dummy-content.de.html",
@@ -14452,13 +14415,11 @@ mediaType: application/json
                                       "uuid" : "86c0a2b6435d434280a2b6435da34247",
                                       "tagFamily" : "vehicles"
                                     } ],
-                                    "childrenInfo" : { },
                                     "schema" : {
                                       "name" : "content",
                                       "uuid" : "e287e8a7497940ac87e8a7497940ac82",
                                       "version" : "1.0"
                                     },
-                                    "container" : false,
                                     "fields" : {
                                       "name" : "Name for language tag en",
                                       "filename" : "dummy-content.en.html",
@@ -14909,10 +14870,6 @@ mediaType: application/json
                                     "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
                                     "tagFamily" : "colors"
                                   }, {
-                                    "name" : "red",
-                                    "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
-                                    "tagFamily" : "colors"
-                                  }, {
                                     "name" : "green",
                                     "uuid" : "8931caed445d4d1cb1caed445d0d1c8c",
                                     "tagFamily" : "colors"
@@ -14938,7 +14895,6 @@ mediaType: application/json
                                     "uuid" : "e287e8a7497940ac87e8a7497940ac82",
                                     "version" : "1.0"
                                   },
-                                  "container" : false,
                                   "fields" : {
                                     "name" : "Name for language tag de-DE",
                                     "filename" : "dummy-content.de.html",
@@ -15491,13 +15447,11 @@ mediaType: application/json
                                     "uuid" : "86c0a2b6435d434280a2b6435da34247",
                                     "tagFamily" : "vehicles"
                                   } ],
-                                  "childrenInfo" : { },
                                   "schema" : {
                                     "name" : "content",
                                     "uuid" : "e287e8a7497940ac87e8a7497940ac82",
                                     "version" : "1.0"
                                   },
-                                  "container" : false,
                                   "fields" : {
                                     "name" : "Name for language tag en",
                                     "filename" : "dummy-content.en.html",
@@ -16004,10 +15958,6 @@ mediaType: application/json
                                     "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
                                     "tagFamily" : "colors"
                                   }, {
-                                    "name" : "red",
-                                    "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
-                                    "tagFamily" : "colors"
-                                  }, {
                                     "name" : "green",
                                     "uuid" : "8931caed445d4d1cb1caed445d0d1c8c",
                                     "tagFamily" : "colors"
@@ -16033,7 +15983,6 @@ mediaType: application/json
                                     "uuid" : "e287e8a7497940ac87e8a7497940ac82",
                                     "version" : "1.0"
                                   },
-                                  "container" : false,
                                   "fields" : {
                                     "name" : "Name for language tag de-DE",
                                     "filename" : "dummy-content.de.html",
@@ -16637,10 +16586,6 @@ mediaType: application/json
                                     "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
                                     "tagFamily" : "colors"
                                   }, {
-                                    "name" : "red",
-                                    "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
-                                    "tagFamily" : "colors"
-                                  }, {
                                     "name" : "green",
                                     "uuid" : "8931caed445d4d1cb1caed445d0d1c8c",
                                     "tagFamily" : "colors"
@@ -16666,7 +16611,6 @@ mediaType: application/json
                                     "uuid" : "e287e8a7497940ac87e8a7497940ac82",
                                     "version" : "1.0"
                                   },
-                                  "container" : false,
                                   "fields" : {
                                     "name" : "Name for language tag de-DE",
                                     "filename" : "dummy-content.de.html",
@@ -17209,10 +17153,6 @@ mediaType: application/json
                                       "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
                                       "tagFamily" : "colors"
                                     }, {
-                                      "name" : "red",
-                                      "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
-                                      "tagFamily" : "colors"
-                                    }, {
                                       "name" : "green",
                                       "uuid" : "8931caed445d4d1cb1caed445d0d1c8c",
                                       "tagFamily" : "colors"
@@ -17238,7 +17178,6 @@ mediaType: application/json
                                       "uuid" : "e287e8a7497940ac87e8a7497940ac82",
                                       "version" : "1.0"
                                     },
-                                    "container" : false,
                                     "fields" : {
                                       "name" : "Name for language tag de-DE",
                                       "filename" : "dummy-content.de.html",
@@ -17352,13 +17291,11 @@ mediaType: application/json
                                       "uuid" : "86c0a2b6435d434280a2b6435da34247",
                                       "tagFamily" : "vehicles"
                                     } ],
-                                    "childrenInfo" : { },
                                     "schema" : {
                                       "name" : "content",
                                       "uuid" : "e287e8a7497940ac87e8a7497940ac82",
                                       "version" : "1.0"
                                     },
-                                    "container" : false,
                                     "fields" : {
                                       "name" : "Name for language tag en",
                                       "filename" : "dummy-content.en.html",
@@ -19390,13 +19327,11 @@ mediaType: application/json
                                     "uuid" : "86c0a2b6435d434280a2b6435da34247",
                                     "tagFamily" : "vehicles"
                                   } ],
-                                  "childrenInfo" : { },
                                   "schema" : {
                                     "name" : "content",
                                     "uuid" : "e287e8a7497940ac87e8a7497940ac82",
                                     "version" : "1.0"
                                   },
-                                  "container" : false,
                                   "fields" : {
                                     "name" : "Name for language tag en",
                                     "filename" : "dummy-content.en.html",
@@ -21373,10 +21308,6 @@ mediaType: application/json
                                       "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
                                       "tagFamily" : "colors"
                                     }, {
-                                      "name" : "red",
-                                      "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
-                                      "tagFamily" : "colors"
-                                    }, {
                                       "name" : "green",
                                       "uuid" : "8931caed445d4d1cb1caed445d0d1c8c",
                                       "tagFamily" : "colors"
@@ -21402,7 +21333,6 @@ mediaType: application/json
                                       "uuid" : "e287e8a7497940ac87e8a7497940ac82",
                                       "version" : "1.0"
                                     },
-                                    "container" : false,
                                     "fields" : {
                                       "name" : "Name for language tag de-DE",
                                       "filename" : "dummy-content.de.html",
@@ -21516,13 +21446,11 @@ mediaType: application/json
                                       "uuid" : "86c0a2b6435d434280a2b6435da34247",
                                       "tagFamily" : "vehicles"
                                     } ],
-                                    "childrenInfo" : { },
                                     "schema" : {
                                       "name" : "content",
                                       "uuid" : "e287e8a7497940ac87e8a7497940ac82",
                                       "version" : "1.0"
                                     },
-                                    "container" : false,
                                     "fields" : {
                                       "name" : "Name for language tag en",
                                       "filename" : "dummy-content.en.html",
@@ -21957,10 +21885,6 @@ mediaType: application/json
                                       "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
                                       "tagFamily" : "colors"
                                     }, {
-                                      "name" : "red",
-                                      "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
-                                      "tagFamily" : "colors"
-                                    }, {
                                       "name" : "green",
                                       "uuid" : "8931caed445d4d1cb1caed445d0d1c8c",
                                       "tagFamily" : "colors"
@@ -21986,7 +21910,6 @@ mediaType: application/json
                                       "uuid" : "e287e8a7497940ac87e8a7497940ac82",
                                       "version" : "1.0"
                                     },
-                                    "container" : false,
                                     "fields" : {
                                       "name" : "Name for language tag de-DE",
                                       "filename" : "dummy-content.de.html",
@@ -22112,10 +22035,6 @@ mediaType: application/json
                                         "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
                                         "tagFamily" : "colors"
                                       }, {
-                                        "name" : "red",
-                                        "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
-                                        "tagFamily" : "colors"
-                                      }, {
                                         "name" : "green",
                                         "uuid" : "8931caed445d4d1cb1caed445d0d1c8c",
                                         "tagFamily" : "colors"
@@ -22141,7 +22060,6 @@ mediaType: application/json
                                         "uuid" : "e287e8a7497940ac87e8a7497940ac82",
                                         "version" : "1.0"
                                       },
-                                      "container" : false,
                                       "fields" : {
                                         "name" : "Name for language tag de-DE",
                                         "filename" : "dummy-content.de.html",
@@ -22734,13 +22652,11 @@ mediaType: application/json
                                     "uuid" : "86c0a2b6435d434280a2b6435da34247",
                                     "tagFamily" : "vehicles"
                                   } ],
-                                  "childrenInfo" : { },
                                   "schema" : {
                                     "name" : "content",
                                     "uuid" : "e287e8a7497940ac87e8a7497940ac82",
                                     "version" : "1.0"
                                   },
-                                  "container" : false,
                                   "fields" : {
                                     "name" : "Name for language tag en",
                                     "filename" : "dummy-content.en.html",
@@ -23090,13 +23006,11 @@ mediaType: application/json
                                     "uuid" : "86c0a2b6435d434280a2b6435da34247",
                                     "tagFamily" : "vehicles"
                                   } ],
-                                  "childrenInfo" : { },
                                   "schema" : {
                                     "name" : "content",
                                     "uuid" : "e287e8a7497940ac87e8a7497940ac82",
                                     "version" : "1.0"
                                   },
-                                  "container" : false,
                                   "fields" : {
                                     "name" : "Name for language tag en",
                                     "filename" : "dummy-content.en.html",
@@ -26072,10 +25986,6 @@ mediaType: application/json
                                       "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
                                       "tagFamily" : "colors"
                                     }, {
-                                      "name" : "red",
-                                      "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
-                                      "tagFamily" : "colors"
-                                    }, {
                                       "name" : "green",
                                       "uuid" : "8931caed445d4d1cb1caed445d0d1c8c",
                                       "tagFamily" : "colors"
@@ -26101,7 +26011,6 @@ mediaType: application/json
                                       "uuid" : "e287e8a7497940ac87e8a7497940ac82",
                                       "version" : "1.0"
                                     },
-                                    "container" : false,
                                     "fields" : {
                                       "name" : "Name for language tag de-DE",
                                       "filename" : "dummy-content.de.html",
@@ -26215,13 +26124,11 @@ mediaType: application/json
                                       "uuid" : "86c0a2b6435d434280a2b6435da34247",
                                       "tagFamily" : "vehicles"
                                     } ],
-                                    "childrenInfo" : { },
                                     "schema" : {
                                       "name" : "content",
                                       "uuid" : "e287e8a7497940ac87e8a7497940ac82",
                                       "version" : "1.0"
                                     },
-                                    "container" : false,
                                     "fields" : {
                                       "name" : "Name for language tag en",
                                       "filename" : "dummy-content.en.html",
@@ -26835,9 +26742,6 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
-                                                "required" : {
-                                                  "type" : "boolean"
-                                                },
                                                 "label" : {
                                                   "type" : "string",
                                                   "description" : "Label of the field."
@@ -26845,6 +26749,9 @@ mediaType: application/json
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                                },
+                                                "required" : {
+                                                  "type" : "boolean"
                                                 },
                                                 "name" : {
                                                   "type" : "string",
@@ -27179,9 +27086,6 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
-                                          "required" : {
-                                            "type" : "boolean"
-                                          },
                                           "label" : {
                                             "type" : "string",
                                             "description" : "Label of the field."
@@ -27189,6 +27093,9 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                          },
+                                          "required" : {
+                                            "type" : "boolean"
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -27419,9 +27326,6 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
-                                          "required" : {
-                                            "type" : "boolean"
-                                          },
                                           "label" : {
                                             "type" : "string",
                                             "description" : "Label of the field."
@@ -27429,6 +27333,9 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                          },
+                                          "required" : {
+                                            "type" : "boolean"
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -27655,9 +27562,6 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
-                                                "required" : {
-                                                  "type" : "boolean"
-                                                },
                                                 "label" : {
                                                   "type" : "string",
                                                   "description" : "Label of the field."
@@ -27665,6 +27569,9 @@ mediaType: application/json
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                                },
+                                                "required" : {
+                                                  "type" : "boolean"
                                                 },
                                                 "name" : {
                                                   "type" : "string",
@@ -27910,9 +27817,6 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
-                                          "required" : {
-                                            "type" : "boolean"
-                                          },
                                           "label" : {
                                             "type" : "string",
                                             "description" : "Label of the field."
@@ -27920,6 +27824,9 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+                                          },
+                                          "required" : {
+                                            "type" : "boolean"
                                           },
                                           "name" : {
                                             "type" : "string",

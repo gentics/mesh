@@ -33,13 +33,11 @@
     "uuid" : "86c0a2b6435d434280a2b6435da34247",
     "tagFamily" : "vehicles"
   } ],
-  "childrenInfo" : { },
   "schema" : {
     "name" : "content",
     "uuid" : "e287e8a7497940ac87e8a7497940ac82",
     "version" : "1.0"
   },
-  "container" : false,
   "fields" : {
     "name" : "Name for language tag en",
     "filename" : "dummy-content.en.html",
