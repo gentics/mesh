@@ -1,8 +1,8 @@
-package com.syncleus.ferma.index.impl;
+package com.gentics.mesh.madl.index.impl;
 
-import com.syncleus.ferma.index.AbstractIndexDefinition;
-import com.syncleus.ferma.index.AbstractIndexDefinitionBuilder;
-import com.syncleus.ferma.index.VertexIndexDefinition;
+import com.gentics.mesh.madl.index.AbstractIndexDefinition;
+import com.gentics.mesh.madl.index.AbstractIndexDefinitionBuilder;
+import com.gentics.mesh.madl.index.VertexIndexDefinition;
 
 public class VertexIndexDefinitionImpl extends AbstractIndexDefinition implements VertexIndexDefinition {
 

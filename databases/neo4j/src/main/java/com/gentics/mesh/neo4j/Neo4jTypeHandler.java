@@ -4,7 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.graphdb.spi.TypeHandler;
-import com.syncleus.ferma.type.ElementTypeDefinition;
+import com.gentics.mesh.madl.type.ElementTypeDefinition;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;

@@ -1,7 +1,7 @@
-package com.syncleus.ferma.index;
+package com.gentics.mesh.madl.index;
 
-import com.syncleus.ferma.index.field.FieldMap;
-import com.syncleus.ferma.index.field.FieldType;
+import com.gentics.mesh.madl.field.FieldMap;
+import com.gentics.mesh.madl.field.FieldType;
 
 @SuppressWarnings("unchecked")
 public abstract class AbstractIndexDefinitionBuilder<T extends AbstractIndexDefinitionBuilder<T>> {

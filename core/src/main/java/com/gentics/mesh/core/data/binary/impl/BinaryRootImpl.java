@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.binary.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BINARY;
-import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
+import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 
 import java.util.Iterator;
 

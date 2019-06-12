@@ -3,12 +3,12 @@ package com.gentics.mesh.graphdb.spi;
 import java.util.List;
 
 import com.gentics.mesh.graphdb.model.MeshElement;
+import com.gentics.mesh.madl.field.FieldMap;
+import com.gentics.mesh.madl.index.ElementIndexDefinition;
+import com.gentics.mesh.madl.index.impl.EdgeIndexDefinitionImpl.EdgeIndexDefinitonBuilder;
+import com.gentics.mesh.madl.index.impl.VertexIndexDefinitionImpl.VertexIndexDefinitionBuilder;
 import com.syncleus.ferma.ElementFrame;
 import com.syncleus.ferma.VertexFrame;
-import com.syncleus.ferma.index.ElementIndexDefinition;
-import com.syncleus.ferma.index.field.FieldMap;
-import com.syncleus.ferma.index.impl.EdgeIndexDefinitionImpl.EdgeIndexDefinitonBuilder;
-import com.syncleus.ferma.index.impl.VertexIndexDefinitionImpl.VertexIndexDefinitionBuilder;
 
 public interface IndexHandler {
 

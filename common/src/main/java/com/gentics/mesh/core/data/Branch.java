@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.event.project.ProjectBranchEventModel;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madlmigration.TraversalResult;
+import com.gentics.mesh.madl.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**

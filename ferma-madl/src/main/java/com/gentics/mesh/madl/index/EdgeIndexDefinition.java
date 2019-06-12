@@ -1,7 +1,7 @@
-package com.syncleus.ferma.index;
+package com.gentics.mesh.madl.index;
 
-import com.syncleus.ferma.index.impl.EdgeIndexDefinitionImpl;
-import com.syncleus.ferma.index.impl.EdgeIndexDefinitionImpl.EdgeIndexDefinitonBuilder;
+import com.gentics.mesh.madl.index.impl.EdgeIndexDefinitionImpl;
+import com.gentics.mesh.madl.index.impl.EdgeIndexDefinitionImpl.EdgeIndexDefinitonBuilder;
 
 public interface EdgeIndexDefinition extends ElementIndexDefinition {
 

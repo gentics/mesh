@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.relationship;
 
-import static com.syncleus.ferma.type.EdgeTypeDefinition.edgeType;
+import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
 import com.gentics.mesh.graphdb.spi.IndexHandler;
 import com.gentics.mesh.graphdb.spi.TypeHandler;

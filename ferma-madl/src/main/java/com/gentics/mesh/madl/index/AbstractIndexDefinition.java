@@ -1,6 +1,6 @@
-package com.syncleus.ferma.index;
+package com.gentics.mesh.madl.index;
 
-import com.syncleus.ferma.index.field.FieldMap;
+import com.gentics.mesh.madl.field.FieldMap;
 
 public abstract class AbstractIndexDefinition implements ElementIndexDefinition {
 

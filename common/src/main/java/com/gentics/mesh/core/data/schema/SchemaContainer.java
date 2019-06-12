@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.madlmigration.TraversalResult;
+import com.gentics.mesh.madl.TraversalResult;
 
 /**
  * A schema container is a graph element which stores the JSON schema data.

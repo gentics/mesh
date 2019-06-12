@@ -1,8 +1,8 @@
-package com.syncleus.ferma.type.impl;
+package com.gentics.mesh.madl.type.impl;
 
-import com.syncleus.ferma.type.AbstractTypeDefinition;
-import com.syncleus.ferma.type.AbstractTypeDefinitionBuilder;
-import com.syncleus.ferma.type.VertexTypeDefinition;
+import com.gentics.mesh.madl.type.AbstractTypeDefinition;
+import com.gentics.mesh.madl.type.AbstractTypeDefinitionBuilder;
+import com.gentics.mesh.madl.type.VertexTypeDefinition;
 
 public class VertexTypeDefinitionImpl extends AbstractTypeDefinition implements VertexTypeDefinition {
 

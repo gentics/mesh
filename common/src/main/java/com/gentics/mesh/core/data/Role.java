@@ -13,7 +13,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
-import com.gentics.mesh.madlmigration.TraversalResult;
+import com.gentics.mesh.madl.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**

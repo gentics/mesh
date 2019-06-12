@@ -1,7 +1,7 @@
-package com.syncleus.ferma.type;
+package com.gentics.mesh.madl.type;
 
-import com.syncleus.ferma.type.impl.VertexTypeDefinitionImpl;
-import com.syncleus.ferma.type.impl.VertexTypeDefinitionImpl.VertexTypeDefinitionBuilder;
+import com.gentics.mesh.madl.type.impl.VertexTypeDefinitionImpl;
+import com.gentics.mesh.madl.type.impl.VertexTypeDefinitionImpl.VertexTypeDefinitionBuilder;
 
 /**
  * Type definition for a vertex.

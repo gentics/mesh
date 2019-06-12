@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.generic;
 
-import static com.syncleus.ferma.index.VertexIndexDefinition.vertexIndex;
+import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,12 +17,12 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.IndexHandler;
 import com.gentics.mesh.graphdb.spi.TypeHandler;
+import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.AbstractVertexFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.annotations.GraphElement;
-import com.syncleus.ferma.index.field.FieldType;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Element;

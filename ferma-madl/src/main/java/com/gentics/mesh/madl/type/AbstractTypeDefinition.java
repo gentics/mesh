@@ -1,6 +1,6 @@
-package com.syncleus.ferma.type;
+package com.gentics.mesh.madl.type;
 
-import com.syncleus.ferma.index.field.FieldMap;
+import com.gentics.mesh.madl.field.FieldMap;
 
 public abstract class AbstractTypeDefinition implements ElementTypeDefinition {
 

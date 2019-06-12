@@ -1,7 +1,7 @@
-package com.syncleus.ferma.type;
+package com.gentics.mesh.madl.type;
 
-import com.syncleus.ferma.type.impl.EdgeTypeDefinitionImpl;
-import com.syncleus.ferma.type.impl.EdgeTypeDefinitionImpl.EdgeTypeDefinitionBuilder;
+import com.gentics.mesh.madl.type.impl.EdgeTypeDefinitionImpl;
+import com.gentics.mesh.madl.type.impl.EdgeTypeDefinitionImpl.EdgeTypeDefinitionBuilder;
 
 public interface EdgeTypeDefinition extends ElementTypeDefinition {
 

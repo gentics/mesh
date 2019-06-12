@@ -1,4 +1,4 @@
-package com.syncleus.ferma.index.field;
+package com.gentics.mesh.madl.field;
 
 import java.util.LinkedHashMap;
 

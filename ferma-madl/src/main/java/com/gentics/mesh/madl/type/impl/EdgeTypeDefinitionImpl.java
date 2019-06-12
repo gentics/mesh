@@ -1,8 +1,8 @@
-package com.syncleus.ferma.type.impl;
+package com.gentics.mesh.madl.type.impl;
 
-import com.syncleus.ferma.type.AbstractTypeDefinition;
-import com.syncleus.ferma.type.AbstractTypeDefinitionBuilder;
-import com.syncleus.ferma.type.EdgeTypeDefinition;
+import com.gentics.mesh.madl.type.AbstractTypeDefinition;
+import com.gentics.mesh.madl.type.AbstractTypeDefinitionBuilder;
+import com.gentics.mesh.madl.type.EdgeTypeDefinition;
 
 public class EdgeTypeDefinitionImpl extends AbstractTypeDefinition implements EdgeTypeDefinition {
 

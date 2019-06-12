@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.syncleus.ferma.index.VertexIndexDefinition.vertexIndex;
-import static com.syncleus.ferma.index.field.FieldType.STRING;
+import static com.gentics.mesh.madl.field.FieldType.STRING;
+import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import org.apache.commons.lang.NotImplementedException;
 

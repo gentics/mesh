@@ -1,4 +1,4 @@
-package com.gentics.mesh.madlmigration;
+package com.gentics.mesh.madl;
 
 import java.util.Iterator;
 import java.util.List;
