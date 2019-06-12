@@ -256,7 +256,9 @@
 						<!-- Before the test phase -->
 						<phase>process-test-classes</phase>
 						<configuration>
+							<!--
 							<skipInvocation>${skip.unit.tests}</skipInvocation>
+							 -->
 							<properties>
 								<mesh.version>${project.version}</mesh.version>
 							</properties>
