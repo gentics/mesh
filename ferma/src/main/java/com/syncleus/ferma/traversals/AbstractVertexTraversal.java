@@ -167,18 +167,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	}
 
 	@Override
-	public VertexTraversal<?, ?, M> both(final int branchFactor, final String... labels) {
-		getPipeline().both(branchFactor, labels);
-		return this;
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> both(final String... labels) {
-		getPipeline().both(labels);
-		return this;
-	}
-
-	@Override
 	public EdgeTraversal<?, ?, M> outE(final int branchFactor, final String... labels) {
 		getPipeline().outE(branchFactor, labels);
 		return castToEdges();
@@ -199,18 +187,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	@Override
 	public EdgeTraversal<?, ?, M> inE(final String... labels) {
 		getPipeline().inE(labels);
-		return castToEdges();
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> bothE(final int branchFactor, final String... labels) {
-		getPipeline().bothE(branchFactor, labels);
-		return castToEdges();
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> bothE(final String... labels) {
-		getPipeline().bothE(labels);
 		return castToEdges();
 	}
 

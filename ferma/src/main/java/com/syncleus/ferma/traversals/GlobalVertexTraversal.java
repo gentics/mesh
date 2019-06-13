@@ -232,16 +232,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public VertexTraversal<?, ?, M> both(final int branchFactor, final String... labels) {
-		return this.simpleDelegate().both(branchFactor, labels);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> both(final String... labels) {
-		return this.simpleDelegate().both(labels);
-	}
-
-	@Override
 	public EdgeTraversal<?, ?, M> outE(final int branchFactor, final String... labels) {
 		return this.simpleDelegate().outE(branchFactor, labels);
 	}
@@ -259,16 +249,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	@Override
 	public EdgeTraversal<?, ?, M> inE(final String... labels) {
 		return this.simpleDelegate().inE(labels);
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> bothE(final int branchFactor, final String... labels) {
-		return this.simpleDelegate().bothE(branchFactor, labels);
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> bothE(final String... labels) {
-		return this.simpleDelegate().bothE(labels);
 	}
 
 	@Override

@@ -192,26 +192,6 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	VertexTraversal<?, ?, M> in(String... labels);
 
 	/**
-	 * Emit both the incoming and outgoing adjacent vertices for the incoming vertex.
-	 *
-	 * @param branchFactor
-	 *            the number of max adjacent vertices for each incoming vertex
-	 * @param labels
-	 *            the edge labels to traverse
-	 * @return the extended Pipeline
-	 */
-	VertexTraversal<?, ?, M> both(int branchFactor, String... labels);
-
-	/**
-	 * Emit both the incoming and outgoing adjacent vertices for the incoming vertex.
-	 *
-	 * @param labels
-	 *            the edge labels to traverse
-	 * @return the extended Pipeline
-	 */
-	VertexTraversal<?, ?, M> both(String... labels);
-
-	/**
 	 * Emit the outgoing edges for the incoming vertex.
 	 *
 	 * @param branchFactor
@@ -250,26 +230,6 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	 * @return the extended Pipeline
 	 */
 	EdgeTraversal<?, ?, M> inE(String... labels);
-
-	/**
-	 * Emit both incoming and outgoing edges for the incoming vertex.
-	 *
-	 * @param branchFactor
-	 *            the number of max incident edges for each incoming vertex
-	 * @param labels
-	 *            the edge labels to traverse
-	 * @return the extended Pipeline
-	 */
-	EdgeTraversal<?, ?, M> bothE(int branchFactor, String... labels);
-
-	/**
-	 * Emit both incoming and outgoing edges for the incoming vertex.
-	 *
-	 * @param labels
-	 *            the edge labels to traverse
-	 * @return the extended Pipeline
-	 */
-	EdgeTraversal<?, ?, M> bothE(String... labels);
 
 	/**
 	 * Get the next object emitted from the pipeline. If no such object exists, then a NoSuchElementException is thrown.
