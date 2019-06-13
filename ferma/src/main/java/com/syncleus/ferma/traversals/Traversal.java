@@ -23,19 +23,17 @@
  */
 package com.syncleus.ferma.traversals;
 
-import com.syncleus.ferma.EdgeFrame;
-import com.syncleus.ferma.Path;
-import com.syncleus.ferma.VertexFrame;
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
-import com.tinkerpop.blueprints.Graph;
+import com.syncleus.ferma.EdgeFrame;
+import com.syncleus.ferma.VertexFrame;
 import com.tinkerpop.gremlin.Tokens;
 import com.tinkerpop.gremlin.java.GremlinPipeline;
 import com.tinkerpop.pipes.transform.TransformPipe;
-import com.tinkerpop.pipes.util.structures.Pair;
-import com.tinkerpop.pipes.util.structures.Row;
-import com.tinkerpop.pipes.util.structures.Table;
-import com.tinkerpop.pipes.util.structures.Tree;
 
 /**
  * The root traversal class. Wraps a Tinkerpop {@link GremlinPipeline}
@@ -64,24 +62,6 @@ public interface Traversal<T, C, S, M> extends Iterator<T>, Iterable<T> {
 	 * @return The traversal representing all the edges in the graph.
 	 */
 	EdgeTraversal<?, ?, M> e();
-
-	/**
-	 * Traversal over a list of vertices in the graph.
-	 * 
-	 * @param ids
-	 *            The ids of the vertices.
-	 * @return The traversal.
-	 */
-	VertexTraversal<?, ?, M> v(Object... ids);
-
-	/**
-	 * Traversal over a list of vertices in the graph.
-	 * 
-	 * @param ids
-	 *            The IDs of the vertices.
-	 * @return The traversal.
-	 */
-	VertexTraversal<?, ?, M> v(Collection<?> ids);
 
 	/**
 	 * Traverse over all the vertices in the graph that have the specified key and value.
@@ -143,35 +123,6 @@ public interface Traversal<T, C, S, M> extends Iterator<T>, Iterable<T> {
 	Traversal<T, ?, ?, M> filter(TraversalFunction<T, Boolean> filterFunction);
 
 	/**
-	 * A biased coin toss determines if the object is emitted or not.
-	 *
-	 * @param bias
-	 *            the bias of the random coin
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, ?, ?, M> random(double bias);
-
-	/**
-	 * Analogous to a high/low index lookup. This is an open range so high is inclusive.
-	 *
-	 * @param low
-	 *            the low end of the range
-	 * @param high
-	 *            the high end of the range
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, ?, ?, M> range(int low, int high);
-
-	/**
-	 * Limit the number of elements returned.
-	 *
-	 * @param limit
-	 *            the number of elements to return.
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, ?, ?, M> limit(int limit);
-
-	/**
 	 * Will emit the object only if it is in the provided collection.
 	 *
 	 * @param collection
@@ -231,164 +182,6 @@ public interface Traversal<T, C, S, M> extends Iterator<T>, Iterable<T> {
 	<N> Traversal<T, Collection<? extends N>, Collection<? extends N>, M> aggregate(TraversalFunction<T, ? extends N> aggregateFunction);
 
 	/**
-	 * Group the objects inputted objects according to a key generated from the object and a value generated from the object. The grouping map has values that
-	 * are Lists.
-	 *
-	 * @param <K>
-	 *            The key type
-	 * @param <V>
-	 *            The value type
-	 * @param map
-	 *            the map to store the grouping in
-	 * @param keyFunction
-	 *            the function that generates the key from the object
-	 * @param valueFunction
-	 *            the function that generates the value from the function
-	 * @return the extended Pipeline
-	 */
-	<K, V> Traversal<T, Map<K, List<V>>, Map<K, List<V>>, M> groupBy(Map<K, List<V>> map,
-		TraversalFunction<T, K> keyFunction, TraversalFunction<T, Iterator<V>> valueFunction);
-
-	/**
-	 * Group the objects inputted objects according to a key generated from the object and a value generated from the object. The grouping map has values that
-	 * are Lists.
-	 *
-	 * @param <K>
-	 *            The key type
-	 * @param <V>
-	 *            The value type
-	 * @param keyFunction
-	 *            the function that generates the key from the object
-	 * @param valueFunction
-	 *            the function that generates the value from the function
-	 * @return the extended Pipeline
-	 */
-	<K, V> Traversal<T, Map<K, List<V>>, Map<K, List<V>>, M> groupBy(TraversalFunction<T, K> keyFunction,
-		TraversalFunction<T, Iterator<V>> valueFunction);
-
-	/**
-	 * Group the objects inputted objects according to a key generated from the object and a value generated from the object. The grouping map has values that
-	 * are Lists. When the pipe has no more incoming objects, apply the reduce function to the keyed Lists. The sideEffect is only fully available when the pipe
-	 * is empty.
-	 *
-	 * @param <K>
-	 *            The key type
-	 * @param <V>
-	 *            The value type
-	 * @param <V2>
-	 *            The reduced value type
-	 * @param reduceMap
-	 *            a map to perform the reduce operation on (good for having a later reference)
-	 * @param keyFunction
-	 *            the function that generates the key from the object
-	 * @param valueFunction
-	 *            the function that generates the value from the function
-	 * @param reduceFunction
-	 *            the function that reduces the value lists
-	 * @return the extended Pipeline
-	 */
-	<K, V, V2> Traversal<T, Map<K, V2>, Map<K, V2>, M> groupBy(Map<K, V2> reduceMap,
-		TraversalFunction<T, K> keyFunction, TraversalFunction<T, Iterator<V>> valueFunction,
-		TraversalFunction<List<V>, V2> reduceFunction);
-
-	/**
-	 * Group the objects inputted objects according to a key generated from the object and a value generated from the object. The grouping map has values that
-	 * are Lists. When the pipe has no more incoming objects, apply the reduce function to the keyed Lists. The sideEffect is only fully available when the pipe
-	 * is empty.
-	 *
-	 * @param <K>
-	 *            The key type
-	 * @param <V>
-	 *            The value type
-	 * @param <V2>
-	 *            The reduced value type
-	 * @param keyFunction
-	 *            the function that generates the key from the object
-	 * @param valueFunction
-	 *            the function that generates the value from the function
-	 * @param reduceFunction
-	 *            the function that reduces the value lists
-	 * @return the extended Pipeline
-	 */
-	<K, V, V2> Traversal<T, Map<K, V2>, Map<K, V2>, M> groupBy(TraversalFunction<T, K> keyFunction,
-		TraversalFunction<T, Iterator<V>> valueFunction, TraversalFunction<List<V>, V2> reduceFunction);
-
-	/**
-	 * Add a GroupCountPipe or GroupCountFunctionPipe to the end of the Pipeline. A map is maintained of counts. The map keys are determined by the function on
-	 * the incoming object. The map values are determined by the function on the incoming object (getA()) and the previous value (getB()).
-	 *
-	 * @param <K>
-	 *            The key type
-	 * @param map
-	 *            a provided count map
-	 * @param keyFunction
-	 *            the key function to determine map key
-	 * @param valueFunction
-	 *            the value function to determine map value
-	 * @return the extended Pipeline
-	 */
-	<K> Traversal<T, Map<K, Long>, Map<K, Long>, M> groupCount(Map<K, Long> map,
-		TraversalFunction<T, K> keyFunction, TraversalFunction<Pair<T, Long>, Long> valueFunction);
-
-	/**
-	 * Add a GroupCountPipe or GroupCountFunctionPipe to the end of the Pipeline. map is maintained of counts. The map keys are determined by the function on
-	 * the incoming object. The map values are determined by the function on the incoming object (getA()) and the previous value (getB()).
-	 *
-	 * @param <K>
-	 *            The key type
-	 * @param keyFunction
-	 *            the key function to determine map key
-	 * @param valueFunction
-	 *            the value function to determine map value
-	 * @return the extended Pipeline
-	 */
-	<K> Traversal<T, Map<K, Long>, Map<K, Long>, M> groupCount(TraversalFunction<T, K> keyFunction,
-		TraversalFunction<Pair<T, Long>, Long> valueFunction);
-
-	/**
-	 * Add a GroupCountPipe or GroupCountFunctionPipe to the end of the Pipeline. A map is maintained of counts. The map keys are determined by the function on
-	 * the incoming object. The map values are 1 plus the previous value for that key.
-	 *
-	 * @param <K>
-	 *            The key type
-	 * @param map
-	 *            a provided count map
-	 * @param keyFunction
-	 *            the key function to determine map key
-	 * @return the extended Pipeline
-	 */
-	<K> Traversal<T, Map<K, Long>, Map<K, Long>, M> groupCount(Map<K, Long> map,
-		TraversalFunction<T, K> keyFunction);
-
-	/**
-	 * Add a GroupCountPipe or GroupCountFunctionPipe to the end of the Pipeline. A map is maintained of counts. The map keys are determined by the function on
-	 * the incoming object. The map values are 1 plus the previous value for that key.
-	 *
-	 * @param <K>
-	 *            The key type
-	 * @param keyFunction
-	 *            the key function to determine map key
-	 * @return the extended Pipeline
-	 */
-	<K> Traversal<T, Map<K, Long>, Map<K, Long>, M> groupCount(TraversalFunction<T, K> keyFunction);
-
-	/**
-	 * A map is maintained of counts. The map keys are the incoming objects. The map values are 1 plus the previous value for that key.
-	 *
-	 * @param map
-	 *            a provided count map
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, Map<T, Long>, Map<T, Long>, M> groupCount(Map<T, Long> map);
-
-	/**
-	 * A map is maintained of counts. The map keys are the incoming objects. The map values are 1 plus the previous value for that key.
-	 *
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, Map<T, Long>, Map<T, Long>, M> groupCount();
-
-	/**
 	 * The provided function is evaluated and the incoming object is the outgoing object.
 	 *
 	 * @param sideEffectFunction
@@ -396,116 +189,6 @@ public interface Traversal<T, C, S, M> extends Iterator<T>, Iterable<T> {
 	 * @return the extended Pipeline
 	 */
 	Traversal<T, ?, ?, M> sideEffect(SideEffectFunction<T> sideEffectFunction);
-
-	/**
-	 * Lazily store the incoming objects into the provided collection.
-	 *
-	 * @param <N>
-	 *            The type of the object to be stored.
-	 * @param storage
-	 *            the collection to store results into
-	 * @return the extended Pipeline
-	 */
-	<N> Traversal<T, Collection<? extends N>, N, M> store(Collection<? super N> storage);
-
-	/**
-	 * Lazily store the object returned by the function over the incoming object into the provided collection.
-	 *
-	 * @param <N>
-	 *            The type of the object to be stored.
-	 * @param storage
-	 *            the collection to store results into
-	 * @param storageFunction
-	 *            the function to run over each object prior to insertion into the storage collection
-	 * @return the extended Pipeline
-	 */
-	<N> Traversal<T, Collection<? extends N>, N, M> store(Collection<? super N> storage, TraversalFunction<T, N> storageFunction);
-
-	/**
-	 * An ArrayList storage collection is provided and filled lazily with incoming objects.
-	 *
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, Collection<? extends T>, T, M> store();
-
-	/**
-	 * An ArrayList storage collection is provided and filled lazily with the return of the function evaluated over the incoming objects.
-	 *
-	 * @param <N>
-	 *            The type of the object to be stored.
-	 * @param storageFunction
-	 *            the function to run over each object prior to insertion into the storage collection
-	 * @return the extended Pipeline
-	 */
-	<N> Traversal<T, Collection<? extends N>, N, M> store(TraversalFunction<T, N> storageFunction);
-
-	/**
-	 * This step is used for grabbing previously seen objects the pipeline as identified by as-steps.
-	 *
-	 * @param table
-	 *            the table to fill
-	 * @param stepNames
-	 *            the partition steps to include in the filling
-	 * @param columnFunctions
-	 *            the post-processing function for each column
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, Table, Table, M> table(Table table, Collection<String> stepNames,
-		TraversalFunction<?, ?>... columnFunctions);
-
-	/**
-	 * This step is used for grabbing previously seen objects the pipeline as identified by as-steps.
-	 *
-	 * @param table
-	 *            the table to fill
-	 * @param columnFunctions
-	 *            the post-processing function for each column
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, Table, Table, M> table(Table table, TraversalFunction<?, ?>... columnFunctions);
-
-	/**
-	 * This step is used for grabbing previously seen objects the pipeline as identified by as-steps.
-	 *
-	 * @param columnFunctions
-	 *            the post-processing function for each column
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, Table, Table, M> table(TraversalFunction<?, ?>... columnFunctions);
-
-	/**
-	 * This step is used for grabbing previously seen objects the pipeline as identified by as-steps.
-	 *
-	 * @param table
-	 *            the table to fill
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, Table, Table, M> table(Table table);
-
-	/**
-	 * This step is used for grabbing previously seen objects the pipeline as identified by as-steps.
-	 *
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, Table, Table, M> table();
-
-	/**
-	 * Add a TreePipe to the end of the Pipeline This step maintains an internal tree representation of the paths that have flowed through the step.
-	 *
-	 * @param <N>
-	 *            The type of the values stored in the tree.
-	 * @param tree
-	 *            an embedded Map data structure to store the tree representation in
-	 * @return the extended Pipeline
-	 */
-	<N> Traversal<T, Tree<N>, Tree<N>, M> tree(Tree<N> tree);
-
-	/**
-	 * Add a TreePipe to the end of the Pipeline This step maintains an internal tree representation of the paths that have flowed through the step.
-	 *
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, Tree<T>, Tree<T>, M> tree();
 
 	/**
 	 * Useful in various situations where a step is needed without processing. For example, useful when two as-steps are needed in a row.
@@ -571,24 +254,6 @@ public interface Traversal<T, C, S, M> extends Iterator<T>, Iterable<T> {
 	Traversal<T, ?, ?, M> order(Comparator<? super T> compareFunction);
 
 	/**
-	 * Wrap the previous step in an AsPipe. Useful for naming steps and is used in conjunction with various other steps including: loop, select, back, table,
-	 * etc.
-	 *
-	 * @param name
-	 *            the name of the AsPipe
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, ?, ?, M> as(String name);
-
-	/**
-	 * If the object's path is repeating (looping), then the object is filtered. Thus, what is emitted are those objects whose history is composed of unique
-	 * objects.
-	 *
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, ?, ?, M> simplePath();
-
-	/**
 	 * The object that was seen at the topmost marked step is emitted. The mark step is removed from the stack.
 	 *
 	 * @return the extended Pipeline
@@ -604,75 +269,12 @@ public interface Traversal<T, C, S, M> extends Iterator<T>, Iterable<T> {
 	Traversal<T, C, S, ? extends Traversal<T, C, S, M>> mark();
 
 	/**
-	 * Causes the pipeline to be greedy up to this step.
-	 *
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, ?, ?, M> gatherScatter();
-
-	/**
-	 * This will emit the path that has been seen thus far. If path functions are provided, then they are evaluated in a round robin fashion on the objects of
-	 * the path.
-	 *
-	 * @param pathFunctions
-	 *            the path function of the PathPipe
-	 * @return the extended Pipeline
-	 */
-	Traversal<Path, ?, ?, M> path(TraversalFunction<?, ?>... pathFunctions);
-
-	/**
-	 * The objects of the named steps (via as) previous in the pipeline are emitted as a Row object. A Row object extends ArrayList and simply provides named
-	 * columns and some helper methods. If column functions are provided, then they are evaluated in a round robin fashion on the objects of the Row.
-	 *
-	 * @param stepNames
-	 *            the name of the steps in the expression to retrieve the objects from
-	 * @param columnFunctions
-	 *            the functions to apply to the column objects prior to filling the Row
-	 * @return the extended Pipeline
-	 */
-	Traversal<Row<?>, ?, ?, M> select(Collection<String> stepNames, TraversalFunction<?, ?>... columnFunctions);
-
-	/**
-	 * The objects of the named steps (via as) previous in the pipeline are emitted as a Row object. A Row object extends ArrayList and simply provides named
-	 * columns and some helper methods. If column functions are provided, then they are evaluated in a round robin fashion on the objects of the Row.
-	 *
-	 * @param columnFunctions
-	 *            the functions to apply to the column objects prior to filling the Row
-	 * @return the extended Pipeline
-	 */
-	Traversal<Row<?>, ?, ?, M> select(TraversalFunction<?, ?>... columnFunctions);
-
-	/**
-	 * The objects of the named steps (via as) previous in the pipeline are emitted as a Row object. A Row object extends ArrayList and simply provides named
-	 * columns and some helper methods.
-	 *
-	 * @return the extended Pipeline
-	 */
-	Traversal<Row<?>, ?, ?, M> select();
-
-	/**
-	 * All the objects previous to this step are aggregated in a greedy fashion, their order randomized and emitted.
-	 *
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, ?, ?, M> shuffle();
-
-	/**
 	 * When the previous step in the pipeline is implements SideEffectPipe, then it has a method called getSideEffect(). The cap step will greedily iterate the
 	 * pipeline and then, when its empty, emit the side effect of the previous pipe.
 	 *
 	 * @return the extended Pipeline
 	 */
 	C cap();
-
-	/**
-	 * This step emits the input but also calls the sideEffectFunction function with the side effect of the previous step when it is ready.
-	 *
-	 * @param sideEffectFunction
-	 *            The SideEffectFunction to be called.
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, ?, ?, M> divert(SideEffectFunction<S> sideEffectFunction);
 
 	/**
 	 * Given an input, the provided function is computed on the input and the output of that function is emitted.
@@ -787,16 +389,6 @@ public interface Traversal<T, C, S, M> extends Iterator<T>, Iterable<T> {
 	Traversal<T, C, S, M> enablePath();
 
 	/**
-	 * When possible, Gremlin takes advantage of certain sequences of pipes in order to make a more concise, and generally more efficient expression. This
-	 * method will turn on and off query optimization from this stage in the pipeline on.
-	 *
-	 * @param optimize
-	 *            whether to optimize the pipeline from here on or not
-	 * @return The GremlinPipeline with the optimization turned off
-	 */
-	Traversal<T, C, S, M> optimize(boolean optimize);
-
-	/**
 	 * Fill the provided collection with the objects in the pipeline.
 	 *
 	 * @param collection
@@ -804,31 +396,6 @@ public interface Traversal<T, C, S, M> extends Iterator<T>, Iterable<T> {
 	 * @return the collection filled
 	 */
 	Collection<? extends T> fill(Collection<? super T> collection);
-
-	/**
-	 * The section of pipeline back to the topmost marked step is evaluated. The mark is removed from the stack.
-	 *
-	 * @return the extended Pipeline
-	 */
-	M optional();
-
-	/**
-	 * Emit the edges of the graph whose ids are those of the incoming id objects.
-	 *
-	 * @param graph
-	 *            the graph of the pipe
-	 * @return the extended Pipeline
-	 */
-	EdgeTraversal<?, ?, M> idEdge(Graph graph);
-
-	/**
-	 * Emit the vertices of the graph whose ids are those of the incoming id objects.
-	 *
-	 * @param graph
-	 *            the graph of the pipe
-	 * @return the extended Pipeline
-	 */
-	VertexTraversal<?, ?, M> idVertex(Graph graph);
 
 	/**
 	 * Emit the ids of the incoming objects.

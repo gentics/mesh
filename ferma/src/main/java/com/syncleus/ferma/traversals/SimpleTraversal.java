@@ -156,10 +156,6 @@ public class SimpleTraversal<T, C, S, M> extends AbstractTraversal<T, C, S, M> {
 			return splitTraversal;
 		}
 
-		@Override
-		public VertexTraversal v(Object... ids) {
-			throw new NotImplementedException("Method not implemented");
-		}
 	};
 
 	private final VertexTraversal vertexTraversal = new AbstractVertexTraversal(getGraph(), getPipeline()) {
@@ -193,15 +189,6 @@ public class SimpleTraversal<T, C, S, M> extends AbstractTraversal<T, C, S, M> {
 			return splitTraversal;
 		}
 
-		@Override
-		public VertexTraversal v(Object... ids) {
-			throw new NotImplementedException("Method not implemented");
-		}
-
 	};
 
-	@Override
-	public VertexTraversal<?, ?, M> v(Object... ids) {
-		throw new NotImplementedException("Method not implemented");
-	}
 }

@@ -441,21 +441,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public VertexTraversal<?, ?, M> random(final double bias) {
-		return this.simpleDelegate().random(bias);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> range(final int low, final int high) {
-		return this.simpleDelegate().range(low, high);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> limit(final int limit) {
-		return this.simpleDelegate().limit(limit);
-	}
-
-	@Override
 	public VertexTraversal<?, ?, M> retain(final VertexFrame... vertices) {
 		return this.simpleDelegate().retain(vertices);
 	}
@@ -494,126 +479,8 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public <K, V> VertexTraversal<Map<K, List<V>>, Map<K, List<V>>, M> groupBy(final Map<K, List<V>> map,
-		final TraversalFunction<VertexFrame, K> keyFunction,
-		final TraversalFunction<VertexFrame, Iterator<V>> valueFunction) {
-		return this.simpleDelegate().groupBy(map, keyFunction, valueFunction);
-	}
-
-	@Override
-	public <K, V> VertexTraversal<Map<K, List<V>>, Map<K, List<V>>, M> groupBy(final TraversalFunction<VertexFrame, K> keyFunction,
-		final TraversalFunction<VertexFrame, Iterator<V>> valueFunction) {
-		return this.simpleDelegate().groupBy(keyFunction, valueFunction);
-	}
-
-	@Override
-	public <K, V, V2> VertexTraversal<Map<K, V2>, Map<K, V2>, M> groupBy(final Map<K, V2> reduceMap,
-		final TraversalFunction<VertexFrame, K> keyFunction,
-		final TraversalFunction<VertexFrame, Iterator<V>> valueFunction,
-		final TraversalFunction<List<V>, V2> reduceFunction) {
-		return this.simpleDelegate().groupBy(reduceMap, keyFunction, valueFunction, reduceFunction);
-	}
-
-	@Override
-	public <K, V, V2> VertexTraversal<Map<K, V2>, Map<K, V2>, M> groupBy(final TraversalFunction<VertexFrame, K> keyFunction,
-		final TraversalFunction<VertexFrame, Iterator<V>> valueFunction,
-		final TraversalFunction<List<V>, V2> reduceFunction) {
-		return this.simpleDelegate().groupBy(keyFunction, valueFunction, reduceFunction);
-	}
-
-	@Override
-	public <K> VertexTraversal<Map<K, Long>, Map<K, Long>, M> groupCount(final Map<K, Long> map, final TraversalFunction<VertexFrame, K> keyFunction,
-		final TraversalFunction<Pair<VertexFrame, Long>, Long> valueFunction) {
-		return this.simpleDelegate().groupCount(map, keyFunction, valueFunction);
-	}
-
-	@Override
-	public <K> VertexTraversal<Map<K, Long>, Map<K, Long>, M> groupCount(final TraversalFunction<VertexFrame, K> keyFunction,
-		final TraversalFunction<Pair<VertexFrame, Long>, Long> valueFunction) {
-		return this.simpleDelegate().groupCount(keyFunction, valueFunction);
-	}
-
-	@Override
-	public <K> VertexTraversal<Map<K, Long>, Map<K, Long>, M> groupCount(final Map<K, Long> map,
-		final TraversalFunction<VertexFrame, K> keyFunction) {
-		return this.simpleDelegate().groupCount(map, keyFunction);
-	}
-
-	@Override
-	public <K> VertexTraversal<Map<K, Long>, Map<K, Long>, M> groupCount(final TraversalFunction<VertexFrame, K> keyFunction) {
-		return this.simpleDelegate().groupCount(keyFunction);
-	}
-
-	@Override
-	public VertexTraversal<Map<VertexFrame, Long>, Map<VertexFrame, Long>, M> groupCount(final Map<VertexFrame, Long> map) {
-		return this.simpleDelegate().groupCount(map);
-	}
-
-	@Override
-	public VertexTraversal<Map<VertexFrame, Long>, Map<VertexFrame, Long>, M> groupCount() {
-		return this.simpleDelegate().groupCount();
-	}
-
-	@Override
 	public VertexTraversal<?, ?, M> sideEffect(final SideEffectFunction<VertexFrame> sideEffectFunction) {
 		return this.simpleDelegate().sideEffect(sideEffectFunction);
-	}
-
-	@Override
-	public <N> Traversal<VertexFrame, Collection<? extends N>, N, M> store(final Collection<? super N> storage) {
-		return this.simpleDelegate().store(storage);
-	}
-
-	@Override
-	public <N> Traversal<VertexFrame, Collection<? extends N>, N, M> store(final Collection<? super N> storage,
-		final TraversalFunction<VertexFrame, N> storageFunction) {
-		return this.simpleDelegate().store(storage, storageFunction);
-	}
-
-	@Override
-	public Traversal<VertexFrame, Collection<? extends VertexFrame>, VertexFrame, M> store() {
-		return this.simpleDelegate().store();
-	}
-
-	@Override
-	public <N> Traversal<VertexFrame, Collection<? extends N>, N, M> store(final TraversalFunction<VertexFrame, N> storageFunction) {
-		return this.simpleDelegate().store(storageFunction);
-	}
-
-	@Override
-	public VertexTraversal<Table, Table, M> table(final Table table, final Collection<String> stepNames,
-		final TraversalFunction<?, ?>... columnFunctions) {
-		return this.simpleDelegate().table(table, stepNames, columnFunctions);
-	}
-
-	@Override
-	public VertexTraversal<Table, Table, M> table(final Table table, final TraversalFunction<?, ?>... columnFunctions) {
-		return this.simpleDelegate().table(table, columnFunctions);
-	}
-
-	@Override
-	public VertexTraversal<Table, Table, M> table(final TraversalFunction<?, ?>... columnFunctions) {
-		return this.simpleDelegate().table(columnFunctions);
-	}
-
-	@Override
-	public VertexTraversal<Table, Table, M> table(final Table table) {
-		return this.simpleDelegate().table(table);
-	}
-
-	@Override
-	public VertexTraversal<Table, Table, M> table() {
-		return this.simpleDelegate().table();
-	}
-
-	@Override
-	public VertexTraversal<Tree<VertexFrame>, Tree<VertexFrame>, M> tree() {
-		return this.simpleDelegate().tree();
-	}
-
-	@Override
-	public <N> VertexTraversal<Tree<N>, Tree<N>, M> tree(final Tree<N> tree) {
-		return this.simpleDelegate().tree(tree);
 	}
 
 	@Override
@@ -652,16 +519,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public VertexTraversal<?, ?, M> as(final String name) {
-		return this.simpleDelegate().as(name);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> simplePath() {
-		return this.simpleDelegate().simplePath();
-	}
-
-	@Override
 	public <N> Collection<? extends N> fill(final Collection<? super N> collection, final Class<N> kind) {
 		return this.simpleDelegate().fill(collection, kind);
 	}
@@ -672,11 +529,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public VertexTraversal<?, ?, M> gatherScatter() {
-		return this.simpleDelegate().gatherScatter();
-	}
-
-	@Override
 	public VertexTraversal<?, ?, M> and(final TraversalFunction<VertexFrame, Traversal<?, ?, ?, ?>>... traversals) {
 		return this.simpleDelegate().and(traversals);
 	}
@@ -684,16 +536,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	@Override
 	public VertexTraversal<?, ?, M> or(final TraversalFunction<VertexFrame, Traversal<?, ?, ?, ?>>... traversals) {
 		return this.simpleDelegate().or(traversals);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> divert(final SideEffectFunction<S> sideEffectFunction) {
-		return this.simpleDelegate().divert(sideEffectFunction);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> shuffle() {
-		return this.simpleDelegate().shuffle();
 	}
 
 	@Override
@@ -733,11 +575,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public VertexTraversal<?, ?, M> v(final Collection<?> ids) {
-		return this.simpleDelegate().v(ids);
-	}
-
-	@Override
 	public VertexTraversal<?, ?, M> v(final String key, final Object value) {
 		return this.simpleDelegate().v(key, value);
 	}
@@ -750,26 +587,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	@Override
 	public M back() {
 		return this.simpleDelegate().back();
-	}
-
-	@Override
-	public Traversal<Path, ?, ?, M> path(final TraversalFunction<?, ?>... pathFunctions) {
-		return this.simpleDelegate().path(pathFunctions);
-	}
-
-	@Override
-	public Traversal<Row<?>, ?, ?, M> select(final Collection<String> stepNames, final TraversalFunction<?, ?>... columnFunctions) {
-		return this.simpleDelegate().select(stepNames, columnFunctions);
-	}
-
-	@Override
-	public Traversal<Row<?>, ?, ?, M> select(final TraversalFunction<?, ?>... columnFunctions) {
-		return this.simpleDelegate().select(columnFunctions);
-	}
-
-	@Override
-	public Traversal<Row<?>, ?, ?, M> select() {
-		return this.simpleDelegate().select();
 	}
 
 	@Override
@@ -838,28 +655,8 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public Traversal<VertexFrame, C, S, M> optimize(final boolean optimize) {
-		return this.simpleDelegate().optimize(optimize);
-	}
-
-	@Override
 	public Collection<? extends VertexFrame> fill(final Collection<? super VertexFrame> collection) {
 		return this.simpleDelegate().fill(collection);
-	}
-
-	@Override
-	public M optional() {
-		return this.simpleDelegate().optional();
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> idEdge(final Graph graph) {
-		return this.simpleDelegate().idEdge(graph);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> idVertex(final Graph graph) {
-		return this.simpleDelegate().idVertex(graph);
 	}
 
 	@Override
@@ -897,8 +694,4 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 		return this.simpleDelegate().spliterator();
 	}
 
-	@Override
-	public VertexTraversal<?, ?, M> v(Object... ids) {
-		throw new NotImplementedException("Method not implemented");
-	}
 }

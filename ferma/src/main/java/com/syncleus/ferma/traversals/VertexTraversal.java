@@ -23,11 +23,15 @@
  */
 package com.syncleus.ferma.traversals;
 
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import com.syncleus.ferma.ClassInitializer;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.VertexFrame;
-import java.util.*;
-
 import com.tinkerpop.blueprints.Predicate;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.gremlin.Tokens;
@@ -596,15 +600,6 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	@Override
 	VertexTraversal<?, ?, M> filter(TraversalFunction<VertexFrame, Boolean> filterFunction);
 
-	@Override
-	VertexTraversal<?, ?, M> random(double bias);
-
-	@Override
-	VertexTraversal<?, ?, M> range(int low, int high);
-
-	@Override
-	VertexTraversal<?, ?, M> limit(int limit);
-
 	/**
 	 * Will emit the object only if it is in the provided collection.
 	 *
@@ -634,80 +629,7 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	<N> VertexTraversal<Collection<? extends N>, Collection<? extends N>, M> aggregate(TraversalFunction<VertexFrame, ? extends N> aggregateFunction);
 
 	@Override
-	<K, V> VertexTraversal<Map<K, List<V>>, Map<K, List<V>>, M> groupBy(Map<K, List<V>> map, TraversalFunction<VertexFrame, K> keyFunction,
-		TraversalFunction<VertexFrame, Iterator<V>> valueFunction);
-
-	@Override
-	<K, V> VertexTraversal<Map<K, List<V>>, Map<K, List<V>>, M> groupBy(TraversalFunction<VertexFrame, K> keyFunction,
-		TraversalFunction<VertexFrame, Iterator<V>> valueFunction);
-
-	@Override
-	<K, V, V2> VertexTraversal<Map<K, V2>, Map<K, V2>, M> groupBy(Map<K, V2> reduceMap, TraversalFunction<VertexFrame, K> keyFunction,
-		TraversalFunction<VertexFrame, Iterator<V>> valueFunction,
-		TraversalFunction<List<V>, V2> reduceFunction);
-
-	@Override
-	<K, V, V2> VertexTraversal<Map<K, V2>, Map<K, V2>, M> groupBy(TraversalFunction<VertexFrame, K> keyFunction,
-		TraversalFunction<VertexFrame, Iterator<V>> valueFunction,
-		TraversalFunction<List<V>, V2> reduceFunction);
-
-	@Override
-	<K> VertexTraversal<Map<K, Long>, Map<K, Long>, M> groupCount(Map<K, Long> map, TraversalFunction<VertexFrame, K> keyFunction,
-		TraversalFunction<Pair<VertexFrame, Long>, Long> valueFunction);
-
-	@Override
-	<K> VertexTraversal<Map<K, Long>, Map<K, Long>, M> groupCount(TraversalFunction<VertexFrame, K> keyFunction,
-		TraversalFunction<Pair<VertexFrame, Long>, Long> valueFunction);
-
-	@Override
-	<K> VertexTraversal<Map<K, Long>, Map<K, Long>, M> groupCount(Map<K, Long> map, TraversalFunction<VertexFrame, K> keyFunction);
-
-	@Override
-	<K> VertexTraversal<Map<K, Long>, Map<K, Long>, M> groupCount(TraversalFunction<VertexFrame, K> keyFunction);
-
-	@Override
-	VertexTraversal<Map<VertexFrame, Long>, Map<VertexFrame, Long>, M> groupCount(Map<VertexFrame, Long> map);
-
-	@Override
-	VertexTraversal<Map<VertexFrame, Long>, Map<VertexFrame, Long>, M> groupCount();
-
-	@Override
 	VertexTraversal<?, ?, M> sideEffect(SideEffectFunction<VertexFrame> sideEffectFunction);
-
-	@Override
-	<N> Traversal<VertexFrame, Collection<? extends N>, N, M> store(Collection<? super N> storage);
-
-	@Override
-	<N> Traversal<VertexFrame, Collection<? extends N>, N, M> store(Collection<? super N> storage,
-		TraversalFunction<VertexFrame, N> storageFunction);
-
-	@Override
-	Traversal<VertexFrame, Collection<? extends VertexFrame>, VertexFrame, M> store();
-
-	@Override
-	<N> Traversal<VertexFrame, Collection<? extends N>, N, M> store(TraversalFunction<VertexFrame, N> storageFunction);
-
-	@Override
-	VertexTraversal<Table, Table, M> table(Table table, Collection<String> stepNames,
-		TraversalFunction<?, ?>... columnFunctions);
-
-	@Override
-	VertexTraversal<Table, Table, M> table(Table table, TraversalFunction<?, ?>... columnFunctions);
-
-	@Override
-	VertexTraversal<Table, Table, M> table(TraversalFunction<?, ?>... columnFunctions);
-
-	@Override
-	VertexTraversal<Table, Table, M> table(Table table);
-
-	@Override
-	VertexTraversal<Table, Table, M> table();
-
-	@Override
-	VertexTraversal<Tree<VertexFrame>, Tree<VertexFrame>, M> tree();
-
-	@Override
-	<N> VertexTraversal<Tree<N>, Tree<N>, M> tree(Tree<N> tree);
 
 	@Override
 	VertexTraversal<?, ?, M> identity();
@@ -729,12 +651,6 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 
 	@Override
 	VertexTraversal<?, ?, M> order(Tokens.T order);
-
-	@Override
-	VertexTraversal<?, ?, M> as(String name);
-
-	@Override
-	VertexTraversal<?, ?, M> simplePath();
 
 	/**
 	 * Fill the provided collection with the objects in the pipeline.
@@ -765,9 +681,6 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	 */
 	<N> Collection<? extends N> fillExplicit(Collection<? super N> collection, Class<N> kind);
 
-	@Override
-	VertexTraversal<?, ?, M> gatherScatter();
-
 	/**
 	 * If the internal pipes all yield objects, then the object is not filtered. The provided pipes are provided the object as their starts.
 	 *
@@ -787,12 +700,6 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	VertexTraversal<?, ?, M> or(TraversalFunction<VertexFrame, Traversal<?, ?, ?, ?>>... traversals);
 
 	@Override
-	VertexTraversal<?, ?, M> divert(SideEffectFunction<S> sideEffectFunction);
-
-	@Override
-	VertexTraversal<?, ?, M> shuffle();
-
-	@Override
 	VertexTraversal<C, S, ? extends VertexTraversal<C, S, M>> mark();
 
 	/**
@@ -800,10 +707,6 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	 */
 	void removeAll();
 
-	// /**
-	// * Remove the current element at the end of this Pipeline.
-	// */
-	// public abstract void remove();
 	/**
 	 * The incoming objects are copied to the provided pipes. This "split-pipe" is used in conjunction with some type of "merge-pipe."
 	 *
