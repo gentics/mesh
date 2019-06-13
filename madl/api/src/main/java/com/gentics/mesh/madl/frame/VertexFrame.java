@@ -18,4 +18,5 @@ public interface VertexFrame extends ElementFrame, com.syncleus.ferma.VertexFram
 	void setSingleLinkOutTo(VertexFrame vertex, String... labels);
 
 	void setSingleLinkInTo(VertexFrame vertex, String... labels);
+
 }
