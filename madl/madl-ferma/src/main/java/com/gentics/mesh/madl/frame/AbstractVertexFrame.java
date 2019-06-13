@@ -2,6 +2,8 @@ package com.gentics.mesh.madl.frame;
 
 import java.util.Set;
 
+import com.gentics.mesh.madl.traversal.TraversalResult;
+
 public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVertexFrame implements VertexFrame {
 
 	/**
@@ -102,4 +104,14 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 		linkOut(vertex, labels);
 	}
 
+	
+	@Override
+	public <T extends ElementFrame> TraversalResult<T> out(String label, Class<T> clazz) {
+		return new TraversalResult<>(out(label).frameExplicit(clazz));
+	}
+	
+	@Override
+	public <T extends ElementFrame> TraversalResult<T> in(String label, Class<T> clazz) {
+		return new TraversalResult<>(in(label).frameExplicit(clazz));
+	}
 }

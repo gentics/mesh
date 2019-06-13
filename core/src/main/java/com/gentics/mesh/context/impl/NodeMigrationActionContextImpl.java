@@ -37,6 +37,7 @@ import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -419,115 +420,101 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public Vertex getElement() {
-
 				return null;
 			}
 
 			@Override
 			public <T> T addFramedEdge(String label, VertexFrame inVertex, ClassInitializer<T> initializer) {
-
 				return null;
 			}
 
 			@Override
 			public <T> T addFramedEdge(String label, VertexFrame inVertex, Class<T> kind) {
-
 				return null;
 			}
 
 			@Override
 			public <T> T addFramedEdgeExplicit(String label, VertexFrame inVertex, ClassInitializer<T> initializer) {
-
 				return null;
 			}
 
 			@Override
 			public <T> T addFramedEdgeExplicit(String label, VertexFrame inVertex, Class<T> kind) {
-
 				return null;
 			}
 
 			@Override
 			public TEdge addFramedEdge(String label, VertexFrame inVertex) {
-
 				return null;
 			}
 
 			@Override
 			public TEdge addFramedEdgeExplicit(String label, VertexFrame inVertex) {
-
 				return null;
 			}
 
 			@Override
 			public VertexTraversal<?, ?, ?> out(int branchFactor, String... labels) {
-
 				return null;
 			}
 
 			@Override
 			public VertexTraversal<?, ?, ?> out(String... labels) {
-
+				return null;
+			}
+			
+			@Override
+			public <T extends ElementFrame> TraversalResult<T> out(String label, Class<T> clazz) {
 				return null;
 			}
 
 			@Override
-			public VertexTraversal<?, ?, ?> in(int branchFactor, String... labels) {
-
+			public <T extends ElementFrame> TraversalResult<T> in(String label, Class<T> clazz) {
 				return null;
 			}
 
 			@Override
 			public VertexTraversal<?, ?, ?> in(String... labels) {
-
 				return null;
 			}
 
 			@Override
 			public VertexTraversal<?, ?, ?> both(int branchFactor, String... labels) {
-
 				return null;
 			}
 
 			@Override
 			public VertexTraversal<?, ?, ?> both(String... labels) {
-
 				return null;
 			}
 
 			@Override
 			public EdgeTraversal<?, ?, ?> outE(int branchFactor, String... labels) {
-
 				return null;
 			}
 
 			@Override
 			public EdgeTraversal<?, ?, ?> outE(String... labels) {
-
 				return null;
 			}
 
 			@Override
 			public EdgeTraversal<?, ?, ?> inE(int branchFactor, String... labels) {
-
 				return null;
 			}
 
 			@Override
 			public EdgeTraversal<?, ?, ?> inE(String... labels) {
-
 				return null;
 			}
 
 			@Override
 			public EdgeTraversal<?, ?, ?> bothE(int branchFactor, String... labels) {
-
 				return null;
 			}
 
 			@Override
 			public EdgeTraversal<?, ?, ?> bothE(String... labels) {
-
 				return null;
 			}
 
@@ -578,13 +565,11 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public <K> K setLinkOut(ClassInitializer<K> initializer, String... labels) {
-
 				return null;
 			}
 
 			@Override
 			public <K> K setLinkOut(Class<K> kind, String... labels) {
-
 				return null;
 			}
 

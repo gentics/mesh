@@ -1,5 +1,8 @@
 package com.gentics.mesh.madl.frame;
 
+import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.syncleus.ferma.traversals.VertexTraversal;
+
 public interface VertexFrame extends ElementFrame, com.syncleus.ferma.VertexFrame {
 
 	/**
@@ -18,5 +21,16 @@ public interface VertexFrame extends ElementFrame, com.syncleus.ferma.VertexFram
 	void setSingleLinkOutTo(VertexFrame vertex, String... labels);
 
 	void setSingleLinkInTo(VertexFrame vertex, String... labels);
+
+	/**
+	 * @deprecated Use {@link #out(String, Class)} instead.
+	 */
+	@Deprecated
+	@Override
+	VertexTraversal<?, ?, ?> out(String... labels);
+
+	<T extends ElementFrame> TraversalResult<T> out(String label, Class<T> clazz);
+	
+	<T extends ElementFrame> TraversalResult<T> in(String label, Class<T> clazz);
 
 }

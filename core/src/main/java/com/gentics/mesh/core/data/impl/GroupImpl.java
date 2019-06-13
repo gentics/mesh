@@ -83,7 +83,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public TraversalResult<? extends User> getUsers() {
-		return new TraversalResult<>(in(HAS_USER).frameExplicit(UserImpl.class));
+		return in(HAS_USER, UserImpl.class);
 	}
 
 	@Override
@@ -107,7 +107,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public TraversalResult<? extends Role> getRoles() {
-		return new TraversalResult<>(in(HAS_ROLE).frameExplicit(RoleImpl.class));
+		return in(HAS_ROLE, RoleImpl.class);
 	}
 
 	@Override

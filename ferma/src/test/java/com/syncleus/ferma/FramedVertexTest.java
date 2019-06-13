@@ -65,15 +65,11 @@ public class FramedVertexTest {
     @Test
     public void testIn() {
         Assert.assertEquals(p1, p2.in().next(Person.class));
-        Assert.assertEquals(p1, p2.in(1).next(Person.class));
-
     }
 
     @Test
     public void testInExplicit() {
         Assert.assertEquals(p1, p2.in().nextExplicit(Person.class));
-        Assert.assertEquals(p1, p2.in(1).nextExplicit(Person.class));
-
     }
 
     @Test
