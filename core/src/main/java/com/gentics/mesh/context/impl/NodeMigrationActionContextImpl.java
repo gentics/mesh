@@ -462,7 +462,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			public VertexTraversal<?, ?, ?> out(String... labels) {
 				return null;
 			}
-			
+
 			@Override
 			public <T extends ElementFrame> TraversalResult<T> out(String label, Class<T> clazz) {
 				return null;
@@ -479,42 +479,12 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public VertexTraversal<?, ?, ?> both(int branchFactor, String... labels) {
-				return null;
-			}
-
-			@Override
-			public VertexTraversal<?, ?, ?> both(String... labels) {
-				return null;
-			}
-
-			@Override
-			public EdgeTraversal<?, ?, ?> outE(int branchFactor, String... labels) {
-				return null;
-			}
-
-			@Override
 			public EdgeTraversal<?, ?, ?> outE(String... labels) {
 				return null;
 			}
 
 			@Override
-			public EdgeTraversal<?, ?, ?> inE(int branchFactor, String... labels) {
-				return null;
-			}
-
-			@Override
 			public EdgeTraversal<?, ?, ?> inE(String... labels) {
-				return null;
-			}
-
-			@Override
-			public EdgeTraversal<?, ?, ?> bothE(int branchFactor, String... labels) {
-				return null;
-			}
-
-			@Override
-			public EdgeTraversal<?, ?, ?> bothE(String... labels) {
 				return null;
 			}
 
@@ -529,11 +499,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void linkBoth(VertexFrame vertex, String... labels) {
-
-			}
-
-			@Override
 			public void unlinkOut(VertexFrame vertex, String... labels) {
 
 			}
@@ -544,22 +509,12 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void unlinkBoth(VertexFrame vertex, String... labels) {
-
-			}
-
-			@Override
 			public void setLinkOut(VertexFrame vertex, String... labels) {
 
 			}
 
 			@Override
 			public void setLinkIn(VertexFrame vertex, String... labels) {
-
-			}
-
-			@Override
-			public void setLinkBoth(VertexFrame vertex, String... labels) {
 
 			}
 
@@ -600,26 +555,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public <K> K setLinkInExplicit(Class<K> kind, String... labels) {
-				return null;
-			}
-
-			@Override
-			public <K> K setLinkBoth(ClassInitializer<K> initializer, String... labels) {
-				return null;
-			}
-
-			@Override
-			public <K> K setLinkBoth(Class<K> kind, String... labels) {
-				return null;
-			}
-
-			@Override
-			public <K> K setLinkBothExplicit(ClassInitializer<K> initializer, String... labels) {
-				return null;
-			}
-
-			@Override
-			public <K> K setLinkBothExplicit(Class<K> kind, String... labels) {
 				return null;
 			}
 

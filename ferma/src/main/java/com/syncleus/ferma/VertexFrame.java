@@ -127,21 +127,9 @@ public interface VertexFrame extends ElementFrame {
 
 	VertexTraversal<?, ?, ?> in(final String... labels);
 
-	VertexTraversal<?, ?, ?> both(final int branchFactor, final String... labels);
-
-	VertexTraversal<?, ?, ?> both(final String... labels);
-
-	EdgeTraversal<?, ?, ?> outE(final int branchFactor, final String... labels);
-
 	EdgeTraversal<?, ?, ?> outE(final String... labels);
 
-	EdgeTraversal<?, ?, ?> inE(final int branchFactor, final String... labels);
-
 	EdgeTraversal<?, ?, ?> inE(final String... labels);
-
-	EdgeTraversal<?, ?, ?> bothE(final int branchFactor, final String... labels);
-
-	EdgeTraversal<?, ?, ?> bothE(final String... labels);
 
 	/**
 	 * Create edges from the framed vertex to the supplied vertex with the supplied labels
@@ -164,16 +152,6 @@ public interface VertexFrame extends ElementFrame {
 	void linkIn(VertexFrame vertex, String... labels);
 
 	/**
-	 * Create edges from the supplied vertex to the framed vertex and vice versa with the supplied labels
-	 *
-	 * @param vertex
-	 *            The vertex to link to and from.
-	 * @param labels
-	 *            The labels for the edges.
-	 */
-	void linkBoth(VertexFrame vertex, String... labels);
-
-	/**
 	 * Remove all out edges to the supplied vertex with the supplied labels.
 	 *
 	 * @param vertex
@@ -194,16 +172,6 @@ public interface VertexFrame extends ElementFrame {
 	void unlinkIn(VertexFrame vertex, String... labels);
 
 	/**
-	 * Remove all edges to/from the supplied vertex with the supplied labels.
-	 *
-	 * @param vertex
-	 *            The vertex to removed the edges to/from.
-	 * @param labels
-	 *            The labels of the edges.
-	 */
-	void unlinkBoth(VertexFrame vertex, String... labels);
-
-	/**
 	 * Remove all out edges with the labels and then add a single edge to the supplied vertex.
 	 *
 	 * @param vertex
@@ -222,16 +190,6 @@ public interface VertexFrame extends ElementFrame {
 	 *            The labels of the edges.
 	 */
 	void setLinkIn(VertexFrame vertex, String... labels);
-
-	/**
-	 * Remove all edges with the labels and then add a edges from the supplied vertex and to the supplied vertex.
-	 *
-	 * @param vertex
-	 *            the vertex to link from.
-	 * @param labels
-	 *            The labels of the edges.
-	 */
-	void setLinkBoth(VertexFrame vertex, String... labels);
 
 	/**
 	 * Remove all out edges with the labels and then add a single edge to a new vertex.
@@ -348,64 +306,6 @@ public interface VertexFrame extends ElementFrame {
 	 * @return The newly created edge.
 	 */
 	<K> K setLinkInExplicit(Class<K> kind, String... labels);
-
-	/**
-	 * Remove all edges with the labels and then add edges to/from a new vertex.
-	 *
-	 * @param <K>
-	 *            The type used to frame the edge.
-	 * @param initializer
-	 *            the initializer for the frame which defines its type and may initialize properties
-	 * @param labels
-	 *            The labels of the edges.
-	 * @return The newly created edge.
-	 */
-	<K> K setLinkBoth(ClassInitializer<K> initializer, String... labels);
-
-	/**
-	 * Remove all edges with the labels and then add edges to/from a new vertex.
-	 *
-	 * @param <K>
-	 *            The type used to frame the edge.
-	 * @param kind
-	 *            The kind of frame.
-	 * @param labels
-	 *            The labels of the edges.
-	 * @return The newly created edge.
-	 */
-	<K> K setLinkBoth(Class<K> kind, String... labels);
-
-	/**
-	 * Remove all edges with the labels and then add edges to/from a new vertex.
-	 *
-	 * This will bypass the default type resolution and use the untyped resolver instead. This method is useful for speeding up a look up when type resolution
-	 * isn't required.
-	 *
-	 * @param <K>
-	 *            The type used to frame the edge.
-	 * @param initializer
-	 *            the initializer for the frame which defines its type and may initialize properties
-	 * @param labels
-	 *            The labels of the edges.
-	 * @return The newly created edge.
-	 */
-	<K> K setLinkBothExplicit(ClassInitializer<K> initializer, String... labels);
-
-	/**
-	 * Remove all edges with the labels and then add edges to/from a new vertex.
-	 *
-	 * This will bypass the default type resolution and use the untyped resolver instead. This method is useful for speeding up a look up when type resolution
-	 * isn't required.
-	 *
-	 * @param <K>
-	 *            The type used to frame the edge.
-	 * @param kind
-	 *            The kind of frame.
-	 * @param labels
-	 *            The labels of the edges.
-	 * @return The newly created edge.
-	 */
-	<K> K setLinkBothExplicit(Class<K> kind, String... labels);
 
 	/**
 	 * Shortcut to get frame Traversal of current element
