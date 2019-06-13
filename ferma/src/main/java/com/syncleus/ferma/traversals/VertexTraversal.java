@@ -25,9 +25,7 @@ package com.syncleus.ferma.traversals;
 
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import com.syncleus.ferma.ClassInitializer;
 import com.syncleus.ferma.EdgeFrame;
@@ -36,9 +34,6 @@ import com.tinkerpop.blueprints.Predicate;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.gremlin.Tokens;
 import com.tinkerpop.pipes.transform.TransformPipe;
-import com.tinkerpop.pipes.util.structures.Pair;
-import com.tinkerpop.pipes.util.structures.Table;
-import com.tinkerpop.pipes.util.structures.Tree;
 
 /**
  * Vertex specific traversal.
@@ -570,32 +565,7 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkBoth(String label, VertexFrame other);
 
 	@Override
-	VertexTraversal<?, ?, M> dedup();
-
-	@Override
 	VertexTraversal<?, ?, M> dedup(TraversalFunction<VertexFrame, ?> dedupFunction);
-
-	@Override
-	VertexTraversal<?, ?, M> except(Iterable<?> collection);
-
-	/**
-	 * Will only emit the object if it is not in the provided collection.
-	 *
-	 * @param vertices
-	 *            the collection except from the stream
-	 * @return the extended Pipeline
-	 */
-	VertexTraversal<?, ?, M> except(VertexFrame... vertices);
-
-	/**
-	 * Will only emit the object if it is not equal to any of the objects contained at the named steps.
-	 *
-	 * @param namedSteps
-	 *            the named steps in the pipeline
-	 * @return the extended Pipeline
-	 */
-	@Override
-	VertexTraversal<?, ?, M> except(String... namedSteps);
 
 	@Override
 	VertexTraversal<?, ?, M> filter(TraversalFunction<VertexFrame, Boolean> filterFunction);
@@ -613,32 +583,7 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	VertexTraversal<?, ?, M> retain(Iterable<?> collection);
 
 	@Override
-	VertexTraversal<?, ?, M> retain(String... namedSteps);
-
-	@Override
-	VertexTraversal<Collection<? extends VertexFrame>, Collection<? extends VertexFrame>, M> aggregate();
-
-	@Override
-	VertexTraversal<Collection<? extends VertexFrame>, Collection<? extends VertexFrame>, M> aggregate(Collection<? super VertexFrame> aggregate);
-
-	@Override
-	<N> VertexTraversal<Collection<? extends N>, Collection<? extends N>, M> aggregate(Collection<? super N> aggregate,
-		TraversalFunction<VertexFrame, ? extends N> aggregateFunction);
-
-	@Override
-	<N> VertexTraversal<Collection<? extends N>, Collection<? extends N>, M> aggregate(TraversalFunction<VertexFrame, ? extends N> aggregateFunction);
-
-	@Override
-	VertexTraversal<?, ?, M> sideEffect(SideEffectFunction<VertexFrame> sideEffectFunction);
-
-	@Override
 	VertexTraversal<?, ?, M> identity();
-
-	@Override
-	VertexTraversal<?, ?, M> memoize(String namedStep);
-
-	@Override
-	VertexTraversal<?, ?, M> memoize(String namedStep, Map<?, ?> map);
 
 	@Override
 	VertexTraversal<?, ?, M> order();

@@ -244,36 +244,6 @@ abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFram
 	@Override
 	public EdgeTraversal<?, ?, M> filter(final TraversalFunction<EdgeFrame, Boolean> filterFunction) {
 		return (EdgeTraversal<?, ?, M>) super.filter(filterFunction);
-
-	}
-
-	@Override
-	public EdgeTraversal<Collection<? extends EdgeFrame>, Collection<? extends EdgeFrame>, M> aggregate() {
-		return (EdgeTraversal<Collection<? extends EdgeFrame>, Collection<? extends EdgeFrame>, M>) super.aggregate();
-
-	}
-
-	@Override
-	public EdgeTraversal<Collection<? extends EdgeFrame>, Collection<? extends EdgeFrame>, M> aggregate(
-		final Collection<? super EdgeFrame> aggregate) {
-		return (EdgeTraversal<Collection<? extends EdgeFrame>, Collection<? extends EdgeFrame>, M>) super.aggregate(aggregate);
-
-	}
-
-	@Override
-	public <N> EdgeTraversal<Collection<? extends N>, Collection<? extends N>, M> aggregate(final Collection<? super N> aggregate,
-		final TraversalFunction<EdgeFrame, ? extends N> aggregateFunction) {
-		Traversal<EdgeFrame, ?, ?, M> traversal = super.aggregate(aggregate, aggregateFunction);
-		return (EdgeTraversal<Collection<? extends N>, Collection<? extends N>, M>) traversal;
-
-	}
-
-	@Override
-	public <N> EdgeTraversal<Collection<? extends N>, Collection<? extends N>, M> aggregate(
-		final TraversalFunction<EdgeFrame, ? extends N> aggregateFunction) {
-		Traversal<EdgeFrame, ?, ?, M> traversal = super.aggregate(aggregateFunction);
-		return (EdgeTraversal<Collection<? extends N>, Collection<? extends N>, M>) traversal;
-
 	}
 
 	@Override
@@ -303,24 +273,8 @@ abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFram
 	}
 
 	@Override
-	public EdgeTraversal<?, ?, M> sideEffect(final SideEffectFunction<EdgeFrame> sideEffectFunction) {
-		return (EdgeTraversal<?, ?, M>) super.sideEffect(sideEffectFunction);
-	}
-
-	@Override
 	public EdgeTraversal<?, ?, M> dedup(final TraversalFunction<EdgeFrame, ?> dedupFunction) {
 		return (EdgeTraversal<?, ?, M>) super.dedup(dedupFunction);
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> except(final String... namedSteps) {
-
-		return (EdgeTraversal<?, ?, M>) super.except(namedSteps);
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> except(final Iterable<?> collection) {
-		return (EdgeTraversal) super.except(Lists.newArrayList(collection));
 	}
 
 	@Override
@@ -341,33 +295,6 @@ abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFram
 	@Override
 	public EdgeTraversal<?, ?, M> order(final Tokens.T order) {
 		return (EdgeTraversal<?, ?, M>) super.order(order);
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> dedup() {
-
-		return (EdgeTraversal<?, ?, M>) super.dedup();
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> retain(final String... namedSteps) {
-		return (EdgeTraversal<?, ?, M>) super.retain(namedSteps);
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> memoize(final String namedStep) {
-		return (EdgeTraversal<?, ?, M>) super.memoize(namedStep);
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> memoize(final String namedStep, final Map<?, ?> map) {
-		return (EdgeTraversal<?, ?, M>) super.memoize(namedStep, map);
-
-	}
-
-	@Override
-	public Collection<? extends EdgeFrame> fill(final Collection<? super EdgeFrame> collection) {
-		return super.fill(collection);
 	}
 
 	@Override
@@ -395,13 +322,10 @@ abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFram
 
 	@Override
 	public EdgeTraversal<?, ?, M> retain(final EdgeFrame... edges) {
-		return (EdgeTraversal<?, ?, M>) super.retain(Arrays.asList(edges));
-	}
 
-	@Override
-	public EdgeTraversal<?, ?, M> except(final EdgeFrame... edges) {
 		return (EdgeTraversal<?, ?, M>) super.retain(Arrays.asList(edges));
 	}
+	
 
 	@Override
 	public EdgeTraversal<?, ?, M> retain(final Iterable<?> collection) {

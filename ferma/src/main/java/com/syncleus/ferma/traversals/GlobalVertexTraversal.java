@@ -411,28 +411,8 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public VertexTraversal<?, ?, M> dedup() {
-		return this.simpleDelegate().dedup();
-	}
-
-	@Override
 	public VertexTraversal<?, ?, M> dedup(final TraversalFunction<VertexFrame, ?> dedupFunction) {
 		return this.simpleDelegate().dedup(dedupFunction);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> except(final Iterable<?> collection) {
-		return this.simpleDelegate().except(collection);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> except(final VertexFrame... vertices) {
-		return this.simpleDelegate().except(vertices);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> except(final String... namedSteps) {
-		return this.simpleDelegate().except(namedSteps);
 	}
 
 	@Override
@@ -451,51 +431,8 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public VertexTraversal<?, ?, M> retain(final String... namedSteps) {
-		return this.simpleDelegate().retain(namedSteps);
-	}
-
-	@Override
-	public VertexTraversal<Collection<? extends VertexFrame>, Collection<? extends VertexFrame>, M> aggregate() {
-		return this.simpleDelegate().aggregate();
-	}
-
-	@Override
-	public VertexTraversal<Collection<? extends VertexFrame>, Collection<? extends VertexFrame>, M> aggregate(
-		final Collection<? super VertexFrame> aggregate) {
-		return this.simpleDelegate().aggregate(aggregate);
-	}
-
-	@Override
-	public <N> VertexTraversal<Collection<? extends N>, Collection<? extends N>, M> aggregate(final Collection<? super N> aggregate,
-		final TraversalFunction<VertexFrame, ? extends N> aggregateFunction) {
-		return this.simpleDelegate().aggregate(aggregate, aggregateFunction);
-	}
-
-	@Override
-	public <N> VertexTraversal<Collection<? extends N>, Collection<? extends N>, M> aggregate(
-		final TraversalFunction<VertexFrame, ? extends N> aggregateFunction) {
-		return this.simpleDelegate().aggregate(aggregateFunction);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> sideEffect(final SideEffectFunction<VertexFrame> sideEffectFunction) {
-		return this.simpleDelegate().sideEffect(sideEffectFunction);
-	}
-
-	@Override
 	public VertexTraversal<?, ?, M> identity() {
 		return this.simpleDelegate().identity();
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> memoize(final String namedStep) {
-		return this.simpleDelegate().memoize(namedStep);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> memoize(final String namedStep, final Map<?, ?> map) {
-		return this.simpleDelegate().memoize(namedStep, map);
 	}
 
 	@Override
@@ -575,11 +512,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public VertexTraversal<?, ?, M> v(final String key, final Object value) {
-		return this.simpleDelegate().v(key, value);
-	}
-
-	@Override
 	public void iterate() {
 		Iterators.size(simpleIterator());
 	}
@@ -590,28 +522,8 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public C cap() {
-		return this.simpleDelegate().cap();
-	}
-
-	@Override
 	public <N> Traversal<? extends N, ?, ?, M> transform(final TraversalFunction<VertexFrame, N> function) {
 		return this.simpleDelegate().transform(function);
-	}
-
-	@Override
-	public <N> Traversal<N, ?, ?, M> start(final N object) {
-		return this.simpleDelegate().start(object);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> start(final VertexFrame object) {
-		return this.simpleDelegate().start(object);
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> start(final EdgeFrame object) {
-		return this.simpleDelegate().start(object);
 	}
 
 	@Override
@@ -640,23 +552,8 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public List<? extends VertexFrame> next(final int number) {
-		return this.simpleDelegate().next(number);
-	}
-
-	@Override
 	public List<? extends VertexFrame> toList() {
 		return this.simpleDelegate().toList();
-	}
-
-	@Override
-	public Traversal<VertexFrame, C, S, M> enablePath() {
-		return this.simpleDelegate().enablePath();
-	}
-
-	@Override
-	public Collection<? extends VertexFrame> fill(final Collection<? super VertexFrame> collection) {
-		return this.simpleDelegate().fill(collection);
 	}
 
 	@Override

@@ -308,31 +308,10 @@ public interface EdgeTraversal<C, S, M> extends Traversal<EdgeFrame, C, S, M> {
 	Traversal<String, ?, ?, M> label();
 
 	@Override
-	EdgeTraversal<?, ?, M> dedup();
-
-	@Override
 	EdgeTraversal<?, ?, M> dedup(TraversalFunction<EdgeFrame, ?> dedupFunction);
 
 	@Override
-	EdgeTraversal<?, ?, M> except(Iterable<?> collection);
-
-	/**
-	 * Add an ExceptFilterPipe to the end of the Pipeline. Will only emit the object if it is not in the provided array.
-	 *
-	 * @param edges
-	 *            the edges to reject from the stream
-	 * @return the extended Pipeline
-	 */
-	EdgeTraversal<?, ?, M> except(EdgeFrame... edges);
-
-	@Override
-	EdgeTraversal<?, ?, M> except(String... namedSteps);
-
-	@Override
 	EdgeTraversal<?, ?, M> filter(TraversalFunction<EdgeFrame, Boolean> filterFunction);
-
-	@Override
-	EdgeTraversal<?, ?, M> retain(Iterable<?> collection);
 
 	/**
 	 * Will emit the object only if it is in the provided array.
@@ -344,32 +323,7 @@ public interface EdgeTraversal<C, S, M> extends Traversal<EdgeFrame, C, S, M> {
 	EdgeTraversal<?, ?, M> retain(EdgeFrame... edges);
 
 	@Override
-	EdgeTraversal<?, ?, M> retain(String... namedSteps);
-
-	@Override
-	EdgeTraversal<Collection<? extends EdgeFrame>, Collection<? extends EdgeFrame>, M> aggregate();
-
-	@Override
-	EdgeTraversal<Collection<? extends EdgeFrame>, Collection<? extends EdgeFrame>, M> aggregate(Collection<? super EdgeFrame> aggregate);
-
-	@Override
-	<N> EdgeTraversal<Collection<? extends N>, Collection<? extends N>, M> aggregate(Collection<? super N> aggregate,
-		TraversalFunction<EdgeFrame, ? extends N> aggregateFunction);
-
-	@Override
-	<N> EdgeTraversal<Collection<? extends N>, Collection<? extends N>, M> aggregate(TraversalFunction<EdgeFrame, ? extends N> aggregateFunction);
-
-	@Override
-	EdgeTraversal<?, ?, M> sideEffect(SideEffectFunction<EdgeFrame> sideEffectFunction);
-
-	@Override
 	EdgeTraversal<?, ?, M> identity();
-
-	@Override
-	EdgeTraversal<?, ?, M> memoize(String namedStep);
-
-	@Override
-	EdgeTraversal<?, ?, M> memoize(String namedStep, Map<?, ?> map);
 
 	@Override
 	EdgeTraversal<?, ?, M> order();

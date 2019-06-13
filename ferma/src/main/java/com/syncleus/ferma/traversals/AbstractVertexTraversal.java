@@ -72,7 +72,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 
 	@Override
 	public VertexFrame nextOrAdd() {
-
 		return nextOrAdd(TVertex.DEFAULT_INITIALIZER);
 	}
 
@@ -90,57 +89,11 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	@Override
 	public VertexTraversal<?, ?, M> filter(final TraversalFunction<VertexFrame, Boolean> filterFunction) {
 		return (VertexTraversal<?, ?, M>) super.filter(filterFunction);
-
-	}
-
-	@Override
-	public VertexTraversal<Collection<? extends VertexFrame>, Collection<? extends VertexFrame>, M> aggregate() {
-		return (VertexTraversal<Collection<? extends VertexFrame>, Collection<? extends VertexFrame>, M>) super.aggregate();
-
-	}
-
-	@Override
-	public VertexTraversal<Collection<? extends VertexFrame>, Collection<? extends VertexFrame>, M> aggregate(
-		final Collection<? super VertexFrame> aggregate) {
-		return (VertexTraversal<Collection<? extends VertexFrame>, Collection<? extends VertexFrame>, M>) super.aggregate(aggregate);
-
-	}
-
-	@Override
-	public <N> VertexTraversal<Collection<? extends N>, Collection<? extends N>, M> aggregate(final Collection<? super N> aggregate,
-		final TraversalFunction<VertexFrame, ? extends N> aggregateFunction) {
-		Traversal<VertexFrame, ?, ?, M> traversal = super.aggregate(aggregate, aggregateFunction);
-		return (VertexTraversal<Collection<? extends N>, Collection<? extends N>, M>) traversal;
-
-	}
-
-	@Override
-	public <N> VertexTraversal<Collection<? extends N>, Collection<? extends N>, M> aggregate(
-		final TraversalFunction<VertexFrame, ? extends N> aggregateFunction) {
-		Traversal<VertexFrame, ?, ?, M> traversal = super.aggregate(aggregateFunction);
-		return (VertexTraversal<Collection<? extends N>, Collection<? extends N>, M>) traversal;
-
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> sideEffect(final SideEffectFunction<VertexFrame> sideEffectFunction) {
-		return (VertexTraversal<?, ?, M>) super.sideEffect(sideEffectFunction);
 	}
 
 	@Override
 	public VertexTraversal<?, ?, M> dedup(final TraversalFunction<VertexFrame, ?> dedupFunction) {
 		return (VertexTraversal) super.dedup(dedupFunction);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> except(final String... namedSteps) {
-
-		return (VertexTraversal<?, ?, M>) super.except(namedSteps);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> except(final Iterable<?> collection) {
-		return (VertexTraversal<?, ?, M>) super.except(Lists.newArrayList(collection));
 	}
 
 	@Override
@@ -187,29 +140,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	@Override
 	public VertexTraversal<?, ?, M> order(final T order) {
 		return (VertexTraversal<?, ?, M>) super.order(order);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> dedup() {
-
-		return (VertexTraversal<?, ?, M>) super.dedup();
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> retain(final String... namedSteps) {
-		return (VertexTraversal<?, ?, M>) super.retain(namedSteps);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> memoize(final String namedStep) {
-		return (VertexTraversal<?, ?, M>) super.memoize(namedStep);
-
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> memoize(final String namedStep, final Map<?, ?> map) {
-		return (VertexTraversal<?, ?, M>) super.memoize(namedStep, map);
-
 	}
 
 	@Override
@@ -518,11 +448,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	@Override
 	public VertexTraversal<?, ?, M> retain(final VertexFrame... vertices) {
 		return (VertexTraversal<?, ?, M>) super.retain(Arrays.asList(vertices));
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> except(final VertexFrame... vertices) {
-		return (VertexTraversal<?, ?, M>) super.except(Arrays.asList(vertices));
 	}
 
 	@Override
