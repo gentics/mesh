@@ -743,16 +743,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public EdgeTraversal<?, ?, M> e(final Object... ids) {
-		return this.simpleDelegate().e(ids);
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> e(final Collection<?> ids) {
-		return this.simpleDelegate().e(ids);
-	}
-
-	@Override
 	public void iterate() {
 		Iterators.size(simpleIterator());
 	}

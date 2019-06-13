@@ -95,24 +95,6 @@ public interface Traversal<T, C, S, M> extends Iterator<T>, Iterable<T> {
 	VertexTraversal<?, ?, M> v(String key, Object value);
 
 	/**
-	 * Traversal over a list of edges in the graph.
-	 * 
-	 * @param ids
-	 *            The IDs of the edges.
-	 * @return The traversal.
-	 */
-	EdgeTraversal<?, ?, M> e(Object... ids);
-
-	/**
-	 * Traversal over a list of edges in the graph.
-	 * 
-	 * @param ids
-	 *            The IDs of the edges.
-	 * @return The traversal.
-	 */
-	EdgeTraversal<?, ?, M> e(Collection<?> ids);
-
-	/**
 	 * Completely drain the pipeline of its objects. Useful when a sideEffect of the pipeline is desired.
 	 */
 	void iterate();

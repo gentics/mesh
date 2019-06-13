@@ -102,11 +102,6 @@ abstract class AbstractTraversal<T, C, S, M> implements Traversal<T, C, S, M> {
 	}
 
 	@Override
-	public EdgeTraversal<?, ?, M> e(final Object... ids) {
-		return (EdgeTraversal) graph().e(ids);
-	}
-
-	@Override
 	public long count() {
 		return getPipeline().count();
 	}
@@ -775,11 +770,6 @@ abstract class AbstractTraversal<T, C, S, M> implements Traversal<T, C, S, M> {
 	public VertexTraversal<?, ?, M> v(final String key, final Object value) {
 		getPipeline().V(key, value);
 		return castToVertices();
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> e(final Collection<?> ids) {
-		return (EdgeTraversal) graph().e(ids);
 	}
 
 	@Override
