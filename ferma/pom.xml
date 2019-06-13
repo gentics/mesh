@@ -25,10 +25,6 @@
 		</license>
 	</licenses>
 
-	<properties>
-		<projectRoot>${project.basedir}/..</projectRoot>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>com.orientechnologies</groupId>
