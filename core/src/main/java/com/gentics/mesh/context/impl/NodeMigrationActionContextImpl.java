@@ -603,11 +603,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public VertexTraversal<?, ?, ?> v(Object... ids) {
-				return null;
-			}
-
-			@Override
 			public EdgeTraversal<?, ?, ?> e(Object... ids) {
 				return null;
 			}
