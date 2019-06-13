@@ -149,13 +149,6 @@ public abstract class AbstractVertexFrame extends AbstractElementFrame implement
 	}
 
 	@Override
-	public void setLinkIn(final VertexFrame vertex, final String... labels) {
-		unlinkIn(null, labels);
-		if (vertex != null)
-			linkIn(vertex, labels);
-	}
-
-	@Override
 	public <K> K setLinkOutExplicit(final ClassInitializer<K> initializer, final String... labels) {
 		final K vertex = getGraph().addFramedVertexExplicit(initializer);
 		setLinkOut((VertexFrame) vertex, labels);
@@ -165,30 +158,6 @@ public abstract class AbstractVertexFrame extends AbstractElementFrame implement
 	@Override
 	public <K> K setLinkOutExplicit(final Class<K> kind, final String... labels) {
 		return this.setLinkOutExplicit(new DefaultClassInitializer<>(kind), labels);
-	}
-
-	@Override
-	public <K> K setLinkIn(final ClassInitializer<K> initializer, final String... labels) {
-		final K vertex = getGraph().addFramedVertex(null, initializer);
-		setLinkIn((VertexFrame) vertex, labels);
-		return vertex;
-	}
-
-	@Override
-	public <K> K setLinkIn(final Class<K> kind, final String... labels) {
-		return this.setLinkIn(new DefaultClassInitializer<>(kind), labels);
-	}
-
-	@Override
-	public <K> K setLinkInExplicit(final ClassInitializer<K> initializer, final String... labels) {
-		final K vertex = getGraph().addFramedVertexExplicit(initializer);
-		setLinkIn((VertexFrame) vertex, labels);
-		return vertex;
-	}
-
-	@Override
-	public <K> K setLinkInExplicit(final Class<K> kind, final String... labels) {
-		return this.setLinkInExplicit(new DefaultClassInitializer<>(kind), labels);
 	}
 
 	@Override

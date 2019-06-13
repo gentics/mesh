@@ -41,11 +41,6 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	}
 
 	@Override
-	public <K> K setLinkInExplicit(Class<K> kind, String... labels) {
-		return super.setLinkInExplicit(kind, labels);
-	}
-
-	@Override
 	public void setUniqueLinkOutTo(VertexFrame vertex, String... labels) {
 		// Unlink all edges between both objects with the given label
 		unlinkOut(vertex, labels);
@@ -104,12 +99,11 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 		linkOut(vertex, labels);
 	}
 
-	
 	@Override
 	public <T extends ElementFrame> TraversalResult<T> out(String label, Class<T> clazz) {
 		return new TraversalResult<>(out(label).frameExplicit(clazz));
 	}
-	
+
 	@Override
 	public <T extends ElementFrame> TraversalResult<T> in(String label, Class<T> clazz) {
 		return new TraversalResult<>(in(label).frameExplicit(clazz));

@@ -182,16 +182,6 @@ public interface VertexFrame extends ElementFrame {
 	void setLinkOut(VertexFrame vertex, String... labels);
 
 	/**
-	 * Remove all in edges with the labels and then add a single edge from the supplied vertex.
-	 *
-	 * @param vertex
-	 *            the vertex to link from.
-	 * @param labels
-	 *            The labels of the edges.
-	 */
-	void setLinkIn(VertexFrame vertex, String... labels);
-
-	/**
 	 * Remove all out edges with the labels and then add a single edge to a new vertex.
 	 *
 	 * This will bypass the default type resolution and use the untyped resolver instead. This method is useful for speeding up a look up when type resolution
@@ -222,64 +212,6 @@ public interface VertexFrame extends ElementFrame {
 	 * @return The newly created edge.
 	 */
 	<K> K setLinkOutExplicit(Class<K> kind, String... labels);
-
-	/**
-	 * Remove all in edges with the labels and then add a single edge from a new vertex.
-	 *
-	 * @param <K>
-	 *            The type used to frame the edge.
-	 * @param initializer
-	 *            the initializer for the frame which defines its type and may initialize properties
-	 * @param labels
-	 *            The labels of the edges.
-	 * @return The newly created edge.
-	 */
-	<K> K setLinkIn(ClassInitializer<K> initializer, String... labels);
-
-	/**
-	 * Remove all in edges with the labels and then add a single edge from a new vertex.
-	 *
-	 * @param <K>
-	 *            The type used to frame the edge.
-	 * @param kind
-	 *            The kind of frame.
-	 * @param labels
-	 *            The labels of the edges.
-	 * @return The newly created edge.
-	 */
-	<K> K setLinkIn(Class<K> kind, String... labels);
-
-	/**
-	 * Remove all in edges with the labels and then add a single edge from a new vertex.
-	 *
-	 * This will bypass the default type resolution and use the untyped resolver instead. This method is useful for speeding up a look up when type resolution
-	 * isn't required.
-	 *
-	 * @param <K>
-	 *            The type used to frame the edge.
-	 * @param initializer
-	 *            the initializer for the frame which defines its type and may initialize properties
-	 * @param labels
-	 *            The labels of the edges.
-	 * @return The newly created edge.
-	 */
-	<K> K setLinkInExplicit(ClassInitializer<K> initializer, String... labels);
-
-	/**
-	 * Remove all in edges with the labels and then add a single edge from a new vertex.
-	 *
-	 * This will bypass the default type resolution and use the untyped resolver instead. This method is useful for speeding up a look up when type resolution
-	 * isn't required.
-	 *
-	 * @param <K>
-	 *            The type used to frame the edge.
-	 * @param kind
-	 *            The kind of frame.
-	 * @param labels
-	 *            The labels of the edges.
-	 * @return The newly created edge.
-	 */
-	<K> K setLinkInExplicit(Class<K> kind, String... labels);
 
 	/**
 	 * Shortcut to get frame Traversal of current element

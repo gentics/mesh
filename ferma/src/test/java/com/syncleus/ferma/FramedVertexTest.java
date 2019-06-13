@@ -265,39 +265,6 @@ public class FramedVertexTest {
 	}
 
 	@Test
-	public void testSetLinkIn() {
-		final String label = "knows";
-		final Person p3 = fg.addFramedVertex(Person.class);
-		final Person p4 = fg.addFramedVertex(Person.class);
-		final Person p5 = fg.addFramedVertex(Person.class);
-
-		p4.addFramedEdge(label, p3, Knows.class);
-
-		Assert.assertTrue("An edge(in) of type " + label + " must exist between vertices", p3.in(label).retain(Lists.newArrayList(p4)).count() > 0);
-
-		p3.setLinkIn(p5, label);
-
-		// Make sure old edge was deleted
-		Assert.assertEquals("old " + label + " edge was not removed", 0, p3.in(label).retain(Lists.newArrayList(p4)).count());
-
-		// Make sure a new edge was created (and to correct vertex)
-		Assert.assertEquals(label + " edge was not created", 1, p3.in(label).retain(Lists.newArrayList(p5)).count());
-	}
-
-	@Test
-	public void testSetLinkInNull() {
-		final String label = "knows";
-		final Person p3 = fg.addFramedVertex(Person.class);
-		final Person p4 = fg.addFramedVertex(Person.class);
-		p3.setLinkIn(p4, label);
-		Assert.assertTrue("An out edge of type " + label + " must exist between vertices", p3.in(label).retain(Lists.newArrayList(p4)).count() > 0);
-
-		// tests if setLinkOut accepts null values, and only unlinks the edges
-		p3.setLinkIn((VertexFrame) null, label);
-		Assert.assertEquals(label + " edge was not unlinked", 0, p3.in(label).count());
-	}
-
-	@Test
 	public void testSetLinkOut() {
 		final String label = "knows";
 		final Person p3 = fg.addFramedVertex(Person.class);
@@ -328,26 +295,6 @@ public class FramedVertexTest {
 		// tests if setLinkOut accepts null values, and only unlinks the edges
 		p3.setLinkOut((VertexFrame) null, label);
 		Assert.assertEquals(label + " edge was not unlinked", 0, p3.out(label).count());
-	}
-
-	@Test
-	public void testSetNewLinkIn() {
-		final String label = "knows";
-		final Person p3 = fg.addFramedVertex(Person.class);
-		final Person p4 = fg.addFramedVertex(Person.class);
-
-		p4.addFramedEdge(label, p3, Knows.class);
-
-		Assert.assertTrue("An out edge of type " + label + " must exist between vertices", p3.in(label).retain(Lists.newArrayList(p4)).count() > 0);
-
-		final Person p5 = p3.setLinkIn(Person.class, label);
-
-		// Make sure old edge was deleted
-		Assert.assertEquals("old " + label + " edge was not removed", 0, p3.in(label).retain(Lists.newArrayList(p4)).count());
-
-		// Make sure a new edge was created (and to correct vertex)
-		Assert.assertEquals(label + " edge was not created", 1, p3.in(label).retain(Lists.newArrayList(p5)).count());
-
 	}
 
 }

@@ -514,37 +514,12 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void setLinkIn(VertexFrame vertex, String... labels) {
-
-			}
-
-			@Override
 			public <K> K setLinkOutExplicit(ClassInitializer<K> initializer, String... labels) {
 				return null;
 			}
 
 			@Override
 			public <K> K setLinkOutExplicit(Class<K> kind, String... labels) {
-				return null;
-			}
-
-			@Override
-			public <K> K setLinkIn(ClassInitializer<K> initializer, String... labels) {
-				return null;
-			}
-
-			@Override
-			public <K> K setLinkIn(Class<K> kind, String... labels) {
-				return null;
-			}
-
-			@Override
-			public <K> K setLinkInExplicit(ClassInitializer<K> initializer, String... labels) {
-				return null;
-			}
-
-			@Override
-			public <K> K setLinkInExplicit(Class<K> kind, String... labels) {
 				return null;
 			}
 
