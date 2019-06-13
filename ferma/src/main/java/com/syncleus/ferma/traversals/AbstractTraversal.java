@@ -181,12 +181,6 @@ abstract class AbstractTraversal<T, C, S, M> implements Traversal<T, C, S, M> {
 	}
 
 	@Override
-	public Traversal<Map<String, Object>, ?, ?, M> propertyMap(final String... keys) {
-		getPipeline().map(keys);
-		return castToTraversal();
-	}
-
-	@Override
 	public Traversal<T, ?, ?, M> dedup() {
 		getPipeline().dedup();
 		return this;

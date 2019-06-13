@@ -100,15 +100,6 @@ public interface Traversal<T, C, S, M> extends Iterator<T>, Iterable<T> {
 	void iterate();
 
 	/**
-	 * Emit the properties of the incoming element as a java.util.Map.
-	 *
-	 * @param keys
-	 *            the keys to get from the element (if none provided, all keys retrieved)
-	 * @return the extended Pipeline
-	 */
-	Traversal<Map<String, Object>, ?, ?, M> propertyMap(String... keys);
-
-	/**
 	 * Will only emit the object if it has not been seen before.
 	 *
 	 * @return the extended Pipeline
