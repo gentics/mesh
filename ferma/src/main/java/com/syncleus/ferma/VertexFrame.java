@@ -194,32 +194,6 @@ public interface VertexFrame extends ElementFrame {
 	/**
 	 * Remove all out edges with the labels and then add a single edge to a new vertex.
 	 *
-	 * @param <K>
-	 *            The type used to frame the edge.
-	 * @param initializer
-	 *            the initializer for the frame which defines its type and may initialize properties
-	 * @param labels
-	 *            The labels of the edges.
-	 * @return The newly created edge.
-	 */
-	<K> K setLinkOut(ClassInitializer<K> initializer, String... labels);
-
-	/**
-	 * Remove all out edges with the labels and then add a single edge to a new vertex.
-	 *
-	 * @param <K>
-	 *            The type used to frame the edge.
-	 * @param kind
-	 *            The kind of frame.
-	 * @param labels
-	 *            The labels of the edges.
-	 * @return The newly created edge.
-	 */
-	<K> K setLinkOut(Class<K> kind, String... labels);
-
-	/**
-	 * Remove all out edges with the labels and then add a single edge to a new vertex.
-	 *
 	 * This will bypass the default type resolution and use the untyped resolver instead. This method is useful for speeding up a look up when type resolution
 	 * isn't required.
 	 *

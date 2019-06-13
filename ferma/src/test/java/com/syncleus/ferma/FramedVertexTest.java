@@ -350,24 +350,4 @@ public class FramedVertexTest {
 
 	}
 
-	@Test
-	public void testSetNewLinkOut() {
-		final String label = "knows";
-		final Person p3 = fg.addFramedVertex(Person.class);
-		final Person p4 = fg.addFramedVertex(Person.class);
-
-		p3.addFramedEdge(label, p4, Knows.class);
-
-		Assert.assertTrue("An out edge of type " + label + " must exist between vertices", p3.out(label).retain(Lists.newArrayList(p4)).count() > 0);
-
-		final Person p5 = p3.setLinkOut(Person.class, label);
-
-		// Make sure old edge was deleted
-		Assert.assertEquals("old " + label + " edge was not removed", 0, p3.out(label).retain(Lists.newArrayList(p4)).count());
-
-		// Make sure a new edge was created (and to correct vertex)
-		Assert.assertEquals(label + " edge was not created", 1, p3.out(label).retain(Lists.newArrayList(p5)).count());
-
-	}
-
 }

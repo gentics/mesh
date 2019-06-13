@@ -156,18 +156,6 @@ public abstract class AbstractVertexFrame extends AbstractElementFrame implement
 	}
 
 	@Override
-	public <K> K setLinkOut(final ClassInitializer<K> initializer, final String... labels) {
-		final K vertex = getGraph().addFramedVertex(null, initializer);
-		setLinkOut((VertexFrame) vertex, labels);
-		return vertex;
-	}
-
-	@Override
-	public <K> K setLinkOut(final Class<K> kind, final String... labels) {
-		return this.setLinkOut(new DefaultClassInitializer<>(kind), labels);
-	}
-
-	@Override
 	public <K> K setLinkOutExplicit(final ClassInitializer<K> initializer, final String... labels) {
 		final K vertex = getGraph().addFramedVertexExplicit(initializer);
 		setLinkOut((VertexFrame) vertex, labels);
