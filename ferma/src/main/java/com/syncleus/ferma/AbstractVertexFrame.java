@@ -79,11 +79,6 @@ public abstract class AbstractVertexFrame extends AbstractElementFrame implement
 	}
 
 	@Override
-	public VertexTraversal<?, ?, ?> out(final int branchFactor, final String... labels) {
-		return new SimpleTraversal(getGraph(), this).castToVertices().out(branchFactor, labels);
-	}
-
-	@Override
 	public VertexTraversal<?, ?, ?> out(final String... labels) {
 		return new SimpleTraversal(getGraph(), this).castToVertices().out(labels);
 	}

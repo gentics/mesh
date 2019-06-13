@@ -101,8 +101,6 @@ public interface VertexFrame extends ElementFrame {
 	 */
 	TEdge addFramedEdge(String label, VertexFrame inVertex);
 
-	VertexTraversal<?, ?, ?> out(final int branchFactor, final String... labels);
-
 	/**
 	 * @deprecated Use out(label, clazz) instead.
 	 * @param labels

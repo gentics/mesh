@@ -27,10 +27,11 @@ package com.syncleus.ferma.traversals;
  * 
  * Takes a value but does not return anything.
  *
- * @param <T> The type of input processed by this function.
+ * @param <T>
+ *            The type of input processed by this function.
  */
 public interface SideEffectFunction<T> {
 
-    void execute(T o);
+	void execute(T o);
 
 }

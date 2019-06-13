@@ -449,11 +449,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public VertexTraversal<?, ?, ?> out(int branchFactor, String... labels) {
-				return null;
-			}
-
-			@Override
 			public VertexTraversal<?, ?, ?> out(String... labels) {
 				return null;
 			}
