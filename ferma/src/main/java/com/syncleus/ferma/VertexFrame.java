@@ -449,4 +449,5 @@ public interface VertexFrame extends ElementFrame {
      * @return The new frame
      */
     <T> T reframeExplicit(Class<T> kind);
+
 }

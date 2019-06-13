@@ -81,62 +81,6 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		return id;
 	}
 
-	/**
-	 * Add a single link <b>in-bound</b> link to the given vertex. Note that this method will remove all other links to other vertices for the given labels and
-	 * only create a single edge between both vertices per label.
-	 * 
-	 * @param vertex
-	 *            Target vertex
-	 * @param labels
-	 *            Labels to handle
-	 */
-	public void setSingleLinkInTo(VertexFrame vertex, String... labels) {
-		// Unlink all edges with the given label
-		unlinkIn(null, labels);
-		// Create a new edge with the given label
-		linkIn(vertex, labels);
-	}
-
-	/**
-	 * Add a unique <b>in-bound</b> link to the given vertex for the given set of labels. Note that this method will effectively ensure that only one
-	 * <b>in-bound</b> link exists between the two vertices for each label.
-	 * 
-	 * @param vertex
-	 *            Target vertex
-	 * @param labels
-	 *            Labels to handle
-	 */
-	public void setUniqueLinkInTo(VertexFrame vertex, String... labels) {
-		// Unlink all edges between both objects with the given label
-		unlinkIn(vertex, labels);
-		// Create a new edge with the given label
-		linkIn(vertex, labels);
-	}
-
-	/**
-	 * Remove all out-bound edges with the given label from the current vertex and create a new new <b>out-bound</b> edge between the current and given vertex
-	 * using the specified label. Note that only a single out-bound edge per label will be preserved.
-	 * 
-	 * @param vertex
-	 *            Target vertex
-	 * @param labels
-	 *            Labels to handle
-	 */
-	public void setSingleLinkOutTo(VertexFrame vertex, String... labels) {
-		// Unlink all edges with the given label
-		unlinkOut(null, labels);
-		// Create a new edge with the given label
-		linkOut(vertex, labels);
-	}
-
-	@Override
-	public void setUniqueLinkOutTo(VertexFrame vertex, String... labels) {
-		// Unlink all edges between both objects with the given label
-		unlinkOut(vertex, labels);
-		// Create a new edge with the given label
-		linkOut(vertex, labels);
-	}
-
 	public String getUuid() {
 		// Return the locally stored uuid if possible. Otherwise load it from the graph.
 		if (uuid == null) {

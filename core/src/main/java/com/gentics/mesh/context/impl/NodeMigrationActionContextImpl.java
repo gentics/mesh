@@ -733,7 +733,22 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void setUniqueLinkOutTo(VertexFrame vertex, String... labels) {
+			public void setSingleLinkInTo(com.gentics.mesh.madl.frame.VertexFrame vertex, String... labels) {
+
+			}
+
+			@Override
+			public void setSingleLinkOutTo(com.gentics.mesh.madl.frame.VertexFrame vertex, String... labels) {
+
+			}
+
+			@Override
+			public void setUniqueLinkInTo(com.gentics.mesh.madl.frame.VertexFrame vertex, String... labels) {
+
+			}
+
+			@Override
+			public void setUniqueLinkOutTo(com.gentics.mesh.madl.frame.VertexFrame vertex, String... labels) {
 
 			}
 
