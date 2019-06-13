@@ -1,6 +1,7 @@
 package com.gentics.mesh.util;
 
 import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.test.util.TestUtils.getJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -9,7 +10,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 
+import org.apache.commons.io.Charsets;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -40,6 +43,21 @@ public class JsonUtilTest {
 	@Test(expected = GenericRestException.class)
 	public void testToJson() {
 		JsonUtil.toJson(new Loop());
+	}
+
+	@Test
+	public void testJsonEncoding() throws IOException {
+		validateEncodingHandling("UTF16BE.json", Charsets.UTF_16BE);
+		validateEncodingHandling("ISO8859-1.json", Charsets.ISO_8859_1);
+	}
+
+	public void validateEncodingHandling(String name, Charset encoding) throws IOException {
+		String json = getJson(name, encoding);
+		json = EncodeUtil.ensureUtf8(json);
+		System.out.println(json);
+		SchemaUpdateRequest schema = JsonUtil.readValue(json, SchemaUpdateRequest.class);
+		System.out.println(schema.getName());
+		System.out.println(json);
 	}
 
 	@Test
@@ -115,7 +133,7 @@ public class JsonUtilTest {
 		} catch (GenericRestException e) {
 			assertEquals("error_json_malformed", e.getI18nKey());
 			assertThat(e.getI18nParameters()).containsExactly("1", "3",
-					"Unexpected character ('b' (code 98)): was expecting double-quote to start field name");
+				"Unexpected character ('b' (code 98)): was expecting double-quote to start field name");
 		}
 	}
 

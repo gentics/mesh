@@ -49,6 +49,25 @@ public final class EncodeUtil {
 	}
 
 	/**
+	 * Decodes the given text using Utf8 and replaces all unmappable characters with the replacement char.
+	 * 
+	 * @param text
+	 * @return
+	 * @throws CharacterCodingException
+	 */
+	public static String ensureUtf8(String text) throws CharacterCodingException {
+		ByteBuffer inputBuffer = ByteBuffer.wrap(text.getBytes(UTF8_CHARSET));
+
+		// Decode UTF-8
+		CharBuffer data = UTF8_CHARSET.newDecoder()
+			.onMalformedInput(REPLACE)
+			.onUnmappableCharacter(REPLACE)
+			.replaceWith(REPLACEMENT)
+			.decode(inputBuffer);
+		return data.toString();
+	}
+
+	/**
 	 * Encode the given text to conform to RFC 5597.
 	 * 
 	 * @param text
