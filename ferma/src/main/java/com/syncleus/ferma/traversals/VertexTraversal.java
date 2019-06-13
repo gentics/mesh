@@ -467,31 +467,6 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	<N> List<? extends N> toListExplicit(Class<N> kind);
 
 	/**
-	 * Return a set of all the objects in the pipeline.
-	 *
-	 * @param <N>
-	 *            The type used to frame the element
-	 * @param kind
-	 *            The kind of framed elements to return.
-	 * @return a set of all the objects
-	 */
-	<N> Set<? extends N> toSet(Class<N> kind);
-
-	/**
-	 * Return a set of all the objects in the pipeline.
-	 *
-	 * This will bypass the default type resolution and use the untyped resolver instead. This method is useful for speeding up a look up when type resolution
-	 * isn't required.
-	 *
-	 * @param <N>
-	 *            The type used to frame the element
-	 * @param kind
-	 *            The kind of framed elements to return.
-	 * @return a set of all the objects
-	 */
-	<N> Set<? extends N> toSetExplicit(Class<N> kind);
-
-	/**
 	 * Emit the incoming vertex, but have other vertex provide an outgoing edge to incoming vertex.
 	 *
 	 * @param label

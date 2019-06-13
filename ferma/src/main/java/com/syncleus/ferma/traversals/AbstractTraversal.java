@@ -600,13 +600,6 @@ abstract class AbstractTraversal<T, C, S, M> implements Traversal<T, C, S, M> {
 	}
 
 	@Override
-	public Set<? extends T> toSet() {
-
-		return Sets.newHashSet(toList());
-
-	}
-
-	@Override
 	public Collection<? extends T> fill(final Collection<? super T> collection) {
 		return getPipeline().fill(new FramingCollection<>(collection, graph()));
 	}

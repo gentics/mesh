@@ -366,16 +366,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public <N> Set<? extends N> toSet(final Class<N> kind) {
-		return this.simpleDelegate().toSet(kind);
-	}
-
-	@Override
-	public <N> Set<? extends N> toSetExplicit(final Class<N> kind) {
-		return this.simpleDelegate().toSetExplicit(kind);
-	}
-
-	@Override
 	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkOut(final String label, final String namedStep) {
 		return this.simpleDelegate().linkOut(label, namedStep);
 	}
@@ -855,11 +845,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	@Override
 	public List<? extends VertexFrame> toList() {
 		return this.simpleDelegate().toList();
-	}
-
-	@Override
-	public Set<? extends VertexFrame> toSet() {
-		return this.simpleDelegate().toSet();
 	}
 
 	@Override
