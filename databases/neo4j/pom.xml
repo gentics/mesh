@@ -6,7 +6,7 @@
 
 	<artifactId>mesh-neo4j</artifactId>
 	<packaging>jar</packaging>
-	<name>Mesh - OrientDB</name>
+	<name>Mesh - Neo4j</name>
 
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
@@ -40,6 +40,9 @@
 		<dependency>
 			<groupId>org.neo4j</groupId>
 			<artifactId>neo4j</artifactId>
+			<!-- Used as provided dependency since Neo4j License is not
+				directly compatible with Gentics Mesh -->
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- Common Tools -->
