@@ -1,5 +1,21 @@
 package com.gentics.mesh.madl.frame;
 
-public interface VertexFrame {
+public interface VertexFrame extends ElementFrame, com.syncleus.ferma.VertexFrame {
 
+	/**
+	 * Add a unique <b>out-bound</b> link to the given vertex for the given set of labels. Note that this method will effectively ensure that only one
+	 * <b>out-bound</b> link exists between the two vertices for each label.
+	 * 
+	 * @param vertex
+	 *            Target vertex
+	 * @param labels
+	 *            Labels to handle
+	 */
+	void setUniqueLinkOutTo(VertexFrame vertex, String... labels);
+
+	void setUniqueLinkInTo(VertexFrame vertex, String... labels);
+
+	void setSingleLinkOutTo(VertexFrame vertex, String... labels);
+
+	void setSingleLinkInTo(VertexFrame vertex, String... labels);
 }

@@ -1,12 +1,14 @@
 package com.gentics.mesh.madl.frame;
 
-public interface EdgeFrame {
+public interface EdgeFrame extends ElementFrame, com.syncleus.ferma.EdgeFrame {
 
 	/**
 	 * Return the label of the edge.
 	 * 
 	 * @return
 	 */
-	String label();
+	default String label() {
+		return getLabel();
+	}
 
 }
