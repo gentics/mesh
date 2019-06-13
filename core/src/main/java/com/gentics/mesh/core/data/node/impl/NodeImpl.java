@@ -132,7 +132,7 @@ import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.madl.TraversalResult;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.DeleteParameters;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.LinkType;

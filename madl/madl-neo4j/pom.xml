@@ -6,26 +6,13 @@
 
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
-		<artifactId>mesh</artifactId>
+		<artifactId>madl</artifactId>
 		<version>0.36.1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>ferma-madl</artifactId>
+	<artifactId>madl-neo4j</artifactId>
 	<packaging>jar</packaging>
 
-	<description>Interopt layer between Ferma and Madl</description>
-
-	<dependencies>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>ferma</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>net.bytebuddy</groupId>
-					<artifactId>byte-buddy</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-	</dependencies>
+	<description>MADL Neo4j Implementation</description>
 
 </project>

@@ -87,7 +87,7 @@
 
 	<modules>
 		<module>ferma</module>
-		<module>ferma-madl</module>
+		<module>madl</module>
 		<module>rest-model</module>
 		<module>api</module>
 		<module>plugin-api</module>

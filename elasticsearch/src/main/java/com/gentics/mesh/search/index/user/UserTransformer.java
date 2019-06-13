@@ -14,7 +14,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.madl.TraversalResult;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
 

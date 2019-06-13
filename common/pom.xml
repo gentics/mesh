@@ -22,7 +22,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>ferma-madl</artifactId>
+			<artifactId>madl-ferma</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

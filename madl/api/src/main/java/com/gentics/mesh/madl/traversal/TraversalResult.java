@@ -1,4 +1,4 @@
-package com.gentics.mesh.madl;
+package com.gentics.mesh.madl.traversal;
 
 import java.util.Iterator;
 import java.util.List;
