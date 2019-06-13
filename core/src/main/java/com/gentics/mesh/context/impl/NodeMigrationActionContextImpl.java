@@ -449,11 +449,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public TEdge addFramedEdgeExplicit(String label, VertexFrame inVertex) {
-				return null;
-			}
-
-			@Override
 			public VertexTraversal<?, ?, ?> out(int branchFactor, String... labels) {
 				return null;
 			}

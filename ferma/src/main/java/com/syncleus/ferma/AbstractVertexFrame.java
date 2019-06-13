@@ -79,11 +79,6 @@ public abstract class AbstractVertexFrame extends AbstractElementFrame implement
 	}
 
 	@Override
-	public TEdge addFramedEdgeExplicit(final String label, final VertexFrame inVertex) {
-		return addFramedEdgeExplicit(label, inVertex, TEdge.DEFAULT_INITIALIZER);
-	}
-
-	@Override
 	public VertexTraversal<?, ?, ?> out(final int branchFactor, final String... labels) {
 		return new SimpleTraversal(getGraph(), this).castToVertices().out(branchFactor, labels);
 	}

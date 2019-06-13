@@ -101,20 +101,6 @@ public interface VertexFrame extends ElementFrame {
 	 */
 	TEdge addFramedEdge(String label, VertexFrame inVertex);
 
-	/**
-	 * Add an edge using a frame type of {@link TEdge}.
-	 *
-	 * This will bypass the default type resolution and use the untyped resolver instead. This method is useful for speeding up a look up when type resolution
-	 * isn't required.
-	 *
-	 * @param label
-	 *            The label for the edge
-	 * @param inVertex
-	 *            The vertex to link to.
-	 * @return The added edge.
-	 */
-	TEdge addFramedEdgeExplicit(String label, VertexFrame inVertex);
-
 	VertexTraversal<?, ?, ?> out(final int branchFactor, final String... labels);
 
 	/**
