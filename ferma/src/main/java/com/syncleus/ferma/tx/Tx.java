@@ -22,65 +22,74 @@ import com.syncleus.ferma.FramedTransactionalGraph;
  */
 public interface Tx extends AutoCloseable {
 
-    /**
-     * Thread local that is used to store references to the used graph.
-     */
-    public static ThreadLocal<Tx> threadLocalGraph = new ThreadLocal<>();
+	/**
+	 * Thread local that is used to store references to the used graph.
+	 */
+	public static ThreadLocal<Tx> threadLocalGraph = new ThreadLocal<>();
 
-    /**
-     * Set the nested active transaction for the current thread.
-     * 
-     * @param tx
-     *            Transaction
-     */
-    public static void setActive(Tx tx) {
-        Tx.threadLocalGraph.set(tx);
-    }
+	/**
+	 * Set the nested active transaction for the current thread.
+	 * 
+	 * @param tx
+	 *            Transaction
+	 */
+	public static void setActive(Tx tx) {
+		Tx.threadLocalGraph.set(tx);
+	}
 
-    /**
-     * Return the current active graph. A transaction should be the only place where this threadlocal is updated.
-     * 
-     * @return Currently active transaction
-     */
-    public static Tx getActive() {
-        return Tx.threadLocalGraph.get();
-    }
+	/**
+	 * @deprecated Use {@link #get()} instead.
+	 * @return
+	 */
+	@Deprecated
+	public static Tx getActive() {
+		return Tx.threadLocalGraph.get();
+	}
 
-    /**
-     * Mark the transaction as succeeded. The autoclosable will invoke a commit when completing.
-     */
-    void success();
+	/**
+	 * Return the current active graph. A transaction should be the only place where this threadlocal is updated.
+	 * 
+	 * @return Currently active transaction
+	 */
+	public static Tx get() {
+		return getActive();
+	}
 
-    /**
-     * Mark the transaction as failed. The autoclosable will invoke a rollback when completing.
-     */
-    void failure();
+	/**
+	 * Mark the transaction as succeeded. The autoclosable will invoke a commit when completing.
+	 */
+	void success();
 
-    /**
-     * Return the framed graph that is bound to the transaction.
-     * 
-     * @return Graph which is bound to the transaction.
-     */
-    FramedTransactionalGraph getGraph();
+	/**
+	 * Mark the transaction as failed. The autoclosable will invoke a rollback when completing.
+	 */
+	void failure();
 
-    /**
-     * Invoke rollback or commit when closing the autoclosable. By default a rollback will be invoked.
-     */
-    @Override
-    void close();
+	/**
+	 * Return the framed graph that is bound to the transaction.
+	 * 
+	 * @return Graph which is bound to the transaction.
+	 */
+	FramedTransactionalGraph getGraph();
 
-    /**
-     * Add new isolated vertex to the graph.
-     * 
-     * @param <T>
-     *            The type used to frame the element.
-     * @param kind
-     *            The kind of the vertex
-     * @return The framed vertex
-     * 
-     */
-    default <T> T addVertex(Class<T> kind) {
-        return getGraph().addFramedVertex(kind);
-    }
+	/**
+	 * Invoke rollback or commit when closing the autoclosable. By default a rollback will be invoked.
+	 */
+	@Override
+	void close();
+
+	/**
+	 * Add new isolated vertex to the graph.
+	 * 
+	 * @param <T>
+	 *            The type used to frame the element.
+	 * @param kind
+	 *            The kind of the vertex
+	 * @return The framed vertex
+	 * 
+	 */
+	default <T> T addVertex(Class<T> kind) {
+		return getGraph().addFramedVertex(kind);
+	}
 
 }

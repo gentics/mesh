@@ -1,8 +1,13 @@
 package com.gentics.mesh.madl.frame;
 
 import java.util.Set;
+import java.util.function.Function;
 
+import com.gentics.madl.traversal.RawTraversalResult;
+import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.syncleus.ferma.tx.Tx;
+import com.tinkerpop.blueprints.Vertex;
 
 public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVertexFrame implements VertexFrame {
 
@@ -109,5 +114,15 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	public <T extends ElementFrame> TraversalResult<? extends T> in(String label, Class<T> clazz) {
 		TraversalResult<? extends T> result = new TraversalResult<>(in(label).frameExplicit(clazz));
 		return result;
+	}
+
+	@Override
+	public <T extends RawTraversalResult<?>> T traverse(final Function<GraphTraversal<Vertex, Vertex>, GraphTraversal<?, ?>> traverser) {
+		Tx tx = Tx.get();
+		if (tx == null) {
+			throw new RuntimeException("No active transaction found.");
+		}
+		//return tx.traversal(input -> traverser.apply(input.V(id())));
+		return null;
 	}
 }
