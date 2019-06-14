@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.branch.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
-import static com.syncleus.ferma.type.EdgeTypeDefinition.edgeType;
+import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;

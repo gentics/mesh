@@ -23,58 +23,52 @@
  */
 package com.syncleus.ferma.pipes;
 
-import com.tinkerpop.blueprints.Element;
 import java.util.List;
 
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.pipes.PipeFunction;
+import com.tinkerpop.pipes.transform.PathPipe;
 import com.tinkerpop.pipes.util.FluentUtility;
 
 public class FermaGremlinPipeline<S, E> extends com.tinkerpop.gremlin.java.GremlinPipeline<S, E> {
 
-    private E current;
+	private E current;
 
-    public FermaGremlinPipeline() {
-        super();
-    }
+	public FermaGremlinPipeline() {
+		super();
+	}
 
-    public FermaGremlinPipeline(final Object starts, final boolean doQueryOptimization) {
-        super(starts, doQueryOptimization);
-    }
+	public FermaGremlinPipeline(final Object starts, final boolean doQueryOptimization) {
+		super(starts, doQueryOptimization);
+	}
 
-    public FermaGremlinPipeline(final Object starts) {
-        super(starts);
-    }
+	public FermaGremlinPipeline(final Object starts) {
+		super(starts);
+	}
 
-    @Override
-    public com.tinkerpop.gremlin.java.GremlinPipeline<S, List> path(final PipeFunction... pathFunctions) {
+	@Override
+	public void remove() {
+		if (this.current instanceof Element) {
+			((Element) this.current).remove();
+			this.current = null;
+		} else
+			throw new UnsupportedOperationException("Current must be an element to remove");
+	}
 
-        return this.add(new PathPipe<>(FluentUtility.prepareFunctions(this.asMap, pathFunctions)));
-    }
+	@Override
+	public E next() {
 
-    @Override
-    public void remove() {
-        if (this.current instanceof Element) {
-            ((Element) this.current).remove();
-            this.current = null;
-        }
-        else
-            throw new UnsupportedOperationException("Current must be an element to remove");
-    }
+		this.current = super.next();
+		return this.current;
+	}
 
-    @Override
-    public E next() {
+	@Override
+	public List<E> next(final int number) {
+		this.current = null;
+		return super.next(number);
+	}
 
-        this.current = super.next();
-        return this.current;
-    }
-
-    @Override
-    public List<E> next(final int number) {
-        this.current = null;
-        return super.next(number);
-    }
-
-    public void removeAll() {
-        super.remove();
-    }
+	public void removeAll() {
+		super.remove();
+	}
 }

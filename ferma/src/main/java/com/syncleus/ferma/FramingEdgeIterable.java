@@ -19,11 +19,11 @@ import com.tinkerpop.blueprints.Edge;
 
 public class FramingEdgeIterable<T> extends FramingIterable<T, Edge> {
 
-    public FramingEdgeIterable(final FramedGraph framedGraph, final Iterable<Edge> iterable, final Class<T> kind) {
-        super(framedGraph, iterable, kind);
-    }
+	public FramingEdgeIterable(final FramedGraph framedGraph, final Iterable<Edge> iterable, final Class<T> kind) {
+		super(framedGraph, iterable, kind);
+	}
 
-    public FramingEdgeIterable(final FramedGraph framedGraph, final Iterable<Edge> iterable, final Class<T> kind, final boolean explicit) {
-        super(framedGraph, iterable, kind, explicit);
-    }
+	public FramingEdgeIterable(final FramedGraph framedGraph, final Iterable<Edge> iterable, final Class<T> kind, final boolean explicit) {
+		super(framedGraph, iterable, kind, explicit);
+	}
 }

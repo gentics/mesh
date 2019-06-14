@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
-import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
+import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 
 import org.apache.commons.lang3.NotImplementedException;
 

@@ -5,7 +5,9 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
+import com.gentics.mesh.core.data.changelog.Change;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.logging.Logger;
@@ -61,6 +63,19 @@ public abstract class AbstractDatabase implements Database {
 			e.printStackTrace();
 		}
 		setupConnectionPool();
+	}
+
+	@Override
+	public String getDatabaseRevision() {
+		String overrideRev = System.getProperty("mesh.internal.dbrev");
+		if (overrideRev != null) {
+			return overrideRev;
+		}
+		StringBuilder builder = new StringBuilder();
+		for (String changeUuid : getChangeUuidList()) {
+			builder.append(changeUuid);
+		}
+		return ETag.hash(builder.toString() + getVersion());
 	}
 
 }

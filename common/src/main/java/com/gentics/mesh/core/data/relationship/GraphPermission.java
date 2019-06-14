@@ -6,8 +6,8 @@ import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
-import static com.syncleus.ferma.type.EdgeTypeDefinition.edgeType;
+import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
+import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.graphdb.spi.IndexHandler;

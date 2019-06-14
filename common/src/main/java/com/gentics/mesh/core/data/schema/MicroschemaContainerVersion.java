@@ -6,7 +6,7 @@ import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.madlmigration.TraversalResult;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 
 import static com.gentics.mesh.ElementType.MICROSCHEMAVERSION;
 import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_CREATED;

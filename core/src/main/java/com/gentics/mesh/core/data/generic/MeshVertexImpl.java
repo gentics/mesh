@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.generic;
 
-import static com.syncleus.ferma.index.VertexIndexDefinition.vertexIndex;
+import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,12 +17,12 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.IndexHandler;
 import com.gentics.mesh.graphdb.spi.TypeHandler;
+import com.gentics.mesh.madl.field.FieldType;
+import com.gentics.mesh.madl.frame.AbstractVertexFrame;
 import com.gentics.mesh.util.UUIDUtil;
-import com.syncleus.ferma.AbstractVertexFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.annotations.GraphElement;
-import com.syncleus.ferma.index.field.FieldType;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Element;
@@ -79,62 +79,6 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	@SuppressWarnings("unchecked")
 	public Object getId() {
 		return id;
-	}
-
-	/**
-	 * Add a single link <b>in-bound</b> link to the given vertex. Note that this method will remove all other links to other vertices for the given labels and
-	 * only create a single edge between both vertices per label.
-	 * 
-	 * @param vertex
-	 *            Target vertex
-	 * @param labels
-	 *            Labels to handle
-	 */
-	public void setSingleLinkInTo(VertexFrame vertex, String... labels) {
-		// Unlink all edges with the given label
-		unlinkIn(null, labels);
-		// Create a new edge with the given label
-		linkIn(vertex, labels);
-	}
-
-	/**
-	 * Add a unique <b>in-bound</b> link to the given vertex for the given set of labels. Note that this method will effectively ensure that only one
-	 * <b>in-bound</b> link exists between the two vertices for each label.
-	 * 
-	 * @param vertex
-	 *            Target vertex
-	 * @param labels
-	 *            Labels to handle
-	 */
-	public void setUniqueLinkInTo(VertexFrame vertex, String... labels) {
-		// Unlink all edges between both objects with the given label
-		unlinkIn(vertex, labels);
-		// Create a new edge with the given label
-		linkIn(vertex, labels);
-	}
-
-	/**
-	 * Remove all out-bound edges with the given label from the current vertex and create a new new <b>out-bound</b> edge between the current and given vertex
-	 * using the specified label. Note that only a single out-bound edge per label will be preserved.
-	 * 
-	 * @param vertex
-	 *            Target vertex
-	 * @param labels
-	 *            Labels to handle
-	 */
-	public void setSingleLinkOutTo(VertexFrame vertex, String... labels) {
-		// Unlink all edges with the given label
-		unlinkOut(null, labels);
-		// Create a new edge with the given label
-		linkOut(vertex, labels);
-	}
-
-	@Override
-	public void setUniqueLinkOutTo(VertexFrame vertex, String... labels) {
-		// Unlink all edges between both objects with the given label
-		unlinkOut(vertex, labels);
-		// Create a new edge with the given label
-		linkOut(vertex, labels);
 	}
 
 	public String getUuid() {

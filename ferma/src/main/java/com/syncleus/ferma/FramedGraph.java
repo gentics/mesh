@@ -28,251 +28,185 @@ import java.util.Iterator;
  */
 public interface FramedGraph extends Graph {
 
-    TypeResolver getTypeResolver();
+	TypeResolver getTypeResolver();
 
-    /**
-     * Close the delegate graph.
-     */
-    void close();
+	/**
+	 * Close the delegate graph.
+	 */
+	void close();
 
-    /**
-     * Add a vertex to the graph
-     *
-     * @param <T> The type used to frame the element.
-     * @param id
-     *            the recommended object identifier
-     * @param initializer
-     *            the initializer for the frame which defines its type and may initialize properties
-     * @return The framed vertex.
-     */
-    <T> T addFramedVertex(Object id, ClassInitializer<T> initializer);
-    
-    /**
-     * Add a vertex to the graph
-     *
-     * @param <T> The type used to frame the element.
-     * @param kind
-     *            The kind of the frame.
-     * @return The framed vertex.
-     */
-    <T> T addFramedVertex(Class<T> kind);
+	/**
+	 * Add a vertex to the graph
+	 *
+	 * @param <T>
+	 *            The type used to frame the element.
+	 * @param id
+	 *            the recommended object identifier
+	 * @param initializer
+	 *            the initializer for the frame which defines its type and may initialize properties
+	 * @return The framed vertex.
+	 */
+	<T> T addFramedVertex(Object id, ClassInitializer<T> initializer);
 
-    /**
-     * Add a vertex to the graph
-     *
-     * This will bypass the default type resolution and use the untyped resolver
-     * instead. This method is useful for speeding up a look up when type resolution
-     * isn't required.
-     *
-     * @param <T> The type used to frame the element.
-     * @param initializer
-     *            the initializer for the frame which defines its type and may initialize properties
-     * @return The framed vertex.
-     */
-    <T> T addFramedVertexExplicit(ClassInitializer<T> initializer);
-    
-    /**
-     * Add a vertex to the graph
-     *
-     * This will bypass the default type resolution and use the untyped resolver
-     * instead. This method is useful for speeding up a look up when type resolution
-     * isn't required.
-     *
-     * @param <T> The type used to frame the element.
-     * @param kind
-     *            The kind of the frame.
-     * @return The framed vertex.
-     */
-    <T> T addFramedVertexExplicit(Class<T> kind);
+	/**
+	 * Add a vertex to the graph
+	 *
+	 * @param <T>
+	 *            The type used to frame the element.
+	 * @param kind
+	 *            The kind of the frame.
+	 * @return The framed vertex.
+	 */
+	<T> T addFramedVertex(Class<T> kind);
 
-    /**
-     * Add a vertex to the graph using a frame type of {@link TVertex}.
-     *
-     * @return The framed vertex.
-     */
-    TVertex addFramedVertex();
+	/**
+	 * Add a vertex to the graph
+	 *
+	 * This will bypass the default type resolution and use the untyped resolver instead. This method is useful for speeding up a look up when type resolution
+	 * isn't required.
+	 *
+	 * @param <T>
+	 *            The type used to frame the element.
+	 * @param initializer
+	 *            the initializer for the frame which defines its type and may initialize properties
+	 * @return The framed vertex.
+	 */
+	<T> T addFramedVertexExplicit(ClassInitializer<T> initializer);
 
-    /**
-     * Add a vertex to the graph using a frame type of {@link TVertex}.
-     *
-     * This will bypass the default type resolution and use the untyped resolver
-     * instead. This method is useful for speeding up a look up when type resolution
-     * isn't required.
-     *
-     * @return The framed vertex.
-     */
-    TVertex addFramedVertexExplicit();
+	/**
+	 * Add a vertex to the graph
+	 *
+	 * This will bypass the default type resolution and use the untyped resolver instead. This method is useful for speeding up a look up when type resolution
+	 * isn't required.
+	 *
+	 * @param <T>
+	 *            The type used to frame the element.
+	 * @param kind
+	 *            The kind of the frame.
+	 * @return The framed vertex.
+	 */
+	<T> T addFramedVertexExplicit(Class<T> kind);
 
-    /**
-     * Add a edge to the graph
-     *
-     * @param <T> The type used to frame the element.
-     * @param id the recommended object identifier
-     * @param source the source vertex
-     * @param destination the destination vertex
-     * @param label the label.
-     * @param initializer
-     *            the initializer for the frame which defines its type and may initialize properties
-     * @return The framed edge.
-     */
-    <T> T addFramedEdge(final Object id, final VertexFrame source, final VertexFrame destination, final String label, ClassInitializer<T> initializer);
+	/**
+	 * Add a vertex to the graph using a frame type of {@link TVertex}.
+	 *
+	 * @return The framed vertex.
+	 */
+	TVertex addFramedVertex();
 
-    /**
-     * Add a edge to the graph
-     *
-     * @param <T> The type used to frame the element.
-     * @param source The source vertex
-     * @param destination the destination vertex
-     * @param label the label.
-     * @param kind
-     *            The kind of the frame.
-     * @return The framed edge.
-     */
-    <T> T addFramedEdge(final VertexFrame source, final VertexFrame destination, final String label, Class<T> kind);
+	/**
+	 * Add a edge to the graph
+	 *
+	 * @param <T>
+	 *            The type used to frame the element.
+	 * @param id
+	 *            the recommended object identifier
+	 * @param source
+	 *            the source vertex
+	 * @param destination
+	 *            the destination vertex
+	 * @param label
+	 *            the label.
+	 * @param initializer
+	 *            the initializer for the frame which defines its type and may initialize properties
+	 * @return The framed edge.
+	 */
+	<T> T addFramedEdge(final Object id, final VertexFrame source, final VertexFrame destination, final String label,
+		ClassInitializer<T> initializer);
 
-    /**
-     * Add a edge to the graph
-     *
-     * This will bypass the default type resolution and use the untyped resolver
-     * instead. This method is useful for speeding up a look up when type resolution
-     * isn't required.
-     *
-     * @param <T> The type used to frame the element.
-     * @param source The source vertex
-     * @param destination the destination vertex
-     * @param label the label.
-     * @param initializer
-     *            the initializer for the frame which defines its type and may initialize properties
-     * @return The framed edge.
-     */
-    <T> T addFramedEdgeExplicit(final VertexFrame source, final VertexFrame destination, final String label, ClassInitializer<T> initializer);
-    
-    /**
-     * Add a edge to the graph
-     *
-     * This will bypass the default type resolution and use the untyped resolver
-     * instead. This method is useful for speeding up a look up when type resolution
-     * isn't required.
-     *
-     * @param <T> The type used to frame the element.
-     * @param source The source vertex
-     * @param destination the destination vertex
-     * @param label the label.
-     * @param kind
-     *            The kind of the frame.
-     * @return The framed edge.
-     */
-    <T> T addFramedEdgeExplicit(final VertexFrame source, final VertexFrame destination, final String label, Class<T> kind);
+	/**
+	 * Add a edge to the graph
+	 *
+	 * @param <T>
+	 *            The type used to frame the element.
+	 * @param source
+	 *            The source vertex
+	 * @param destination
+	 *            the destination vertex
+	 * @param label
+	 *            the label.
+	 * @param kind
+	 *            The kind of the frame.
+	 * @return The framed edge.
+	 */
+	<T> T addFramedEdge(final VertexFrame source, final VertexFrame destination, final String label, Class<T> kind);
 
-    /**
-     * Add a edge to the graph using a frame type of {@link TEdge}.
-     *
-     * @param source The source vertex
-     * @param destination the destination vertex
-     * @param label the label.
-     * @return The framed edge.
-     */
-    TEdge addFramedEdge(final VertexFrame source, final VertexFrame destination, final String label);
+	/**
+	 * Add a edge to the graph using a frame type of {@link TEdge}.
+	 *
+	 * @param source
+	 *            The source vertex
+	 * @param destination
+	 *            the destination vertex
+	 * @param label
+	 *            the label.
+	 * @return The framed edge.
+	 */
+	TEdge addFramedEdge(final VertexFrame source, final VertexFrame destination, final String label);
 
-    /**
-     * Add a edge to the graph using a frame type of {@link TEdge}.
-     *
-     * This will bypass the default type resolution and use the untyped resolver
-     * instead. This method is useful for speeding up a look up when type resolution
-     * isn't required.
-     *
-     * @param source The source vertex
-     * @param destination the destination vertex
-     * @param label the label.
-     * @return The framed edge.
-     */
-    TEdge addFramedEdgeExplicit(final VertexFrame source, final VertexFrame destination, final String label);
+	/**
+	 * Query over all vertices in the graph.
+	 *
+	 * @return The query.
+	 */
+	VertexTraversal<?, ?, ?> v();
 
-    /**
-     * Query over all vertices in the graph.
-     *
-     * @return The query.
-     */
-    VertexTraversal<?, ?, ?> v();
+	/**
+	 * Query over all edges in the graph.
+	 *
+	 * @return The query.
+	 */
+	EdgeTraversal<?, ?, ?> e();
 
-    /**
-     * Query over all edges in the graph.
-     *
-     * @return The query.
-     */
-    EdgeTraversal<?, ?, ?> e();
+	<F> F getFramedVertexExplicit(Class<F> classOfF, Object id);
 
-    <F> F getFramedVertexExplicit(Class<F> classOfF, Object id);
+	<F> Iterable<? extends F> getFramedVertices(final String key, final Object value, final Class<F> kind);
 
-    <F> Iterable<? extends F> getFramedVertices(final Class<F> kind);
+	<F> Iterable<? extends F> getFramedVerticesExplicit(final Class<F> kind);
 
-    <F> Iterable<? extends F> getFramedVertices(final String key, final Object value, final Class<F> kind);
+	<F> Iterable<? extends F> getFramedVerticesExplicit(final String key, final Object value, final Class<F> kind);
 
-    <F> Iterable<? extends F> getFramedVerticesExplicit(final Class<F> kind);
+	<F> Iterable<? extends F> getFramedEdges(final Class<F> kind);
 
-    <F> Iterable<? extends F> getFramedVerticesExplicit(final String key, final Object value, final Class<F> kind);
+	<F> Iterable<? extends F> getFramedEdges(final String key, final Object value, final Class<F> kind);
 
-    <F> Iterable<? extends F> getFramedEdges(final Class<F> kind);
+	<F> Iterable<? extends F> getFramedEdgesExplicit(final String key, final Object value, final Class<F> kind);
 
-    <F> Iterable<? extends F> getFramedEdges(final String key, final Object value, final Class<F> kind);
+	/**
+	 * Query over a list of edges in the graph.
+	 *
+	 * @param ids
+	 *            The ids of the edges.
+	 * @return The query.
+	 */
+	EdgeTraversal<?, ?, ?> e(final Object... ids);
 
-    <F> Iterable<? extends F> getFramedEdgesExplicit(final Class<F> kind);
+	/**
+	 * Query over a list of edges in the graph.
+	 *
+	 * @param ids
+	 *            The ids of the edges.
+	 * @return The query.
+	 */
+	EdgeTraversal<?, ?, ?> e(final Collection<?> ids);
 
-    <F> Iterable<? extends F> getFramedEdgesExplicit(final String key, final Object value, final Class<F> kind);
+	Vertex addVertexExplicit(Object id);
 
-    /**
-     * Query over a list of vertices in the graph.
-     *
-     * @param ids
-     *            The ids of the vertices.
-     * @return The query.
-     */
-    VertexTraversal<?, ?, ?> v(final Collection<?> ids);
+	Edge addEdgeExplicit(Object id, Vertex outVertex, Vertex inVertex, String label);
 
-    /**
-     * Query over a list of vertices in the graph.
-     *
-     * @param ids
-     *            The ids of the vertices.
-     * @return The query.
-     */
-    VertexTraversal<?, ?, ?> v(final Object... ids);
+	<T> Iterator<? extends T> frame(Iterator<? extends Element> pipeline, final Class<T> kind);
 
-    /**
-     * Query over a list of edges in the graph.
-     *
-     * @param ids
-     *            The ids of the edges.
-     * @return The query.
-     */
-    EdgeTraversal<?, ?, ?> e(final Object... ids);
+	<T> T frameNewElement(Element e, ClassInitializer<T> initializer);
 
-    /**
-     * Query over a list of edges in the graph.
-     *
-     * @param ids
-     *            The ids of the edges.
-     * @return The query.
-     */
-    EdgeTraversal<?, ?, ?> e(final Collection<?> ids);
+	<T> T frameNewElement(Element e, Class<T> kind);
 
-    Vertex addVertexExplicit(Object id);
+	<T> T frameElement(Element e, Class<T> kind);
 
-    Edge addEdgeExplicit(Object id, Vertex outVertex, Vertex inVertex, String label);
+	<T> T frameNewElementExplicit(Element e, ClassInitializer<T> initializer);
 
-    <T> Iterator<? extends T> frame(Iterator<? extends Element> pipeline, final Class<T> kind);
+	<T> T frameNewElementExplicit(Element e, Class<T> kind);
 
-    <T> T frameNewElement(Element e, ClassInitializer<T> initializer);
-    
-    <T> T frameNewElement(Element e, Class<T> kind);
+	<T> T frameElementExplicit(Element e, Class<T> kind);
 
-    <T> T frameElement(Element e, Class<T> kind);
-
-    <T> T frameNewElementExplicit(Element e, ClassInitializer<T> initializer);
-    
-    <T> T frameNewElementExplicit(Element e, Class<T> kind);
-
-    <T> T frameElementExplicit(Element e, Class<T> kind);
-
-    <T> Iterator<? extends T> frameExplicit(Iterator<? extends Element> pipeline, final Class<T> kind);
+	<T> Iterator<? extends T> frameExplicit(Iterator<? extends Element> pipeline, final Class<T> kind);
 }

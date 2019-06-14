@@ -13,13 +13,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Set;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -62,7 +61,9 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.MeshJsonException;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.json.JsonObject;
 
@@ -302,7 +303,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			Micronode micronode = field.getMicronode();
 			String originalUuid = micronode.getUuid();
 
-			Set<? extends MicronodeImpl> existingMicronodes = tx.getGraph().v().has(MicronodeImpl.class).toSetExplicit(MicronodeImpl.class);
+			List<? extends MicronodeImpl> existingMicronodes = new TraversalResult(tx.getGraph().v().has(MicronodeImpl.class).frameExplicit(MicronodeImpl.class)).list();
 			for (Micronode foundMicronode : existingMicronodes) {
 				assertEquals(micronode.getUuid(), foundMicronode.getUuid());
 			}
@@ -313,7 +314,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 
 			assertFalse("Uuid of micronode must be different after update", StringUtils.equalsIgnoreCase(originalUuid, updatedMicronode.getUuid()));
 
-			existingMicronodes = tx.getGraph().v().has(MicronodeImpl.class).toSetExplicit(MicronodeImpl.class);
+			existingMicronodes = new TraversalResult(tx.getGraph().v().has(MicronodeImpl.class).frameExplicit(MicronodeImpl.class)).list();
 			for (MicronodeImpl foundMicronode : existingMicronodes) {
 				assertEquals(updatedMicronode.getUuid(), foundMicronode.getUuid());
 			}

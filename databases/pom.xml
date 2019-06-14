@@ -14,11 +14,11 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<projectRoot>${project.basedir}/..</projectRoot>
 	</properties>
 
 	<modules>
 		<module>orientdb</module>
+		<module>neo4j</module>
 	</modules>
 
 	<dependencies>

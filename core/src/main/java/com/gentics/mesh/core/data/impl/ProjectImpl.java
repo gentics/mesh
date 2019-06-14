@@ -15,7 +15,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_ASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_UNASSIGNED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.syncleus.ferma.index.VertexIndexDefinition.vertexIndex;
+import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Set;
@@ -61,12 +61,12 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.IndexHandler;
 import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.handler.VersionHandler;
-import com.gentics.mesh.madlmigration.TraversalResult;
+import com.gentics.mesh.madl.field.FieldType;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.util.ETag;
-import com.syncleus.ferma.index.field.FieldType;
 
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;

@@ -1,9 +1,9 @@
 package com.gentics.mesh.graphdb;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
+import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
+import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.syncleus.ferma.index.EdgeIndexDefinition.edgeIndex;
-import static com.syncleus.ferma.index.VertexIndexDefinition.vertexIndex;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
@@ -22,9 +22,9 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.index.field.FieldType;
 import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(testSize = FULL, startServer = false)

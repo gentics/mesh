@@ -127,15 +127,6 @@ public interface ElementFrame {
     EdgeTraversal<?, ?, ?> e();
 
     /**
-     * Query over a list of vertices in the graph.
-     *
-     * @param ids
-     *            The ids of the vertices.
-     * @return The query.
-     */
-    VertexTraversal<?, ?, ?> v(final Object... ids);
-
-    /**
      * Query over a list of edges in the graph.
      *
      * @param ids

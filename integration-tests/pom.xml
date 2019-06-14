@@ -10,9 +10,4 @@
 	<packaging>pom</packaging>
 	<name>Mesh Integration Tests</name>
 
-	<properties>
-		<dockerHostname>satan3.office</dockerHostname>
-		<dockerHostProtocol>tcp</dockerHostProtocol>
-		<projectRoot>${project.basedir}/..</projectRoot>
-	</properties>
 </project>

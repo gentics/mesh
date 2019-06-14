@@ -16,7 +16,6 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<projectRoot>${project.basedir}/../..</projectRoot>
 		<aws.sdk.version>2.1.0</aws.sdk.version>
 	</properties>
 

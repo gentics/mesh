@@ -1,10 +1,10 @@
 package com.gentics.mesh.graphdb.spi;
 
-import static com.syncleus.ferma.type.VertexTypeDefinition.vertexType;
+import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 
-import com.syncleus.ferma.type.ElementTypeDefinition;
-import com.syncleus.ferma.type.impl.EdgeTypeDefinitionImpl.EdgeTypeDefinitionBuilder;
-import com.syncleus.ferma.type.impl.VertexTypeDefinitionImpl.VertexTypeDefinitionBuilder;
+import com.gentics.mesh.madl.type.ElementTypeDefinition;
+import com.gentics.mesh.madl.type.impl.EdgeTypeDefinitionImpl.EdgeTypeDefinitionBuilder;
+import com.gentics.mesh.madl.type.impl.VertexTypeDefinitionImpl.VertexTypeDefinitionBuilder;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;

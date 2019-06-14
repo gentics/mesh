@@ -1,7 +1,7 @@
 package com.gentics.mesh.graphdb;
 
+import com.gentics.mesh.madl.field.FieldType;
 import com.orientechnologies.orient.core.metadata.schema.OType;
-import com.syncleus.ferma.index.field.FieldType;
 
 public final class FieldTypeMapper {
 

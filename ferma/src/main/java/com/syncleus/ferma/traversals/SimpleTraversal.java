@@ -26,8 +26,11 @@ package com.syncleus.ferma.traversals;
 import com.syncleus.ferma.ElementFrame;
 import com.syncleus.ferma.FramedGraph;
 import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
+
+import org.apache.commons.lang.NotImplementedException;
 
 import com.syncleus.ferma.pipes.FermaGremlinPipeline;
 import com.tinkerpop.blueprints.Graph;
@@ -35,150 +38,157 @@ import com.tinkerpop.blueprints.Graph;
 /**
  * A simple element traversal.
  *
- * @param <T> The type of the objects coming off the pipe.
- * @param <C> The cap of the current pipe.
- * @param <S> The SideEffect of the current pipe.
- * @param <M> The current marked type for the current pipe.
+ * @param <T>
+ *            The type of the objects coming off the pipe.
+ * @param <C>
+ *            The cap of the current pipe.
+ * @param <S>
+ *            The SideEffect of the current pipe.
+ * @param <M>
+ *            The current marked type for the current pipe.
  */
 public class SimpleTraversal<T, C, S, M> extends AbstractTraversal<T, C, S, M> {
-    private final Deque<MarkId> marks = new ArrayDeque<>();
-    private int markId = 0;
+	private final Deque<MarkId> marks = new ArrayDeque<>();
+	private int markId = 0;
 
-    public SimpleTraversal(final FramedGraph graph, final Graph delegate) {
-        this(graph, new FermaGremlinPipeline<>(delegate));
-    }
+	public SimpleTraversal(final FramedGraph graph, final Graph delegate) {
+		this(graph, new FermaGremlinPipeline<>(delegate));
+	}
 
-    public SimpleTraversal(final FramedGraph graph, final Iterator starts) {
-        super(graph, new FermaGremlinPipeline<>(starts));
-    }
+	public SimpleTraversal(final FramedGraph graph, final Iterator starts) {
+		super(graph, new FermaGremlinPipeline<>(starts));
+	}
 
-    public SimpleTraversal(final FramedGraph graph, final ElementFrame starts) {
-        this(graph, new FermaGremlinPipeline<>(starts.getElement()));
-    }
+	public SimpleTraversal(final FramedGraph graph, final ElementFrame starts) {
+		this(graph, new FermaGremlinPipeline<>(starts.getElement()));
+	}
 
-    public MarkId pushMark(final Traversal<?, ?, ?, ?> traversal) {
-        final MarkId mark = new MarkId();
-        mark.id = "traversalMark" + markId++;
-        mark.traversal = traversal;
-        marks.push(mark);
+	public MarkId pushMark(final Traversal<?, ?, ?, ?> traversal) {
+		final MarkId mark = new MarkId();
+		mark.id = "traversalMark" + markId++;
+		mark.traversal = traversal;
+		marks.push(mark);
 
-        return mark;
-    }
+		return mark;
+	}
 
-    @Override
-    public <W, X, Y, Z> MarkId<W, X, Y, Z> pushMark() {
+	@Override
+	public <W, X, Y, Z> MarkId<W, X, Y, Z> pushMark() {
 
-        return pushMark(this);
-    }
+		return pushMark(this);
+	}
 
-    @Override
-    public <W, X, Y, Z> MarkId<W, X, Y, Z> popMark() {
-        return marks.pop();
-    }
+	@Override
+	public <W, X, Y, Z> MarkId<W, X, Y, Z> popMark() {
+		return marks.pop();
+	}
 
-    /**
-     * @return Cast the traversal to a {@link VertexTraversal}
-     */
-    @Override
-    public VertexTraversal<C, S, M> castToVertices() {
-        return vertexTraversal;
-    }
+	/**
+	 * @return Cast the traversal to a {@link VertexTraversal}
+	 */
+	@Override
+	public VertexTraversal<C, S, M> castToVertices() {
+		return vertexTraversal;
+	}
 
-    /**
-     * @return Cast the traversal to a {@link EdgeTraversal}
-     */
-    @Override
-    public EdgeTraversal<C, S, M> castToEdges() {
-        return edgeTraversal;
-    }
+	/**
+	 * @return Cast the traversal to a {@link EdgeTraversal}
+	 */
+	@Override
+	public EdgeTraversal<C, S, M> castToEdges() {
+		return edgeTraversal;
+	}
 
-    @Override
-    protected <W, X, Y, Z> Traversal<W, X, Y, Z> castToTraversal() {
-        return (Traversal<W, X, Y, Z>) this;
-    }
+	@Override
+	protected <W, X, Y, Z> Traversal<W, X, Y, Z> castToTraversal() {
+		return (Traversal<W, X, Y, Z>) this;
+	}
 
-    @Override
-    protected <N> SplitTraversal<N> castToSplit() {
-        return splitTraversal;
-    }
+	@Override
+	protected <N> SplitTraversal<N> castToSplit() {
+		return splitTraversal;
+	}
 
-    private final SplitTraversal splitTraversal = new SplitTraversal() {
+	private final SplitTraversal splitTraversal = new SplitTraversal() {
 
-        @Override
-        public Traversal exhaustMerge() {
-            getPipeline().exhaustMerge();
-            return castToTraversal();
-        }
+		@Override
+		public Traversal exhaustMerge() {
+			getPipeline().exhaustMerge();
+			return castToTraversal();
+		}
 
-        @Override
-        public Traversal fairMerge() {
-            getPipeline().fairMerge();
-            return castToTraversal();
-        }
-    };
+		@Override
+		public Traversal fairMerge() {
+			getPipeline().fairMerge();
+			return castToTraversal();
+		}
+	};
 
-    private final EdgeTraversal edgeTraversal = new AbstractEdgeTraversal(getGraph(), getPipeline()) {
+	private final EdgeTraversal edgeTraversal = new AbstractEdgeTraversal(getGraph(), getPipeline()) {
 
-        @Override
-        public VertexTraversal castToVertices() {
-            return vertexTraversal;
-        }
+		@Override
+		public VertexTraversal castToVertices() {
+			return vertexTraversal;
+		}
 
-        @Override
-        public EdgeTraversal castToEdges() {
-            return edgeTraversal;
-        }
+		@Override
+		public EdgeTraversal castToEdges() {
+			return edgeTraversal;
+		}
 
-        @Override
-        protected Traversal castToTraversal() {
-            return SimpleTraversal.this;
-        }
+		@Override
+		protected Traversal castToTraversal() {
+			return SimpleTraversal.this;
+		}
 
-        @Override
-        public AbstractTraversal.MarkId pushMark() {
-            return SimpleTraversal.this.pushMark(this);
-        }
+		@Override
+		public AbstractTraversal.MarkId pushMark() {
+			return SimpleTraversal.this.pushMark(this);
+		}
 
-        @Override
-        public AbstractTraversal.MarkId popMark() {
-            return SimpleTraversal.this.popMark();
-        }
+		@Override
+		public AbstractTraversal.MarkId popMark() {
+			return SimpleTraversal.this.popMark();
+		}
 
-        @Override
-        public SplitTraversal castToSplit() {
-            return splitTraversal;
-        }
-    };
+		@Override
+		public SplitTraversal castToSplit() {
+			return splitTraversal;
+		}
 
-    private final VertexTraversal vertexTraversal = new AbstractVertexTraversal(getGraph(), getPipeline()) {
-        @Override
-        public VertexTraversal castToVertices() {
-            return vertexTraversal;
-        }
+	};
 
-        @Override
-        public EdgeTraversal castToEdges() {
-            return edgeTraversal;
-        }
+	private final VertexTraversal vertexTraversal = new AbstractVertexTraversal(getGraph(), getPipeline()) {
+		@Override
+		public VertexTraversal castToVertices() {
+			return vertexTraversal;
+		}
 
-        @Override
-        protected Traversal castToTraversal() {
-            return SimpleTraversal.this;
-        }
+		@Override
+		public EdgeTraversal castToEdges() {
+			return edgeTraversal;
+		}
 
-        @Override
-        public AbstractTraversal.MarkId pushMark() {
-            return SimpleTraversal.this.pushMark(this);
-        }
+		@Override
+		protected Traversal castToTraversal() {
+			return SimpleTraversal.this;
+		}
 
-        @Override
-        public AbstractTraversal.MarkId popMark() {
-            return SimpleTraversal.this.popMark();
-        }
+		@Override
+		public AbstractTraversal.MarkId pushMark() {
+			return SimpleTraversal.this.pushMark(this);
+		}
 
-        @Override
-        public SplitTraversal castToSplit() {
-            return splitTraversal;
-        }
-    };
+		@Override
+		public AbstractTraversal.MarkId popMark() {
+			return SimpleTraversal.this.popMark();
+		}
+
+		@Override
+		public SplitTraversal castToSplit() {
+			return splitTraversal;
+		}
+
+	};
+
 }

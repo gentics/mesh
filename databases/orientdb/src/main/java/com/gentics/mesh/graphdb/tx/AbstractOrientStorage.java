@@ -44,8 +44,8 @@ public abstract class AbstractOrientStorage implements OrientStorage {
 	public AbstractOrientStorage(MeshOptions options, MetricsService metrics) {
 		this.options = options;
 		this.metrics = metrics;
-		txCounter = metrics.meter(TX);
-		noTxCounter = metrics.meter(NO_TX);
+		this.txCounter = metrics.meter(TX);
+		this.noTxCounter = metrics.meter(NO_TX);
 	}
 
 	public MeshOptions getOptions() {

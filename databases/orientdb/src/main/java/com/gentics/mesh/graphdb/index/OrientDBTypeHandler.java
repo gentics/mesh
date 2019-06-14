@@ -8,13 +8,13 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.spi.TypeHandler;
+import com.gentics.mesh.madl.field.FieldMap;
+import com.gentics.mesh.madl.field.FieldType;
+import com.gentics.mesh.madl.type.EdgeTypeDefinition;
+import com.gentics.mesh.madl.type.ElementTypeDefinition;
+import com.gentics.mesh.madl.type.VertexTypeDefinition;
 import com.orientechnologies.orient.core.id.ORID;
 import com.orientechnologies.orient.core.metadata.schema.OType;
-import com.syncleus.ferma.index.field.FieldMap;
-import com.syncleus.ferma.index.field.FieldType;
-import com.syncleus.ferma.type.EdgeTypeDefinition;
-import com.syncleus.ferma.type.ElementTypeDefinition;
-import com.syncleus.ferma.type.VertexTypeDefinition;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
