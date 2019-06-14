@@ -142,19 +142,6 @@ abstract class AbstractTraversal<T, C, S, M> implements Traversal<T, C, S, M> {
 		return this;
 	}
 
-	protected <Z> Traversal<T, ?, ?, M> interval(final String key, final Comparable<Z> startValue, final Comparable<Z> endValue) {
-		Comparable pipelineStart = startValue;
-		if (startValue instanceof Enum)
-			pipelineStart = startValue.toString();
-
-		Comparable pipelineEnd = endValue;
-		if (endValue instanceof Enum)
-			pipelineEnd = endValue.toString();
-
-		getPipeline().interval(key, pipelineStart, pipelineEnd);
-		return this;
-	}
-
 	@Override
 	public Traversal<T, ?, ?, M> dedup(final TraversalFunction<T, ?> dedupFunction) {
 		getPipeline().dedup(dedupFunction);

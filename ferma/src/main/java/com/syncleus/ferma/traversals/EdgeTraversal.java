@@ -23,16 +23,11 @@
  */
 package com.syncleus.ferma.traversals;
 
-import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import com.syncleus.ferma.EdgeFrame;
 import com.tinkerpop.blueprints.Predicate;
 import com.tinkerpop.gremlin.Tokens;
-import com.tinkerpop.pipes.transform.TransformPipe;
 
 /**
  * Edge specific traversal.
@@ -135,22 +130,6 @@ public interface EdgeTraversal<C, S, M> extends Traversal<EdgeFrame, C, S, M> {
 	EdgeTraversal<?, ?, M> hasNot(Class<?> clazz);
 
 	/**
-	 * Add an IntervalFilterPipe to the end of the Pipeline. If the incoming element has a value that is within the interval value range specified, then the
-	 * element is allows to pass. If the incoming element's value for the key is null, the element is filtered.
-	 *
-	 * @param <Z>
-	 *            The type for the property value.
-	 * @param key
-	 *            the property key to check
-	 * @param startValue
-	 *            the start of the interval (inclusive)
-	 * @param endValue
-	 *            the end of the interval (exclusive)
-	 * @return the extended Pipeline
-	 */
-	<Z> EdgeTraversal<?, ?, M> interval(String key, Comparable<Z> startValue, Comparable<Z> endValue);
-
-	/**
 	 * Add an InVertexPipe to the end of the Pipeline. Emit the head vertex of the incoming edge.
 	 *
 	 * @return the extended Pipeline
@@ -163,13 +142,6 @@ public interface EdgeTraversal<C, S, M> extends Traversal<EdgeFrame, C, S, M> {
 	 * @return the extended Pipeline
 	 */
 	VertexTraversal<?, ?, M> outV();
-
-	/**
-	 * Emit both the tail and head vertices of the incoming edge.
-	 *
-	 * @return the extended Pipeline
-	 */
-	VertexTraversal<?, ?, M> bothV();
 
 	/**
 	 * Get the next object emitted from the pipeline. If no such object exists, then a NoSuchElementException is thrown.
@@ -197,46 +169,6 @@ public interface EdgeTraversal<C, S, M> extends Traversal<EdgeFrame, C, S, M> {
 	<T> T nextExplicit(Class<T> kind);
 
 	/**
-	 * Return the next X objects in the traversal as a list.
-	 * 
-	 * @param <T>
-	 *            The type to frame the element as.
-	 * @param amount
-	 *            the number of objects to return
-	 * @param kind
-	 *            the type of frame to for each element.
-	 * @return a list of X objects (if X objects occur)
-	 */
-	<T> List<? extends T> next(int amount, Class<T> kind);
-
-	/**
-	 * Return the next X objects in the traversal as a list.
-	 *
-	 * This will bypass the default type resolution and use the untyped resolver instead. This method is useful for speeding up a look up when type resolution
-	 * isn't required.
-	 *
-	 * @param <T>
-	 *            The type to frame the element as.
-	 * @param amount
-	 *            the number of objects to return
-	 * @param kind
-	 *            the type of frame to for each element.
-	 * @return a list of X objects (if X objects occur)
-	 */
-	<T> List<? extends T> nextExplicit(int amount, Class<T> kind);
-
-	/**
-	 * Return an iterator of framed elements.
-	 * 
-	 * @param <T>
-	 *            The type to frame the element as.
-	 * @param kind
-	 *            The kind of framed elements to return.
-	 * @return An iterator of framed elements.
-	 */
-	<T> Iterable<T> frame(Class<T> kind);
-
-	/**
 	 * Return an iterator of framed elements.
 	 *
 	 * This will bypass the default type resolution and use the untyped resolver instead. This method is useful for speeding up a look up when type resolution
@@ -260,31 +192,6 @@ public interface EdgeTraversal<C, S, M> extends Traversal<EdgeFrame, C, S, M> {
 	 * @return a list of all the objects
 	 */
 	<T> List<? extends T> toList(Class<T> kind);
-
-	/**
-	 * Return a set of all the objects in the pipeline.
-	 *
-	 * @param <T>
-	 *            The type to frame the element as.
-	 * @param kind
-	 *            The kind of framed elements to return.
-	 * @return a set of all the objects
-	 */
-	<T> Set<? extends T> toSet(Class<T> kind);
-
-	/**
-	 * Return a set of all the objects in the pipeline.
-	 *
-	 * This will bypass the default type resolution and use the untyped resolver instead. This method is useful for speeding up a look up when type resolution
-	 * isn't required.
-	 *
-	 * @param <T>
-	 *            The type to frame the element as.
-	 * @param kind
-	 *            The kind of framed elements to return.
-	 * @return a set of all the objects
-	 */
-	<T> Set<? extends T> toSetExplicit(Class<T> kind);
 
 	/**
 	 * Return a list of all the objects in the pipeline.
@@ -322,15 +229,6 @@ public interface EdgeTraversal<C, S, M> extends Traversal<EdgeFrame, C, S, M> {
 	 */
 	EdgeTraversal<?, ?, M> retain(EdgeFrame... edges);
 
-	@Override
-	EdgeTraversal<?, ?, M> order();
-
-	@Override
-	EdgeTraversal<?, ?, M> order(TransformPipe.Order order);
-
-	@Override
-	EdgeTraversal<?, ?, M> order(Comparator<? super EdgeFrame> compareFunction);
-
 	/**
 	 * Add an OrFilterPipe to the end the Pipeline. Will only emit the object if one or more of the provides pipes yields an object. The provided pipes are
 	 * provided the object as their starts.
@@ -348,37 +246,6 @@ public interface EdgeTraversal<C, S, M> extends Traversal<EdgeFrame, C, S, M> {
 	 * Remove every element at the end of this Pipeline.
 	 */
 	void removeAll();
-
-	/**
-	 * The incoming objects are copied to the provided pipes. This "split-pipe" is used in conjunction with some type of "merge-pipe."
-	 *
-	 * @param <N>
-	 *            The type of the element being traversed.
-	 * @param traversals
-	 *            the internal pipes of the CopySplitPipe
-	 * @return the extended Pipeline
-	 */
-	<N> SplitTraversal<? extends Traversal<N, ?, ?, M>> copySplit(TraversalFunction<EdgeFrame, ? extends Traversal<N, ?, ?, ?>>... traversals);
-
-	/**
-	 * The pipeline loops over the supplied traversal.
-	 *
-	 * @param traversal
-	 *            the traversal to loop over.
-	 * @return the extended Pipeline
-	 */
-	EdgeTraversal<?, ?, M> loop(TraversalFunction<EdgeFrame, ? extends EdgeTraversal<?, ?, ?>> traversal);
-
-	/**
-	 * The pipeline loops over the supplied traversal up to a maximum depth.
-	 *
-	 * @param traversal
-	 *            the traversal to loop over.
-	 * @param depth
-	 *            The maximum depth to loop to
-	 * @return the extended Pipeline
-	 */
-	EdgeTraversal<?, ?, M> loop(TraversalFunction<EdgeFrame, ? extends EdgeTraversal<?, ?, ?>> traversal, int depth);
 
 	/**
 	 * Get the next object emitted from the pipeline. If no such object exists, then a the default value is returned.

@@ -21,57 +21,55 @@ import com.google.gson.JsonObject;
 import com.tinkerpop.blueprints.Edge;
 
 public interface EdgeFrame extends ElementFrame {
-    @Override
-    Edge getElement();
+	@Override
+	Edge getElement();
 
-    /**
-     * @return The label associated with this edge
-     */
-    String getLabel();
+	/**
+	 * @return The label associated with this edge
+	 */
+	String getLabel();
 
-    /**
-     * @return The in vertex for this edge.
-     */
-    VertexTraversal<?, ?, ?> inV();
+	/**
+	 * @return The in vertex for this edge.
+	 */
+	VertexTraversal<?, ?, ?> inV();
 
-    /**
-     * @return The out vertex of this edge.
-     */
-    VertexTraversal<?, ?, ?> outV();
+	/**
+	 * @return The out vertex of this edge.
+	 */
+	VertexTraversal<?, ?, ?> outV();
 
-    /**
-     * @return The vertices for this edge.
-     */
-    VertexTraversal<?, ?, ?> bothV();
+	/**
+	 * Shortcut to get Traversal of current element
+	 *
+	 * @return the EdgeTraversal of the current element
+	 */
+	EdgeTraversal<?, ?, ?> traversal();
 
-    /**
-     * Shortcut to get Traversal of current element
-     *
-     * @return the EdgeTraversal of the current element
-     */
-    EdgeTraversal<?, ?, ?> traversal();
+	JsonObject toJson();
 
-    JsonObject toJson();
+	/**
+	 * Reframe this element as a different type of frame.
+	 *
+	 * @param <T>
+	 *            The type to frame as.
+	 * @param kind
+	 *            The new kind of frame.
+	 * @return The new frame
+	 */
+	<T> T reframe(Class<T> kind);
 
-    /**
-     * Reframe this element as a different type of frame.
-     *
-     * @param <T> The type to frame as.
-     * @param kind The new kind of frame.
-     * @return The new frame
-     */
-    <T> T reframe(Class<T> kind);
-
-    /**
-     * Reframe this element as a different type of frame.
-     *
-     * This will bypass the default type resolution and use the untyped resolver
-     * instead. This method is useful for speeding up a look up when type resolution
-     * isn't required.
-     *
-     * @param <T> The type to frame as.
-     * @param kind The new kind of frame.
-     * @return The new frame
-     */
-    <T> T reframeExplicit(Class<T> kind);
+	/**
+	 * Reframe this element as a different type of frame.
+	 *
+	 * This will bypass the default type resolution and use the untyped resolver instead. This method is useful for speeding up a look up when type resolution
+	 * isn't required.
+	 *
+	 * @param <T>
+	 *            The type to frame as.
+	 * @param kind
+	 *            The new kind of frame.
+	 * @return The new frame
+	 */
+	<T> T reframeExplicit(Class<T> kind);
 }

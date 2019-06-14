@@ -181,15 +181,6 @@ public interface FramedGraph extends Graph {
 	 */
 	EdgeTraversal<?, ?, ?> e(final Object... ids);
 
-	/**
-	 * Query over a list of edges in the graph.
-	 *
-	 * @param ids
-	 *            The ids of the edges.
-	 * @return The query.
-	 */
-	EdgeTraversal<?, ?, ?> e(final Collection<?> ids);
-
 	Vertex addVertexExplicit(Object id);
 
 	Edge addEdgeExplicit(Object id, Vertex outVertex, Vertex inVertex, String label);

@@ -385,18 +385,6 @@ public class DelegatingFramedGraph<G extends Graph> extends WrappedGraph<G> impl
 	}
 
 	@Override
-	public EdgeTraversal<?, ?, ?> e(final Collection<?> ids) {
-		return new SimpleTraversal(this, Iterators.transform(ids.iterator(), new Function<Object, Edge>() {
-
-			@Override
-			public Edge apply(final Object input) {
-				return getBaseGraph().getEdge(input);
-			}
-
-		})).castToEdges();
-	}
-
-	@Override
 	public TypeResolver getTypeResolver() {
 		return this.defaultResolver;
 	}

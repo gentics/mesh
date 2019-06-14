@@ -26,11 +26,6 @@ public abstract class AbstractEdgeFrame extends com.syncleus.ferma.AbstractEdgeF
 	}
 
 	@Override
-	public VertexTraversal<?, ?, ?> bothV() {
-		return super.bothV();
-	}
-
-	@Override
 	public EdgeTraversal<?, ?, ?> traversal() {
 		return super.traversal();
 	}
