@@ -190,7 +190,7 @@ public class SchemaContainerVersionImpl extends
 		// Delete change
 		SchemaChange<?> change = getNextChange();
 		if (change != null) {
-			change.remove();
+			change.delete(context);
 		}
 		// Delete referenced jobs
 		for (Job job : referencedJobsViaFrom()) {
