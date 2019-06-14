@@ -411,12 +411,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	}
 
 	@Override
-	public <N> Collection<? extends N> fill(final Collection<? super N> collection, final Class<N> kind) {
-
-		return getPipeline().fill(new FramingCollection<>(collection, graph(), kind));
-	}
-
-	@Override
 	public <N> Collection<? extends N> fillExplicit(final Collection<? super N> collection, final Class<N> kind) {
 		return getPipeline().fill(new FramingCollection<>(collection, graph(), kind, true));
 	}

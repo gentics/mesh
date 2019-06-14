@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.MeshVertex.UUID_KEY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
+import com.gentics.madl.annotations.GraphElement;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.Branch;
@@ -12,7 +13,6 @@ import com.gentics.mesh.core.data.TagEdge;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.madl.field.FieldType;
 import com.syncleus.ferma.VertexFrame;
-import com.syncleus.ferma.annotations.GraphElement;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 /**

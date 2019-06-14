@@ -13,25 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * Part or all of this source file was forked from a third-party project, the details of which are listed below.
- *
- * Source Project: Totorom
- * Source URL: https://github.com/BrynCooke/totorom
- * Source License: Apache Public License v2.0
- * When: November, 20th 2014
- */
-package com.syncleus.ferma.traversals;
+package com.gentics.madl.annotations;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * 
- * Takes a value but does not return anything.
- *
- * @param <T>
- *            The type of input processed by this function.
+ * Annotation which is used to identify classes which represent graph elements.
  */
-public interface SideEffectFunction<T> {
-
-	void execute(T o);
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface GraphElement {
 
 }

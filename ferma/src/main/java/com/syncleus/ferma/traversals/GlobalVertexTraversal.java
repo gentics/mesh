@@ -23,27 +23,28 @@
  */
 package com.syncleus.ferma.traversals;
 
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Spliterator;
+import java.util.function.Consumer;
+
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import com.syncleus.ferma.ClassInitializer;
 import com.syncleus.ferma.DefaultClassInitializer;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.Path;
 import com.syncleus.ferma.VertexFrame;
-import com.tinkerpop.blueprints.*;
+import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.KeyIndexableGraph;
+import com.tinkerpop.blueprints.Predicate;
+import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.tg.TinkerGraph;
 import com.tinkerpop.gremlin.Tokens;
 import com.tinkerpop.pipes.transform.TransformPipe;
-import com.tinkerpop.pipes.util.structures.Pair;
-import com.tinkerpop.pipes.util.structures.Row;
-import com.tinkerpop.pipes.util.structures.Table;
-import com.tinkerpop.pipes.util.structures.Tree;
-
-import java.util.*;
-import java.util.function.Consumer;
-
-import org.apache.commons.lang.NotImplementedException;
 
 /**
  * Specialized global vertex traversal that bypasses gremlin pipeline for simple key value lookups. As soon as a more complex traversal is detected then it
@@ -433,11 +434,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	@Override
 	public VertexTraversal<?, ?, M> order(final Tokens.T order) {
 		return this.simpleDelegate().order(order);
-	}
-
-	@Override
-	public <N> Collection<? extends N> fill(final Collection<? super N> collection, final Class<N> kind) {
-		return this.simpleDelegate().fill(collection, kind);
 	}
 
 	@Override

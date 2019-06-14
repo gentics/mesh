@@ -560,19 +560,6 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	/**
 	 * Fill the provided collection with the objects in the pipeline.
 	 *
-	 * @param <N>
-	 *            The type used to frame the element
-	 * @param collection
-	 *            the collection to fill
-	 * @param kind
-	 *            The kind of framed elements to return.
-	 * @return the collection filled
-	 */
-	<N> Collection<? extends N> fill(Collection<? super N> collection, Class<N> kind);
-
-	/**
-	 * Fill the provided collection with the objects in the pipeline.
-	 *
 	 * This will bypass the default type resolution and use the untyped resolver instead. This method is useful for speeding up a look up when type resolution
 	 * isn't required.
 	 *

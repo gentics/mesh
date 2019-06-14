@@ -8,6 +8,7 @@ import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
 import java.util.List;
 
+import com.gentics.madl.annotations.GraphElement;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.tx.Tx;
 import com.gentics.madl.type.TypeHandler;
@@ -25,7 +26,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madl.field.FieldMap;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.annotations.GraphElement;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.Traversal;
 import com.syncleus.ferma.traversals.TraversalFunction;

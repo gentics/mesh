@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.madl.annotations.GraphElement;
 import com.gentics.madl.frame.AbstractVertexFrame;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.tx.Tx;
@@ -23,7 +24,6 @@ import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.VertexFrame;
-import com.syncleus.ferma.annotations.GraphElement;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;

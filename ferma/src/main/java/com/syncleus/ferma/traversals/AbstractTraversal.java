@@ -23,17 +23,12 @@
  */
 package com.syncleus.ferma.traversals;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang.NotImplementedException;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
@@ -41,23 +36,18 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.Path;
 import com.syncleus.ferma.TEdge;
 import com.syncleus.ferma.TVertex;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.pipes.FermaGremlinPipeline;
-import com.syncleus.ferma.pipes.TraversalFunctionPipe;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Predicate;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.gremlin.Tokens;
 import com.tinkerpop.gremlin.java.GremlinPipeline;
 import com.tinkerpop.pipes.transform.TransformPipe.Order;
 import com.tinkerpop.pipes.util.structures.Pair;
-import com.tinkerpop.pipes.util.structures.Table;
-import com.tinkerpop.pipes.util.structures.Tree;
 
 /**
  * The root traversal class. Wraps a Tinkerpop {@link GremlinPipeline}

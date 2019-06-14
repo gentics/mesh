@@ -335,45 +335,6 @@ public interface EdgeTraversal<C, S, M> extends Traversal<EdgeFrame, C, S, M> {
 	EdgeTraversal<?, ?, M> order(Comparator<? super EdgeFrame> compareFunction);
 
 	/**
-	 * Fill the provided collection with the objects in the pipeline.
-	 *
-	 * @param <N>
-	 *            the type used to frame the elements in the pipeline.
-	 * @param collection
-	 *            the collection to fill
-	 * @param kind
-	 *            The kind of framed elements to return.
-	 * @return the collection filled
-	 */
-	<N> Collection<N> fill(Collection<? super N> collection, Class<N> kind);
-
-	/**
-	 * Fill the provided collection with the objects in the pipeline.
-	 *
-	 * This will bypass the default type resolution and use the untyped resolver instead. This method is useful for speeding up a look up when type resolution
-	 * isn't required.
-	 *
-	 * @param <N>
-	 *            the type used to frame the elements in the pipeline.
-	 * @param collection
-	 *            the collection to fill
-	 * @param kind
-	 *            The kind of framed elements to return.
-	 * @return the collection filled
-	 */
-	<N> Collection<N> fillExplicit(Collection<? super N> collection, Class<N> kind);
-
-	/**
-	 * Add an AndFilterPipe to the end the Pipeline. If the internal pipes all yield objects, then the object is not filtered. The provided pipes are provided
-	 * the object as their starts.
-	 *
-	 * @param pipes
-	 *            the internal pipes of the AndFilterPipe
-	 * @return the extended Pipeline
-	 */
-	EdgeTraversal<?, ?, M> and(TraversalFunction<EdgeFrame, Traversal<?, ?, ?, ?>>... pipes);
-
-	/**
 	 * Add an OrFilterPipe to the end the Pipeline. Will only emit the object if one or more of the provides pipes yields an object. The provided pipes are
 	 * provided the object as their starts.
 	 *
