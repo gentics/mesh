@@ -27,15 +27,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.syncleus.ferma.ClassInitializer;
-import com.syncleus.ferma.DefaultClassInitializer;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.TVertex;
@@ -68,11 +64,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	@Override
 	public VertexFrame next() {
 		return graph().frameElement((Vertex) getPipeline().next(), VertexFrame.class);
-	}
-
-	@Override
-	public VertexFrame nextOrAdd() {
-		return nextOrAdd(TVertex.DEFAULT_INITIALIZER);
 	}
 
 	@Override
@@ -138,25 +129,8 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	}
 
 	@Override
-	public VertexTraversal<?, ?, M> order(final T order) {
-		return (VertexTraversal<?, ?, M>) super.order(order);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> out(final int branchFactor, final String... labels) {
-		getPipeline().out(branchFactor, labels);
-		return this;
-	}
-
-	@Override
 	public VertexTraversal<?, ?, M> out(final String... labels) {
 		getPipeline().out(labels);
-		return this;
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> in(final int branchFactor, final String... labels) {
-		getPipeline().in(branchFactor, labels);
 		return this;
 	}
 
@@ -167,20 +141,8 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	}
 
 	@Override
-	public EdgeTraversal<?, ?, M> outE(final int branchFactor, final String... labels) {
-		getPipeline().outE(branchFactor, labels);
-		return castToEdges();
-	}
-
-	@Override
 	public EdgeTraversal<?, ?, M> outE(final String... labels) {
 		getPipeline().outE(labels);
-		return castToEdges();
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> inE(final int branchFactor, final String... labels) {
-		getPipeline().inE(branchFactor, labels);
 		return castToEdges();
 	}
 
@@ -188,11 +150,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	public EdgeTraversal<?, ?, M> inE(final String... labels) {
 		getPipeline().inE(labels);
 		return castToEdges();
-	}
-
-	@Override
-	public <Z> VertexTraversal<?, ?, M> interval(final String key, final Comparable<Z> startValue, final Comparable<Z> endValue) {
-		return (VertexTraversal<?, ?, M>) super.interval(key, startValue, endValue);
 	}
 
 	@Override
@@ -219,56 +176,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 			return nextExplicit(kind);
 		else
 			return defaultValue;
-	}
-
-	@Override
-	public <N> N nextOrAdd(final ClassInitializer<N> initializer) {
-		try {
-			return graph().frameElement((Element) getPipeline().next(), initializer.getInitializationType());
-		} catch (final NoSuchElementException e) {
-			return graph().addFramedVertex(null, initializer);
-		}
-	}
-
-	@Override
-	public <N> N nextOrAdd(final Class<N> kind) {
-		return this.nextOrAdd(new DefaultClassInitializer<>(kind));
-	}
-
-	@Override
-	public <N> N nextOrAddExplicit(final ClassInitializer<N> initializer) {
-		try {
-			return graph().frameElementExplicit((Element) getPipeline().next(), initializer.getInitializationType());
-		} catch (final NoSuchElementException e) {
-			return graph().addFramedVertex(null, initializer);
-		}
-	}
-
-	@Override
-	public <N> N nextOrAddExplicit(final Class<N> kind) {
-		return this.nextOrAddExplicit(new DefaultClassInitializer<>(kind));
-	}
-
-	@Override
-	public <N> List<? extends N> next(final int amount, final Class<N> kind) {
-		return Lists.transform(getPipeline().next(amount), new Function() {
-
-			@Override
-			public Object apply(final Object input) {
-				return graph().frameElement((Element) input, kind);
-			}
-		});
-	}
-
-	@Override
-	public <N> List<? extends N> nextExplicit(final int amount, final Class<N> kind) {
-		return Lists.transform(getPipeline().next(amount), new Function() {
-
-			@Override
-			public Object apply(final Object input) {
-				return graph().frameElementExplicit((Element) input, kind);
-			}
-		});
 	}
 
 	@Override
@@ -352,11 +259,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	}
 
 	@Override
-	public VertexTraversal<?, ?, M> identity() {
-		return (VertexTraversal<?, ?, M>) super.identity();
-	}
-
-	@Override
 	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkOut(final String label, final String namedStep) {
 		getPipeline().linkOut(label, namedStep);
 		return (VertexTraversal<List<EdgeFrame>, EdgeFrame, M>) this;
@@ -365,12 +267,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	@Override
 	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkIn(final String label, final String namedStep) {
 		getPipeline().linkIn(label, namedStep);
-		return (VertexTraversal<List<EdgeFrame>, EdgeFrame, M>) this;
-	}
-
-	@Override
-	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkBoth(final String label, final String namedStep) {
-		getPipeline().linkBoth(label, namedStep);
 		return (VertexTraversal<List<EdgeFrame>, EdgeFrame, M>) this;
 	}
 
@@ -387,12 +283,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	}
 
 	@Override
-	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkBoth(final String label, final Vertex other) {
-		getPipeline().linkBoth(label, other);
-		return (VertexTraversal<List<EdgeFrame>, EdgeFrame, M>) this;
-	}
-
-	@Override
 	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkOut(final String label, final VertexFrame other) {
 		getPipeline().linkOut(label, other.getElement());
 		return (VertexTraversal<List<EdgeFrame>, EdgeFrame, M>) this;
@@ -401,12 +291,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	@Override
 	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkIn(final String label, final VertexFrame other) {
 		getPipeline().linkIn(label, other.getElement());
-		return (VertexTraversal<List<EdgeFrame>, EdgeFrame, M>) this;
-	}
-
-	@Override
-	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkBoth(final String label, final VertexFrame other) {
-		getPipeline().linkBoth(label, other.getElement());
 		return (VertexTraversal<List<EdgeFrame>, EdgeFrame, M>) this;
 	}
 

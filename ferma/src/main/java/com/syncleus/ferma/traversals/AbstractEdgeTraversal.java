@@ -112,12 +112,6 @@ abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFram
 	}
 
 	@Override
-	public EdgeTraversal<?, ?, M> identity() {
-
-		return (EdgeTraversal) super.identity();
-	}
-
-	@Override
 	public EdgeTraversal<?, ?, M> interval(final String key, final Comparable startValue, final Comparable endValue) {
 		return (EdgeTraversal) super.interval(key, startValue, endValue);
 	}
@@ -280,11 +274,6 @@ abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFram
 	}
 
 	@Override
-	public EdgeTraversal<?, ?, M> order(final Tokens.T order) {
-		return (EdgeTraversal<?, ?, M>) super.order(order);
-	}
-
-	@Override
 	public java.util.Iterator<EdgeFrame> iterator() {
 		return Iterators.transform(getPipeline(), new Function() {
 
@@ -300,7 +289,6 @@ abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFram
 
 		return (EdgeTraversal<?, ?, M>) super.retain(Arrays.asList(edges));
 	}
-	
 
 	@Override
 	public EdgeTraversal<?, ?, M> retain(final Iterable<?> collection) {

@@ -323,9 +323,6 @@ public interface EdgeTraversal<C, S, M> extends Traversal<EdgeFrame, C, S, M> {
 	EdgeTraversal<?, ?, M> retain(EdgeFrame... edges);
 
 	@Override
-	EdgeTraversal<?, ?, M> identity();
-
-	@Override
 	EdgeTraversal<?, ?, M> order();
 
 	@Override

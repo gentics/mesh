@@ -92,13 +92,6 @@ public interface Traversal<T, C, S, M> extends Iterator<T>, Iterable<T> {
 	Traversal<T, ?, ?, M> retain(Iterable<?> collection);
 
 	/**
-	 * Useful in various situations where a step is needed without processing. For example, useful when two as-steps are needed in a row.
-	 *
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, ?, ?, M> identity();
-
-	/**
 	 * This step will sort the objects in the stream in a default Comparable order.
 	 *
 	 * @return the extended Pipeline
@@ -113,15 +106,6 @@ public interface Traversal<T, C, S, M> extends Iterator<T>, Iterable<T> {
 	 * @return the extended Pipeline
 	 */
 	Traversal<T, ?, ?, M> order(TransformPipe.Order order);
-
-	/**
-	 * This step will sort the objects in the stream in a default Comparable order.
-	 *
-	 * @param order
-	 *            if the stream is composed of comparable objects, then increment or decrement can be specified
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, ?, ?, M> order(Tokens.T order);
 
 	/**
 	 * This step will sort the objects in the stream according to a comparator defined in the provided function.

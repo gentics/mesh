@@ -32,15 +32,12 @@ import java.util.function.Consumer;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
-import com.syncleus.ferma.ClassInitializer;
-import com.syncleus.ferma.DefaultClassInitializer;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.VertexFrame;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.KeyIndexableGraph;
-import com.tinkerpop.blueprints.Predicate;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.tg.TinkerGraph;
 import com.tinkerpop.gremlin.Tokens;
@@ -183,18 +180,8 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public VertexTraversal<?, ?, M> has(final String key, final Predicate predicate, final Object value) {
-		return this.delegate().has(key, predicate, value);
-	}
-
-	@Override
 	public VertexTraversal<?, ?, M> has(Class<?> clazz) {
 		return this.delegate().has(clazz);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> hasNot(final String key) {
-		return this.delegate().hasNot(key);
 	}
 
 	@Override
@@ -208,23 +195,8 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public <Z> VertexTraversal<?, ?, M> interval(final String key, final Comparable<Z> startValue, final Comparable<Z> endValue) {
-		return this.delegate().interval(key, startValue, endValue);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> out(final int branchFactor, final String... labels) {
-		return this.simpleDelegate().out(branchFactor, labels);
-	}
-
-	@Override
 	public VertexTraversal<?, ?, M> out(final String... labels) {
 		return this.simpleDelegate().out(labels);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> in(final int branchFactor, final String... labels) {
-		return this.simpleDelegate().in(branchFactor, labels);
 	}
 
 	@Override
@@ -233,18 +205,8 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public EdgeTraversal<?, ?, M> outE(final int branchFactor, final String... labels) {
-		return this.simpleDelegate().outE(branchFactor, labels);
-	}
-
-	@Override
 	public EdgeTraversal<?, ?, M> outE(final String... labels) {
 		return this.simpleDelegate().outE(labels);
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> inE(final int branchFactor, final String... labels) {
-		return this.simpleDelegate().inE(branchFactor, labels);
 	}
 
 	@Override
@@ -276,41 +238,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 			return nextExplicit(kind);
 		else
 			return defaultValue;
-	}
-
-	@Override
-	public VertexFrame nextOrAdd() {
-		return this.simpleDelegate().nextOrAdd();
-	}
-
-	@Override
-	public <N> N nextOrAddExplicit(final ClassInitializer<N> initializer) {
-		return this.simpleDelegate().nextOrAddExplicit(initializer);
-	}
-
-	@Override
-	public <N> N nextOrAddExplicit(final Class<N> kind) {
-		return this.nextOrAddExplicit(new DefaultClassInitializer<>(kind));
-	}
-
-	@Override
-	public <N> N nextOrAdd(final ClassInitializer<N> initializer) {
-		return this.delegate().nextOrAdd(initializer);
-	}
-
-	@Override
-	public <N> N nextOrAdd(final Class<N> kind) {
-		return this.nextOrAdd(new DefaultClassInitializer<>(kind));
-	}
-
-	@Override
-	public <N> List<? extends N> next(final int amount, final Class<N> kind) {
-		return this.delegate().next(amount, kind);
-	}
-
-	@Override
-	public <N> List<? extends N> nextExplicit(final int amount, final Class<N> kind) {
-		return this.delegate().nextExplicit(amount, kind);
 	}
 
 	@Override
@@ -357,11 +284,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkBoth(final String label, final String namedStep) {
-		return this.simpleDelegate().linkBoth(label, namedStep);
-	}
-
-	@Override
 	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkOut(final String label, final Vertex other) {
 		return this.simpleDelegate().linkOut(label, other);
 	}
@@ -377,18 +299,8 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkBoth(final String label, final Vertex other) {
-		return this.simpleDelegate().linkBoth(label, other);
-	}
-
-	@Override
 	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkIn(final String label, final VertexFrame other) {
 		return this.simpleDelegate().linkIn(label, other);
-	}
-
-	@Override
-	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkBoth(final String label, final VertexFrame other) {
-		return this.simpleDelegate().linkBoth(label, other);
 	}
 
 	@Override
@@ -412,11 +324,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public VertexTraversal<?, ?, M> identity() {
-		return this.simpleDelegate().identity();
-	}
-
-	@Override
 	public VertexTraversal<?, ?, M> order() {
 		return this.simpleDelegate().order();
 	}
@@ -428,11 +335,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 
 	@Override
 	public VertexTraversal<?, ?, M> order(final TransformPipe.Order order) {
-		return this.simpleDelegate().order(order);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> order(final Tokens.T order) {
 		return this.simpleDelegate().order(order);
 	}
 

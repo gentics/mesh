@@ -38,7 +38,6 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
