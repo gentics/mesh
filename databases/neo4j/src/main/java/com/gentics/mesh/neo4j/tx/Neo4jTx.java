@@ -1,7 +1,6 @@
 package com.gentics.mesh.neo4j.tx;
 
 import com.gentics.mesh.neo4j.Neo4jStorage;
-import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.tx.AbstractTx;
 import com.syncleus.ferma.tx.Tx;
@@ -33,8 +32,6 @@ public class Neo4jTx extends AbstractTx<FramedTransactionalGraph> {
 			} else {
 				rollback();
 			}
-		} catch (OConcurrentModificationException e) {
-			throw e;
 		} finally {
 			if (!isWrapped) {
 				// Restore the old graph that was previously swapped with the current graph

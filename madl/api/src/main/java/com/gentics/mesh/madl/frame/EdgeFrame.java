@@ -8,6 +8,7 @@ public interface EdgeFrame extends ElementFrame, com.syncleus.ferma.EdgeFrame {
 	 * @return
 	 */
 	default String label() {
+		//TODO Move this to edge frame instead
 		return getLabel();
 	}
 

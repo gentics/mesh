@@ -24,14 +24,6 @@
 			<version>${project.version}</version>
 		</dependency>
 
-
-		<!-- https://mvnrepository.com/artifact/org.javassist/javassist -->
-		<dependency>
-			<groupId>org.javassist</groupId>
-			<artifactId>javassist</artifactId>
-			<version>3.25.0-GA</version>
-		</dependency>
-
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-dropwizard-metrics</artifactId>
@@ -45,12 +37,6 @@
 			<groupId>io.prometheus</groupId>
 			<artifactId>client</artifactId>
 			<version>0.0.10</version>
-			<exclusions>
-				<exclusion>
-					<groupId>javassist</groupId>
-					<artifactId>javassist</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>io.prometheus</groupId>
