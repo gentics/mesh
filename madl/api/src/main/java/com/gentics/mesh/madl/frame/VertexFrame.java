@@ -29,8 +29,8 @@ public interface VertexFrame extends ElementFrame, com.syncleus.ferma.VertexFram
 	@Override
 	VertexTraversal<?, ?, ?> out(String... labels);
 
-	<T extends ElementFrame> TraversalResult<T> out(String label, Class<T> clazz);
-	
-	<T extends ElementFrame> TraversalResult<T> in(String label, Class<T> clazz);
+	<T extends ElementFrame> TraversalResult<? extends T> out(String label, Class<T> clazz);
+
+	<T extends ElementFrame> TraversalResult<? extends T> in(String label, Class<T> clazz);
 
 }
