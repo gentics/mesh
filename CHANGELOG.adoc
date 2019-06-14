@@ -31,6 +31,8 @@ icon:check[] REST: The deletion of microschemas which contain changes has been f
 
 icon:plus[] Core: Various internal structures and dependencies were re-organized and refactored.
 
+icon:plus[] UI: The default set of enabled languages within the `mesh-ui-config.js` file has been updated to include more languages.
+
 [[v0.36.0]]
 == 0.36.0 (12.06.2019)
 
