@@ -4,9 +4,10 @@ import java.util.Set;
 import java.util.function.Function;
 
 import com.gentics.madl.traversal.RawTraversalResult;
+import com.gentics.madl.tx.BaseTransaction;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
-import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Vertex;
 
 public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVertexFrame implements VertexFrame {
@@ -118,7 +119,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 
 	@Override
 	public <T extends RawTraversalResult<?>> T traverse(final Function<GraphTraversal<Vertex, Vertex>, GraphTraversal<?, ?>> traverser) {
-		Tx tx = Tx.get();
+		BaseTransaction tx = Tx.get();
 		if (tx == null) {
 			throw new RuntimeException("No active transaction found.");
 		}

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.group;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.GroupRoot;
@@ -14,7 +15,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
-import com.syncleus.ferma.tx.Tx;
+
 import io.reactivex.Observable;
 import org.junit.Ignore;
 import org.junit.Test;

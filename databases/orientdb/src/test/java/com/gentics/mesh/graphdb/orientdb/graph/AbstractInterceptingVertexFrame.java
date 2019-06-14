@@ -3,7 +3,7 @@ package com.gentics.mesh.graphdb.orientdb.graph;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.AbstractVertexFrame;
 import com.syncleus.ferma.FramedGraph;

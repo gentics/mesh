@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.page.impl;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -9,7 +10,6 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
-import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;

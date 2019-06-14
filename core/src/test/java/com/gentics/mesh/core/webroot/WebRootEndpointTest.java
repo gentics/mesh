@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.webroot;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -25,7 +26,7 @@ import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.URIUtils;
-import com.syncleus.ferma.tx.Tx;
+
 import org.junit.Test;
 
 import java.io.IOException;

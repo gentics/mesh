@@ -4,9 +4,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.metric.MetricsService;
-import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Vertex;
 
 @Ignore

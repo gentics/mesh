@@ -34,6 +34,7 @@ import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.cli.CoreVerticleLoader;
 import com.gentics.mesh.context.InternalActionContext;
@@ -69,7 +70,6 @@ import com.gentics.mesh.test.context.event.EventAsserterChain;
 import com.gentics.mesh.test.docker.ElasticsearchContainer;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.VersionNumber;
-import com.syncleus.ferma.tx.Tx;
 
 import eu.rekawek.toxiproxy.model.ToxicList;
 import io.reactivex.Completable;

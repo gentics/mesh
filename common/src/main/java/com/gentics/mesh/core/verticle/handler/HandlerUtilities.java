@@ -16,6 +16,9 @@ import java.util.function.Function;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.madl.tx.TxAction;
+import com.gentics.madl.tx.TxAction0;
+import com.gentics.madl.tx.TxAction1;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -32,9 +35,6 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
-import com.syncleus.ferma.tx.TxAction;
-import com.syncleus.ferma.tx.TxAction0;
-import com.syncleus.ferma.tx.TxAction1;
 
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;

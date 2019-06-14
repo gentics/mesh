@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.syncleus.ferma.tx;
+package com.gentics.madl.tx;
 
 @FunctionalInterface
-public interface TxAction2 {
+public interface TxAction1<T> {
 
-    void handle(Tx tx) throws Exception;
+    T handle() throws Exception;
 
 }

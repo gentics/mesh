@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.graphql;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.assertj.impl.JsonObjectAssert;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -60,7 +61,7 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.hazelcast.util.function.Consumer;
-import com.syncleus.ferma.tx.Tx;
+
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.functions.Function;

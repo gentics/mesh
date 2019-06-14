@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.endpoint.admin.consistency;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.tx.Tx;
 
 /**
  * A consistency check must identify and log database inconsistencies.

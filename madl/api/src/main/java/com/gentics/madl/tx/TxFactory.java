@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.syncleus.ferma.tx;
+package com.gentics.madl.tx;
 
 /**
  * Interface which can be used for custom transaction factories in 

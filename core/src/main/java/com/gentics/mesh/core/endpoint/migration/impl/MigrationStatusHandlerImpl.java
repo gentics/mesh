@@ -9,12 +9,12 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.branch.BranchVersionEdge;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobStatus;
-import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;

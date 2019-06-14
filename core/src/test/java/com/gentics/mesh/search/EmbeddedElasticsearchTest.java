@@ -12,11 +12,11 @@ import io.vertx.core.logging.LoggerFactory;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.tx.Tx;
 @MeshTestSetting(elasticsearch = EMBEDDED, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class EmbeddedElasticsearchTest extends AbstractMeshTest {
 

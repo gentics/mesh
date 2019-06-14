@@ -1,10 +1,11 @@
 package com.gentics.mesh.core.field.number;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
-import com.syncleus.ferma.tx.Tx;
+
 import org.junit.Before;
 
 import java.io.IOException;

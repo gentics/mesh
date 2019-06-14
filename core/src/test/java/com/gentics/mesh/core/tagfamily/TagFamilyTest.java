@@ -7,11 +7,11 @@ import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = false)
 public class TagFamilyTest extends AbstractMeshTest {

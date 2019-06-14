@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;

@@ -17,6 +17,11 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 
+import com.gentics.madl.tx.Tx;
+import com.gentics.madl.tx.TxAction;
+import com.gentics.madl.tx.TxAction0;
+import com.gentics.madl.tx.TxAction1;
+import com.gentics.madl.tx.TxAction2;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -86,11 +91,7 @@ import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.storage.LocalBinaryStorage;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.util.VersionNumber;
-import com.syncleus.ferma.tx.Tx;
-import com.syncleus.ferma.tx.TxAction;
-import com.syncleus.ferma.tx.TxAction0;
-import com.syncleus.ferma.tx.TxAction1;
-import com.syncleus.ferma.tx.TxAction2;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;

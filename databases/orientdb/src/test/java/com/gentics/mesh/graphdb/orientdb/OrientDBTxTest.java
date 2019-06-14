@@ -12,10 +12,10 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
-import com.syncleus.ferma.tx.Tx;
 
 public class OrientDBTxTest extends AbstractOrientDBTest {
 
