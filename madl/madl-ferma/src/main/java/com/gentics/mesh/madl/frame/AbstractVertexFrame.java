@@ -101,13 +101,13 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 
 	@Override
 	public <T extends ElementFrame> TraversalResult<? extends T> out(String label, Class<T> clazz) {
-		TraversalResult<T> result = new TraversalResult<>(out(label).frameExplicit(clazz));
+		TraversalResult<? extends T> result = new TraversalResult<>(out(label).frameExplicit(clazz));
 		return result;
 	}
 
 	@Override
 	public <T extends ElementFrame> TraversalResult<? extends T> in(String label, Class<T> clazz) {
-		TraversalResult<T> result = new TraversalResult<>(in(label).frameExplicit(clazz));
+		TraversalResult<? extends T> result = new TraversalResult<>(in(label).frameExplicit(clazz));
 		return result;
 	}
 }
