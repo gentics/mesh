@@ -1,8 +1,7 @@
-package com.gentics.mesh.graphdb.spi;
+package com.gentics.madl.index;
 
 import java.util.List;
 
-import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.madl.field.FieldMap;
 import com.gentics.mesh.madl.index.ElementIndexDefinition;
 import com.gentics.mesh.madl.index.impl.EdgeIndexDefinitionImpl.EdgeIndexDefinitonBuilder;
@@ -93,6 +92,6 @@ public interface IndexHandler {
 	 *            index key to check
 	 * @return the conflicting element or null if no conflict exists
 	 */
-	<T extends MeshElement> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key);
+	<T extends ElementFrame> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key);
 
 }

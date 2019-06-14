@@ -1,4 +1,4 @@
-package com.gentics.mesh.graphdb.spi;
+package com.gentics.madl.type;
 
 import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 

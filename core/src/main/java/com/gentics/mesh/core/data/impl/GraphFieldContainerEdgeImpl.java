@@ -8,7 +8,9 @@ import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
 import java.util.List;
 
+import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.tx.Tx;
+import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.BasicFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -20,8 +22,6 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.IndexHandler;
-import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.madl.field.FieldMap;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;

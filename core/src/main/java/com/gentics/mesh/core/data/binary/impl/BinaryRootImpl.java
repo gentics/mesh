@@ -5,14 +5,14 @@ import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 
 import java.util.Iterator;
 
+import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.tx.Tx;
+import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.IndexHandler;
-import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;

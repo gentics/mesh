@@ -7,11 +7,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.tx.Tx;
 import com.gentics.madl.tx.TxAction;
 import com.gentics.madl.tx.TxAction0;
 import com.gentics.madl.tx.TxAction1;
 import com.gentics.madl.tx.TxFactory;
+import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.error.GenericRestException;

@@ -2,8 +2,8 @@ package com.gentics.mesh.core.data.relationship;
 
 import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
-import com.gentics.mesh.graphdb.spi.IndexHandler;
-import com.gentics.mesh.graphdb.spi.TypeHandler;
+import com.gentics.madl.index.IndexHandler;
+import com.gentics.madl.type.TypeHandler;
 
 /**
  * Main class that holds all the graph relationship names.

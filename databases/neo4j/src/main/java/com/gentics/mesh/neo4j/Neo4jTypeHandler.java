@@ -3,7 +3,7 @@ package com.gentics.mesh.neo4j;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.graphdb.spi.TypeHandler;
+import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.madl.type.ElementTypeDefinition;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;

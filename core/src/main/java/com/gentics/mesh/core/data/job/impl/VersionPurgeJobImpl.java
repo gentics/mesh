@@ -8,6 +8,8 @@ import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import com.gentics.madl.index.IndexHandler;
+import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
@@ -19,8 +21,6 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.IndexHandler;
-import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.util.DateUtils;
 
 import io.reactivex.Completable;

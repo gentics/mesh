@@ -4,9 +4,9 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CHA
 
 import java.util.Iterator;
 
+import com.gentics.madl.index.IndexHandler;
+import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.graphdb.spi.IndexHandler;
-import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 public class ChangelogRootImpl extends MeshVertexImpl implements ChangelogRoot {
 

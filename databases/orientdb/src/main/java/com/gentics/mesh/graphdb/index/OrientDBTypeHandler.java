@@ -6,8 +6,8 @@ import static com.gentics.mesh.graphdb.FieldTypeMapper.toType;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
-import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.madl.field.FieldMap;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.type.EdgeTypeDefinition;

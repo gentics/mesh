@@ -9,6 +9,8 @@ import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 import static com.gentics.mesh.core.rest.job.JobStatus.STARTING;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import com.gentics.madl.index.IndexHandler;
+import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.MicronodeMigrationContext;
 import com.gentics.mesh.context.impl.MicronodeMigrationContextImpl;
@@ -31,8 +33,6 @@ import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.IndexHandler;
-import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;

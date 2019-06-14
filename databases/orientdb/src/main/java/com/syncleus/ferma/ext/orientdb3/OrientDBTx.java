@@ -20,10 +20,12 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 
 	boolean isWrapped = false;
+	private final TypeResolver typeResolver;
 
 	public OrientDBTx(OrientGraphFactory factory, TypeResolver typeResolver) {
+		this.typeResolver = typeResolver;
 		// Check if an active transaction already exists.
-		Tx activeTx = Tx.getActive();
+		Tx activeTx = Tx.get();
 		if (activeTx != null) {
 			isWrapped = true;
 			init(activeTx.getGraph());
@@ -34,9 +36,9 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	}
 
 	public OrientDBTx(OrientStorage provider, TypeResolver typeResolver) {
-
+		this.typeResolver = typeResolver;
 		// Check if an active transaction already exists.
-		Tx activeTx = Tx.getActive();
+		Tx activeTx = Tx.get();
 		if (activeTx != null) {
 			isWrapped = true;
 			init(activeTx.getGraph());
@@ -73,7 +75,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 
 	@Override
 	public <T extends RawTraversalResult<?>> T traversal(Function<GraphTraversalSource, GraphTraversal<?, ?>> traverser) {
-		return (T) new RawTraversalResultImpl(traverser.apply(rawTraverse()), null);
+		return (T) new RawTraversalResultImpl(traverser.apply(rawTraverse()), typeResolver);
 	}
 
 	@Override

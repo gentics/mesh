@@ -10,10 +10,10 @@ import java.util.Map.Entry;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.model.MeshElement;
-import com.gentics.mesh.graphdb.spi.IndexHandler;
 import com.gentics.mesh.madl.field.FieldMap;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.index.EdgeIndexDefinition;
@@ -206,7 +206,7 @@ public class OrientDBIndexHandler implements IndexHandler {
 	}
 
 	@Override
-	public <T extends MeshElement> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key) {
+	public <T extends ElementFrame> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key) {
 		FramedGraph graph = Tx.getActive().getGraph();
 		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
 		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
