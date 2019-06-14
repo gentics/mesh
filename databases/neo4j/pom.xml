@@ -54,12 +54,6 @@
 
 		<!-- Test dependencies -->
 		<dependency>
-			<groupId>net.lingala.zip4j</groupId>
-			<artifactId>zip4j</artifactId>
-			<version>1.3.2</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-test-common</artifactId>
 			<version>${project.version}</version>

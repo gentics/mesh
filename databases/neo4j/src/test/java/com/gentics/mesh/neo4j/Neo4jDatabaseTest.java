@@ -1,5 +1,6 @@
 package com.gentics.mesh.neo4j;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -8,6 +9,7 @@ import com.gentics.mesh.metric.MetricsService;
 import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Vertex;
 
+@Ignore
 public class Neo4jDatabaseTest {
 
 	@Test
