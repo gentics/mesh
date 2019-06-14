@@ -233,6 +233,12 @@
 				<artifactId>vertx-dropwizard-metrics</artifactId>
 				<version>${vertx.version}</version>
 			</dependency>
+
+			<dependency>
+				<groupId>org.reflections</groupId>
+				<artifactId>reflections</artifactId>
+				<version>0.9.11</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
