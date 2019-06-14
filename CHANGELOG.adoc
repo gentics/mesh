@@ -24,6 +24,13 @@ include::content/docs/variables.adoc-include[]
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
 "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.36.1]]
+== 0.36.1 (TBD)
+
+icon:check[] REST: The deletion of microschemas which contain changes has been fixed. Previously a `NotImplementedException` was thrown for microschemas which contained changes. link:https://github.com/gentics/mesh/issues/589[#589]
+
+icon:plus[] Core: Various internal structures and dependencies were re-organized and refactored.
+
 [[v0.36.0]]
 == 0.36.0 (12.06.2019)
 
@@ -471,11 +478,6 @@ icon:check[] Elasticsearch: Search indices are now created sequentially. Paralle
 icon:plus[] Core: When resolving links with type FULL, and the chosen branch is not the latest branch, the query parameter for the branch will be added to the rendered link.
 
 icon:plus[] Java Rest Client: Added new REST client implementation. The `MeshRestOkHttpClientImpl` implementation will replace the current Java client in a future release. It is advised to switch to the new implementation which is based on the OkHttp library instead of Vert.x.
-
-[[v0.28.3]]
-== 0.28.3 (TBD)
-
-icon:check[] REST: The deletion of microschemas which contain changes has been fixed. Previously a `NotImplementedException` was thrown for microschemas which contained changes. link:https://github.com/gentics/mesh/issues/589[#589]
 
 [[v0.28.2]]
 == 0.28.2 (26.11.2018)
