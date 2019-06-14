@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.madl.frame.AbstractVertexFrame;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -19,7 +20,6 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.IndexHandler;
 import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.madl.field.FieldType;
-import com.gentics.mesh.madl.frame.AbstractVertexFrame;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.VertexFrame;

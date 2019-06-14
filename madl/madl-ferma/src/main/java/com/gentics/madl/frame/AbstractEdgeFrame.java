@@ -1,5 +1,6 @@
-package com.gentics.mesh.madl.frame;
+package com.gentics.madl.frame;
 
+import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 

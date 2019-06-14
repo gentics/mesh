@@ -1,4 +1,4 @@
-package com.gentics.mesh.madl.frame;
+package com.gentics.madl.frame;
 
 import java.util.Set;
 import java.util.function.Function;
@@ -6,6 +6,8 @@ import java.util.function.Function;
 import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.madl.tx.BaseTransaction;
 import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.madl.frame.ElementFrame;
+import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.tinkerpop.blueprints.Vertex;
@@ -123,7 +125,6 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 		if (tx == null) {
 			throw new RuntimeException("No active transaction found.");
 		}
-		//return tx.traversal(input -> traverser.apply(input.V(id())));
-		return null;
+		return tx.traversal(input -> traverser.apply(input.V(id())));
 	}
 }

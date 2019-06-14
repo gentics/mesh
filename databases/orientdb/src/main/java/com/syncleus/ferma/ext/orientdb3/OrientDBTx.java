@@ -3,6 +3,7 @@ package com.syncleus.ferma.ext.orientdb3;
 import java.util.function.Function;
 
 import com.gentics.madl.traversal.RawTraversalResult;
+import com.gentics.madl.traversal.RawTraversalResultImpl;
 import com.gentics.madl.tx.AbstractTx;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
@@ -72,8 +73,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 
 	@Override
 	public <T extends RawTraversalResult<?>> T traversal(Function<GraphTraversalSource, GraphTraversal<?, ?>> traverser) {
-		// TODO Auto-generated method stub
-		return null;
+		return (T) new RawTraversalResultImpl(traverser.apply(rawTraverse()), null);
 	}
 
 	@Override
