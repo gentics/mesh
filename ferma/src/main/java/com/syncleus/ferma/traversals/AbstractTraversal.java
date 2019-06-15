@@ -61,6 +61,7 @@ import com.tinkerpop.pipes.util.structures.Pair;
  * @param <M>
  *            The current marked type for the current pipe.
  */
+@Deprecated
 abstract class AbstractTraversal<T, C, S, M> implements Traversal<T, C, S, M> {
 	private final FramedGraph graph;
 	private final FermaGremlinPipeline pipeline;

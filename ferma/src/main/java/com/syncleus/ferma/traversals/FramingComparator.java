@@ -23,38 +23,39 @@
  */
 package com.syncleus.ferma.traversals;
 
+import java.util.Comparator;
+
 import com.syncleus.ferma.ElementFrame;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.traversals.FrameMaker;
-import java.util.Comparator;
 
 /**
  * Framed elements before delegation.
  *
  * @param <T>
  */
+@Deprecated
 class FramingComparator<T, K extends ElementFrame> extends FrameMaker implements Comparator<T> {
 
-    private final Comparator<T> delegate;
+	private final Comparator<T> delegate;
 
-    public FramingComparator(final Comparator<T> delegate, final FramedGraph graph) {
-        super(graph);
-        this.delegate = delegate;
+	public FramingComparator(final Comparator<T> delegate, final FramedGraph graph) {
+		super(graph);
+		this.delegate = delegate;
 
-    }
+	}
 
-    public FramingComparator(final Comparator<T> delegate, final FramedGraph graph, final Class<K> kind) {
-        super(graph, kind);
-        this.delegate = delegate;
-    }
+	public FramingComparator(final Comparator<T> delegate, final FramedGraph graph, final Class<K> kind) {
+		super(graph, kind);
+		this.delegate = delegate;
+	}
 
-    @Override
-    public int compare(T t, T t1) {
+	@Override
+	public int compare(T t, T t1) {
 
-        t = makeFrame(t);
-        t1 = makeFrame(t1);
+		t = makeFrame(t);
+		t1 = makeFrame(t1);
 
-        return delegate.compare(t, t1);
-    }
+		return delegate.compare(t, t1);
+	}
 
 }

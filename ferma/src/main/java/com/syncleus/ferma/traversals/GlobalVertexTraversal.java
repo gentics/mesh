@@ -46,6 +46,7 @@ import com.tinkerpop.pipes.transform.TransformPipe;
  * Specialized global vertex traversal that bypasses gremlin pipeline for simple key value lookups. As soon as a more complex traversal is detected then it
  * delegates to a full gremlin pipeline.
  */
+@Deprecated
 public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> {
 
 	private final FramedGraph graph;
@@ -186,11 +187,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	@Override
 	public VertexTraversal<?, ?, M> hasNot(final String key, final Object value) {
 		return this.delegate().hasNot(key, value);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> hasNot(Class<?> clazz) {
-		return this.delegate().hasNot(clazz);
 	}
 
 	@Override

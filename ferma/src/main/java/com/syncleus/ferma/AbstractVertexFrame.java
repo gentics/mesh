@@ -62,7 +62,6 @@ public abstract class AbstractVertexFrame extends AbstractElementFrame implement
 
 	@Override
 	public <T> T addFramedEdgeExplicit(final String label, final VertexFrame inVertex, final ClassInitializer<T> initializer) {
-
 		final Edge edge = getElement().addEdge(label, inVertex.getElement());
 		final T framedEdge = getGraph().frameNewElementExplicit(edge, initializer);
 		return framedEdge;
@@ -82,11 +81,6 @@ public abstract class AbstractVertexFrame extends AbstractElementFrame implement
 	public VertexTraversal<?, ?, ?> out(final String... labels) {
 		return new SimpleTraversal(getGraph(), this).castToVertices().out(labels);
 	}
-
-	// @Override
-	// public VertexTraversal<?, ?, ?> in(final int branchFactor, final String... labels) {
-	// return new SimpleTraversal(getGraph(), this).castToVertices().in(branchFactor, labels);
-	// }
 
 	@Override
 	public VertexTraversal<?, ?, ?> in(final String... labels) {

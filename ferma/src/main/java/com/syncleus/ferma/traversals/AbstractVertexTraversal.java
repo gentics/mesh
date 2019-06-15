@@ -40,10 +40,7 @@ import com.syncleus.ferma.pipes.FermaGremlinPipeline;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Predicate;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.gremlin.Tokens.T;
-import com.tinkerpop.gremlin.java.GremlinPipeline;
 import com.tinkerpop.pipes.Pipe;
-import com.tinkerpop.pipes.branch.LoopPipe;
 import com.tinkerpop.pipes.transform.TransformPipe.Order;
 
 /**
@@ -56,6 +53,7 @@ import com.tinkerpop.pipes.transform.TransformPipe.Order;
  * @param <M>
  *            The current marked type for the current pipe.
  */
+@Deprecated
 abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<VertexFrame, C, S, M> implements VertexTraversal<C, S, M> {
 	protected AbstractVertexTraversal(FramedGraph graph, FermaGremlinPipeline pipeline) {
 		super(graph, pipeline);
@@ -210,12 +208,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	@Override
 	public VertexTraversal<?, ?, M> hasNot(final String key, final Object value) {
 		return (VertexTraversal<?, ?, M>) super.hasNot(key, value);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> hasNot(Class<?> clazz) {
-		graph().getTypeResolver().hasNotType(this, clazz);
-		return this;
 	}
 
 	@Override

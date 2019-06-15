@@ -27,6 +27,7 @@ import java.util.List;
 
 import com.tinkerpop.blueprints.Element;
 
+@Deprecated
 public class FermaGremlinPipeline<S, E> extends com.tinkerpop.gremlin.java.GremlinPipeline<S, E> {
 
 	private E current;

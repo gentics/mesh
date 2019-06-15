@@ -39,9 +39,7 @@ import com.syncleus.ferma.pipes.FermaGremlinPipeline;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Predicate;
-import com.tinkerpop.gremlin.java.GremlinPipeline;
 import com.tinkerpop.pipes.Pipe;
-import com.tinkerpop.pipes.branch.LoopPipe;
 
 /**
  * Edge specific traversal.
@@ -53,6 +51,7 @@ import com.tinkerpop.pipes.branch.LoopPipe;
  * @param <M>
  *            The current marked type for the current pipe.
  */
+@Deprecated
 abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFrame, C, S, M> implements EdgeTraversal<C, S, M> {
 	protected AbstractEdgeTraversal(FramedGraph graph, FermaGremlinPipeline pipeline) {
 		super(graph, pipeline);

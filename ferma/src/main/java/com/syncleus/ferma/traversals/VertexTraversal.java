@@ -41,6 +41,7 @@ import com.tinkerpop.pipes.transform.TransformPipe;
  * @param <M>
  *            The current marked type for the current pipe.
  */
+@Deprecated
 public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M> {
 
 	/**
@@ -98,15 +99,6 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	 * @return the extended Pipeline
 	 */
 	VertexTraversal<?, ?, M> hasNot(String key, Object value);
-
-	/**
-	 * If the incoming vertex has not the provided ferma_type property that is checked against the given class, then let it pass.
-	 *
-	 * @param clazz
-	 *            the class to check against
-	 * @return the extended Pipeline
-	 */
-	VertexTraversal<?, ?, M> hasNot(Class<?> clazz);
 
 	/**
 	 * Emit the adjacent outgoing vertices of the incoming vertex.

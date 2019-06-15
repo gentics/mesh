@@ -27,7 +27,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import com.tinkerpop.gremlin.Tokens;
 import com.tinkerpop.gremlin.java.GremlinPipeline;
 import com.tinkerpop.pipes.transform.TransformPipe;
 
@@ -43,6 +42,7 @@ import com.tinkerpop.pipes.transform.TransformPipe;
  * @param <M>
  *            The current marked type for the current pipe.
  */
+@Deprecated
 public interface Traversal<T, C, S, M> extends Iterator<T>, Iterable<T> {
 
 	/**

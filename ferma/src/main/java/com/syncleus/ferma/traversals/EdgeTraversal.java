@@ -39,6 +39,7 @@ import com.tinkerpop.gremlin.Tokens;
  * @param <M>
  *            The current mark'ed type for the current pipe.
  */
+@Deprecated
 public interface EdgeTraversal<C, S, M> extends Traversal<EdgeFrame, C, S, M> {
 
 	/**
