@@ -1,14 +1,13 @@
 package com.gentics.mesh.graphdb.orientdb.graph;
 
-import java.util.List;
-
 import com.gentics.madl.annotations.GraphElement;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 
 @GraphElement
 public class Group extends AbstractInterceptingVertexFrame {
 
-	public List<? extends Person> getMembers() {
-		return out("HAS_MEMBER").has(Person.class).toListExplicit(Person.class);
+	public TraversalResult<? extends Person> getMembers() {
+		return new TraversalResult<>(out("HAS_MEMBER").has(Person.class).frameExplicit(Person.class));
 	}
 
 	public void addMember(Person person) {

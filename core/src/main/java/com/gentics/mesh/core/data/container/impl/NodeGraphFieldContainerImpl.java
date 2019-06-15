@@ -630,9 +630,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public List<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaContainerVersion version) {
-		return out(HAS_LIST).has(MicronodeGraphFieldListImpl.class).mark().out(HAS_ITEM).has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER).has(
-			MicroschemaContainerVersionImpl.class).has("uuid", version.getUuid()).back().toListExplicit(MicronodeGraphFieldListImpl.class);
+	public TraversalResult<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaContainerVersion version) {
+		return new TraversalResult<>(out(HAS_LIST).has(MicronodeGraphFieldListImpl.class).mark().out(HAS_ITEM).has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER).has(
+			MicroschemaContainerVersionImpl.class).has("uuid", version.getUuid()).back().frameExplicit(MicronodeGraphFieldListImpl.class));
 	}
 
 	@Override

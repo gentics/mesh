@@ -650,8 +650,8 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public List<? extends Tag> getTags() {
-		return outE(HAS_BRANCH_TAG).inV().toListExplicit(TagImpl.class);
+	public TraversalResult<? extends Tag> getTags() {
+		return new TraversalResult<>(outE(HAS_BRANCH_TAG).inV().frameExplicit(TagImpl.class));
 	}
 
 	@Override

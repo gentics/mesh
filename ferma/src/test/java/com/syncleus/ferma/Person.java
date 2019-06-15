@@ -19,55 +19,47 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Person extends AbstractVertexFrame {
-    static final ClassInitializer<Person> DEFAULT_INITIALIZER = new DefaultClassInitializer(Person.class);
+	static final ClassInitializer<Person> DEFAULT_INITIALIZER = new DefaultClassInitializer(Person.class);
 
-    public String getName() {
-        return getProperty("name");
-    }
+	public String getName() {
+		return getProperty("name");
+	}
 
-    public void setName(final String name) {
-        setProperty("name", name);
-    }
+	public void setName(final String name) {
+		setProperty("name", name);
+	}
 
-    public Iterator<Person> getKnows() {
+	public Iterator<Person> getKnows() {
 
-        return out("knows").frame(Person.class).iterator();
-    }
+		return out("knows").frame(Person.class).iterator();
+	}
 
-    public Iterator<Person> getKnowsExplicit() {
-        return out("knows").frame(Person.class).iterator();
-    }
+	public Iterator<Person> getKnowsExplicit() {
+		return out("knows").frame(Person.class).iterator();
+	}
 
-    public List<? extends Knows> getKnowsList() {
-        return outE("knows").toList(Knows.class);
-    }
+	public List<? extends Knows> getKnowsList() {
+		return outE("knows").toList(Knows.class);
+	}
 
-    public List<? extends Knows> getKnowsListExplicit() {
-        return outE("knows").toListExplicit(Knows.class);
-    }
+	public List<? extends Knows> getKnowsListExplicit() {
+		return outE("knows").toListExplicit(Knows.class);
+	}
 
-    public List<? extends Person> getKnowsCollectionVertices() {
-        return out("knows").toList(Person.class);
-    }
+	public Person getFirst() {
+		return out("knows").next(Person.class);
+	}
 
-    public List<? extends Person> getKnowsCollectionVerticesExplicit() {
-        return out("knows").toListExplicit(Person.class);
-    }
+	public Person getFirstExplicit() {
+		return out("knows").nextExplicit(Person.class);
+	}
 
-    public Person getFirst() {
-        return out("knows").next(Person.class);
-    }
+	public Knows addKnows(final Person friend) {
+		return addFramedEdge("knows", friend, Knows.DEFAULT_INITIALIZER);
+	}
 
-    public Person getFirstExplicit() {
-        return out("knows").nextExplicit(Person.class);
-    }
-
-    public Knows addKnows(final Person friend) {
-        return addFramedEdge("knows", friend, Knows.DEFAULT_INITIALIZER);
-    }
-
-    public Knows addKnowsExplicit(final Person friend) {
-        return addFramedEdgeExplicit("knows", friend, Knows.DEFAULT_INITIALIZER);
-    }
+	public Knows addKnowsExplicit(final Person friend) {
+		return addFramedEdgeExplicit("knows", friend, Knows.DEFAULT_INITIALIZER);
+	}
 
 }

@@ -380,11 +380,11 @@ public interface Branch
 	void removeAllTags();
 
 	/**
-	 * Return a list of all tags that were assigned to this branch.
+	 * Return all tags that were assigned to this branch.
 	 *
 	 * @return
 	 */
-	List<? extends Tag> getTags();
+	TraversalResult<? extends Tag> getTags();
 
 	/**
 	 * Return a page of all visible tags that are assigned to the branch.

@@ -298,8 +298,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public Set<GraphPermission> getPermissions(MeshVertex vertex) {
-		Predicate<? super GraphPermission> isValidPermission = perm ->
-			perm != READ_PUBLISHED_PERM && perm != PUBLISH_PERM || vertex.hasPublishPermissions();
+		Predicate<? super GraphPermission> isValidPermission = perm -> perm != READ_PUBLISHED_PERM && perm != PUBLISH_PERM
+			|| vertex.hasPublishPermissions();
 
 		return Stream.of(GraphPermission.values())
 			// Don't check for publish perms if it does not make sense for the vertex type
@@ -495,7 +495,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	public User addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
 		// 1. Determine all roles that grant given permission on the source
 		// node.
-		List<? extends Role> rolesThatGrantPermission = sourceNode.in(permission.label()).toListExplicit(RoleImpl.class);
+		List<? extends Role> rolesThatGrantPermission = new TraversalResult(sourceNode.in(permission.label()).frameExplicit(RoleImpl.class)).list();
 
 		// 2. Add CRUD permission to identified roles and target node
 		for (Role role : rolesThatGrantPermission) {

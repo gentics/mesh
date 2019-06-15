@@ -23,7 +23,6 @@
  */
 package com.syncleus.ferma.traversals;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -264,38 +263,8 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public <N> List<? extends N> toList(final Class<N> kind) {
-		return this.simpleDelegate().toList(kind);
-	}
-
-	@Override
-	public <N> List<? extends N> toListExplicit(final Class<N> kind) {
-		return this.simpleDelegate().toListExplicit(kind);
-	}
-
-	@Override
-	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkOut(final String label, final String namedStep) {
-		return this.simpleDelegate().linkOut(label, namedStep);
-	}
-
-	@Override
-	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkIn(final String label, final String namedStep) {
-		return this.simpleDelegate().linkIn(label, namedStep);
-	}
-
-	@Override
-	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkOut(final String label, final Vertex other) {
-		return this.simpleDelegate().linkOut(label, other);
-	}
-
-	@Override
 	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkOut(final String label, final VertexFrame other) {
 		return this.simpleDelegate().linkOut(label, other);
-	}
-
-	@Override
-	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkIn(final String label, final Vertex other) {
-		return this.simpleDelegate().linkIn(label, other);
 	}
 
 	@Override
@@ -339,18 +308,8 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public <N> Collection<? extends N> fillExplicit(final Collection<? super N> collection, final Class<N> kind) {
-		return this.simpleDelegate().fillExplicit(collection, kind);
-	}
-
-	@Override
 	public VertexTraversal<?, ?, M> and(final TraversalFunction<VertexFrame, Traversal<?, ?, ?, ?>>... traversals) {
 		return this.simpleDelegate().and(traversals);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> or(final TraversalFunction<VertexFrame, Traversal<?, ?, ?, ?>>... traversals) {
-		return this.simpleDelegate().or(traversals);
 	}
 
 	@Override
@@ -367,16 +326,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	public <N> SplitTraversal<? extends Traversal<N, ?, ?, M>> copySplit(
 		final TraversalFunction<VertexFrame, ? extends Traversal<N, ?, ?, ?>>... traversals) {
 		return this.simpleDelegate().copySplit(traversals);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> loop(final TraversalFunction<VertexFrame, ? extends VertexTraversal<?, ?, ?>> traversal) {
-		return this.simpleDelegate().loop(traversal);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> loop(final TraversalFunction<VertexFrame, ? extends VertexTraversal<?, ?, ?>> traversal, final int depth) {
-		return this.simpleDelegate().loop(traversal, depth);
 	}
 
 	@Override

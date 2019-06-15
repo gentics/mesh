@@ -23,13 +23,11 @@
  */
 package com.syncleus.ferma.traversals;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.VertexFrame;
-import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.gremlin.Tokens;
 import com.tinkerpop.pipes.transform.TransformPipe;
 
@@ -226,68 +224,6 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	<N> Iterable<? extends N> frameExplicit(Class<N> kind);
 
 	/**
-	 * Return a list of all the objects in the pipeline.
-	 * 
-	 * @param <N>
-	 *            The type used to frame the element
-	 * @param kind
-	 *            The kind of framed elements to return.
-	 * @return a list of all the objects
-	 * @deprecated Use Iterator and Traversal Result Instead
-	 */
-	@Deprecated
-	<N> List<? extends N> toList(Class<N> kind);
-
-	/**
-	 * Return a list of all the objects in the pipeline.
-	 *
-	 * This will bypass the default type resolution and use the untyped resolver instead. This method is useful for speeding up a look up when type resolution
-	 * isn't required.
-	 *
-	 * @param <N>
-	 *            The type used to frame the element
-	 * @param kind
-	 *            The kind of framed elements to return.
-	 * @return a list of all the objects
-	 * @deprecated Use Iterator and Traversal Result Instead
-	 */
-	@Deprecated
-	<N> List<? extends N> toListExplicit(Class<N> kind);
-
-	/**
-	 * Emit the incoming vertex, but have other vertex provide an outgoing edge to incoming vertex.
-	 *
-	 * @param label
-	 *            the edge label
-	 * @param namedStep
-	 *            the step name that has the other vertex to link to
-	 * @return the extended Pipeline
-	 */
-	VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkOut(String label, String namedStep);
-
-	/**
-	 * Emit the incoming vertex, but have other vertex provide an incoming edge to incoming vertex.
-	 *
-	 * @param label
-	 *            the edge label
-	 * @param namedStep
-	 *            the step name that has the other vertex to link to
-	 * @return the extended Pipeline
-	 */
-	VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkIn(String label, String namedStep);
-
-	/**
-	 * Emit the incoming vertex, but have other vertex provide an outgoing edge to incoming vertex.
-	 *
-	 * @param label
-	 *            the edge label
-	 * @param other
-	 *            the other vertex
-	 * @return the extended Pipeline
-	 */
-	VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkOut(String label, Vertex other);
-
-	/**
 	 * Emit the incoming vertex, but have other vertex provide an outgoing edge to incoming vertex.
 	 *
 	 * @param label
@@ -297,17 +233,6 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	 * @return the extended Pipeline
 	 */
 	VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkOut(String label, VertexFrame other);
-
-	/**
-	 * Emit the incoming vertex, but have other vertex provide an incoming edge to incoming vertex.
-	 *
-	 * @param label
-	 *            the edge label
-	 * @param other
-	 *            the other vertex
-	 * @return the extended Pipeline
-	 */
-	VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkIn(String label, Vertex other);
 
 	/**
 	 * Emit the incoming vertex, but have other vertex provide an incoming edge to incoming vertex.
@@ -348,22 +273,6 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	VertexTraversal<?, ?, M> order(TransformPipe.Order order);
 
 	/**
-	 * Fill the provided collection with the objects in the pipeline.
-	 *
-	 * This will bypass the default type resolution and use the untyped resolver instead. This method is useful for speeding up a look up when type resolution
-	 * isn't required.
-	 *
-	 * @param <N>
-	 *            The type used to frame the element
-	 * @param collection
-	 *            the collection to fill
-	 * @param kind
-	 *            The kind of framed elements to return.
-	 * @return the collection filled
-	 */
-	<N> Collection<? extends N> fillExplicit(Collection<? super N> collection, Class<N> kind);
-
-	/**
 	 * If the internal pipes all yield objects, then the object is not filtered. The provided pipes are provided the object as their starts.
 	 *
 	 * @param traversals
@@ -371,15 +280,6 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	 * @return the extended Pipeline
 	 */
 	VertexTraversal<?, ?, M> and(TraversalFunction<VertexFrame, Traversal<?, ?, ?, ?>>... traversals);
-
-	/**
-	 * Will only emit the object if one or more of the provides pipes yields an object. The provided pipes are provided the object as their starts.
-	 *
-	 * @param traversals
-	 *            the internal pipes of the OrFilterPipe
-	 * @return the extended Pipeline
-	 */
-	VertexTraversal<?, ?, M> or(TraversalFunction<VertexFrame, Traversal<?, ?, ?, ?>>... traversals);
 
 	@Override
 	VertexTraversal<C, S, ? extends VertexTraversal<C, S, M>> mark();
@@ -399,25 +299,5 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	 * @return the extended Pipeline
 	 */
 	<N> SplitTraversal<? extends Traversal<N, ?, ?, M>> copySplit(TraversalFunction<VertexFrame, ? extends Traversal<N, ?, ?, ?>>... traversals);
-
-	/**
-	 * The pipeline loops over the supplied traversal.
-	 *
-	 * @param traversal
-	 *            the traversal to look over.
-	 * @return the extended Pipeline
-	 */
-	VertexTraversal<?, ?, M> loop(TraversalFunction<VertexFrame, ? extends VertexTraversal<?, ?, ?>> traversal);
-
-	/**
-	 * The pipeline loops over the supplied traversal up to a maximum depth.
-	 *
-	 * @param traversal
-	 *            the traversal to look over.
-	 * @param depth
-	 *            The maximum depth to loop to
-	 * @return the extended Pipeline
-	 */
-	VertexTraversal<?, ?, M> loop(TraversalFunction<VertexFrame, ? extends VertexTraversal<?, ?, ?>> traversal, int depth);
 
 }

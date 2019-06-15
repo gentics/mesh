@@ -2,13 +2,13 @@ package com.gentics.mesh.core.field.micronode;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -58,6 +58,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.client.PublishParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -581,7 +582,8 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	 */
 	protected void assertMicronodes(FieldList<MicronodeField> field) {
 		try (Tx tx = tx()) {
-			Set<? extends MicronodeImpl> unboundMicronodes = tx.getGraph().v().has(MicronodeImpl.class).toList(MicronodeImpl.class).stream()
+			TraversalResult<? extends Micronode> s = new TraversalResult<>(tx.getGraph().v().has(MicronodeImpl.class).frameExplicit(MicronodeImpl.class));
+			Set<? extends Micronode> unboundMicronodes = s.stream()
 				.filter(micronode -> micronode.getContainer() == null).collect(Collectors.toSet());
 			assertThat(unboundMicronodes).as("Unbound micronodes").isEmpty();
 		}

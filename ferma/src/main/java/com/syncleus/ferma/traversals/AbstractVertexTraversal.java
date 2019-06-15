@@ -101,19 +101,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	}
 
 	@Override
-	public VertexTraversal<?, ?, M> or(final TraversalFunction<VertexFrame, Traversal<?, ?, ?, ?>>... traversals) {
-		final Collection<Pipe> extractedPipes = Collections2.transform(Arrays.asList(traversals), new Function<TraversalFunction, Pipe>() {
-
-			@Override
-			public Pipe apply(final TraversalFunction input) {
-				return ((AbstractTraversal) input.compute(new TVertex())).getPipeline();
-			}
-		});
-		getPipeline().or(extractedPipes.toArray(new Pipe[extractedPipes.size()]));
-		return this;
-	}
-
-	@Override
 	public VertexTraversal<?, ?, M> order() {
 		return (VertexTraversal<?, ?, M>) super.order();
 	}
@@ -190,33 +177,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	}
 
 	@Override
-	public <N> List<? extends N> toList(final Class<N> kind) {
-		return Lists.transform(getPipeline().toList(), new Function() {
-
-			@Override
-			public Object apply(final Object input) {
-				return graph().frameElement((Element) input, kind);
-			}
-		});
-	}
-
-	@Override
-	public <N> List<? extends N> toListExplicit(final Class<N> kind) {
-		return Lists.transform(getPipeline().toList(), new Function() {
-
-			@Override
-			public Object apply(final Object input) {
-				return graph().frameElementExplicit((Element) input, kind);
-			}
-		});
-	}
-
-	@Override
-	public List<? extends VertexFrame> toList() {
-		return toListExplicit(VertexFrame.class);
-	}
-
-	@Override
 	public VertexTraversal<?, ?, M> has(final String key) {
 		return (VertexTraversal<?, ?, M>) super.has(key);
 	}
@@ -259,30 +219,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	}
 
 	@Override
-	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkOut(final String label, final String namedStep) {
-		getPipeline().linkOut(label, namedStep);
-		return (VertexTraversal<List<EdgeFrame>, EdgeFrame, M>) this;
-	}
-
-	@Override
-	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkIn(final String label, final String namedStep) {
-		getPipeline().linkIn(label, namedStep);
-		return (VertexTraversal<List<EdgeFrame>, EdgeFrame, M>) this;
-	}
-
-	@Override
-	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkOut(final String label, final Vertex other) {
-		getPipeline().linkOut(label, other);
-		return (VertexTraversal<List<EdgeFrame>, EdgeFrame, M>) this;
-	}
-
-	@Override
-	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkIn(final String label, final Vertex other) {
-		getPipeline().linkIn(label, other);
-		return (VertexTraversal<List<EdgeFrame>, EdgeFrame, M>) this;
-	}
-
-	@Override
 	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkOut(final String label, final VertexFrame other) {
 		getPipeline().linkOut(label, other.getElement());
 		return (VertexTraversal<List<EdgeFrame>, EdgeFrame, M>) this;
@@ -292,11 +228,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	public VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkIn(final String label, final VertexFrame other) {
 		getPipeline().linkIn(label, other.getElement());
 		return (VertexTraversal<List<EdgeFrame>, EdgeFrame, M>) this;
-	}
-
-	@Override
-	public <N> Collection<? extends N> fillExplicit(final Collection<? super N> collection, final Class<N> kind) {
-		return getPipeline().fill(new FramingCollection<>(collection, graph(), kind, true));
 	}
 
 	@Override
@@ -334,19 +265,4 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 		return castToSplit();
 	}
 
-	@Override
-	public VertexTraversal<?, ?, M> loop(final TraversalFunction<VertexFrame, ? extends VertexTraversal<?, ?, ?>> traversal) {
-		final GremlinPipeline pipeline = ((AbstractTraversal) traversal.compute(new TVertex())).getPipeline();
-		getPipeline().add(new LoopPipe(pipeline, LoopPipe.createTrueFunction(), null));
-
-		return this;
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> loop(final TraversalFunction<VertexFrame, ? extends VertexTraversal<?, ?, ?>> traversal, final int depth) {
-		final GremlinPipeline pipeline = ((AbstractTraversal) traversal.compute(new TVertex())).getPipeline();
-		getPipeline().add(new LoopPipe(pipeline, LoopPipe.createLoopsFunction(depth), null));
-
-		return this;
-	}
 }

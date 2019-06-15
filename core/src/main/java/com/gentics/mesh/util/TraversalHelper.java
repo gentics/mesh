@@ -19,7 +19,7 @@ public final class TraversalHelper {
 	 *            Traversal to be debugged
 	 */
 	public static void debug(VertexTraversal<?, ?, ?> traversal) {
-		for (MeshVertexImpl v : traversal.toListExplicit(MeshVertexImpl.class)) {
+		for (MeshVertexImpl v : traversal.frameExplicit(MeshVertexImpl.class)) {
 			System.out.println(v.getProperty("name") + " type: " + v.getFermaType() + " json: " + v.toJson());
 
 		}
