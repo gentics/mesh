@@ -46,7 +46,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.ContentConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;

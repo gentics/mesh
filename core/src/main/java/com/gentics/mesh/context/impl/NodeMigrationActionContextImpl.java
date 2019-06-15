@@ -507,16 +507,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public <K> K setLinkOutExplicit(ClassInitializer<K> initializer, String... labels) {
-				return null;
-			}
-
-			@Override
-			public <K> K setLinkOutExplicit(Class<K> kind, String... labels) {
-				return null;
-			}
-
-			@Override
 			public VertexTraversal<?, ?, ?> traversal() {
 				return null;
 			}

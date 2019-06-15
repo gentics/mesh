@@ -16,19 +16,19 @@
 package com.syncleus.ferma;
 
 public class DefaultClassInitializer<C> implements ClassInitializer<C> {
-    private final Class<C> type;
+	private final Class<C> type;
 
-    public DefaultClassInitializer(final Class<C> type) {
-        this.type = type;
-    }
+	public DefaultClassInitializer(final Class<C> type) {
+		this.type = type;
+	}
 
-    @Override
-    public Class<C> getInitializationType() {
-        return this.type;
-    }
+	@Override
+	public Class<C> getInitializationType() {
+		return this.type;
+	}
 
-    @Override
-    public void initalize(final C frame) {
-    }
+	@Override
+	public void initalize(final C frame) {
+	}
 
 }

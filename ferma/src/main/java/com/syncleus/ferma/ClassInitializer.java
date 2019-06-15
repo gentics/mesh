@@ -16,6 +16,7 @@
 package com.syncleus.ferma;
 
 public interface ClassInitializer<C> {
-    Class<C> getInitializationType();
-    void initalize(C frame);
+	Class<C> getInitializationType();
+
+	void initalize(C frame);
 }

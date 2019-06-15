@@ -31,47 +31,47 @@ import com.tinkerpop.blueprints.Element;
  */
 public class UntypedTypeResolver implements TypeResolver {
 
-    @Override
-    public <T> Class<? extends T> resolve(final Element element, final Class<T> kind) {
-        if (VertexFrame.class.equals(kind) || AbstractVertexFrame.class.equals(kind))
-            return (Class<? extends T>) TVertex.class;
-        else if (EdgeFrame.class.equals(kind) || AbstractEdgeFrame.class.equals(kind))
-            return (Class<? extends T>) TEdge.class;
-        return kind;
-    }
-    
-    @Override
-    public Class<?> resolve(final Element element) {
-        return null;
-    }
+	@Override
+	public <T> Class<? extends T> resolve(final Element element, final Class<T> kind) {
+		if (VertexFrame.class.equals(kind) || AbstractVertexFrame.class.equals(kind))
+			return (Class<? extends T>) TVertex.class;
+		else if (EdgeFrame.class.equals(kind) || AbstractEdgeFrame.class.equals(kind))
+			return (Class<? extends T>) TEdge.class;
+		return kind;
+	}
 
-    @Override
-    public void init(final Element element, final Class<?> kind) {
-    }
-    
-    @Override
-    public void deinit(final Element element) {
-    }
-    
-    @Override
-    public VertexTraversal<?,?,?> hasType(final VertexTraversal<?,?,?> traverser, final Class<?> type) {
-        return traverser.filter(new TraversalFunction<VertexFrame, Boolean>() {
-            @Override
-            public Boolean compute(VertexFrame argument) {
-                return false;
-            }
-        });
-    }
-    
-    @Override
-    public EdgeTraversal<?,?,?> hasType(final EdgeTraversal<?,?,?> traverser, final Class<?> type) {
-        return traverser.filter(new TraversalFunction<EdgeFrame, Boolean>() {
-            @Override
-            public Boolean compute(EdgeFrame argument) {
-                return false;
-            }
-        });
-    }
+	@Override
+	public Class<?> resolve(final Element element) {
+		return null;
+	}
+
+	@Override
+	public void init(final Element element, final Class<?> kind) {
+	}
+
+	@Override
+	public void deinit(final Element element) {
+	}
+
+	@Override
+	public VertexTraversal<?, ?, ?> hasType(final VertexTraversal<?, ?, ?> traverser, final Class<?> type) {
+		return traverser.filter(new TraversalFunction<VertexFrame, Boolean>() {
+			@Override
+			public Boolean compute(VertexFrame argument) {
+				return false;
+			}
+		});
+	}
+
+	@Override
+	public EdgeTraversal<?, ?, ?> hasType(final EdgeTraversal<?, ?, ?> traverser, final Class<?> type) {
+		return traverser.filter(new TraversalFunction<EdgeFrame, Boolean>() {
+			@Override
+			public Boolean compute(EdgeFrame argument) {
+				return false;
+			}
+		});
+	}
 
 	@Override
 	public VertexTraversal<?, ?, ?> hasNotType(VertexTraversal<?, ?, ?> traverser, Class<?> type) {

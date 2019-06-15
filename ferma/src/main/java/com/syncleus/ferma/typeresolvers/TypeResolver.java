@@ -28,86 +28,90 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Element;
 
 /**
- * Type resolvers resolve the frame type from the element being requested and
- * may optionally store metadata about the frame type on the element.
+ * Type resolvers resolve the frame type from the element being requested and may optionally store metadata about the frame type on the element.
  */
 public interface TypeResolver {
-    /**
-     * Resolve the type of frame that a an element should be.
-     * 
-     * @param <T> The type used to frame the element.
-     * @param element
-     *            The element that is being framed.
-     * @param kind
-     *            The kind of frame that is being requested by the client code.
-     * @return The kind of frame
-     */
-    <T> Class<? extends T> resolve(Element element, Class<T> kind);
-    
-    /**
-     * Resolve the type of frame that a an element should be.
-     * 
-     * @param element
-     *            The element that is being framed.
-     * @return The kind of frame, null if no type resolution properties exist.
-     */
-    Class<?> resolve(Element element);
+	/**
+	 * Resolve the type of frame that a an element should be.
+	 * 
+	 * @param <T>
+	 *            The type used to frame the element.
+	 * @param element
+	 *            The element that is being framed.
+	 * @param kind
+	 *            The kind of frame that is being requested by the client code.
+	 * @return The kind of frame
+	 */
+	<T> Class<? extends T> resolve(Element element, Class<T> kind);
 
-    /**
-     * Called to initialize an element with type resolution properties.
-     * 
-     * @param element
-     *            The element that was created.
-     * @param kind
-     *            The kind of frame that was resolved.
-     */
-    void init(Element element, Class<?> kind);
-    
-    /**
-     * Called to remove the type resolution properties from an element
-     * 
-     * @param element
-     *            The element to remove the property from.
-     */
-    void deinit(Element element);
-    
-    /**
-     * Filters the objects on the traversal that satisfy a requested type.
-     * 
-     * @param traverser A traversal pointing to the current set of vertex to be
-     * filtered
-     * @param type The type to filter by.
-     * @return The traversal stream filtered by the desired type.
-     */
-    VertexTraversal<?,?,?> hasType(VertexTraversal<?,?,?> traverser, Class<?> type);
-    
-    /**
-     * Filters the objects on the traversal that satisfy a requested type.
-     * 
-     * @param traverser A traversal pointing to the current set of edges to be
-     * filtered
-     * @param type The type to filter by.
-     * @return The traversal stream filtered by the desired type.
-     */
-    EdgeTraversal<?,?,?> hasType(EdgeTraversal<?,?,?> traverser, Class<?> type);
+	/**
+	 * Resolve the type of frame that a an element should be.
+	 * 
+	 * @param element
+	 *            The element that is being framed.
+	 * @return The kind of frame, null if no type resolution properties exist.
+	 */
+	Class<?> resolve(Element element);
 
-    /**
-     * Filters out the objects on the traversal that are not satisfying a requested type.
-     * 
-     * @param traverser A traversal pointing to the current set of vertex to be
-     * filtered
-     * @param type The type to filter by.
-     * @return The traversal stream filtered by the desired type.
-     */
-    VertexTraversal<?,?,?> hasNotType(VertexTraversal<?,?,?> traverser, Class<?> type);
+	/**
+	 * Called to initialize an element with type resolution properties.
+	 * 
+	 * @param element
+	 *            The element that was created.
+	 * @param kind
+	 *            The kind of frame that was resolved.
+	 */
+	void init(Element element, Class<?> kind);
 
-    /**
-     * Filters out the objects on the traversal that are not satisfying a requested type.
-     * 
-     * @param traverser A traversal pointing to the current set of edges to be
-     * filtered
-     * @param type The type to filter by.
-     * @return The traversal stream filtered by the desired type.
-     */
-    EdgeTraversal<?,?,?> hasNotType(EdgeTraversal<?,?,?> traverser, Class<?> type);
+	/**
+	 * Called to remove the type resolution properties from an element
+	 * 
+	 * @param element
+	 *            The element to remove the property from.
+	 */
+	void deinit(Element element);
+
+	/**
+	 * Filters the objects on the traversal that satisfy a requested type.
+	 * 
+	 * @param traverser
+	 *            A traversal pointing to the current set of vertex to be filtered
+	 * @param type
+	 *            The type to filter by.
+	 * @return The traversal stream filtered by the desired type.
+	 */
+	VertexTraversal<?, ?, ?> hasType(VertexTraversal<?, ?, ?> traverser, Class<?> type);
+
+	/**
+	 * Filters the objects on the traversal that satisfy a requested type.
+	 * 
+	 * @param traverser
+	 *            A traversal pointing to the current set of edges to be filtered
+	 * @param type
+	 *            The type to filter by.
+	 * @return The traversal stream filtered by the desired type.
+	 */
+	EdgeTraversal<?, ?, ?> hasType(EdgeTraversal<?, ?, ?> traverser, Class<?> type);
+
+	/**
+	 * Filters out the objects on the traversal that are not satisfying a requested type.
+	 * 
+	 * @param traverser
+	 *            A traversal pointing to the current set of vertex to be filtered
+	 * @param type
+	 *            The type to filter by.
+	 * @return The traversal stream filtered by the desired type.
+	 */
+	VertexTraversal<?, ?, ?> hasNotType(VertexTraversal<?, ?, ?> traverser, Class<?> type);
+
+	/**
+	 * Filters out the objects on the traversal that are not satisfying a requested type.
+	 * 
+	 * @param traverser
+	 *            A traversal pointing to the current set of edges to be filtered
+	 * @param type
+	 *            The type to filter by.
+	 * @return The traversal stream filtered by the desired type.
+	 */
+	EdgeTraversal<?, ?, ?> hasNotType(EdgeTraversal<?, ?, ?> traverser, Class<?> type);
 }

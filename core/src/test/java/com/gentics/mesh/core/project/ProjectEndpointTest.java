@@ -83,7 +83,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
-import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
+import com.syncleus.ferma.ElementFrame;
 
 import io.reactivex.Observable;
 
@@ -749,7 +749,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		});
 
 		try (Tx tx = tx()) {
-			long n = StreamSupport.stream(tx.getGraph().getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName())
+			long n = StreamSupport.stream(tx.getGraph().getVertices(ElementFrame.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName())
 				.spliterator(), true).count();
 			long nProjectsAfter = meshRoot().getProjectRoot().computeCount();
 			assertEquals(nProjectsBefore + nJobs, nProjectsAfter);

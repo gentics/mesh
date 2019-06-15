@@ -23,116 +23,123 @@ import java.util.Set;
 
 public interface ElementFrame {
 
-    /**
-     * @param <N> The ID's type.
-     * @return The id of this element.
-     */
-    <N> N getId();
+	static String TYPE_RESOLUTION_KEY = "ferma_type";
 
-    /**
-     * @return The property keys of this element.
-     */
-    Set<String> getPropertyKeys();
+	/**
+	 * @param <N>
+	 *            The ID's type.
+	 * @return The id of this element.
+	 */
+	<N> N getId();
 
-    /**
-     * Remove this element from the graph.
-     */
-    void remove();
+	/**
+	 * @return The property keys of this element.
+	 */
+	Set<String> getPropertyKeys();
 
-    /**
-     * @return The underlying element.
-     */
-    Element getElement();
+	/**
+	 * Remove this element from the graph.
+	 */
+	void remove();
 
-    /**
-     * Set the underlying element.
-     *
-     * @param element Raw graph element
-     */
+	/**
+	 * @return The underlying element.
+	 */
+	Element getElement();
+
+	/**
+	 * Set the underlying element.
+	 *
+	 * @param element
+	 *            Raw graph element
+	 */
 	void setElement(Element element);
 
-    /**
-     * @return The underlying graph.
-     */
-    FramedGraph getGraph();
+	/**
+	 * @return The underlying graph.
+	 */
+	FramedGraph getGraph();
 
-    /**
-     * Return a property value.
-     *
-     * @param <T> The type of the property value.
-     * @param name
-     *            The name of the property.
-     * @return the value of the property or null if none was present.
-     */
-    <T> T getProperty(String name);
+	/**
+	 * Return a property value.
+	 *
+	 * @param <T>
+	 *            The type of the property value.
+	 * @param name
+	 *            The name of the property.
+	 * @return the value of the property or null if none was present.
+	 */
+	<T> T getProperty(String name);
 
-    /**
-     * Return a property value.
-     *
-     * @param <T> The type of the property value.
-     * @param name
-     *            The name of the property.
-     * @param type
-     *            The type of the property.
-     *
-     * @return the value of the property or null if none was present.
-     */
-    <T> T getProperty(String name, Class<T> type);
+	/**
+	 * Return a property value.
+	 *
+	 * @param <T>
+	 *            The type of the property value.
+	 * @param name
+	 *            The name of the property.
+	 * @param type
+	 *            The type of the property.
+	 *
+	 * @return the value of the property or null if none was present.
+	 */
+	<T> T getProperty(String name, Class<T> type);
 
-    /**
-     * Set a property value.
-     *
-     * @param name
-     *            The name of the property.
-     * @param value
-     *            The value of the property.
-     */
-    void setProperty(String name, Object value);
+	/**
+	 * Set a property value.
+	 *
+	 * @param name
+	 *            The name of the property.
+	 * @param value
+	 *            The value of the property.
+	 */
+	void setProperty(String name, Object value);
 
-    /**
-     * Returns the type resolution currently encoded into the element.
-     *
-     * @return the current type resolution.
-     * @since 2.1.0
-     */
-    Class<?> getTypeResolution();
+	/**
+	 * Returns the type resolution currently encoded into the element.
+	 *
+	 * @return the current type resolution.
+	 * @since 2.1.0
+	 */
+	Class<?> getTypeResolution();
 
-    /**
-     * Sets the type resolution and encodes it into the element in the graph.
-     *
-     * @param type The new type to resolve this element to.
-     * @since 2.1.0
-     */
-    void setTypeResolution(Class<?> type);
+	/**
+	 * Sets the type resolution and encodes it into the element in the graph.
+	 *
+	 * @param type
+	 *            The new type to resolve this element to.
+	 * @since 2.1.0
+	 */
+	void setTypeResolution(Class<?> type);
 
-    /**
-     * Removes type resolution from this node and decodes it from the element in the graph.
-     *
-     * @since 2.1.0
-     */
-    void removeTypeResolution();
+	/**
+	 * Removes type resolution from this node and decodes it from the element in the graph.
+	 *
+	 * @since 2.1.0
+	 */
+	void removeTypeResolution();
 
-    /**
-     * Query over all vertices in the graph.
-     *
-     * @return The query.
-     */
-    VertexTraversal<?, ?, ?> v();
+	/**
+	 * Query over all vertices in the graph.
+	 *
+	 * @return The query.
+	 */
+	VertexTraversal<?, ?, ?> v();
 
-    /**
-     * Query over all edges in the graph.
-     *
-     * @return The query.
-     */
-    EdgeTraversal<?, ?, ?> e();
+	/**
+	 * Query over all edges in the graph.
+	 *
+	 * @return The query.
+	 */
+	EdgeTraversal<?, ?, ?> e();
 
-    /**
-     * Query over a list of edges in the graph.
-     *
-     * @param ids
-     *            The ids of the edges.
-     * @return The query.
-     */
-    EdgeTraversal<?, ?, ?> e(final Object... ids);
+	/**
+	 * Query over a list of edges in the graph.
+	 *
+	 * @param ids
+	 *            The ids of the edges.
+	 * @return The query.
+	 */
+	EdgeTraversal<?, ?, ?> e(final Object... ids);
 
 }

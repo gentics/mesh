@@ -23,8 +23,6 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.VertexFrame;
-import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
@@ -99,7 +97,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	}
 
 	public String getFermaType() {
-		return property(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY);
+		return property(TYPE_RESOLUTION_KEY);
 	}
 
 	@Override

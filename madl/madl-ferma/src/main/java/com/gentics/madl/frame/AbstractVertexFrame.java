@@ -44,11 +44,6 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	}
 
 	@Override
-	public <K> K setLinkOutExplicit(Class<K> kind, String... labels) {
-		return super.setLinkOutExplicit(kind, labels);
-	}
-
-	@Override
 	public void setUniqueLinkOutTo(VertexFrame vertex, String... labels) {
 		// Unlink all edges between both objects with the given label
 		unlinkOut(vertex, labels);

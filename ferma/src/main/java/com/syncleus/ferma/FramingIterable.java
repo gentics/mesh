@@ -29,47 +29,47 @@ import java.util.Iterator;
 
 public abstract class FramingIterable<T, E extends Element> implements Iterable<T> {
 
-    private final Class<T> kind;
-    private final Iterable<E> iterable;
-    private final FramedGraph framedGraph;
-    private final boolean explicit;
+	private final Class<T> kind;
+	private final Iterable<E> iterable;
+	private final FramedGraph framedGraph;
+	private final boolean explicit;
 
-    public FramingIterable(final FramedGraph framedGraph, final Iterable<E> iterable, final Class<T> kind) {
-        this.framedGraph = framedGraph;
-        this.iterable = iterable;
-        this.kind = kind;
-        this.explicit = false;
-    }
+	public FramingIterable(final FramedGraph framedGraph, final Iterable<E> iterable, final Class<T> kind) {
+		this.framedGraph = framedGraph;
+		this.iterable = iterable;
+		this.kind = kind;
+		this.explicit = false;
+	}
 
-    public FramingIterable(final FramedGraph framedGraph, final Iterable<E> iterable, final Class<T> kind, final boolean explicit) {
-        this.framedGraph = framedGraph;
-        this.iterable = iterable;
-        this.kind = kind;
-        this.explicit = explicit;
-    }
+	public FramingIterable(final FramedGraph framedGraph, final Iterable<E> iterable, final Class<T> kind, final boolean explicit) {
+		this.framedGraph = framedGraph;
+		this.iterable = iterable;
+		this.kind = kind;
+		this.explicit = explicit;
+	}
 
-    @Override
-    public Iterator<T> iterator() {
-        return new Iterator<T>() {
-            private final Iterator<E> iterator = iterable.iterator();
+	@Override
+	public Iterator<T> iterator() {
+		return new Iterator<T>() {
+			private final Iterator<E> iterator = iterable.iterator();
 
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
+			@Override
+			public void remove() {
+				throw new UnsupportedOperationException();
+			}
 
-            @Override
-            public boolean hasNext() {
-                return this.iterator.hasNext();
-            }
+			@Override
+			public boolean hasNext() {
+				return this.iterator.hasNext();
+			}
 
-            @Override
-            public T next() {
-                if (explicit)
-                    return framedGraph.frameElementExplicit(this.iterator.next(), kind);
-                else
-                    return framedGraph.frameElement(this.iterator.next(), kind);
-            }
-        };
-    }
+			@Override
+			public T next() {
+				if (explicit)
+					return framedGraph.frameElementExplicit(this.iterator.next(), kind);
+				else
+					return framedGraph.frameElement(this.iterator.next(), kind);
+			}
+		};
+	}
 }
