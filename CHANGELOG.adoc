@@ -29,6 +29,8 @@ include::content/docs/variables.adoc-include[]
 
 icon:check[] REST: The deletion of microschemas which contain changes has been fixed. Previously a `NotImplementedException` was thrown for microschemas which contained changes. link:https://github.com/gentics/mesh/issues/589[#589]
 
+icon:check[] REST: Error messages should now always be wrapped in JSON. Previously, internal server errors were returned as plain text.
+
 icon:plus[] Core: Various internal structures and dependencies were re-organized and refactored.
 
 icon:plus[] UI: The default set of enabled languages within the `mesh-ui-config.js` file has been updated to include more languages.

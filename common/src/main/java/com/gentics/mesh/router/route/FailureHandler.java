@@ -138,7 +138,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 				String msg = I18NUtil.get(ac, "error_parse_request_json_error");
 				rc.response().end(new GenericMessageResponse(msg, failure.getMessage()).toJson());
 			}
-			if (failure != null && failure instanceof AbstractRestException) {
+			if (failure instanceof AbstractRestException) {
 				AbstractRestException error = (AbstractRestException) failure;
 				rc.response().setStatusCode(code);
 				translateMessage(error, rc);
@@ -147,6 +147,8 @@ public class FailureHandler implements Handler<RoutingContext> {
 				rc.response().setStatusCode(code);
 				rc.response().end(JsonUtil.toJson(new GenericMessageResponse(failure.getMessage())));
 			} else {
+				// We don't want to output too much information when an unexpected error occurs.
+				// That's why we don't reuse the error message here.
 				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 				String msg = I18NUtil.get(ac, "error_internal");
 				rc.response().setStatusCode(500);
