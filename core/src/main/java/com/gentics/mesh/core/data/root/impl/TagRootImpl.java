@@ -31,7 +31,8 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	/**
 	 * Initialise the indices and type.
 	 * 
-	 * @param database
+	 * @param type
+	 * @param index
 	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(TagRootImpl.class, MeshVertexImpl.class);

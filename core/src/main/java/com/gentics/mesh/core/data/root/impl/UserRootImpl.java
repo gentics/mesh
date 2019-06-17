@@ -47,7 +47,8 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	/**
 	 * Initialise the type and indices for this type.
 	 * 
-	 * @param database
+	 * @param type
+	 * @param index
 	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(UserRootImpl.class, MeshVertexImpl.class);
