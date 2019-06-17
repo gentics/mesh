@@ -143,9 +143,6 @@ public class FailureHandler implements Handler<RoutingContext> {
 				rc.response().setStatusCode(code);
 				translateMessage(error, rc);
 				rc.response().end(JsonUtil.toJson(error));
-			} else if (failure != null) {
-				rc.response().setStatusCode(code);
-				rc.response().end(JsonUtil.toJson(new GenericMessageResponse(failure.getMessage())));
 			} else {
 				// We don't want to output too much information when an unexpected error occurs.
 				// That's why we don't reuse the error message here.
