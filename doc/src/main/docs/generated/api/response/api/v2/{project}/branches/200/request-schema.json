@@ -1,0 +1,177 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:branch:BranchListResponse",
+  "properties" : {
+    "data" : {
+      "type" : "array",
+      "required" : true,
+      "description" : "Array which contains the found elements.",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:branch:BranchResponse",
+        "properties" : {
+          "uuid" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Uuid of the element"
+          },
+          "creator" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReference",
+            "required" : true,
+            "description" : "User reference of the creator of the element.",
+            "properties" : {
+              "firstName" : {
+                "type" : "string",
+                "description" : "Firstname of the user"
+              },
+              "lastName" : {
+                "type" : "string",
+                "description" : "Lastname of the user"
+              },
+              "uuid" : {
+                "type" : "string",
+                "required" : true,
+                "description" : "Uuid of the user"
+              }
+            }
+          },
+          "created" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "ISO8601 formatted created date string."
+          },
+          "editor" : {
+            "type" : "object",
+            "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReference",
+            "description" : "User reference of the editor of the element."
+          },
+          "edited" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "ISO8601 formatted edited date string."
+          },
+          "name" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Name of the branch."
+          },
+          "hostname" : {
+            "type" : "string",
+            "description" : "The hostname of the branch which will be used to generate links across multiple projects."
+          },
+          "ssl" : {
+            "type" : "boolean",
+            "description" : "SSL flag of the branch which will be used to generate links across multiple projects."
+          },
+          "pathPrefix" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Optional path prefix for webroot path and rendered links."
+          },
+          "migrated" : {
+            "type" : "boolean",
+            "required" : true,
+            "description" : "Flag which indicates whether any active node migration for this branch is still running or whether all nodes have been migrated to this branch."
+          },
+          "latest" : {
+            "type" : "boolean",
+            "required" : true,
+            "description" : "Flag which indicates whether this is the latest branch. Requests that do not specify a specific branch will be performed in the scope of the latest branch."
+          },
+          "tags" : {
+            "type" : "array",
+            "required" : true,
+            "description" : "List of tags that were used to tag the branch.",
+            "items" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:tag:TagReference",
+              "properties" : {
+                "name" : {
+                  "type" : "string",
+                  "description" : "Name of the referenced element"
+                },
+                "uuid" : {
+                  "type" : "string",
+                  "required" : true,
+                  "description" : "Uuid of the referenced element"
+                },
+                "tagFamily" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "permissions" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfo",
+            "required" : true,
+            "properties" : {
+              "create" : {
+                "type" : "boolean",
+                "required" : true,
+                "description" : "Flag which indicates whether the create permission is granted."
+              },
+              "read" : {
+                "type" : "boolean",
+                "required" : true,
+                "description" : "Flag which indicates whether the read permission is granted."
+              },
+              "update" : {
+                "type" : "boolean",
+                "required" : true,
+                "description" : "Flag which indicates whether the update permission is granted."
+              },
+              "delete" : {
+                "type" : "boolean",
+                "required" : true,
+                "description" : "Flag which indicates whether the delete permission is granted."
+              },
+              "publish" : {
+                "type" : "boolean",
+                "description" : "Flag which indicates whether the publish permission is granted."
+              },
+              "readPublished" : {
+                "type" : "boolean",
+                "description" : "Flag which indicates whether the read published permission is granted."
+              }
+            }
+          },
+          "rolePerms" : {
+            "type" : "object",
+            "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfo",
+            "description" : "Permission information for provided role. This property will only be populated if a role query parameter has been specified."
+          }
+        }
+      }
+    },
+    "_metainfo" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PagingMetaInfo",
+      "required" : true,
+      "description" : "Paging information of the list result.",
+      "properties" : {
+        "currentPage" : {
+          "type" : "integer",
+          "required" : true,
+          "description" : "Number of the current page."
+        },
+        "perPage" : {
+          "type" : "integer",
+          "required" : true,
+          "description" : "Number of elements which can be included in a single page."
+        },
+        "pageCount" : {
+          "type" : "integer",
+          "required" : true,
+          "description" : "Number of the pages which can be found for the given per page count."
+        },
+        "totalCount" : {
+          "type" : "integer",
+          "required" : true,
+          "description" : "Number of all elements which could be found."
+        }
+      }
+    }
+  }
+}

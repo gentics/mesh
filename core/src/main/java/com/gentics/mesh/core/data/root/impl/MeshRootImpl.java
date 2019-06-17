@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BINARY_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CHANGELOG_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_JOB_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE_ROOT;
@@ -27,6 +28,8 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.binary.impl.BinaryRootImpl;
+import com.gentics.mesh.core.data.changelog.ChangelogRoot;
+import com.gentics.mesh.core.data.changelog.ChangelogRootImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.job.impl.JobRootImpl;
@@ -43,6 +46,8 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -69,29 +74,30 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	private static MicroschemaContainerRoot microschemaContainerRoot;
 	private static JobRoot jobRoot;
 	private static BinaryRoot binaryRoot;
+	private static ChangelogRoot changelogRoot;
 
-	public static void init(Database database) {
-		database.addVertexType(MeshRootImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(MeshRootImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
 	public String getMeshVersion() {
-		return getProperty(MESH_VERSION);
+		return property(MESH_VERSION);
 	}
 
 	@Override
 	public void setMeshVersion(String version) {
-		setProperty(MESH_VERSION, version);
+		property(MESH_VERSION, version);
 	}
 
 	@Override
 	public String getDatabaseRevision() {
-		return getProperty(MESH_DB_REV);
+		return property(MESH_DB_REV);
 	}
 
 	@Override
 	public void setDatabaseRevision(String rev) {
-		setProperty(MESH_DB_REV, rev);
+		property(MESH_DB_REV, rev);
 	}
 
 	@Override
@@ -111,6 +117,25 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			}
 		}
 		return binaryRoot;
+	}
+
+	@Override
+	public ChangelogRoot getChangelogRoot() {
+		if (changelogRoot == null) {
+			synchronized (MeshRootImpl.class) {
+				ChangelogRoot foundChangelogRoot = out(HAS_CHANGELOG_ROOT).nextOrDefaultExplicit(ChangelogRootImpl.class, null);
+				if (foundChangelogRoot == null) {
+					changelogRoot = getGraph().addFramedVertex(ChangelogRootImpl.class);
+					linkOut(changelogRoot, HAS_CHANGELOG_ROOT);
+					if (log.isInfoEnabled()) {
+						log.info("Created changelog root {" + changelogRoot.getUuid() + "}");
+					}
+				} else {
+					changelogRoot = foundChangelogRoot;
+				}
+			}
+		}
+		return changelogRoot;
 	}
 
 	@Override
@@ -343,6 +368,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		MeshRootImpl.microschemaContainerRoot = null;
 		MeshRootImpl.languageRoot = null;
 		MeshRootImpl.jobRoot = null;
+		MeshRootImpl.changelogRoot = null;
 
 	}
 

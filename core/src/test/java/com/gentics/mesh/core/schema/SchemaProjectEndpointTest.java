@@ -2,9 +2,11 @@ package com.gentics.mesh.core.schema;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_ASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_UNASSIGNED;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.ClientHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -13,18 +15,21 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class SchemaProjectEndpointTest extends AbstractMeshTest {
 
 	@Test
@@ -60,58 +65,74 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddSchemaToProjectWithPerm() throws Exception {
-		Project extraProject;
-		SchemaContainer schema;
+		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+
+		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setName("extraProject");
+		request.setSchemaRef("folder");
+
+		ProjectResponse created = call(() -> client().createProject(request));
+		String projectUuid = created.getUuid();
+		String projectName = created.getName();
+
 		try (Tx tx = tx()) {
-			schema = schemaContainer("content");
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
-
-			ProjectCreateRequest request = new ProjectCreateRequest();
-			request.setName("extraProject");
-			request.setSchema(new SchemaReferenceImpl().setName("folder"));
-			ProjectResponse created = call(() -> client().createProject(request));
-			extraProject = projectRoot.findByUuid(created.getUuid());
-
+			Project extraProject = projectRoot.findByUuid(created.getUuid());
 			// Add only read perms
+			SchemaContainer schema = schemaContainer("content");
 			role().grantPermissions(schema, READ_PERM);
 			role().grantPermissions(extraProject, UPDATE_PERM);
 			tx.success();
 		}
 
+		expect(PROJECT_SCHEMA_ASSIGNED).match(1, ProjectSchemaEventModel.class, event -> {
+			ProjectReference projectRef = event.getProject();
+			assertNotNull(projectRef);
+			assertEquals(projectName, projectRef.getName());
+			assertEquals(projectUuid, projectRef.getUuid());
+
+			SchemaReference schemaRef = event.getSchema();
+			assertNotNull(schemaRef);
+			assertEquals("content", schemaRef.getName());
+			assertEquals(schemaUuid, schemaRef.getUuid());
+		});
+
+		call(() -> client().assignSchemaToProject(projectName, schemaUuid));
+		awaitEvents();
+
 		try (Tx tx = tx()) {
-			call(() -> client().assignSchemaToProject(extraProject.getName(), schema.getUuid()));
-			// assertThat(restSchema).matches(schema);
-			assertNotNull("The schema should be added to the extra project", extraProject.getSchemaContainerRoot().findByUuid(schema.getUuid()));
+			ProjectRoot projectRoot = meshRoot().getProjectRoot();
+			Project extraProject = projectRoot.findByUuid(created.getUuid());
+			assertNotNull("The schema should be added to the extra project", extraProject.getSchemaContainerRoot().findByUuid(schemaUuid));
 		}
 	}
 
 	@Test
 	public void testAddSchemaToProjectWithoutPerm() throws Exception {
-		String projectUuid;
-		String schemaUuid;
-		Project extraProject;
-		try (Tx tx = tx()) {
-			SchemaContainer schema = schemaContainer("content");
-			schemaUuid = schema.getUuid();
-			ProjectRoot projectRoot = meshRoot().getProjectRoot();
-			ProjectCreateRequest request = new ProjectCreateRequest();
-			request.setName("extraProject");
-			request.setSchema(new SchemaReferenceImpl().setName("folder"));
-			ProjectResponse response = call(() -> client().createProject(request));
-			projectUuid = response.getUuid();
-			extraProject = projectRoot.findByUuid(projectUuid);
-			// Revoke Update perm on project
-			role().revokePermissions(extraProject, UPDATE_PERM);
-			tx.success();
-		}
+		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
 
-		call(() -> client().assignSchemaToProject("extraProject", schemaUuid), FORBIDDEN, "error_missing_perm", projectUuid);
+		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setName("extraProject");
+		request.setSchema(new SchemaReferenceImpl().setName("folder"));
+		ProjectResponse response = call(() -> client().createProject(request));
+		String projectUuid = response.getUuid();
+
+		Project extraProject = tx((tx) -> {
+			ProjectRoot projectRoot = meshRoot().getProjectRoot();
+			// Revoke Update perm on project
+			Project p = projectRoot.findByUuid(projectUuid);
+			role().revokePermissions(p, UPDATE_PERM);
+			return p;
+		});
+
+		call(() -> client().assignSchemaToProject("extraProject", schemaUuid), FORBIDDEN, "error_missing_perm", projectUuid,
+			UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
 			// Reload the schema and check for expected changes
 			SchemaContainer schema = schemaContainer("content");
 			assertFalse("The schema should not have been added to the extra project but it was",
-					extraProject.getSchemaContainerRoot().contains(schema));
+				extraProject.getSchemaContainerRoot().contains(schema));
 		}
 
 	}
@@ -119,18 +140,35 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 	// Schema Project Testcases - DELETE / Remove
 	@Test
 	public void testRemoveSchemaFromProjectWithPerm() throws Exception {
+		Project project = project();
+		SchemaContainer schema = schemaContainer("content");
+		String schemaUuid = tx(() -> schema.getUuid());
+
 		try (Tx tx = tx()) {
-			SchemaContainer schema = schemaContainer("content");
-			Project project = project();
 			assertTrue("The schema should be assigned to the project.", project.getSchemaContainerRoot().contains(schema));
+		}
 
-			call(() -> client().unassignSchemaFromProject(project.getName(), schema.getUuid()));
+		expect(PROJECT_SCHEMA_UNASSIGNED).match(1, ProjectSchemaEventModel.class, event -> {
+			ProjectReference projectRef = event.getProject();
+			assertNotNull(projectRef);
+			assertEquals(PROJECT_NAME, projectRef.getName());
+			assertEquals(projectUuid(), projectRef.getUuid());
 
-			SchemaListResponse list = call(() -> client().findSchemas(PROJECT_NAME));
+			SchemaReference schemaRef = event.getSchema();
+			assertNotNull(schemaRef);
+			assertEquals("content", schemaRef.getName());
+			assertEquals(schemaUuid, schemaRef.getUuid());
+		});
 
-			// final String removedProjectName = project.getName();
-			assertEquals("The removed schema should not be listed in the response", 0,
-					list.getData().stream().filter(s -> s.getUuid().equals(schema.getUuid())).count());
+		call(() -> client().unassignSchemaFromProject(PROJECT_NAME, schemaUuid));
+		// TODO test for idempotency
+		awaitEvents();
+
+		SchemaListResponse list = call(() -> client().findSchemas(PROJECT_NAME));
+		assertEquals("The removed schema should not be listed in the response", 0,
+			list.getData().stream().filter(s -> s.getUuid().equals(schemaUuid)).count());
+
+		try (Tx tx = tx()) {
 			assertFalse("The schema should no longer be assigned to the project.", project.getSchemaContainerRoot().contains(schema));
 		}
 	}
@@ -146,7 +184,8 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().unassignSchemaFromProject(PROJECT_NAME, schema.getUuid()), FORBIDDEN, "error_missing_perm", projectUuid());
+			call(() -> client().unassignSchemaFromProject(PROJECT_NAME, schema.getUuid()), FORBIDDEN, "error_missing_perm", projectUuid(),
+				UPDATE_PERM.getRestPerm().getName());
 			// Reload the schema and check for expected changes
 			assertTrue("The schema should still be listed for the project.", project().getSchemaContainerRoot().contains(schema));
 		}

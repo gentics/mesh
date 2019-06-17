@@ -1,5 +1,8 @@
+---
+title: Building Blocks
+---
 
-= Building Blocks
+include::content/docs/variables.adoc-include[]
 
 This part of the documentation will be about the core concepts of Gentics Mesh.
 
@@ -28,19 +31,19 @@ TIP: Gentics Mesh creates a root or base node for each project. As you will lear
 | API endpoint
 
 | Create a project
-| link:++raml#projects__post++[```POST /api/v1/projects/```]
+| link:++/docs/api#projects__post++[```POST {apiLatest}/projects/```]
 
 | Get all projects
-| link:++raml##projects__get++[```GET /api/v1/projects/```]
+| link:++/docs/api/##projects__get++[```GET {apiLatest}/projects/```]
 
 | Get a project
-| link:++raml#projects__projectUuid__get++[```GET /api/v1/projects/:projectUuid```]
+| link:++/docs/api#projects__projectUuid__get++[```GET {apiLatest}/projects/:projectUuid```]
 
 | Update a project
-| link:++raml#projects__projectUuid__post++[```POST /api/v1/projects/:projectUuid```]
+| link:++/docs/api#projects__projectUuid__post++[```POST {apiLatest}/projects/:projectUuid```]
 
 | Delete a node
-| link:++raml#projects__projectUuid__delete++[```DELETE /api/v1/projects/:projectUuid```]
+| link:++/docs/api#projects__projectUuid__delete++[```DELETE {apiLatest}/projects/:projectUuid```]
 
 |======
 
@@ -48,7 +51,7 @@ TIP: Gentics Mesh creates a root or base node for each project. As you will lear
 
 [source,json]
 ----
-include::examples/api/response/api/v1/projects/\{projectUuid\}/200/example.json[]
+include::content/docs/api/response{apiLatest}/projects/\{projectUuid\}/200/example.json[]
 ----
 
 == Node
@@ -69,64 +72,64 @@ NOTE: It is important to understand that a node is just a container for language
 | API endpoint
 
 | Create a new node
-| link:++raml#project__nodes__post++[```POST /api/v1/projectName/nodes```]
+| link:++/docs/api#project__nodes__post++[```POST {apiLatest}/:projectName/nodes```]
 
 | Get all nodes of a project
-| link:++raml#project__nodes__get++[```GET /api/v1/projectName/nodes```]
+| link:++/docs/api#project__nodes__get++[```GET {apiLatest}/:projectName/nodes```]
 
 | Get a node
-| link:++raml#project__nodes__nodeUuid__get++[```GET /api/v1/:projectName/nodes/:nodeUuid```]
+| link:++/docs/api#project__nodes__nodeUuid__get++[```GET {apiLatest}/:projectName/nodes/:nodeUuid```]
 
 | Update a node
-| link:++raml#project__nodes__nodeUuid__post++[```POST /api/v1/:projectName/nodes/:nodeUuid```]
+| link:++/docs/api#project__nodes__nodeUuid__post++[```POST {apiLatest}/:projectName/nodes/:nodeUuid```]
 
 | Delete a node
-| link:++raml#project__nodes__nodeUuid__delete++[```DELETE /api/v1/:projectName/nodes/:nodeUuid```]
+| link:++/docs/api#project__nodes__nodeUuid__delete++[```DELETE {apiLatest}/:projectName/nodes/:nodeUuid```]
 
 | Update an image, video, or document
-| link:++raml#project__nodes__nodeUuid__binary__fieldName__post++[```POST /api/v1/:projectName/nodes/:nodeUuid/binary/:fieldName```]
+| link:++/docs/api#project__nodes__nodeUuid__binary__fieldName__post++[```POST {apiLatest}/:projectName/nodes/:nodeUuid/binary/:fieldName```]
 
 | Get an image, video, or document -  Crop & resize images
-| link:++raml#project__nodes__nodeUuid__binary__fieldName__get++[```GET /api/v1/:projectName/nodes/:nodeUuid/binary/:fieldName```]
+| link:++/docs/api#project__nodes__nodeUuid__binary__fieldName__get++[```GET {apiLatest}/:projectName/nodes/:nodeUuid/binary/:fieldName```]
 
 | Crop & resize and update an image
-| link:++raml#project__nodes__nodeUuid__binaryTransform__fieldName__post++[```POST /api/v1/:projectName/nodes/:nodeUuid/binaryTransform/:fieldName```]
+| link:++/docs/api#project__nodes__nodeUuid__binaryTransform__fieldName__post++[```POST {apiLatest}/:projectName/nodes/:nodeUuid/binaryTransform/:fieldName```]
 
 | Get all child nodes
-| link:++raml#project__nodes__nodeUuid__children_get++[```GET /api/v1/:projectName/nodes/:nodeUuid/children```]
+| link:++/docs/api#project__nodes__nodeUuid__children_get++[```GET {apiLatest}/:projectName/nodes/:nodeUuid/children```]
 
 | Delete the language specific content of a node
-| link:++raml#project__nodes__nodeUuid__languages__language__delete++[```DELETE /api/v1/:projectName/nodes/:nodeUuid/language/:language```]
+| link:++/docs/api#project__nodes__nodeUuid__languages__language__delete++[```DELETE {apiLatest}/:projectName/nodes/:nodeUuid/language/:language```]
 
 | Get the publish status for the given language of a node
-| link:++raml#project__nodes__nodeUuid__languages__language__published_get++[```GET /api/v1/:projectName/nodes/:nodeUuid/language/:language/published```]
+| link:++/docs/api#project__nodes__nodeUuid__languages__language__published_get++[```GET {apiLatest}/:projectName/nodes/:nodeUuid/language/:language/published```]
 
 | Move a node
-| link:++raml#project__nodes__nodeUuid__moveTo__toUuid__post++[```POST /api/v1/:projectName/nodes/:nodeUuid/moveTo/:toUuid```]
+| link:++/docs/api#project__nodes__nodeUuid__moveTo__toUuid__post++[```POST {apiLatest}/:projectName/nodes/:nodeUuid/moveTo/:toUuid```]
 
 | Get a navigation object
-| link:++raml#project__nodes__nodeUuid__navigation_get++[```GET /api/v1/:projectName/nodes/:nodeUuid/navigation```]
+| link:++/docs/api#project__nodes__nodeUuid__navigation_get++[```GET {apiLatest}/:projectName/nodes/:nodeUuid/navigation```]
 
 | Get the published status of a node
-| link:++raml#project__nodes__nodeUuid__published_get++[```GET /api/v1/:projectName/nodes/:nodeUuid/published```]
+| link:++/docs/api#project__nodes__nodeUuid__published_get++[```GET {apiLatest}/:projectName/nodes/:nodeUuid/published```]
 
 | Publish a node
-| link:++raml#project__nodes__nodeUuid__published_post++[```POST /api/v1/:projectName/nodes/:nodeUuid/published```]
+| link:++/docs/api#project__nodes__nodeUuid__published_post++[```POST {apiLatest}/:projectName/nodes/:nodeUuid/published```]
 
 | Unpublish a node
-| link:++raml#project__nodes__nodeUuid__published_delete++[```DELETE /api/v1/:projectName/nodes/:nodeUuid/published```]
+| link:++/docs/api#project__nodes__nodeUuid__published_delete++[```DELETE {apiLatest}/:projectName/nodes/:nodeUuid/published```]
 
 | Get the tag list of a node
-| link:++raml#project__nodes__nodeUuid__tags_get++[```GET /api/v1/:projectName/nodes/:nodeUuid/tags```]
+| link:++/docs/api#project__nodes__nodeUuid__tags_get++[```GET {apiLatest}/:projectName/nodes/:nodeUuid/tags```]
 
 | Update the tag list of a node
-| link:++raml#project__nodes__nodeUuid__tags_post++[```POST /api/v1/:projectName/nodes/:nodeUuid/tags```]
+| link:++/docs/api#project__nodes__nodeUuid__tags_post++[```POST {apiLatest}/:projectName/nodes/:nodeUuid/tags```]
 
 | Tag a node
-| link:++raml#project__nodes__nodeUuid__tags__tagUuid__post++[```POST /api/v1/:projectName/nodes/:nodeUuid/tags/:tagUuid```]
+| link:++/docs/api#project__nodes__nodeUuid__tags__tagUuid__post++[```POST {apiLatest}/:projectName/nodes/:nodeUuid/tags/:tagUuid```]
 
 | Remove a tag from a node
-| link:++raml#project__nodes__nodeUuid__tags__tagUuid__delete++[```DELETE /api/v1/:projectName/nodes/:nodeUuid/tags/:tagUuid```]
+| link:++/docs/api#project__nodes__nodeUuid__tags__tagUuid__delete++[```DELETE {apiLatest}/:projectName/nodes/:nodeUuid/tags/:tagUuid```]
 
 |======
 
@@ -135,14 +138,14 @@ NOTE: It is important to understand that a node is just a container for language
 
 [source,json]
 ----
-include::examples/api/response/api/v1/\{project\}/nodes/\{nodeUuid\}/200/example.json[]
+include::content/docs/api/response{apiLatest}/\{project\}/nodes/\{nodeUuid\}/200/example.json[]
 ----
 
 == Schema
 
 Typically, each project will require a set of different content types. Together they can be considered the content model of your project. Staying with the example of a product catalogue website: a product, product category, product image, and product manual each represent a separate content type. In Gentics Mesh, a *schema* is used to define such content types in terms of a couple of standard fields (e.g. ```uuid```, ```name```, ```description```, ```version```, etc.) and an arbitrary number of custom fields. Available <<Schema Field Types,field types>> are  ```string```, ```number```, ```HTML```, ```date```, ```binary```, ```list```, ```node```, ```micronode```, ```boolean```. You can think of a schema as a blueprint for new content items.
 
-TIP: Using the ```container``` property, a schema can be configured to allow for hierarchically structuring nodes. Nodes based on a such a schema may contain child nodes. This is the basis for building link:features.html#_contenttrees[content trees] in Gentics Mesh and leveraging the power of automatic link:features.html#_navigation[navigation menus], link:features.html#_breadcrumbs[breadcrumbs] and link:features.html#_prettyurls[pretty URLs].
+TIP: Using the ```container``` property, a schema can be configured to allow for hierarchically structuring nodes. Nodes based on a such a schema may contain child nodes. This is the basis for building link:{{< relref "features.asciidoc" >}}#_contenttrees[content trees] in Gentics Mesh and leveraging the power of automatic link:{{< relref "features.asciidoc" >}}#_navigation[navigation menus], link:{{< relref "features.asciidoc" >}}#_breadcrumbs[breadcrumbs] and link:{{< relref "features.asciidoc" >}}#_prettyurls[pretty URLs].
 
 === API endpoints
 
@@ -153,25 +156,25 @@ TIP: Using the ```container``` property, a schema can be configured to allow for
 | API endpoint
 
 | Create a schema
-| link:++raml#schemas__post++[```POST /api/v1/schemas/```]
+| link:++/docs/api#schemas__post++[```POST {apiLatest}/schemas/```]
 
 | Get all schemas
-| link:++raml#schemas__get++[```GET /api/v1/schemas/```]    
+| link:++/docs/api#schemas__get++[```GET {apiLatest}/schemas/```]    
 
 | Get a schema
-| link:++raml#schemas__schemaUuid__get++[```GET /api/v1/schemas/:schemaUuid```]
+| link:++/docs/api#schemas__schemaUuid__get++[```GET {apiLatest}/schemas/:schemaUuid```]
 
 | Update a schema
-| link:++raml#schemas__schemaUuid__post++[```POST /api/v1/schemas/:schemaUuid```]
+| link:++/docs/api#schemas__schemaUuid__post++[```POST {apiLatest}/schemas/:schemaUuid```]
 
 | Delete a schema
-| link:++raml#schemas__schemaUuid__delete++[```DELETE /api/v1/schema/:schemaUuid```]
+| link:++/docs/api#schemas__schemaUuid__delete++[```DELETE {apiLatest}/schema/:schemaUuid```]
 
-| Create a changeset for link:features.html#_schema_microschema_migration[migrating] a schema and all affected nodes
-| link:++raml#schemas__schemaUuid__diff_post++[```POST /api/v1/schema/:schemaUuid/diff```]
+| Create a changeset for link:{{< relref "features.asciidoc" >}}#_schema_microschema_migration[migrating] a schema and all affected nodes
+| link:++/docs/api#schemas__schemaUuid__diff_post++[```POST {apiLatest}/schema/:schemaUuid/diff```]
 
-| link:features.html#_schema_microschema_migration[Migrate] a schema and all affected nodes with a set of changes
-| link:++raml#schemas__schemaUuid__changes_post++[```POST /api/v1/schema/:schemaUuid/changes```]
+| link:{{< relref "features.asciidoc" >}}#_schema_microschema_migration[Migrate] a schema and all affected nodes with a set of changes
+| link:++/docs/api#schemas__schemaUuid__changes_post++[```POST {apiLatest}/schema/:schemaUuid/changes```]
 
 |======
 
@@ -179,7 +182,7 @@ TIP: Using the ```container``` property, a schema can be configured to allow for
 
 [source,json]
 ----
-include::examples/api/response/api/v1/schemas/\{schemaUuid\}/200/example.json[]
+include::content/docs/api/response{apiLatest}/schemas/\{schemaUuid\}/200/example.json[]
 ----
 
 === Schema Field
@@ -293,7 +296,7 @@ The optional ```step``` property allows specifying the size of the permitted inc
 | The ```required``` property indicates if the field is mandatory or not.
 
 | ```micronode```
-| A ```micronode``` field type stores a single micronode. A micronode is similar to a node. Typically they do not exist on their own but are tied to their (parent) node, e.g. an image with caption to be used in a blogpost node. For a detailed description see our definition of <<micronode>>.
+| A ```micronode``` field type stores a single micronode. A micronode is similar to a node. Typically they do not exist on their own but are tied to their (parent) node, e.g. an image with caption to be used in a blog post node. For a detailed description see our definition of <<micronode>>.
 | The ```required``` property indicates if the field is mandatory or not.
 
 A ```micronode``` field type must have an ```allow``` property that acts as a whitelist for allowed microschemas.  If allow is an empty array, any type of micronode may be used.
@@ -309,7 +312,7 @@ A ```node``` field type must have an ```allow``` property, which acts as a white
 
 (1) Within a node you can have simple lists of arbitrary length. The ```listType``` property then has to be of type ```string```, ```number```, ```date```, ```boolean```, or ```HTML```. E.g. handling your recipe nodes of your food blog will be a breeze with string-typed lists for ingredients.
 
-(2) You can unleash the power of micronodes, by specifying a list with the ```listType``` property set to ```micronode```, and the ```allow``` property set to the allowed microschemas. For example, besides having title, teaser, date and author fields, your blogpost schema could define a content field of type list allowing to insert any of your microschemas (e.g. YouTube Video, Image, Text, Galleries, Google Maps, etc.).
+(2) You can unleash the power of micronodes, by specifying a list with the ```listType``` property set to ```micronode```, and the ```allow``` property set to the allowed microschemas. For example, besides having title, teaser, date and author fields, your blog post schema could define a content field of type list allowing to insert any of your microschemas (e.g. YouTube Video, Image, Text, Galleries, Google Maps, etc.).
 
 (3) Furthermore, a ```list``` field type can be used to specify a structural relationship between nodes. In this case, the ```listType``` property has to be of type ```node```. This kind of reference represents a 1:n relationship. E.g., in your movie database app, you might want to list all actors of a movie.
 | The ```required``` property indicates if the field is mandatory or not.
@@ -330,7 +333,7 @@ A *micronode* is similar to a node. It also follows a schema - a *microschema*. 
 
 With micronodes it is possible to build complex object data structures as they are basically representing subnodes of nodes.
 
-Typical use cases for micronodes are content items that do not exist on their own but are tied to their (parent) node, e.g., media elements of your blogpost such as YouTube videos, image galleries, Google maps, image with caption, vcards, quotes, text paragraphs. As another example consider a recipe having a list of ingredients which in turn consist of a name and a quantity.
+Typical use cases for micronodes are content items that do not exist on their own but are tied to their (parent) node, e.g., media elements of your blog post such as YouTube videos, image galleries, Google maps, image with caption, vcards, quotes, text paragraphs. As another example consider a recipe having a list of ingredients which in turn consist of a name and a quantity.
 
 NOTE: Nodes can contain micronodes. Micronodes, however, can not contain further micronodes, thus limiting the nesting level to one.
 
@@ -343,25 +346,25 @@ NOTE: Nodes can contain micronodes. Micronodes, however, can not contain further
 | API endpoint
 
 | Create a microschema
-| link:++raml#microschemas__post++[```POST /api/v1/microschemas/```]
+| link:++/docs/api#microschemas__post++[```POST {apiLatest}/microschemas/```]
 
 | Get all microschemas
-| link:++raml#microschemas__get++[```GET /api/v1/microschemas/```]
+| link:++/docs/api#microschemas__get++[```GET {apiLatest}/microschemas/```]
 
 | Get a microschema
-| link:++raml#microschemas__microschemaUuid__get++[```GET /api/v1/microschemas/:microschemaUuid```]
+| link:++/docs/api#microschemas__microschemaUuid__get++[```GET {apiLatest}/microschemas/:microschemaUuid```]
 
 | Update a microschema
-| link:++raml#microschemas__microschemaUuid__post++[```POST /api/v1/microschemas/:microschemaUuid```]
+| link:++/docs/api#microschemas__microschemaUuid__post++[```POST {apiLatest}/microschemas/:microschemaUuid```]
 
 | Delete a microschema
-| link:++raml#microschemas__microschemaUuid__delete++[```DELETE /api/v1/microschemas/:microschemaUuid```]
+| link:++/docs/api#microschemas__microschemaUuid__delete++[```DELETE {apiLatest}/microschemas/:microschemaUuid```]
 
-| Create a changeset for link:features.html#_schema_microschema_migration[migrating] a microschema and all affected nodes
-| link:++raml#microschemas__microschemaUuid__diff_post++[```POST /api/v1/microschemas/:microschemaUuid/diff```]
+| Create a changeset for link:{{< relref "features.asciidoc" >}}#_schema_microschema_migration[migrating] a microschema and all affected nodes
+| link:++/docs/api#microschemas__microschemaUuid__diff_post++[```POST {apiLatest}/microschemas/:microschemaUuid/diff```]
 
-| link:features.html#_schema_microschema_migration[Migrate] a microschema and all affected nodes with a set of changes
-| link:++raml#microschemas__microschemaUuid__changes_post++[```POST /api/v1/microschemas/:microschemaUuid/changes```]
+| link:{{< relref "features.asciidoc" >}}#_schema_microschema_migration[Migrate] a microschema and all affected nodes with a set of changes
+| link:++/docs/api#microschemas__microschemaUuid__changes_post++[```POST {apiLatest}/microschemas/:microschemaUuid/changes```]
 
 |======
 
@@ -380,7 +383,15 @@ Fields of type ```list``` in micronodes can be of type: ```String```, ```Number`
 
 == Tag
 
-Gentics Mesh allows tagging of nodes. Tags can not be hierarchically structured.
+Gentics Mesh allows tagging of nodes and content branches. Tags of a specific kind are always part of a tag family.
+
+A typical example would be:
+
+> The tags [red]#red#, [green]#green#, [blue]#blue# belong to the tag family _colors_.
+
+Tags can't be hierarchically structured, are not translatable and can only applied to nodes and branches.
+
+TIP: If you don't want to work with uuids you can also specify the tags within the node update or node create request. The given tag list will automatically be applied to the node. Any missing tags in the list will be removed from the node.
 
 === API endpoints
 
@@ -391,23 +402,23 @@ Gentics Mesh allows tagging of nodes. Tags can not be hierarchically structured.
 | API endpoint
 
 | Get the tag list of a node
-| link:++raml#project__nodes__nodeUuid__tags_get++[```GET /api/v1/:projectName/nodes/:nodeUuid/tags```]
+| link:++/docs/api#project__nodes__nodeUuid__tags_get++[```GET {apiLatest}/:projectName/nodes/:nodeUuid/tags```]
 
 | Update the tag list of a node
-| link:++raml#project__nodes__nodeUuid__tags_post++[```POST /api/v1/:projectName/nodes/:nodeUuid/tags```]
+| link:++/docs/api#project__nodes__nodeUuid__tags_post++[```POST {apiLatest}/:projectName/nodes/:nodeUuid/tags```]
 
 | Tag a node
-| link:++raml#project__nodes__nodeUuid__tags__tagUuid__post++[```POST /api/v1/:projectName/nodes/:nodeUuid/tags/:tagUuid```]
+| link:++/docs/api#project__nodes__nodeUuid__tags__tagUuid__post++[```POST {apiLatest}/:projectName/nodes/:nodeUuid/tags/:tagUuid```]
 
 | Remove a tag from a node
-| link:++raml#project__nodes__nodeUuid__tags__tagUuid__delete++[```DELETE /api/v1/:projectName/nodes/:nodeUuid/tags/:tagUuid```]
+| link:++/docs/api#project__nodes__nodeUuid__tags__tagUuid__delete++[```DELETE {apiLatest}/:projectName/nodes/:nodeUuid/tags/:tagUuid```]
 |======
 
 === Response Sample
 
 [source,json]
 ----
-include::examples/api/response/api/v1/\{project\}/tagFamilies/\{tagFamilyUuid\}/tags/\{tagUuid\}/200/example.json[]
+include::content/docs/api/response{apiLatest}/\{project\}/tagFamilies/\{tagFamilyUuid\}/tags/\{tagUuid\}/200/example.json[]
 ----
 
 == Tag Family
@@ -439,34 +450,34 @@ A tag family is defined as part of a project. Tag families can’t be nested.
 | API endpoint
 
 | Get all tag families
-| link:++raml#project__tagFamilies__get++[```GET /api/v1/:projectName/tagFamilies/```]
+| link:++/docs/api#project__tagFamilies__get++[```GET {apiLatest}/:projectName/tagFamilies/```]
 
 | Create a tag family.
-| link:++raml#project__tagFamilies__post++[```POST /api/v1/:projectName/tagFamilies/```]
+| link:++/docs/api#project__tagFamilies__post++[```POST {apiLatest}/:projectName/tagFamilies/```]
 
 | Get a tag family
-| link:++raml#project__tagFamilies__tagFamilyUuid__get++[```GET /api/v1/:projectName/tagFamilies/:tagFamilyUuid```]
+| link:++/docs/api#project__tagFamilies__tagFamilyUuid__get++[```GET {apiLatest}/:projectName/tagFamilies/:tagFamilyUuid```]
 
 | Update a tag family
-| link:++raml#project__tagFamilies__tagFamilyUuid__post++[```POST /api/v1/:projectName/tagFamilies/:tagFamilyUuid```]
+| link:++/docs/api#project__tagFamilies__tagFamilyUuid__post++[```POST {apiLatest}/:projectName/tagFamilies/:tagFamilyUuid```]
 
 | Delete a tag family
-| link:++raml#project__tagFamilies__tagFamilyUuid__delete++[```DELETE /api/v1/:projectName/tagFamilies/:tagFamilyUuid```]
+| link:++/docs/api#project__tagFamilies__tagFamilyUuid__delete++[```DELETE {apiLatest}/:projectName/tagFamilies/:tagFamilyUuid```]
 
 | Get all tags of a tag family
-| link:++raml#project__tagFamilies__tagFamilyUuid__tags_get++[```GET /api/v1/:projectName/tagFamilies/:tagFamilyUuid/tags```]
+| link:++/docs/api#project__tagFamilies__tagFamilyUuid__tags_get++[```GET {apiLatest}/:projectName/tagFamilies/:tagFamilyUuid/tags```]
 
 | Get a specified tag from a tag family
-| link:++raml#project__tagFamilies__tagFamilyUuid__tags__tagUuid__get++[```GET /api/v1/:projectName/tagFamilies/:tagFamilyUuid/tags/:tagUuid```]
+| link:++/docs/api#project__tagFamilies__tagFamilyUuid__tags__tagUuid__get++[```GET {apiLatest}/:projectName/tagFamilies/:tagFamilyUuid/tags/:tagUuid```]
 
 | Update a specified tag
-| link:++raml#project__tagFamilies__tagFamilyUuid__tags__tagUuid__post++[```POST /api/v1/:projectName/tagFamilies/:tagFamilyUuid/tags/:tagUuid```]
+| link:++/docs/api#project__tagFamilies__tagFamilyUuid__tags__tagUuid__post++[```POST {apiLatest}/:projectName/tagFamilies/:tagFamilyUuid/tags/:tagUuid```]
 
 | Remove a tag from a tag family
-| link:++raml#project__tagFamilies__tagFamilyUuid__tags__tagUuid__delete++[```DELETE /api/v1/:projectName/tagFamilies/:tagFamilyUuid/tags/:tagUuid```]
+| link:++/docs/api#project__tagFamilies__tagFamilyUuid__tags__tagUuid__delete++[```DELETE {apiLatest}/:projectName/tagFamilies/:tagFamilyUuid/tags/:tagUuid```]
 
 | Get all nodes that have been tagged with the tag
-| link:++raml#project__tagFamilies__tagFamilyUuid__tags__tagUuid__nodes_get++[```GET /api/v1/:projectName/tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes```]
+| link:++/docs/api#project__tagFamilies__tagFamilyUuid__tags__tagUuid__nodes_get++[```GET {apiLatest}/:projectName/tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes```]
 
 |======
 
@@ -474,7 +485,7 @@ A tag family is defined as part of a project. Tag families can’t be nested.
 
 [source,json]
 ----
-include::examples/api/response/api/v1/\{project\}/tagFamilies/\{tagFamilyUuid\}/200/example.json[]
+include::content/docs/api/response{apiLatest}/\{project\}/tagFamilies/\{tagFamilyUuid\}/200/example.json[]
 ----
 
 == User
@@ -484,7 +495,7 @@ This user object has a standard set of properties, e.g.```firstname```, ```lastn
 
 TIP: Gentics Mesh supports *user management for your apps*! The property ```nodeReference``` is used for storing additional user-related data based on a schema you define, thus allowing for extensible user profiles.
 
-In order to be able to store and retrieve content, a user needs to authenticate using one of the available link:references.html#_authentication[authentication] mechanisms.
+In order to be able to store and retrieve content, a user needs to authenticate using one of the available link:{{< relref "references.asciidoc" >}}#_authentication[authentication] mechanisms.
 
 === API endpoints
 
@@ -495,31 +506,31 @@ In order to be able to store and retrieve content, a user needs to authenticate 
 | API endpoint
 
 | Get all users
-| link:++raml#users__get++[```GET /api/v1/users/```]
+| link:++/docs/api#users__get++[```GET {apiLatest}/users/```]
 
 | Create a user
-| link:++raml#users__post++[```POST /api/v1/users/```]
+| link:++/docs/api#users__post++[```POST {apiLatest}/users/```]
 
 | Get a user
-| link:++raml#users__userUuid__get++[```GET /api/v1/users/:userUuid```]
+| link:++/docs/api#users__userUuid__get++[```GET {apiLatest}/users/:userUuid```]
 
 | Update a user
-| link:++raml#users__userUuid__post++[```POST /api/v1/users/:userUuid```]
+| link:++/docs/api#users__userUuid__post++[```POST {apiLatest}/users/:userUuid```]
 
 | Deactivate a user
-| link:++raml#users__userUuid__delete++[```DELETE /api/v1/users/:userUuid```]
+| link:++/docs/api#users__userUuid__delete++[```DELETE {apiLatest}/users/:userUuid```]
 
 | Read user permissions on elements
-| link:++raml#users__userUuid__permissions__path__get++[```GET /api/v1/users/:userUuid/permissions/:path```]
+| link:++/docs/api#users__userUuid__permissions__path__get++[```GET {apiLatest}/users/:userUuid/permissions/:path```]
 
 | Return a one time token to update a user
-| link:++raml#users__userUuid__reset_token_post++[```POST /api/v1/users/:userUuid/reset_token```]
+| link:++/docs/api#users__userUuid__reset_token_post++[```POST {apiLatest}/users/:userUuid/reset_token```]
 
 | Return an API token
-| link:++raml#users__userUuid__token_post++[```POST /api/v1/users/:userUuid/token```]
+| link:++/docs/api#users__userUuid__token_post++[```POST {apiLatest}/users/:userUuid/token```]
 
 | Invalidate an API token
-| link:++raml#users__userUuid__token_delete++[```DELETE /api/v1/users/:userUuid/token```]
+| link:++/docs/api#users__userUuid__token_delete++[```DELETE {apiLatest}/users/:userUuid/token```]
 
 |======
 
@@ -527,7 +538,7 @@ In order to be able to store and retrieve content, a user needs to authenticate 
 
 [source,json]
 ----
-include::examples/api/response/api/v1/users/\{userUuid\}/200/example.json[]
+include::content/docs/api/response{apiLatest}/users/\{userUuid\}/200/example.json[]
 ----
 
 == Group
@@ -543,49 +554,49 @@ include::examples/api/response/api/v1/users/\{userUuid\}/200/example.json[]
 | API endpoint
 
 | Get all groups
-| link:++raml#groups__get++[```GET /api/v1/groups/```]
+| link:++/docs/api#groups__get++[```GET {apiLatest}/groups/```]
 
 | Create a group
-| link:++raml#groups__post++[```POST /api/v1/groups/```]
+| link:++/docs/api#groups__post++[```POST {apiLatest}/groups/```]
 
 | Get a group
-| link:++raml#groups__groupUuid__get++[```GET /api/v1/group/:groupUuid```]
+| link:++/docs/api#groups__groupUuid__get++[```GET {apiLatest}/group/:groupUuid```]
 
 | Update a group
-| link:++raml#groups__groupUuid__post++[```POST /api/v1/group/:groupUuid```]
+| link:++/docs/api#groups__groupUuid__post++[```POST {apiLatest}/group/:groupUuid```]
 
 | Delete a group
-| link:++raml#groups__groupUuid__delete++[```DELETE /api/v1/group/:groupUuid```]
+| link:++/docs/api#groups__groupUuid__delete++[```DELETE {apiLatest}/group/:groupUuid```]
 
 | Get all roles assigned to a group
-| link:++raml#groups__groupUuid__roles_get++[```GET /api/v1/group/:groupUuid/roles```]
+| link:++/docs/api#groups__groupUuid__roles_get++[```GET {apiLatest}/group/:groupUuid/roles```]
 
 | Assign a role to a group
-| link:++raml#groups__groupUuid__roles__roleUuid__post++[```POST /api/v1/group/:groupUuid/roles/:rolesUuid```]
+| link:++/docs/api#groups__groupUuid__roles__roleUuid__post++[```POST {apiLatest}/group/:groupUuid/roles/:rolesUuid```]
 
 | Remove a role from a group
-| link:++raml#groups__groupUuid__roles__roleUuid__delete++[```DELETE /api/v1/group/:groupUuid/roles/:rolesUuid```]
+| link:++/docs/api#groups__groupUuid__roles__roleUuid__delete++[```DELETE {apiLatest}/group/:groupUuid/roles/:rolesUuid```]
 
 | Get all users assigned to a group
-| link:++raml#groups__groupUuid__users_get++[```GET /api/v1/group/:groupUuid/users```]
+| link:++/docs/api#groups__groupUuid__users_get++[```GET {apiLatest}/group/:groupUuid/users```]
 
 | Add user to a group
-| link:++raml#groups__groupUuid__users__userUuid__post++[```POST /api/v1/group/:groupUuid/users/:userUuid```]
+| link:++/docs/api#groups__groupUuid__users__userUuid__post++[```POST {apiLatest}/group/:groupUuid/users/:userUuid```]
 
 | Remove user from a group
-| link:++raml#groups__groupUuid__users__userUuid__delete++[```DELETE /api/v1/group/:groupUuid/users/:userUuid```]
+| link:++/docs/api#groups__groupUuid__users__userUuid__delete++[```DELETE {apiLatest}/group/:groupUuid/users/:userUuid```]
 |======
 
 === Response Sample
 
 [source,json]
 ----
-include::examples/api/response/api/v1/groups/\{groupUuid\}/200/example.json[]
+include::content/docs/api/response{apiLatest}/groups/\{groupUuid\}/200/example.json[]
 ----
 
 == Role
 
-*Roles* are used to manage link:features.html#_permissions[permissions] between the role and other elements in Gentics Mesh (i.e., nodes, schemas, users, roles, etc.). Roles can be assigned to groups. Thus, a user of a group with roles inherits the permissions that are bound to these roles. Roles can’t be nested.
+*Roles* are used to manage link:{{< relref "features.asciidoc" >}}#_permissions[permissions] between the role and other elements in Gentics Mesh (i.e., nodes, schemas, users, roles, etc.). Roles can be assigned to groups. Thus, a user of a group with roles inherits the permissions that are bound to these roles. Roles can’t be nested.
 
 //TODO picture with example User/Group/Roles that we ship
 
@@ -598,30 +609,30 @@ include::examples/api/response/api/v1/groups/\{groupUuid\}/200/example.json[]
 | API endpoint
 
 | Get all roles
-| link:++raml#roles__get++[```GET /api/v1/roles/```]
+| link:++/docs/api#roles__get++[```GET {apiLatest}/roles/```]
 
 | Create a role
-| link:++raml#roles__post++[```POST /api/v1/roles/```]
+| link:++/docs/api#roles__post++[```POST {apiLatest}/roles/```]
 
 | Get a role
-| link:++raml#roles__roleUuid__get++[```GET /api/v1/roles/:roleUuid```]
+| link:++/docs/api#roles__roleUuid__get++[```GET {apiLatest}/roles/:roleUuid```]
 
 | Update a role
-| link:++raml#roles__roleUuid__post++[```POST /api/v1/roles/:roleUuid```]
+| link:++/docs/api#roles__roleUuid__post++[```POST {apiLatest}/roles/:roleUuid```]
 
 | Delete a role
-| link:++raml#roles__roleUuid__delete++[```DELETE /api/v1/roles/:roleUuid```]
+| link:++/docs/api#roles__roleUuid__delete++[```DELETE {apiLatest}/roles/:roleUuid```]
 
 | Read role permissions on elements
-| link:++raml#roles__roleUuid__permissions__path__get++[```GET /api/v1/roles/:roleUuid/permissions/:path```]
+| link:++/docs/api#roles__roleUuid__permissions__path__get++[```GET {apiLatest}/roles/:roleUuid/permissions/:path```]
 
 | Set role permissions on elements
-| link:++raml#roles__roleUuid__permissions__path__post++[```POST /api/v1/roles/:roleUuid/permissions/:path```]
+| link:++/docs/api#roles__roleUuid__permissions__path__post++[```POST {apiLatest}/roles/:roleUuid/permissions/:path```]
 |======
 
 === Response Sample
 
 [source,json]
 ----
-include::examples/api/response/api/v1/roles/\{roleUuid\}/200/example.json[]
+include::content/docs/api/response{apiLatest}/roles/\{roleUuid\}/200/example.json[]
 ----

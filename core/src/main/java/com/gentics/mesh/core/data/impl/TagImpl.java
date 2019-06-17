@@ -1,28 +1,31 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.ContainerType;
-import com.gentics.mesh.core.data.HandleElementAction;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
@@ -32,14 +35,23 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.event.role.TagPermissionChangedEventModel;
+import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
+import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.dagger.DB;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
+import com.gentics.mesh.handler.VersionHandler;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -60,23 +72,24 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	public static final String TAG_VALUE_KEY = "tagValue";
 
-	public static void init(Database database) {
-		database.addVertexType(TagImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(TagImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
-	public List<? extends Node> getNodes(Branch branch) {
-		return TagEdgeImpl.getNodeTraversal(this, branch).toListExplicit(NodeImpl.class);
+	public TraversalResult<? extends Node> getNodes(Branch branch) {
+		Iterable<? extends NodeImpl> it = TagEdgeImpl.getNodeTraversal(this, branch).frameExplicit(NodeImpl.class);
+		return new TraversalResult<>(it);
 	}
 
 	@Override
 	public String getName() {
-		return getProperty(TAG_VALUE_KEY);
+		return property(TAG_VALUE_KEY);
 	}
 
 	@Override
 	public void setName(String name) {
-		setProperty(TAG_VALUE_KEY, name);
+		property(TAG_VALUE_KEY, name);
 	}
 
 	@Override
@@ -142,16 +155,17 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public void delete(BulkActionContext bac) {
+		String uuid = getUuid();
+		String name = getName();
 		if (log.isDebugEnabled()) {
-			log.debug("Deleting tag {" + getName() + "}");
+			log.debug("Deleting tag {" + uuid + ":" + name + "}");
 		}
-		bac.batch().delete(this, true);
+		bac.add(onDeleted());
 
-		// Nodes which used this tag must be updated in the search index for all branches
-		for (Branch branch : getProject().getBranchRoot().findAllIt()) {
-			String branchUuid = branch.getUuid();
+		// For node which have been previously tagged we need to fire the untagged event.
+		for (Branch branch : getProject().getBranchRoot().findAll()) {
 			for (Node node : getNodes(branch)) {
-				bac.batch().store(node, branchUuid);
+				bac.add(node.onTagged(this, branch, UNASSIGNED));
 			}
 		}
 		getElement().remove();
@@ -162,7 +176,35 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	public TransformablePage<? extends Node> findTaggedNodes(MeshAuthUser user, Branch branch, List<String> languageTags, ContainerType type,
 		PagingParameters pagingInfo) {
 		VertexTraversal<?, ?, ?> traversal = getTaggedNodesTraversal(branch, languageTags, type);
-		return new DynamicTransformablePageImpl<Node>(user, traversal, pagingInfo, READ_PERM, NodeImpl.class);
+		return new DynamicTransformablePageImpl<Node>(user, traversal, pagingInfo, READ_PUBLISHED_PERM, NodeImpl.class);
+	}
+
+	@Override
+	public TraversalResult<? extends Node> findTaggedNodes(InternalActionContext ac, GraphPermission permission) {
+		MeshAuthUser user = ac.getUser();
+		Branch branch = ac.getBranch();
+		String branchUuid = branch.getUuid();
+		TraversalResult<? extends Node> nodes = new TraversalResult<>(inE(HAS_TAG).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).outV().frameExplicit(NodeImpl.class));
+		Stream<? extends Node> s = nodes.stream()
+			.filter(item -> {
+				// Check whether the node has at least a draft in the selected branch - Otherwise the node should be skipped
+				return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, DRAFT.getCode());
+			})
+			.filter(item -> {
+				boolean hasRead = user.hasPermissionForId(item.getId(), READ_PERM);
+				if (hasRead) {
+					return true;
+				} else {
+					// Check whether the node is published. In this case we need to check the read publish perm.
+					boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED.getCode());
+					if (isPublishedForBranch) {
+						return user.hasPermissionForId(item.getId(), READ_PUBLISHED_PERM);
+					}
+				}
+				return false;
+			});
+
+		return new TraversalResult<>(() -> s.iterator());
 	}
 
 	/**
@@ -194,7 +236,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	}
 
 	@Override
-	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
 		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);
 		String newTagName = requestModel.getName();
 		if (isEmpty(newTagName)) {
@@ -213,29 +255,12 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 				setEditor(ac.getUser());
 				setLastEditedTimestamp();
 				setName(newTagName);
-				batch.store(getTagFamily(), false);
-				batch.store(this, true);
+				batch.add(onUpdated());
 				return true;
 			}
 		}
 		return false;
 
-	}
-
-	@Override
-	public void handleRelatedEntries(HandleElementAction action) {
-		// Locate all nodes that use the tag across all branches and update these nodes
-		for (Branch branch : getProject().getBranchRoot().findAllIt()) {
-			for (Node node : getNodes(branch)) {
-				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
-					GenericEntryContextImpl context = new GenericEntryContextImpl();
-					context.setContainerType(type);
-					context.setBranchUuid(branch.getUuid());
-					context.setProjectUuid(node.getProject().getUuid());
-					action.call(node, context);
-				}
-			}
-		}
 	}
 
 	@Override
@@ -249,7 +274,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return "/api/v1/" + encodeSegment(getProject().getName()) + "/tagFamilies/" + getTagFamily().getUuid() + "/tags/" + getUuid();
+		return VersionHandler.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/tagFamilies/" + getTagFamily().getUuid() + "/tags/" + getUuid();
 	}
 
 	@Override
@@ -267,6 +292,32 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		return DB.get().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
+	}
+
+	@Override
+	protected TagMeshEventModel createEvent(MeshEvent type) {
+		TagMeshEventModel event = new TagMeshEventModel();
+		event.setEvent(type);
+		fillEventInfo(event);
+
+		// .project
+		Project project = getProject();
+		ProjectReference reference = project.transformToReference();
+		event.setProject(reference);
+
+		// .tagFamily
+		TagFamily tagFamily = getTagFamily();
+		TagFamilyReference tagFamilyReference = tagFamily.transformToReference();
+		event.setTagFamily(tagFamilyReference);
+		return event;
+	}
+
+	@Override
+	public TagPermissionChangedEventModel onPermissionChanged(Role role) {
+		TagPermissionChangedEventModel model = new TagPermissionChangedEventModel();
+		fillPermissionChanged(model, role);
+		model.setTagFamily(getTagFamily().transformToReference());
+		return model;
 	}
 
 }

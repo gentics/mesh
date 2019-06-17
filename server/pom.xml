@@ -9,13 +9,12 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.24.1-SNAPSHOT</version>
+		<version>0.36.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<projectRoot>${project.basedir}/..</projectRoot>
 	</properties>
 
 	<dependencies>
@@ -23,12 +22,6 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-core</artifactId>
 			<version>${project.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.hazelcast</groupId>
-					<artifactId>hazelcast</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
@@ -36,9 +29,10 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>${mesh.database.provider}</artifactId>
-			<version>${project.version}</version>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-transport-native-epoll</artifactId>
+			<version>${netty.version}</version>
+			<classifier>linux-x86_64</classifier>
 		</dependency>
 	</dependencies>
 
@@ -49,6 +43,7 @@
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
 					<execution>
+						<?m2e ignore?>
 						<id>copy-sharedlib-dependencies</id>
 						<phase>package</phase>
 						<goals>

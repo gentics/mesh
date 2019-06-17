@@ -1,29 +1,28 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.Events.EVENT_GROUP_CREATED;
-import static com.gentics.mesh.Events.EVENT_GROUP_DELETED;
-import static com.gentics.mesh.Events.EVENT_GROUP_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_UPDATED;
 
-import java.util.List;
 import java.util.Objects;
 
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
+import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.event.Assignment;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
  * Graph domain model interface for groups.
  */
-public interface Group extends MeshCoreVertex<GroupResponse, Group>, ReferenceableElement<GroupReference>, UserTrackingVertex, IndexableElement {
+public interface Group extends MeshCoreVertex<GroupResponse, Group>, ReferenceableElement<GroupReference>, UserTrackingVertex {
 
-	/**
-	 * Type Value: {@value #TYPE}
-	 */
-	String TYPE = "group";
-
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_GROUP_CREATED, EVENT_GROUP_UPDATED, EVENT_GROUP_DELETED);
+	TypeInfo TYPE_INFO = new TypeInfo(ElementType.GROUP, GROUP_CREATED, GROUP_UPDATED, GROUP_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {
@@ -36,7 +35,7 @@ public interface Group extends MeshCoreVertex<GroupResponse, Group>, Referenceab
 	 * @return
 	 */
 	static String composeIndexName() {
-		return Group.TYPE.toLowerCase();
+		return "group";
 	}
 
 	/**
@@ -79,18 +78,18 @@ public interface Group extends MeshCoreVertex<GroupResponse, Group>, Referenceab
 	void removeRole(Role role);
 
 	/**
-	 * Return a list of users that are assigned to the group.
+	 * Return a traversal of users that are assigned to the group.
 	 * 
-	 * @return List of users
+	 * @return Traversal of users
 	 */
-	List<? extends User> getUsers();
+	TraversalResult<? extends User> getUsers();
 
 	/**
-	 * Return the a list of roles that are assigned to the group.
+	 * Return a traversal of roles that are assigned to the group.
 	 * 
-	 * @return List of roles
+	 * @return Traversal of roles
 	 */
-	List<? extends Role> getRoles();
+	TraversalResult<? extends Role> getRoles();
 
 	/**
 	 * Check whether the user has been assigned to the group.
@@ -127,5 +126,24 @@ public interface Group extends MeshCoreVertex<GroupResponse, Group>, Referenceab
 	 * @return Page with found users, an empty page is returned when no users could be found
 	 */
 	TransformablePage<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo);
+
+	/**
+	 * Create the assignment event for the given user.
+	 * 
+	 * @param user
+	 * @param assignment
+	 *            Direction of the assignment
+	 * @return
+	 */
+	GroupUserAssignModel createUserAssignmentEvent(User user, Assignment assignment);
+
+	/**
+	 * Create the assignment event for the given role.
+	 * 
+	 * @param role
+	 * @param assignment
+	 * @return
+	 */
+	GroupRoleAssignModel createRoleAssignmentEvent(Role role, Assignment assignment);
 
 }

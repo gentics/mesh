@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>mesh-common</artifactId>
@@ -9,15 +11,19 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.24.1-SNAPSHOT</version>
+		<version>0.36.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<projectRoot>${project.basedir}/..</projectRoot>
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>madl-ferma</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-plugin-api</artifactId>
@@ -31,16 +37,6 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.syncleus.ferma</groupId>
-			<artifactId>ferma</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>net.bytebuddy</groupId>
-					<artifactId>byte-buddy</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
@@ -74,7 +70,7 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.1.2</version>
+			<version>1.2.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -180,6 +176,12 @@
 			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
+		</dependency>
+
+		<!-- Metrics -->
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-dropwizard-metrics</artifactId>
 		</dependency>
 	</dependencies>
 

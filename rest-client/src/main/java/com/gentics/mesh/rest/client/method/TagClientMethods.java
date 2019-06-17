@@ -6,6 +6,7 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.impl.EmptyResponse;
 
 public interface TagClientMethods {
 
@@ -33,7 +34,6 @@ public interface TagClientMethods {
 	 */
 	MeshRequest<TagResponse> findTagByUuid(String projectName, String tagFamilyUuid, String uuid, ParameterProvider... parameters);
 
-	//
 	/**
 	 * Update the tag.
 	 * 
@@ -50,17 +50,29 @@ public interface TagClientMethods {
 	MeshRequest<TagResponse> updateTag(String projectName, String tagFamilyUuid, String uuid, TagUpdateRequest request);
 
 	/**
-	 * Delete the tag.
+	 * Create the tag with the given uuid
 	 * 
 	 * @param projectName
 	 *            Name of the project
 	 * @param tagFamilyUuid
-	 *            Uuid of the tagfamily
+	 *            Uuid of the tagfamily in which the tag is stored
 	 * @param uuid
-	 *            Uuid of the tag
+	 *            Uuid of the new tag
+	 * @param request
+	 *            Create request
 	 * @return
 	 */
-	MeshRequest<Void> deleteTag(String projectName, String tagFamilyUuid, String uuid);
+	MeshRequest<TagResponse> createTag(String projectName, String tagFamilyUuid, String uuid, TagCreateRequest request);
+
+	/**
+	 * Delete the tag.
+	 *
+	 * @param projectName   Name of the project
+	 * @param tagFamilyUuid Uuid of the tagfamily
+	 * @param uuid          Uuid of the tag
+	 * @return
+	 */
+	MeshRequest<EmptyResponse> deleteTag(String projectName, String tagFamilyUuid, String uuid);
 
 	/**
 	 * Load multiple tags of a given tag family.

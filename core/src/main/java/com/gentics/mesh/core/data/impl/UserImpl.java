@@ -15,13 +15,19 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROL
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -29,7 +35,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -44,7 +49,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -56,8 +61,11 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
+import com.gentics.mesh.handler.VersionHandler;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -68,34 +76,10 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang3.BooleanUtils;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_REFERENCE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * @see User
@@ -120,14 +104,16 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	public static final String RESET_TOKEN_ISSUE_TIMESTAMP_KEY = "resetTokenTimestamp";
 
-	public static void init(Database database) {
-		database.addVertexType(UserImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(ASSIGNED_TO_ROLE, false, false, true);
+	public static final String FORCE_PASSWORD_CHANGE_KEY = "forcePasswordChange";
+
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(UserImpl.class, MeshVertexImpl.class);
+		index.createIndex(edgeIndex(ASSIGNED_TO_ROLE).withOut());
 	}
 
 	@Override
 	public User disable() {
-		setProperty(ENABLED_FLAG_PROPERTY_KEY, false);
+		property(ENABLED_FLAG_PROPERTY_KEY, false);
 		return this;
 	}
 
@@ -141,56 +127,67 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public Long getResetTokenIssueTimestamp() {
-		return getProperty(RESET_TOKEN_ISSUE_TIMESTAMP_KEY);
+		return property(RESET_TOKEN_ISSUE_TIMESTAMP_KEY);
 	}
 
 	@Override
 	public User setResetTokenIssueTimestamp(Long timestamp) {
-		setProperty(RESET_TOKEN_ISSUE_TIMESTAMP_KEY, timestamp);
+		property(RESET_TOKEN_ISSUE_TIMESTAMP_KEY, timestamp);
 		return this;
 	}
 
 	@Override
 	public User setResetToken(String token) {
-		setProperty(RESET_TOKEN_KEY, token);
+		property(RESET_TOKEN_KEY, token);
 		return this;
 	}
 
 	@Override
 	public String getResetToken() {
-		return getProperty(RESET_TOKEN_KEY);
+		return property(RESET_TOKEN_KEY);
+	}
+
+	@Override
+	public boolean isForcedPasswordChange() {
+		return Optional.<Boolean>ofNullable(property(FORCE_PASSWORD_CHANGE_KEY)).orElse(false);
+	}
+
+	@Override
+	public User setForcedPasswordChange(boolean force) {
+		property(FORCE_PASSWORD_CHANGE_KEY, force);
+		return this;
 	}
 
 	@Override
 	public User enable() {
-		setProperty(ENABLED_FLAG_PROPERTY_KEY, true);
+		property(ENABLED_FLAG_PROPERTY_KEY, true);
 		return this;
 	}
 
 	@Override
 	public boolean isEnabled() {
-		return BooleanUtils.toBoolean(getProperty(ENABLED_FLAG_PROPERTY_KEY).toString());
+		return BooleanUtils.toBoolean(property(ENABLED_FLAG_PROPERTY_KEY).toString());
 	}
 
 	@Override
 	public String getFirstname() {
-		return getProperty(FIRSTNAME_PROPERTY_KEY);
+		return property(FIRSTNAME_PROPERTY_KEY);
 	}
 
 	@Override
 	public User setFirstname(String name) {
-		setProperty(FIRSTNAME_PROPERTY_KEY, name);
+		property(FIRSTNAME_PROPERTY_KEY, name);
 		return this;
 	}
 
 	@Override
 	public String getLastname() {
-		return getProperty(LASTNAME_PROPERTY_KEY);
+		return property(LASTNAME_PROPERTY_KEY);
 	}
 
 	@Override
 	public User setLastname(String name) {
-		setProperty(LASTNAME_PROPERTY_KEY, name);
+		property(LASTNAME_PROPERTY_KEY, name);
 		return this;
 	}
 
@@ -206,23 +203,23 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public String getUsername() {
-		return getProperty(USERNAME_PROPERTY_KEY);
+		return property(USERNAME_PROPERTY_KEY);
 	}
 
 	@Override
 	public User setUsername(String name) {
-		setProperty(USERNAME_PROPERTY_KEY, name);
+		property(USERNAME_PROPERTY_KEY, name);
 		return this;
 	}
 
 	@Override
 	public String getEmailAddress() {
-		return getProperty(EMAIL_PROPERTY_KEY);
+		return property(EMAIL_PROPERTY_KEY);
 	}
 
 	@Override
 	public User setEmailAddress(String emailAddress) {
-		setProperty(EMAIL_PROPERTY_KEY, emailAddress);
+		property(EMAIL_PROPERTY_KEY, emailAddress);
 		return this;
 	}
 
@@ -233,18 +230,37 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public List<? extends Group> getGroups() {
-		return out(HAS_USER).toListExplicit(GroupImpl.class);
+	public TraversalResult<? extends Group> getGroups() {
+		return new TraversalResult<>(out(HAS_USER).frameExplicit(GroupImpl.class));
 	}
 
 	@Override
-	public Iterable<? extends Role> getRoles() {
-		return out(HAS_USER).in(HAS_ROLE).frameExplicit(RoleImpl.class);
+	public String getRolesHash() {
+		String indexName = "e." + ASSIGNED_TO_ROLE + "_out";
+		Spliterator<Edge> itemEdges = getGraph().getEdges(indexName.toLowerCase(), id()).spliterator();
+		String roles = StreamSupport.stream(itemEdges, false)
+			.map(itemEdge -> itemEdge.getVertex(Direction.IN).getId().toString())
+			.sorted()
+			.collect(Collectors.joining());
+
+		return ETag.hash(roles);
 	}
 
 	@Override
-	public Iterable<? extends Role> getRolesViaShortcut() {
-		return out(ASSIGNED_TO_ROLE).frameExplicit(RoleImpl.class);
+	public TraversalResult<? extends Role> getRoles() {
+		return new TraversalResult<>(out(HAS_USER).in(HAS_ROLE).frameExplicit(RoleImpl.class));
+	}
+
+	@Override
+	public TraversalResult<? extends Role> getRolesViaShortcut() {
+		// TODO Use shortcut index.
+		return new TraversalResult<>(out(ASSIGNED_TO_ROLE).frameExplicit(RoleImpl.class));
+	}
+
+	@Override
+	public Page<? extends Role> getRolesViaShortcut(User user, PagingParameters params) {
+		String indexName = "e." + ASSIGNED_TO_ROLE + "_out";
+		return new DynamicTransformablePageImpl<>(user, indexName.toLowerCase(), id(), Direction.IN, RoleImpl.class, params, READ_PERM, null, true);
 	}
 
 	@Override
@@ -275,21 +291,21 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		for (GraphPermission perm : permissions) {
 			info.set(perm.getRestPerm(), true);
 		}
-		info.setOthers(false);
+		info.setOthers(false, vertex.hasPublishPermissions());
 
 		return info;
 	}
 
 	@Override
 	public Set<GraphPermission> getPermissions(MeshVertex vertex) {
-		Set<GraphPermission> graphPermissions = new HashSet<>();
-		// Check all permissions one at a time and add granted permissions to the set
-		for (GraphPermission perm : GraphPermission.values()) {
-			if (hasPermission(vertex, perm)) {
-				graphPermissions.add(perm);
-			}
-		}
-		return graphPermissions;
+		Predicate<? super GraphPermission> isValidPermission = perm ->
+			perm != READ_PUBLISHED_PERM && perm != PUBLISH_PERM || vertex.hasPublishPermissions();
+
+		return Stream.of(GraphPermission.values())
+			// Don't check for publish perms if it does not make sense for the vertex type
+			.filter(isValidPermission)
+			.filter(perm -> hasPermission(vertex, perm))
+			.collect(Collectors.toSet());
 	}
 
 	@Override
@@ -310,13 +326,15 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			FramedGraph graph = getGraph();
 			// Find all roles that are assigned to the user by checking the
 			// shortcut edge from the index
-			Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE + "_out", this.getId());
+			String idxKey = "e." + ASSIGNED_TO_ROLE + "_out";
+			Iterable<Edge> roleEdges = graph.getEdges(idxKey.toLowerCase(), this.id());
 			for (Edge roleEdge : roleEdges) {
 				Vertex role = roleEdge.getVertex(Direction.IN);
 				// Find all permission edges between the found role and target
 				// vertex with the specified label
-				Iterable<Edge> edges = graph.getEdges("e." + permission.label() + "_inout",
-					MeshInternal.get().database().createComposedIndexKey(elementId, role.getId()));
+				String roleEdgeIdx = "e." + permission.label() + "_inout";
+				Iterable<Edge> edges = graph.getEdges(roleEdgeIdx.toLowerCase(),
+					MeshInternal.get().database().index().createComposedIndexKey(elementId, role.getId()));
 				boolean foundPermEdge = edges.iterator().hasNext();
 				if (foundPermEdge) {
 					// We only store granting permissions in the store in order
@@ -342,19 +360,23 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		if (log.isTraceEnabled()) {
 			log.debug("Checking permissions for vertex {" + vertex.getUuid() + "}");
 		}
-		return hasPermissionForId(vertex.getId(), permission);
+		return hasPermissionForId(vertex.id(), permission);
 	}
 
 	@Override
-	public void failOnNoReadPermission(NodeGraphFieldContainer container, String branchUuid) {
+	public void failOnNoReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
 		Node node = container.getParentNode();
 		if (hasPermission(node, READ_PERM)) {
 			return;
 		}
-		if (container.isPublished(branchUuid) && hasPermission(node, READ_PUBLISHED_PERM)) {
+		boolean published = container.isPublished(branchUuid);
+		if (published && hasPermission(node, READ_PUBLISHED_PERM)) {
 			return;
 		}
-		throw error(FORBIDDEN, "error_missing_perm", node.getUuid());
+		throw error(FORBIDDEN, "error_missing_perm", node.getUuid(),
+			"published".equals(requestedVersion)
+				? READ_PUBLISHED_PERM.getRestPerm().getName()
+				: READ_PERM.getRestPerm().getName());
 	}
 
 	@Override
@@ -389,6 +411,12 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		if (fields.has("groups")) {
 			setGroups(ac, restUser);
 		}
+		if (fields.has("rolesHash")) {
+			restUser.setRolesHash(getRolesHash());
+		}
+		if (fields.has("forcedPasswordChange")) {
+			restUser.setForcedPasswordChange(isForcedPasswordChange());
+		}
 		fillCommonRestFields(ac, fields, restUser);
 		setRolePermissions(ac, restUser);
 
@@ -397,7 +425,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	/**
 	 * Set the groups to which the user belongs in the rest model.
-	 * 
+	 *
 	 * @param ac
 	 * @param restUser
 	 */
@@ -411,7 +439,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	/**
 	 * Add the node reference field to the user response (if required to).
-	 * 
+	 *
 	 * @param ac
 	 * @param restUser
 	 * @param level
@@ -446,12 +474,14 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public String getPasswordHash() {
-		return getProperty(PASSWORD_HASH_PROPERTY_KEY);
+		return property(PASSWORD_HASH_PROPERTY_KEY);
 	}
 
 	@Override
 	public User setPasswordHash(String hash) {
-		setProperty(PASSWORD_HASH_PROPERTY_KEY, hash);
+		property(PASSWORD_HASH_PROPERTY_KEY, hash);
+		// Password has changed, the user is not forced to change their password anymore.
+		setForcedPasswordChange(false);
 		return this;
 	}
 
@@ -502,7 +532,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		// user will be just disabled and removed from all groups.");
 		// }
 		// outE(HAS_USER).removeAll();
-		bac.batch().delete(this, false);
+		bac.add(onDeleted());
 		getElement().remove();
 		bac.process();
 		PermissionStore.invalidate();
@@ -510,7 +540,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	/**
 	 * Encode the given password and set the generated hash.
-	 * 
+	 *
 	 * @param password
 	 *            Plain password to be hashed and set
 	 * @return Fluent API
@@ -522,8 +552,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
-		UserUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserUpdateRequest.class);
+	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
+		UserUpdateRequest requestModel = ac.fromJson(UserUpdateRequest.class);
 		boolean modified = false;
 		if (shouldUpdate(requestModel.getUsername(), getUsername())) {
 			User conflictingUser = MeshInternal.get().boot().userRoot().findByUsername(requestModel.getUsername());
@@ -546,6 +576,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 		if (shouldUpdate(requestModel.getEmailAddress(), getEmailAddress())) {
 			setEmailAddress(requestModel.getEmailAddress());
+			modified = true;
+		}
+
+		if (shouldUpdate(requestModel.getForcedPasswordChange(), isForcedPasswordChange())) {
+			setForcedPasswordChange(requestModel.getForcedPasswordChange());
 			modified = true;
 		}
 
@@ -598,7 +633,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		if (modified) {
 			setEditor(ac.getUser());
 			setLastEditedTimestamp();
-			batch.store(this, true);
+			batch.add(onUpdated());
 		}
 		return modified;
 	}
@@ -621,13 +656,16 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			keyBuilder.append(referencedNode.getUuid());
 			keyBuilder.append(referencedNode.getProject().getName());
 		}
+		for (Group group : getGroups()) {
+			keyBuilder.append(group.getUuid());
+		}
 
 		return ETag.hash(keyBuilder);
 	}
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return "/api/v1/users/" + getUuid();
+		return VersionHandler.baseRoute(ac) + "/users/" + getUuid();
 	}
 
 	@Override

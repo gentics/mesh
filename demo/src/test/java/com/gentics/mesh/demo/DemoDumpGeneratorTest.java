@@ -1,6 +1,6 @@
 package com.gentics.mesh.demo;
 
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -15,20 +15,20 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
+import com.syncleus.ferma.tx.Tx;
 
 public class DemoDumpGeneratorTest {
 
@@ -61,9 +61,9 @@ public class DemoDumpGeneratorTest {
 			assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").getNodeRoot().computeCount() > 0);
 			User user = boot.meshRoot().getUserRoot().findByUsername("webclient");
 			assertNotNull("The webclient user should have been created but could not be found.", user);
-			assertFalse("The webclient user should also have at least one group assigned to it.", user.getGroups().isEmpty());
-			Group group = user.getGroups().get(0);
-			Role role = group.getRoles().get(0);
+			assertFalse("The webclient user should also have at least one group assigned to it.", !user.getGroups().iterator().hasNext());
+			Group group = user.getGroups().iterator().next();
+			Role role = group.getRoles().iterator().next();
 			assertNotNull("The webclient group should also have a role assigned to it", role);
 
 			assertTrue("The webclient role has not read permission on the user.", role.hasPermission(GraphPermission.READ_PERM, user));
@@ -77,8 +77,8 @@ public class DemoDumpGeneratorTest {
 			assertNotNull(boot.meshRoot().getNodeRoot().findByUuid("df8beb3922c94ea28beb3922c94ea2f6"));
 
 			// Verify that all documents are stored in the index
-			for (Node node : boot.meshRoot().getNodeRoot().findAllIt()) {
-				NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(boot.meshRoot().getLanguageRoot().findByLanguageTag("en"));
+			for (Node node : boot.meshRoot().getNodeRoot().findAll()) {
+				NodeGraphFieldContainer container = node.getLatestDraftFieldContainer("en");
 				String languageTag = "en";
 				String projectUuid = node.getProject().getUuid();
 				String branchUuid = node.getProject().getInitialBranch().getUuid();

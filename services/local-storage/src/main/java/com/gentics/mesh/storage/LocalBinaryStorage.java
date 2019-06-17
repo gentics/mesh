@@ -1,16 +1,17 @@
 package com.gentics.mesh.storage;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.File;
 import java.nio.file.NoSuchFileException;
+import java.util.Objects;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.util.RxUtil;
 
@@ -20,57 +21,139 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
 
 @Singleton
 public class LocalBinaryStorage extends AbstractBinaryStorage {
 
 	private static final Logger log = LoggerFactory.getLogger(LocalBinaryStorage.class);
+	private final Vertx rxVertx;
+	private final FileSystem fileSystem;
+
+	private MeshUploadOptions options;
 
 	@Inject
-	public LocalBinaryStorage() {
+	public LocalBinaryStorage(MeshOptions options, Vertx rxVertx) {
+		this.options = options.getUploadOptions();
+		this.rxVertx = rxVertx;
+		this.fileSystem = rxVertx.fileSystem();
 	}
 
 	@Override
-	public Completable store(Flowable<Buffer> stream, String uuid) {
+	public Completable moveInPlace(String uuid, String temporaryId) {
 		return Completable.defer(() -> {
-			FileSystem fileSystem = FileSystem.newInstance(Mesh.vertx().fileSystem());
-			String path = getFilePath(uuid);
-			log.debug("Saving data for field to path {" + path + "}");
-			MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
-			File uploadFolder = new File(uploadOptions.getDirectory(), getSegmentedPath(uuid));
-
-			if (!uploadFolder.exists()) {
-				if (!uploadFolder.mkdirs()) {
-					log.error("Failed to create target folder {" + uploadFolder.getAbsolutePath() + "}");
-					throw error(BAD_REQUEST, "node_error_upload_failed");
-				}
-
-				if (log.isDebugEnabled()) {
-					log.debug("Created folder {" + uploadFolder.getAbsolutePath() + "}");
-				}
+			if (log.isDebugEnabled()) {
+				log.debug("Move temporary upload for uuid '{}' into place using temporaryId '{}'", uuid, temporaryId);
 			}
+			String source = getTemporaryFilePath(temporaryId);
+			String target = getFilePath(uuid);
+			if (log.isDebugEnabled()) {
+				log.debug("Moving '{}' to '{}'", source, target);
+			}
+			File uploadFolder = new File(options.getDirectory(), getSegmentedPath(uuid));
+			return createParentPath(uploadFolder.getAbsolutePath())
+				.andThen(fileSystem.rxMove(source, target).doOnError(e -> {
+					log.error("Error while moving binary from temp upload dir {} to final dir {}", source, target);
+				}));
+		});
+	}
 
-			File targetFile = new File(uploadFolder, uuid + ".bin");
-			return fileSystem.rxOpen(targetFile.getAbsolutePath(), new OpenOptions()).flatMapCompletable(file -> {
-				return stream
-					.map(io.vertx.reactivex.core.buffer.Buffer::new)
-					.doOnNext(file::write)
-					.doOnComplete(file::flush)
-					.doOnTerminate(file::close)
-					.ignoreElements();
-			});
+	@Override
+	public Completable purgeTemporaryUpload(String temporaryId) {
+		return Completable.defer(() -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Purging temporary upload for tempId '{}'", temporaryId);
+			}
+			String path = getTemporaryFilePath(temporaryId);
+			return fileSystem.rxDelete(path);
 		});
 	}
 
 	/**
-	 * Return the absolute path to the binary data for the given uuid.
+	 * Store the upload in the local binary storage. This method will in fact only move the upload file to the tempdir location.
 	 * 
-	 * @param binaryUuid
+	 * @param sourceFilePath
+	 * @param temporaryId
 	 * @return
 	 */
-	public static String getFilePath(String binaryUuid) {
-		File folder = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory(), getSegmentedPath(binaryUuid));
+	@Override
+	public Completable storeInTemp(String sourceFilePath, String temporaryId) {
+		Objects.requireNonNull(temporaryId, "The temporary id was not specified.");
+		return Completable.defer(() -> {
+			String path = getTemporaryFilePath(temporaryId);
+			if (log.isDebugEnabled()) {
+				log.debug("Moving upload file '{}' for field to path '{}'.", sourceFilePath, path);
+			}
+
+			// First ensure that the temp folder can be created and finally store the data in the folder.
+			File tempFolder = new File(options.getDirectory(), "temp");
+			return createParentPath(tempFolder.getAbsolutePath())
+				.andThen(fileSystem.rxMove(sourceFilePath, path).doOnError(e -> {
+					log.error("Failed to move upload file {} to temp dir {}", sourceFilePath, path, e);
+				}));
+		});
+	}
+
+	@Override
+	public Completable storeInTemp(Flowable<Buffer> stream, String temporaryId) {
+		Objects.requireNonNull(temporaryId, "The temporary id was not specified.");
+		return Completable.defer(() -> {
+			String path = getTemporaryFilePath(temporaryId);
+			if (log.isDebugEnabled()) {
+				log.debug("Saving data for field to path '{}'.", path);
+			}
+			// First ensure that the temp folder can be created and finally store the data in the folder.
+			File tempFolder = new File(options.getDirectory(), "temp");
+			return createParentPath(tempFolder.getAbsolutePath())
+				.andThen(fileSystem.rxOpen(path, new OpenOptions()).flatMapCompletable(file -> stream
+					.map(io.vertx.reactivex.core.buffer.Buffer::new)
+					.doOnNext(file::write)
+					.ignoreElements()
+					.andThen(file.rxFlush())
+					.andThen(file.rxClose())
+					.doOnError(err -> file.close())));
+		});
+	}
+
+	private Completable createParentPath(String folderPath) {
+		return fileSystem.rxExists(folderPath)
+			.flatMapCompletable(exists -> {
+				if (exists) {
+					return Completable.complete();
+				} else {
+					return fileSystem.rxMkdirs(folderPath)
+						.onErrorResumeNext(e -> {
+							log.error("Failed to create target folder {}", folderPath);
+							return Completable.error(error(INTERNAL_SERVER_ERROR, "node_error_upload_failed"));
+						}).doOnComplete(() -> {
+							if (log.isDebugEnabled()) {
+								log.debug("Created folders for path {}", folderPath);
+							}
+						});
+				}
+			});
+
+	}
+
+	/**
+	 * Return the temporary file path.
+	 * 
+	 * @param binaryUuid
+	 * @param temporaryId
+	 * @return
+	 */
+	public String getTemporaryFilePath(String temporaryId) {
+		Objects.requireNonNull(temporaryId, "The temporary id was specified.");
+
+		File tempFolder = new File(options.getDirectory(), "temp");
+		File binaryFile = new File(tempFolder, temporaryId + ".tmp");
+		return binaryFile.getAbsolutePath();
+	}
+
+	public String getFilePath(String binaryUuid) {
+		Objects.requireNonNull(binaryUuid, "The binary uuid was not specified.");
+		File folder = new File(options.getDirectory(), getSegmentedPath(binaryUuid));
 		File binaryFile = new File(folder, binaryUuid + ".bin");
 		return binaryFile.getAbsolutePath();
 	}
@@ -84,11 +167,21 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	@Override
 	public Flowable<Buffer> read(String binaryUuid) {
 		String path = getFilePath(binaryUuid);
-		Flowable<Buffer> obs = FileSystem.newInstance(Mesh.vertx().fileSystem())
+		Flowable<Buffer> obs = fileSystem
 			.rxOpen(path, new OpenOptions())
 			.toFlowable()
 			.flatMap(RxUtil::toBufferFlow);
 		return obs;
+	}
+
+	@Override
+	public Buffer readAllSync(String binaryUuid) {
+		return fileSystem.getDelegate().readFileBlocking(getFilePath(binaryUuid));
+	}
+
+	@Override
+	public String getLocalPath(String binaryUuid) {
+		return getFilePath(binaryUuid);
 	}
 
 	/**
@@ -112,18 +205,17 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	@Override
 	public Completable delete(String binaryUuid) {
 		String path = getFilePath(binaryUuid);
-		return FileSystem.newInstance(Mesh.vertx().fileSystem())
-
-				.rxDelete(path)
-				// Don't fail if the file is not even in the local storage
-				.onErrorComplete(e -> {
-					Throwable cause = e.getCause();
-					if (cause != null) {
-						return cause instanceof NoSuchFileException;
-					} else {
-						return e instanceof NoSuchFileException;
-					}
-				});
+		return rxVertx.fileSystem()
+			.rxDelete(path)
+			// Don't fail if the file is not even in the local storage
+			.onErrorComplete(e -> {
+				Throwable cause = e.getCause();
+				if (cause != null) {
+					return cause instanceof NoSuchFileException;
+				} else {
+					return e instanceof NoSuchFileException;
+				}
+			});
 	}
 
 }

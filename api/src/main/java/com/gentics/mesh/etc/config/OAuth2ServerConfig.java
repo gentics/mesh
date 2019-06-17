@@ -6,26 +6,39 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
 
 import io.vertx.core.json.JsonObject;
 
 public class OAuth2ServerConfig implements Option {
 
+	private static final String MESH_AUTH_OAUTH2_SERVER_CONF_REALM_ENV = "MESH_AUTH_OAUTH2_SERVER_CONF_REALM";
+	private static final String MESH_AUTH_OAUTH2_SERVER_CONF_AUTH_SERVER_URL_ENV = "MESH_AUTH_OAUTH2_SERVER_CONF_AUTH_SERVER_URL";
+	private static final String MESH_AUTH_OAUTH2_SERVER_CONF_AUTH_SSL_REQUIRED_ENV = "MESH_AUTH_OAUTH2_SERVER_CONF_AUTH_SSL_REQUIRED";
+	private static final String MESH_AUTH_OAUTH2_SERVER_CONF_RESOURCE_ENV = "MESH_AUTH_OAUTH2_SERVER_CONF_RESOURCE";
+	private static final String MESH_AUTH_OAUTH2_SERVER_CONF_CONFIDENTIAL_PORT_ENV = "MESH_AUTH_OAUTH2_SERVER_CONF_CONFIDENTIAL_PORT";
+	static final String MESH_AUTH_OAUTH2_SERVER_CONF_CREDENTIALS = "MESH_AUTH_OAUTH2_SERVER_CONF_CREDENTIALS";
+
+
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Realm name to be used.")
+	@EnvironmentVariable(name = MESH_AUTH_OAUTH2_SERVER_CONF_REALM_ENV, description = "Override the configured OAuth2 server realm.")
 	private String realm = "master";
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("URL to the authentication server.")
+	@EnvironmentVariable(name = MESH_AUTH_OAUTH2_SERVER_CONF_AUTH_SERVER_URL_ENV, description = "Override the configured OAuth2 server URL.")
 	private String authServerUrl = "http://localhost:3000/auth";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("SSL Required flag of the realm.")
+	@EnvironmentVariable(name = MESH_AUTH_OAUTH2_SERVER_CONF_AUTH_SSL_REQUIRED_ENV, description = "Override the configured OAuth2 server SSL-required flag.")
 	private String sslRequired = "external";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Name of the resource to be used.")
+	@EnvironmentVariable(name = MESH_AUTH_OAUTH2_SERVER_CONF_RESOURCE_ENV, description = "Override the configured OAuth2 server resource name.")
 	private String resource;
 
 	@JsonProperty(required = false)
@@ -33,6 +46,7 @@ public class OAuth2ServerConfig implements Option {
 	private Map<String, String> credentials = new HashMap<>();
 
 	@JsonProperty(required = false)
+	@EnvironmentVariable(name = MESH_AUTH_OAUTH2_SERVER_CONF_CONFIDENTIAL_PORT_ENV, description = "Override the configured OAuth2 confidential port.")
 	private int confidentialPort = 0;
 
 	/**
@@ -114,6 +128,16 @@ public class OAuth2ServerConfig implements Option {
 	public OAuth2ServerConfig setCredentials(Map<String, String> credentials) {
 		this.credentials = credentials;
 		return this;
+	}
+
+	@EnvironmentVariable(name = MESH_AUTH_OAUTH2_SERVER_CONF_CREDENTIALS, description = "Override the configured OAuth2 server credentials (as JSON Object String).")
+	public void setCredentialsViaEnv(JsonObject credentialsObject) {
+		for(String key : credentialsObject.fieldNames()) {
+			Object val = credentialsObject.getValue(key);
+			if (val == null || val instanceof String) {
+				this.addCredential(key, (String) val);
+			}
+		}
 	}
 
 	/**

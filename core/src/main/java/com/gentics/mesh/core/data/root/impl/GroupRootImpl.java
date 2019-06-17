@@ -4,6 +4,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
+import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
@@ -19,19 +21,21 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 /**
  * @see GroupRoot
  */
 public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoot {
 
-	public static void init(Database database) {
-		database.addVertexType(GroupRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_GROUP, true, false, true);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(GroupRootImpl.class, MeshVertexImpl.class);
+		type.createType(edgeType(HAS_GROUP));
+		index.createIndex(edgeIndex(HAS_GROUP).withInOut().withOut());
 	}
 
 	@Override
@@ -68,12 +72,12 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		throw new NotImplementedException("The group root node can't be deleted");
 	}
 
 	@Override
-	public Group create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
+	public Group create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
 		GroupCreateRequest requestModel = ac.fromJson(GroupCreateRequest.class);
 
@@ -81,7 +85,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 			throw error(BAD_REQUEST, "error_name_must_be_set");
 		}
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
-			throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
+			throw error(FORBIDDEN, "error_missing_perm", this.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		MeshRoot root = MeshInternal.get().boot().meshRoot();
 
@@ -94,7 +98,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 		// Finally create the group and set the permissions
 		Group group = create(requestModel.getName(), requestUser, uuid);
 		requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);
-		batch.store(group, true);
+		batch.add(group.onCreated());
 		return group;
 	}
 

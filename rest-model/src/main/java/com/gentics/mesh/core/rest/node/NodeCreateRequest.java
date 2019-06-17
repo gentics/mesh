@@ -1,11 +1,14 @@
 package com.gentics.mesh.core.rest.node;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
+import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 
 /**
@@ -30,6 +33,10 @@ public class NodeCreateRequest implements FieldContainer {
 	@JsonPropertyDescription("Dynamic map with fields of the node content.")
 	private FieldMap fields = new FieldMapImpl();
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("List of tags that should be used to tag the node.")
+	private List<TagReference> tags;
+
 	public NodeCreateRequest() {
 	}
 
@@ -45,8 +52,7 @@ public class NodeCreateRequest implements FieldContainer {
 	/**
 	 * Set the schema name.
 	 * 
-	 * @param schema
-	 *            Schema reference
+	 * @param schema Schema reference
 	 * @return Fluent API
 	 */
 	public NodeCreateRequest setSchema(SchemaReference schema) {
@@ -97,8 +103,7 @@ public class NodeCreateRequest implements FieldContainer {
 	/**
 	 * Set the language of the node which should be updated.
 	 * 
-	 * @param language
-	 *            Language tag for the node
+	 * @param language Language tag for the node
 	 * @return Fluent API
 	 */
 	public NodeCreateRequest setLanguage(String language) {
@@ -118,8 +123,7 @@ public class NodeCreateRequest implements FieldContainer {
 	/**
 	 * Set the fields which should be updated.
 	 *
-	 * @param fields
-	 *            A field map containing all fields to be updated.
+	 * @param fields A field map containing all fields to be updated.
 	 * @return Fluent API
 	 */
 	public NodeCreateRequest setFields(FieldMap fields) {
@@ -137,6 +141,26 @@ public class NodeCreateRequest implements FieldContainer {
 		SchemaReference schemaReference = new SchemaReferenceImpl();
 		schemaReference.setName(schemaName);
 		setSchema(schemaReference);
+		return this;
+	}
+
+	/**
+	 * Return the tag list.
+	 * 
+	 * @return
+	 */
+	public List<TagReference> getTags() {
+		return tags;
+	}
+
+	/**
+	 * Set the tag list.
+	 * 
+	 * @param tags
+	 * @return Fluent API
+	 */
+	public NodeCreateRequest setTags(List<TagReference> tags) {
+		this.tags = tags;
 		return this;
 	}
 

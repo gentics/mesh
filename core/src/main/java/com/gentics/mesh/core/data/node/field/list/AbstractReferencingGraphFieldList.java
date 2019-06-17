@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIS
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -59,13 +60,13 @@ public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphF
 	}
 
 	@Override
-	public void removeField(GraphFieldContainer container) {
+	public void removeField(BulkActionContext bac, GraphFieldContainer container) {
 		// Detach the list from the given graph field container
 		container.unlinkOut(this, HAS_LIST);
 
 		// Remove the field if no more containers are attached to it
-		if (in(HAS_LIST).count() == 0) {
-			delete(null);
+		if (!in(HAS_LIST).hasNext()) {
+			delete(bac);
 		}
 	}
 
@@ -76,6 +77,6 @@ public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphF
 	}
 
 	public void removeField() {
-		delete(null);
+		delete();
 	}
 }

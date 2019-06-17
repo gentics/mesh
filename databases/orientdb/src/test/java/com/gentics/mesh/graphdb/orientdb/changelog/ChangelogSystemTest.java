@@ -11,27 +11,33 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.mockito.Mockito;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.Timer;
 import com.gentics.mesh.changelog.Change;
 import com.gentics.mesh.changelog.ChangelogSystem;
-import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.DatabaseService;
+import com.gentics.mesh.graphdb.OrientDBDatabase;
+import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.maven.MavenMetadata;
 import com.gentics.mesh.maven.MavenUtilities;
 import com.gentics.mesh.maven.VersionNumber;
+import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.metric.ResettableCounter;
 import com.tinkerpop.blueprints.Vertex;
 
 import net.lingala.zip4j.core.ZipFile;
@@ -46,13 +52,6 @@ public class ChangelogSystemTest {
 
 	public ChangelogSystemTest(String version) {
 		this.version = version;
-	}
-
-	@BeforeClass
-	public static void setupOnce() {
-		// Add dummy changes
-		ChangesList.getList().add(new ChangeDummy());
-		ChangesList.getList().add(new ChangeDummy2());
 	}
 
 	/**
@@ -70,7 +69,7 @@ public class ChangelogSystemTest {
 		Collection<Object[]> data = new ArrayList<Object[]>();
 		for (String version : metadata.getVersions()) {
 			// Only test mesh release dumps since a specific version
-			if (VersionNumber.parse(version).compareTo(VersionNumber.parse("0.14.0")) >= 0) {
+			if (VersionNumber.parse(version).compareTo(VersionNumber.parse("0.30.0")) >= 0) {
 				data.add(new Object[] { version });
 			}
 		}
@@ -107,9 +106,7 @@ public class ChangelogSystemTest {
 		Database db = getDatabase(options);
 		db.setupConnectionPool();
 		ChangelogSystem cls = new ChangelogSystem(db);
-		List<Change> testChanges = new ArrayList<>();
-		testChanges.add(new ChangeDummy2());
-		testChanges.add(new ChangeDummy());
+		List<Change> testChanges = Arrays.asList(new ChangeDummy2(), new ChangeDummy());
 		assertTrue("All changes should have been applied", cls.applyChanges(null, testChanges));
 		assertTrue("All changes should have been applied", cls.applyChanges(null, testChanges));
 		assertTrue("All changes should have been applied", cls.applyChanges(null, testChanges));
@@ -127,12 +124,12 @@ public class ChangelogSystemTest {
 	 * @return
 	 */
 	public static Database getDatabase(MeshOptions options) {
-		DatabaseService databaseService = DatabaseService.getInstance();
-		Database database = databaseService.getDatabase();
-		if (database == null) {
-			String message = "No database provider could be found.";
-			throw new RuntimeException(message);
-		}
+		MetricsService metrics = Mockito.mock(MetricsService.class);
+		Mockito.when(metrics.timer(Mockito.any())).thenReturn(Mockito.mock(Timer.class));
+		Mockito.when(metrics.counter(Mockito.any())).thenReturn(Mockito.mock(Counter.class));
+		Mockito.when(metrics.meter(Mockito.any())).thenReturn(Mockito.mock(Meter.class));
+		Mockito.when(metrics.resetableCounter(Mockito.any())).thenReturn(Mockito.mock(ResettableCounter.class));
+		Database database = new OrientDBDatabase(metrics, null, null, new OrientDBClusterManager(options, null));
 		try {
 			database.init(options, null);
 			return database;

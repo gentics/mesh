@@ -10,16 +10,14 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MIC
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
 
 import java.util.Iterator;
-import java.util.List;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.ContainerType;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
+import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
@@ -27,14 +25,18 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.impl.AbstractGraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
@@ -43,11 +45,11 @@ import com.syncleus.ferma.VertexFrame;
 import io.reactivex.Single;
 
 public class MicroschemaContainerVersionImpl extends
-		AbstractGraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer>
-		implements MicroschemaContainerVersion {
+	AbstractGraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer>
+	implements MicroschemaContainerVersion {
 
-	public static void init(Database database) {
-		database.addVertexType(MicroschemaContainerVersionImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(MicroschemaContainerVersionImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
@@ -62,23 +64,27 @@ public class MicroschemaContainerVersionImpl extends
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid) {
+	public TraversalResult<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid) {
 		Iterator<? extends NodeGraphFieldContainer> it = in(HAS_MICROSCHEMA_CONTAINER).copySplit((a) -> a.in(HAS_FIELD).mark().inE(
+			HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()).has(
+				GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid)
+			.back(),
+			(a) -> a.in(HAS_ITEM).in(HAS_LIST).mark().inE(
 				HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()).has(
-						GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).back(), (a) -> a.in(HAS_ITEM).in(HAS_LIST).mark().inE(
-								HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()).has(
-										GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).back()).fairMerge()
-				// To circumvent a bug in the ferma library we have to transform the VertexFrame object to itself
-				// before calling dedup(). This forces the actual conversion to VertexFrame inside of the pipeline.
-				.transform(v -> v)
-				// when calling dedup we use the the id of the vertex instead of the whole object to save memory
-				.dedup(VertexFrame::getId).transform(v -> v.reframeExplicit(NodeGraphFieldContainerImpl.class)).iterator();
-		return it;
+					GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid)
+				.back())
+			.fairMerge()
+			// To circumvent a bug in the ferma library we have to transform the VertexFrame object to itself
+			// before calling dedup(). This forces the actual conversion to VertexFrame inside of the pipeline.
+			.transform(v -> v)
+			// when calling dedup we use the the id of the vertex instead of the whole object to save memory
+			.dedup(VertexFrame::getId).transform(v -> v.reframeExplicit(NodeGraphFieldContainerImpl.class)).iterator();
+		return new TraversalResult<>(() -> it);
 	}
 
 	@Override
-	public Iterator<? extends Micronode> findMicronodes() {
-		return in(HAS_MICROSCHEMA_CONTAINER).frameExplicit(MicronodeImpl.class).iterator();
+	public TraversalResult<? extends Micronode> findMicronodes() {
+		return new TraversalResult<>(in(HAS_MICROSCHEMA_CONTAINER).frameExplicit(MicronodeImpl.class));
 	}
 
 	@Override
@@ -97,14 +103,14 @@ public class MicroschemaContainerVersionImpl extends
 		MeshInternal.get().serverSchemaStorage().addMicroschema(microschema);
 		String json = microschema.toJson();
 		setJson(json);
-		setProperty(VERSION_PROPERTY_KEY, microschema.getVersion());
+		property(VERSION_PROPERTY_KEY, microschema.getVersion());
 	}
 
 	@Override
 	public MicroschemaResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
-		
+
 		// Load the microschema and add/overwrite some properties
 		MicroschemaResponse microschema = JsonUtil.readValue(getJson(), MicroschemaResponse.class);
 		// TODO apply fields filtering here
@@ -123,6 +129,7 @@ public class MicroschemaContainerVersionImpl extends
 		reference.setName(getName());
 		reference.setUuid(getSchemaContainer().getUuid());
 		reference.setVersion(getVersion());
+		reference.setVersionUuid(getUuid());
 		return reference;
 	}
 
@@ -138,8 +145,8 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	public List<? extends Branch> getBranches() {
-		return in(HAS_MICROSCHEMA_VERSION).toListExplicit(BranchImpl.class);
+	public TraversalResult<? extends Branch> getBranches() {
+		return new TraversalResult<>(in(HAS_MICROSCHEMA_VERSION).frameExplicit(BranchImpl.class));
 	}
 
 	@Override
@@ -160,11 +167,11 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		// Delete change
 		SchemaChange<?> change = getNextChange();
 		if (change != null) {
-			change.delete(context);
+			change.delete(bac);
 		}
 		// Delete referenced jobs
 		for (Job job : referencedJobsViaFrom()) {
@@ -179,13 +186,13 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	public void onCreated() {
-		getSchemaContainer().onCreated();
+	public MeshElementEventModel onCreated() {
+		return getSchemaContainer().onCreated();
 	}
 
 	@Override
-	public void onUpdated() {
-		getSchemaContainer().onUpdated();
+	public MeshElementEventModel onUpdated() {
+		return getSchemaContainer().onUpdated();
 	}
 
 }

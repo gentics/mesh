@@ -10,8 +10,6 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -56,11 +54,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
-import com.gentics.mesh.rest.client.MeshResponse;
-import com.syncleus.ferma.tx.Tx;
-import com.tinkerpop.blueprints.Vertex;
 
-import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -89,11 +83,7 @@ public class DemoDataProvider {
 	private Map<String, RoleResponse> roles = new HashMap<>();
 	private Map<String, GroupResponse> groups = new HashMap<>();
 
-	private Map<String, String> uuidMapping = new HashMap<>();
-
 	private BootstrapInitializer boot;
-
-	private JsonObject mappingData;
 
 	@Inject
 	public DemoDataProvider(Database database, MeshLocalClientImpl client, BootstrapInitializer boot) {
@@ -103,8 +93,6 @@ public class DemoDataProvider {
 	}
 
 	public void setup(boolean syncIndex) throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
-		mappingData = loadJson("uuid-mapping");
-
 		MeshAuthUser user = db.tx(() -> {
 			return MeshInternal.get().boot().meshRoot().getUserRoot().findMeshAuthUserByUsername("admin");
 		});
@@ -127,8 +115,6 @@ public class DemoDataProvider {
 		addWebclientPermissions();
 		addAnonymousPermissions();
 
-		// Update the uuids and index all contents.
-		updateUuids();
 		if (syncIndex) {
 			invokeFullIndex();
 		}
@@ -140,23 +126,6 @@ public class DemoDataProvider {
 	 */
 	public void invokeFullIndex() {
 		boot.syncIndex();
-	}
-
-	/**
-	 * We currently can't specify the uuid during element creation. Thus we need to update it afterwards.
-	 */
-	private void updateUuids() {
-		try (Tx tx = db.tx()) {
-			for (Vertex v : tx.getGraph().getVertices()) {
-				String uuid = v.getProperty("uuid");
-				String mapping = uuidMapping.get(uuid);
-				if (mapping != null) {
-					v.setProperty("uuid", mapping);
-					uuidMapping.remove(mapping);
-				}
-			}
-			tx.success();
-		}
 	}
 
 	/**
@@ -222,9 +191,8 @@ public class DemoDataProvider {
 			request.setFirstname(firstname);
 			request.setLastname(lastname);
 			request.setPassword(password);
-			UserResponse response = call(() -> client.createUser(request));
+			UserResponse response = call(() -> client.createUser(uuid, request));
 			users.put(username, response);
-			uuidMapping.put(response.getUuid(), uuid);
 
 			JsonArray groupArray = userJson.getJsonArray("groups");
 			for (int e = 0; e < groupArray.size(); e++) {
@@ -253,35 +221,14 @@ public class DemoDataProvider {
 			log.info("Creating group {" + name + "}");
 			GroupCreateRequest groupCreateRequest = new GroupCreateRequest();
 			groupCreateRequest.setName(name);
-			MeshResponse<GroupResponse> groupResponseFuture = client.createGroup(groupCreateRequest).invoke();
-			latchFor(groupResponseFuture);
-			GroupResponse group = groupResponseFuture.result();
+			GroupResponse group = call(() -> client.createGroup(uuid, groupCreateRequest));
 			groups.put(name, group);
-			uuidMapping.put(group.getUuid(), uuid);
 
 			JsonArray rolesNode = groupJson.getJsonArray("roles");
 			for (int e = 0; e < rolesNode.size(); e++) {
 				final int r = e;
 				call(() -> client.addRoleToGroup(group.getUuid(), getRole(rolesNode.getString(r)).getUuid()));
 			}
-		}
-	}
-
-	private void latchFor(MeshResponse<?> future) {
-		CountDownLatch latch = new CountDownLatch(1);
-		future.setHandler(rh -> {
-			latch.countDown();
-		});
-		try {
-			if (!latch.await(35, TimeUnit.SECONDS)) {
-				throw new RuntimeException("Timeout reached");
-			}
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
-
-		if (future.failed()) {
-			throw new RuntimeException(future.cause());
 		}
 	}
 
@@ -302,9 +249,8 @@ public class DemoDataProvider {
 			log.info("Creating role {" + name + "}");
 			RoleCreateRequest request = new RoleCreateRequest();
 			request.setName(name);
-			RoleResponse role = call(() -> client.createRole(request));
+			RoleResponse role = call(() -> client.createRole(uuid, request));
 			roles.put(name, role);
-			uuidMapping.put(role.getUuid(), uuid);
 		}
 	}
 
@@ -315,31 +261,23 @@ public class DemoDataProvider {
 	 * @throws IOException
 	 */
 	private void addBootstrappedData() throws InterruptedException, IOException {
-
-		MeshResponse<GroupListResponse> groupsFuture = client.findGroups().invoke();
-		latchFor(groupsFuture);
-		for (GroupResponse group : groupsFuture.result().getData()) {
+		GroupListResponse groupsResponse = client.findGroups().blockingGet();
+		for (GroupResponse group : groupsResponse.getData()) {
 			groups.put(group.getName(), group);
-			uuidMapping.put(group.getUuid(), mappingData.getString("group/" + group.getName()));
 		}
 
-		MeshResponse<UserListResponse> usersFuture = client.findUsers().invoke();
-		latchFor(usersFuture);
-		for (UserResponse user : usersFuture.result().getData()) {
+		UserListResponse usersResponse = client.findUsers().blockingGet();
+		for (UserResponse user : usersResponse.getData()) {
 			users.put(user.getUsername(), user);
-			uuidMapping.put(user.getUuid(), mappingData.getString("user/" + user.getUsername()));
 		}
 
-		MeshResponse<RoleListResponse> rolesFuture = client.findRoles().invoke();
-		latchFor(rolesFuture);
-		for (RoleResponse role : rolesFuture.result().getData()) {
+		RoleListResponse rolesResponse = client.findRoles().blockingGet();
+		for (RoleResponse role : rolesResponse.getData()) {
 			roles.put(role.getName(), role);
-			uuidMapping.put(role.getUuid(), mappingData.getString("role/" + role.getName()));
 		}
 
-		MeshResponse<SchemaListResponse> schemasFuture = client.findSchemas().invoke();
-		latchFor(schemasFuture);
-		for (SchemaResponse schema : schemasFuture.result().getData()) {
+		SchemaListResponse schemasResponse = client.findSchemas().blockingGet();
+		for (SchemaResponse schema : schemasResponse.getData()) {
 			schemas.put(schema.getName(), schema);
 		}
 	}
@@ -406,8 +344,8 @@ public class DemoDataProvider {
 					}
 				}
 			}
-			NodeResponse createdNode = call(() -> client.createNode(project.getName(), nodeCreateRequest));
-			uuidMapping.put(createdNode.getUuid(), uuid);
+			NodeResponse createdNode = call(() -> client.createNode(uuid, project.getName(), nodeCreateRequest));
+			System.out.println("UUID: " + uuid + " - " + createdNode.getUuid());
 
 			// Upload binary data
 			JsonObject binNode = nodeJson.getJsonObject("bin");
@@ -424,7 +362,7 @@ public class DemoDataProvider {
 
 				NodeResponse resp = call(
 					() -> client.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", createdNode.getVersion().toString(), "image",
-						fileData, filenName, contentType));
+						fileData.getBytes(), filenName, contentType));
 
 				Float fpx = binNode.getFloat("fpx");
 				Float fpy = binNode.getFloat("fpy");
@@ -469,9 +407,8 @@ public class DemoDataProvider {
 			// TODO determine project of tag family automatically or use json field to assign it
 			TagCreateRequest createRequest = new TagCreateRequest();
 			createRequest.setName(name);
-			TagResponse result = call(() -> client.createTag(PROJECT_NAME, tagFamily.getUuid(), createRequest));
+			TagResponse result = call(() -> client.createTag(PROJECT_NAME, tagFamily.getUuid(), uuid, createRequest));
 			tags.put(name, result);
-			uuidMapping.put(result.getUuid(), uuid);
 		}
 	}
 
@@ -493,10 +430,8 @@ public class DemoDataProvider {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			request.setName(name);
-			ProjectResponse project = call(() -> client.createProject(request));
+			ProjectResponse project = call(() -> client.createProject(uuid, request));
 			projects.put(name, project);
-			uuidMapping.put(project.getUuid(), uuid);
-			uuidMapping.put(project.getRootNode().getUuid(), mappingData.getString("node/root"));
 		}
 	}
 
@@ -512,9 +447,8 @@ public class DemoDataProvider {
 			log.info("Creating tagfamily {" + name + "} for project {" + projectName + "}");
 			TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 			request.setName(name);
-			TagFamilyResponse result = call(() -> client.createTagFamily(PROJECT_NAME, request));
+			TagFamilyResponse result = call(() -> client.createTagFamily(PROJECT_NAME, uuid, request));
 			tagFamilies.put(name, result);
-			uuidMapping.put(result.getUuid(), uuid);
 		}
 	}
 
@@ -532,9 +466,8 @@ public class DemoDataProvider {
 			if (ins != null) {
 				IOUtils.copy(ins, writer, Charsets.UTF_8.name());
 				SchemaCreateRequest schema = JsonUtil.readValue(writer.toString(), SchemaCreateRequest.class);
-				SchemaResponse schemaResponse = call(() -> client.createSchema(schema));
+				SchemaResponse schemaResponse = call(() -> client.createSchema(uuid, schema));
 				schemas.put(schemaName, schemaResponse);
-				uuidMapping.put(schemaResponse.getUuid(), uuid);
 			}
 
 			// Assign all schemas to all projects
@@ -551,17 +484,11 @@ public class DemoDataProvider {
 	}
 
 	protected <T> T call(ClientHandler<T> handler) {
-		MeshResponse<T> future;
 		try {
-			future = handler.handle().invoke();
+			return handler.handle().blockingGet();
 		} catch (Exception e) {
-			future = new MeshResponse<>(Future.failedFuture(e));
+			throw new RuntimeException("Error while handling request.", e);
 		}
-		if (future.failed()) {
-			throw new RuntimeException("Error while handling request.", future.cause());
-		}
-		latchFor(future);
-		return future.result();
 	}
 
 	private JsonObject loadJson(String name) throws IOException {

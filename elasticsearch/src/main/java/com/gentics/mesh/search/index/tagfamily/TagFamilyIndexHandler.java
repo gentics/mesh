@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -15,16 +16,18 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetric;
 
+import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 
 @Singleton
@@ -37,8 +40,8 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	TagFamilyMappingProvider mappingProvider;
 
 	@Inject
-	public TagFamilyIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
-		super(searchProvider, db, boot, searchQueue);
+	public TagFamilyIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper) {
+		super(searchProvider, db, boot, helper);
 	}
 
 	@Override
@@ -88,7 +91,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 		return db.tx(() -> {
 			ProjectRoot root = boot.meshRoot().getProjectRoot();
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
-			for (Project project : root.findAllIt()) {
+			for (Project project : root.findAll()) {
 				String indexName = TagFamily.composeIndexName(project.getUuid());
 				IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "tagFamily");
 				indexInfo.put(indexName, info);
@@ -98,22 +101,33 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	}
 
 	@Override
-	public Completable syncIndices() {
-		return Completable.defer(() -> {
-			return db.tx(() -> {
-				ProjectRoot root = boot.meshRoot().getProjectRoot();
-				SyncMetric metric = new SyncMetric(getType());
+	public Flowable<SearchRequest> syncIndices() {
+		return Flowable.defer(() -> db.tx(() -> {
+			SyncMetric metric = new SyncMetric(getType());
 
-				Set<Completable> actions = new HashSet<>();
-				for (Project project : root.findAllIt()) {
+			return boot.meshRoot().getProjectRoot().findAll().stream()
+				.map(project -> {
 					String uuid = project.getUuid();
 					String indexName = TagFamily.composeIndexName(uuid);
-					actions.add(diffAndSync(indexName, uuid, metric));
-				}
+					return diffAndSync(indexName, uuid, metric);
+				}).collect(Collectors.collectingAndThen(Collectors.toList(), Flowable::merge));
+		}));
+	}
 
-				return Completable.merge(actions);
-			});
+	@Override
+	public Set<String> filterUnknownIndices(Set<String> indices) {
+		return db.tx(() -> {
+			Set<String> activeIndices = new HashSet<>();
+			for (Project project : boot.meshRoot().getProjectRoot().findAll()) {
+				activeIndices.add(TagFamily.composeIndexName(project.getUuid()));
+			}
+
+			return indices.stream()
+				.filter(i -> i.startsWith(getType()))
+				.filter(i -> !activeIndices.contains(i))
+				.collect(Collectors.toSet());
 		});
+
 	}
 
 	@Override

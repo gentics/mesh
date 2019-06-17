@@ -1,0 +1,20 @@
+[options="header",cols="10%,20%,10%,60%"]
+|======
+
+| Name
+| Type
+| Mandatory
+| Description
+
+
+| lang
+| string 
+| false
+| ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned.  If omitted or the requested language is not available then the _defaultLanguage_ as configured in _mesh.yml_ will be returned.
+
+| resolveLinks
+| string 
+| false
+| The resolve links parameter can be set to either _short_, _medium_ or _full_. Stored mesh links will automatically be resolved and replaced by the resolved webroot link. With the parameter set the _path_ property as well as the _languagesPath_ property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved link:{{&lt; relref &quot;features.asciidoc&quot; &gt;}}#_link_resolving[WebRoot path]. No resolving occurs if no link has been specified.
+
+|======

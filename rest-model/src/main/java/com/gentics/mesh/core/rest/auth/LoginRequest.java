@@ -17,6 +17,10 @@ public class LoginRequest implements RestModel {
 	@JsonPropertyDescription("Password of the user which should be logged in.")
 	private String password;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("New password that will be set after successful login.")
+	private String newPassword;
+
 	public LoginRequest() {
 	}
 
@@ -58,4 +62,23 @@ public class LoginRequest implements RestModel {
 		this.password = password;
 	}
 
+	/**
+	 * Return the new password.
+	 *
+	 * @return
+	 */
+	public String getNewPassword() {
+		return newPassword;
+	}
+
+	/**
+	 * Set the new password.
+	 *
+	 * @param newPassword
+	 * @return
+	 */
+	public LoginRequest setNewPassword(String newPassword) {
+		this.newPassword = newPassword;
+		return this;
+	}
 }

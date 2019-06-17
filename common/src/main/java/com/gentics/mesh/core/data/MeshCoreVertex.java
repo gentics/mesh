@@ -3,9 +3,12 @@ package com.gentics.mesh.core.data;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.event.MeshElementEventModel;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
 /**
@@ -27,7 +30,7 @@ public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R,
 	 *            Batch to which entries will be added in order to update the search index.
 	 * @return true if the element was updated. Otherwise false
 	 */
-	boolean update(InternalActionContext ac, SearchQueueBatch batch);
+	boolean update(InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Return the type info of the element.
@@ -55,31 +58,46 @@ public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R,
 	void setRolePermissions(InternalActionContext ac, GenericRestResponse model);
 
 	/**
-	 * Return an iterable for all roles which grant the permission to the element.
+	 * Return a traversal result for all roles which grant the permission to the element.
 	 * 
 	 * @param perm
 	 * @return
 	 */
-	Iterable<? extends Role> getRolesWithPerm(GraphPermission perm);
+	TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm);
 
 	/**
 	 * Method which is being invoked once the element has been created.
 	 */
-	void onCreated();
+	MeshElementEventModel onCreated();
 
 	/**
 	 * Method which is being invoked once the element has been updated.
+	 * 
+	 * @return Created event
 	 */
-	void onUpdated();
+	MeshElementEventModel onUpdated();
 
 	/**
 	 * Method which is being invoked once the element has been deleted.
 	 * 
-	 * @param uuid
-	 *            UUID of the element which was deleted
-	 * @param name
-	 *            Name of the element which was deleted
+	 * @return Created event
 	 */
-	void onDeleted(String uuid, String name);
+	MeshElementEventModel onDeleted();
+
+	/**
+	 * Method which is being invoked once the permissions on the element have been updated.
+	 * 
+	 * @param role
+	 * @return
+	 */
+	PermissionChangedEventModelImpl onPermissionChanged(Role role);
+
+	/**
+	 * Add the common permission information to the model.
+	 * 
+	 * @param model
+	 * @param role
+	 */
+	void fillPermissionChanged(PermissionChangedEventModelImpl model, Role role);
 
 }

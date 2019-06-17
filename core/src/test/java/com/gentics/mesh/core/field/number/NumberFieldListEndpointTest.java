@@ -29,7 +29,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Override
@@ -40,13 +40,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		NumberFieldListImpl listField = new NumberFieldListImpl();
-		listField.add(42L);
-		listField.add(41L);
-		listField.add(0.1f);
-		listField.add(Long.MAX_VALUE);
-
-		NodeResponse response = createNode(FIELD_NAME, listField);
+		NodeResponse response = createNodeWithField();
 		NumberFieldListImpl field = response.getFields().getNumberFieldList(FIELD_NAME);
 		assertThat(field.getItems()).as("Only valid values should be stored").containsExactly(42, 41, 0.1, Long.MAX_VALUE);
 	}
@@ -121,14 +115,16 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() throws IOException {
+		disableAutoPurge();
+
 		Node node = folder("2015");
 
 		List<List<Number>> valueCombinations = Arrays.asList(Arrays.asList(1.1, 2, 3), Arrays.asList(3, 2, 1.1), Collections.emptyList(),
-				Arrays.asList(47.11, 8.15), Arrays.asList(3));
+			Arrays.asList(47.11, 8.15), Arrays.asList(3));
 
 		NodeGraphFieldContainer container = tx(() -> node.getGraphFieldContainer("en"));
 		for (int i = 0; i < 20; i++) {
-			final NodeGraphFieldContainer currentContainer = container; 
+			final NodeGraphFieldContainer currentContainer = container;
 			List<Number> oldValue = tx(() -> getListValues(currentContainer, NumberGraphFieldListImpl.class, FIELD_NAME));
 			List<Number> newValue = valueCombinations.get(i % valueCombinations.size());
 
@@ -152,6 +148,8 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		disableAutoPurge();
+
 		Node node = folder("2015");
 
 		NumberFieldListImpl list = new NumberFieldListImpl();
@@ -171,12 +169,12 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(latest.getNumberList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNumberList(FIELD_NAME)).isNotNull();
 			List<Number> oldValueList = latest.getPreviousVersion().getNumberList(FIELD_NAME).getList().stream().map(item -> item.getNumber())
-					.collect(Collectors.toList());
+				.collect(Collectors.toList());
 			assertThat(oldValueList).containsExactly(42, 41.1);
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
+				secondResponse.getVersion());
 		}
 	}
 
@@ -221,6 +219,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 	/**
 	 * Adds numbers to a number field list of node until the count is reached.
+	 * 
 	 * @param node
 	 * @param count
 	 * @return
@@ -246,5 +245,16 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		} else {
 			return Completable.complete();
 		}
+	}
+
+	@Override
+	public NodeResponse createNodeWithField() {
+		NumberFieldListImpl listField = new NumberFieldListImpl();
+		listField.add(42L);
+		listField.add(41L);
+		listField.add(0.1f);
+		listField.add(Long.MAX_VALUE);
+
+		return createNode(FIELD_NAME, listField);
 	}
 }

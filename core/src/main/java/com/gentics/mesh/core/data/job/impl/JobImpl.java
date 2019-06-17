@@ -1,11 +1,11 @@
 package com.gentics.mesh.core.data.job.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FROM_VERSION;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.STARTING;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.UNKNOWN;
+import static com.gentics.mesh.core.rest.job.JobStatus.STARTING;
+import static com.gentics.mesh.core.rest.job.JobStatus.UNKNOWN;
 
 import java.util.Map;
 
@@ -27,15 +27,16 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
-import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.dagger.DB;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.ETag;
 
+import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -50,7 +51,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 		"For further details concerning this error please refer to the logs.";
 
 	@Override
-	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
 		throw new NotImplementedException("Jobs can't be updated");
 	}
 
@@ -73,7 +74,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 		if (creator != null) {
 			response.setCreator(creator.transformToReference());
 		} else {
-			log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no creator. Omitting creator field");
+			//log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no creator. Omitting creator field");
 		}
 
 		String date = getCreationDate();
@@ -86,32 +87,44 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 		response.setStartDate(getStartDate());
 		response.setCompletionCount(getCompletionCount());
 		response.setNodeName(getNodeName());
-		response.setWarnings(getWarnings().getData());
+
+		JobWarningList warnings = getWarnings();
+		if (warnings != null) {
+			response.setWarnings(warnings.getData());
+		}
 
 		Map<String, String> props = response.getProperties();
-		props.put("branchName", getBranch().getName());
-		props.put("branchUuid", getBranch().getUuid());
+		Branch branch = getBranch();
+		if (branch != null) {
+			props.put("branchName", branch.getName());
+			props.put("branchUuid", branch.getUuid());
+		} else {
+			log.debug("No referenced branch found.");
+		}
 
-		if (getToSchemaVersion() != null) {
-			SchemaContainer container = getToSchemaVersion().getSchemaContainer();
+		SchemaContainerVersion toSchema = getToSchemaVersion();
+		if (toSchema != null) {
+			SchemaContainer container = toSchema.getSchemaContainer();
 			props.put("schemaName", container.getName());
 			props.put("schemaUuid", container.getUuid());
 			props.put("fromVersion", getFromSchemaVersion().getVersion());
-			props.put("toVersion", getToSchemaVersion().getVersion());
+			props.put("toVersion", toSchema.getVersion());
 		}
-		if (getToMicroschemaVersion() != null) {
-			MicroschemaContainer container = getToMicroschemaVersion().getSchemaContainer();
+
+		MicroschemaContainerVersion toMicroschema = getToMicroschemaVersion();
+		if (toMicroschema != null) {
+			MicroschemaContainer container = toMicroschema.getSchemaContainer();
 			props.put("microschemaName", container.getName());
 			props.put("microschemaUuid", container.getUuid());
 			props.put("fromVersion", getFromMicroschemaVersion().getVersion());
-			props.put("toVersion", getToMicroschemaVersion().getVersion());
+			props.put("toVersion", toMicroschema.getVersion());
 		}
 		return response;
 	}
 
 	@Override
 	public JobWarningList getWarnings() {
-		String json = getProperty(WARNING_PROPERTY_KEY);
+		String json = property(WARNING_PROPERTY_KEY);
 		if (json == null) {
 			return new JobWarningList();
 		} else {
@@ -122,7 +135,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	@Override
 	public void setWarnings(JobWarningList warnings) {
 		String json = JsonUtil.toJson(warnings);
-		setProperty(WARNING_PROPERTY_KEY, json);
+		property(WARNING_PROPERTY_KEY, json);
 	}
 
 	@Override
@@ -131,49 +144,49 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	}
 
 	@Override
-	public void setType(MigrationType type) {
-		setProperty(TYPE_PROPERTY_KEY, type.name());
+	public void setType(JobType type) {
+		property(TYPE_PROPERTY_KEY, type.name());
 	}
 
 	@Override
-	public MigrationType getType() {
-		String type = getProperty(TYPE_PROPERTY_KEY);
+	public JobType getType() {
+		String type = property(TYPE_PROPERTY_KEY);
 		if (type == null) {
 			return null;
 		} else {
-			return MigrationType.valueOf(type);
+			return JobType.valueOf(type);
 		}
 	}
 
 	@Override
 	public Long getStartTimestamp() {
-		return getProperty(START_TIMESTAMP_PROPERTY_KEY);
+		return property(START_TIMESTAMP_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setStartTimestamp(Long date) {
-		setProperty(START_TIMESTAMP_PROPERTY_KEY, date);
+		property(START_TIMESTAMP_PROPERTY_KEY, date);
 	}
 
 	@Override
 	public Long getStopTimestamp() {
-		return getProperty(STOP_TIMESTAMP_PROPERTY_KEY);
+		return property(STOP_TIMESTAMP_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setStopTimestamp(Long date) {
-		setProperty(STOP_TIMESTAMP_PROPERTY_KEY, date);
+		property(STOP_TIMESTAMP_PROPERTY_KEY, date);
 	}
 
 	@Override
 	public long getCompletionCount() {
-		Long value = getProperty(COMPLETION_COUNT_PROPERTY_KEY);
+		Long value = property(COMPLETION_COUNT_PROPERTY_KEY);
 		return value == null ? 0 : value;
 	}
 
 	@Override
 	public void setCompletionCount(long count) {
-		setProperty(COMPLETION_COUNT_PROPERTY_KEY, count);
+		property(COMPLETION_COUNT_PROPERTY_KEY, count);
 	}
 
 	@Override
@@ -183,7 +196,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public void setBranch(Branch branch) {
-		setUniqueLinkOutTo(branch, HAS_BRANCH);
+		setSingleLinkOutTo(branch, HAS_BRANCH);
 	}
 
 	@Override
@@ -193,7 +206,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public void setFromSchemaVersion(SchemaContainerVersion version) {
-		setUniqueLinkOutTo(version, HAS_FROM_VERSION);
+		setSingleLinkOutTo(version, HAS_FROM_VERSION);
 	}
 
 	@Override
@@ -203,7 +216,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public void setToSchemaVersion(SchemaContainerVersion version) {
-		setUniqueLinkOutTo(version, HAS_TO_VERSION);
+		setSingleLinkOutTo(version, HAS_TO_VERSION);
 	}
 
 	@Override
@@ -213,7 +226,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public void setFromMicroschemaVersion(MicroschemaContainerVersion fromVersion) {
-		setUniqueLinkOutTo(fromVersion, HAS_FROM_VERSION);
+		setSingleLinkOutTo(fromVersion, HAS_FROM_VERSION);
 	}
 
 	@Override
@@ -223,31 +236,31 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public void setToMicroschemaVersion(MicroschemaContainerVersion toVersion) {
-		setUniqueLinkOutTo(toVersion, HAS_TO_VERSION);
+		setSingleLinkOutTo(toVersion, HAS_TO_VERSION);
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		remove();
 	}
 
 	@Override
-	public MigrationStatus getStatus() {
-		String status = getProperty(STATUS_PROPERTY_KEY);
+	public JobStatus getStatus() {
+		String status = property(STATUS_PROPERTY_KEY);
 		if (status == null) {
 			return UNKNOWN;
 		}
-		return MigrationStatus.valueOf(status);
+		return JobStatus.valueOf(status);
 	}
 
 	@Override
-	public void setStatus(MigrationStatus status) {
-		setProperty(STATUS_PROPERTY_KEY, status.name());
+	public void setStatus(JobStatus status) {
+		property(STATUS_PROPERTY_KEY, status.name());
 	}
 
 	@Override
 	public String getErrorDetail() {
-		return getProperty(ERROR_DETAIL_PROPERTY_KEY);
+		return property(ERROR_DETAIL_PROPERTY_KEY);
 	}
 
 	@Override
@@ -256,17 +269,17 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 		if (info != null && info.length() > ERROR_DETAIL_MAX_LENGTH) {
 			info = info.substring(0, ERROR_DETAIL_MAX_LENGTH - ERROR_DETAIL_MAX_LENGTH_MSG.length()) + ERROR_DETAIL_MAX_LENGTH_MSG;
 		}
-		setProperty(ERROR_DETAIL_PROPERTY_KEY, info);
+		property(ERROR_DETAIL_PROPERTY_KEY, info);
 	}
 
 	@Override
 	public String getErrorMessage() {
-		return getProperty(ERROR_MSG_PROPERTY_KEY);
+		return property(ERROR_MSG_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setErrorMessage(String message) {
-		setProperty(ERROR_MSG_PROPERTY_KEY, message);
+		property(ERROR_MSG_PROPERTY_KEY, message);
 	}
 
 	@Override
@@ -291,7 +304,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 		setStopTimestamp(null);
 		setErrorDetail(null);
 		setErrorMessage(null);
-		setStatus(MigrationStatus.QUEUED);
+		setStatus(JobStatus.QUEUED);
 	}
 
 	@Override
@@ -300,30 +313,33 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	}
 
 	@Override
-	public void process() {
-		log.info("Processing job {" + getUuid() + "}");
-		DB.get().tx(() -> {
-			setStartTimestamp();
-			setStatus(STARTING);
-			setNodeName();
-		});
+	public Completable process() {
+		return Completable.defer(() -> {
 
-		processTask();
+			DB.get().tx(() -> {
+				log.info("Processing job {" + getUuid() + "}");
+				setStartTimestamp();
+				setStatus(STARTING);
+				setNodeName();
+			});
+
+			return processTask();
+		});
 	}
 
 	/**
 	 * Actual implementation of the task which the job executes.
 	 */
-	protected abstract void processTask();
+	protected abstract Completable processTask();
 
 	@Override
 	public String getNodeName() {
-		return getProperty(NODE_NAME_PROPERTY_KEY);
+		return property(NODE_NAME_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setNodeName(String nodeName) {
-		setProperty(NODE_NAME_PROPERTY_KEY, nodeName);
+		property(NODE_NAME_PROPERTY_KEY, nodeName);
 	}
 
 }

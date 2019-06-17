@@ -1,0 +1,40 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| algorithm
+| true
+| string
+| Algorithm which is used to verify and sign JWT.
+
+| enableAnonymousAccess
+| false
+| boolean
+| Flag which indicates whether anonymous access should be enabled.
+
+| keystorePassword
+| true
+| string
+| The Java keystore password for the keystore file.
+
+| keystorePath
+| true
+| string
+| Path to the java keystore file which will be used to store cryptographic keys.
+
+| oauth2
+| false
+| object
+| OAuth2 related configuration options.
+
+| tokenExpirationTime
+| true
+| integer
+| Time in minutes which an issued token stays valid.
+
+|======

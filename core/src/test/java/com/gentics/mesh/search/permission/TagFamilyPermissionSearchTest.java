@@ -2,6 +2,7 @@ package com.gentics.mesh.search.permission;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -16,8 +17,7 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
-
-@MeshTestSetting(useElasticsearch = true, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class TagFamilyPermissionSearchTest extends AbstractMeshTest {
 
 	@Test
@@ -34,9 +34,7 @@ public class TagFamilyPermissionSearchTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		String json = getESText("tagFamilyWildcard.es");
 
@@ -53,9 +51,7 @@ public class TagFamilyPermissionSearchTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		list = call(() -> client().searchTagFamilies(json));
 		assertEquals("The tagFamily should be found since we added the permission to see it", 1, list.getData().size());
@@ -64,8 +60,10 @@ public class TagFamilyPermissionSearchTest extends AbstractMeshTest {
 
 	@Test
 	public void testIndexPermUpdate() throws Exception {
+		recreateIndices();
 		String tagfamilyName = "testtagfamily42a";
 		TagFamilyResponse response = createTagFamily(PROJECT_NAME, tagfamilyName);
+		waitForSearchIdleEvent();
 
 		String json = getESText("tagFamilyWildcard.es");
 
@@ -76,6 +74,7 @@ public class TagFamilyPermissionSearchTest extends AbstractMeshTest {
 		RolePermissionRequest request = new RolePermissionRequest();
 		request.getPermissions().setRead(false);
 		call(() -> client().updateRolePermissions(roleUuid(), "/projects/" + PROJECT_NAME + "/tagFamilies/" + response.getUuid(), request));
+		waitForSearchIdleEvent();
 
 		list = call(() -> client().searchTagFamilies(json));
 		assertEquals("The tagFamily should not be found since the requestor has no permission to see it", 0, list.getData().size());

@@ -554,6 +554,11 @@ public class FieldMapImpl implements FieldMap {
 	}
 
 	@Override
+	public void clear() {
+		((ObjectNode) node).removeAll();
+	}
+
+	@Override
 	public NodeResponse getNodeFieldExpanded(String key) {
 		return getField(key, FieldTypes.NODE, null, true);
 	}

@@ -1,0 +1,20 @@
+[options="header",cols="10%,20%,10%,60%"]
+|======
+
+| Name
+| Type
+| Mandatory
+| Description
+
+
+| updateAssignedBranches
+| boolean  (default: true) 
+| false
+| Update the schema version for all branches which already utilize the schema.
+
+| updateBranchNames
+| string 
+| false
+| List of branch names which should be included in the update process. By default all branches which use the schema will be updated. You can thus use this parameter to only include a subset of branch in the update.
+
+|======

@@ -1,11 +1,7 @@
 # This Dockerfile is used to build an image containing basic stuff to be used as a Jenkins slave build node.
-FROM jenkinsci/jnlp-slave
+FROM jenkinsci/jnlp-slave:3.27-1
 MAINTAINER Johannes Schüth <j.schueth@gentics.com>
 USER root
-
-# Key chains
-RUN wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C2518248EEA14886
 
 # APT
 RUN echo 'deb http://debian.apa.at/debian stretch main contrib non-free' > /etc/apt/sources.list
@@ -25,11 +21,11 @@ RUN curl "https://get.docker.com/builds/`uname -s`/`uname -m`/docker-latest.tgz"
 # Install Java 8
 RUN mkdir -p /usr/lib/jvm/ && \
    cd /usr/lib/jvm/ && \
-   wget -nv -O jdk-8-x64.tar.gz "https://filebox.apa-it.at/index.php/s/p3yUKk7Rju96eyc/download" && \
+   wget -nv -O jdk-8-x64.tar.gz "https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u202-b08/OpenJDK8U-jdk_x64_linux_hotspot_8u202b08.tar.gz" && \
    tar xfz jdk-8-x64.tar.gz && \
    rm *.gz && \
-   mv jdk1.8.0_151 java-8-oracle
-ENV JAVA_1_8_HOME /usr/lib/jvm/java-8-oracle
+   mv jdk8u202-b08/ java-8
+ENV JAVA_1_8_HOME /usr/lib/jvm/java-8
 
 # Install Java 10
 #RUN mkdir -p /usr/lib/jvm/ && \
@@ -44,7 +40,7 @@ ENV JAVA_1_8_HOME /usr/lib/jvm/java-8-oracle
 RUN echo "jenkins:jenkins" | chpasswd
 RUN mkdir -p /home/jenkins/workspace && mkdir -p /home/jenkins/.ssh
 
-#ADD ./files/settings.xml /home/jenkins/.m2/settings.xml
+ADD ./files/settings.xml /home/jenkins/.m2/settings.xml
 #ADD ./files/gentics /home/jenkins/.gnupg/gentics
 RUN chown jenkins: /home/jenkins -R
 
@@ -89,7 +85,6 @@ ENV LANG en_US.UTF-8
 # Add credentials
 #RUN sudo -u jenkins gpg --import /home/jenkins/credentials/gpg/gentics/gpg-key.asc
 #RUN sudo -u jenkins gpg --import /home/jenkins/credentials/gpg/gentics/gpg-secret-key.asc
-RUN ln -s /home/jenkins/credentials/maven/settings.xml /home/jenkins/.m2/settings.xml
 
 USER jenkins
 

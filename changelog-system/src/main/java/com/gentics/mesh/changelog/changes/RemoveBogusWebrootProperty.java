@@ -21,7 +21,7 @@ public class RemoveBogusWebrootProperty extends AbstractChange {
 	}
 
 	@Override
-	public void apply() {
+	public void applyInTx() {
 
 		// Iterate over all field container
 		Iterable<Vertex> vertices = getGraph().getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, "NodeGraphFieldContainerImpl");

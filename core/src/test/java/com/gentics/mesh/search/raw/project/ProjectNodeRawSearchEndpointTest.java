@@ -3,6 +3,7 @@ package com.gentics.mesh.search.raw.project;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static org.junit.Assert.assertNotNull;
 
@@ -17,8 +18,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
-
-@MeshTestSetting(useElasticsearch = true, startServer = true, testSize = FULL)
+@MeshTestSetting(elasticsearch = CONTAINER, startServer = true, testSize = FULL)
 public class ProjectNodeRawSearchEndpointTest extends AbstractMeshTest {
 
 	@Test
@@ -45,8 +45,10 @@ public class ProjectNodeRawSearchEndpointTest extends AbstractMeshTest {
 		request.setParentNodeUuid(projectB.getRootNode().getUuid());
 		call(() -> client().createNode("projectB", request));
 
+		waitForSearchIdleEvent();
+
 		// search in old project
-		JsonObject response = call(() -> client().searchNodesRaw("projectA", getSimpleQuery("fields.content", contentFieldValue)));
+		JsonObject response = new JsonObject(call(() -> client().searchNodesRaw("projectA", getSimpleQuery("fields.content", contentFieldValue))).toString());
 		assertNotNull(response);
 		assertThat(response).has("responses[0].hits.hits[0]._id", nodeA.getUuid() + "-en", "The correct element was not found.");
 		assertThat(response).has("responses[0].hits.total", "1", "Not exactly one item was found");

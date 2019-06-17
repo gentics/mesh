@@ -6,6 +6,8 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 
+import org.junit.Test;
+
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.ListGraphField;
@@ -31,7 +33,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 	}
 
 	protected void createNodeAndExpectFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey,
-			String... i18nParams) {
+		String... i18nParams) {
 		Node node = folder("2015");
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setParentNodeUuid(node.getUuid());
@@ -42,7 +44,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		}
 
 		call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParametersImpl().setLanguages("en")), status, bodyMessageI18nKey,
-				i18nParams);
+			i18nParams);
 	}
 
 	/**
@@ -88,7 +90,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		nodeUpdateRequest.setVersion(tx(() -> node.getLatestDraftFieldContainer(english()).getVersion().toString()));
 
 		call(() -> client().updateNode(PROJECT_NAME, tx(() -> node.getUuid()), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")),
-				status, bodyMessageI18nKey, i18nParams);
+			status, bodyMessageI18nKey, i18nParams);
 	}
 
 	/**
@@ -105,5 +107,12 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 	protected <U, T extends ListGraphField<?, ?, U>> List<U> getListValues(NodeGraphFieldContainer container, Class<T> classOfT, String fieldKey) {
 		T field = container.getList(classOfT, fieldKey);
 		return field != null ? field.getValues() : null;
+	}
+
+	@Test
+	@Override
+	public void testDeleteField() {
+		NodeResponse response = createNodeWithField();
+		call(() -> client().deleteNode(PROJECT_NAME, response.getUuid()));
 	}
 }

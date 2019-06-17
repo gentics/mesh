@@ -1,0 +1,501 @@
+---
+title: Documentation
+---
+
+++++
+<style>
+ul.doc-toc, ul.doc-toc ul {
+    list-style: none;
+    line-height:150%;
+    padding-left: 0px;
+}
+
+ul.doc-toc ul ul {
+    padding-left: 15px;
+}
+
+ul.doc-toc h2 {
+    font-size: 27px;
+}
+</style>
+
+<div class="container docs-content">
+    <div class="row">
+        <div class="col-sm-12">
+            <div id="preamble">
+                <div class="sectionbody">
+                    <div class="paragraph">
+                        <p>
+                        Gentics Mesh is a headless or API-first CMS shipped with a single JAR file. <br/>
+                        This is the right place for <a href="getting-started">getting started</a> using Gentics Mesh. 
+                            <ul>
+                                <li>The <a href="getting-started#_tldr">TL;DR</a> section will briefly explain everything you should know and what makes Gentics Mesh special.</li>
+                                <li>Our <a href="getting-started#_quickstart">Quickstart</a> guide will let you play with Gentics Mesh in seconds - No installation is required. Just download a single JAR file!</li>
+                                <li>You will find an overview of the <a href="building-blocks">core concepts</a>, a complete list of all <a href="features">features</a> and <a href="references">references</a> for available APIs, such as REST and GraphQL. </li>
+                                <li>To get you started, we have collected a set of samples for different <a href="platforms">platforms</a>, i.e. JavaScript, Java, GO, and PHP .
+                                <li>The <a href="administration-guide">administration guide</a>, will provide information on how to configure and run Gentics Mesh in your environment.</li>
+                            </ul>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-12">
+            <div class="col-md-4">
+                <ul class="doc-toc">
+                    <li class="section">
+                        <h2><a href="getting-started">Getting Started</a></h2>
+                        <ul>
+                            <li>
+                                <a href="getting-started#_quickstart">Quickstart</a>
+                            </li>
+                            <li>
+                                <a href="getting-started#_tldr">TL;DR</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="section">
+                        <h2><a href="building-blocks">Building Blocks</a></h2>
+                        <ul>
+                            <li>
+                                <a href="building-blocks#_project">Project</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks#_node">Node</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks#_schema">Schema</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks#_micronode">Micronode &amp; Microschema</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks#_tag">Tag</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks#_tag_family">Tag Family</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks#_user">User</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks#_group">Group</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks#_role">Role</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="section">
+                        <h2><a href="administration-guide">Administration Guide</a></h2>
+                        <ul>
+                            <li>
+                                <a href="administration-guide#_software_stack">Software Stack</a>
+                            </li>
+                            <li>
+                                <a href="administration-guide#_run_with_jar_file">Run with JAR File</a>
+                            </li>
+                            <li>
+                                <a href="administration-guide#_run_with_docker">Run with Docker</a>
+                            </li>
+                            <li>
+                                <a href="administration-guide#installdir">Installation Directory</a>
+                            </li>                            
+                            <li>
+                                <a href="administration-guide#_system_requirements">System Requirements</a>
+                            </li>
+                            <li>
+                                <a href="administration-guide#conf">Configuration & Settings</a>
+                            </li>
+                            <li>
+                                <a href="administration-guide/#_environment_variables">Environment Variables</a>
+                            </li>
+                            
+                            <li>
+                                <a href="administration-guide#_backup_recovery">Backup &amp; Recovery</a>
+                            </li>                            
+                            <li>
+                                <a href="changelog">Changelog</a>
+                            </li>
+                            <li>
+                                <a href="administration-guide#_license">License</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="section">
+                        <h2><a href="performance">Performance Guide</a></h2>
+                        <ul>
+                            <li>
+                                <a href="performance#_paging">Paging</a>
+                            </li>
+                            <li>
+                                <a href="performance#_contents">Contents</a>
+                            </li>
+                        </ul>
+                    </li>
+                    
+                    <li class="section">
+                        <h2><a href="contributing">Contributing</a></h2>
+                        <ul>
+                            <li>
+                                <a href="contributing#_tl_dr">TL;DR</a>
+                            </li>
+                            <li>
+                                <a href="contributing#_big_picture">Big Picture</a>
+                            </li>
+                            <li>
+                                <a href="https://portal.graphgist.org/graph_gists/6c8712b8-d741-45f9-beb4-84ebca278bfa">Graph Gist</a>
+                            </li>
+                            <li>
+                                <a href="contributing#_domain_model">Domain Model</a>
+                            </li>
+                            <li>
+                                <a href="contributing#_project_structure">Project Structure</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="section">
+                        <h2><a href="support">Support</a></h2>
+                        <ul>
+                            <li>
+                                <a href="support/#_professional_services">Professional Services</a>
+                            </li>
+                            <li>
+                                <a href="support/#_release_cycle">Release Cycle</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <ul class="doc-toc">
+                    <li class="section">
+                        <h2><a href="features">Features</a></h2>
+                        <ul>
+                            <li>
+                                <a href="features#contenttree">Content Tree</a>
+                            </li>
+                            <li>
+                                <a href="features#prettyurls">Pretty URLs</a>
+                            </li>
+                            <li>
+                                <a href="features#navigation">Navigation Menus</a>
+                            </li>
+                            <li>
+                                <a href="features#_breadcrumbs">Breadcrumbs</a>
+                            </li>
+                            <li>
+                                <a href="features#webroot">Fetching Content with WebRoot Paths</a>
+                            </li>
+                            <li>
+                                <a href="features#_link_resolving">Link Resolving</a>
+                            </li>
+                            <li>
+                                <a href="image-manipulation">Image Manipulation</a>
+                            </li>
+                            <li>
+                                <a href="features#_file_upload">File Upload</a>
+                            </li>
+                            <li>
+                                <a href="features#multilanguage">Multi-Language</a>
+                            </li>
+                            <li>
+                                <a href="features#_permissions">Permissions</a>
+                            </li>
+                            <li>
+                                <a href="features#_versioning">Versioning</a>
+                            </li>
+                            <li>
+                                <a href="features#_content_branches">Content Branches</a>
+                            </li>
+                            <li>
+                                <a href="elasticsearch">Search</a>
+                            </li>
+                            <li>
+                                <a href="features#_preview_handling">Preview Handling</a>
+                            </li>
+                            <li>
+                                <a href="features#_password_recovery">Password Recovery</a>
+                            </li>
+                            <li>
+                                <a href="features#_schema_microschema_migration">Schema &amp; Microschema Migration</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="section">
+                        <h2><a href="user-interface">User Interface</a></h2>
+                        <ul>
+                            <li>
+                                <a href="user-interface#_creating_and_managing_content">Creating and Managing Content</a>
+                            </li>
+                            <li>
+                                <a href="user-interface#_searching">Searching</a>
+                            </li>
+                            <li>
+                                <a href="user-interface#_administrative_functions">Administrative Functions</a>
+                            </li>
+                            <li>
+                                <a href="user-interface#_configuration">Configuration</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="section">
+                        <h2><a href="deployment">Deployment</a></h2>
+                        <ul>
+                            <li>
+                                <a href="deployment#_aws">AWS</a>
+                            </li>
+                            <li>
+                                <a href="deployment#_kubernetes">Kubernetes</a>
+                            </li>
+                            <li>
+                                <a href="deployment#_docker">Docker</a>
+                            </li>
+                            <li>
+                                <a href="deployment#_linux">Linux</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="section">
+                        <h2><a href="cli">CLI</a></h2>
+                        <ul>
+                            <li>
+                                <a href="cli#_installation">Installation</a>
+                            </li>
+                            <li>
+                                <a href="cli#_usage">Usage</a>
+                            </li>
+                            <li>
+                                <a href="cli#_configuration">Configuration</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="section">
+                        <h2><a href="platforms">Platforms</a></h2>
+                        <ul>
+                            <li>
+                                <a href="platforms#_javascript">JavaScript</a>
+                            </li>
+                            <li>
+                                <a href="platforms#_java">Java</a>
+                            </li>
+                            <li>
+                                <a href="platforms#_go">Go</a>
+                            </li>
+                            <li>
+                                <a href="platforms#_php">PHP</a>
+                            </li>
+                        </ul>
+                    </li>
+
+
+                    <li class="section">
+                        <h2>Guides</h2>
+                        <ul>
+                            <li>
+                                <a href="guides/mesh-api-intro">API Introduction</a>
+                            </li>
+                            <li>
+                                <a href="guides/mesh-react">React - Basics</a>
+                            </li>
+                            <li>
+                                <a href="guides/mesh-react-2">React - Event Handling</a>
+                            </li>
+                            <li>
+                                <a href="guides/mesh-hugo">Hugo Guide</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <ul class="doc-toc">
+                    <li class="section">
+                        <h2><a href="references">References</a></h2>
+                        <ul>
+                            <li>
+                                <a href="graphql">GraphQL</a>
+                                <ul>
+                                    <li>
+                                        <a href="graphql#_filtering">Filtering</a>
+                                    </li>
+                                    <li>
+                                        <a href="graphql#_limitations">Limitations</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="references#_rest_api">REST API</a>
+                                <ul>
+                                    <li>
+                                        <a href="references#_query_parameters">Query parameters</a>
+                                    </li>
+                                    <li>
+                                        <a href="references#_examples">Examples</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="events">Events</a>
+                                <ul>
+                                    <li>
+                                        <a href="events#_addresses">Addresses</a>
+                                    </li>
+                                    <li>
+                                        <a href="events#customevents">Custom Events</a>
+                                    </li>
+                                    <li>
+                                        <a href="events#iot">IoT Example</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="references#_http_details">HTTP Details</a>
+                                <ul>
+                                    <li>
+                                        <a href="references#_http_details">Security/SSL</a>
+                                    </li>
+                                    <li>
+                                        <a href="references#_encoding">Encoding</a>
+                                    </li>
+                                    <li>
+                                        <a href="references#_headers">Headers</a>
+                                    </li>
+                                    <li>
+                                        <a href="references#_cors">CORS</a>
+                                    </li>
+                                    <li>
+                                        <a href="references#_etag_handling">ETag Handling</a>
+                                    </li>
+                                    <!--
+                                    <li>
+                                        <a href="references">Error Codes</a>
+                                    </li>
+                                    -->
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="authentication#_authentication">Authentication</a>
+                                <ul>
+                                    <li>
+                                        <a href="authentication#_overview">Overview</a>
+                                    </li>
+                                    <li>
+                                        <a href="authentication#_oauth2">OAuth2</a>
+                                    </li>
+                                    <li>
+                                        <a href="authentication#_login">Login</a>
+                                    </li>
+                                    <li>
+                                        <a href="authentication#_api_token">API Token</a>
+                                    </li>
+                                    <li>
+                                        <a href="authentication#_anonymous_access">Anonymous Access</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    
+                    <li class="section">
+                        <h2><a href="monitoring">Monitoring</a></h2>
+                        <ul>
+                            <li>
+                                <a href="monitoring#_endpoints">Endpoints</a>
+                            </li>
+                            <li>
+                                <a href="monitoring#_metrics">Metrics</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                   <li class="section">
+                        <h2><a href="logging">Logging</a></h2>
+                        <ul>
+                            <li>
+                                <a href="logging#levels">Levels</a>
+                            </li>
+
+                            <li>
+                                <a href="logging#examples">Examples</a>
+                            </li>
+                        </ul>
+                    </li>
+
+
+                    <li class="section">
+                        <h2><a href="clustering">Clustering</a></h2>
+                        <ul>
+                            <li>
+                                <a href="clustering#_configuration">Configuration</a>
+                            </li>
+                            <li>
+                                <a href="clustering#_setup">Setup</a>
+                            </li>
+                            <li>
+                                <a href="clustering#_node_discovery">Node discovery</a>
+                            </li>
+                            <li>
+                                <a href="clustering#_monitoring">Monitoring</a>
+                            </li>
+                            <li>
+                                <a href="clustering#_faq">FAQ</a>
+                            </li>
+                            <li>
+                                <a href="clustering#_limitations">Limitations</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="section">
+                        <h2><a href="security">Security</a></h2>
+                        <ul>
+                            <li>
+                                <a href="security#_api_tokens">API Tokens</a>
+                            </li>
+                            <li>
+                                <a href="security#_network_security">Network Security</a>
+                            </li>
+                            <li>
+                                <a href="security#_database_security">Database Security</a>
+                            </li>
+                            <li>
+                                <a href="security#_vulnerability_disclosure_policy">Vulnerability Disclosure Policy</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="section">
+                        <h2><a href="plugin-system">Plugin System</a></h2>
+                        <ul>
+                            <li>
+                                <a href="plugin-system#_plugin_development">Plugin Development</a>
+                            </li>
+                            <li>
+                                <a href="plugin-system#_integration_testing">Testing</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="section">
+                        <h2><a href="plugins">Plugins</a></h2>
+                        <ul>
+                            <li>
+                                <a href="plugins#_list">List</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+++++

@@ -1,0 +1,27 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:ClusterStatusResponse",
+  "properties" : {
+    "instances" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:ClusterInstanceInfo",
+        "properties" : {
+          "address" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "startDate" : {
+            "type" : "string"
+          }
+        }
+      }
+    }
+  }
+}

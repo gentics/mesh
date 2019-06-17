@@ -1,0 +1,34 @@
+{
+  me {
+    # [$.data.me.username=anonymous]
+    username
+  }
+  node(path:"/Neuigkeiten/2015") {
+    # [$.data.node.uuid=<is-uuid>]
+    uuid
+  }
+  tag(name: "red") {
+    nodes {
+      elements {
+        uuid
+      }
+      # [$.data.tag.nodes.totalCount=2]
+      totalCount
+    }
+  }
+  nodes {
+    elements {
+      uuid
+      tags {
+        elements {
+          # [$.data.nodes.elements[0].tags.elements[0].name=red]
+          # [$.data.nodes.elements[1].tags.elements[0].name=red]
+          name
+        }
+      }
+    }
+    # [$.data.nodes.totalCount=2]
+    totalCount
+  }
+}
+# [$.errors=<is-undefined>]

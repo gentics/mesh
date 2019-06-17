@@ -12,6 +12,7 @@ public class PathSegment {
 	private NodeGraphFieldContainer container;
 	private GraphField pathField;
 	private String languageTag;
+	private String segment;
 
 	/**
 	 * Create a new path segment.
@@ -23,10 +24,11 @@ public class PathSegment {
 	 * @param languageTag
 	 *            Language of the segment field
 	 */
-	public PathSegment(NodeGraphFieldContainer container, GraphField pathField, String languageTag) {
+	public PathSegment(NodeGraphFieldContainer container, GraphField pathField, String languageTag, String segment) {
 		this.container = container;
 		this.pathField = pathField;
 		this.languageTag = languageTag;
+		this.segment = segment;
 	}
 
 	/**
@@ -54,6 +56,15 @@ public class PathSegment {
 	 */
 	public String getLanguageTag() {
 		return languageTag;
+	}
+
+	/**
+	 * Return the segment which was used to resolve the path segment.
+	 * 
+	 * @return
+	 */
+	public String getSegment() {
+		return segment;
 	}
 
 }

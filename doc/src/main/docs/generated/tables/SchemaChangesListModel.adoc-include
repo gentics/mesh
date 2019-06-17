@@ -1,0 +1,20 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| changes.items.operation
+| false
+| string
+| Type of operation for this change
+
+| changes.items.uuid
+| false
+| string
+| Uuid of the change entry
+
+|======

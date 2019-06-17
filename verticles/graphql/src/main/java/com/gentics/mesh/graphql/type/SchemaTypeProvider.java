@@ -1,11 +1,11 @@
 package com.gentics.mesh.graphql.type;
 
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -68,21 +68,31 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 //					.filter(it -> gc.getUser().hasPermission(it, GraphPermission.READ_PERM)).collect(Collectors.toList());
 //		}, PROJECT_REFERENCE_PAGE_TYPE_NAME));
 
+		// .isContainer
 		schemaType.field(newFieldDefinition().name("isContainer").type(GraphQLBoolean).dataFetcher((env) -> {
 			SchemaModel model = loadModelWithFallback(env);
-			return model != null ? model.isContainer() : null;
+			return model != null ? model.getContainer() : null;
 		}));
 
+		// .isAutoPurge
+		schemaType.field(newFieldDefinition().name("isAutoPurge").type(GraphQLBoolean).dataFetcher((env) -> {
+			SchemaModel model = loadModelWithFallback(env);
+			return model != null ? model.getAutoPurge() : null;
+		}));
+
+		// .displayField
 		schemaType.field(newFieldDefinition().name("displayField").type(GraphQLString).dataFetcher((env) -> {
 			SchemaModel model = loadModelWithFallback(env);
 			return model != null ? model.getDisplayField() : null;
 		}));
 
+		// .segmentField
 		schemaType.field(newFieldDefinition().name("segmentField").type(GraphQLString).dataFetcher((env) -> {
 			SchemaModel model = loadModelWithFallback(env);
 			return model != null ? model.getSegmentField() : null;
 		}));
 
+		// .nodes
 		schemaType
 			.field(newPagingFieldWithFetcherBuilder("nodes", "Load nodes with this schema", env -> {
 			GraphQLContext gc = env.getContext();
@@ -103,14 +113,22 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 
 		Builder fieldListBuilder = newObject().name(SCHEMA_FIELD_TYPE).description("List of schema fields");
 
+		// .name
 		fieldListBuilder.field(newFieldDefinition().name("name").type(GraphQLString).description("Name of the field"));
+
+		// .label
 		fieldListBuilder.field(newFieldDefinition().name("label").type(GraphQLString).description("Label of the field"));
+
+		// .required
 		fieldListBuilder.field(newFieldDefinition().name("required").type(GraphQLBoolean).description("Whether this field is required"));
+
+		// .type
 		fieldListBuilder.field(newFieldDefinition().name("type").type(GraphQLString).description("The type of the field"));
 		// TODO add "allow" and "indexSettings"
 
 		GraphQLOutputType type = GraphQLList.list(fieldListBuilder.build());
 
+		// .fields
 		schemaType.field(newFieldDefinition().name("fields").type(type).dataFetcher(env -> loadModelWithFallback(env).getFields()));
 
 		return schemaType.build();

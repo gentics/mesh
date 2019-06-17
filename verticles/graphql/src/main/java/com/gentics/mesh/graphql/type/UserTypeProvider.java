@@ -1,37 +1,26 @@
 package com.gentics.mesh.graphql.type;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.graphql.type.GroupTypeProvider.GROUP_PAGE_TYPE_NAME;
-import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLArgument.newArgument;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static graphql.schema.GraphQLObjectType.newObject;
-
-import java.util.Map;
-import java.util.function.Predicate;
+import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.graphql.context.GraphQLContext;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLObjectType.Builder;
+import graphql.schema.GraphQLTypeReference;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.graphql.context.GraphQLContext;
-import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.tx.Tx;
-import com.tinkerpop.blueprints.Vertex;
-
-import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLInputObjectField;
-import graphql.schema.GraphQLInputObjectType;
-import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLObjectType.Builder;
-import graphql.schema.GraphQLTypeReference;
-import io.vertx.core.json.JsonObject;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.graphql.type.GroupTypeProvider.GROUP_PAGE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.RoleTypeProvider.ROLE_PAGE_TYPE_NAME;
+import static graphql.Scalars.GraphQLBoolean;
+import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLObjectType.newObject;
 
 @Singleton
-public class UserTypeProvider extends AbstractTypeProvider implements Filterable {
+public class UserTypeProvider extends AbstractTypeProvider {
 
 	public static final String USER_TYPE_NAME = "User";
 
@@ -74,12 +63,34 @@ public class UserTypeProvider extends AbstractTypeProvider implements Filterable
 			return user.getEmailAddress();
 		}));
 
+		// .forcedPasswordChange
+		root.field(newFieldDefinition()
+		.name("forcedPasswordChange")
+		.description("When true, the user needs to change their password on the next login.")
+		.type(GraphQLBoolean).dataFetcher((env) -> {
+			User user = env.getSource();
+			return user.isForcedPasswordChange();
+		}));
+
 		// .groups
 		root.field(newPagingFieldWithFetcher("groups", "Groups to which the user belongs.", (env) -> {
 			User user = env.getSource();
 			GraphQLContext gc = env.getContext();
 			return user.getGroups(gc.getUser(), getPagingInfo(env));
 		}, GROUP_PAGE_TYPE_NAME));
+
+		// .roles
+		root.field(newPagingFieldWithFetcher("roles", "Roles the user has", env -> {
+			User user = env.getSource();
+			GraphQLContext gc = env.getContext();
+			return user.getRolesViaShortcut(gc.getUser(), getPagingInfo(env));
+		}, ROLE_PAGE_TYPE_NAME));
+
+		// .rolesHash
+		root.field(newFieldDefinition().name("rolesHash").description("Hash of the users roles").type(GraphQLString).dataFetcher((env) -> {
+			User user = env.getSource();
+			return user.getRolesHash();
+		}));
 
 		// .nodeReference
 		root.field(newFieldDefinition().name("nodeReference").description("User node reference").type(new GraphQLTypeReference("Node"))
@@ -99,60 +110,6 @@ public class UserTypeProvider extends AbstractTypeProvider implements Filterable
 			}));
 
 		return root.build();
-	}
-
-	@Override
-	public GraphQLArgument createFilterArgument() {
-
-		// eq()
-		GraphQLInputObjectField eq = GraphQLInputObjectField.newInputObjectField().name("eq").description("Filter by quality of the string.")
-			.type(GraphQLString).build();
-
-		GraphQLInputObjectType usernameType = GraphQLInputObjectType.newInputObject().name("username").field(eq)
-			.description("Filter by username")
-			.build();
-
-		GraphQLInputObjectField firstname = GraphQLInputObjectField.newInputObjectField().name("firstname").type(GraphQLString)
-			.description("Filter by firstname")
-			.build();
-
-		GraphQLInputObjectField lastname = GraphQLInputObjectField.newInputObjectField().name("lastname").type(GraphQLString)
-			.description("Filter by lastname")
-			.build();
-
-		graphql.schema.GraphQLInputObjectType.Builder filterType = GraphQLInputObjectType.newInputObject().name("userFilter")
-
-			// .username
-			.field(GraphQLInputObjectField.newInputObjectField().name("username").type(usernameType))
-
-			// .firstnam
-			.field(firstname)
-
-			// .lastname
-			.field(lastname);
-
-		return newArgument().name("filter").type(filterType.build()).description("Specify a filter").build();
-	}
-
-	@Override
-	public Predicate<Vertex> constructFilter(Map<String, Object> filter, RootVertex<?> root) {
-		if (filter == null) {
-			return null;
-		} else {
-			FramedGraph graph = Tx.getActive().getGraph();
-			JsonObject json = new JsonObject(filter);
-			return (v) -> {
-				User user = (User) graph.frameElementExplicit(v, root.getPersistanceClass());
-				JsonObject usernameFilter = json.getJsonObject("username");
-				if (usernameFilter != null) {
-					String eq = usernameFilter.getString("eq");
-					if (eq != null) {
-						return eq.equals(user.getUsername());
-					}
-				}
-				return true;
-			};
-		}
 	}
 
 }

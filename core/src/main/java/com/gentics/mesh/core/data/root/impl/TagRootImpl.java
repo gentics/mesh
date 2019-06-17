@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
+import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -11,12 +12,13 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.impl.TagEdgeImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -31,10 +33,11 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	 * 
 	 * @param database
 	 */
-	public static void init(Database database) {
-		database.addVertexType(TagRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_TAG, TagEdgeImpl.BRANCH_UUID_KEY);
-		database.addEdgeIndex(HAS_TAG, true, false, true);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(TagRootImpl.class, MeshVertexImpl.class);
+		//TODO why was the branch key omitted? TagEdgeImpl.BRANCH_UUID_KEY
+		index.createIndex(edgeIndex(HAS_TAG));
+		index.createIndex(edgeIndex(HAS_TAG).withInOut().withOut());
 	}
 
 	private static final Logger log = LoggerFactory.getLogger(TagRootImpl.class);
@@ -71,7 +74,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 			log.debug("Deleting tag root {" + getUuid() + "}");
 		}
 		// Delete all the tags of the tag root
-		for (Tag tag : findAllIt()) {
+		for (Tag tag : findAll()) {
 			tag.delete(bac);
 		}
 		// Now delete the tag root element
@@ -99,7 +102,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public Tag create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
+	public Tag create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		throw new NotImplementedException("The tag family is the root element thus should be used for creation of tags.");
 	}
 

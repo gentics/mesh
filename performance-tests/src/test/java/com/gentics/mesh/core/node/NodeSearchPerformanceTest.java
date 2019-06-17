@@ -4,12 +4,12 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -20,11 +20,11 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.StopWatchLogger;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-@MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
 public class NodeSearchPerformanceTest extends AbstractMeshTest {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeSearchPerformanceTest.class);
@@ -57,7 +57,7 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 
 		// Revoke all but one permission
 		try (Tx tx = db().tx()) {
-			for (Node node : boot().nodeRoot().findAllIt()) {
+			for (Node node : boot().nodeRoot().findAll()) {
 				if (!node.getUuid().equals(lastNodeUuid)) {
 					role().revokePermissions(node, READ_PERM);
 				}

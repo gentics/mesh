@@ -1,0 +1,167 @@
+---
+title: Deployment
+---
+
+include::content/docs/variables.adoc-include[]
+
+Gentics Mesh can be deployed in various ways. This page contains various information and suggestions on different deployment platforms.
+
+== AWS
+
+It is possible to deploy Gentics Mesh in AWS using the Elastic Container Service (ECS). It is recommended to use Elastic Filesystem (EFS) to persist the file uploads. We also recommend to use link:https://aws.amazon.com/de/elasticsearch-service/[Amazon Elasticsearch Service] to provide search functionality.
+
+////
+== Heroku
+
+```bash
+heroku container:login
+docker login --username=_ --password=$(heroku auth:token) registry.heroku.com
+
+docker pull gentics/mesh-demo:0.27.0
+docker tag gentics/mesh-demo:0.27.0 registry.heroku.com/mesh-test/worker
+docker push registry.heroku.com/mesh-test/worker
+```
+////
+
+
+== Kubernetes
+
+We are currently working on providing a Helm Chart for K8S deployment.
+
+== Linux (via systemd)
+
+Gentics Mesh can quickly be installed on a Linux by registering a systemd service.
+
+First you need to install Java 8 on your server. After that step you can link:/download[download the Gentics Mesh] server jar to your installation folder.
+
+Store the service file in the same folder.
+
+.mesh-server.service
+[source,bash]
+----
+[Unit]
+Description=Gentics Mesh Server
+Wants=basic.target
+After=basic.target network.target syslog.target
+
+[Service]
+User=node
+Restart=on-failure
+ExecStart=/usr/bin/java -Xms1024m -Xmx1024m -XX:MaxDirectMemorySize=1024m -jar mesh-server.jar
+WorkingDirectory=/opt/mesh-server
+LimitMEMLOCK=infinity
+LimitNOFILE=65536
+LimitAS=infinity
+LimitRSS=infinity
+LimitCORE=infinity
+
+[Install]
+WantedBy=multi-user.target
+----
+
+NOTE: The given limits are mandatory. Especially the `LimitNOFILE` setting must be set to prevent database issues.
+
+You can also change the `Wants` and `After` setting if you run Elasticsearch on the same server. In that case it is recommended to start Gentics Mesh after Elasticsearch has been started.
+
+```
+Wants=elasticsearch.service
+After=elasticsearch.service
+```
+
+Finally you can register the systemd service file:
+
+```bash
+systemctl enable /opt/mesh-server/mesh-server.service
+```
+
+Start the server:
+
+```bash
+service mesh-server start
+```
+
+== Docker
+
+We provide example docker-compose stacks for Gentics Mesh which show how Gentics Mesh and Elasticsearch can work together using Docker.
+
+link:{{< relref "administration-guide.asciidoc" >}}#_run_with_docker[Docker settings]
+
+=== Single Node
+
+The single node stack contains the following components:
+
+* Gentics Mesh 
+* Elasticsearch
+
+link:https://github.com/gentics/mesh-compose/tree/master[Full example on GitHub]
+
+.docker-compose.yml
+[source,xml]
+----
+version: "3"
+services:
+
+  mesh:
+    image: gentics/mesh:0.31.0
+    container_name: mesh-server
+    environment:
+      - MESH_ELASTICSEARCH_URL=http://elasticsearch:9200
+      - MESH_ELASTICSEARCH_START_EMBEDDED=false
+      - MESH_AUTH_KEYSTORE_PASS=changeme
+      - MESH_MONITORING_HTTP_HOST=0.0.0.0
+    stop_grace_period: 5m
+    ports:
+      - '8080:8080'
+      - '127.0.0.1:8081:8081'
+    volumes:
+      - mesh-data:/graphdb
+      - mesh-uploads:/uploads
+      - mesh-keystore:/keystore
+    ulimits:
+      nofile:
+        soft: 20000
+        hard: 40000
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.6.2
+    container_name: mesh-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    stop_grace_period: 5m
+    ports:
+      - '127.0.0.1:9200:9200'
+    volumes:
+    - esdata:/usr/share/elasticsearch/data
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+      memlock:
+        soft: -1
+        hard: -1
+
+volumes:
+  esdata:
+    driver: local
+  mesh-keystore:
+    driver: local
+  mesh-data:
+    driver: local
+  mesh-uploads:
+    driver: local
+----
+
+NOTE: The `stop_grace_period` setting is important to allow for a clean shutdown of Gentics Mesh.
+
+==== Cluster
+
+The cluster stack contains the following components:
+
+* Gentics Mesh (Three instances)
+* Elasticsearch
+* Nginx (Loadbalancer over three Gentics Mesh instances)
+* Gentics Mesh Backup Instance (Optional)
+
+link:https://github.com/gentics/mesh-compose/tree/clustering[Full example on GitHub]

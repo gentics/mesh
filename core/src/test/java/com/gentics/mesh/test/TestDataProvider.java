@@ -16,12 +16,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.mockito.Mockito;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -45,6 +48,7 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.MeshJsonException;
 import com.syncleus.ferma.tx.Tx;
@@ -73,9 +77,9 @@ public class TestDataProvider {
 
 	// References to dummy data
 
-	private Language english;
+	private String english = "en";
 
-	private Language german;
+	private String german = "de";
 
 	private Project project;
 	private String projectUuid;
@@ -90,6 +94,7 @@ public class TestDataProvider {
 	private Map<String, SchemaContainer> schemaContainers = new HashMap<>();
 	private Map<String, MicroschemaContainer> microschemaContainers = new HashMap<>();
 	private Map<String, TagFamily> tagFamilies = new HashMap<>();
+	private long contentCount = 0;
 	private Map<String, Node> folders = new HashMap<>();
 	private Map<String, Node> contents = new HashMap<>();
 	private Map<String, Tag> tags = new HashMap<>();
@@ -127,8 +132,6 @@ public class TestDataProvider {
 			groups.clear();
 
 			root = boot.meshRoot();
-			english = boot.languageRoot().findByLanguageTag("en");
-			german = boot.languageRoot().findByLanguageTag("de");
 
 			addBootstrappedData();
 			addSchemaContainers();
@@ -197,13 +200,13 @@ public class TestDataProvider {
 	 * Add data to the internal maps which was created within the {@link BootstrapInitializer} (eg. admin groups, roles, users)
 	 */
 	private void addBootstrappedData() {
-		for (Group group : root.getGroupRoot().findAllIt()) {
+		for (Group group : root.getGroupRoot().findAll()) {
 			groups.put(group.getName(), group);
 		}
-		for (User user : root.getUserRoot().findAllIt()) {
+		for (User user : root.getUserRoot().findAll()) {
 			users.put(user.getUsername(), user);
 		}
-		for (Role role : root.getRoleRoot().findAllIt()) {
+		for (Role role : root.getRoleRoot().findAll()) {
 			roles.put(role.getName(), role);
 		}
 	}
@@ -225,17 +228,17 @@ public class TestDataProvider {
 		addContent(folders.get("2015"), "News_2015", "News!", "Neuigkeiten!", contentSchema);
 
 		Node concorde = addContent(folders.get("products"), "Concorde",
-				"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
-				"Die Aérospatiale-BAC Concorde 101/102, kurz Concorde (französisch und englisch für Eintracht, Einigkeit), ist ein Überschall-Passagierflugzeug, das von 1976 bis 2003 betrieben wurde.",
-				contentSchema);
+			"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
+			"Die Aérospatiale-BAC Concorde 101/102, kurz Concorde (französisch und englisch für Eintracht, Einigkeit), ist ein Überschall-Passagierflugzeug, das von 1976 bis 2003 betrieben wurde.",
+			contentSchema);
 		concorde.addTag(tags.get("plane"), project.getLatestBranch());
 		concorde.addTag(tags.get("twinjet"), project.getLatestBranch());
 		concorde.addTag(tags.get("red"), project.getLatestBranch());
 
 		Node hondaNR = addContent(folders.get("products"), "Honda NR",
-				"The Honda NR (New Racing) was a V-four motorcycle engine series started by Honda in 1979 with the 500cc NR500 Grand Prix racer that used oval pistons.",
-				"Die NR750 ist ein Motorrad mit Ovalkolben-Motor des japanischen Motorradherstellers Honda, von dem in den Jahren 1991 und 1992 300 Exemplare gebaut wurden.",
-				contentSchema);
+			"The Honda NR (New Racing) was a V-four motorcycle engine series started by Honda in 1979 with the 500cc NR500 Grand Prix racer that used oval pistons.",
+			"Die NR750 ist ein Motorrad mit Ovalkolben-Motor des japanischen Motorradherstellers Honda, von dem in den Jahren 1991 und 1992 300 Exemplare gebaut wurden.",
+			contentSchema);
 		hondaNR.addTag(tags.get("vehicle"), project.getLatestBranch());
 		hondaNR.addTag(tags.get("motorcycle"), project.getLatestBranch());
 		hondaNR.addTag(tags.get("green"), project.getLatestBranch());
@@ -290,11 +293,14 @@ public class TestDataProvider {
 	public UserInfo createUserInfo(String username, String firstname, String lastname) {
 
 		String password = "test123";
+		String hashedPassword = "$2a$10$n/UeWGbY9c1FHFyCqlVsY.XvNYmZ7Jjgww99SF94q/B5nomYuquom";
+
 		log.debug("Creating user with username: " + username + " and password: " + password);
 
 		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
 		User user = root.getUserRoot().create(username, null);
-		user.setPassword(password);
+		// Precomputed hash since hashing takes some time and we want to keep out tests fast
+		user.setPasswordHash(hashedPassword);
 		user.setFirstname(firstname);
 		user.setLastname(lastname);
 		user.setEmailAddress(email);
@@ -330,13 +336,13 @@ public class TestDataProvider {
 		GroupRoot groupRoot = getMeshRoot().getGroupRoot();
 		RoleRoot roleRoot = getMeshRoot().getRoleRoot();
 
-		project = root.getProjectRoot().create(PROJECT_NAME, null, null, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion());
-		project.addLanguage(getEnglish());
-		project.addLanguage(getGerman());
+		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
+		project = root.getProjectRoot().create(PROJECT_NAME, null, null, null, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion(),
+			batch);
 		User jobUser = userInfo.getUser();
-		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("folder"));
-		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("content"));
-		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("binary_content"));
+		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("folder"), batch);
+		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("content"), batch);
+		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("binary_content"), batch);
 		projectUuid = project.getUuid();
 		branchUuid = project.getInitialBranch().getUuid();
 
@@ -364,7 +370,9 @@ public class TestDataProvider {
 			roles.put(role.getName(), role);
 		}
 		// Publish the project basenode
-		project.getBaseNode().publish(getEnglish(), getProject().getLatestBranch(), getUserInfo().getUser());
+		InternalActionContext ac = new NodeMigrationActionContextImpl();
+		project.getBaseNode().publish(ac, getEnglish(), getProject().getLatestBranch(), getUserInfo().getUser());
+		contentCount++;
 
 	}
 
@@ -444,9 +452,10 @@ public class TestDataProvider {
 		postcodeFieldSchema.setLabel("Post Code");
 		vcardMicroschema.addField(postcodeFieldSchema);
 
-		MicroschemaContainer vcardMicroschemaContainer = boot.microschemaContainerRoot().create(vcardMicroschema, userInfo.getUser());
+		MicroschemaContainer vcardMicroschemaContainer = boot.microschemaContainerRoot().create(vcardMicroschema, userInfo.getUser(),
+			EventQueueBatch.create());
 		microschemaContainers.put(vcardMicroschemaContainer.getName(), vcardMicroschemaContainer);
-		project.getMicroschemaContainerRoot().addMicroschema(user(), vcardMicroschemaContainer);
+		project.getMicroschemaContainerRoot().addMicroschema(user(), vcardMicroschemaContainer, EventQueueBatch.create());
 	}
 
 	/**
@@ -472,30 +481,34 @@ public class TestDataProvider {
 		captionFieldSchema.setLabel("Caption");
 		captionedImageMicroschema.addField(captionFieldSchema);
 
-		MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(captionedImageMicroschema, userInfo.getUser());
+		MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(captionedImageMicroschema, userInfo.getUser(),
+			EventQueueBatch.create());
 		microschemaContainers.put(captionedImageMicroschema.getName(), microschemaContainer);
-		project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer);
+		project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, EventQueueBatch.create());
 	}
 
 	public Node addFolder(Node rootNode, String englishName, String germanName) {
+		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		SchemaContainerVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
 		Node folderNode = rootNode.create(userInfo.getUser(), schemaVersion, project);
-
+		Branch branch = project.getLatestBranch();
 		if (germanName != null) {
-			NodeGraphFieldContainer germanContainer = folderNode.createGraphFieldContainer(german, project.getLatestBranch(), userInfo.getUser());
+			NodeGraphFieldContainer germanContainer = folderNode.createGraphFieldContainer(german, branch, userInfo.getUser());
 			// germanContainer.createString("displayName").setString(germanName);
 			germanContainer.createString("teaser").setString(germanName);
 			germanContainer.createString("slug").setString(germanName);
 			germanContainer.updateDisplayFieldValue();
-			folderNode.publish(getGerman(), getProject().getLatestBranch(), getUserInfo().getUser());
+			contentCount++;
+			folderNode.publish(ac, getGerman(), branch, getUserInfo().getUser());
 		}
 		if (englishName != null) {
-			NodeGraphFieldContainer englishContainer = folderNode.createGraphFieldContainer(english, project.getLatestBranch(), userInfo.getUser());
+			NodeGraphFieldContainer englishContainer = folderNode.createGraphFieldContainer(english, branch, userInfo.getUser());
 			// englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
 			englishContainer.createString("slug").setString(englishName);
 			englishContainer.updateDisplayFieldValue();
-			folderNode.publish(getEnglish(), getProject().getLatestBranch(), getUserInfo().getUser());
+			contentCount++;
+			folderNode.publish(ac, getEnglish(), branch, getUserInfo().getUser());
 		}
 
 		if (englishName == null || StringUtils.isEmpty(englishName)) {
@@ -523,27 +536,31 @@ public class TestDataProvider {
 	}
 
 	private Node addContent(Node parentNode, String name, String englishContent, String germanContent, SchemaContainer schema) {
+		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		Node node = parentNode.create(userInfo.getUser(), schemaContainers.get("content").getLatestVersion(), project);
+		Branch branch = project.getLatestBranch();
 		if (englishContent != null) {
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, project.getLatestBranch(), userInfo.getUser());
+			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, branch, userInfo.getUser());
 			englishContainer.createString("teaser").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
 			englishContainer.createString("displayName").setString(name + " english displayName");
 			englishContainer.createString("slug").setString(name + ".en.html");
 			englishContainer.createHTML("content").setHtml(englishContent);
 			englishContainer.updateDisplayFieldValue();
-			node.publish(getEnglish(), getProject().getLatestBranch(), getUserInfo().getUser());
+			contentCount++;
+			node.publish(ac, getEnglish(), branch, getUserInfo().getUser());
 		}
 
 		if (germanContent != null) {
-			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, project.getLatestBranch(), userInfo.getUser());
+			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, branch, userInfo.getUser());
 			germanContainer.createString("teaser").setString(name + " german");
 			germanContainer.createString("title").setString(name + " german title");
 			germanContainer.createString("displayName").setString(name + " german");
 			germanContainer.createString("slug").setString(name + ".de.html");
 			germanContainer.createHTML("content").setHtml(germanContent);
 			germanContainer.updateDisplayFieldValue();
-			node.publish(getGerman(), getProject().getLatestBranch(), getUserInfo().getUser());
+			contentCount++;
+			node.publish(ac, getGerman(), branch, getUserInfo().getUser());
 		}
 
 		if (contents.containsKey(name.toLowerCase())) {
@@ -557,18 +574,18 @@ public class TestDataProvider {
 	/**
 	 * Returns the path to the tag for the given language.
 	 */
-	public String getPathForNews2015Tag(Language language) {
+	public String getPathForNews2015Tag(String languageTag) {
 
-		String name = folders.get("news").getLatestDraftFieldContainer(language).getString("name").getString();
-		String name2 = folders.get("2015").getLatestDraftFieldContainer(language).getString("name").getString();
+		String name = folders.get("news").getLatestDraftFieldContainer(languageTag).getString("name").getString();
+		String name2 = folders.get("2015").getLatestDraftFieldContainer(languageTag).getString("name").getString();
 		return name + "/" + name2;
 	}
 
-	public Language getEnglish() {
+	public String getEnglish() {
 		return english;
 	}
 
-	public Language getGerman() {
+	public String getGerman() {
 		return german;
 	}
 
@@ -671,6 +688,10 @@ public class TestDataProvider {
 
 	public String branchUuid() {
 		return branchUuid;
+	}
+
+	public long getContentCount() {
+		return contentCount;
 	}
 
 }

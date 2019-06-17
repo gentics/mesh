@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.endpoint.webroot;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.URIUtils.decodeSegment;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -20,9 +21,14 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldResponseHandler;
+import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
@@ -31,10 +37,17 @@ import com.gentics.mesh.util.ETag;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Single;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 @Singleton
 public class WebRootHandler {
+
+	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
+
+	private static final String WEBROOT_LAST_SEGMENT = "WEBROOT_SEGMENT_NAME";
 
 	private WebRootServiceImpl webrootService;
 
@@ -42,11 +55,18 @@ public class WebRootHandler {
 
 	private Database db;
 
+	private NodeCrudHandler nodeCrudHandler;
+
+	private HandlerUtilities utils;
+
 	@Inject
-	public WebRootHandler(Database database, WebRootServiceImpl webrootService, BinaryFieldResponseHandler binaryFieldResponseHandler) {
+	public WebRootHandler(Database database, WebRootServiceImpl webrootService, BinaryFieldResponseHandler binaryFieldResponseHandler,
+		NodeCrudHandler nodeCrudHandler, HandlerUtilities utils) {
 		this.db = database;
 		this.webrootService = webrootService;
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
+		this.nodeCrudHandler = nodeCrudHandler;
+		this.utils = utils;
 	}
 
 	/**
@@ -56,27 +76,30 @@ public class WebRootHandler {
 	 */
 	public void handleGetPath(RoutingContext rc) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-		String path = ac.getParameter("param0");
-		final String decodedPath = "/" + path;
+		String path = rc.request().path().substring(
+			rc.mountPoint().length()
+		);
 		MeshAuthUser requestUser = ac.getUser();
-		// List<String> languageTags = ac.getSelectedLanguageTags();
 		db.asyncTx(() -> {
 
 			String branchUuid = ac.getBranch().getUuid();
 			// Load all nodes for the given path
-			Path nodePath = webrootService.findByProjectPath(ac, decodedPath);
+			Path nodePath = webrootService.findByProjectPath(ac, path);
+			if (!nodePath.isFullyResolved()) {
+				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(nodePath.getTargetPath()));
+			}
 			PathSegment lastSegment = nodePath.getLast();
 
 			// Check whether the path actually points to a valid node
 			if (lastSegment == null) {
-				throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
+				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
 			}
 			NodeGraphFieldContainer container = lastSegment.getContainer();
 			if (container == null) {
-				throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
+				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
 			}
 
-			requestUser.failOnNoReadPermission(container, branchUuid);
+			requestUser.failOnNoReadPermission(container, branchUuid, ac.getVersioningParameters().getVersion());
 
 			GraphField field = lastSegment.getPathField();
 			if (field instanceof BinaryGraphField) {
@@ -115,9 +138,79 @@ public class WebRootHandler {
 		}).subscribe(result -> {
 			if (result.isPresent()) {
 				ac.send(JsonUtil.toJson(result.get()),
-						HttpResponseStatus.valueOf(NumberUtils.toInt(rc.data().getOrDefault("statuscode", "").toString(), OK.code())));
+					HttpResponseStatus.valueOf(NumberUtils.toInt(rc.data().getOrDefault("statuscode", "").toString(), OK.code())));
 			}
 		}, ac::fail);
+
+	}
+
+	public void handleUpdateCreatePath(RoutingContext rc, HttpMethod method) {
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+		String path = rc.request().path().substring(
+			rc.mountPoint().length()
+		);
+		String uuid = db.tx(() -> {
+
+			// Load all nodes for the given path
+			Path nodePath = webrootService.findByProjectPath(ac, path);
+			if (nodePath.isPrefixMismatch()) {
+				throw error(NOT_FOUND, "webroot_error_prefix_invalid", decodeSegment(path), ac.getBranch().getPathPrefix());
+			}
+
+			// Check whether path could be resolved at all
+			if (nodePath.getResolvedPath() == null) {
+				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(nodePath.getTargetPath()));
+			}
+
+			PathSegment lastSegment = nodePath.getLast();
+			List<PathSegment> segments = nodePath.getSegments();
+
+			// Update Node
+			if (nodePath.isFullyResolved()) {
+				NodeGraphFieldContainer container = lastSegment.getContainer();
+				NodeUpdateRequest request = ac.fromJson(NodeUpdateRequest.class);
+				// We can deduce a missing the language via the path
+				if (request.getLanguage() == null) {
+					String lang = container.getLanguageTag();
+					log.debug("Using deduced language of container: " + lang);
+					request.setLanguage(lang);
+				}
+				ac.setBody(request);
+				return container.getParentNode().getUuid();
+			} else {
+				int diff = nodePath.getInitialStack().size() - nodePath.getSegments().size();
+				if (diff > 1) {
+					String resolvedPath = nodePath.getResolvedPath();
+					throw error(NOT_FOUND, "webroot_error_parent_not_found", resolvedPath);
+				}
+
+				// Deduce parent node
+				NodeCreateRequest request = ac.fromJson(NodeCreateRequest.class);
+
+				// Deduce parent node
+				if (request.getParentNode() == null || request.getParentNode().getUuid() == null) {
+					Node parentNode = null;
+					if (segments.size() == 0) {
+						parentNode = ac.getProject().getBaseNode();
+					} else {
+						PathSegment parentSegment = segments.get(segments.size() - 1);
+						parentNode = parentSegment.getContainer().getParentNode();
+					}
+					String parentUuid = parentNode.getUuid();
+					log.debug("Using deduced parent node uuid: " + parentUuid);
+					request.setParentNodeUuid(parentUuid);
+				}
+				ac.put(WEBROOT_LAST_SEGMENT, nodePath.getInitialStack().firstElement());
+				ac.setBody(request);
+				return null;
+			}
+		});
+
+		if (uuid != null) {
+			nodeCrudHandler.handleUpdate(ac, uuid);
+		} else {
+			nodeCrudHandler.handleCreate(ac);
+		}
 
 	}
 

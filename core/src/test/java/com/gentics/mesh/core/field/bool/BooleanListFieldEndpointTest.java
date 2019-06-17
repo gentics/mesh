@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
@@ -24,8 +23,9 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Override
@@ -37,11 +37,7 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	@Override
 	public void testCreateNodeWithField() {
 		try (Tx tx = tx()) {
-			BooleanFieldListImpl listField = new BooleanFieldListImpl();
-			listField.add(true);
-			listField.add(false);
-
-			NodeResponse response = createNode(FIELD_NAME, listField);
+			NodeResponse response = createNodeWithField();
 			BooleanFieldListImpl field = response.getFields().getBooleanFieldList(FIELD_NAME);
 			assertThat(field.getItems()).as("Only valid values (true,false) should be stored").containsExactly(true, false);
 		}
@@ -117,10 +113,12 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() throws IOException {
+		disableAutoPurge();
+
 		Node node = folder("2015");
 
 		List<List<Boolean>> valueCombinations = Arrays.asList(Arrays.asList(true, false, false), Arrays.asList(false, false, true),
-				Collections.emptyList(), Arrays.asList(true, false), Arrays.asList(false));
+			Collections.emptyList(), Arrays.asList(true, false), Arrays.asList(false));
 
 		for (int i = 0; i < 20; i++) {
 			BooleanFieldListImpl list = new BooleanFieldListImpl();
@@ -151,6 +149,8 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		disableAutoPurge();
+
 		BooleanFieldListImpl list = new BooleanFieldListImpl();
 		list.add(true);
 		list.add(false);
@@ -169,12 +169,12 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 			assertThat(latest.getBooleanList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getBooleanList(FIELD_NAME)).isNotNull();
 			List<Boolean> oldValueList = latest.getPreviousVersion().getBooleanList(FIELD_NAME).getList().stream().map(item -> item.getBoolean())
-					.collect(Collectors.toList());
+				.collect(Collectors.toList());
 			assertThat(oldValueList).containsExactly(true, false);
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
+				secondResponse.getVersion());
 		}
 	}
 
@@ -196,5 +196,14 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 		NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
 		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(), secondResponse.getVersion());
 		assertThat(secondResponse.getVersion()).as("No new version number should be generated").isEqualTo(secondResponse.getVersion());
+	}
+
+	@Override
+	public NodeResponse createNodeWithField() {
+		BooleanFieldListImpl listField = new BooleanFieldListImpl();
+		listField.add(true);
+		listField.add(false);
+
+		return createNode(FIELD_NAME, listField);
 	}
 }

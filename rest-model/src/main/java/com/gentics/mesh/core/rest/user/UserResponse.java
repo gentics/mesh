@@ -1,14 +1,14 @@
 package com.gentics.mesh.core.rest.user;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * POJO for user response model.
@@ -40,15 +40,23 @@ public class UserResponse extends AbstractGenericRestResponse {
 	private Boolean enabled;
 
 	@JsonProperty(required = true)
+	@JsonPropertyDescription("Hashsum of user roles which can be used for user permission caching.")
+	private String rolesHash;
+
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of group references to which the user belongs.")
 	private List<GroupReference> groups = new ArrayList<>();
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("When true, the user needs to change their password on the next login.")
+	private Boolean forcedPasswordChange;
 
 	public UserResponse() {
 	}
 
 	/**
 	 * Return the lastname of the user.
-	 * 
+	 *
 	 * @return Lastname of the user
 	 */
 	public String getLastname() {
@@ -57,7 +65,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Set the lastname of the user.
-	 * 
+	 *
 	 * @param lastname
 	 *            Lastname of the user
 	 * @return Fluent API
@@ -69,7 +77,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Return the firstname.
-	 * 
+	 *
 	 * @return Firstname of the user
 	 */
 	public String getFirstname() {
@@ -78,7 +86,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Set the firstname.
-	 * 
+	 *
 	 * @param firstname
 	 *            Firstname of the user
 	 * @return Fluent API
@@ -90,7 +98,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Returns the email address.
-	 * 
+	 *
 	 * @return Email address of the user
 	 */
 	public String getEmailAddress() {
@@ -99,7 +107,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Set the email address.
-	 * 
+	 *
 	 * @param emailAddress
 	 *            Email address of the user
 	 * @return Fluent API
@@ -111,7 +119,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Return the username.
-	 * 
+	 *
 	 * @return Username of the user
 	 */
 	public String getUsername() {
@@ -120,7 +128,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Set the username.
-	 * 
+	 *
 	 * @param username
 	 *            Username of the user
 	 * @return Fluent API
@@ -128,11 +136,32 @@ public class UserResponse extends AbstractGenericRestResponse {
 	public UserResponse setUsername(String username) {
 		this.username = username;
 		return this;
+
+	}
+	/**
+	 * Returns a hash of the users roles.
+	 *
+	 * @return A hash of the users roles
+	 */
+	public String getRolesHash() {
+		return rolesHash;
+	}
+
+	/**
+	 * Set the hash of the users roles.
+	 *
+	 * @param rolesHash
+	 *            Hash of the users roles
+	 * @return Fluent API
+	 */
+	public UserResponse setRolesHash(String rolesHash) {
+		this.rolesHash = rolesHash;
+		return this;
 	}
 
 	/**
 	 * Returns the group references of the user.
-	 * 
+	 *
 	 * @return List of group references of the user.
 	 */
 	public List<GroupReference> getGroups() {
@@ -140,8 +169,20 @@ public class UserResponse extends AbstractGenericRestResponse {
 	}
 
 	/**
+	 * Set the groups.
+	 *
+	 * @param groups
+	 *            Groups of the user
+	 * @return Fluent API
+	 */
+	public UserResponse setGroups(List<GroupReference> groups) {
+		this.groups = groups;
+		return this;
+	}
+
+	/**
 	 * Return the node reference that was assigned to the user.
-	 * 
+	 *
 	 * @return Node reference or null if no reference has been set
 	 */
 	public ExpandableNode getNodeReference() {
@@ -170,7 +211,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Set the node reference to the user.
-	 * 
+	 *
 	 * @param nodeReference
 	 * @return Fluent API
 	 */
@@ -181,7 +222,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Set the expanded node response.
-	 * 
+	 *
 	 * @param nodeResponse
 	 * @return Fluent API
 	 */
@@ -192,7 +233,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Return the enabled flag for the user.
-	 * 
+	 *
 	 * @return Enabled flag
 	 */
 	public Boolean getEnabled() {
@@ -201,7 +242,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	/**
 	 * Set the enabled flag for the user.
-	 * 
+	 *
 	 * @param enabled
 	 *            Enabled flag
 	 * @return Fluent API
@@ -211,4 +252,23 @@ public class UserResponse extends AbstractGenericRestResponse {
 		return this;
 	}
 
+	/**
+	 * Return true if the user needs to change their password on next login.
+	 *
+	 * @return
+	 */
+	public Boolean getForcedPasswordChange() {
+		return forcedPasswordChange;
+	}
+
+	/**
+	 * Set whether the user needs to change their password on next login.
+	 *
+	 * @param forcedPasswordChange
+	 * @return Fluent API
+	 */
+	public UserResponse setForcedPasswordChange(Boolean forcedPasswordChange) {
+		this.forcedPasswordChange = forcedPasswordChange;
+		return this;
+	}
 }

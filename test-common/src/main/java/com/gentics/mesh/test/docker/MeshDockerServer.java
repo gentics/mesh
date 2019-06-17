@@ -38,7 +38,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 	 * Action which will be invoked once the mesh instance is ready.
 	 */
 	private Runnable startupAction = () -> {
-		client = MeshRestClient.create(getContainerIpAddress(), getMappedPort(8080), false, vertx);
+		client = MeshRestClient.create(getContainerIpAddress(), getMappedPort(8080), false);
 		client.setLogin("admin", "admin");
 		client.login().blockingGet();
 	};
@@ -201,7 +201,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 	 * Use the provided JVM arguments.
 	 * 
 	 * @param opts
-	 *            Additional JVM options }
+	 *            Additional JVM options
 	 * @return
 	 */
 	public MeshDockerServer withExtraOpts(String opts) {
@@ -238,6 +238,25 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 	public MeshDockerServer withFilesystem() {
 		this.useFilesystem = true;
 		return this;
+	}
+
+	@Override
+	public String getContainerIpAddress() {
+		String containerHost = System.getenv("CONTAINER_HOST");
+		if (containerHost != null) {
+			return containerHost;
+		} else {
+			return super.getContainerIpAddress();
+		}
+	}
+
+	public String getHost() {
+		String containerHost = System.getenv("CONTAINER_HOST");
+		if (containerHost != null) {
+			return containerHost;
+		} else {
+			return "localhost";
+		}
 	}
 
 }

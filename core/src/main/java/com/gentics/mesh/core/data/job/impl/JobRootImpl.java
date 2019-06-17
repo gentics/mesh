@@ -2,23 +2,27 @@ package com.gentics.mesh.core.data.job.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_JOB;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.UNKNOWN;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
+import static com.gentics.mesh.core.rest.job.JobStatus.QUEUED;
+import static com.gentics.mesh.core.rest.job.JobStatus.UNKNOWN;
+import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.Job;
@@ -28,25 +32,29 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.root.impl.AbstractRootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
-import com.gentics.mesh.core.rest.admin.migration.MigrationType;
-import com.gentics.mesh.dagger.DB;
+import com.gentics.mesh.core.rest.job.JobStatus;
+import com.gentics.mesh.core.rest.job.JobType;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
+import io.reactivex.Completable;
+
 /**
  * @see JobRoot
  */
 public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
-	public static void init(Database database) {
-		database.addVertexType(JobRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_JOB, true, false, true);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(JobRootImpl.class, MeshVertexImpl.class);
+		index.createIndex(edgeIndex(HAS_JOB).withInOut().withOut());
 	}
 
 	@Override
@@ -57,12 +65,6 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	@Override
 	public String getRootLabel() {
 		return HAS_JOB;
-	}
-
-	@Override
-	public List<? extends Job> findAll() {
-		// Use #findAllIt instead!
-		throw error(INTERNAL_SERVER_ERROR, "The server tried to access the wrong method.");
 	}
 
 	/**
@@ -80,7 +82,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 			Vertex potentialElement = it.next();
 			// 2. Use the edge index to determine whether the element is part of this root vertex
 			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
-					database().createComposedIndexKey(potentialElement.getId(), getId()));
+				database().createComposedIndexKey(potentialElement.getId(), id()));
 			if (edges.iterator().hasNext()) {
 				// Don't frame explicitly since multiple types can be returned
 				return graph.frameElement(potentialElement, getPersistanceClass());
@@ -90,7 +92,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Iterable<? extends Job> findAllIt() {
+	public TraversalResult<? extends Job> findAll() {
 		// We need to enforce the usage of dynamic loading since the root->item yields different types of vertices.
 		return super.findAllDynamic();
 	}
@@ -98,13 +100,11 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	@Override
 	public Job enqueueSchemaMigration(User creator, Branch branch, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
 		NodeMigrationJobImpl job = getGraph().addFramedVertex(NodeMigrationJobImpl.class);
-		job.setType(MigrationType.schema);
-		job.setCreated(creator);
+		job.setType(JobType.schema);
 		job.setBranch(branch);
 		job.setStatus(QUEUED);
 		job.setFromSchemaVersion(fromVersion);
 		job.setToSchemaVersion(toVersion);
-		job.prepare();
 		addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued schema migration job {" + job.getUuid() + "}");
@@ -114,19 +114,17 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
 	@Override
 	public Job enqueueMicroschemaMigration(User creator, Branch branch, MicroschemaContainerVersion fromVersion,
-			MicroschemaContainerVersion toVersion) {
+		MicroschemaContainerVersion toVersion) {
 		MicronodeMigrationJobImpl job = getGraph().addFramedVertex(MicronodeMigrationJobImpl.class);
-		job.setType(MigrationType.microschema);
-		job.setCreated(creator);
+		job.setType(JobType.microschema);
 		job.setBranch(branch);
 		job.setStatus(QUEUED);
 		job.setFromMicroschemaVersion(fromVersion);
 		job.setToMicroschemaVersion(toVersion);
-		job.prepare();
 		addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued microschema migration job {" + job.getUuid() + "} - " + toVersion.getSchemaContainer().getName() + " "
-					+ fromVersion.getVersion() + " to " + toVersion.getVersion());
+				+ fromVersion.getVersion() + " to " + toVersion.getVersion());
 		}
 		return job;
 	}
@@ -134,13 +132,11 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	@Override
 	public Job enqueueBranchMigration(User creator, Branch branch, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
 		Job job = getGraph().addFramedVertex(BranchMigrationJobImpl.class);
-		job.setCreated(creator);
-		job.setType(MigrationType.branch);
+		job.setType(JobType.branch);
 		job.setBranch(branch);
 		job.setStatus(QUEUED);
 		job.setFromSchemaVersion(fromVersion);
 		job.setToSchemaVersion(toVersion);
-		job.prepare();
 		addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued branch migration job {" + job.getUuid() + "} for branch {" + branch.getUuid() + "}");
@@ -151,11 +147,9 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	@Override
 	public Job enqueueBranchMigration(User creator, Branch branch) {
 		Job job = getGraph().addFramedVertex(BranchMigrationJobImpl.class);
-		job.setCreated(creator);
-		job.setType(MigrationType.branch);
+		job.setType(JobType.branch);
 		job.setStatus(QUEUED);
 		job.setBranch(branch);
-		job.prepare();
 		addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued branch migration job {" + job.getUuid() + "} for branch {" + branch.getUuid() + "}");
@@ -164,12 +158,33 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
+	public Job enqueueVersionPurge(User user, Project project, ZonedDateTime before) {
+		VersionPurgeJobImpl job = getGraph().addFramedVertex(VersionPurgeJobImpl.class);
+		// TODO Don't add the user to reduce contention
+		// job.setCreated(user);
+		job.setType(JobType.versionpurge);
+		job.setStatus(QUEUED);
+		job.setProject(project);
+		job.setMaxAge(before);
+		addItem(job);
+		if (log.isDebugEnabled()) {
+			log.debug("Enqueued project version purge job {" + job.getUuid() + "} for project {" + project.getName() + "}");
+		}
+		return job;
+	}
+
+	@Override
+	public Job enqueueVersionPurge(User user, Project project) {
+		return enqueueVersionPurge(user, project, null);
+	}
+
+	@Override
 	public MeshVertex resolveToElement(Stack<String> stack) {
 		throw error(BAD_REQUEST, "Jobs are not accessible");
 	}
 
 	@Override
-	public Job create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
+	public Job create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		throw new NotImplementedException("Jobs can be created using REST");
 	}
 
@@ -202,24 +217,23 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public void process() {
-		Iterable<? extends Job> it = findAllIt();
+	public Completable process() {
+		List<Completable> actions = new ArrayList<>();
+		Iterable<? extends Job> it = findAll();
 		for (Job job : it) {
 			try {
 				// Don't execute failed or completed jobs again
-				MigrationStatus jobStatus = job.getStatus();
+				JobStatus jobStatus = job.getStatus();
 				if (job.hasFailed() || (jobStatus == COMPLETED || jobStatus == FAILED || jobStatus == UNKNOWN)) {
 					continue;
 				}
-				try (Tx tx = DB.get().tx()) {
-					job.process();
-					tx.success();
-				}
+				actions.add(job.process());
 			} catch (Exception e) {
 				job.markAsFailed(e);
 				log.error("Error while processing job {" + job.getUuid() + "}");
 			}
 		}
+		return Completable.concat(actions);
 	}
 
 	@Override
@@ -228,7 +242,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		Iterable<? extends JobImpl> it = out(HAS_JOB).hasNot("error", null).frameExplicit(JobImpl.class);
 		long count = 0;
 		for (Job job : it) {
-			job.delete(null);
+			job.delete();
 			count++;
 		}
 		log.info("Purged {" + count + "} failed jobs.");
@@ -237,6 +251,11 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	@Override
 	public void clear() {
 		out(HAS_JOB).removeAll();
+	}
+
+	@Override
+	public void delete(BulkActionContext bac) {
+		throw new NotImplementedException("The job root can't be deleted");
 	}
 
 }

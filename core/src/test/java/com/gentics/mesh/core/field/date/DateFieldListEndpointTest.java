@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.DateGraphFieldListImpl;
@@ -25,8 +24,9 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Override
@@ -122,11 +122,13 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() throws IOException {
+		disableAutoPurge();
+
 		Node node = folder("2015");
 
 		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList(toISO8601(1000L), toISO8601(2000L), toISO8601(3000L)),
-				Arrays.asList(toISO8601(3000L), toISO8601(2000L), toISO8601(1000L)), Collections.emptyList(),
-				Arrays.asList(toISO8601(471100L), toISO8601(81500L)), Arrays.asList(toISO8601(3000L)));
+			Arrays.asList(toISO8601(3000L), toISO8601(2000L), toISO8601(1000L)), Collections.emptyList(),
+			Arrays.asList(toISO8601(471100L), toISO8601(81500L)), Arrays.asList(toISO8601(3000L)));
 
 		for (int i = 0; i < 20; i++) {
 			DateFieldListImpl list = new DateFieldListImpl();
@@ -156,6 +158,8 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		disableAutoPurge();
+
 		NodeResponse secondResponse;
 		Node node = folder("2015");
 
@@ -179,12 +183,12 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(latest.getDateList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getDateList(FIELD_NAME)).isNotNull();
 			List<Number> oldValueList = latest.getPreviousVersion().getDateList(FIELD_NAME).getList().stream().map(item -> item.getDate())
-					.collect(Collectors.toList());
+				.collect(Collectors.toList());
 			assertThat(oldValueList).containsExactly(42000L, 41000L);
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
+				secondResponse.getVersion());
 		}
 	}
 
@@ -209,6 +213,17 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
 		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(), secondResponse.getVersion());
 		assertThat(secondResponse.getVersion()).as("No new version number should be generated").isEqualTo(secondResponse.getVersion());
+	}
+
+	@Override
+	public NodeResponse createNodeWithField() {
+		DateFieldListImpl listField = new DateFieldListImpl();
+		String dateA = toISO8601(4200L);
+		String dateB = toISO8601(4100L);
+		listField.add(dateA);
+		listField.add(dateB);
+
+		return createNode(FIELD_NAME, listField);
 	}
 
 }

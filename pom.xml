@@ -5,30 +5,32 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>0.24.1-SNAPSHOT</version>
+	<version>0.36.1-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
-	<name>Mesh</name>
+	<name>Gentics Mesh</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<projectRoot>${project.basedir}</projectRoot>
-		<mesh.admin-ui.version>0.9.1</mesh.admin-ui.version>
+		<mesh.admin-ui.version>0.9.4</mesh.admin-ui.version>
 
+		<!-- when updating version, don't forget to update administration-guide.asciidoc -->
 		<asm.version>3.3.1</asm.version>
-		<spring.security.version>4.2.3.RELEASE</spring.security.version>
-		<ferma.version>2.4.0</ferma.version>
-		<ferma.orientdb.version>2.3.1</ferma.orientdb.version>
-		<elasticsearch.client.version>0.5.0</elasticsearch.client.version>
-		<orientdb.version>2.2.34</orientdb.version>
+		<spring.security.version>4.2.12.RELEASE</spring.security.version>
+		<ferma.version>${project.version}</ferma.version>
+		<elasticsearch.client.version>0.5.2</elasticsearch.client.version>
+		<orientdb.version>3.0.19</orientdb.version>
 		<dagger.version>2.11</dagger.version>
-		<hazelcast.version>3.8.4</hazelcast.version>
-		<jackson.version>2.9.0</jackson.version>
+		<hazelcast.version>3.10.4</hazelcast.version>
+		<jackson.version>2.9.8</jackson.version>
+		<netty.version>4.1.34.Final</netty.version>
+		<tika.version>1.21</tika.version>
 
-		<surefire.forkcount>3</surefire.forkcount>
+		<surefire.forkcount>2</surefire.forkcount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>
 		<skip.unit.tests>false</skip.unit.tests>
 		<skip.cluster.tests>false</skip.cluster.tests>
+		<skip.jacoco.merge>true</skip.jacoco.merge>
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
 		<mesh.image.provider>mesh-service-image-imgscalr</mesh.image.provider>
 		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
@@ -44,7 +46,7 @@
 	<parent>
 		<groupId>com.gentics.vertx</groupId>
 		<artifactId>maven-vertx-parent</artifactId>
-		<version>3.5.6</version>
+		<version>3.7.2</version>
 	</parent>
 
 	<developers>
@@ -83,6 +85,8 @@
 	<inceptionYear>2014</inceptionYear>
 
 	<modules>
+		<module>ferma</module>
+		<module>madl</module>
 		<module>rest-model</module>
 		<module>api</module>
 		<module>plugin-api</module>
@@ -110,27 +114,10 @@
 		</dependency>
 	</dependencies>
 
-	<profiles>
-		<profile>
-			<id>inclusions</id>
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration>
-							<skip>${skip.unit.tests}</skip>
-							<includesFile>${projectRoot}/inclusions.txt</includesFile>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
-
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>com.syncleus.ferma</groupId>
+				<groupId>com.gentics.mesh</groupId>
 				<artifactId>ferma</artifactId>
 				<version>${ferma.version}</version>
 			</dependency>
@@ -172,6 +159,12 @@
 				<version>20.0-rc1</version>
 			</dependency>
 
+			<!-- Tika -->
+			<dependency>
+				<groupId>org.apache.tika</groupId>
+				<artifactId>tika-parsers</artifactId>
+				<version>${tika.version}</version>
+			</dependency>
 
 			<!-- Spring - bcrypt -->
 			<dependency>
@@ -184,12 +177,19 @@
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
-				<version>2.9.0</version>
+				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-core</artifactId>
-				<version>2.9.0</version>
+				<version>${jackson.version}</version>
+			</dependency>
+
+			<!-- Hazelcast -->
+			<dependency>
+				<groupId>com.hazelcast</groupId>
+				<artifactId>hazelcast</artifactId>
+				<version>${hazelcast.version}</version>
 			</dependency>
 
 			<!-- Test dependencies -->
@@ -233,6 +233,17 @@
 				<artifactId>vertx-dropwizard-metrics</artifactId>
 				<version>${vertx.version}</version>
 			</dependency>
+
+			<dependency>
+				<groupId>org.reflections</groupId>
+				<artifactId>reflections</artifactId>
+				<version>0.9.11</version>
+			</dependency>
+			<dependency>
+				<groupId>org.javassist</groupId>
+				<artifactId>javassist</artifactId>
+				<version>3.25.0-GA</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -243,43 +254,41 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
+					<version>3.0.0-M3</version>
 					<configuration>
 						<skip>${skip.unit.tests}</skip>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.jacoco</groupId>
+					<artifactId>jacoco-maven-plugin</artifactId>
+					<version>0.8.2</version>
+					<executions>
+						<execution>
+							<id>merge-all-jacoco</id>
+							<goals>
+								<goal>merge</goal>
+							</goals>
+							<phase>install</phase>
+							<configuration>
+								<skip>${skip.jacoco.merge}</skip>
+								<destFile>${project.build.directory}/jacoco.exec</destFile>
+								<fileSets>
+									<fileSet>
+										<directory>${project.build.directory}</directory>
+										<includes>
+											<include>*.exec</include>
+										</includes>
+									</fileSet>
+								</fileSets>
+							</configuration>
+						</execution>
+					</executions>
 				</plugin>
 			</plugins>
 		</pluginManagement>
 
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>3.0.0-M1</version>
-				<executions>
-					<execution>
-						<id>enforce-maven</id>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-						<configuration>
-							<rules>
-								<requireJavaVersion>
-									<version>1.8.0</version>
-								</requireJavaVersion>
-								<requireReleaseDeps>
-									<onlyWhenRelease>true</onlyWhenRelease>
-									<message>No Snapshots Allowed!</message>
-									<excludes>
-										<exclude>org.apache.maven:maven-core</exclude>
-										<exclude>org.apache.maven.plugins:*</exclude>
-									</excludes>
-								</requireReleaseDeps>
-							</rules>
-							<fail>true</fail>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
@@ -323,20 +332,36 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<verbose>true</verbose>
+					<verbose>false</verbose>
 					<compilerVersion>1.8</compilerVersion>
 					<source>1.8</source>
 					<target>1.8</target>
 				</configuration>
 			</plugin>
-
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+						<configuration>
+							<destFile>${project.build.directory}/jacoco-partial.exec</destFile>
+							<excludes>
+								<exclude>*OrientSqlTokenManager*</exclude>
+							</excludes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<skip>${skip.unit.tests}</skip>
 					<jvm>${env.JAVA_1_8_HOME}/bin/java</jvm>
-					<argLine>-Xmx256m -XX:MaxDirectMemorySize=1524m</argLine>
+					<argLine>-Xms128m -Xmx256m -XX:MaxDirectMemorySize=128m -Dstorage.diskCache.bufferSize=128 ${argLine}</argLine>
 					<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
 					<rerunFailingTestsCount>0</rerunFailingTestsCount>
 					<reuseForks>false</reuseForks>

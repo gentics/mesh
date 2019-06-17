@@ -18,34 +18,19 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.FILL;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import javax.script.ScriptException;
+import static com.gentics.mesh.test.TestSize.FULL;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class MicronodeFieldMigrationTest extends AbstractFieldMigrationTest {
 
 	@Override
 	@Test
 	public void testRemove() throws Exception {
 		removeField(CREATEMICRONODE, FILL, FETCH);
-	}
-
-	@Override
-	@Test
-	public void testRename() throws Exception {
-		renameField(CREATEMICRONODE, FILL, FETCH, (container, name) -> {
-			assertThat(container.getMicronode(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getMicronode(name).getMicronode()).as(NEWFIELDVALUE).containsStringField("firstName", "Donald")
-					.containsStringField("lastName", "Duck");
-		});
 	}
 
 	@Override
@@ -173,29 +158,4 @@ public class MicronodeFieldMigrationTest extends AbstractFieldMigrationTest {
 		});
 	}
 
-	@Override
-	@Test
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEMICRONODE, FILL, FETCH,
-				"function migrate(node, fieldname, convert) {node.fields[fieldname].fields['firstName'] = 'Dagobert'; return node;}",
-				(container, name) -> {
-					MicronodeGraphField field = container.getMicronode(name);
-					assertThat(field).as(NEWFIELD).isNotNull();
-					Micronode micronode = field.getMicronode();
-					assertThat(micronode).as(NEWFIELDVALUE).isNotNull();
-					assertThat(micronode).as(NEWFIELDVALUE).containsStringField("firstName", "Dagobert").containsStringField("lastName", "Duck");
-				});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATEMICRONODE, FILL, INVALIDSCRIPT);
-	}
-
-	@Override
-	@Test(expected = ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		invalidMigrationScript(CREATEMICRONODE, FILL, KILLERSCRIPT);
-	}
 }

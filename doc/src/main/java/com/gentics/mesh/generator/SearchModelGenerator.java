@@ -1,18 +1,18 @@
 package com.gentics.mesh.generator;
 
-import static com.gentics.mesh.mock.Mocks.mockGroup;
-import static com.gentics.mesh.mock.Mocks.mockLanguage;
-import static com.gentics.mesh.mock.Mocks.mockMicroschemaContainer;
-import static com.gentics.mesh.mock.Mocks.mockNode;
-import static com.gentics.mesh.mock.Mocks.mockNodeBasic;
-import static com.gentics.mesh.mock.Mocks.mockProject;
-import static com.gentics.mesh.mock.Mocks.mockRole;
-import static com.gentics.mesh.mock.Mocks.mockSchemaContainer;
-import static com.gentics.mesh.mock.Mocks.mockTag;
-import static com.gentics.mesh.mock.Mocks.mockTagFamily;
-import static com.gentics.mesh.mock.Mocks.mockUpdateDocumentEntry;
-import static com.gentics.mesh.mock.Mocks.mockUser;
-import static com.gentics.mesh.util.UUIDUtil.randomUUID;
+import static com.gentics.mesh.dagger.SearchProviderType.TRACKING;
+import static com.gentics.mesh.example.ExampleUuids.UUID_1;
+import static com.gentics.mesh.mock.TestMocks.mockGroup;
+import static com.gentics.mesh.mock.TestMocks.mockMicroschemaContainer;
+import static com.gentics.mesh.mock.TestMocks.mockNode;
+import static com.gentics.mesh.mock.TestMocks.mockNodeBasic;
+import static com.gentics.mesh.mock.TestMocks.mockProject;
+import static com.gentics.mesh.mock.TestMocks.mockRole;
+import static com.gentics.mesh.mock.TestMocks.mockSchemaContainer;
+import static com.gentics.mesh.mock.TestMocks.mockTag;
+import static com.gentics.mesh.mock.TestMocks.mockTagFamily;
+import static com.gentics.mesh.mock.TestMocks.mockUpdateDocumentEntry;
+import static com.gentics.mesh.mock.TestMocks.mockUser;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -26,9 +26,7 @@ import org.mockito.Mockito;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
@@ -38,10 +36,12 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.DaggerMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
@@ -62,6 +62,8 @@ import io.vertx.core.json.JsonObject;
  */
 public class SearchModelGenerator extends AbstractGenerator {
 
+	public static File OUTPUT_ROOT_FOLDER = new File("src/main/docs/examples");
+
 	private ObjectMapper mapper = new ObjectMapper();
 
 	private TrackingSearchProvider provider;
@@ -70,6 +72,11 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 	public SearchModelGenerator(File outputDir) throws IOException {
 		super(new File(outputDir, "search"));
+	}
+
+	public static void main(String[] args) throws Exception {
+		SearchModelGenerator searchModelGen = new SearchModelGenerator(OUTPUT_ROOT_FOLDER);
+		searchModelGen.run();
 	}
 
 	public static void initPaths() {
@@ -106,8 +113,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		System.out.println("Writing files to  {" + outputFolder.getAbsolutePath() + "}");
 		// outputDir.mkdirs();
 
-		System.setProperty("mesh.test", "true");
-		meshDagger = DaggerMeshComponent.builder().configuration(new MeshOptions()).build();
+		meshDagger = DaggerMeshComponent.builder().configuration(new MeshOptions()).searchProviderType(TRACKING).build();
 		provider = (TrackingSearchProvider) meshDagger.searchProvider();
 
 		try {
@@ -127,7 +133,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 	}
 
 	private void writeNodeDocumentExample() throws Exception {
-		Language language = mockLanguage("de");
+		String language = "de";
 		User user = mockUser("joe1", "Joe", "Doe");
 		Project project = mockProject(user);
 		TagFamily tagFamily = mockTagFamily("colors", user, project);
@@ -137,8 +143,8 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Node node = mockNode(parentNode, project, user, language, tagA, tagB);
 
 		NodeIndexHandler nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
-		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), randomUUID(), ContainerType.PUBLISHED).toCompletable()
-				.blockingAwait();
+		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), UUID_1, ContainerType.PUBLISHED).toCompletable()
+			.blockingAwait();
 		writeStoreEvent("node.search");
 	}
 
@@ -172,7 +178,8 @@ public class SearchModelGenerator extends AbstractGenerator {
 		User user = mockUser("joe1", "Joe", "Doe", creator);
 		Group groupA = mockGroup("editors", user);
 		Group groupB = mockGroup("superEditors", user);
-		Mockito.<List<? extends Group>>when(user.getGroups()).thenReturn(Arrays.asList(groupA, groupB));
+		TraversalResult<? extends Group> result = new TraversalResult<>(Arrays.asList(groupA, groupB));
+		Mockito.<TraversalResult<? extends Group>>when(user.getGroups()).thenReturn(result);
 		UserIndexHandler userIndexHandler = meshDagger.userIndexHandler();
 		userIndexHandler.store(user, mockUpdateDocumentEntry()).blockingAwait();
 		writeStoreEvent("user.search");
@@ -186,11 +193,8 @@ public class SearchModelGenerator extends AbstractGenerator {
 		tagList.add(mockTag("red", user, tagFamily, project));
 		tagList.add(mockTag("green", user, tagFamily, project));
 
-		when(tagFamily.findAllIt()).then(answer -> {
-			return tagList;
-		});
-		when(tagFamily.findAllIt()).then(answer -> {
-			return tagList;
+		when(tagFamily.findAll()).then(answer -> {
+			return new TraversalResult<>(tagList);
 		});
 
 		TagFamilyIndexHandler tagFamilyIndexHandler = meshDagger.tagFamilyIndexHandler();

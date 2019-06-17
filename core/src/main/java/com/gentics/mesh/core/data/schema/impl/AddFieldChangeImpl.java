@@ -7,8 +7,15 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LI
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.TYPE_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.stream.Stream;
+
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.AddFieldChange;
+import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -27,14 +34,16 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 /**
  * @see AddFieldChange
  */
 public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements AddFieldChange {
 
-	public static void init(Database database) {
-		database.addVertexType(AddFieldChangeImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(AddFieldChangeImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
@@ -60,9 +69,15 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 
 	@Override
 	public String[] getAllowProp() {
-		return getRestProperty(ALLOW_KEY);
+		Object[] prop = getRestProperty(ALLOW_KEY);
+		if (prop == null) {
+			return null;
+		}
+		return Stream.of(prop)
+			.map(item -> (String) item)
+			.toArray(String[]::new);
 	}
-	
+
 	@Override
 	public void setListType(String type) {
 		setRestProperty(LIST_TYPE_KEY, type);
@@ -152,6 +167,16 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 		}
 		container.addField(field, position);
 		return container;
+	}
+
+	@Override
+	public Map<String, Field> createFields(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
+		return Collections.singletonMap(getFieldName(), null);
+	}
+
+	@Override
+	public void delete(BulkActionContext bac) {
+		getElement().remove();
 	}
 
 }

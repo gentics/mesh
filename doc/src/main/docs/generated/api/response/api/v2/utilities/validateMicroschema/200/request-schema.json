@@ -1,0 +1,53 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:validation:SchemaValidationResponse",
+  "properties" : {
+    "status" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Status of the validation.",
+      "enum" : [ "VALID", "INVALID" ]
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:GenericMessageResponse",
+      "required" : true,
+      "description" : "Detailed validation message.",
+      "properties" : {
+        "message" : {
+          "type" : "string",
+          "required" : true,
+          "description" : "Enduser friendly translated message. Translation depends on the 'Accept-Language' header value"
+        },
+        "internalMessage" : {
+          "type" : "string",
+          "required" : true,
+          "description" : "Internal developer friendly message"
+        },
+        "properties" : {
+          "type" : "object",
+          "description" : "Map of i18n properties which were used to construct the provided message",
+          "additionalProperties" : {
+            "type" : "any"
+          }
+        }
+      }
+    },
+    "elasticsearch" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:vertx:core:json:JsonObject",
+      "description" : "The generated elasticsearch index configuration which includes the used analyzers and mappings.",
+      "properties" : {
+        "map" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "type" : "any"
+          }
+        },
+        "empty" : {
+          "type" : "boolean"
+        }
+      }
+    }
+  }
+}

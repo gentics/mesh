@@ -48,7 +48,7 @@ import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 
-@MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = false)
+@MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = false)
 public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 
 	private static final String BINARY_FIELD = "binaryField";
@@ -72,8 +72,8 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 				input = input.concat("Hallo");
 			}
 			Binary binary = meshRoot().getBinaryRoot().create("hashsum", 1L);
-			MeshInternal.get().binaryStorage().store(Flowable.fromArray(Buffer.buffer(input)), binary.getUuid()).blockingAwait();
-			String base64 = binary.getBase64Content().blockingGet();
+			MeshInternal.get().binaryStorage().store(Flowable.just(Buffer.buffer(input)), binary.getUuid()).blockingAwait();
+			String base64 = binary.getBase64ContentSync();
 			assertEquals(input.toString(), new String(BASE64.decode(base64)));
 		}
 	}
@@ -83,8 +83,8 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		try (Tx tx = tx()) {
 			String input = " ";
 			Binary binary = meshRoot().getBinaryRoot().create("hashsum", 1L);
-			MeshInternal.get().binaryStorage().store(Flowable.fromArray(Buffer.buffer(input)), binary.getUuid()).blockingAwait();
-			String base64 = binary.getBase64Content().blockingGet();
+			MeshInternal.get().binaryStorage().store(Flowable.just(Buffer.buffer(input)), binary.getUuid()).blockingAwait();
+			String base64 = binary.getBase64ContentSync();
 			assertEquals(input.toString(), new String(BASE64.decode(base64)));
 		}
 	}
@@ -101,7 +101,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			schema.addField(createFieldSchema(true));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
-			Binary binary = meshRoot().getBinaryRoot().create(hash, 0L);
+			Binary binary = meshRoot().getBinaryRoot().create(hash, 10L);
 			BinaryGraphField field = container.createBinary(BINARY_FIELD, binary);
 			field.setMimeType("image/jpg");
 			binary.setImageHeight(200);
@@ -321,7 +321,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		Single<String> store = MeshInternal.get().binaryStorage().store(obs, "bogus").toSingleDefault("null");
 
 		TransformationResult result = Single.zip(hash, info, store, (hashV, infoV, storeV) -> {
-			return new TransformationResult(hashV, 0, infoV, null);
+			return new TransformationResult(hashV, 0, infoV, "blume.jpg");
 		}).blockingGet();
 
 		assertNotNull(result.getHash());

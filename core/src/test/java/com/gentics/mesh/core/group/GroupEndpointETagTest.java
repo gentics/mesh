@@ -1,15 +1,19 @@
 package com.gentics.mesh.core.group;
 
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.callETag;
 import static com.gentics.mesh.test.ClientHelper.callETagRaw;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.rest.user.UserCreateRequest;
+import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -17,7 +21,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class GroupEndpointETagTest extends AbstractMeshTest {
 
 	@Test
@@ -60,6 +64,21 @@ public class GroupEndpointETagTest extends AbstractMeshTest {
 			callETag(() -> client().findGroupByUuid(group.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true, 304);
 		}
 
+	}
+
+	/**
+	 * Link a user to a group and check whether this affects the etag of user pages (since the user in the page contains group information).
+	 */
+	@Test
+	public void testLinkingEtagHandling() {
+		String groupUuid = groupUuid();
+		UserResponse user2 = call(() -> client().createUser(new UserCreateRequest().setUsername("someUser").setPassword("test")));
+		String userUuid = user2.getUuid();
+
+		String before = callETag(() -> client().findUsers());
+		call(() -> client().addUserToGroup(groupUuid, userUuid));
+		String after = callETag(() -> client().findUsers());
+		assertNotEquals("Adding the user should have changed the etag.", before, after);
 	}
 
 }

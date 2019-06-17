@@ -64,7 +64,7 @@ public class BinaryStorageMigration extends AbstractChange {
 	}
 
 	@Override
-	public void apply() {
+	public void applyInTx() {
 		// Move the data directory away
 		try {
 			log.info("Moving current data directory away to {" + dataSourceFolder().getAbsolutePath() + "}");

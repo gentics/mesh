@@ -10,6 +10,10 @@ import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
+import com.gentics.mesh.json.JsonUtil;
+
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -101,10 +105,32 @@ public class MicroschemaResponse extends AbstractGenericRestResponse implements 
 		return this;
 	}
 
+	/**
+	 * Create a microschema reference using the microschema as source.
+	 *
+	 * @return
+	 */
+	public MicroschemaReference toReference() {
+		MicroschemaReferenceImpl reference = new MicroschemaReferenceImpl();
+		reference.setUuid(getUuid());
+		reference.setVersion(getVersion());
+		reference.setName(getName());
+		return reference;
+	}
+
 	@Override
 	public String toString() {
 		String fields = getFields().stream().map(field -> field.getName()).collect(Collectors.joining(","));
 		return getName() + " fields: {" + fields + "}";
+	}
+
+	/**
+	 * Create a microschema update request using the microschema as source.
+	 * 
+	 * @return
+	 */
+	public MicroschemaUpdateRequest toRequest() {
+		return JsonUtil.readValue(toJson(), MicroschemaUpdateRequest.class);
 	}
 
 }

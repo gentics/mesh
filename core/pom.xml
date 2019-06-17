@@ -10,17 +10,21 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.24.1-SNAPSHOT</version>
+		<version>0.36.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<projectRoot>${project.basedir}/..</projectRoot>
 		<mesh.version>${project.version}</mesh.version>
 	</properties>
 
 	<dependencies>
 		<!-- Internal dependencies -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>${mesh.database.provider}</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-common</artifactId>
@@ -59,7 +63,7 @@
 		<dependency>
 			<groupId>com.gentics.vertx</groupId>
 			<artifactId>vertx-filesystem-service-factory</artifactId>
-			<version>3.5.0</version>
+			<version>3.7.1</version>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
@@ -105,6 +109,19 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- Attachment parsing -->
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-parsers</artifactId>
+		</dependency>
+
+		<!-- Metrics -->
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-service-metrics-prometheus</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- Changelog system -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
@@ -137,11 +154,18 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
+		<!-- Hazelcast -->
 		<dependency>
 			<groupId>com.hazelcast</groupId>
 			<artifactId>hazelcast</artifactId>
-			<version>${hazelcast.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast-kubernetes</artifactId>
+			<version>1.2.2</version>
+		</dependency>
+
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-mail-client</artifactId>
@@ -223,6 +247,7 @@
 				<version>3.1.0</version>
 				<executions>
 					<execution>
+						<?m2e ignore ?>
 						<id>build-test-projects</id>
 						<goals>
 							<goal>run</goal>
@@ -230,7 +255,9 @@
 						<!-- Before the test phase -->
 						<phase>process-test-classes</phase>
 						<configuration>
+							<!--
 							<skipInvocation>${skip.unit.tests}</skipInvocation>
+							 -->
 							<properties>
 								<mesh.version>${project.version}</mesh.version>
 							</properties>

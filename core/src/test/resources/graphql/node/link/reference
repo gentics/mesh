@@ -2,21 +2,21 @@
 	enNode: node(uuid: "e8f5c7875b2f49a7b5c7875b2fa9a718", lang: "en") {
 		uuid
 		language
-		fields {
-			... on folder {
+        ... on folder {
+		    fields {
 				nodeList {
 					uuid
 					language
-					fields {
-						... on folder {
-							# [$.data.enNode.fields.nodeList[0].fields.stringList[0]=A Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
-							# [$.data.enNode.fields.nodeList[0].fields.stringList[1]=B Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
-							# [$.data.enNode.fields.nodeList[0].fields.stringList[2]=C Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
+                    ... on folder {
+					    fields {
+							# [$.data.enNode.fields.nodeList[0].fields.stringList[0]=A Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
+							# [$.data.enNode.fields.nodeList[0].fields.stringList[1]=B Link: /api/v2/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+							# [$.data.enNode.fields.nodeList[0].fields.stringList[2]=C Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
 							stringList(linkType: FULL)
 
-							# [$.data.enNode.fields.nodeList[0].fields.htmlList[0]=A Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
-							# [$.data.enNode.fields.nodeList[0].fields.htmlList[1]=B Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
-							# [$.data.enNode.fields.nodeList[0].fields.htmlList[2]=C Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
+							# [$.data.enNode.fields.nodeList[0].fields.htmlList[0]=A Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
+							# [$.data.enNode.fields.nodeList[0].fields.htmlList[1]=B Link: /api/v2/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+							# [$.data.enNode.fields.nodeList[0].fields.htmlList[2]=C Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
 							htmlList(linkType: FULL)
 						}
 					}
@@ -24,16 +24,16 @@
 				nodeRef {
 					uuid
 					language
-					fields {
-						... on folder {
-							# [$.data.enNode.fields.nodeRef.fields.stringList[0]=A Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
-							# [$.data.enNode.fields.nodeRef.fields.stringList[1]=B Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
-							# [$.data.enNode.fields.nodeRef.fields.stringList[2]=C Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
+                    ... on folder {
+					    fields {
+							# [$.data.enNode.fields.nodeRef.fields.stringList[0]=A Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
+							# [$.data.enNode.fields.nodeRef.fields.stringList[1]=B Link: /api/v2/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+							# [$.data.enNode.fields.nodeRef.fields.stringList[2]=C Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
 							stringList(linkType: FULL)
 
-							# [$.data.enNode.fields.nodeRef.fields.htmlList[0]=A Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
-							# [$.data.enNode.fields.nodeRef.fields.htmlList[1]=B Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
-							# [$.data.enNode.fields.nodeRef.fields.htmlList[2]=C Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
+							# [$.data.enNode.fields.nodeRef.fields.htmlList[0]=A Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
+							# [$.data.enNode.fields.nodeRef.fields.htmlList[1]=B Link: /api/v2/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+							# [$.data.enNode.fields.nodeRef.fields.htmlList[2]=C Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
 							htmlList(linkType: FULL)
 						}
 					}
@@ -45,21 +45,21 @@
 	deNode: node(uuid: "e8f5c7875b2f49a7b5c7875b2fa9a718", lang: "de") {
 		uuid
 		language
-		fields {
-			... on folder {
+        ... on folder {
+		    fields {
 				nodeList {
 					uuid
 					language
-					fields {
-						... on folder {
-							# [$.data.deNode.fields.nodeList[0].fields.stringList[0]=A Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
-							# [$.data.deNode.fields.nodeList[0].fields.stringList[1]=B Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
-							# [$.data.deNode.fields.nodeList[0].fields.stringList[2]=C Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+                    ... on folder {
+					    fields {
+							# [$.data.deNode.fields.nodeList[0].fields.stringList[0]=A Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
+							# [$.data.deNode.fields.nodeList[0].fields.stringList[1]=B Link: /api/v2/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+							# [$.data.deNode.fields.nodeList[0].fields.stringList[2]=C Link: /api/v2/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
 							stringList(linkType: FULL)
 
-							# [$.data.deNode.fields.nodeList[0].fields.htmlList[0]=A Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
-							# [$.data.deNode.fields.nodeList[0].fields.htmlList[1]=B Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
-							# [$.data.deNode.fields.nodeList[0].fields.htmlList[2]=C Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+							# [$.data.deNode.fields.nodeList[0].fields.htmlList[0]=A Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
+							# [$.data.deNode.fields.nodeList[0].fields.htmlList[1]=B Link: /api/v2/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+							# [$.data.deNode.fields.nodeList[0].fields.htmlList[2]=C Link: /api/v2/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
 							htmlList(linkType: FULL)
 						}
 					}
@@ -67,16 +67,16 @@
 				nodeRef {
 					uuid
 					language
-					fields {
-						... on folder {
-							# [$.data.deNode.fields.nodeRef.fields.stringList[0]=A Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
-							# [$.data.deNode.fields.nodeRef.fields.stringList[1]=B Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
-							# [$.data.deNode.fields.nodeRef.fields.stringList[2]=C Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+                    ... on folder {
+					    fields {
+							# [$.data.deNode.fields.nodeRef.fields.stringList[0]=A Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
+							# [$.data.deNode.fields.nodeRef.fields.stringList[1]=B Link: /api/v2/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+							# [$.data.deNode.fields.nodeRef.fields.stringList[2]=C Link: /api/v2/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
 							stringList(linkType: FULL)
 
-							# [$.data.deNode.fields.nodeRef.fields.htmlList[0]=A Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
-							# [$.data.deNode.fields.nodeRef.fields.htmlList[1]=B Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
-							# [$.data.deNode.fields.nodeRef.fields.htmlList[2]=C Link: /api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+							# [$.data.deNode.fields.nodeRef.fields.htmlList[0]=A Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
+							# [$.data.deNode.fields.nodeRef.fields.htmlList[1]=B Link: /api/v2/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+							# [$.data.deNode.fields.nodeRef.fields.htmlList[2]=C Link: /api/v2/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
 							htmlList(linkType: FULL)
 						}
 					}

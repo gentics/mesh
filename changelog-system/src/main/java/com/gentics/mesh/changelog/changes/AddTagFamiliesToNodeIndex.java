@@ -27,10 +27,6 @@ public class AddTagFamiliesToNodeIndex extends AbstractChange {
 	}
 
 	@Override
-	public void apply() {
-	}
-
-	@Override
 	public String getUuid() {
 		return "4509765177F942BC82D064CF1DBA6108";
 	}

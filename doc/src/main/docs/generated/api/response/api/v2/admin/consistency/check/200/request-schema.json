@@ -1,0 +1,63 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:consistency:ConsistencyCheckResponse",
+  "properties" : {
+    "outputTruncated" : {
+      "type" : "boolean",
+      "required" : true,
+      "description" : "Flag which indicates whether the output was truncated because more than 250 have been found."
+    },
+    "result" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Result of the consistency check.",
+      "enum" : [ "CONSISTENT", "INCONSISTENT" ]
+    },
+    "repairCount" : {
+      "type" : "object",
+      "required" : true,
+      "description" : "Counter for repair operations",
+      "additionalProperties" : {
+        "type" : "integer"
+      }
+    },
+    "inconsistencies" : {
+      "type" : "array",
+      "required" : true,
+      "description" : "List of found inconsistencies.",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:consistency:InconsistencyInfo",
+        "properties" : {
+          "description" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Description of the inconsistency."
+          },
+          "severity" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Level of severity of the inconsistency.",
+            "enum" : [ "CRITICAL", "HIGH", "MEDIUM", "LOW" ]
+          },
+          "elementUuid" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Uuid of the element which is related to the inconsistency."
+          },
+          "repaired" : {
+            "type" : "boolean",
+            "required" : true,
+            "description" : "Status of the inconsistency. This will indicate whether the inconsistency could be resolved via the repair action."
+          },
+          "repairAction" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Repair action which will attept to fix the inconsistency. The action will only be invoked when using invoking the rapair endpoint.",
+            "enum" : [ "NONE", "RECOVER", "DELETE" ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,8 +1,8 @@
 package com.gentics.mesh.search.index.node;
 
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
@@ -19,7 +19,6 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jsoup.Jsoup;
 
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -46,12 +45,12 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
 
@@ -72,11 +71,8 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 
 	private static final String VERSION_KEY = "version";
 
-	private SearchProvider searchProvider;
-
 	@Inject
-	public NodeContainerTransformer(SearchProvider searchProvider) {
-		this.searchProvider = searchProvider;
+	public NodeContainerTransformer() {
 	}
 
 	/**
@@ -201,12 +197,6 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 						binaryFieldInfo.put("sha512sum", binary.getSHA512Sum());
 						binaryFieldInfo.put("width", binary.getImageWidth());
 						binaryFieldInfo.put("height", binary.getImageHeight());
-
-						// Only add the base64 content if we can actually process it and if it can be processed
-						// Images, Videos etc can't be processed by the ingest plugin
-						if (searchProvider.hasIngestPipelinePlugin() && binaryField.isIngestableDocument()) {
-							binaryFieldInfo.put("data", binary.getBase64Content().blockingGet());
-						}
 					}
 
 					// Add the metadata
@@ -228,6 +218,14 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 							// Add height outside of object to prevent ES error
 							binaryFieldMetadataInfo.put("location-z", loc.getAlt());
 						}
+					}
+
+					// Plain text
+					String plainText = binaryField.getPlainText();
+					if (plainText != null) {
+						JsonObject file = new JsonObject();
+						binaryFieldInfo.put("file", file);
+						file.put("content", plainText);
 					}
 
 				}
@@ -406,7 +404,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * @param document
 	 * @param tags
 	 */
-	private void addTagFamilies(JsonObject document, List<? extends Tag> tags) {
+	private void addTagFamilies(JsonObject document, Iterable<? extends Tag> tags) {
 		JsonObject familiesObject = new JsonObject();
 
 		for (Tag tag : tags) {
@@ -502,7 +500,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 			addParentNodeInfo(document, node.getParentNode(branchUuid));
 		}
 
-		String language = container.getLanguage().getLanguageTag();
+		String language = container.getLanguageTag();
 		document.put("language", language);
 		addSchema(document, container.getSchemaContainerVersion());
 

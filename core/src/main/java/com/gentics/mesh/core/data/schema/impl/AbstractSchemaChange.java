@@ -10,13 +10,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
-import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.json.JsonObject;
 
@@ -77,32 +77,6 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	}
 
 	@Override
-	public String getMigrationScript() throws IOException {
-		String migrationScript = getProperty(MIGRATION_SCRIPT_PROPERTY_KEY);
-		if (migrationScript == null) {
-			migrationScript = getAutoMigrationScript();
-		}
-
-		return migrationScript;
-	}
-
-	@Override
-	public SchemaChange<T> setCustomMigrationScript(String migrationScript) {
-		setProperty(MIGRATION_SCRIPT_PROPERTY_KEY, migrationScript);
-		return this;
-	}
-
-	@Override
-	public String getAutoMigrationScript() throws IOException {
-		return null; // Default value for changes that don't have a script
-	}
-
-	@Override
-	public List<Tuple<String, Object>> getMigrationScriptContext() {
-		return null; // Default value for changes that don't have a script
-	}
-
-	@Override
 	public void setRestProperty(String key, Object value) {
 		if (value instanceof List) {
 			value = ((List) value).toArray();
@@ -110,12 +84,12 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 		if (value instanceof JsonObject) {
 			value = ((JsonObject) value).encode();
 		}
-		setProperty(REST_PROPERTY_PREFIX_KEY + key, value);
+		property(REST_PROPERTY_PREFIX_KEY + key, value);
 	}
 
 	@Override
 	public <R> R getRestProperty(String key) {
-		return getProperty(REST_PROPERTY_PREFIX_KEY + key);
+		return property(REST_PROPERTY_PREFIX_KEY + key);
 	}
 
 	@Override
@@ -145,10 +119,6 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 
 	@Override
 	public void updateFromRest(SchemaChangeModel restChange) {
-		String migrationScript = restChange.getMigrationScript();
-		if (migrationScript != null) {
-			setCustomMigrationScript(migrationScript);
-		}
 		for (String key : restChange.getProperties().keySet()) {
 			setRestProperty(key, restChange.getProperties().get(key));
 		}
@@ -165,8 +135,16 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 		}
 		model.setOperation(getOperation());
 		model.setUuid(getUuid());
-		model.setMigrationScript(getMigrationScript());
 		return model;
+	}
+
+	@Override
+	public void delete(BulkActionContext bc) {
+		SchemaChange<?> next = getNextChange();
+		if (next != null) {
+			next.delete(bc);
+		}
+		getElement().remove();
 	}
 
 }

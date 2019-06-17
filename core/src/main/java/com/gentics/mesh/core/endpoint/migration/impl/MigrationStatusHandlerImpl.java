@@ -1,8 +1,7 @@
 package com.gentics.mesh.core.endpoint.migration.impl;
 
-import static com.gentics.mesh.Events.MESH_MIGRATION;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 
 import java.lang.management.ManagementFactory;
 
@@ -13,12 +12,11 @@ import javax.management.ObjectName;
 import com.gentics.mesh.core.data.branch.BranchVersionEdge;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
-import com.gentics.mesh.core.rest.admin.migration.MigrationType;
+import com.gentics.mesh.core.rest.job.JobType;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -39,16 +37,19 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 
 	private long completionCount = 0;
 
-	private MigrationStatus status;
+	private JobStatus status;
 
-	public MigrationStatusHandlerImpl(Job job, Vertx vertx, MigrationType type) {
+	public MigrationStatusHandlerImpl(Job job, Vertx vertx, JobType type) {
 		this.vertx = vertx;
 		this.job = job;
-		status = job.getStatus();
 	}
 
 	@Override
 	public MigrationStatusHandler commit() {
+		// Load the status if it has not yet been set or loaded.
+		if (status == null) {
+			status = job.getStatus();
+		}
 		if (versionEdge != null) {
 			versionEdge.setMigrationStatus(status);
 		}
@@ -83,15 +84,12 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	 * <ul>
 	 * <li>Log the success</li>
 	 * <li>Reply to the invoker of the migration</li>
-	 * <li>Send an event to other potential consumers on the eventbus</li>
 	 * <li>Update the job and potential version edge</li>
 	 * </ul>
 	 */
 	public MigrationStatusHandler done() {
 		setStatus(COMPLETED);
 		log.info("Migration completed without errors.");
-		JsonObject result = new JsonObject().put("type", "completed");
-		vertx.eventBus().publish(MESH_MIGRATION, result);
 		job.setStopTimestamp();
 		commit();
 		return this;
@@ -112,7 +110,6 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		setStatus(FAILED);
 		log.error("Error handling migration", error);
 
-		vertx.eventBus().publish(MESH_MIGRATION, new JsonObject().put("type", status.name()));
 		job.setStopTimestamp();
 		job.setError(error);
 		commit();
@@ -130,7 +127,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	}
 
 	@Override
-	public void setStatus(MigrationStatus status) {
+	public void setStatus(JobStatus status) {
 		this.status = status;
 	}
 

@@ -1,14 +1,5 @@
 package com.gentics.mesh.graphql.type;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static graphql.Scalars.GraphQLBoolean;
-import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static graphql.schema.GraphQLObjectType.newObject;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.TransformableElement;
@@ -16,10 +7,20 @@ import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphql.context.GraphQLContext;
-
 import dagger.Lazy;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLTypeReference;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.function.Consumer;
+
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static graphql.Scalars.GraphQLBoolean;
+import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLObjectType.newObject;
 
 @Singleton
 public class InterfaceTypeProvider extends AbstractTypeProvider {
@@ -108,10 +109,29 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 	 *            Flag which indicates whether the builder is for a node. Nodes do not require certain common fields. Those fields will be excluded.
 	 */
 	public void addCommonFields(graphql.schema.GraphQLObjectType.Builder builder, boolean isNode) {
+		setFields(builder::field, isNode);
+	}
+
+	public void addCommonFields(graphql.schema.GraphQLInterfaceType.Builder builder) {
+		addCommonFields(builder, false);
+	}
+
+	/**
+	 * Add common fields to the given builder.
+	 *
+	 * @param builder
+	 * @param isNode
+	 *            Flag which indicates whether the builder is for a node. Nodes do not require certain common fields. Those fields will be excluded.
+	 */
+	public void addCommonFields(graphql.schema.GraphQLInterfaceType.Builder builder, boolean isNode) {
+		setFields(builder::field, isNode);
+	}
+
+	private void setFields(Consumer<GraphQLFieldDefinition.Builder> setField, boolean isNode) {
 		// builder.withInterface(createCommonType());
 
 		// .uuid
-		builder.field(newFieldDefinition().name("uuid").description("UUID of the element").type(GraphQLString).dataFetcher(env -> {
+		setField.accept(newFieldDefinition().name("uuid").description("UUID of the element").type(GraphQLString).dataFetcher(env -> {
 			MeshElement element = null;
 			Object source = env.getSource();
 			if (source instanceof NodeContent) {
@@ -125,20 +145,20 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 		}));
 
 		// .etag
-		builder.field(newFieldDefinition().name("etag").description("ETag of the element").type(GraphQLString).dataFetcher(env -> {
+		setField.accept(newFieldDefinition().name("etag").description("ETag of the element").type(GraphQLString).dataFetcher(env -> {
 			GraphQLContext gc = env.getContext();
 			TransformableElement<?> element = env.getSource();
 			return element.getETag(gc);
 		}));
 
 		// .permission
-		builder.field(newFieldDefinition().name("permissions").description("Permission information of the element")
+		setField.accept(newFieldDefinition().name("permissions").description("Permission information of the element")
 				.type(new GraphQLTypeReference(PERM_INFO_TYPE_NAME)));
 
 		// TODO rolePerms
 
 		// .created
-		builder.field(
+		setField.accept(
 				newFieldDefinition().name("created").description("ISO8601 formatted created date string").type(GraphQLString).dataFetcher(env -> {
 					// The source element might be a NGFC. These containers have no creator. The creator is stored for it's Node instead
 					Object source = env.getSource();
@@ -154,7 +174,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 				}));
 
 		// .creator
-		builder.field(
+		setField.accept(
 				newFieldDefinition().name("creator").description("Creator of the element").type(new GraphQLTypeReference("User")).dataFetcher(env -> {
 					GraphQLContext gc = env.getContext();
 					// The source element might be a NGFC. These containers have no creator. The creator is stored for it's Node instead
@@ -169,10 +189,9 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 					}
 					return gc.requiresPerm(vertex.getCreator(), READ_PERM);
 				}));
-
 		if (!isNode) {
 			// .edited
-			builder.field(newFieldDefinition().name("edited").description("ISO8601 formatted edit timestamp").type(GraphQLString).dataFetcher(env -> {
+			setField.accept(newFieldDefinition().name("edited").description("ISO8601 formatted edit timestamp").type(GraphQLString).dataFetcher(env -> {
 				Object source = env.getSource();
 				if (source instanceof SchemaContainerVersion) {
 					source = ((SchemaContainerVersion) source).getSchemaContainer();
@@ -185,7 +204,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 			}));
 
 			// .editor
-			builder.field(newFieldDefinition().name("editor").description("Editor of the element").type(new GraphQLTypeReference("User"))
+			setField.accept(newFieldDefinition().name("editor").description("Editor of the element").type(new GraphQLTypeReference("User"))
 					.dataFetcher(env -> {
 						Object source = env.getSource();
 						if (source instanceof SchemaContainerVersion) {
@@ -199,7 +218,6 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 						return null;
 					}));
 		}
-
 	}
 
 }

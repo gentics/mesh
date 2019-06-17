@@ -35,7 +35,7 @@ import com.gentics.mesh.test.util.TestUtils;
 
 import io.reactivex.Single;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class TxTest extends AbstractMeshTest {
 
 	@Test
@@ -227,7 +227,7 @@ public class TxTest extends AbstractMeshTest {
 				Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getId());
 				// node.reload();
 				assertEquals("Expected {" + expect + "} tags since this is run {" + r + "}.", expect,
-						reloadedNode.getTags(project().getLatestBranch()).size());
+						reloadedNode.getTags(project().getLatestBranch()).count());
 			}
 		}
 	}

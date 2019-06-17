@@ -11,8 +11,8 @@ public class MeshServerInfoModel implements RestModel {
 	@JsonPropertyDescription("Gentics Mesh Version string.")
 	private String meshVersion;
 
-	@JsonPropertyDescription("NodeId of the Gentics Mesh instance.")
-	private String meshNodeId;
+	@JsonPropertyDescription("Node name of the Gentics Mesh instance.")
+	private String meshNodeName;
 
 	@JsonPropertyDescription("Used database implementation vendor name.")
 	private String databaseVendor;
@@ -83,12 +83,12 @@ public class MeshServerInfoModel implements RestModel {
 		this.vertxVersion = vertxVersion;
 	}
 
-	public String getMeshNodeId() {
-		return meshNodeId;
+	public String getMeshNodeName() {
+		return meshNodeName;
 	}
 
-	public void setMeshNodeId(String meshNodeId) {
-		this.meshNodeId = meshNodeId;
+	public void setMeshNodeName(String meshNodeName) {
+		this.meshNodeName = meshNodeName;
 	}
 
 	public String getDatabaseRevision() {

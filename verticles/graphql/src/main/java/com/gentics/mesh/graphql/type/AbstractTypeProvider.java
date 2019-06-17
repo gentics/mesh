@@ -1,7 +1,7 @@
 package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static graphql.Scalars.GraphQLInt;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static graphql.Scalars.GraphQLLong;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLArgument.newArgument;
@@ -18,11 +18,12 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.gentics.graphqlfilter.filter.StartFilter;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
@@ -30,6 +31,7 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.NodeFilter;
@@ -89,6 +91,15 @@ public abstract class AbstractTypeProvider {
 		return getLanguageArgument(env, (List<String>) null);
 	}
 
+	public String getSingleLanguageArgument(DataFetchingEnvironment env) {
+		String argument = env.getArgument("lang");
+		if (argument != null) {
+			return argument;
+		} else {
+			return Mesh.mesh().getOptions().getDefaultLanguage();
+		}
+	}
+
 	/**
 	 * Generate a language fallback list and utilize any existing language fallback list from the given content.
 	 * 
@@ -101,14 +112,14 @@ public abstract class AbstractTypeProvider {
 	}
 
 	/**
-	 * Generate a language fallback list and utilize the given container language. 
-	 * Prefer the language of the container for the fallback. 
+	 * Generate a language fallback list and utilize the given container language. Prefer the language of the container for the fallback.
+	 * 
 	 * @param env
 	 * @param source
 	 * @return
 	 */
 	public List<String> getLanguageArgument(DataFetchingEnvironment env, GraphFieldContainer source) {
-		return getLanguageArgument(env, Arrays.asList(source.getLanguage().getLanguageTag()));
+		return getLanguageArgument(env, Arrays.asList(source.getLanguageTag()));
 	}
 
 	/**
@@ -160,6 +171,22 @@ public abstract class AbstractTypeProvider {
 		return arg.build();
 	}
 
+	public GraphQLArgument createSingleLanguageTagArg(boolean withDefaultLang) {
+
+		// #lang
+		String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
+		graphql.schema.GraphQLArgument.Builder arg = newArgument()
+			.name("lang")
+			.type(GraphQLString)
+			.description("Language tag to filter by.");
+
+		if (withDefaultLang) {
+			arg.defaultValue(defaultLanguage);
+		}
+
+		return arg.build();
+	}
+
 	/**
 	 * Return a new argument for the uuid.
 	 * 
@@ -168,6 +195,17 @@ public abstract class AbstractTypeProvider {
 	 */
 	public GraphQLArgument createUuidArg(String description) {
 		return newArgument().name("uuid").type(GraphQLString).description(description).build();
+	}
+
+	/**
+	 * Return a new argument for a list of uuids.
+	 *
+	 * @param description
+	 *            The new arguments description
+	 * @return A new argument for a list of uuids
+	 */
+	public GraphQLArgument createUuidsArg(String description) {
+		return newArgument().name("uuids").type(GraphQLList.list(GraphQLString)).description(description).build();
 	}
 
 	/**
@@ -293,8 +331,9 @@ public abstract class AbstractTypeProvider {
 	 * @param filterArgument
 	 * @return
 	 */
-	protected GraphQLFieldDefinition newPagingSearchField(String name, String description, Function<GraphQLContext, RootVertex<?>> rootProvider,
-		String pageTypeName, SearchHandler searchHandler, Filterable filterProvider) {
+	protected <T extends MeshCoreVertex<? extends RestModel, T>> GraphQLFieldDefinition newPagingSearchField(String name, String description,
+		Function<GraphQLContext, RootVertex<T>> rootProvider,
+		String pageTypeName, SearchHandler<?, ?> searchHandler, StartFilter<T, Map<String, ?>> filterProvider) {
 		Builder fieldDefBuilder = newFieldDefinition()
 			.name(name)
 			.description(description)
@@ -314,9 +353,9 @@ public abstract class AbstractTypeProvider {
 						throw new RuntimeException(e);
 					}
 				} else {
-					RootVertex<?> root = rootProvider.apply(gc);
-					if (filterProvider != null) {
-						return root.findAll(gc, getPagingInfo(env), filterProvider.constructFilter(filter, root));
+					RootVertex<T> root = rootProvider.apply(gc);
+					if (filterProvider != null && filter != null) {
+						return root.findAll(gc, getPagingInfo(env), filterProvider.createPredicate(filter));
 					} else {
 						return root.findAll(gc, getPagingInfo(env));
 					}
@@ -416,7 +455,7 @@ public abstract class AbstractTypeProvider {
 
 		List<String> languageTags = getLanguageArgument(env);
 
-		Stream<NodeContent> contents = nodeRoot.findAllStream(gc)
+		Stream<NodeContent> contents = nodeRoot.findAllStream(gc, READ_PUBLISHED_PERM)
 			// Now lets try to load the containers for those found nodes - apply the language fallback
 			.map(node -> new NodeContent(node, node.findVersion(gc, languageTags), languageTags))
 			// Filter nodes without a container

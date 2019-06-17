@@ -1,14 +1,10 @@
 package com.gentics.mesh.cli;
 
-import java.io.IOException;
-import java.util.Collection;
-
-import javax.naming.InvalidNameException;
-
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.binary.BinaryRoot;
+import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
@@ -24,8 +20,10 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
-
 import io.vertx.core.Vertx;
+
+import java.io.IOException;
+import java.util.Collection;
 
 /**
  * The bootstrap initialiser takes care of creating all mandatory graph elements for mesh. This includes the creation of MeshRoot, ProjectRoot, NodeRoot,
@@ -81,6 +79,13 @@ public interface BootstrapInitializer {
 	 * @return
 	 */
 	BinaryRoot binaryRoot();
+
+	/**
+	 * Return the changelog root element.
+	 * 
+	 * @return
+	 */
+	ChangelogRoot changelogRoot();
 
 	/**
 	 * Return the global tagfamily root element. Note that each project has their own tag family root element.
@@ -187,6 +192,13 @@ public interface BootstrapInitializer {
 	void initLanguages(LanguageRoot root) throws JsonParseException, JsonMappingException, IOException;
 
 	/**
+	 * Initialize optional languages, if an additional language file was configured
+	 * 
+	 * @param configuration configuration
+	 */
+	void initOptionalLanguages(MeshOptions configuration);
+
+	/**
 	 * Grant CRUD to all objects within the graph to the Admin Role.
 	 */
 	void initPermissions();
@@ -224,12 +236,5 @@ public interface BootstrapInitializer {
 	 * Register the eventbus event handlers.
 	 */
 	void registerEventHandlers();
-
-	/**
-	 * The projects share various subrouters. This method will add the subrouters for all registered projects.
-	 * 
-	 * @throws InvalidNameException
-	 */
-	void initProjects() throws InvalidNameException;
 
 }

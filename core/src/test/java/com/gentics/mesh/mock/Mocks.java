@@ -1,31 +1,27 @@
 package com.gentics.mesh.mock;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.mockito.Mockito;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.router.ProjectsRouter;
 import com.gentics.mesh.util.HttpQueryUtils;
 import com.syncleus.ferma.tx.Tx;
-
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
+import org.mockito.Mockito;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import static com.gentics.mesh.handler.VersionHandler.API_VERSION_CONTEXT_KEY;
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public final class Mocks {
 
@@ -36,6 +32,7 @@ public final class Mocks {
 	public static InternalActionContext getMockedInternalActionContext(String query, User user, Project project) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(query, false, user, null));
 		ac.data().put(ProjectsRouter.PROJECT_CONTEXT_KEY, project);
+		ac.put(API_VERSION_CONTEXT_KEY, CURRENT_API_VERSION);
 		return ac;
 	}
 

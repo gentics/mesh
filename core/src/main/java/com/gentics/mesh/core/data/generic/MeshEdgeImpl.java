@@ -2,8 +2,8 @@ package com.gentics.mesh.core.data.generic;
 
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.madl.frame.AbstractEdgeFrame;
 import com.gentics.mesh.util.UUIDUtil;
-import com.syncleus.ferma.AbstractEdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.annotations.GraphElement;
 import com.syncleus.ferma.tx.Tx;
@@ -29,20 +29,20 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 
 	@Override
 	protected void init(FramedGraph graph, Element element) {
-		super.init(graph, element);
+		super.init(graph, null);
 		this.id = element.getId();
 	}
 
 	public String getFermaType() {
-		return getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY);
+		return property(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY);
 	}
 
 	public String getUuid() {
-		return getProperty("uuid");
+		return property("uuid");
 	}
 
 	public void setUuid(String uuid) {
-		setProperty("uuid", uuid);
+		property("uuid", uuid);
 	}
 
 	@Override

@@ -6,7 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.Arrays;
 import java.util.Objects;
 
-import com.gentics.mesh.core.data.ContainerType;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
@@ -73,8 +74,9 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 
 		// check value restrictions
 		StringFieldSchema stringFieldSchema = (StringFieldSchema) fieldSchema;
-		if (stringFieldSchema.getAllowedValues() != null) {
-			if (stringField.getString() != null && !Arrays.asList(stringFieldSchema.getAllowedValues()).contains(stringField.getString())) {
+		String[] allowedStrings = stringFieldSchema.getAllowedValues();
+		if (allowedStrings != null && allowedStrings.length != 0) {
+			if (stringField.getString() != null && !Arrays.asList(allowedStrings).contains(stringField.getString())) {
 				throw error(BAD_REQUEST, "node_error_invalid_string_field_value", fieldKey, stringField.getString());
 			}
 		}
@@ -119,7 +121,7 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 	}
 
 	@Override
-	public void removeField(GraphFieldContainer container) {
+	public void removeField(BulkActionContext bac, GraphFieldContainer container) {
 		setFieldProperty("string", null);
 		setFieldKey(null);
 	}

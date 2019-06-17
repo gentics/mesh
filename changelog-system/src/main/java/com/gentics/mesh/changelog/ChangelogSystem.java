@@ -41,9 +41,7 @@ public class ChangelogSystem {
 		boolean reindex = false;
 		for (Change change : list) {
 			// Execute each change in a new transaction
-			TransactionalGraph graph = db.rawTx();
 			change.setDb(db);
-			change.setGraph(graph);
 			try {
 				if (!change.isApplied()) {
 					log.info("Handling change {" + change.getUuid() + "}");
@@ -61,12 +59,9 @@ public class ChangelogSystem {
 				} else {
 					log.debug("Change {" + change.getUuid() + "} is already applied.");
 				}
-			} catch (Exception e) {
-				log.error("Error while handling change {" + change.getUuid() + "/" + change.getName() + "}. Invoking rollback..", e);
-				graph.rollback();
+			} catch (Throwable e) {
+				log.error("Error while handling change {" + change.getUuid() + "/" + change.getName() + "}.", e);
 				return false;
-			} finally {
-				graph.shutdown();
 			}
 		}
 		if (reindex) {
@@ -83,6 +78,7 @@ public class ChangelogSystem {
 		try {
 			for (Change change : list) {
 				change.setGraph(graph);
+				change.setDb(db);
 				change.markAsComplete();
 				log.info("Marking change {" + change.getUuid() + "/" + change.getName() + "} as completed.");
 			}

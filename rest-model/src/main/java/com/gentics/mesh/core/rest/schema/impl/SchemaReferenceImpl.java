@@ -10,6 +10,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 public class SchemaReferenceImpl extends AbstractNameUuidReference<SchemaReference> implements SchemaReference {
 
 	private String version;
+	private String versionUuid;
 
 	@Override
 	public String getVersion() {
@@ -19,6 +20,17 @@ public class SchemaReferenceImpl extends AbstractNameUuidReference<SchemaReferen
 	@Override
 	public SchemaReference setVersion(String version) {
 		this.version = version;
+		return this;
+	}
+
+	@Override
+	public String getVersionUuid() {
+		return versionUuid;
+	}
+
+	@Override
+	public SchemaReferenceImpl setVersionUuid(String versionUuid) {
+		this.versionUuid = versionUuid;
 		return this;
 	}
 

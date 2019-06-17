@@ -1,24 +1,12 @@
 package com.gentics.mesh.linkrenderer;
 
-import static com.gentics.mesh.test.TestSize.FULL;
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.ExecutionException;
-
-import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.ContainerType;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -27,8 +15,19 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
+import org.apache.commons.io.IOUtils;
+import org.junit.Before;
+import org.junit.Test;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.concurrent.ExecutionException;
+
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static org.junit.Assert.assertEquals;
+
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class LinkRendererTest extends AbstractMeshTest {
 
 	private WebRootLinkReplacer replacer;
@@ -90,7 +89,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
-			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News%20Overview.en.html", replacedContent);
+			assertEquals("Check rendered content", CURRENT_API_BASE_PATH + "/dummy/webroot/News/News%20Overview.en.html", replacedContent);
 		}
 	}
 
@@ -104,7 +103,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
-			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News%20Overview.en.html postfix", replacedContent);
+			assertEquals("Check rendered content", CURRENT_API_BASE_PATH + "/dummy/webroot/News/News%20Overview.en.html postfix", replacedContent);
 		}
 	}
 
@@ -118,7 +117,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
-			assertEquals("Check rendered content", "prefix /api/v1/dummy/webroot/News/News%20Overview.en.html", replacedContent);
+			assertEquals("Check rendered content", "prefix " + CURRENT_API_BASE_PATH + "/dummy/webroot/News/News%20Overview.en.html", replacedContent);
 		}
 	}
 
@@ -132,7 +131,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
-			assertEquals("Check rendered content", "prefix /api/v1/dummy/webroot/News/News%20Overview.en.html postfix", replacedContent);
+			assertEquals("Check rendered content", "prefix " + CURRENT_API_BASE_PATH + "/dummy/webroot/News/News%20Overview.en.html postfix", replacedContent);
 		}
 	}
 
@@ -147,7 +146,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 					null);
 
 			assertEquals("Check rendered content",
-					"/api/v1/dummy/webroot/News/News%20Overview.en.html/api/v1/dummy/webroot/News/News%20Overview.en.html", replacedContent);
+				CURRENT_API_BASE_PATH + "/dummy/webroot/News/News%20Overview.en.html" + CURRENT_API_BASE_PATH + "/dummy/webroot/News/News%20Overview.en.html", replacedContent);
 		}
 	}
 
@@ -162,7 +161,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 					null);
 
 			assertEquals("Check rendered content",
-					"/api/v1/dummy/webroot/News/News%20Overview.en.html in between /api/v1/dummy/webroot/News/News%20Overview.en.html",
+				CURRENT_API_BASE_PATH + "/dummy/webroot/News/News%20Overview.en.html in between " + CURRENT_API_BASE_PATH + "/dummy/webroot/News/News%20Overview.en.html",
 					replacedContent);
 		}
 	}
@@ -191,7 +190,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
-			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News%20Overview.en.html\"'", replacedContent);
+			assertEquals("Check rendered content", "'\"" + CURRENT_API_BASE_PATH + "/dummy/webroot/News/News%20Overview.en.html\"'", replacedContent);
 		}
 	}
 
@@ -206,7 +205,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
-			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html\"'", replacedContent);
+			assertEquals("Check rendered content", "'\"" + CURRENT_API_BASE_PATH + "/dummy/webroot/Neuigkeiten/News%20Overview.de.html\"'", replacedContent);
 		}
 	}
 
@@ -221,7 +220,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
-			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News%20Overview.en.html\"'", replacedContent);
+			assertEquals("Check rendered content", "'\"" + CURRENT_API_BASE_PATH + "/dummy/webroot/News/News%20Overview.en.html\"'", replacedContent);
 		}
 	}
 
@@ -236,7 +235,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
-			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News%20Overview.en.html\"'", replacedContent);
+			assertEquals("Check rendered content", "'\"" + CURRENT_API_BASE_PATH + "/dummy/webroot/News/News%20Overview.en.html\"'", replacedContent);
 		}
 	}
 
@@ -251,7 +250,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
-			assertEquals("Check rendered content", "/api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html", replacedContent);
+			assertEquals("Check rendered content", CURRENT_API_BASE_PATH + "/dummy/webroot/Neuigkeiten/News%20Overview.de.html", replacedContent);
 		}
 	}
 
@@ -265,15 +264,15 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
 					null);
 
-			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News%20Overview.en.html", replacedContent);
+			assertEquals("Check rendered content", CURRENT_API_BASE_PATH + "/dummy/webroot/News/News%20Overview.en.html", replacedContent);
 		}
 	}
 
 	@Test
 	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException {
 		try (Tx tx = tx()) {
-			Language german = german();
-			Language english = english();
+			String german = german();
+			String english = english();
 			Node parentNode = folder("2015");
 
 			SchemaContainerVersion schemaVersion = schemaContainer("content").getLatestVersion();
@@ -313,7 +312,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			InternalActionContext ac = mockActionContext();
 			String replacedContent = replacer.replace(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, meshLink, LinkType.FULL, null,
 					null);
-			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/somefile.dat", replacedContent);
+			assertEquals("Check rendered content", CURRENT_API_BASE_PATH + "/dummy/webroot/News/somefile.dat", replacedContent);
 		}
 	}
 

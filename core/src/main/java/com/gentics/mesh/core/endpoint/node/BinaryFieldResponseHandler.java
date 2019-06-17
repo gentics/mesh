@@ -14,16 +14,20 @@ import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.handler.RangeRequestHandler;
+import com.gentics.mesh.handler.impl.RangeRequestHandlerImpl;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.ETag;
+import com.gentics.mesh.util.EncodeUtil;
 import com.gentics.mesh.util.RxUtil;
 
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -49,67 +53,118 @@ public class BinaryFieldResponseHandler {
 	 * @param binaryField
 	 */
 	public void handle(RoutingContext rc, BinaryGraphField binaryField) {
+		rc.response().putHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
 		if (!storage.exists(binaryField)) {
 			rc.fail(error(NOT_FOUND, "node_error_binary_data_not_found"));
 			return;
 		} else {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			Binary binary = binaryField.getBinary();
-			String contentLength = String.valueOf(binary.getSize());
-			String fileName = binaryField.getFileName();
-			String contentType = binaryField.getMimeType();
-			String sha512sum = binary.getSHA512Sum();
-
-			// Check the etag
-			String etagKey = sha512sum;
-			if (binaryField.hasProcessableImage()) {
-				etagKey += ac.getImageParameters().getQueryParameters();
+			if (checkETag(rc, binaryField)) {
+				return;
 			}
-
-			String etagHeaderValue = ETag.prepareHeader(ETag.hash(etagKey), false);
-			HttpServerResponse response = rc.response();
-			response.putHeader(ETAG, etagHeaderValue);
-			String requestETag = rc.request().getHeader(HttpHeaders.IF_NONE_MATCH);
-
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			ImageManipulationParameters imageParams = ac.getImageParameters();
-			if (requestETag != null && requestETag.equals(etagHeaderValue)) {
-				response.setStatusCode(NOT_MODIFIED.code()).end();
-			} else if (binaryField.hasProcessableImage() && imageParams.hasResizeParams()) {
-
-				// We can maybe enhance the parameters using stored parameters.
-				if (!imageParams.hasFocalPoint()) {
-					FocalPoint fp = binaryField.getImageFocalPoint();
-					if (fp != null) {
-						imageParams.setFocalPoint(fp);
-					}
-				}
-				// Resize the image if needed
-				Flowable<Buffer> data = binary.getStream();
-				Flowable<Buffer> resizedData = imageManipulator.handleResize(data, sha512sum, imageParams)
-					.toFlowable()
-					.map(fileWithProps -> {
-						response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileWithProps.getProps().size()));
-						response.putHeader(HttpHeaders.CONTENT_TYPE, "image/jpeg");
-						response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
-						response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
-						// TODO encode filename?
-						response.putHeader("content-disposition", "inline; filename=" + fileName);
-						return fileWithProps.getFile();
-					}).flatMap(RxUtil::toBufferFlow);
-				resizedData.subscribe(response::write, rc::fail, response::end);
+			if (binaryField.hasProcessableImage() && imageParams.hasResizeParams()) {
+				resizeAndRespond(rc, binaryField, imageParams);
 			} else {
-				response.putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);
-				if (contentType != null) {
-					response.putHeader(HttpHeaders.CONTENT_TYPE, contentType);
-				}
-				response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
-				response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
-				// TODO encode filename?
-				// TODO images and pdf files should be shown in inline format
-				response.putHeader("content-disposition", "attachment; filename=" + fileName);
-				binary.getStream().subscribe(response::write, rc::fail, response::end);
+				respond(rc, binaryField);
 			}
 		}
+	}
+
+	private boolean checkETag(RoutingContext rc, BinaryGraphField binaryField) {
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+		String sha512sum = binaryField.getBinary().getSHA512Sum();
+		String etagKey = sha512sum;
+		if (binaryField.hasProcessableImage()) {
+			etagKey += ac.getImageParameters().getQueryParameters();
+		}
+
+		String etagHeaderValue = ETag.prepareHeader(ETag.hash(etagKey), false);
+		HttpServerResponse response = rc.response();
+		response.putHeader(ETAG, etagHeaderValue);
+		String requestETag = rc.request().getHeader(HttpHeaders.IF_NONE_MATCH);
+		if (requestETag != null && requestETag.equals(etagHeaderValue)) {
+			response.setStatusCode(NOT_MODIFIED.code()).end();
+			return true;
+		}
+		return false;
+	}
+
+	private void respond(RoutingContext rc, BinaryGraphField binaryField) {
+		HttpServerResponse response = rc.response();
+
+		Binary binary = binaryField.getBinary();
+		String fileName = binaryField.getFileName();
+		String contentType = binaryField.getMimeType();
+		// Try to guess the contenttype via the filename
+		if (contentType == null) {
+			contentType = MimeMapping.getMimeTypeForFilename(fileName);
+		}
+
+		response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
+
+		addContentDispositionHeader(response, fileName, "attachment");
+
+		// Set to IDENTITY to avoid gzip compression
+		response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
+
+		String localPath = storage.getLocalPath(binary.getUuid());
+		if (localPath != null) {
+			RangeRequestHandler handler = new RangeRequestHandlerImpl();
+			handler.handle(rc, localPath, contentType);
+		} else {
+			String contentLength = String.valueOf(binary.getSize());
+			if (contentType != null) {
+				response.putHeader(HttpHeaders.CONTENT_TYPE, contentType);
+			}
+			response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
+			response.putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);
+			binary.getStream().subscribe(response::write, rc::fail, response::end);
+		}
+
+	}
+
+	private void resizeAndRespond(RoutingContext rc, BinaryGraphField binaryField, ImageManipulationParameters imageParams) {
+		HttpServerResponse response = rc.response();
+		Binary binary = binaryField.getBinary();
+		String sha512sum = binary.getSHA512Sum();
+		String fileName = binaryField.getFileName();
+		// We can maybe enhance the parameters using stored parameters.
+		if (!imageParams.hasFocalPoint()) {
+			FocalPoint fp = binaryField.getImageFocalPoint();
+			if (fp != null) {
+				imageParams.setFocalPoint(fp);
+			}
+		}
+		// Resize the image if needed
+		Flowable<Buffer> data = binary.getStream();
+		Flowable<Buffer> resizedData = imageManipulator.handleResize(data, sha512sum, imageParams)
+			.toFlowable()
+			.map(fileWithProps -> {
+				response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileWithProps.getProps().size()));
+				response.putHeader(HttpHeaders.CONTENT_TYPE, fileWithProps.getMimeType());
+				response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
+				response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
+				// Set to IDENTITY to avoid gzip compression
+				response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
+
+				addContentDispositionHeader(response, fileName, "inline");
+
+				return fileWithProps.getFile();
+			}).flatMap(RxUtil::toBufferFlow);
+		resizedData.subscribe(response::write, rc::fail, response::end);
+
+	}
+
+	private void addContentDispositionHeader(HttpServerResponse response, String fileName, String type) {
+		String encodedFileNameUTF8 = EncodeUtil.encodeForRFC5597(fileName);
+		String encodedFileNameISO = EncodeUtil.toISO88591(fileName);
+
+		StringBuilder value = new StringBuilder();
+		value.append(type + ";");
+		value.append(" filename=\"" + encodedFileNameISO + "\";");
+		value.append(" filename*=" + encodedFileNameUTF8);
+		response.putHeader("content-disposition", value.toString());
 	}
 
 }

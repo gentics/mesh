@@ -4,8 +4,11 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.test.TestSize.PROJECT;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_ASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_UNASSIGNED;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestSize.PROJECT;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
@@ -21,18 +24,21 @@ import java.util.Map;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.ListResponse;
+import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
+import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = PROJECT, startServer = true)
 public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
@@ -79,26 +85,49 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddUserToGroupWithPerm() throws Exception {
-		User extraUser;
-		try (Tx tx = tx()) {
+		final String userFirstname = "Albert";
+		final String userLastname = "Einstein";
+		final String groupUuid = groupUuid();
+		final String groupName = tx(() -> group().getName());
+		User extraUser = tx(() -> {
 			UserRoot userRoot = meshRoot().getUserRoot();
-			extraUser = userRoot.create("extraUser", user());
-			role().grantPermissions(extraUser, READ_PERM);
-			assertFalse("User should not be member of the group.", group().hasUser(extraUser));
-			tx.success();
-		}
+			User user = userRoot.create("extraUser", user());
+			user.setFirstname(userFirstname);
+			user.setLastname(userLastname);
+			role().grantPermissions(user, READ_PERM);
+			assertFalse("User should not be member of the group.", group().hasUser(user));
+			return user;
+		});
 
-		GroupResponse restGroup = call(() -> client().addUserToGroup(groupUuid(), tx(() -> extraUser.getUuid())));
+		String extraUserUuid = tx(() -> extraUser.getUuid());
+		expect(GROUP_USER_ASSIGNED).match(1, GroupUserAssignModel.class, event -> {
+			GroupReference groupRef = event.getGroup();
+			assertNotNull(groupRef);
+			assertEquals("The group name was not set.", groupName, groupRef.getName());
+			assertEquals("The group uuid was not set.", groupUuid, groupRef.getUuid());
+
+			UserReference userRef = event.getUser();
+			assertNotNull(userRef);
+			assertEquals("The user uuid was not set.", extraUserUuid, userRef.getUuid());
+			assertEquals("The user firstname was not set.", userFirstname, userRef.getFirstName());
+			assertEquals("The user lastname was not set.", userLastname, userRef.getLastName());
+		}).total(1);
+
+		GroupResponse restGroup = call(() -> client().addUserToGroup(groupUuid(), extraUserUuid));
+		awaitEvents();
+		waitForSearchIdleEvent();
+
 		try (Tx tx = tx()) {
 			assertThat(restGroup).matches(group());
-			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), user().getUuid());
-			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), extraUser.getUuid());
-			assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), group().getUuid());
-			assertThat(trackingSearchProvider()).hasEvents(3, 0, 0, 0);
-			trackingSearchProvider().clear().blockingAwait();
+			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), extraUserUuid);
+			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
+			trackingSearchProvider().reset();
 			assertTrue("User should be member of the group.", group().hasUser(extraUser));
 		}
-
+		// Test for idempotency
+		expect(GROUP_USER_ASSIGNED).none();
+		call(() -> client().addUserToGroup(groupUuid(), extraUserUuid));
+		awaitEvents();
 	}
 
 	@Test
@@ -114,7 +143,8 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().addUserToGroup(groupUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", groupUuid());
+			call(() -> client().addUserToGroup(groupUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", groupUuid(),
+				UPDATE_PERM.getRestPerm().getName());
 			assertFalse("User should not be member of the group.", group().hasUser(extraUser));
 		}
 
@@ -131,7 +161,8 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().addUserToGroup(group().getUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", extraUser.getUuid());
+			call(() -> client().addUserToGroup(group().getUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", extraUser.getUuid(),
+				READ_PERM.getRestPerm().getName());
 			assertFalse("User should not be member of the group.", group().hasUser(extraUser));
 		}
 	}
@@ -144,7 +175,8 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		call(() -> client().removeUserFromGroup(groupUuid(), userUuid()), FORBIDDEN, "error_missing_perm", groupUuid());
+		call(() -> client().removeUserFromGroup(groupUuid(), userUuid()), FORBIDDEN, "error_missing_perm", groupUuid(),
+			UPDATE_PERM.getRestPerm().getName());
 		try (Tx tx = tx()) {
 			assertTrue("User should still be a member of the group.", group().hasUser(user()));
 		}
@@ -152,10 +184,50 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveUserFromGroupWithPerm() throws Exception {
-		call(() -> client().removeUserFromGroup(groupUuid(), userUuid()));
+		final String groupUuid = groupUuid();
+		final String groupName = tx(() -> group().getName());
+		final String userFirstname = "Albert";
+		final String userLastname = "Einstein";
+
+		User extraUser = tx(() -> {
+			UserRoot userRoot = meshRoot().getUserRoot();
+			User user = userRoot.create("extraUser", user());
+			user.setFirstname(userFirstname);
+			user.setLastname(userLastname);
+			role().grantPermissions(user, READ_PERM);
+			group().addUser(user);
+			return user;
+		});
+		final String extraUserUuid = tx(() -> extraUser.getUuid());
+
+		expect(GROUP_USER_UNASSIGNED).match(1, GroupUserAssignModel.class, event -> {
+			GroupReference groupRef = event.getGroup();
+			assertNotNull(groupRef);
+			assertEquals("The group name was not set.", groupName, groupRef.getName());
+			assertEquals("The group uuid was not set.", groupUuid, groupRef.getUuid());
+
+			UserReference userRef = event.getUser();
+			assertNotNull(userRef);
+			assertEquals("The user uuid was not set.", extraUserUuid, userRef.getUuid());
+			assertEquals("The user firstname was not set.", userFirstname, userRef.getFirstName());
+			assertEquals("The user lastname was not set.", userLastname, userRef.getLastName());
+		}).total(1);
+
+		call(() -> client().removeUserFromGroup(groupUuid, extraUserUuid));
+		awaitEvents();
+		waitForSearchIdleEvent();
+
 		try (Tx tx = tx()) {
-			assertFalse("User should not be member of the group.", group().hasUser(user()));
+			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), extraUserUuid);
+			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
+			assertFalse("User should not be member of the group.", group().hasUser(extraUser));
 		}
+
+		// Test for idempotency
+		expect(GROUP_USER_UNASSIGNED).none();
+		call(() -> client().removeUserFromGroup(groupUuid, extraUserUuid));
+		awaitEvents();
+
 	}
 
 	@Test

@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.impl.BinaryImpl;
@@ -31,8 +32,13 @@ import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.NodeUtil;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * @see BinaryGraphField
@@ -41,18 +47,9 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 
 	public static final Set<String> allowedTypes = new HashSet<>();
 
-	static {
-		allowedTypes.add("application/pdf");
-		allowedTypes.add("application/msword");
-		allowedTypes.add("text/rtf");
-		allowedTypes.add("application/vnd.ms-powerpoint");
-		allowedTypes.add("application/vnd.oasis.opendocument.text");
-		allowedTypes.add("text/plain");
-		allowedTypes.add("application/rtf");
-	}
+	private static final Logger log = LoggerFactory.getLogger(BinaryGraphFieldImpl.class);
 
-	public static void init(Database database) {
-		// database.addVertexType(BinaryGraphFieldImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
 	}
 
 	public static FieldTransformer<BinaryField> BINARY_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
@@ -91,7 +88,11 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		String hash = binaryField.getSha512sum();
 		if (graphBinaryField == null && hash != null) {
 			Binary binary = MeshInternal.get().boot().binaryRoot().findByHash(hash);
-			graphBinaryField = container.createBinary(fieldKey, binary);
+			if (binary != null) {
+				graphBinaryField = container.createBinary(fieldKey, binary);
+			} else {
+				log.debug("Could not find binary for hash {" + hash + "}");
+			}
 		}
 
 		// Otherwise we can't update the binaryfield
@@ -147,6 +148,12 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 				graphBinaryField.setLocation(loc);
 			}
 		}
+		
+		// Handle Update - Plain text
+		String text = binaryField.getPlainText();
+		if (text != null) {
+			graphBinaryField.setPlainText(text);
+		}
 
 		// Don't update image width, height, SHA checksum - those are immutable
 	};
@@ -175,6 +182,8 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 
 		BinaryMetadata metaData = getMetadata();
 		restModel.setMetadata(metaData);
+
+		restModel.setPlainText(getPlainText());
 		return restModel;
 	}
 
@@ -185,20 +194,20 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 			if ("uuid".equals(key)) {
 				continue;
 			}
-			Object value = getProperty(key);
-			target.setProperty(key, value);
+			Object value = property(key);
+			target.property(key, value);
 		}
 		return this;
 	}
 
 	@Override
 	public void setFieldKey(String key) {
-		setProperty(GraphField.FIELD_KEY_PROPERTY_KEY, key);
+		property(GraphField.FIELD_KEY_PROPERTY_KEY, key);
 	}
 
 	@Override
 	public String getFieldKey() {
-		return getProperty(GraphField.FIELD_KEY_PROPERTY_KEY);
+		return property(GraphField.FIELD_KEY_PROPERTY_KEY);
 	}
 
 	@Override
@@ -216,12 +225,12 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	 * the binary storage as well.
 	 */
 	@Override
-	public void removeField(GraphFieldContainer container) {
+	public void removeField(BulkActionContext bac, GraphFieldContainer container) {
 		Binary binary = getBinary();
 		remove();
 		// Only get rid of the binary as well if no other fields are using the binary.
-		if (!binary.findFields().iterator().hasNext()) {
-			binary.remove();
+		if (!binary.findFields().hasNext()) {
+			binary.delete(bac);
 		}
 	}
 
@@ -235,8 +244,8 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 			if (key.equals("uuid") || key.equals("ferma_type")) {
 				continue;
 			}
-			Object value = getProperty(key);
-			field.setProperty(key, value);
+			Object value = property(key);
+			field.property(key, value);
 		}
 		return field;
 	}
@@ -320,23 +329,13 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	}
 
 	@Override
-	public boolean isIngestableDocument() {
-		String mimeType = getMimeType();
-		if (mimeType == null) {
-			return false;
-		}
-		mimeType = mimeType.toLowerCase();
-		return allowedTypes.contains(mimeType);
-	}
-
-	@Override
 	public Map<String, String> getMetadataProperties() {
 		List<String> keys = getPropertyKeys().stream().filter(k -> k.startsWith(META_DATA_PROPERTY_PREFIX)).collect(Collectors.toList());
 
 		Map<String, String> metadata = new HashMap<>();
 		for (String key : keys) {
 			String name = key.substring(META_DATA_PROPERTY_PREFIX.length());
-			String value = getProperty(key);
+			String value = property(key);
 			metadata.put(name, value);
 		}
 		return metadata;
@@ -365,6 +364,16 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	@Override
 	public void setMetadata(String key, String value) {
 		setProperty(META_DATA_PROPERTY_PREFIX + key, value);
+	}
+
+	@Override
+	public String getPlainText() {
+		return getProperty(PLAIN_TEXT_KEY);
+	}
+
+	@Override
+	public void setPlainText(String text) {
+		setProperty(PLAIN_TEXT_KEY, text);
 	}
 
 }

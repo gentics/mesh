@@ -1,0 +1,48 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:NodeUpdateRequest",
+  "properties" : {
+    "language" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "ISO 639-1 language tag of the node content."
+    },
+    "fields" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:FieldMap",
+      "required" : true,
+      "description" : "Dynamic map with fields of the node content.",
+      "properties" : {
+        "empty" : {
+          "type" : "boolean"
+        }
+      }
+    },
+    "version" : {
+      "type" : "string",
+      "description" : "Version number which can be provided in order to handle and detect concurrent changes to the node content."
+    },
+    "tags" : {
+      "type" : "array",
+      "description" : "List of tags that should be used to tag the node.",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:tag:TagReference",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "description" : "Name of the referenced element"
+          },
+          "uuid" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Uuid of the referenced element"
+          },
+          "tagFamily" : {
+            "type" : "string"
+          }
+        }
+      }
+    }
+  }
+}

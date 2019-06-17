@@ -18,8 +18,6 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import javax.script.ScriptException;
-
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.binary.Binary;
@@ -28,49 +26,52 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.binary.BinaryFieldTestHelper;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.RxUtil;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest implements BinaryFieldTestHelper {
 
 	String hash;
 
+	/**
+	 * Creates a new binary field in the given container
+	 */
 	final DataProvider FILL = (container, name) -> {
 		Buffer buffer = Buffer.buffer(FILECONTENTS);
 		hash = FileUtils.hash(buffer).blockingGet();
 		BinaryRoot binaryRoot = MeshInternal.get().boot().binaryRoot();
+
+		// Check whether the binary could already be found
 		Binary binary = binaryRoot.findByHash(hash);
+		boolean store = false;
 		if (binary == null) {
 			binary = binaryRoot.create(hash, 1L);
+			store = true;
 		}
 		BinaryGraphField field = container.createBinary(name, binary);
 		field.setFileName(FILENAME);
 		field.setMimeType(MIMETYPE);
-		meshDagger().binaryStorage().store(Flowable.just(buffer), binary.getUuid()).blockingAwait();
+
+		// Only store the file data if we need to
+		if (store == true) {
+			BinaryStorage storage = meshDagger().binaryStorage();
+			String tmpId = UUIDUtil.randomUUID();
+			storage.storeInTemp(Flowable.just(buffer), tmpId).blockingAwait();
+			storage.moveInPlace(binary.getUuid(), tmpId).blockingAwait();
+		}
 	};
 
 	@Test
 	@Override
 	public void testRemove() throws Exception {
 		removeField(CREATEBINARY, FILL, FETCH);
-	}
-
-	@Test
-	@Override
-	public void testRename() throws Exception {
-		renameField(CREATEBINARY, FILL, FETCH, (container, name) -> {
-			assertThat(container.getBinary(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getBinary(name).getFileName()).as(NEWFIELDVALUE).isEqualTo(FILENAME);
-			assertThat(container.getBinary(name).getMimeType()).as(NEWFIELDVALUE).isEqualTo(MIMETYPE);
-			assertThat(container.getBinary(name).getBinary().getSHA512Sum()).as(NEWFIELDVALUE).isEqualTo(hash);
-			Buffer contents = RxUtil.readEntireData(container.getBinary(name).getBinary().getStream()).blockingGet();
-			assertThat(contents.toString()).as(NEWFIELDVALUE).isEqualTo(FILECONTENTS);
-		});
 	}
 
 	@Test
@@ -198,31 +199,4 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		});
 	}
 
-	@Test
-	@Override
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEBINARY, FILL, FETCH,
-				"function migrate(node, fieldname, convert) {node.fields[fieldname].fileName = 'bla' + node.fields[fieldname].fileName; return node;}",
-				(container, name) -> {
-					BinaryGraphField newField = container.getBinary(name);
-					assertThat(newField).as(NEWFIELD).isNotNull();
-					assertThat(newField.getFileName()).as(NEWFIELDVALUE).isEqualTo("bla" + FILENAME);
-					assertThat(newField.getMimeType()).as(NEWFIELDVALUE).isEqualTo(MIMETYPE);
-					assertThat(newField.getBinary().getSHA512Sum()).as(NEWFIELDVALUE).isEqualTo(hash);
-					Buffer contents = RxUtil.readEntireData(container.getBinary(name).getBinary().getStream()).blockingGet();
-					assertThat(contents.toString()).as(NEWFIELDVALUE).isEqualTo(FILECONTENTS);
-				});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATEBINARY, FILL, INVALIDSCRIPT);
-	}
-
-	@Override
-	@Test(expected = ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		invalidMigrationScript(CREATEBINARY, FILL, KILLERSCRIPT);
-	}
 }

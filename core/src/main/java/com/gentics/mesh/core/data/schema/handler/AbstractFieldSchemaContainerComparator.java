@@ -37,8 +37,8 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 	/**
 	 * Create a diff of both provides field containers.
 	 * 
-	 * @param containerA
-	 * @param containerB
+	 * @param containerA Current container
+	 * @param containerB New container
 	 * @param classOfFC
 	 *            Implementation class of the field containers
 	 * @return
@@ -63,7 +63,6 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 					log.debug("Field " + fieldInA.getName() + " was removed.");
 				}
 				SchemaChangeModel change = SchemaChangeModel.createRemoveFieldChange(fieldInA.getName());
-				change.loadMigrationScript();
 				changes.add(change);
 			}
 		}

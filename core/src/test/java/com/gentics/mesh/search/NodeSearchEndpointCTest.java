@@ -1,11 +1,12 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.Events.INDEX_SYNC_EVENT;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_FINISHED;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.context.MeshTestHelper.getRangeQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
@@ -29,18 +30,14 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
 import com.syncleus.ferma.tx.Tx;
-
-@MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
 public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchNumberRange() throws Exception {
 		int numberValue = 1200;
-		try (Tx tx = tx()) {
-			addNumberSpeedFieldToOneNode(numberValue);
-			recreateIndices();
-			tx.success();
-		}
+		tx(() -> addNumberSpeedFieldToOneNode(numberValue));
+		recreateIndices();
 
 		// from 100 to 9000
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.speed", 100, 9000),
@@ -51,12 +48,11 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchNumberRange2() throws Exception {
 		int numberValue = 1200;
-		try (Tx tx = tx()) {
+		tx(() -> {
 			addNumberSpeedFieldToOneNode(numberValue);
 			content().getLatestDraftFieldContainer(english()).createNumber("speed").setNumber(92.1535f);
-			recreateIndices();
-			tx.success();
-		}
+		});
+		recreateIndices();
 
 		// from 9 to 1
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.speed", 900, 1500),
@@ -68,11 +64,8 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchNumberRange3() throws Exception {
 		int numberValue = 1200;
-		try (Tx tx = tx()) {
-			addNumberSpeedFieldToOneNode(numberValue);
-			recreateIndices();
-			tx.success();
-		}
+		tx(() -> addNumberSpeedFieldToOneNode(numberValue));
+		recreateIndices();
 
 		// out of bounds
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.speed", 1000, 90),
@@ -82,11 +75,8 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchMicronode() throws Exception {
-		try (Tx tx = tx()) {
-			addMicronodeField();
-			recreateIndices();
-			tx.success();
-		}
+		tx(this::addMicronodeField);
+		recreateIndices();
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.vcard.fields-vcard.firstName", "Mickey"),
 			new PagingParametersImpl().setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));
@@ -104,9 +94,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchStringFieldNoRaw() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.teaser.raw", "Concorde_english_name"),
 			new PagingParametersImpl().setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));
@@ -115,11 +103,8 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchStringFieldRaw() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
-
 		addRawToSchemaField();
+		recreateIndices();
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.teaser.raw", "Concorde_english_name"),
 			new PagingParametersImpl().setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));
@@ -128,17 +113,13 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchStringFieldRawAfterIndexSync() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
-
 		addRawToSchemaField();
+		recreateIndices();
 
 		// Add the user to the admin group - this way the user is in fact an admin.
 		tx(() -> user().addGroup(groups().get("admin")));
-		searchProvider().refreshIndex().blockingAwait();
 
-		waitForEvent(INDEX_SYNC_EVENT, () -> {
+		waitForEvent(INDEX_SYNC_FINISHED, () -> {
 			GenericMessageResponse message = call(() -> client().invokeIndexSync());
 			assertThat(message).matches("search_admin_index_sync_invoked");
 		});
@@ -165,9 +146,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchHtml() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		String newHtml = "ABCD<strong>EF</strong>GHI";
 		String newPlain = Jsoup.parse(newHtml).text();
@@ -183,6 +162,8 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		update.setVersion("1.0");
 		call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 
+		waitForSearchIdleEvent();
+
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"), new PagingParametersImpl().setPage(1)
 			.setPerPage(2L), new VersioningParametersImpl().draft()));
 		assertEquals("Check hits for 'supersonic' after update", 0, response.getData().size());
@@ -194,9 +175,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testDocumentUpdate() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		String newString = "ABCDEFGHI";
 		String nodeUuid = db().tx(() -> content("concorde").getUuid());
@@ -211,6 +190,8 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		update.setVersion("1.0");
 		call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 
+		waitForSearchIdleEvent();
+
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"), new PagingParametersImpl().setPage(1)
 			.setPerPage(2L), new VersioningParametersImpl().draft()));
 		assertEquals("Check hits for 'supersonic' after update", 0, response.getData().size());
@@ -222,9 +203,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchContentResolveLinksAndLangFallback() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "the"),
 			new PagingParametersImpl().setPage(1)
@@ -241,9 +220,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchContentResolveLinks() throws Exception {
-		try (Tx tx = tx()) {
-			recreateIndices();
-		}
+		recreateIndices();
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "the"), new PagingParametersImpl()
 			.setPage(1).setPerPage(2L), new NodeParametersImpl().setResolveLinks(LinkType.FULL), new VersioningParametersImpl().draft()));

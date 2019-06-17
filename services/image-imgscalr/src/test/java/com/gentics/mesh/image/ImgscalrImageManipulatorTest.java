@@ -50,8 +50,11 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 	@Before
 	public void setup() {
+		super.setup();
+
 		ImageManipulatorOptions options = new ImageManipulatorOptions();
-		options.setImageCacheDirectory(new File("target", "tmp_" + System.currentTimeMillis()).getAbsolutePath());
+
+		options.setImageCacheDirectory(cacheDir.getAbsolutePath());
 		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options);
 	}
 
@@ -69,7 +72,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 					byte[] data = buffer.getBytes();
 					try (ByteArrayInputStream bis = new ByteArrayInputStream(data)) {
 						BufferedImage resizedImage = ImageIO.read(bis);
-						assertThat(resizedImage).hasSize(150, 180).matches(refImage);
+						assertThat(resizedImage).as(imageName).hasSize(150, 180).matches(refImage);
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -105,6 +108,31 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		});
 	}
 
+	/**
+	 * Get the corresponding reference filename for the given input filename.
+	 *
+	 * When the original filename is <code>NAME.EXTENTION</code> the result will be
+	 * <code>/references/NAME.reference.EXTENSION</code>.
+	 *
+	 * @param filename The filename of the original image
+	 * @return The filename for the corresponding reference file
+	 */
+	public static String getReferenceFilename(String filename) {
+		int idx = filename.lastIndexOf('.');
+		String name;
+		String ext;
+
+		if (idx >= 0) {
+			name = filename.substring(0, idx);
+			ext = filename.substring(idx);
+		} else {
+			name = filename;
+			ext = "";
+		}
+
+		return "/references/" + name + ".reference" + ext;
+	}
+
 	private void checkImages(ImageAction<String, Integer, Integer, String, BufferedImage, Flowable<Buffer>> action) throws JSONException,
 		IOException {
 		JSONObject json = new JSONObject(IOUtils.toString(getClass().getResourceAsStream("/pictures/images.json"), Charset.defaultCharset()));
@@ -123,7 +151,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 			int width = image.getInt("w");
 			int height = image.getInt("h");
 			String color = image.getString("dominantColor");
-			String refPath = "/references/" + imageName + "reference.jpg";
+			String refPath = getReferenceFilename(imageName);
 			InputStream insRef = getClass().getResourceAsStream(refPath);
 			if (insRef == null) {
 				throw new RuntimeException("Could not find reference image {" + refPath + "}");
@@ -226,5 +254,4 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 			System.out.println(key + "=" + metadata.get(key));
 		}
 	}
-
 }

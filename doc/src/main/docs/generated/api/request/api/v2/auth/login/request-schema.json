@@ -1,0 +1,20 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:auth:LoginRequest",
+  "properties" : {
+    "username" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Username of the user which should be logged in."
+    },
+    "password" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Password of the user which should be logged in."
+    },
+    "newPassword" : {
+      "type" : "string",
+      "description" : "New password that will be set after successful login."
+    }
+  }
+}

@@ -1,12 +1,16 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.MeshVertex.UUID_KEY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
+import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagEdge;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.AbstractEdgeFrame;
+import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
+import com.gentics.mesh.madl.field.FieldType;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.annotations.GraphElement;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -15,12 +19,13 @@ import com.syncleus.ferma.traversals.VertexTraversal;
  * @see TagEdge
  */
 @GraphElement
-public class TagEdgeImpl extends AbstractEdgeFrame implements TagEdge {
+public class TagEdgeImpl extends MeshEdgeImpl implements TagEdge {
 	public static final String BRANCH_UUID_KEY = "branchUuid";
 
-	public static void init(Database db) {
-		db.addEdgeType(TagEdgeImpl.class.getSimpleName(), (Class<?>) null, TagEdgeImpl.BRANCH_UUID_KEY);
-		db.addEdgeType(HAS_TAG, TagEdgeImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createType(edgeType(TagEdgeImpl.class.getSimpleName())
+			.withField(TagEdgeImpl.BRANCH_UUID_KEY, FieldType.STRING));
+		type.createType(edgeType(HAS_TAG).withSuperClazz(TagEdgeImpl.class));
 	}
 
 	/**
@@ -32,6 +37,18 @@ public class TagEdgeImpl extends AbstractEdgeFrame implements TagEdge {
 	 */
 	public static VertexTraversal<?, ?, ?> getTagTraversal(VertexFrame vertex, Branch branch) {
 		return vertex.outE(HAS_TAG).has(BRANCH_UUID_KEY, branch.getUuid()).inV();
+	}
+
+	/**
+	 * Get the traversal for the tag assigned to the given vertex for the given branch
+	 *
+	 * @param vertex
+	 * @param tag
+	 * @param branch
+	 * @return Traversal
+	 */
+	public static boolean hasTag(VertexFrame vertex, Tag tag, Branch branch) {
+		return vertex.outE(HAS_TAG).has(BRANCH_UUID_KEY, branch.getUuid()).inV().has(UUID_KEY, tag.getUuid()).hasNext();
 	}
 
 	/**
@@ -47,12 +64,12 @@ public class TagEdgeImpl extends AbstractEdgeFrame implements TagEdge {
 
 	@Override
 	public String getBranchUuid() {
-		return getProperty(BRANCH_UUID_KEY);
+		return property(BRANCH_UUID_KEY);
 	}
 
 	@Override
 	public void setBranchUuid(String uuid) {
-		setProperty(BRANCH_UUID_KEY, uuid);
+		property(BRANCH_UUID_KEY, uuid);
 	}
 
 }

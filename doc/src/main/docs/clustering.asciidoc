@@ -1,4 +1,8 @@
-= Clustering
+---
+title: Clustering
+---
+
+include::content/docs/variables.adoc-include[]
 
 == Basics
 
@@ -13,7 +17,7 @@ Clustering is also a way to increase redundancy and fault tolerance since each i
 
 == Configuration
 
-include::includes/cluster-options.inc[]
+include::content/docs/examples/cluster-options.inc[]
 
 .mesh.yml
 [source,yaml]
@@ -82,7 +86,7 @@ Alternatively it is also possible to hardcode the IP addresses of the cluster in
 ----
 ...
   <join>
-    <multicast enabled="false"></multicast>
+      <multicast enabled="false"/>
       <tcp-ip enabled="true">
    	  <member>192.168.10.100</member> <!-- instance A -->
    	  <member>192.168.10.101</member> <!-- instance B -->
@@ -90,6 +94,40 @@ Alternatively it is also possible to hardcode the IP addresses of the cluster in
   </join>
 ...
 ----
+
+=== Kubernetes
+
+The link:https://github.com/hazelcast/hazelcast-kubernetes[hazelcast-kubernetes] plugin can be used to enable autodiscovery of nodes in a kubernetes environment. The plugin itself is already part of Gentics Mesh and just needs to be configured in the `hazelcast.xml` file.
+
+Example configuration:
+
+.hazelcast.xml
+[source,xml]
+----
+...
+<network>
+        <port auto-increment="true">5701</port>
+        <join>
+            <!-- deactivate normal discovery -->
+            <multicast enabled="false"/>
+            <tcp-ip enabled="false" />
+
+            <!-- activate the Kubernetes plugin -->
+            <discovery-strategies>
+                <discovery-strategy enabled="true"
+                        class="com.hazelcast.kubernetes.HazelcastKubernetesDiscoveryStrategy">
+                    <properties>
+                        <property name="service-dns">MY-SERVICE-DNS-NAME</property>
+                        <property name="service-dns-timeout">10</property>
+                    </properties>
+                </discovery-strategy>
+            </discovery-strategies>
+        </join>
+  </network>
+...
+----
+
+NOTE: For more details on the setup of the plugin please take a look at the link:https://github.com/hazelcast/hazelcast-kubernetes[documentation].
 
 == Session distribution
 
@@ -104,7 +142,7 @@ Please refer to the link:https://www.elastic.co/guide/en/elasticsearch/reference
 == Handling binary data
 
 File uploads are currently not automatically being distributed. This means that it is required to share the data of the upload directory manually.
-One option would be to use a clustering filesystem like link:https://en.wikipedia.org/wiki/GlusterFS[GlusterFS] or link:https://en.wikipedia.org/wiki/Network_File_System[NFS].
+One option would be to use a link:https://en.wikipedia.org/wiki/List_of_file_systems#Distributed_file_systems[distributed file system] like link:https://en.wikipedia.org/wiki/GlusterFS[GlusterFS], link:https://en.wikipedia.org/wiki/Amazon_S3[S3] or link:https://en.wikipedia.org/wiki/Network_File_System[NFS].
 The only directory which needs to be shared across the cluster is the upload directory which can be configured in the `mesh.yml` file.
 
 .mesh.yml
@@ -116,7 +154,7 @@ upload:
 
 == Transaction handling / Change propagation
 
-Transactions are directly being handled by link:http://orientdb.com/docs/2.2.x/Transactions.html[OrientDB].
+Transactions are directly being handled by link:https://orientdb.com/docs/3.0.x/internals/Transactions.html[OrientDB].
 
 The distribution of data (write) is executed synchronous and will be directly visible on other instances. 
 Operations which modify permissions are handled asynchronous and may take a few milliseconds to propagate throughout the cluster.
@@ -131,7 +169,7 @@ There are two types of upgrades. An upgrade can either be handled online of offl
 
 Online upgrades can happen without any downtime. First you stop a single instance within your cluster. Next you start the instance up again using the new Gentics Mesh version.
 The instance will directly join the cluster and receive the changes from other instances. This is possible since the newly started Gentics Mesh version uses the same
-link:administration-guide.html#database-revisions[database revision] as the older version.
+link:{{< relref "administration-guide.asciidoc" >}}#database-revisions[database revision] as the older version.
 
 *Rollback*:
 You can rollback by stopping the Gentics Mesh version and starting the older version.
@@ -140,7 +178,7 @@ You can rollback by stopping the Gentics Mesh version and starting the older ver
 
 Offline upgrades are required when database changes need to be applied. These changes could negatively impact other (older) instances in the cluster and thus an offline upgrade will 
 only occur locally and not directly propagate throughout the cluster. Gentics Mesh will not join the cluster in such situations.
-The cluster will only form in-between versions which use the same database revision. You can check the list of link:administration-guide.html#database-revisions[Database revisions] in 
+The cluster will only form in-between versions which use the same database revision. You can check the list of link:{{< relref "administration-guide.asciidoc" >}}#database-revisions[Database revisions] in 
 order to determine whether an online or offline upgrade can be done.
 
 Data which has been written to other instances in the cluster __can't__ be merged back to the now upgraded instance. Instead the upgraded instance will act as a new source of truth. 
@@ -150,9 +188,9 @@ The old database will be moved in a backup location and can later be deleted. Yo
 *Rollback*:
 You can rollback as long as you still have instances which have not yet been migrated by just starting older Gentics Mesh instances. These instances will automatically join the corresponding cluster with the same database revision.
 
-== AWS / GCE / Kubernetes support
+== AWS / GCE
 
-There is currently no build-in support for these platforms.
+There is currently no built-in support for these platforms.
 
 == Scaling
 
@@ -171,7 +209,7 @@ Yes. New instances can be added at any time.
 Are my changes directly visible on other instances?::
 The replication handles this as fast as the network allows but by default replication is happening synchronous to full fill the `writeQuorum` and asynchronous once the quorum has been satisfied.
 which means that it could take a few moments until your changes are propagated throughout the cluster.
-This behaviour is configurable via the OrientDB `writeQuorum` setting. Take a look at the link:https://orientdb.com/docs/2.2/Distributed-Configuration.html[OrientDB distributed configuration] if you want to know more.
+This behaviour is configurable via the OrientDB `writeQuorum` setting. Take a look at the link:https://orientdb.com/docs/3.0.x/distributed/Distributed-Configuration.html[OrientDB distributed configuration] if you want to know more.
 Our tests currently only cover the `writeQuorum` and `readQuorum` of *1*.
 
 What happens if the network between my instances fails?::
@@ -189,7 +227,7 @@ Yes. This can be done by starting a new cluster using a different `cluster.clust
 
 == Monitoring
 
-The `/api/v1/admin/cluster/status` endpoint can be used to retrieve information about the cluster topology and status of instances within the cluster.
+The `{apiLatest}/admin/cluster/status` endpoint can be used to retrieve information about the cluster topology and status of instances within the cluster.
 
 Additionally it is possible to access the JMX beans of OrientDB.
 

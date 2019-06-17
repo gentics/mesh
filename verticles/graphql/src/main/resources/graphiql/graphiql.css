@@ -43,6 +43,7 @@
   -webkit-box-flex: 1;
       -ms-flex: 1;
           flex: 1;
+  overflow-x: hidden;
 }
 
 .graphiql-container .title {
@@ -83,6 +84,7 @@
       -ms-flex: 1;
           flex: 1;
   height: 34px;
+  overflow-y: visible;
   padding: 7px 14px 6px;
   -webkit-user-select: none;
      -moz-user-select: none;
@@ -101,6 +103,7 @@
 .graphiql-container .historyShow {
   background: -webkit-gradient(linear, left top, left bottom, from(#f7f7f7), to(#e2e2e2));
   background: linear-gradient(#f7f7f7, #e2e2e2);
+  border-radius: 0;
   border-bottom: 1px solid #d0d0d0;
   border-right: none;
   border-top: none;
@@ -221,7 +224,7 @@
   -webkit-box-direction: normal;
       -ms-flex-direction: column;
           flex-direction: column;
-  height: 29px;
+  height: 30px;
   position: relative;
 }
 
@@ -1230,7 +1233,6 @@ span.CodeMirror-selectedtext { background: none; }
   margin-left: 5px;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .graphiql-container .enum-value {
@@ -1258,7 +1260,7 @@ span.CodeMirror-selectedtext { background: none; }
 }
 
 .graphiql-container .arg-default-value {
-  color: #0B7FC7;
+  color: #43A047;
 }
 
 .graphiql-container .doc-deprecation {
@@ -1400,12 +1402,19 @@ span.CodeMirror-selectedtext { background: none; }
 .CodeMirror-foldgutter-folded:after {
   content: "\25B8";
 }
-.graphiql-container .history-contents {
+.graphiql-container .history-contents,
+.graphiql-container .history-contents input {
   font-family: 'Consolas', 'Inconsolata', 'Droid Sans Mono', 'Monaco', monospace;
   padding: 0;
 }
 
 .graphiql-container .history-contents p {
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
   font-size: 12px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1415,10 +1424,29 @@ span.CodeMirror-selectedtext { background: none; }
   border-bottom: 1px solid #e0e0e0;
 }
 
+.graphiql-container .history-contents p.editable {
+  padding-bottom: 6px;
+  padding-top: 7px;
+}
+
+.graphiql-container .history-contents input {
+  -webkit-box-flex: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1;
+  font-size: 12px;
+}
+
 .graphiql-container .history-contents p:hover {
   cursor: pointer;
 }
-.CodeMirror-info {
+
+.graphiql-container .history-contents p span.history-label {
+  -webkit-box-flex: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}.CodeMirror-info {
   background: white;
   border-radius: 2px;
   -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);

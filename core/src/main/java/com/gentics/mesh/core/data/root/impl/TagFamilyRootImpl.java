@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -24,10 +25,11 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -39,9 +41,9 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectImpl.class);
 
-	public static void init(Database database) {
-		database.addVertexType(TagFamilyRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_TAG_FAMILY, true, false, true);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(TagFamilyRootImpl.class, MeshVertexImpl.class);
+		index.createIndex(edgeIndex(HAS_TAG_FAMILY).withInOut().withOut());
 	}
 
 	@Override
@@ -97,7 +99,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tagFamilyRoot {" + getUuid() + "}");
 		}
-		for (TagFamily tagFamily : findAllIt()) {
+		for (TagFamily tagFamily : findAll()) {
 			tagFamily.delete(bac);
 			bac.process();
 		}
@@ -107,7 +109,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	public TagFamily create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
+	public TagFamily create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
 		TagFamilyCreateRequest requestModel = ac.fromJson(TagFamilyCreateRequest.class);
 
@@ -123,13 +125,13 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 		}
 
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
-			throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
+			throw error(FORBIDDEN, "error_missing_perm", this.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		TagFamily tagFamily = create(name, requestUser, uuid);
 		addTagFamily(tagFamily);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, tagFamily);
 
-		batch.store(tagFamily, true);
+		batch.add(tagFamily.onCreated());
 		return tagFamily;
 	}
 

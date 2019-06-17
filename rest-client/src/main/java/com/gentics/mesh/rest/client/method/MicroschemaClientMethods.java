@@ -8,6 +8,7 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.impl.EmptyResponse;
 
 public interface MicroschemaClientMethods {
 
@@ -19,6 +20,16 @@ public interface MicroschemaClientMethods {
 	 * @return future for the microschema response
 	 */
 	MeshRequest<MicroschemaResponse> createMicroschema(MicroschemaCreateRequest request);
+
+	/**
+	 * Create a new microschema using the given uuid and request.
+	 * 
+	 * @param uuid
+	 *            Uuid of the microschema
+	 * @param request
+	 * @return
+	 */
+	MeshRequest<MicroschemaResponse> createMicroschema(String uuid, MicroschemaCreateRequest request);
 
 	/**
 	 * Load the microschema with the given UUID.
@@ -43,12 +54,11 @@ public interface MicroschemaClientMethods {
 
 	/**
 	 * Delete the given microschema.
-	 * 
-	 * @param uuid
-	 *            Microschema UUID
+	 *
+	 * @param uuid Microschema UUID
 	 * @return
 	 */
-	MeshRequest<Void> deleteMicroschema(String uuid);
+	MeshRequest<EmptyResponse> deleteMicroschema(String uuid);
 
 	/**
 	 * Apply the given set of changes to the microschema.

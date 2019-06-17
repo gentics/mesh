@@ -2,15 +2,10 @@ package com.gentics.mesh.core.schema.change;
 
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 
 import org.junit.Test;
-
-import com.syncleus.ferma.tx.Tx;
-
-import io.vertx.core.json.JsonObject;
 
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -20,8 +15,11 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+import io.vertx.core.json.JsonObject;
+
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 
 	@Test
@@ -74,28 +72,13 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 
 	@Test
 	@Override
-	public void testGetMigrationScript() throws IOException {
-		try (Tx tx = tx()) {
-			UpdateMicroschemaChange change = tx.getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
-			assertNull("Update microschema changes have a auto migation script.", change.getAutoMigrationScript());
-
-			assertNull("Intitially no migration script should be set.", change.getMigrationScript());
-			change.setCustomMigrationScript("test");
-			assertEquals("The custom migration script was not changed.", "test", change.getMigrationScript());
-		}
-	}
-
-	@Test
-	@Override
 	public void testTransformToRest() throws IOException {
 		try (Tx tx = tx()) {
 			UpdateMicroschemaChange change = tx.getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
-			change.setCustomMigrationScript("testScript");
 			change.setName("vcard");
 
 			SchemaChangeModel model = change.transformToRest();
 			assertEquals("vcard", model.getProperty(SchemaChangeModel.NAME_KEY));
-			assertEquals("testScript", model.getMigrationScript());
 		}
 	}
 

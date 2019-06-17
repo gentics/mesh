@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -25,12 +26,14 @@ import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.json.JsonUtil;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;
@@ -46,9 +49,9 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	 * 
 	 * @param database
 	 */
-	public static void init(Database database) {
-		database.addVertexType(UserRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_USER, true, false, true);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(UserRootImpl.class, MeshVertexImpl.class);
+		index.createIndex(edgeIndex(HAS_USER).withInOut().withOut());
 	}
 
 	@Override
@@ -127,7 +130,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 			throw new RuntimeException("Found multiple nodes with the same UUID");
 		}
 
-		if (root.getId().equals(getId())) {
+		if (root.getId().equals(id())) {
 			return user;
 		} else {
 			throw new RuntimeException("User does not belong to the UserRoot");
@@ -140,7 +143,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	}
 
 	@Override
-	public User create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
+	public User create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		BootstrapInitializer boot = MeshInternal.get().boot();
 		MeshAuthUser requestUser = ac.getUser();
 
@@ -155,7 +158,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 			throw error(BAD_REQUEST, "user_missing_username");
 		}
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
-			throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
+			throw error(FORBIDDEN, "error_missing_perm", this.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		String groupUuid = requestModel.getGroupUuid();
 		String userName = requestModel.getUsername();
@@ -170,15 +173,19 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		user.setLastname(requestModel.getLastname());
 		user.setEmailAddress(requestModel.getEmailAddress());
 		user.setPasswordHash(MeshInternal.get().passwordEncoder().encode(requestModel.getPassword()));
+		Boolean forcedPasswordChange = requestModel.getForcedPasswordChange();
+		if (forcedPasswordChange != null) {
+			user.setForcedPasswordChange(forcedPasswordChange);
+		}
 
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, user);
 		ExpandableNode reference = requestModel.getNodeReference();
-		batch.store(user, true);
+		batch.add(user.onCreated());
 
 		if (!isEmpty(groupUuid)) {
 			Group parentGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, CREATE_PERM);
 			parentGroup.addUser(user);
-			batch.store(parentGroup, false);
+			// batch.add(parentGroup.onUpdated());
 			requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
 		}
 

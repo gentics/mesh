@@ -12,15 +12,14 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.util.ETag;
 
 import io.reactivex.Single;
@@ -41,7 +40,7 @@ import io.reactivex.Single;
  *            Graph vertex version type
  */
 public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaContainer, RM extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>>
-		extends AbstractMeshCoreVertex<R, SC> implements GraphFieldSchemaContainer<R, RE, SC, SCV>, IndexableElement {
+		extends AbstractMeshCoreVertex<R, SC> implements GraphFieldSchemaContainer<R, RE, SC, SCV> {
 
 	/**
 	 * Return the class that is used to construct new containers.
@@ -84,7 +83,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	}
 
 	@Override
-	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
 		throw new NotImplementedException("Updating is not directly supported for schemas. Please start a schema migration");
 	}
 
@@ -129,9 +128,9 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		// TODO should all references be updated to a new fallback schema?
-		context.batch().delete(this, true);
+		bac.add(onDeleted());
 		getElement().remove();
 		// TODO delete versions and nodes as well
 	}

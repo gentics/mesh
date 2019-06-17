@@ -1,15 +1,16 @@
 package com.gentics.mesh.search;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Set;
-
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
-
+import com.gentics.mesh.core.data.search.request.Bulkable;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * A search provider is a service this enables storage and retrieval of indexed documents.
@@ -31,11 +32,11 @@ public interface SearchProvider {
 	Completable refreshIndex(String... indices);
 
 	/**
-	 * Load the plugin information.
+	 * Load a list of all existing indices.
 	 * 
 	 * @return
 	 */
-	Single<Set<String>> loadPluginInfo();
+	Single<Set<String>> listIndices();
 
 	/**
 	 * Create a search index with index information.
@@ -45,14 +46,6 @@ public interface SearchProvider {
 	 * @return Completable for the action
 	 */
 	Completable createIndex(IndexInfo info);
-
-	/**
-	 * Register the ingest pipeline using the index information.
-	 * 
-	 * @param info
-	 * @return Completable for the action
-	 */
-	Completable registerIngestPipeline(IndexInfo info);
 
 	/**
 	 * Deregister the ingest pipeline using the index information.
@@ -100,11 +93,29 @@ public interface SearchProvider {
 
 	/**
 	 * Process the bulk request.
+	 *
+	 * @param actions
+	 * @return
+	 */
+	Completable processBulk(String actions);
+
+	/**
+	 * Process the bulk request.
 	 * 
 	 * @param entries
 	 * @return
 	 */
-	Completable processBulk(List<? extends BulkEntry> entries);
+	@Deprecated
+	Completable processBulkOld(List<? extends BulkEntry> entries);
+
+
+	/**
+	 * Process the bulk request.
+	 *
+	 * @param entries
+	 * @return
+	 */
+	Completable processBulk(Collection<? extends Bulkable> entries);
 
 	/**
 	 * Get the given document.
@@ -227,13 +238,6 @@ public interface SearchProvider {
 	Completable validateCreateViaTemplate(IndexInfo info);
 
 	/**
-	 * Check whether the ingest attachment plugin can be used.
-	 * 
-	 * @return
-	 */
-	boolean hasIngestPipelinePlugin();
-
-	/**
 	 * Return the specific prefix for this installation. Indices and pipelines will make use of this prefix so that multiple mesh instances can use the same
 	 * search server.
 	 * 
@@ -247,4 +251,11 @@ public interface SearchProvider {
 	 * @return
 	 */
 	Single<Boolean> isAvailable();
+
+	/**
+	 * Check whether the provider is active and able to process data.
+	 * 
+	 * @return
+	 */
+	boolean isActive();
 }

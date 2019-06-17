@@ -19,6 +19,8 @@ import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.util.CompareUtils;
 
 /**
@@ -81,8 +83,8 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 		return container.getNumberList(fieldSchema.getName());
 	};
 
-	public static void init(Database database) {
-		database.addVertexType(NumberGraphFieldListImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(NumberGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

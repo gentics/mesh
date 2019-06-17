@@ -3,7 +3,9 @@ package com.gentics.mesh.example;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
-import static com.gentics.mesh.util.UUIDUtil.randomUUID;
+import static com.gentics.mesh.example.ExampleUuids.PROJECT_DEMO2_UUID;
+import static com.gentics.mesh.example.ExampleUuids.PROJECT_DEMO_UUID;
+import static com.gentics.mesh.example.ExampleUuids.SCHEMA_FOLDER_UUID;
 
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
@@ -15,11 +17,11 @@ public class ProjectExamples extends AbstractExamples {
 
 	public ProjectResponse getProjectResponse(String name) {
 		ProjectResponse project = new ProjectResponse();
-		project.setUuid(randomUUID());
+		project.setUuid(PROJECT_DEMO2_UUID);
 		project.setName(name);
-		project.setCreated(createTimestamp());
+		project.setCreated(createOldTimestamp());
 		project.setCreator(createUserReference());
-		project.setEdited(createTimestamp());
+		project.setEdited(createNewTimestamp());
 		project.setEditor(createUserReference());
 		project.setPermissions(READ, DELETE, CREATE);
 		project.setRootNode(createNodeReference());
@@ -28,11 +30,11 @@ public class ProjectExamples extends AbstractExamples {
 
 	public ProjectResponse getProjectResponse2() {
 		ProjectResponse project2 = new ProjectResponse();
-		project2.setUuid(randomUUID());
+		project2.setUuid(PROJECT_DEMO_UUID);
 		project2.setName("Dummy Project (Mobile)");
-		project2.setCreated(createTimestamp());
+		project2.setCreated(createOldTimestamp());
 		project2.setCreator(createUserReference());
-		project2.setEdited(createTimestamp());
+		project2.setEdited(createNewTimestamp());
 		project2.setEditor(createUserReference());
 		project2.setPermissions(READ, DELETE, CREATE);
 		project2.setRootNode(createNodeReference());
@@ -58,7 +60,7 @@ public class ProjectExamples extends AbstractExamples {
 		projectCreate.setName(name);
 		projectCreate.setHostname("getmesh.io");
 		projectCreate.setSsl(true);
-		projectCreate.setSchema(new SchemaReferenceImpl().setName("folder").setUuid(randomUUID()));
+		projectCreate.setSchema(new SchemaReferenceImpl().setName("folder").setUuid(SCHEMA_FOLDER_UUID));
 		return projectCreate;
 	}
 

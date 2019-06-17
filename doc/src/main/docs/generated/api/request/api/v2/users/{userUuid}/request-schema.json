@@ -1,0 +1,43 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserUpdateRequest",
+  "properties" : {
+    "password" : {
+      "type" : "string",
+      "description" : "New password of the user"
+    },
+    "oldPassword" : {
+      "type" : "string"
+    },
+    "lastname" : {
+      "type" : "string",
+      "description" : "New lastname of the user"
+    },
+    "firstname" : {
+      "type" : "string",
+      "description" : "New firstname of the user"
+    },
+    "username" : {
+      "type" : "string",
+      "description" : "New username of the user"
+    },
+    "emailAddress" : {
+      "type" : "string",
+      "description" : "New email address of the user"
+    },
+    "nodeReference" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:ExpandableNode",
+      "description" : "New node reference of the user. This can also explicitly set to null in order to remove the assigned node from the user",
+      "properties" : {
+        "uuid" : {
+          "type" : "string"
+        }
+      }
+    },
+    "forcedPasswordChange" : {
+      "type" : "boolean",
+      "description" : "When true, the user needs to change their password on the next login."
+    }
+  }
+}

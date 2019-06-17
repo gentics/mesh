@@ -1,0 +1,188 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserListResponse",
+  "properties" : {
+    "data" : {
+      "type" : "array",
+      "required" : true,
+      "description" : "Array which contains the found elements.",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserResponse",
+        "properties" : {
+          "uuid" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Uuid of the element"
+          },
+          "creator" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReference",
+            "required" : true,
+            "description" : "User reference of the creator of the element.",
+            "properties" : {
+              "firstName" : {
+                "type" : "string",
+                "description" : "Firstname of the user"
+              },
+              "lastName" : {
+                "type" : "string",
+                "description" : "Lastname of the user"
+              },
+              "uuid" : {
+                "type" : "string",
+                "required" : true,
+                "description" : "Uuid of the user"
+              }
+            }
+          },
+          "created" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "ISO8601 formatted created date string."
+          },
+          "editor" : {
+            "type" : "object",
+            "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReference",
+            "description" : "User reference of the editor of the element."
+          },
+          "edited" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "ISO8601 formatted edited date string."
+          },
+          "lastname" : {
+            "type" : "string",
+            "description" : "Lastname of the user."
+          },
+          "firstname" : {
+            "type" : "string",
+            "description" : "Firstname of the user."
+          },
+          "username" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Username of the user."
+          },
+          "emailAddress" : {
+            "type" : "string",
+            "description" : "Email address of the user"
+          },
+          "nodeReference" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:ExpandableNode",
+            "description" : "Optional node reference of the user. Users can directly reference a single node. This can be used to store additional data that is user related.",
+            "properties" : {
+              "uuid" : {
+                "type" : "string"
+              }
+            }
+          },
+          "enabled" : {
+            "type" : "boolean",
+            "required" : true,
+            "description" : "Flag which indicates whether the user is enabled or disabled. Disabled users can no longer log into Gentics Mesh. Deleting a user user will not remove it. Instead the user will just be disabled."
+          },
+          "rolesHash" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Hashsum of user roles which can be used for user permission caching."
+          },
+          "groups" : {
+            "type" : "array",
+            "required" : true,
+            "description" : "List of group references to which the user belongs.",
+            "items" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:group:GroupReference",
+              "properties" : {
+                "name" : {
+                  "type" : "string",
+                  "description" : "Name of the referenced element"
+                },
+                "uuid" : {
+                  "type" : "string",
+                  "required" : true,
+                  "description" : "Uuid of the referenced element"
+                }
+              }
+            }
+          },
+          "forcedPasswordChange" : {
+            "type" : "boolean",
+            "required" : true,
+            "description" : "When true, the user needs to change their password on the next login."
+          },
+          "permissions" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfo",
+            "required" : true,
+            "properties" : {
+              "create" : {
+                "type" : "boolean",
+                "required" : true,
+                "description" : "Flag which indicates whether the create permission is granted."
+              },
+              "read" : {
+                "type" : "boolean",
+                "required" : true,
+                "description" : "Flag which indicates whether the read permission is granted."
+              },
+              "update" : {
+                "type" : "boolean",
+                "required" : true,
+                "description" : "Flag which indicates whether the update permission is granted."
+              },
+              "delete" : {
+                "type" : "boolean",
+                "required" : true,
+                "description" : "Flag which indicates whether the delete permission is granted."
+              },
+              "publish" : {
+                "type" : "boolean",
+                "description" : "Flag which indicates whether the publish permission is granted."
+              },
+              "readPublished" : {
+                "type" : "boolean",
+                "description" : "Flag which indicates whether the read published permission is granted."
+              }
+            }
+          },
+          "rolePerms" : {
+            "type" : "object",
+            "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfo",
+            "description" : "Permission information for provided role. This property will only be populated if a role query parameter has been specified."
+          }
+        }
+      }
+    },
+    "_metainfo" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PagingMetaInfo",
+      "required" : true,
+      "description" : "Paging information of the list result.",
+      "properties" : {
+        "currentPage" : {
+          "type" : "integer",
+          "required" : true,
+          "description" : "Number of the current page."
+        },
+        "perPage" : {
+          "type" : "integer",
+          "required" : true,
+          "description" : "Number of elements which can be included in a single page."
+        },
+        "pageCount" : {
+          "type" : "integer",
+          "required" : true,
+          "description" : "Number of the pages which can be found for the given per page count."
+        },
+        "totalCount" : {
+          "type" : "integer",
+          "required" : true,
+          "description" : "Number of all elements which could be found."
+        }
+      }
+    }
+  }
+}

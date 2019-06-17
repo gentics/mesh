@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -18,9 +19,10 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -32,9 +34,9 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(RoleRootImpl.class);
 
-	public static void init(Database database) {
-		database.addVertexType(RoleRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_ROLE, true, false, true);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(RoleRootImpl.class, MeshVertexImpl.class);
+		index.createIndex(edgeIndex(HAS_ROLE).withInOut().withOut());
 	}
 
 	@Override
@@ -50,7 +52,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 	@Override
 	public void addRole(Role role) {
 		if (log.isDebugEnabled()) {
-			log.debug("Adding role {" + role.getUuid() + ":" + role.getName() + "#" + role.getId() + "} to roleRoot {" + getId() + "}");
+			log.debug("Adding role {" + role.getUuid() + ":" + role.getName() + "#" + role.id() + "} to roleRoot {" + id() + "}");
 		}
 		addItem(role);
 	}
@@ -74,7 +76,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 		return role;
 	}
 
-	public Role create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
+	public Role create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		RoleCreateRequest requestModel = ac.fromJson(RoleCreateRequest.class);
 		String roleName = requestModel.getName();
 
@@ -90,18 +92,18 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 
 		// TODO use non-blocking code here
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
-			throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
+			throw error(FORBIDDEN, "error_missing_perm", this.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 
 		Role role = create(requestModel.getName(), requestUser, uuid);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, role);
-		batch.store(role, true);
+		batch.add(role.onCreated());
 		return role;
 
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		throw error(INTERNAL_SERVER_ERROR, "The global role root can't be deleted.");
 	}
 

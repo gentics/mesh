@@ -1,0 +1,30 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| byteLimit
+| false
+| integer
+| The upload size limit in bytes. Default: 250
+
+| directory
+| false
+| string
+| Path binary data storage directory. Fileuploads will be placed here.
+
+| parserLimit
+| false
+| integer
+| The parser limit for uploaded documents (pdf, doc, docx). Default: 40000
+
+| tempDirectory
+| false
+| string
+| Path to the file upload temporary directory. Inbound file uploads will be placed here before they are processed.
+
+|======

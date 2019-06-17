@@ -1,4 +1,8 @@
-= GraphQL
+---
+title: GraphQL
+---
+
+include::content/docs/variables.adoc-include[]
 
 Gentics Mesh is also able to process http://graphql.org/[GraphQL] queries. You can use GraphQL to directly specify what fields should be retrieved and retrieve deeply nested data sets.
 Internally, Gentics Mesh will resolve your query and traverse your content graph to fetch only the data you specified.
@@ -20,38 +24,39 @@ If you want to learn more about the http://graphql.org/learn/queries/[GraphQL sy
 
 === Loading current user
 
-include::examples/graphql/user-tiny-query[]
+include::content/docs/examples/graphql/user-tiny-query[]
 
 === Loading basic fields of a node 
 
-include::examples/graphql/node-field-query[]
+include::content/docs/examples/graphql/node-field-query[]
 
 === Loading a node via uuid
 
-include::examples/graphql/node-uuid-query[]
+include::content/docs/examples/graphql/node-uuid-query[]
 
 === Loading referenced fields of a node
 
 Nodes can be linked together in various way. One way is the regular parent-child relationship. Another way is by using node fields. The demo data contains vehicles which each is linked to a vehicle image. In order to present the vehicle we also need to retrieve the image path and other information.
 
-include::examples/graphql/node-reference-query[]
+include::content/docs/examples/graphql/node-reference-query[]
 
 [[search]]
 === Invoking a search query to find specific nodes
 
 The search query is an escaped JSON object which represents the a regular https://www.elastic.co/guide/en/elasticsearch/reference/2.4/_executing_searches.html[Elasticsearch query].
 
-include::examples/graphql/node-search-query[]
+include::content/docs/examples/graphql/node-search-query[]
 
-+++
-<a href="https://demo.getmesh.io/api/v1/demo/graphql/browser/#query=query%20stuff(%24esQuery%3A%20String)%20%7B%0A%20%20nodes(query%3A%20%24esQuery)%20%7B%0A%20%20%20%20elements%20%7B%0A%20%20%20%20%20%20uuid%0A%20%20%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20%20%20...%20on%20vehicle%20%7B%0A%20%20%20%20%20%20%20%20%20%20slug%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%20%20totalCount%0A%20%20%7D%0A%7D%0A&variables=%7B%0A%20%20%22esQuery%22%3A%20%20%22%7B%5C%22query%5C%22%3A%7B%5C%22query_string%5C%22%3A%7B%5C%22query%5C%22%3A%5C%22car%5C%22%7D%7D%7D%22%0A%7D&operationName=stuff" target="_blank">Example using variables</a>
-+++
+[subs=attributes]
+++++
+<a href="https://demo.getmesh.io{apiLatest}/demo/graphql/browser/#query=query%20stuff(%24esQuery%3A%20String)%20%7B%0A%20%20nodes(query%3A%20%24esQuery)%20%7B%0A%20%20%20%20elements%20%7B%0A%20%20%20%20%20%20uuid%0A%20%20%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20%20%20...%20on%20vehicle%20%7B%0A%20%20%20%20%20%20%20%20%20%20slug%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%20%20totalCount%0A%20%20%7D%0A%7D%0A&variables=%7B%0A%20%20%22esQuery%22%3A%20%20%22%7B%5C%22query%5C%22%3A%7B%5C%22query_string%5C%22%3A%7B%5C%22query%5C%22%3A%5C%22car%5C%22%7D%7D%7D%22%0A%7D&operationName=stuff" target="_blank">Example using variables</a>
+++++
 
 === Using pagination
 
 Similar to the REST API a value based pagination system is implemented. 
 
-include::examples/graphql/node-page-query[]
+include::content/docs/examples/graphql/node-page-query[]
 
 === Multilanguage support
 
@@ -59,7 +64,7 @@ The node will automatically be loaded in the language which matches up with the 
 
 It is possible to load a found node in a different language using the `node` field as shown in the example.
 
-include::examples/graphql/node-multilang-query[]
+include::content/docs/examples/graphql/node-multilang-query[]
 
 == Filtering
 Any time a node list is requested, you can provide a filter object as a parameter to narrow down the result.
@@ -68,17 +73,17 @@ Here are a few examples:
 
 === Loading nodes from a specific schema
 The `SchemaFilter` matches nodes with a specific schema name.
-include::examples/graphql/filtering/root-folders[]
+include::content/docs/examples/graphql/filtering/root-folders[]
 
 === Filter nodes with regular expressions
 The `StringFilter` offers various ways to filter strings. One example is regular expressions.
 In this example we get all nodes with the schema `vehicle`. We check if their name field ends with a number.
-include::examples/graphql/filtering/vehicles-regex[]
+include::content/docs/examples/graphql/filtering/vehicles-regex[]
 
 === Combining different filters
 Combine multiple filters to further narrow down your results. One example is the `OrFilter`.
 We get the same nodes as in the previous example. Additionally we also get all vehicles that have a price lower than 200.000.
-include::examples/graphql/filtering/vehicles-or[]
+include::content/docs/examples/graphql/filtering/vehicles-or[]
 
 === Filtering limitations
 When filtering by fields of a node, it is currently only possible to filter by fields of the following types:
@@ -113,12 +118,12 @@ We have integrated the interactive https://github.com/graphql/graphiql[GraphiQL]
 
 .Try the example
 [TIP]
-https://demo.getmesh.io/api/v1/demo/graphql/browser/[Live Demo]
+https://demo.getmesh.io{apiLatest}/demo/graphql/browser/[Live Demo]
 
 Alternatively, you can download Gentics Mesh and test the API locally.
-Once authenticated you can access the interactive GraphiQL browser at ```/api/v1/:projectName/graphql/browser/``` .
+Once authenticated you can access the interactive GraphiQL browser at ```{apiLatest}/:projectName/graphql/browser/``` .
 
-NOTE: The GraphiQL browser currently does not support the `branch`` or `version` query parameter.
+NOTE: The GraphiQL browser currently does not support the `branch` or `version` query parameter.
 
 == Limitations
 

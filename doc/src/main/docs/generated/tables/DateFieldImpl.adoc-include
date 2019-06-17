@@ -1,0 +1,15 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| date
+| false
+| string
+| ISO8601 formatted date field value
+
+|======

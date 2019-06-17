@@ -10,6 +10,7 @@ import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 
 /**
  * A micronodes is similar to a node but instead of nodes these elements can't be directly accessed via the REST API. A micronode can have it's own set of
@@ -21,11 +22,19 @@ public interface Micronode extends GraphFieldContainer, MeshVertex, Transformabl
 	public static final String TYPE = "micronode";
 
 	/**
-	 * Get the container of this micronode.
+	 * Get the container of this micronode which can either be referenced via a micronode list or a directly to the container.
 	 *
 	 * @return container
 	 */
 	NodeGraphFieldContainer getContainer();
+
+	
+	/**
+	 * Get the container of this micronode which can either be referenced via a micronode list or a directly to the container.
+	 *
+	 * @return container
+	 */
+	TraversalResult<? extends NodeGraphFieldContainer> getContainers();
 
 	/**
 	 * Make this micronode a clone of the given micronode. Property Vertices are reused

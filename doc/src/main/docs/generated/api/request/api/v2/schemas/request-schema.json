@@ -1,0 +1,85 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:impl:SchemaCreateRequest",
+  "properties" : {
+    "displayField" : {
+      "type" : "string",
+      "description" : "Name of the display field."
+    },
+    "segmentField" : {
+      "type" : "string",
+      "description" : "Name of the segment field. This field is used to construct the webroot path to the node."
+    },
+    "urlFields" : {
+      "type" : "array",
+      "description" : "Names of the fields which provide a compete url to the node. This property can be used to define custom urls for certain nodes. The webroot API will try to locate the node via it's segment field and via the specified url fields.",
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "container" : {
+      "type" : "boolean",
+      "description" : "Flag which indicates whether nodes which use this schema store additional child nodes."
+    },
+    "description" : {
+      "type" : "string",
+      "description" : "Description of the schema"
+    },
+    "name" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Name of the schema"
+    },
+    "elasticsearch" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:vertx:core:json:JsonObject",
+      "description" : "Additional search index configuration. This can be used to setup custom analyzers and filters.",
+      "properties" : {
+        "map" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "type" : "any"
+          }
+        },
+        "empty" : {
+          "type" : "boolean"
+        }
+      }
+    },
+    "fields" : {
+      "type" : "array",
+      "description" : "List of schema fields",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
+        "properties" : {
+          "label" : {
+            "type" : "string",
+            "description" : "Label of the field."
+          },
+          "elasticsearch" : {
+            "type" : "object",
+            "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+          },
+          "required" : {
+            "type" : "boolean"
+          },
+          "name" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Name of the field."
+          },
+          "type" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Type of the field."
+          }
+        }
+      }
+    },
+    "autoPurge" : {
+      "type" : "boolean",
+      "description" : "Auto purge flag of the schema. Controls whether contents of this schema should create new versions."
+    }
+  }
+}

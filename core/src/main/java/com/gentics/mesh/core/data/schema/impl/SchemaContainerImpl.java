@@ -5,10 +5,13 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDI
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Iterator;
-import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -21,12 +24,16 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 
 /**
  * @see SchemaContainer
@@ -45,8 +52,8 @@ public class SchemaContainerImpl extends
 		return SchemaContainerVersionImpl.class;
 	}
 
-	public static void init(Database database) {
-		database.addVertexType(SchemaContainerImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(SchemaContainerImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
@@ -55,8 +62,8 @@ public class SchemaContainerImpl extends
 	}
 
 	@Override
-	public List<? extends SchemaContainerRoot> getRoots() {
-		return in(HAS_SCHEMA_CONTAINER_ITEM).toListExplicit(SchemaContainerRootImpl.class);
+	public TraversalResult<? extends SchemaContainerRoot> getRoots() {
+		return new TraversalResult<>(in(HAS_SCHEMA_CONTAINER_ITEM).frameExplicit(SchemaContainerRootImpl.class));
 	}
 
 	@Override
@@ -70,13 +77,16 @@ public class SchemaContainerImpl extends
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		// Check whether the schema is currently being referenced by nodes.
 		Iterator<? extends NodeImpl> it = getNodes().iterator();
 		if (!it.hasNext()) {
-			context.batch().delete(this, true);
+
+			unassignEvents().forEach(bac::add);
+			bac.add(onDeleted());
+
 			for(SchemaContainerVersion v : findAll()) {
-				v.delete(context);
+				v.delete(bac);
 			}
 			remove();
 		} else {
@@ -84,9 +94,20 @@ public class SchemaContainerImpl extends
 		}
 	}
 
+	/**
+	 * Returns events for unassignment on deletion.
+	 * @return
+	 */
+	private Stream<ProjectSchemaEventModel> unassignEvents() {
+		return getRoots().stream()
+			.map(SchemaContainerRoot::getProject)
+			.filter(Objects::nonNull)
+			.map(project -> project.onSchemaAssignEvent(this, UNASSIGNED));
+	}
+
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return "/api/v1/schemas/" + getUuid();
+		return CURRENT_API_BASE_PATH + "/schemas/" + getUuid();
 	}
 
 	@Override

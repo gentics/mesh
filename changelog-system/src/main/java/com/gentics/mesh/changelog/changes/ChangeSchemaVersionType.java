@@ -26,7 +26,7 @@ public class ChangeSchemaVersionType extends AbstractChange {
 	}
 
 	@Override
-	public void apply() {
+	public void applyInTx() {
 		Vertex meshRoot = getMeshRootVertex();
 		updateSchemas(meshRoot);
 		updateMicroschemas(meshRoot);

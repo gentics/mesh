@@ -9,41 +9,44 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
+import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
+import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -61,15 +64,12 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyImpl.class);
 
-	/**
-	 * Initialise the indices and type.
-	 * 
-	 * @param database
-	 */
-	public static void init(Database database) {
-		database.addVertexType(TagFamilyImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_TAG, TagEdgeImpl.BRANCH_UUID_KEY);
-		database.addEdgeIndex(HAS_TAG, true, false, true);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(TagFamilyImpl.class, MeshVertexImpl.class);
+		// TODO why was the branch key omitted? TagEdgeImpl.BRANCH_UUID_KEY
+		index.createIndex(edgeIndex(HAS_TAG));
+		index.createIndex(edgeIndex(HAS_TAG));
+		index.createIndex(edgeIndex(HAS_TAG).withInOut().withOut());
 	}
 
 	@Override
@@ -89,22 +89,22 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public String getName() {
-		return getProperty("name");
+		return property("name");
 	}
 
 	@Override
 	public void setName(String name) {
-		setProperty("name", name);
+		property("name", name);
 	}
 
 	@Override
 	public String getDescription() {
-		return getProperty("description");
+		return property("description");
 	}
 
 	@Override
 	public void setDescription(String description) {
-		setProperty("description", description);
+		property("description", description);
 	}
 
 	@Override
@@ -124,12 +124,12 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public Tag create(InternalActionContext ac, SearchQueueBatch batch) {
+	public Tag create(InternalActionContext ac, EventQueueBatch batch) {
 		return create(ac, batch, null);
 	}
 
 	@Override
-	public Tag create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
+	public Tag create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		Project project = ac.getProject();
 		TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
 		String tagName = requestModel.getName();
@@ -139,7 +139,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 		MeshAuthUser requestUser = ac.getUser();
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
-			throw error(FORBIDDEN, "error_missing_perm", getUuid());
+			throw error(FORBIDDEN, "error_missing_perm", getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 
 		Tag conflictingTag = findByName(tagName);
@@ -151,7 +151,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		ac.getUser().addCRUDPermissionOnRole(this, CREATE_PERM, newTag);
 		addTag(newTag);
 
-		batch.store(newTag, true);
+		batch.add(newTag.onCreated());
 		return newTag;
 	}
 
@@ -190,17 +190,19 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		}
 
 		// Delete all the tags of the tag root
-		for (Tag tag : findAllIt()) {
+		for (Tag tag : findAll()) {
 			tag.delete(bac);
 		}
-		bac.batch().delete(this, false);
+
+		bac.add(onDeleted());
+
 		// Now delete the tag root element
 		getElement().remove();
 		bac.process();
 	}
 
 	@Override
-	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
 		TagFamilyUpdateRequest requestModel = ac.fromJson(TagFamilyUpdateRequest.class);
 		Project project = ac.getProject();
 		String newName = requestModel.getName();
@@ -215,46 +217,21 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		}
 		if (!getName().equals(newName)) {
 			this.setName(newName);
-			batch.store(this, true);
+			batch.add(onUpdated());
 			return true;
-		} else {
-			return false;
 		}
+		return false;
 	}
 
 	@Override
-	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
 		Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
-			for (Tag tag : findAllIt()) {
+			for (Tag tag : findAll()) {
 				tag.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 			}
 		}
 		super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
-	}
-
-	@Override
-	public void handleRelatedEntries(HandleElementAction action) {
-		for (Tag tag : findAllIt()) {
-			GenericEntryContextImpl context = new GenericEntryContextImpl();
-			context.setProjectUuid(tag.getProject().getUuid());
-			action.call(tag, context);
-
-			// To prevent nodes from being handled multiple times
-			HashSet<String> handledNodes = new HashSet<>();
-
-			for (Branch branch : tag.getProject().getBranchRoot().findAllIt()) {
-				for (Node node : tag.getNodes(branch)) {
-					if (!handledNodes.contains(node.getUuid())) {
-						handledNodes.add(node.getUuid());
-						GenericEntryContextImpl nodeContext = new GenericEntryContextImpl();
-						context.setBranchUuid(branch.getUuid());
-						context.setProjectUuid(node.getProject().getUuid());
-						action.call(node, nodeContext);
-					}
-				}
-			}
-		}
 	}
 
 	@Override
@@ -267,7 +244,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return "/api/v1/" + encodeSegment(getProject().getName()) + "/tagFamilies/" + getUuid();
+		return CURRENT_API_BASE_PATH + "/" + encodeSegment(getProject().getName()) + "/tagFamilies/" + getUuid();
 	}
 
 	@Override
@@ -330,6 +307,27 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		// Set the tag family for the tag
 		tag.setTagFamily(this);
 		return tag;
+	}
+
+	@Override
+	protected TagFamilyMeshEventModel createEvent(MeshEvent type) {
+		TagFamilyMeshEventModel event = new TagFamilyMeshEventModel();
+		event.setEvent(type);
+		fillEventInfo(event);
+
+		// .project
+		Project project = getProject();
+		ProjectReference reference = project.transformToReference();
+		event.setProject(reference);
+
+		return event;
+	}
+
+	@Override
+	public PermissionChangedProjectElementEventModel onPermissionChanged(Role role) {
+		PermissionChangedProjectElementEventModel model = new PermissionChangedProjectElementEventModel();
+		fillPermissionChanged(model, role);
+		return model;
 	}
 
 }

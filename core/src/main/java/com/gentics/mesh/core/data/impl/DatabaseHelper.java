@@ -4,15 +4,17 @@ import com.gentics.mesh.core.data.binary.impl.BinaryImpl;
 import com.gentics.mesh.core.data.binary.impl.BinaryRootImpl;
 import com.gentics.mesh.core.data.branch.impl.BranchMicroschemaEdgeImpl;
 import com.gentics.mesh.core.data.branch.impl.BranchSchemaEdgeImpl;
+import com.gentics.mesh.core.data.changelog.ChangeMarkerVertexImpl;
+import com.gentics.mesh.core.data.changelog.ChangelogRootImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.job.impl.BranchMigrationJobImpl;
 import com.gentics.mesh.core.data.job.impl.JobRootImpl;
 import com.gentics.mesh.core.data.job.impl.MicronodeMigrationJobImpl;
 import com.gentics.mesh.core.data.job.impl.NodeMigrationJobImpl;
-import com.gentics.mesh.core.data.job.impl.BranchMigrationJobImpl;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
@@ -26,6 +28,7 @@ import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
+import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
 import com.gentics.mesh.core.data.root.impl.GroupRootImpl;
 import com.gentics.mesh.core.data.root.impl.LanguageRootImpl;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
@@ -34,7 +37,6 @@ import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
-import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
 import com.gentics.mesh.core.data.root.impl.RoleRootImpl;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
@@ -49,6 +51,8 @@ import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateMicroschemaChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateSchemaChangeImpl;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -68,81 +72,87 @@ public final class DatabaseHelper {
 	public static void init(Database database) {
 
 		log.info("Creating database indices. This may take a few seconds...");
+		TypeHandler type = database.type();
+		IndexHandler index = database.index();
 
 		// Base type for most vertices
-		MeshVertexImpl.init(database);
+		MeshVertexImpl.init(type, index);
 
 		// Edges
-		GraphRelationships.init(database);
-		GraphPermission.init(database);
-		GraphFieldContainerEdgeImpl.init(database);
-		MicronodeGraphFieldImpl.init(database);
-		TagEdgeImpl.init(database);
-		BranchSchemaEdgeImpl.init(database);
-		BranchMicroschemaEdgeImpl.init(database);
+		GraphRelationships.init(type, index);
+		GraphPermission.init(type, index);
+		GraphFieldContainerEdgeImpl.init(type, index);
+		MicronodeGraphFieldImpl.init(type, index);
+		TagEdgeImpl.init(type, index);
+		BranchSchemaEdgeImpl.init(type, index);
+		BranchMicroschemaEdgeImpl.init(type, index);
 
 		// Aggregation nodes
-		MeshRootImpl.init(database);
-		GroupRootImpl.init(database);
-		UserRootImpl.init(database);
-		RoleRootImpl.init(database);
-		TagRootImpl.init(database);
-		NodeRootImpl.init(database);
-		TagFamilyRootImpl.init(database);
-		LanguageRootImpl.init(database);
-		ProjectRootImpl.init(database);
-		SchemaContainerRootImpl.init(database);
-		MicroschemaContainerRootImpl.init(database);
-		ProjectSchemaContainerRootImpl.init(database);
-		ProjectMicroschemaContainerRootImpl.init(database);
-		BranchRootImpl.init(database);
-		JobRootImpl.init(database);
+		MeshRootImpl.init(type, index);
+		GroupRootImpl.init(type, index);
+		UserRootImpl.init(type, index);
+		RoleRootImpl.init(type, index);
+		TagRootImpl.init(type, index);
+		NodeRootImpl.init(type, index);
+		TagFamilyRootImpl.init(type, index);
+		LanguageRootImpl.init(type, index);
+		ProjectRootImpl.init(type, index);
+		SchemaContainerRootImpl.init(type, index);
+		MicroschemaContainerRootImpl.init(type, index);
+		ProjectSchemaContainerRootImpl.init(type, index);
+		ProjectMicroschemaContainerRootImpl.init(type, index);
+		BranchRootImpl.init(type, index);
+		JobRootImpl.init(type, index);
+		ChangelogRootImpl.init(type, index);
 
 		// Binary
-		BinaryImpl.init(database);
-		BinaryRootImpl.init(database);
+		BinaryImpl.init(type, index);
+		BinaryRootImpl.init(type, index);
 
 		// Nodes
-		ProjectImpl.init(database);
-		BranchImpl.init(database);
+		ProjectImpl.init(type, index);
+		BranchImpl.init(type, index);
 
 		// Fields
-		AbstractGenericFieldContainerVertex.init(database);
-		NodeGraphFieldContainerImpl.init(database);
-		StringGraphFieldListImpl.init(database);
-		BooleanGraphFieldListImpl.init(database);
-		DateGraphFieldListImpl.init(database);
-		NumberGraphFieldListImpl.init(database);
-		HtmlGraphFieldListImpl.init(database);
-		NodeGraphFieldListImpl.init(database);
-		MicronodeGraphFieldListImpl.init(database);
-		BinaryGraphFieldImpl.init(database);
+		AbstractGenericFieldContainerVertex.init(type, index);
+		NodeGraphFieldContainerImpl.init(type, index);
+		StringGraphFieldListImpl.init(type, index);
+		BooleanGraphFieldListImpl.init(type, index);
+		DateGraphFieldListImpl.init(type, index);
+		NumberGraphFieldListImpl.init(type, index);
+		HtmlGraphFieldListImpl.init(type, index);
+		NodeGraphFieldListImpl.init(type, index);
+		MicronodeGraphFieldListImpl.init(type, index);
+		BinaryGraphFieldImpl.init(type, index);
 
-		LanguageImpl.init(database);
-		GroupImpl.init(database);
-		RoleImpl.init(database);
-		UserImpl.init(database);
-		NodeImpl.init(database);
-		MicronodeImpl.init(database);
-		TagImpl.init(database);
-		TagFamilyImpl.init(database);
-		SchemaContainerImpl.init(database);
-		MicroschemaContainerImpl.init(database);
-		SchemaContainerVersionImpl.init(database);
-		MicroschemaContainerVersionImpl.init(database);
+		LanguageImpl.init(type, index);
+		GroupImpl.init(type, index);
+		RoleImpl.init(type, index);
+		UserImpl.init(type, index);
+		NodeImpl.init(type, index);
+		MicronodeImpl.init(type, index);
+		TagImpl.init(type, index);
+		TagFamilyImpl.init(type, index);
+		SchemaContainerImpl.init(type, index);
+		MicroschemaContainerImpl.init(type, index);
+		SchemaContainerVersionImpl.init(type, index);
+		MicroschemaContainerVersionImpl.init(type, index);
 
 		// Jobs
-		NodeMigrationJobImpl.init(database);
-		MicronodeMigrationJobImpl.init(database);
-		BranchMigrationJobImpl.init(database);
+		NodeMigrationJobImpl.init(type, index);
+		MicronodeMigrationJobImpl.init(type, index);
+		BranchMigrationJobImpl.init(type, index);
 
 		// Field changes
-		FieldTypeChangeImpl.init(database);
-		UpdateSchemaChangeImpl.init(database);
-		RemoveFieldChangeImpl.init(database);
-		UpdateFieldChangeImpl.init(database);
-		AddFieldChangeImpl.init(database);
-		UpdateMicroschemaChangeImpl.init(database);
+		FieldTypeChangeImpl.init(type, index);
+		UpdateSchemaChangeImpl.init(type, index);
+		RemoveFieldChangeImpl.init(type, index);
+		UpdateFieldChangeImpl.init(type, index);
+		AddFieldChangeImpl.init(type, index);
+		UpdateMicroschemaChangeImpl.init(type, index);
+
+		// Changelog
+		ChangeMarkerVertexImpl.init(type, index);
 
 	}
 

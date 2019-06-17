@@ -1,14 +1,8 @@
 package com.gentics.mesh.auth;
 
-import java.util.Base64;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpHeaders;
@@ -17,6 +11,10 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.impl.AuthHandlerImpl;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.Base64;
 
 @Singleton
 public class MeshBasicAuthLoginHandler extends AuthHandlerImpl {
@@ -92,7 +90,7 @@ public class MeshBasicAuthLoginHandler extends AuthHandlerImpl {
 					// We decoded the basic auth information and can now invoke the login call. The MeshAuthProvider will also set the JWT token in the cookie
 					// and return the response to the requestor.
 					InternalActionContext ac = new InternalRoutingActionContextImpl(context);
-					authProvider.login(ac, suser, spass);
+					authProvider.login(ac, suser, spass, null);
 				}
 			}
 		}

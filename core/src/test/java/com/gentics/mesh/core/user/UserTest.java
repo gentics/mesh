@@ -15,13 +15,13 @@ import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -45,11 +45,13 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
 import com.google.common.collect.Iterables;
+import com.syncleus.ferma.tx.Tx;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
@@ -73,6 +75,34 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	}
 
 	@Test
+	public void testLoadPrincipalWithoutTx() {
+		MeshAuthUser user = tx(() -> getRequestUser());
+
+		JsonObject json = user.principal();
+		assertNotNull(json);
+		assertEquals(userUuid(), json.getString("uuid"));
+		assertEquals(tx(() -> user.getEmailAddress()), json.getString("emailAddress"));
+		assertEquals(tx(() -> user.getLastname()), json.getString("lastname"));
+		assertEquals(tx(() -> user.getFirstname()), json.getString("firstname"));
+		assertEquals(tx(() -> user.getUsername()), json.getString("username"));
+
+		JsonArray roles = json.getJsonArray("roles");
+		for (int i = 0; i < roles.size(); i++) {
+			JsonObject role = roles.getJsonObject(i);
+			assertNotNull(role.getString("uuid"));
+			assertNotNull(role.getString("name"));
+		}
+		assertEquals("The principal should contain two roles.", 1, roles.size());
+		JsonArray groups = json.getJsonArray("groups");
+		for (int i = 0; i < roles.size(); i++) {
+			JsonObject group = groups.getJsonObject(i);
+			assertNotNull(group.getString("uuid"));
+			assertNotNull(group.getString("name"));
+		}
+		assertEquals("The principal should contain two groups.", 1, groups.size());
+	}
+
+	@Test
 	public void testETag() {
 		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
@@ -87,9 +117,9 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testRootNode() {
 		try (Tx tx = tx()) {
 			UserRoot root = meshRoot().getUserRoot();
-			int nUserBefore = Iterables.size(root.findAllIt());
+			int nUserBefore = Iterables.size(root.findAll());
 			assertNotNull(root.create("dummy12345", user()));
-			int nUserAfter = Iterables.size(root.findAllIt());
+			int nUserAfter = Iterables.size(root.findAll());
 			assertEquals("The root node should now list one more user", nUserBefore + 1, nUserAfter);
 		}
 	}
@@ -157,7 +187,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 				assertNotNull(json.getJsonArray("roles"));
 				assertEquals(TestUtils.size(user().getRoles()), json.getJsonArray("roles").size());
 				assertNotNull(json.getJsonArray("groups"));
-				assertEquals(user().getGroups().size(), json.getJsonArray("groups").size());
+				assertEquals(user().getGroups().count(), json.getJsonArray("groups").size());
 			}
 		}
 	}
@@ -252,8 +282,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertTrue(user.isEnabled());
 			assertNotNull(user);
 			String uuid = user.getUuid();
-			BulkActionContext context = createBulkContext();
-			user.delete(context);
+			BulkActionContext bac = createBulkContext();
+			user.delete(bac);
 			User foundUser = root.getUserRoot().findByUuid(uuid);
 			assertNull(foundUser);
 		}
@@ -383,7 +413,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNotNull(user.getCreator());
 			assertNotNull(user.getEditor());
 			assertNotNull(user.getCreationTimestamp());
-			assertEquals(1, user.getGroups().size());
+			assertEquals(1, user.getGroups().count());
 			assertNotNull(user);
 		}
 	}
@@ -392,7 +422,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testUserGroup() {
 		try (Tx tx = tx()) {
 			User user = user();
-			assertEquals(1, user.getGroups().size());
+			assertEquals(1, user.getGroups().count());
 
 			for (int i = 0; i < 10; i++) {
 				Group extraGroup = meshRoot().getGroupRoot().create("group_" + i, user());
@@ -403,7 +433,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 				extraGroup.addUser(user);
 			}
 
-			assertEquals(11, user().getGroups().size());
+			assertEquals(11, user().getGroups().count());
 		}
 	}
 
@@ -440,10 +470,10 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			User user = user();
 			String uuid = user.getUuid();
-			assertEquals(1, user.getGroups().size());
+			assertEquals(1, user.getGroups().count());
 			assertTrue(user.isEnabled());
-			BulkActionContext context = createBulkContext();
-			user.delete(context);
+			BulkActionContext bac = createBulkContext();
+			user.delete(bac);
 			User foundUser = meshRoot().getUserRoot().findByUuid(uuid);
 			assertNull(foundUser);
 		}
@@ -527,6 +557,31 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			User user = meshRoot().getUserRoot().create("Anton", user());
 			testPermission(GraphPermission.CREATE_PERM, user);
+		}
+	}
+
+	@Test
+	public void testUserRolesHashes() {
+		try (Tx tz = tx()) {
+			User oldUser = user();
+			User newUser = meshRoot().getUserRoot().create("newuser", oldUser);
+			Group newGroup = meshRoot().getGroupRoot().create("newgroup", oldUser);
+
+			group().getRoles().forEach(newGroup::addRole);
+			newGroup.addUser(newUser);
+
+			// Both groups have the same roles, so the hashes must match.
+			assertEquals(oldUser.getRolesHash(), newUser.getRolesHash());
+
+			String hash = oldUser.getRolesHash();
+
+			// Add another role to the groups only oldUser is in.
+			grantAdminRole();
+
+			// The roles have changed for oldUser ...
+			assertNotEquals(hash, oldUser.getRolesHash());
+			// ... but NOT for newUser.
+			assertEquals(hash, newUser.getRolesHash());
 		}
 	}
 }

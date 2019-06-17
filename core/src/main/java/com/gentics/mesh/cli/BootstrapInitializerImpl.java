@@ -1,14 +1,15 @@
 package com.gentics.mesh.cli;
 
-import static com.gentics.mesh.Events.STARTUP_EVENT_ADDRESS;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.STARTUP;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.DatagramSocket;
@@ -20,11 +21,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.naming.InvalidNameException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -35,6 +37,7 @@ import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ReindexAction;
+import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
@@ -43,6 +46,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.binary.BinaryRoot;
+import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.job.JobRoot;
@@ -77,12 +81,15 @@ import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.PluginManager;
 import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
+import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.util.MavenVersionNumber;
 import com.hazelcast.core.HazelcastInstance;
 import com.syncleus.ferma.tx.Tx;
@@ -93,10 +100,10 @@ import dagger.Lazy;
 import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.eventbus.EventBusOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.dropwizard.DropwizardMetricsOptions;
-import io.vertx.ext.dropwizard.MetricsService;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 /**
@@ -130,6 +137,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Inject
 	public Lazy<CoreVerticleLoader> loader;
 
+	@Inject
+	public HighLevelChangelogSystem highlevelChangelogSystem;
+
 	private static MeshRoot meshRoot;
 
 	private MeshImpl mesh;
@@ -148,16 +158,16 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		if (searchProvider instanceof TrackingSearchProvider) {
 			return;
 		}
-		// Ensure indices are setup and sync the documents
-		IndexHandlerRegistry registry = indexHandlerRegistry.get();
-		for (IndexHandler<?> handler : registry.getHandlers()) {
-			String handlerName = handler.getClass().getSimpleName();
-			try (Tx tx = db.tx()) {
-				log.info("Invoking index sync on handler {" + handlerName + "}. This may take some time..");
-				handler.init().andThen(handler.syncIndices()).blockingAwait();
-				log.info("Index sync on handler {" + handlerName + "} completed.");
-			}
+		if (searchProvider instanceof DevNullSearchProvider) {
+			return;
 		}
+		if (searchProvider.getClient() == null) {
+			return;
+		}
+		// Ensure indices are setup and sync the documents
+		log.info("Invoking index sync. This may take some time..");
+		SyncEventHandler.invokeSyncCompletable().blockingAwait();
+		log.info("Index sync completed.");
 	});
 
 	@Inject
@@ -165,31 +175,24 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		clearReferences();
 	}
 
-	@Override
-	public void initProjects() throws InvalidNameException {
-		for (Project project : meshRoot().getProjectRoot().findAllIt()) {
-			RouterStorage.addProject(project.getName());
-			if (log.isDebugEnabled()) {
-				log.debug("Initalized project {" + project.getName() + "}");
-			}
-		}
-	}
-
 	/**
 	 * Initialize the local data or create the initial dataset if no local data could be found.
 	 * 
+	 * @param configuration
+	 *            Mesh configuration
 	 * @param isJoiningCluster
 	 *            Flag which indicates that the instance is joining the cluster. In those cases various checks must not be invoked.
 	 * @return True if an empty installation was detected, false if existing data was found
 	 * @throws Exception
 	 */
-	private boolean initLocalData(boolean isJoiningCluster) throws Exception {
+	private boolean initLocalData(MeshOptions configuration, boolean isJoiningCluster) throws Exception {
 		boolean isEmptyInstallation = isEmptyInstallation();
 		if (isEmptyInstallation) {
 			// Update graph indices and vertex types (This may take some time)
 			DatabaseHelper.init(db);
 			// Setup mandatory data (e.g.: mesh root, project root, user root etc., admin user/role/group)
 			initMandatoryData();
+			initOptionalLanguages(configuration);
 			initOptionalData(isEmptyInstallation);
 			initPermissions();
 			handleMeshVersion();
@@ -200,10 +203,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		} else {
 			handleMeshVersion();
 			if (!isJoiningCluster) {
+				initOptionalLanguages(configuration);
 				// Only execute the changelog if there are any elements in the graph
 				invokeChangelog();
-				// Update graph indices and vertex types (This may take some time)
-				DatabaseHelper.init(db);
 			}
 			return false;
 		}
@@ -238,10 +240,14 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// We need to init the graph db before starting the OrientDB Server. Otherwise the database will not get picked up by the orientdb server which
 				// handles the clustering.
 				db.setupConnectionPool();
-				boolean setupData = initLocalData(false);
-				db.startServer();
+				boolean setupData = initLocalData(options, false);
+				db.closeConnectionPool();
+				db.shutdown();
+
+				db.clusterManager().startServer();
 				initVertx(options, isClustered);
-				db.registerEventHandlers();
+				db.clusterManager().registerEventHandlers();
+				db.setupConnectionPool();
 				searchProvider.init();
 				searchProvider.start();
 				if (setupData) {
@@ -249,16 +255,16 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				}
 			} else {
 				// We need to wait for other nodes and receive the graphdb
-				db.startServer();
+				db.clusterManager().startServer();
 				initVertx(options, isClustered);
 				mesh.setStatus(MeshStatus.WAITING_FOR_CLUSTER);
-				db.joinCluster();
-				db.registerEventHandlers();
+				db.clusterManager().joinCluster();
+				db.clusterManager().registerEventHandlers();
 				isInitialSetup = false;
 				db.setupConnectionPool();
 				searchProvider.init();
 				searchProvider.start();
-				initLocalData(true);
+				initLocalData(options, true);
 			}
 
 			boolean active = false;
@@ -276,9 +282,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			searchProvider.start();
 			// No cluster mode - Just setup the connection pool and load or setup the local data
 			db.setupConnectionPool();
-			initLocalData(false);
+			initLocalData(options, false);
 			if (startOrientServer) {
-				db.startServer();
+				db.closeConnectionPool();
+				db.clusterManager().startServer();
+				db.setupConnectionPool();
 			}
 		}
 
@@ -289,8 +297,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		pluginManager.init(options);
 		pluginManager.deployExistingPluginFiles().subscribe(() -> {
 			// Finally fire the startup event and log that bootstrap has completed
-			log.info("Sending startup completed event to {" + STARTUP_EVENT_ADDRESS + "}");
-			Mesh.vertx().eventBus().publish(STARTUP_EVENT_ADDRESS, true);
+			log.info("Sending startup completed event to {" + STARTUP + "}");
+			Mesh.vertx().eventBus().publish(STARTUP.address, true);
 		}, log::error);
 
 	}
@@ -319,25 +327,42 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	public void initVertx(MeshOptions options, boolean isClustered) {
 		VertxOptions vertxOptions = new VertxOptions();
-		vertxOptions.setClustered(options.getClusterOptions().isEnabled());
+		vertxOptions.getEventBusOptions().setClustered(options.getClusterOptions().isEnabled());
 		vertxOptions.setWorkerPoolSize(options.getVertxOptions().getWorkerPoolSize());
 		vertxOptions.setEventLoopPoolSize(options.getVertxOptions().getEventPoolSize());
-		vertxOptions.setMetricsOptions(new DropwizardMetricsOptions().setEnabled(true).setRegistryName("mesh"));
+		// vertxOptions.setWorkerPoolSize(1);
+		// vertxOptions.setEventLoopPoolSize(1);
+
+		MonitoringConfig monitorinOptions = options.getMonitoringOptions();
+		if (monitorinOptions != null && monitorinOptions.isEnabled()) {
+			log.info("Enabling Vert.x metrics");
+			DropwizardMetricsOptions metricsOptions = new DropwizardMetricsOptions()
+				.setRegistryName("mesh")
+				.setEnabled(true)
+				.setJmxEnabled(true);
+			vertxOptions.setMetricsOptions(metricsOptions);
+		}
+		vertxOptions.setPreferNativeTransport(true);
+		System.setProperty("vertx.cacheDirBase", options.getTempDirectory());
 		// TODO We need to find a different way to deal with the FileResolver classpath caching issue since disabling the cache
 		// has negative performance implications.
-		//vertxOptions.setFileResolverCachingEnabled(false);
+		// vertxOptions.setFileResolverCachingEnabled(false);
 		vertxOptions.setBlockedThreadCheckInterval(Integer.MAX_VALUE);
 		Vertx vertx = null;
-		if (vertxOptions.isClustered()) {
+		if (vertxOptions.getEventBusOptions().isClustered()) {
 			log.info("Creating clustered Vert.x instance");
-			vertx = createClusteredVertx(options, vertxOptions, (HazelcastInstance) db.getHazelcast());
+			vertx = createClusteredVertx(options, vertxOptions, (HazelcastInstance) db.clusterManager().getHazelcast());
 		} else {
 			log.info("Creating non-clustered Vert.x instance");
 			vertx = Vertx.vertx(vertxOptions);
 		}
+		if (vertx.isNativeTransportEnabled()) {
+			log.info("Running with native transports enabled");
+		} else {
+			log.warn("Current environment does not support native transports");
+		}
 
 		mesh.setVertx(vertx);
-		mesh.setMetricsService(MetricsService.create(vertx));
 	}
 
 	/**
@@ -355,28 +380,28 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		manager = new HazelcastClusterManager(hazelcast);
 		vertxOptions.setClusterManager(manager);
 		String localIp = options.getClusterOptions().getNetworkHost();
-		vertxOptions.getEventBusOptions().setHost(localIp);
-		vertxOptions.getEventBusOptions().setClusterPublicHost(localIp);
-		vertxOptions.setClusterHost(localIp);
-		vertxOptions.setClusterPublicHost(localIp);
 
 		Integer clusterPort = options.getClusterOptions().getVertxPort();
 		int vertxClusterPort = clusterPort == null ? 0 : clusterPort;
-		vertxOptions.setClusterPort(vertxClusterPort);
-		vertxOptions.setClusterPublicPort(vertxClusterPort);
+
+		EventBusOptions eventbus = vertxOptions.getEventBusOptions();
+		eventbus.setHost(localIp);
+		eventbus.setPort(vertxClusterPort);
+		eventbus.setClusterPublicHost(localIp);
+		eventbus.setClusterPublicPort(vertxClusterPort);
 
 		if (log.isDebugEnabled()) {
-			log.debug("Using vert.x cluster port {" + vertxClusterPort + "}");
-			log.debug("Using vert.x cluster public port {" + vertxClusterPort + "}");
-			log.debug("Binding vert.x on host {" + localIp + "}");
+			log.debug("Using Vert.x cluster port {" + vertxClusterPort + "}");
+			log.debug("Using Vert.x cluster public port {" + vertxClusterPort + "}");
+			log.debug("Binding Vert.x on host {" + localIp + "}");
 		}
 		CompletableFuture<Vertx> fut = new CompletableFuture<>();
 		Vertx.clusteredVertx(vertxOptions, rh -> {
-			log.info("Created clustered vert.x instance");
+			log.info("Created clustered Vert.x instance");
 			if (rh.failed()) {
 				Throwable cause = rh.cause();
-				log.error("Failed to create clustered vert.x instance", cause);
-				fut.completeExceptionally(new RuntimeException("Error while creating clusterd vert.x instance", cause));
+				log.error("Failed to create clustered Vert.x instance", cause);
+				fut.completeExceptionally(new RuntimeException("Error while creating clusterd Vert.x instance", cause));
 				return;
 			}
 			Vertx vertx = rh.result();
@@ -385,7 +410,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		try {
 			return fut.get(10, SECONDS);
 		} catch (Exception e) {
-			throw new RuntimeException("Error while creating clusterd vert.x instance");
+			throw new RuntimeException("Error while creating clusterd Vert.x instance");
 		}
 
 	}
@@ -400,15 +425,19 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 * @throws Exception
 	 */
 	private void handleLocalData(boolean forceIndexSync, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+		// Load the verticles
+		List<String> initialProjects = db.tx(() -> meshRoot().getProjectRoot().findAll().stream()
+			.map(Project::getName)
+			.collect(Collectors.toList()));
+
+		loader.get().loadVerticles(initialProjects);
+		if (verticleLoader != null) {
+			verticleLoader.apply(Mesh.vertx());
+		}
+
 		// Invoke reindex as requested
 		if (forceIndexSync && configuration.getSearchOptions().getUrl() != null) {
 			syncIndex();
-		}
-
-		// Load the verticles
-		loader.get().loadVerticles(configuration);
-		if (verticleLoader != null) {
-			verticleLoader.apply(Mesh.vertx());
 		}
 
 		// Handle admin password reset
@@ -422,10 +451,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				tx.success();
 			}
 		}
-		// Initialise routes for existing projects
-		try (Tx tx = db.tx()) {
-			initProjects();
-		}
+
 		registerEventHandlers();
 
 	}
@@ -525,6 +551,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		if (!cls.applyChanges(SYNC_INDEX_ACTION)) {
 			throw new RuntimeException("The changelog could not be applied successfully. See log above.");
 		}
+
+		// Update graph indices and vertex types (This may take some time)
+		DatabaseHelper.init(db);
+
+		// Now run the high level changelog entries
+		highlevelChangelogSystem.apply(meshRoot);
+
 		log.info("Changelog completed.");
 		cls.setCurrentVersionAndRev();
 	}
@@ -534,6 +567,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		log.info("This is the initial setup.. marking all found changelog entries as applied");
 		ChangelogSystem cls = new ChangelogSystem(db);
 		cls.markAllAsApplied();
+		highlevelChangelogSystem.markAllAsApplied(meshRoot);
+		log.info("All changes marked");
 	}
 
 	@Override
@@ -605,6 +640,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
+	public ChangelogRoot changelogRoot() {
+		return meshRoot().getChangelogRoot();
+	}
+
+	@Override
 	public UserRoot userRoot() {
 		return meshRoot().getUserRoot();
 	}
@@ -653,6 +693,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			meshRoot.getLanguageRoot();
 			meshRoot.getJobRoot();
 			meshRoot.getBinaryRoot();
+			meshRoot.getChangelogRoot();
 
 			GroupRoot groupRoot = meshRoot.getGroupRoot();
 			UserRoot userRoot = meshRoot.getUserRoot();
@@ -673,9 +714,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// Scanner scanIn = new Scanner(System.in);
 				// String pw = scanIn.nextLine();
 				// TODO remove later on
-				String pw = "admin";
-				// scanIn.close();
-				adminUser.setPasswordHash(encoder.encode(pw));
+				// Default hash for pw = "admin";
+				// TODO Autogenerate new passwords
+				String hash = "$2a$10$X7NA0kiqrFlyX0NUhPdW1e7jevHyoaoB4OyoxV1pdA7B3SLVSkx22";
+				adminUser.setPasswordHash(hash);
 				log.debug("Created admin user {" + adminUser.getUuid() + "}");
 			}
 
@@ -711,7 +753,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.addField(contentFieldSchema);
 
 				schema.setContainer(false);
-				contentSchemaContainer = schemaContainerRoot.create(schema, adminUser);
+				contentSchemaContainer = schemaContainerRoot.create(schema, adminUser, null, false);
 				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + contentSchemaContainer.getUuid() + "}");
 			}
 
@@ -735,7 +777,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.addField(nameFieldSchema);
 
 				schema.setContainer(true);
-				folderSchemaContainer = schemaContainerRoot.create(schema, adminUser);
+				folderSchemaContainer = schemaContainerRoot.create(schema, adminUser, null, false);
 				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + folderSchemaContainer.getUuid() + "}");
 			}
 
@@ -760,7 +802,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.addField(binaryFieldSchema);
 
 				schema.setContainer(false);
-				binarySchemaContainer = schemaContainerRoot.create(schema, adminUser);
+				binarySchemaContainer = schemaContainerRoot.create(schema, adminUser, null, false);
 				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + binarySchemaContainer.getUuid() + "}");
 			}
 
@@ -853,26 +895,66 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			throw new NullPointerException("Languages could not be loaded from classpath file {" + filename + "}");
 		}
 		LanguageSet languageSet = new ObjectMapper().readValue(ins, LanguageSet.class);
+		initLanguages(root, languageSet);
+
+	}
+
+	@Override
+	public void initOptionalLanguages(MeshOptions configuration) {
+		String languagesFilePath = configuration.getLanguagesFilePath();
+		if (StringUtils.isNotEmpty(languagesFilePath)) {
+			File languagesFile = new File(languagesFilePath);
+			try (Tx tx = db.tx()) {
+				LanguageSet languageSet = new ObjectMapper().readValue(languagesFile, LanguageSet.class);
+				initLanguages(meshRoot().getLanguageRoot(), languageSet);
+				tx.success();
+			} catch (IOException e) {
+				log.error("Error while initializing optional languages from {" + languagesFilePath + "}", e);
+			}
+		}
+	}
+
+	/**
+	 * Create languages in the set, which do not exist yet
+	 * 
+	 * @param root
+	 *            language root
+	 * @param languageSet
+	 *            language set
+	 */
+	protected void initLanguages(LanguageRoot root, LanguageSet languageSet) {
 		for (Map.Entry<String, LanguageEntry> entry : languageSet.entrySet()) {
 			String languageTag = entry.getKey();
 			String languageName = entry.getValue().getName();
 			String languageNativeName = entry.getValue().getNativeName();
-			Language language = meshRoot().getLanguageRoot().findByName(languageName);
+			Language language = meshRoot().getLanguageRoot().findByLanguageTag(languageTag);
 			if (language == null) {
 				language = root.create(languageName, languageTag);
 				language.setNativeName(languageNativeName);
 				if (log.isDebugEnabled()) {
 					log.debug("Added language {" + languageTag + " / " + languageName + "}");
 				}
+			} else {
+				if (!StringUtils.equals(language.getName(), languageName)) {
+					language.setName(languageName);
+					if (log.isDebugEnabled()) {
+						log.debug("Changed name of language {" + languageTag + " } to {" + languageName + "}");
+					}
+				}
+				if (!StringUtils.equals(language.getNativeName(), languageNativeName)) {
+					language.setNativeName(languageNativeName);
+					if (log.isDebugEnabled()) {
+						log.debug("Changed nativeName of language {" + languageTag + " } to {" + languageNativeName + "}");
+					}
+				}
 			}
 		}
-
 	}
 
 	@Override
 	public Collection<? extends String> getAllLanguageTags() {
 		if (allLanguageTags.isEmpty()) {
-			for (Language l : languageRoot().findAllIt()) {
+			for (Language l : languageRoot().findAll()) {
 				String tag = l.getLanguageTag();
 				allLanguageTags.add(tag);
 			}

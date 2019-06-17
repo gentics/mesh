@@ -12,7 +12,6 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.rest.client.impl.MeshRestHttpClientImpl;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.annotations.Nullable;
@@ -62,7 +61,7 @@ public class PluginContext implements RoutingContext {
 		MeshOptions options = Mesh.mesh().getOptions();
 		int port = options.getHttpServerOptions().getPort();
 		String host = options.getHttpServerOptions().getHost();
-		MeshRestClient client = new MeshRestHttpClientImpl(host, port, false, rc.vertx());
+		MeshRestClient client = MeshRestClient.create(host, port, false);
 		// The authentication token / header may be missing if the inbound request was anonymous.
 		String token = parseHeader(rc);
 		if (token != null) {
@@ -376,6 +375,11 @@ public class PluginContext implements RoutingContext {
 	@Override
 	public @Nullable List<String> queryParam(String query) {
 		return rc.queryParam(query);
+	}
+
+	@Override
+	public void fail(int statusCode, Throwable throwable) {
+		rc.fail(statusCode, throwable);
 	}
 
 }

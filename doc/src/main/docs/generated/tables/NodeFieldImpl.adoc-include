@@ -1,0 +1,25 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| languagePaths
+| true
+| object
+| Set of language paths that the node provides.
+
+| path
+| true
+| string
+| Path to the referenced node.
+
+| uuid
+| true
+| string
+| Uuid of the referenced node.
+
+|======

@@ -8,7 +8,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class SchemaComparatorBooleanTest extends AbstractComparatorBooleanTest<Schema> {
 
 	@Override

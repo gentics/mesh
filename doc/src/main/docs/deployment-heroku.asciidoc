@@ -1,9 +1,0 @@
-
-```bash
-heroku container:login
-docker login --username=_ --password=$(heroku auth:token) registry.heroku.com
-
-docker pull gentics/mesh-demo:0.10.4
-docker tag gentics/mesh-demo:0.10.4 registry.heroku.com/mesh-test/worker
-docker push registry.heroku.com/mesh-test/worker
-```

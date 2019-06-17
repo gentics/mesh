@@ -2,6 +2,8 @@ package com.gentics.mesh.core.schema;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_MICROSCHEMA_ASSIGNED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_MICROSCHEMA_UNASSIGNED;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,17 +18,20 @@ import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.ClientHelper.call;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 
 	@Test
@@ -47,17 +52,25 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAddMicroschemaToExtraProject() {
 		final String name = "test12345";
-		try (Tx tx = tx()) {
-			MicroschemaContainer microschema = microschemaContainer("vcard");
+		final String uuid = tx(() -> microschemaContainer("vcard").getUuid());
 
-			ProjectCreateRequest request = new ProjectCreateRequest();
-			request.setSchema(new SchemaReferenceImpl().setName("folder"));
-			request.setName(name);
+		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setSchema(new SchemaReferenceImpl().setName("folder"));
+		request.setName(name);
+		ProjectResponse restProject = call(() -> client().createProject(request));
 
-			ProjectResponse restProject = call(() -> client().createProject(request));
-
-			call(() -> client().assignMicroschemaToProject(restProject.getName(), microschema.getUuid()));
-		}
+		expect(PROJECT_MICROSCHEMA_ASSIGNED).match(1, ProjectMicroschemaEventModel.class, event -> {
+			MicroschemaReference microschemaRef = event.getMicroschema();
+			assertNotNull(microschemaRef);
+			assertEquals("vcard", microschemaRef.getName());
+			assertEquals(uuid, microschemaRef.getUuid());
+			ProjectReference projectRef = event.getProject();
+			assertNotNull(projectRef);
+			assertEquals(restProject.getName(), projectRef.getName());
+			assertEquals(restProject.getUuid(), projectRef.getUuid());
+		});
+		call(() -> client().assignMicroschemaToProject(restProject.getName(), uuid));
+		awaitEvents();
 	}
 
 	@Test
@@ -83,7 +96,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 			MicroschemaResponse restMicroschema = call(() -> client().assignMicroschemaToProject(extraProject.getName(), microschema.getUuid()));
 			assertThat(restMicroschema.getUuid()).isEqualTo(microschema.getUuid());
 			assertNotNull("The microschema should be added to the extra project",
-					extraProject.getMicroschemaContainerRoot().findByUuid(microschema.getUuid()));
+				extraProject.getMicroschemaContainerRoot().findByUuid(microschema.getUuid()));
 		}
 	}
 
@@ -107,32 +120,50 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		call(() -> client().assignMicroschemaToProject("extraProject", microschemaUuid), FORBIDDEN, "error_missing_perm", projectUuid);
+		call(() -> client().assignMicroschemaToProject("extraProject", microschemaUuid), FORBIDDEN, "error_missing_perm", projectUuid,
+			UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
 			// Reload the microschema and check for expected changes
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 
 			assertFalse("The microschema should not have been added to the extra project but it was",
-					extraProject.getMicroschemaContainerRoot().contains(microschema));
+				extraProject.getMicroschemaContainerRoot().contains(microschema));
 		}
 	}
 
 	// Microschema Project Testcases - DELETE / Remove
 	@Test
 	public void testRemoveMicroschemaFromProjectWithPerm() throws Exception {
+		Project project = project();
+		MicroschemaContainer microschema = microschemaContainer("vcard");
+		String microschemaUuid = tx(() -> microschema.getUuid());
+		String microschemaName = "vcard";
+
 		try (Tx tx = tx()) {
-			MicroschemaContainer microschema = microschemaContainer("vcard");
-			Project project = project();
 			assertTrue("The microschema should be assigned to the project.", project.getMicroschemaContainerRoot().contains(microschema));
+		}
 
-			call(() -> client().unassignMicroschemaFromProject(project.getName(), microschema.getUuid()));
+		expect(PROJECT_MICROSCHEMA_UNASSIGNED).match(1, ProjectMicroschemaEventModel.class, event -> {
+			MicroschemaReference microschemaRef = event.getMicroschema();
+			assertNotNull(microschemaRef);
+			assertEquals(microschemaName, microschemaRef.getName());
+			assertEquals(microschemaUuid, microschemaRef.getUuid());
+			ProjectReference projectRef = event.getProject();
+			assertNotNull(projectRef);
+			assertEquals(PROJECT_NAME, projectRef.getName());
+			assertEquals(projectUuid(), projectRef.getUuid());
+		});
+		call(() -> client().unassignMicroschemaFromProject(PROJECT_NAME, microschemaUuid));
+		awaitEvents();
 
-			MicroschemaListResponse list = call(() -> client().findMicroschemas(PROJECT_NAME));
+		MicroschemaListResponse list = call(() -> client().findMicroschemas(PROJECT_NAME));
 
+		try (Tx tx = tx()) {
 			assertEquals("The removed microschema should not be listed in the response", 0,
-					list.getData().stream().filter(s -> s.getUuid().equals(microschema.getUuid())).count());
-			assertFalse("The microschema should no longer be assigned to the project.", project.getMicroschemaContainerRoot().contains(microschema));
+				list.getData().stream().filter(s -> s.getUuid().equals(microschemaUuid)).count());
+			assertFalse("The microschema should no longer be assigned to the project.",
+				project().getMicroschemaContainerRoot().contains(microschema));
 		}
 	}
 
@@ -150,7 +181,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			call(() -> client().unassignMicroschemaFromProject(project.getName(), microschema.getUuid()), FORBIDDEN, "error_missing_perm",
-					project.getUuid());
+				project.getUuid(), UPDATE_PERM.getRestPerm().getName());
 
 			// Reload the microschema and check for expected changes
 			assertTrue("The microschema should still be listed for the project.", project.getMicroschemaContainerRoot().contains(microschema));

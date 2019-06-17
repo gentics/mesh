@@ -36,59 +36,61 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
  */
 public enum GraphFieldTypes {
 
-	STRING("string", StringGraphFieldImpl.STRING_TRANSFORMER, StringGraphFieldImpl.STRING_UPDATER,
-			StringGraphFieldImpl.STRING_GETTER),
+	STRING("string", StringGraphFieldImpl.class, StringGraphFieldImpl.STRING_TRANSFORMER, StringGraphFieldImpl.STRING_UPDATER,
+		StringGraphFieldImpl.STRING_GETTER),
 
-	STRING_LIST("list.string", StringGraphFieldListImpl.STRING_LIST_TRANSFORMER,
-			StringGraphFieldListImpl.STRING_LIST_UPDATER, StringGraphFieldListImpl.STRING_LIST_GETTER),
+	STRING_LIST("list.string", StringGraphFieldListImpl.class, StringGraphFieldListImpl.STRING_LIST_TRANSFORMER,
+		StringGraphFieldListImpl.STRING_LIST_UPDATER, StringGraphFieldListImpl.STRING_LIST_GETTER),
 
-	NUMBER("number", NumberGraphFieldImpl.NUMBER_TRANSFORMER, NumberGraphFieldImpl.NUMBER_UPDATER,
-			NumberGraphFieldImpl.NUMBER_GETTER),
+	NUMBER("number", NumberGraphFieldImpl.class, NumberGraphFieldImpl.NUMBER_TRANSFORMER, NumberGraphFieldImpl.NUMBER_UPDATER,
+		NumberGraphFieldImpl.NUMBER_GETTER),
 
-	NUMBER_LIST("list.number", NumberGraphFieldListImpl.NUMBER_LIST_TRANSFORMER,
-			NumberGraphFieldListImpl.NUMBER_LIST_UPDATER, NumberGraphFieldListImpl.NUMBER_LIST_GETTER),
+	NUMBER_LIST("list.number", NumberGraphFieldListImpl.class, NumberGraphFieldListImpl.NUMBER_LIST_TRANSFORMER,
+		NumberGraphFieldListImpl.NUMBER_LIST_UPDATER, NumberGraphFieldListImpl.NUMBER_LIST_GETTER),
 
-	DATE("date", DateGraphFieldImpl.DATE_TRANSFORMER, DateGraphFieldImpl.DATE_UPDATER,
-			DateGraphFieldImpl.DATE_GETTER),
+	DATE("date", DateGraphFieldImpl.class, DateGraphFieldImpl.DATE_TRANSFORMER, DateGraphFieldImpl.DATE_UPDATER,
+		DateGraphFieldImpl.DATE_GETTER),
 
-	DATE_LIST("list.date", DateGraphFieldListImpl.DATE_LIST_TRANSFORMER, DateGraphFieldListImpl.DATE_LIST_UPDATER,
-			DateGraphFieldListImpl.DATE_LIST_GETTER),
+	DATE_LIST("list.date", DateGraphFieldListImpl.class, DateGraphFieldListImpl.DATE_LIST_TRANSFORMER, DateGraphFieldListImpl.DATE_LIST_UPDATER,
+		DateGraphFieldListImpl.DATE_LIST_GETTER),
 
-	BOOLEAN("boolean", BooleanGraphFieldImpl.BOOLEAN_TRANSFORMER, BooleanGraphFieldImpl.BOOLEAN_UPDATER,
-			BooleanGraphFieldImpl.BOOLEAN_GETTER),
+	BOOLEAN("boolean", BooleanGraphFieldImpl.class, BooleanGraphFieldImpl.BOOLEAN_TRANSFORMER, BooleanGraphFieldImpl.BOOLEAN_UPDATER,
+		BooleanGraphFieldImpl.BOOLEAN_GETTER),
 
-	BOOLEAN_LIST("list.boolean", BooleanGraphFieldListImpl.BOOLEAN_LIST_TRANSFORMER,
-			BooleanGraphFieldListImpl.BOOLEAN_LIST_UPDATER, BooleanGraphFieldListImpl.BOOLEAN_LIST_GETTER),
+	BOOLEAN_LIST("list.boolean", BooleanGraphFieldListImpl.class, BooleanGraphFieldListImpl.BOOLEAN_LIST_TRANSFORMER,
+		BooleanGraphFieldListImpl.BOOLEAN_LIST_UPDATER, BooleanGraphFieldListImpl.BOOLEAN_LIST_GETTER),
 
-	HTML("html", HtmlGraphFieldImpl.HTML_TRANSFORMER, HtmlGraphFieldImpl.HTML_UPDATER,
-			HtmlGraphFieldImpl.HTML_GETTER),
+	HTML("html", HtmlGraphFieldImpl.class, HtmlGraphFieldImpl.HTML_TRANSFORMER, HtmlGraphFieldImpl.HTML_UPDATER,
+		HtmlGraphFieldImpl.HTML_GETTER),
 
-	HTML_LIST("list.html", HtmlGraphFieldListImpl.HTML_LIST_TRANSFORMER, HtmlGraphFieldListImpl.HTML_LIST_UPDATER,
-			HtmlGraphFieldListImpl.HTML_LIST_GETTER),
+	HTML_LIST("list.html", HtmlGraphFieldListImpl.class, HtmlGraphFieldListImpl.HTML_LIST_TRANSFORMER, HtmlGraphFieldListImpl.HTML_LIST_UPDATER,
+		HtmlGraphFieldListImpl.HTML_LIST_GETTER),
 
-	MICRONODE("micronode", MicronodeGraphFieldImpl.MICRONODE_TRANSFORMER, MicronodeGraphFieldImpl.MICRONODE_UPDATER,
-			MicronodeGraphFieldImpl.MICRONODE_GETTER),
+	MICRONODE("micronode", MicronodeGraphFieldImpl.class, MicronodeGraphFieldImpl.MICRONODE_TRANSFORMER, MicronodeGraphFieldImpl.MICRONODE_UPDATER,
+		MicronodeGraphFieldImpl.MICRONODE_GETTER),
 
-	MICRONODE_LIST("list.micronode", MicronodeGraphFieldListImpl.MICRONODE_LIST_TRANSFORMER,
-			MicronodeGraphFieldListImpl.MICRONODE_LIST_UPDATER, MicronodeGraphFieldListImpl.MICRONODE_LIST_GETTER),
+	MICRONODE_LIST("list.micronode", MicronodeGraphFieldListImpl.class, MicronodeGraphFieldListImpl.MICRONODE_LIST_TRANSFORMER,
+		MicronodeGraphFieldListImpl.MICRONODE_LIST_UPDATER, MicronodeGraphFieldListImpl.MICRONODE_LIST_GETTER),
 
-	NODE("node", NodeGraphFieldImpl.NODE_TRANSFORMER, NodeGraphFieldImpl.NODE_UPDATER,
-			NodeGraphFieldImpl.NODE_GETTER),
+	NODE("node", NodeGraphFieldImpl.class, NodeGraphFieldImpl.NODE_TRANSFORMER, NodeGraphFieldImpl.NODE_UPDATER,
+		NodeGraphFieldImpl.NODE_GETTER),
 
-	NODE_LIST("list.node", NodeGraphFieldListImpl.NODE_LIST_TRANSFORMER, NodeGraphFieldListImpl.NODE_LIST_UPDATER,
-			NodeGraphFieldListImpl.NODE_LIST_GETTER),
+	NODE_LIST("list.node", NodeGraphFieldListImpl.class, NodeGraphFieldListImpl.NODE_LIST_TRANSFORMER, NodeGraphFieldListImpl.NODE_LIST_UPDATER,
+		NodeGraphFieldListImpl.NODE_LIST_GETTER),
 
-	BINARY("binary", BinaryGraphFieldImpl.BINARY_TRANSFORMER, BinaryGraphFieldImpl.BINARY_UPDATER,
-			BinaryGraphFieldImpl.BINARY_GETTER);
+	BINARY("binary", BinaryGraphFieldImpl.class, BinaryGraphFieldImpl.BINARY_TRANSFORMER, BinaryGraphFieldImpl.BINARY_UPDATER,
+		BinaryGraphFieldImpl.BINARY_GETTER);
 
 	private String combinedType;
 	private FieldTransformer transformer;
 	private FieldUpdater updater;
 	private FieldGetter getter;
+	private Class<? extends GraphField> domainClass;
 
-	private GraphFieldTypes(String combinedType, FieldTransformer transformer, FieldUpdater updater,
-			FieldGetter getter) {
+	private GraphFieldTypes(String combinedType, Class<? extends GraphField> clazz, FieldTransformer transformer, FieldUpdater updater,
+		FieldGetter getter) {
 		this.combinedType = combinedType;
+		this.domainClass = clazz;
 		this.transformer = transformer;
 		this.updater = updater;
 		this.getter = getter;
@@ -144,7 +146,7 @@ public enum GraphFieldTypes {
 	 * @return
 	 */
 	public Field getRestFieldFromGraph(GraphFieldContainer container, InternalActionContext ac, String fieldKey,
-			FieldSchema fieldSchema, List<String> languageTags, int level, Supplier<Node> parentNode) {
+		FieldSchema fieldSchema, List<String> languageTags, int level, Supplier<Node> parentNode) {
 		return getTransformer().transform(container, ac, fieldKey, fieldSchema, languageTags, level, parentNode);
 	}
 
@@ -164,7 +166,7 @@ public enum GraphFieldTypes {
 	 * @param schema
 	 */
 	public void updateField(GraphFieldContainer container, InternalActionContext ac, FieldMap fieldMap, String fieldKey,
-			FieldSchema fieldSchema, FieldSchemaContainer schema) {
+		FieldSchema fieldSchema, FieldSchemaContainer schema) {
 		updater.update(container, ac, fieldMap, fieldKey, fieldSchema, schema);
 	}
 
@@ -179,5 +181,14 @@ public enum GraphFieldTypes {
 	 */
 	public GraphField getField(GraphFieldContainer container, FieldSchema fieldSchema) {
 		return getter.get(container, fieldSchema);
+	}
+
+	/**
+	 * Returns the graph domain model class for the field type.
+	 * 
+	 * @return
+	 */
+	public Class<? extends GraphField> getDomainClass() {
+		return domainClass;
 	}
 }

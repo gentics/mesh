@@ -1,0 +1,46 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserCreateRequest",
+  "properties" : {
+    "username" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Username of the user."
+    },
+    "emailAddress" : {
+      "type" : "string",
+      "description" : "Email address of the user."
+    },
+    "lastname" : {
+      "type" : "string",
+      "description" : "Lastname of the user."
+    },
+    "firstname" : {
+      "type" : "string",
+      "description" : "Firstname of the user."
+    },
+    "groupUuid" : {
+      "type" : "string",
+      "description" : "Optional group id for the user. If provided the user will automatically be assigned to the identified group."
+    },
+    "password" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Password of the new user."
+    },
+    "nodeReference" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:ExpandableNode",
+      "description" : "New node reference of the user. This can also explicitly set to null in order to remove the assigned node from the user",
+      "properties" : {
+        "uuid" : {
+          "type" : "string"
+        }
+      }
+    },
+    "forcedPasswordChange" : {
+      "type" : "boolean",
+      "description" : "When true, the user needs to change their password on the next login."
+    }
+  }
+}

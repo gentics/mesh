@@ -21,11 +21,13 @@ public class MeshOptions implements Option {
 	public static final int DEFAULT_MAX_DEPTH = 10;
 
 	public static final String MESH_DEFAULT_LANG_ENV = "MESH_DEFAULT_LANG";
+	public static final String MESH_LANGUAGES_FILE_PATH_ENV = "MESH_LANGUAGES_FILE_PATH";
 	public static final String MESH_UPDATECHECK_ENV = "MESH_UPDATECHECK";
 	public static final String MESH_TEMP_DIR_ENV = "MESH_TEMP_DIR";
 	public static final String MESH_PLUGIN_DIR_ENV = "MESH_PLUGIN_DIR";
 	public static final String MESH_NODE_NAME_ENV = "MESH_NODE_NAME";
 	public static final String MESH_CLUSTER_INIT_ENV = "MESH_CLUSTER_INIT";
+	public static final String MESH_LOCK_PATH_ENV = "MESH_LOCK_PATH";
 
 	// TODO remove this setting. There should not be a default max depth. This is no longer needed once we remove the expand all parameter
 	private int defaultMaxDepth = DEFAULT_MAX_DEPTH;
@@ -36,6 +38,11 @@ public class MeshOptions implements Option {
 	private String defaultLanguage = DEFAULT_LANGUAGE;
 
 	@JsonProperty(required = false)
+	@JsonPropertyDescription("Optional path to a JSON file containing additional languages")
+	@EnvironmentVariable(name = MESH_LANGUAGES_FILE_PATH_ENV, description = "Override the path to the optional languages file")
+	private String languagesFilePath;
+
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Turn on or off the update checker.")
 	@EnvironmentVariable(name = MESH_UPDATECHECK_ENV, description = "Override the configured updatecheck flag.")
 	private boolean updateCheck = true;
@@ -43,6 +50,10 @@ public class MeshOptions implements Option {
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Http server options.")
 	private HttpServerConfig httpServerOptions = new HttpServerConfig();
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Monitoring options.")
+	private MonitoringConfig monitoringOptions = new MonitoringConfig();
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Vert.x specific options.")
@@ -72,6 +83,10 @@ public class MeshOptions implements Option {
 	@JsonPropertyDescription("Image handling options.")
 	private ImageManipulatorOptions imageOptions = new ImageManipulatorOptions();
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Content related options.")
+	private ContentConfig contentOptions = new ContentConfig();
+
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Path to the central tmp directory.")
 	@EnvironmentVariable(name = MESH_TEMP_DIR_ENV, description = "Override the configured temp directory.")
@@ -93,6 +108,10 @@ public class MeshOptions implements Option {
 	private boolean isInitCluster = false;
 
 	@JsonIgnore
+	@EnvironmentVariable(name = MESH_LOCK_PATH_ENV, description = "Path to the mesh lock file.")
+	private String lockPath = "mesh.lock";
+
+	@JsonIgnore
 	private String adminPassword;
 
 	public MeshOptions() {
@@ -105,6 +124,25 @@ public class MeshOptions implements Option {
 	 */
 	public String getDefaultLanguage() {
 		return defaultLanguage;
+	}
+
+	/**
+	 * Return the (optional) languages file path
+	 * 
+	 * @return path to the optional languages file
+	 */
+	public String getLanguagesFilePath() {
+		return languagesFilePath;
+	}
+
+	/**
+	 * Set the languages file path
+	 * 
+	 * @param languagesFilePath
+	 *            path to the optional languages file
+	 */
+	public void setLanguagesFilePath(String languagesFilePath) {
+		this.languagesFilePath = languagesFilePath;
 	}
 
 	/**
@@ -167,6 +205,30 @@ public class MeshOptions implements Option {
 		return httpServerOptions;
 	}
 
+	/**
+	 * Set the http server options.
+	 * 
+	 * @param httpServerOptions
+	 *            Http server options
+	 */
+	public void setHttpServerOptions(HttpServerConfig httpServerOptions) {
+		this.httpServerOptions = httpServerOptions;
+	}
+
+	@JsonProperty("monitoring")
+	public MonitoringConfig getMonitoringOptions() {
+		return monitoringOptions;
+	}
+
+	/**
+	 * Set the monitoring options.
+	 * 
+	 * @param monitoringOptions
+	 */
+	public void setMonitoringOptions(MonitoringConfig monitoringOptions) {
+		this.monitoringOptions = monitoringOptions;
+	}
+
 	public VertxOptions getVertxOptions() {
 		return vertxOptions;
 	}
@@ -178,16 +240,6 @@ public class MeshOptions implements Option {
 
 	public void setClusterOptions(ClusterOptions clusterOptions) {
 		this.clusterOptions = clusterOptions;
-	}
-
-	/**
-	 * Set the http server options.
-	 * 
-	 * @param httpServerOptions
-	 *            Http server options
-	 */
-	public void setHttpServerOptions(HttpServerConfig httpServerOptions) {
-		this.httpServerOptions = httpServerOptions;
 	}
 
 	/**
@@ -293,6 +345,27 @@ public class MeshOptions implements Option {
 	}
 
 	/**
+	 * Return the content options
+	 * 
+	 * @return
+	 */
+	@JsonProperty("content")
+	public ContentConfig getContentOptions() {
+		return contentOptions;
+	}
+
+	/**
+	 * Set the content options
+	 * 
+	 * @param contentOptions
+	 * @return
+	 */
+	public MeshOptions setContentOptions(ContentConfig contentOptions) {
+		this.contentOptions = contentOptions;
+		return this;
+	}
+
+	/**
 	 * Return update checker flag.
 	 * 
 	 * @return
@@ -345,6 +418,17 @@ public class MeshOptions implements Option {
 	}
 
 	@JsonIgnore
+	public String getLockPath() {
+		return lockPath;
+	}
+
+	@JsonIgnore
+	public MeshOptions setLockPath(String lockPath) {
+		this.lockPath = lockPath;
+		return this;
+	}
+
+	@JsonIgnore
 	public String getAdminPassword() {
 		return adminPassword;
 	}
@@ -374,6 +458,12 @@ public class MeshOptions implements Option {
 		if (getImageOptions() != null) {
 			getImageOptions().validate(this);
 		}
+		if (getMonitoringOptions() != null) {
+			getMonitoringOptions().validate(this);
+		}
+		if (getContentOptions() != null) {
+			getContentOptions().validate(this);
+		}
 
 		// TODO check for other invalid characters in node name
 	}
@@ -382,22 +472,4 @@ public class MeshOptions implements Option {
 	public void validate(MeshOptions options) {
 		validate();
 	}
-
-	/**
-	 * Apply the environment variables.
-	 */
-	@JsonIgnore
-	@Override
-	public void overrideWithEnv() {
-		Option.super.overrideWithEnv();
-
-		getClusterOptions().overrideWithEnv();
-		getSearchOptions().overrideWithEnv();
-		getStorageOptions().overrideWithEnv();
-		getHttpServerOptions().overrideWithEnv();
-		getAuthenticationOptions().overrideWithEnv();
-		getImageOptions().overrideWithEnv();
-		getVertxOptions().overrideWithEnv();
-	}
-
 }

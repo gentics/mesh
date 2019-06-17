@@ -1,28 +1,5 @@
 package com.gentics.mesh.core.webroot;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.ClientHelper.expectFailureMessage;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.test.util.MeshAssert.latchFor;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.junit.Test;
-
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -30,13 +7,11 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
@@ -45,13 +20,35 @@ import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.rest.client.MeshBinaryResponse;
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.URIUtils;
 import com.syncleus.ferma.tx.Tx;
+import org.junit.Test;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+import java.io.IOException;
+import java.util.Arrays;
+
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.parameter.LinkType.MEDIUM;
+import static com.gentics.mesh.parameter.LinkType.SHORT;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class WebRootEndpointTest extends AbstractMeshTest {
 
 	@Test
@@ -76,10 +73,10 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 			// 3. Try to resolve the path
 			String path = "/News/2015/somefile.dat";
-			WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+			MeshWebrootResponse response = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
 				new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
-			NodeDownloadResponse downloadResponse = response.getDownloadResponse();
-			assertTrue(response.isDownload());
+			MeshBinaryResponse downloadResponse = response.getBinaryResponse();
+			assertTrue(response.isBinary());
 			assertNotNull(downloadResponse);
 		}
 	}
@@ -90,7 +87,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			Node folder = folder("2015");
 			String path = "/News/2015";
 
-			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft()));
+			MeshWebrootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft()));
 			assertThat(restNode.getNodeResponse()).is(folder).hasLanguage("en");
 		}
 	}
@@ -107,11 +104,11 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			String path = "/News/2015/News_2015.en.html";
-			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+			MeshWebrootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
 				new NodeParametersImpl().setResolveLinks(LinkType.FULL).setLanguages("en")));
 			HtmlFieldImpl contentField = restNode.getNodeResponse().getFields().getHtmlField("content");
 			assertNotNull(contentField);
-			assertEquals("Check rendered content", "<a href=\"/api/v1/dummy/webroot/News/2015/News_2015.en.html\">somelink</a>",
+			assertEquals("Check rendered content", "<a href=\"" + CURRENT_API_BASE_PATH + "/dummy/webroot/News/2015/News_2015.en.html\">somelink</a>",
 				contentField.getHTML());
 			assertThat(restNode.getNodeResponse()).is(content).hasLanguage("en");
 		}
@@ -122,7 +119,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	public void testReadContentByPath() throws Exception {
 		String path = "/News/2015/News_2015.en.html";
 
-		WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+		MeshWebrootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
 			new NodeParametersImpl().setLanguages("en", "de")));
 
 		try (Tx tx = tx()) {
@@ -162,8 +159,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			String path = "/News/2015";
-			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
-				new NodeParametersImpl().setResolveLinks(LinkType.MEDIUM).setLanguages("en", "de")));
+			MeshWebrootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+				new NodeParametersImpl().setResolveLinks(MEDIUM).setLanguages("en", "de")));
 			assertEquals("The node reference did not point to the german node.", "/dummy/News/2015/test.de.html",
 				restNode.getNodeResponse().getFields().getNodeField("nodeRef").getPath());
 			assertEquals("The name of the node did not match", "2015", restNode.getNodeResponse().getFields().getStringField("name").getString());
@@ -183,16 +180,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		int nJobs = 200;
 		String path = "/News/2015/News_2015.en.html";
 
-		List<MeshResponse<WebRootResponse>> futures = new ArrayList<>();
-		for (int i = 0; i < nJobs; i++) {
-			futures.add(client()
-				.webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")).invoke());
-		}
-
-		for (MeshResponse<WebRootResponse> fut : futures) {
-			latchFor(fut);
-			assertSuccess(fut);
-		}
+		awaitConcurrentRequests(nJobs, i -> client()
+			.webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")));
 	}
 
 	@Test
@@ -229,7 +218,28 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		assertEquals("/News/" + URIUtils.encodeSegment(newName), after.getPath());
 
 		String[] path = new String[] { "News", newName };
-		WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+		MeshWebrootResponse response = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+			new NodeParametersImpl().setLanguages("en", "de").setResolveLinks(SHORT)));
+		assertEquals(uuid, response.getNodeResponse().getUuid());
+		assertEquals("/News/" + URIUtils.encodeSegment(newName), response.getNodeResponse().getPath());
+	}
+
+	@Test
+	public void testPathWithSlash() throws Exception {
+		String newName = "2015/2016";
+		String uuid = tx(() -> folder("2015").getUuid());
+
+		NodeResponse before = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
+		NodeUpdateRequest nodeUpdateRequest = before.toRequest();
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField(newName));
+		call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest));
+
+		NodeResponse after = call(() -> client().findNodeByUuid(PROJECT_NAME, tx(() -> folder("2015").getUuid()),
+			new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
+		assertEquals("/News/" + URIUtils.encodeSegment(newName), after.getPath());
+
+		String[] path = new String[] { "News", newName };
+		MeshWebrootResponse response = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
 			new NodeParametersImpl().setLanguages("en", "de").setResolveLinks(LinkType.SHORT)));
 		assertEquals(uuid, response.getNodeResponse().getUuid());
 		assertEquals("/News/" + URIUtils.encodeSegment(newName), response.getNodeResponse().getPath());
@@ -243,17 +253,14 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 	@Test(expected = RuntimeException.class)
 	public void testReadWithEmptyPath() {
-		MeshResponse<WebRootResponse> future = client().webroot(PROJECT_NAME, "").invoke();
-		latchFor(future);
-		assertSuccess(future);
-		WebRootResponse response = future.result();
+		MeshWebrootResponse response = client().webroot(PROJECT_NAME, "").blockingGet();
 		assertEquals(project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
 	}
 
 	@Test
 	public void testReadProjectBaseNode() {
-		WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, "/", new VersioningParametersImpl().draft()));
-		assertFalse(response.isDownload());
+		MeshWebrootResponse response = call(() -> client().webroot(PROJECT_NAME, "/", new VersioningParametersImpl().draft()));
+		assertFalse(response.isBinary());
 		try (Tx tx = tx()) {
 			assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
 		}
@@ -261,8 +268,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadDoubleSlashes() {
-		WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, "//", new VersioningParametersImpl().draft()));
-		assertFalse(response.isDownload());
+		MeshWebrootResponse response = call(() -> client().webroot(PROJECT_NAME, "//", new VersioningParametersImpl().draft()));
+		assertFalse(response.isBinary());
 		try (Tx tx = tx()) {
 			assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
 		}
@@ -276,7 +283,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			for (String path2 : Arrays.asList("2014")) {
 				for (String path3 : Arrays.asList("March", "März")) {
 					for (String language : Arrays.asList("en", "de")) {
-						WebRootResponse response = call(() -> client().webroot(PROJECT_NAME,
+						MeshWebrootResponse response = call(() -> client().webroot(PROJECT_NAME,
 							new String[] { path1, path2, path3, name + "." + language + ".html" }, new VersioningParametersImpl().draft()));
 
 						assertEquals("Check response language", language, response.getNodeResponse().getLanguage());
@@ -298,7 +305,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		call(() -> client().webroot(PROJECT_NAME, englishPath, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid);
+		call(() -> client().webroot(PROJECT_NAME, englishPath, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -345,10 +352,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			create404Node.setLanguage("en");
 			call(() -> client().createNode(PROJECT_NAME, create404Node));
 
-			MeshResponse<WebRootResponse> webrootFuture = client().webroot(PROJECT_NAME, notFoundPath, new VersioningParametersImpl().draft())
-				.invoke();
-			latchFor(webrootFuture);
-			expectFailureMessage(webrootFuture, NOT_FOUND, null);
+			call(() -> client().webroot(PROJECT_NAME, notFoundPath, new VersioningParametersImpl().draft()), NOT_FOUND);
 		}
 	}
 
@@ -374,7 +378,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		// 3. Assert that published path can be found
 		try (Tx tx = tx()) {
-			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new NodeParametersImpl()));
+			MeshWebrootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new NodeParametersImpl()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("2.0").hasLanguage("en");
 		}
 	}
@@ -397,7 +401,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		// 3. Assert that published path can be found
 		try (Tx tx = db().tx()) {
-			WebRootResponse restNode = call(
+			MeshWebrootResponse restNode = call(
 				() -> client().webroot(PROJECT_NAME, path, new NodeParametersImpl(), new VersioningParametersImpl().published()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.0").hasLanguage("en");
 		}
@@ -413,7 +417,6 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			BulkActionContext bac = createBulkContext();
 			folder("news").publish(mockActionContext(), bac);
 			folder("2015").publish(mockActionContext(), bac);
-			return null;
 		});
 
 		// 2. Change names
@@ -424,7 +427,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		// 3. Assert published path in published
 		db().tx(() -> {
-			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, publishedPath, new VersioningParametersImpl().published()));
+			MeshWebrootResponse restNode = call(() -> client().webroot(PROJECT_NAME, publishedPath, new VersioningParametersImpl().published()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.0").hasLanguage("en");
 		});
 
@@ -436,7 +439,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		// 5. Assert draft path in draft
 		db().tx(() -> {
-			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, draftPath, new VersioningParametersImpl().draft()));
+			MeshWebrootResponse restNode = call(() -> client().webroot(PROJECT_NAME, draftPath, new VersioningParametersImpl().draft()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.1").hasLanguage("en");
 		});
 
@@ -461,15 +464,15 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			BranchCreateRequest branchCreateRequest = new BranchCreateRequest();
 			branchCreateRequest.setName(newBranchName);
 			call(() -> client().createBranch(PROJECT_NAME, branchCreateRequest));
-		}, MigrationStatus.COMPLETED, 1);
+		}, JobStatus.COMPLETED, 1);
 
 		// Assert name in initial branch after migration
-		WebRootResponse restNode2 = call(() -> client().webroot(PROJECT_NAME, initialPath,
+		MeshWebrootResponse restNode2 = call(() -> client().webroot(PROJECT_NAME, initialPath,
 			new VersioningParametersImpl().draft().setBranch(initialBranchUuid())));
 		assertThat(restNode2.getNodeResponse()).hasUuid(folder2015Uuid).hasVersion("1.0").hasLanguage("en");
 
 		// Assert name in new branch after migration
-		WebRootResponse restNode3 = call(() -> client().webroot(PROJECT_NAME, initialPath,
+		MeshWebrootResponse restNode3 = call(() -> client().webroot(PROJECT_NAME, initialPath,
 			new VersioningParametersImpl().draft().setBranch(newBranchName)));
 		assertThat(restNode3.getNodeResponse()).hasUuid(folder2015Uuid).hasVersion("1.0").hasLanguage("en");
 
@@ -484,7 +487,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		// new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
 
 		// 3. Assert new name in new branch
-		WebRootResponse restNode = call(
+		MeshWebrootResponse restNode = call(
 			() -> client().webroot(PROJECT_NAME, newPath, new VersioningParametersImpl().draft().setBranch(newBranchName)));
 		assertThat(restNode.getNodeResponse()).hasUuid(folder2015Uuid).hasVersion("1.1").hasLanguage("en");
 
@@ -493,7 +496,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			"node_not_found_for_path", newPath);
 
 		// 5. Assert old names in initial branch
-		WebRootResponse restNode4 = call(() -> client().webroot(PROJECT_NAME, initialPath,
+		MeshWebrootResponse restNode4 = call(() -> client().webroot(PROJECT_NAME, initialPath,
 			new VersioningParametersImpl().draft().setBranch(initialBranchUuid())));
 		assertThat(restNode4.getNodeResponse()).hasUuid(folder2015Uuid).hasVersion("1.0").hasLanguage("en");
 

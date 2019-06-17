@@ -32,7 +32,7 @@ import io.vertx.core.json.JsonObject;
 /**
  * Test {@link UpdateSchemaChangeImpl} methods
  */
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class UpdateSchemaChangeTest extends AbstractChangeTest {
 
 	@Test
@@ -43,9 +43,6 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			assertNull("Initially no container flag value should be set.", change.getContainerFlag());
 			change.setContainerFlag(true);
 			assertTrue("The container flag should be set to true.", change.getContainerFlag());
-
-			change.setCustomMigrationScript("test");
-			assertEquals("test", change.getMigrationScript());
 
 			change.setDescription("testDescription");
 			assertEquals("testDescription", change.getDescription());
@@ -156,7 +153,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			Schema updatedSchema = mutator.apply(version);
 			assertEquals("The display field name was not updated", "newDisplayField", updatedSchema.getDisplayField());
 			assertEquals("The segment field name was not updated", "newSegmentField", updatedSchema.getSegmentField());
-			assertTrue("The schema container flag was not updated", updatedSchema.isContainer());
+			assertTrue("The schema container flag was not updated", updatedSchema.getContainer());
 		}
 	}
 
@@ -165,7 +162,6 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	public void testUpdateFromRest() throws IOException {
 		try (Tx tx = tx()) {
 			SchemaChangeModel model = new SchemaChangeModel();
-			model.setMigrationScript("custom");
 			model.setProperty(SchemaChangeModel.REQUIRED_KEY, true);
 			model.setProperty(SchemaChangeModel.ELASTICSEARCH_KEY, IndexOptionHelper.getRawFieldOption().encode());
 			model.setProperty(SchemaChangeModel.CONTAINER_FLAG_KEY, true);
@@ -177,7 +173,6 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			model.setProperty(SchemaChangeModel.FIELD_ORDER_KEY, new String[] { "A", "B", "C" });
 			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			change.updateFromRest(model);
-			assertEquals("custom", change.getMigrationScript());
 			assertTrue("The required flag should be set to true.", change.getRestProperty(REQUIRED_KEY));
 			assertEquals("description", change.getDescription());
 			assertEquals("segmentField", change.getSegmentField());
@@ -188,19 +183,6 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			assertTrue("Container flag should have been set.", change.getContainerFlag());
 			assertEquals(UpdateSchemaChange.OPERATION, change.getOperation());
 			assertArrayEquals(new String[] { "A", "B", "C" }, change.getOrder().toArray());
-		}
-	}
-
-	@Test
-	@Override
-	public void testGetMigrationScript() throws IOException {
-		try (Tx tx = tx()) {
-			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
-			assertNull("Update field changes have no auto migation script.", change.getAutoMigrationScript());
-
-			assertNull("Intitially no migration script should be set.", change.getMigrationScript());
-			change.setCustomMigrationScript("test");
-			assertEquals("The custom migration script was not changed.", "test", change.getMigrationScript());
 		}
 	}
 
@@ -218,7 +200,6 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			change.setDisplayField("test");
 			change.setSegmentField("test2");
 			change.setURLFields("fieldA", "fieldB");
-			change.setCustomMigrationScript("script");
 			change.setName("someName");
 			change.setDescription("someDescription");
 			change.setContainerFlag(true);
@@ -228,7 +209,6 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			assertEquals("test", model.getProperty(SchemaChangeModel.DISPLAY_FIELD_NAME_KEY));
 			assertEquals("test2", model.getProperty(SchemaChangeModel.SEGMENT_FIELD_KEY));
 			assertThat((String[]) model.getProperty(SchemaChangeModel.URLFIELDS_KEY)).containsExactly("fieldA", "fieldB");
-			assertEquals("script", model.getMigrationScript());
 			assertEquals("someName", model.getProperty(SchemaChangeModel.NAME_KEY));
 			assertEquals("someDescription", model.getProperty(SchemaChangeModel.DESCRIPTION_KEY));
 			assertTrue("The container flag should have been set.", model.getProperty(SchemaChangeModel.CONTAINER_FLAG_KEY));

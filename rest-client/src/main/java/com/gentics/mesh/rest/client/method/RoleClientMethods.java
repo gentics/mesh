@@ -9,6 +9,7 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.impl.EmptyResponse;
 
 public interface RoleClientMethods {
 
@@ -49,11 +50,11 @@ public interface RoleClientMethods {
 
 	/**
 	 * Delete the role.
-	 * 
+	 *
 	 * @param uuid
 	 * @return
 	 */
-	MeshRequest<Void> deleteRole(String uuid);
+	MeshRequest<EmptyResponse> deleteRole(String uuid);
 
 	/**
 	 * Load multiple roles that were assigned to the given group.

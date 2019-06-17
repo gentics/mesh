@@ -67,5 +67,4 @@ public class OAuth2Options implements Option {
 		this.mapperScriptDevMode = mapperScriptDevMode;
 		return this;
 	}
-
 }

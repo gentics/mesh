@@ -2,15 +2,12 @@ package com.gentics.mesh.core.schema.change;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
-import com.gentics.mesh.core.rest.schema.*;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -18,12 +15,22 @@ import com.gentics.mesh.core.data.schema.AddFieldChange;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.AddFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
+import com.gentics.mesh.core.rest.schema.DateFieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class AddFieldChangeTest extends AbstractChangeTest {
 
 	@Test
@@ -31,8 +38,6 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	public void testFields() throws IOException {
 		try (Tx tx = tx()) {
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
-			change.setCustomMigrationScript("1234");
-			assertEquals("1234", change.getMigrationScript());
 
 			change.setFieldName("fieldName");
 			assertEquals("fieldName", change.getFieldName());
@@ -370,7 +375,6 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	public void testUpdateFromRest() {
 		try (Tx tx = tx()) {
 			SchemaChangeModel model = SchemaChangeModel.createAddFieldChange("testField", "html", "test123");
-			model.setMigrationScript("custom");
 
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.updateFromRest(model);
@@ -395,19 +399,6 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 			assertEquals(change.getFieldName(), model.getProperty(SchemaChangeModel.FIELD_NAME_KEY));
 			assertEquals("The generic rest property from the change should have been set for the rest model.", "test",
 					change.getRestProperty("someProperty"));
-		}
-	}
-
-	@Test
-	@Override
-	public void testGetMigrationScript() throws IOException {
-		try (Tx tx = tx()) {
-			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
-			assertNull("Add field changes have no auto migation script.", change.getAutoMigrationScript());
-
-			assertNull("Intitially no migration script should be set.", change.getMigrationScript());
-			change.setCustomMigrationScript("test");
-			assertEquals("The custom migration script was not changed.", "test", change.getMigrationScript());
 		}
 	}
 }

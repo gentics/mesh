@@ -2,13 +2,12 @@ package com.gentics.mesh.assertj.impl;
 
 import static org.junit.Assert.assertEquals;
 
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.rest.node.WebRootResponse;
+public class WebRootResponseAssert extends AbstractAssert<WebRootResponseAssert, MeshWebrootResponse> {
 
-public class WebRootResponseAssert extends AbstractAssert<WebRootResponseAssert, WebRootResponse> {
-
-	public WebRootResponseAssert(WebRootResponse actual) {
+	public WebRootResponseAssert(MeshWebrootResponse actual) {
 		super(actual, WebRootResponseAssert.class);
 	}
 

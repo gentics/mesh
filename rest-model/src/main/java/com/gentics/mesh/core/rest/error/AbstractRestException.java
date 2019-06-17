@@ -127,17 +127,6 @@ public abstract class AbstractRestException extends RuntimeException {
 		return getStatus() + " " + getI18nKey() + extraInfo;
 	}
 
-	//	@Override
-	//	public String toString() {
-	//		if (translatedMessage != null) {
-	//			return translatedMessage;
-	//		} else {
-	//			String i18nInfo = Arrays.toString(getI18nParameters());
-	//			String propInfo = JsonUtil.toJson(getProperties());
-	//			return "Key: " + super.getI18nKey() + "\n\nI18nParams:\n" + i18nInfo + "\n\nProperties:\n" + propInfo;
-	//		}
-	//	}
-
 	/**
 	 * Returns the stored information or if possible a translated message.
 	 */
@@ -150,7 +139,6 @@ public abstract class AbstractRestException extends RuntimeException {
 		}
 	}
 
-	@JsonIgnore
 	public String getI18nKey() {
 		return this.i18nKey;
 	}

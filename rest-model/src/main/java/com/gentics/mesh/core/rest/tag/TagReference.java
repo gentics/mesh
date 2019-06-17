@@ -19,9 +19,9 @@ public class TagReference extends AbstractNameUuidReference<TagReference> {
 	}
 
 	/**
-	 * Set the tag family of the tag.
+	 * Set the tag family name of the tag.
 	 * 
-	 * @param tagFamily
+	 * @param tagFamily Name of the tag family
 	 * @return Fluent API
 	 */
 	public TagReference setTagFamily(String tagFamily) {

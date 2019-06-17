@@ -10,15 +10,14 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.tx.Tx;
 
 @Ignore
-public class OrientDBServerTest {
+public class OrientDBServerTest extends AbstractOrientDBTest {
 
-	private Database db = new OrientDBDatabase();
+	private Database db = mockDatabase();
 
 	private File dbDirectory;
 

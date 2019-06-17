@@ -2,6 +2,7 @@ package com.gentics.mesh;
 
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
@@ -48,7 +49,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.util.Tuple;
-import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Utility class that is commonly used for tests and the RAML generator.
@@ -105,6 +105,18 @@ public final class FieldUtil {
 	 */
 	public static MicroschemaUpdateRequest createMinimalValidMicroschemaUpdateRequest() {
 		MicroschemaUpdateRequest schema = new MicroschemaUpdateRequest();
+		schema.setName("test");
+		schema.validate();
+		return schema;
+	}
+
+	/**
+	 * Create minimal create request.
+	 * 
+	 * @return
+	 */
+	public static MicroschemaCreateRequest createMinimalValidMicroschemaCreateRequest() {
+		MicroschemaCreateRequest schema = new MicroschemaCreateRequest();
 		schema.setName("test");
 		schema.validate();
 		return schema;
@@ -236,7 +248,6 @@ public final class FieldUtil {
 		MicronodeResponse field = new MicronodeResponse();
 		MicroschemaReferenceImpl microschemaReference = new MicroschemaReferenceImpl();
 		microschemaReference.setName(microschema);
-		microschemaReference.setUuid(UUIDUtil.randomUUID());
 		field.setMicroschema(microschemaReference);
 
 		for (Tuple<String, Field> tuple : fields) {
@@ -249,8 +260,6 @@ public final class FieldUtil {
 	@SafeVarargs
 	public static MicronodeField createMicronodeField(String microschema, Tuple<String, Field>... fields) {
 		MicronodeResponse field = (MicronodeResponse) createNewMicronodeField(microschema, fields);
-		field.setUuid(UUIDUtil.randomUUID());
-
 		return field;
 	}
 

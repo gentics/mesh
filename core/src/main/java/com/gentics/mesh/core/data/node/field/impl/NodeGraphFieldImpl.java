@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
-import static com.gentics.mesh.core.data.ContainerType.forVersion;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -12,10 +12,9 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -26,6 +25,7 @@ import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
@@ -105,12 +105,12 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 	@Override
 	public String getFieldKey() {
-		return getProperty(GraphField.FIELD_KEY_PROPERTY_KEY);
+		return property(GraphField.FIELD_KEY_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setFieldKey(String key) {
-		setProperty(GraphField.FIELD_KEY_PROPERTY_KEY, key);
+		property(GraphField.FIELD_KEY_PROPERTY_KEY, key);
 	}
 
 	@Override
@@ -151,9 +151,9 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 				// Set the languagePaths for all field containers
 				Map<String, String> languagePaths = new HashMap<>();
 				for (GraphFieldContainer currentFieldContainer : node.getGraphFieldContainers(branch, containerType)) {
-					Language currLanguage = currentFieldContainer.getLanguage();
-					String languagePath = linkReplacer.resolve(ac, branch.getUuid(), containerType, node, type, currLanguage.getLanguageTag());
-					languagePaths.put(currLanguage.getLanguageTag(), languagePath);
+					String currLanguage = currentFieldContainer.getLanguageTag();
+					String languagePath = linkReplacer.resolve(ac, branch.getUuid(), containerType, node, type, currLanguage);
+					languagePaths.put(currLanguage, languagePath);
 				}
 				nodeField.setLanguagePaths(languagePaths);
 
@@ -163,7 +163,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	}
 
 	@Override
-	public void removeField(GraphFieldContainer container) {
+	public void removeField(BulkActionContext bac, GraphFieldContainer container) {
 		// TODO BUG We must only remove one edge to the given container!
 		remove();
 	}

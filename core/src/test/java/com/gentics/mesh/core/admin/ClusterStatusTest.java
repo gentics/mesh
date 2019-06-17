@@ -15,7 +15,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true, inMemoryDB = true, clusterMode = true)
+@MeshTestSetting(testSize = PROJECT, startServer = true, inMemoryDB = true, clusterMode = true)
 public class ClusterStatusTest extends AbstractMeshTest {
 
 	@Test

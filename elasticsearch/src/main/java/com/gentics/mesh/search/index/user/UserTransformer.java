@@ -14,6 +14,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
 
@@ -87,7 +88,7 @@ public class UserTransformer extends AbstractTransformer<User> {
 	 * @param document
 	 * @param groups
 	 */
-	private void addGroups(JsonObject document, List<? extends Group> groups) {
+	private void addGroups(JsonObject document, TraversalResult<? extends Group> groups) {
 		List<String> groupUuids = new ArrayList<>();
 		List<String> groupNames = new ArrayList<>();
 		for (Group group : groups) {

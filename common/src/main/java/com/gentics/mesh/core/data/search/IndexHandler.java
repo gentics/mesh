@@ -11,8 +11,10 @@ import com.gentics.mesh.core.data.search.bulk.DeleteBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 
 /**
@@ -72,7 +74,15 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	 * 
 	 * @return
 	 */
-	Completable syncIndices();
+	Flowable<SearchRequest> syncIndices();
+
+	/**
+	 * Filter the given list and return only indices which match the type of the handler but are no longer in use or unknown.
+	 * 
+	 * @param indices
+	 * @return
+	 */
+	Set<String> filterUnknownIndices(Set<String> indices);
 
 	/**
 	 * Load a map which contains the applicable indices. The key of the map is the index name.

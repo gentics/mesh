@@ -37,7 +37,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
-import io.vertx.ext.dropwizard.MetricsService;
 
 /**
  * @see Mesh
@@ -45,11 +44,6 @@ import io.vertx.ext.dropwizard.MetricsService;
 public class MeshImpl implements Mesh {
 
 	private static final Logger log;
-
-	/**
-	 * Name of the mesh lock file: {@value #TYPE} The file is used to determine whether mesh shutdown cleanly.
-	 */
-	private final String LOCK_FILENAME = "mesh.lock";
 
 	private MeshCustomLoader<Vertx> verticleLoader;
 
@@ -62,8 +56,6 @@ public class MeshImpl implements Mesh {
 	private CountDownLatch latch = new CountDownLatch(1);
 
 	private MeshStatus status = MeshStatus.STARTING;
-
-	private MetricsService metricsService;
 
 	private static PluginManager pluginManager = ServiceHelper.loadFactory(PluginManager.class);
 
@@ -368,6 +360,7 @@ public class MeshImpl implements Mesh {
 			log.error("The search provider did encounter an error while stopping", e);
 		}
 		MeshFactoryImpl.clear();
+		BootstrapInitializerImpl.clearReferences();
 		deleteLock();
 		log.info("Shutdown completed...");
 		latch.countDown();
@@ -379,7 +372,12 @@ public class MeshImpl implements Mesh {
 	 * @throws IOException
 	 */
 	private void createLockFile() throws IOException {
-		new File(LOCK_FILENAME).createNewFile();
+		File lockFile = new File(options.getLockPath());
+		File lockFolder = lockFile.getParentFile();
+		if (lockFolder != null && !lockFolder.exists() && !lockFolder.mkdirs()) {
+			log.error("Could not create parent folder for lockfile {" + lockFile.getAbsolutePath() + "}");
+		}
+		lockFile.createNewFile();
 	}
 
 	/**
@@ -388,14 +386,14 @@ public class MeshImpl implements Mesh {
 	 * @return
 	 */
 	private boolean hasLockFile() {
-		return new File(LOCK_FILENAME).exists();
+		return new File(options.getLockPath()).exists();
 	}
 
 	/**
 	 * Delete the mesh lock file.
 	 */
 	private void deleteLock() {
-		new File(LOCK_FILENAME).delete();
+		new File(options.getLockPath()).delete();
 	}
 
 	@Override
@@ -407,16 +405,6 @@ public class MeshImpl implements Mesh {
 	public Mesh setStatus(MeshStatus status) {
 		this.status = status;
 		return this;
-	}
-
-	public void setMetricsService(MetricsService metricsService) {
-		this.metricsService = metricsService;
-	}
-
-	@Override
-	public MetricsService metrics() {
-		Objects.requireNonNull(metricsService, "The metrics service can only be used once Gentics Mesh has been setup.");
-		return metricsService;
 	}
 
 }

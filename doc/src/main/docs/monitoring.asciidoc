@@ -1,0 +1,150 @@
+---
+title: Monitoring
+---
+
+include::content/docs/variables.adoc-include[]
+
+Gentics Mesh exposes monitoring data via an un-authenticated monitoring server. In addition to the default API server which runs on default port `8080` an additional monitoring server will be started which listens on `localhost:8081` by default.
+
+NOTE: The monitoring server is un-authenticated and thus should not be exposed to the public. By default it will only bind to `localhost:8081`.
+
+== Configuration
+
+The network settings for the monitoring server can be configured within the `mesh.yml` or via link:{{< relref "administration-guide.asciidoc" >}}#_environment_variables[environment settings].
+
+The montoring server can also be turned off via the `enabled` flag.
+
+.mesh.yml
+[source,yaml]
+----
+…
+monitoring:
+  enabled: true
+  port: 8081
+  host: "127.0.0.1"
+----
+
+TIP: Container deployments which need to access the monitoring API need to change the monitoring server binding in order to expose the port. +
+This can be done via the environment http host setting: `MESH_MONITORING_HTTP_HOST=0.0.0.0`
+
+== Endpoints
+
+=== Liveness Probe
+
+The healthcheck liveness probe endpoint `GET {apiLatest}/health/live` indicates if server is working as expected when status code `200` is returned.
+
+=== Readiness Probe
+
+The readiness probe endpoint `GET {apiLatest}/health/ready` returns status code `200` if the server is accepting connections. This endpoint can be used to check when the server instance if ready to accept requests once it has been started. This is especially useful if you run rolling cluster upgrades.
+
+=== Status
+
+The current Gentics Mesh server status can be checked against the `GET {apiLatest}/status`.
+
+[options="header",cols="2*"]
+|======
+
+| Status
+| Description
+
+| **STARTING**
+| Status which indicates that the server is starting up.
+
+| **WAITING_FOR_CLUSTER**
+| Status which indicates that the server is waiting/looking for a cluster to join.
+
+|	**READY**
+|	Status which indicates that the server is operating normally.
+
+| **SHUTTING_DOWN**
+| Status which indicates that the instance is shutting down.
+
+|	**BACKUP**
+|	Status which indicates that a blocking backup is currently running.
+
+|	**RESTORE**
+|	Status which indicates that a blocking restore operation is currently running.
+
+|======
+
+=== Cluster Status
+
+The `GET {apiLatest}/cluster/status` endpoint returns the status of all cluster nodes to which the queries instance has establishes a connection.
+
+=== Version Info
+
+The version information can be retrieved via the `GET {apiLatest}/versions` endpoint.
+
+[source,json]
+----
+{
+  "meshVersion" : "0.30.2",
+  "meshNodeName" : "Singing Chandelure",
+  "databaseVendor" : "orientdb",
+  "databaseVersion" : "3.0.16 - Veloce (build cc3c25ebc7d48a0db1073a0469cee2dd2947f4df, branch 3.0.x)",
+  "searchVendor" : "elasticsearch",
+  "searchVersion" : "6.1.2",
+  "vertxVersion" : "3.5.4",
+  "databaseRevision" : "0be9a986"
+}
+----
+
+=== Prometheus Metrics
+
+Gentics Mesh server exposes link:https://prometheus.io/[Prometheus] compatible data on the `{apiLatest}/metrics` endpoint.
+
+The link:https://prometheus.io/[Prometheus] server can scrape metric data from this endpoint. Using link:https://grafana.com/[Grafana] in combination with Prometheus is a typical usecase to display metric data.
+
+==== Prometheus
+
+Example Prometheus configuration:
+
+.prometheus.yml
+[source,yaml,subs=attributes]
+----
+…
+scrape_configs:
+  - job_name: 'mesh'
+    scrape_interval: 30s
+    metrics_path: '{apiLatest}/metrics'
+    static_configs:
+        - targets: ['mesh:8081']
+…
+----
+
+
+### Metrics
+
+Gentics Mesh exposes the following metrics in addition to the default link:https://vertx.io/docs/vertx-dropwizard-metrics/java/#_the_metrics[Vert.x metrics].
+More metrics will be added over time.
+
+[options="header",cols="2*"]
+|======
+
+| Key
+| Description
+
+| mesh_tx_created
+| Meter which measures the rate of created transactions over time.
+
+| mesh_notx_created
+| Meter which measures the rate of created noTx transactions over time.
+
+| mesh_graph_element_reload
+| Meter which tracks the reload operations on used vertices.
+
+| mesh_tx_time
+| Timer which tracks transaction durations.
+
+| mesh_tx_retry
+| Amount of transaction retries which happen if a conflict has been encountered.
+
+|	mesh_node_migration_pending
+| Pending contents which need to be processed by the node migration.
+
+|======
+
+
+### Clients
+
+The link:{{< relref "platforms.asciidoc" >}}#_clients[Monitoring Java Client] can be used to interact with the endpoints using Java.

@@ -1,0 +1,40 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| create
+| true
+| boolean
+| Flag which indicates whether the create permission is granted.
+
+| delete
+| true
+| boolean
+| Flag which indicates whether the delete permission is granted.
+
+| publish
+| false
+| boolean
+| Flag which indicates whether the publish permission is granted.
+
+| read
+| true
+| boolean
+| Flag which indicates whether the read permission is granted.
+
+| readPublished
+| false
+| boolean
+| Flag which indicates whether the read published permission is granted.
+
+| update
+| true
+| boolean
+| Flag which indicates whether the update permission is granted.
+
+|======

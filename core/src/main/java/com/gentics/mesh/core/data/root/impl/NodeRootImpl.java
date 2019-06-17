@@ -1,13 +1,15 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.ContainerType.INITIAL;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -15,18 +17,20 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.List;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.ContainerType;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -40,16 +44,20 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.InvalidArgumentException;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
+import com.syncleus.ferma.tx.Tx;
+import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 
 import io.vertx.core.logging.Logger;
@@ -62,9 +70,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeRootImpl.class);
 
-	public static void init(Database database) {
-		database.addVertexType(NodeRootImpl.class, MeshVertexImpl.class);
-		database.addEdgeIndex(HAS_NODE, true, false, true);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(NodeRootImpl.class, MeshVertexImpl.class);
+		index.createIndex(edgeIndex(HAS_NODE).withInOut().withOut());
 	}
 
 	@Override
@@ -88,7 +96,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Page<? extends Node> findAll(MeshAuthUser user, List<String> languageTags, PagingParameters pagingInfo) throws InvalidArgumentException {
+	public Page<? extends Node> findAll(MeshAuthUser user, List<String> languageTags, PagingParameters pagingInfo)
+			throws InvalidArgumentException {
 		VertexTraversal<?, ?, ?> traversal = user.getPermTraversal(READ_PERM);
 		return new DynamicTransformablePageImpl<Node>(user, traversal, pagingInfo, READ_PERM, NodeImpl.class);
 	}
@@ -103,24 +112,40 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		String branchUuid = branch.getUuid();
 
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, perm, (item) -> {
-			return matchesBranchAndType(item.getId(), branchUuid, type.getCode());
+			return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.id(), branchUuid, type.getCode());
 		}, true);
 	}
 
-	/**
-	 * Check whether the node has a field for the branch and given type.
-	 * 
-	 * @param nodeId
-	 *            Object id of the node
-	 * @param branchUuid
-	 * @param code
-	 * @return
-	 */
-	private boolean matchesBranchAndType(Object nodeId, String branchUuid, String code) {
-		FramedGraph graph = getGraph();
-		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
-				database().createComposedIndexKey(nodeId, branchUuid, code));
-		return edges.iterator().hasNext();
+	@Override
+	public Stream<? extends Node> findAllStream(InternalActionContext ac, GraphPermission permission) {
+		MeshAuthUser user = ac.getUser();
+		FramedTransactionalGraph graph = Tx.getActive().getGraph();
+
+		Branch branch = ac.getBranch();
+		String branchUuid = branch.getUuid();
+
+		String idx = "e." + getRootLabel().toLowerCase() + "_out";
+		Spliterator<Edge> itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();
+		return StreamSupport.stream(itemEdges, false)
+			.map(edge -> edge.getVertex(Direction.IN))
+			.filter(item -> {
+				// Check whether the node has at least a draft in the selected branch - Otherwise the node should be skipped
+				return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, DRAFT.getCode());
+			})
+			.filter(item -> {
+				boolean hasRead = user.hasPermissionForId(item.getId(), READ_PERM);
+				if (hasRead) {
+					return true;
+				} else {
+					// Check whether the node is published. In this case we need to check the read publish perm.
+					boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED.getCode());
+					if (isPublishedForBranch) {
+						return user.hasPermissionForId(item.getId(), READ_PUBLISHED_PERM);
+					}
+				}
+				return false;
+			})
+			.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 
 	@Override
@@ -139,10 +164,11 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 					ac.getVersioningParameters().getVersion());
 
 			if (fieldContainer == null) {
-				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_branch_language", uuid, String.join(",", requestedLanguageTags),
-						branch.getUuid());
+				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_branch_language", uuid,
+						String.join(",", requestedLanguageTags), branch.getUuid());
 			}
-			// Additionally check whether the read published permission could grant read perm for published nodes
+			// Additionally check whether the read published permission could grant read
+			// perm for published nodes
 			boolean isPublished = fieldContainer.isPublished(branch.getUuid());
 			if (isPublished && requestUser.hasPermission(element, READ_PUBLISHED_PERM)) {
 				return element;
@@ -150,28 +176,25 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			} else if (!isPublished && requestUser.hasPermission(element, READ_PERM)) {
 				return element;
 			} else {
-				throw error(FORBIDDEN, "error_missing_perm", uuid);
+				throw error(FORBIDDEN, "error_missing_perm", uuid, READ_PUBLISHED_PERM.getRestPerm().getName());
 			}
 		} else if (requestUser.hasPermission(element, perm)) {
 			return element;
 		}
-		throw error(FORBIDDEN, "error_missing_perm", uuid);
+		throw error(FORBIDDEN, "error_missing_perm", uuid, perm.getRestPerm().getName());
 	}
 
 	/**
 	 * Get the vertex traversal that finds all nodes visible to the user
 	 * 
-	 * @param requestUser
-	 *            user
-	 * @param branch
-	 *            branch
-	 * @param type
-	 *            type
-	 * @param permission
-	 *            permission to filter by
+	 * @param requestUser user
+	 * @param branch      branch
+	 * @param type        type
+	 * @param permission  permission to filter by
 	 * @return vertex traversal
 	 */
-	protected VertexTraversal<?, ?, ?> getAllTraversal(MeshAuthUser requestUser, Branch branch, ContainerType type, GraphPermission permission) {
+	protected VertexTraversal<?, ?, ?> getAllTraversal(MeshAuthUser requestUser, Branch branch, ContainerType type,
+			GraphPermission permission) {
 		return out(getRootLabel()).filter(vertex -> {
 			return requestUser.hasPermissionForId(vertex.getId(), permission);
 		}).mark().outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid())
@@ -187,7 +210,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		}
 		node.setSchemaContainer(version.getSchemaContainer());
 
-		// TODO is this a duplicate? - Maybe we should only store the project assignment in one way?
+		// TODO is this a duplicate? - Maybe we should only store the project assignment
+		// in one way?
 		project.getNodeRoot().addNode(node);
 		node.setProject(project);
 		node.setCreator(creator);
@@ -204,9 +228,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			log.debug("Deleting node root {" + getUuid() + "}");
 		}
 		// Delete all containers of all nodes
-		for (Node node : findAllIt()) {
+		for (Node node : findAll()) {
 			// We don't need to handle recursion because we delete the root sequentially
-			node.deleteFully(bac, false);
+			node.delete(bac, true, false);
 			bac.inc();
 		}
 		// All nodes are gone. Lets remove the node root element.
@@ -224,13 +248,13 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @return
 	 */
 	// TODO use schema container version instead of container
-	private Node createNode(InternalActionContext ac, SchemaContainerVersion schemaVersion, SearchQueueBatch batch, String uuid) {
+	private Node createNode(InternalActionContext ac, SchemaContainerVersion schemaVersion, EventQueueBatch batch,
+			String uuid) {
 		Project project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
 		BootstrapInitializer boot = MeshInternal.get().boot();
 
-		String body = ac.getBodyAsString();
-		NodeCreateRequest requestModel = JsonUtil.readValue(body, NodeCreateRequest.class);
+		NodeCreateRequest requestModel = ac.fromJson(NodeCreateRequest.class);
 		if (requestModel.getParentNode() == null || isEmpty(requestModel.getParentNode().getUuid())) {
 			throw error(BAD_REQUEST, "node_missing_parentnode_field");
 		}
@@ -239,9 +263,11 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		}
 
 		// Load the parent node in order to create the node
-		Node parentNode = project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNode().getUuid(), CREATE_PERM);
+		Node parentNode = project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNode().getUuid(),
+				CREATE_PERM);
 		Branch branch = ac.getBranch();
-		// BUG: Don't use the latest version. Use the version which is linked to the branch!
+		// BUG: Don't use the latest version. Use the version which is linked to the
+		// branch!
 		Node node = parentNode.create(requestUser, schemaVersion, project, branch, uuid);
 
 		// Add initial permissions to the created node
@@ -254,14 +280,30 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		if (language == null) {
 			throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
 		}
-		NodeGraphFieldContainer container = node.createGraphFieldContainer(language, branch, requestUser);
+		NodeGraphFieldContainer container = node.createGraphFieldContainer(language.getLanguageTag(), branch, requestUser);
 		container.updateFieldsFromRest(ac, requestModel.getFields());
-		batch.store(node, branch.getUuid(), ContainerType.DRAFT, true);
+
+		batch.add(node.onCreated());
+		batch.add(container.onCreated(branch.getUuid(), DRAFT));
+
+		// Check for webroot input data consistency (PUT on webroot)
+		String webrootSegment = ac.get("WEBROOT_SEGMENT_NAME");
+		if (webrootSegment != null) {
+			String current = container.getSegmentFieldValue();
+			if (!webrootSegment.equals(current)) {
+				throw error(BAD_REQUEST, "webroot_error_segment_field_mismatch", webrootSegment, current);
+			}
+		}
+
+		if (requestModel.getTags() != null) {
+			node.updateTags(ac, batch, requestModel.getTags());
+		}
+
 		return node;
 	}
 
 	@Override
-	public Node create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
+	public Node create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 
 		// Override any given version parameter. Creation is always scoped to drafts
 		ac.getVersioningParameters().setVersion("draft");
@@ -275,29 +317,38 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		// 1. Extract the schema information from the given JSON
 		SchemaReferenceInfo schemaInfo = JsonUtil.readValue(body, SchemaReferenceInfo.class);
 		boolean missingSchemaInfo = schemaInfo.getSchema() == null
-				|| (StringUtils.isEmpty(schemaInfo.getSchema().getUuid()) && StringUtils.isEmpty(schemaInfo.getSchema().getName()));
+				|| (StringUtils.isEmpty(schemaInfo.getSchema().getUuid())
+						&& StringUtils.isEmpty(schemaInfo.getSchema().getName()));
 		if (missingSchemaInfo) {
 			throw error(BAD_REQUEST, "error_schema_parameter_missing");
 		}
 
 		if (!isEmpty(schemaInfo.getSchema().getUuid())) {
 			// 2. Use schema reference by uuid first
-			SchemaContainer schemaByUuid = project.getSchemaContainerRoot().loadObjectByUuid(ac, schemaInfo.getSchema().getUuid(), READ_PERM);
+			SchemaContainer schemaByUuid = project.getSchemaContainerRoot().loadObjectByUuid(ac,
+					schemaInfo.getSchema().getUuid(), READ_PERM);
 			SchemaContainerVersion schemaVersion = branch.findLatestSchemaVersion(schemaByUuid);
+			if (schemaVersion == null) {
+				throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByUuid.getName(), branch.getName(), project.getName());
+			}
 			return createNode(ac, schemaVersion, batch, uuid);
 		}
 
 		// 3. Or just schema reference by name
 		if (!isEmpty(schemaInfo.getSchema().getName())) {
-			SchemaContainer schemaByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName());
+			SchemaContainer schemaByName = project.getSchemaContainerRoot()
+					.findByName(schemaInfo.getSchema().getName());
 			if (schemaByName != null) {
 				String schemaName = schemaByName.getName();
 				String schemaUuid = schemaByName.getUuid();
-				if (requestUser.hasPermission(schemaByName, GraphPermission.READ_PERM)) {
+				if (requestUser.hasPermission(schemaByName, READ_PERM)) {
 					SchemaContainerVersion schemaVersion = branch.findLatestSchemaVersion(schemaByName);
+					if (schemaVersion == null) {
+						throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByName.getName(), branch.getName(), project.getName());
+					}
 					return createNode(ac, schemaVersion, batch, uuid);
 				} else {
-					throw error(FORBIDDEN, "error_missing_perm", schemaUuid + "/" + schemaName);
+					throw error(FORBIDDEN, "error_missing_perm", schemaUuid + "/" + schemaName, READ_PERM.getRestPerm().getName());
 				}
 
 			} else {
@@ -309,14 +360,17 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive,
+			Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
-			for (Node node : findAllIt()) {
-				// We don't need to recursively handle the permissions for each node again since this call will already affect all nodes.
+			for (Node node : findAll()) {
+				// We don't need to recursively handle the permissions for each node again since
+				// this call will already affect all nodes.
 				node.applyPermissions(batch, role, false, permissionsToGrant, permissionsToRevoke);
 			}
 		}
-		super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
+
+		applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke);
 	}
 
 }

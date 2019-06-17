@@ -1,0 +1,7 @@
+{
+  "operation" : "CHANGEFIELDTYPE",
+  "properties" : {
+    "field" : "fieldToBeChanged",
+    "type" : "html"
+  }
+}

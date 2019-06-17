@@ -1,0 +1,106 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:job:JobResponse",
+  "properties" : {
+    "uuid" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Uuid of the element"
+    },
+    "creator" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReference",
+      "required" : true,
+      "description" : "User reference of the creator of the element.",
+      "properties" : {
+        "firstName" : {
+          "type" : "string",
+          "description" : "Firstname of the user"
+        },
+        "lastName" : {
+          "type" : "string",
+          "description" : "Lastname of the user"
+        },
+        "uuid" : {
+          "type" : "string",
+          "required" : true,
+          "description" : "Uuid of the user"
+        }
+      }
+    },
+    "created" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "ISO8601 formatted created date string."
+    },
+    "errorMessage" : {
+      "type" : "string",
+      "description" : "The error message of the job."
+    },
+    "errorDetail" : {
+      "type" : "string",
+      "description" : "The detailed error information of the job."
+    },
+    "type" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "The type of the job.",
+      "enum" : [ "schema", "microschema", "branch", "versionpurge" ]
+    },
+    "status" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Migration status.",
+      "enum" : [ "IDLE", "UNKNOWN", "QUEUED", "STARTING", "RUNNING", "COMPLETED", "FAILED" ]
+    },
+    "properties" : {
+      "type" : "object",
+      "required" : true,
+      "description" : "Properties of the job.",
+      "additionalProperties" : {
+        "type" : "string"
+      }
+    },
+    "stopDate" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "The stop date of the job."
+    },
+    "startDate" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "The start date of the job."
+    },
+    "completionCount" : {
+      "type" : "integer",
+      "required" : true,
+      "description" : "The completion count of the job. This indicates how many items the job has processed."
+    },
+    "nodeName" : {
+      "type" : "string",
+      "description" : "Name of the Gentics Mesh instance on which the job was executed."
+    },
+    "warnings" : {
+      "type" : "array",
+      "description" : "List of warnings which were encoutered while executing the job.",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:job:warning:JobWarning",
+        "properties" : {
+          "type" : {
+            "type" : "string"
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "properties" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

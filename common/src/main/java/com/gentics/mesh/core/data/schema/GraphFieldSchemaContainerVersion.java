@@ -1,17 +1,19 @@
 package com.gentics.mesh.core.data.schema;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.VersionUtil;
 
 /**
@@ -77,6 +79,18 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	SchemaChange<?> getNextChange();
 
 	/**
+	 * Retrieves all changes for the next version.
+	 *
+	 * @return
+	 */
+	default Stream<SchemaChange<FieldSchemaContainer>> getChanges() {
+		return StreamUtil.untilNull(
+			() -> (SchemaChange<FieldSchemaContainer>)getNextChange(),
+			change -> (SchemaChange<FieldSchemaContainer>)change.getNextChange()
+		);
+	}
+
+	/**
 	 * Set the next change for the schema. The next change is the first change in the chain of changes that lead to the new schema version.
 	 * 
 	 * @param change
@@ -139,7 +153,7 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 * @param batch
 	 * @return The created schema container version
 	 */
-	SCV applyChanges(InternalActionContext ac, SearchQueueBatch batch);
+	SCV applyChanges(InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Apply the given list of changes to the schema container. This method will invoke the schema migration process.
@@ -149,7 +163,7 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 * @param batch
 	 * @return The created schema container version
 	 */
-	SCV applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges, SearchQueueBatch batch);
+	SCV applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges, EventQueueBatch batch);
 
 	/**
 	 * Return the parent schema container of the version.
@@ -170,7 +184,7 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 * 
 	 * @return Found branches of this version
 	 */
-	List<? extends Branch> getBranches();
+	TraversalResult<? extends Branch> getBranches();
 
 	/**
 	 * Load the stored schema JSON data.

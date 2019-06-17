@@ -1,0 +1,79 @@
+---
+defaultMaxDepth: 10
+defaultLanguage: "en"
+updateCheck: true
+vertxOptions:
+  workerPoolSize: 20
+  eventPoolSize: 8
+tempDirectory: "/opt/mesh/data/tmp"
+pluginDirectory: "plugins"
+httpServer:
+  port: 8080
+  host: "0.0.0.0"
+  corsAllowedOriginPattern: ""
+  corsAllowCredentials: false
+  enableCors: false
+  ssl: false
+  certPath: "config/cert.pem"
+  keyPath: "config/key.pem"
+monitoring:
+  enabled: true
+  port: 8081
+  host: "127.0.0.1"
+cluster:
+  enabled: false
+  vertxPort: 0
+storage:
+  directory: "data/graphdb"
+  backupDirectory: "data/backup"
+  exportDirectory: "data/export"
+  startServer: false
+  parameters: {}
+search:
+  url: "http://localhost:9200"
+  timeout: 8000
+  startupTimeout: 45
+  startEmbedded: true
+  embeddedArguments: "-Xms1g -Xmx1g -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75\
+    \ -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -client -Xss1m -Djava.awt.headless=true\
+    \ -Dfile.encoding=UTF-8 -Djna.nosys=true -XX:-OmitStackTraceInFastThrow -Dio.netty.noUnsafe=true\
+    \ -Dio.netty.noKeySetOptimization=true -Dio.netty.recycler.maxCapacityPerThread=0\
+    \ -Dlog4j.shutdownHookEnabled=false -Dlog4j2.disable.jmx=true -XX:+HeapDumpOnOutOfMemoryError"
+  prefix: "mesh-"
+  bulkLimit: 2000
+  eventBufferSize: 1000
+  bulkDebounceTime: 2000
+  idleDebounceTime: 100
+  retryInterval: 5000
+  waitForIdle: true
+upload:
+  byteLimit: 262144000
+  directory: "data/binaryFiles"
+  tempDirectory: "/opt/mesh/data/tmp/temp-uploads"
+  parserLimit: 40000
+security:
+  tokenExpirationTime: 3600
+  keystorePassword: "<Your Password>"
+  keystorePath: "config/keystore.jceks"
+  algorithm: "HS256"
+  enableAnonymousAccess: true
+  oauth2:
+    enabled: false
+    config:
+      realm: "master"
+      authServerUrl: "http://localhost:3000/auth"
+      sslRequired: "external"
+      resource: "mesh"
+      credentials:
+        secret: "9b65c378-5b4c-4e25-b5a1-a53a381b5fb4"
+      confidentialPort: 0
+    mapperScriptPath: "config/mymapper.js"
+    mapperScriptDevMode: true
+image:
+  imageCacheDirectory: "data/binaryImageCache"
+  maxWidth: 2048
+  maxHeight: 2048
+  jpegQuality: 0.95
+  resampleFilter: "LANCZOS"
+content:
+  autoPurge: true

@@ -1,0 +1,30 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| clusterName
+| false
+| string
+| Name of the cluster. Only instances with a common cluster name will form a cluster.
+
+| enabled
+| false
+| boolean
+| Flag to enable or disable the cluster mode.
+
+| networkHost
+| false
+| string
+| IP or host which is used to announce and reach the instance in the cluster. Gentics Mesh will try to determine the IP automatically but you may use this setting to override this automatic IP handling.
+
+| vertxPort
+| false
+| integer
+| Port used by Vert.x for the eventbus server. A random free port will be selected if set to 0.
+
+|======

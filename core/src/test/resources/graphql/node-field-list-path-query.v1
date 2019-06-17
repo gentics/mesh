@@ -1,0 +1,30 @@
+{
+	node(path:"/Neuigkeiten/2015") {
+		# [$.data.node.uuid=<is-uuid>]
+		uuid
+		fields {
+			... on folder {
+				nodeList { 
+					# [$.data.node.fields.nodeList[0].uuid=<is-uuid>]
+					uuid
+
+					# [$.data.node.fields.nodeList[0].path=/News/News%20Overview.en.html]
+					path
+
+					# [$.data.node.fields.nodeList[0].edited=<is-not-null>]
+					edited
+
+					# [$.data.node.fields.nodeList[0].editor.uuid=<is-uuid>]
+					editor { uuid }
+
+					# [$.data.node.fields.nodeList[0].isPublished=true]
+					isPublished
+
+					# [$.data.node.fields.nodeList[0].language=en]
+					language
+				}
+			}
+		}
+	}
+}
+# [$.errors=<is-undefined>]

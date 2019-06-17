@@ -1,6 +1,8 @@
-:icons: font
+---
+title: Elasticsearch
+---
 
-= Elasticsearch
+include::content/docs/variables.adoc-include[]
 
 Elasticsearch is used in order to provide the main search functionality within Gentics Mesh.
 
@@ -16,7 +18,7 @@ When enabled it is possible to search for:
 * link:#tags[Tags]
 * link:#tagfamilies[TagFamilies]
 
-Search queries can be executed via the dedicated search link:#endpoints[REST endpoints] or link:#graphql[GraphQL].
+Search queries can be executed via the dedicated search link:#endpoints[REST endpoints] or link:#_graphql[GraphQL].
 
 == TL;DR
 
@@ -42,6 +44,8 @@ NOTE: It is not possible to search for specific individual versions. Instead onl
 
 NOTE: The stored documents within the Elasticsearch indices do not contain all properties which are otherwise available via REST. 
 Only directly accessible values which have minimal dependencies to other elements are stored in order to keep the update effort manageable.
+
+NOTE: Unlike Mesh, Elasticsearch does not allow an unbounded page size in the search result. The default value for the `perPage` parameter is `10`.
 
 == Configuration
 
@@ -72,11 +76,19 @@ search:
 | ```search.prefix```            | String     | mesh-                   | Elasticsearch installation prefix. Multiple Gentics Mesh installations with different prefixes can utilize the same Elasticsearch server.
 |======
 
-=== Embedded mode
+=== Dedicated Elasticsearch
 
-Gentics Mesh will setup and start the Elasticsearch server if the `search.startEmbeddedES` property is set to true.
+It is recommended to use a dedicated Elasticsearch server. You can disable the embedded Elasticsearch server via by setting `search.startEmbedded` to false. Your `search.url` parameter must point to the Elasticsearch installation that you want to use.
+
+TIP: You can also use link:{{< relref "administration-guide.asciidoc" >}}#_environment_variables[environment variables] to configure Gentics Mesh and change these settings.
+
+=== Embedded Elasticsearch
+
+Gentics Mesh will setup and start the Elasticsearch server if the `search.startEmbedded` property is set to true.
 The server installation will be placed in the current working directory and started.
 A watchdog will continuously check the process and restart it when a crash has been detected.
+
+WARNING: Support for embedded Elasticsearch will be dropped in the future.
 
 === Disabling search
 
@@ -91,14 +103,19 @@ We currently run and test against Elasticsearch version 6.1.2. Other versions ha
 [[endpoints]]
 == REST endpoints
 
-Search requests are handled by the ```/api/v1/search``` or ```/api/v1/:projectName/search``` endpoints.
+Search requests are handled by the ```{apiLatest}/search``` or ```{apiLatest}/:projectName/search``` endpoints.
+
+If you want the search endpoints to wait until Elasticsearch has processed all pending changes to the index, you can set the query parameter `?wait=true`.
+The default value can be configured in the link:{{< relref "administration-guide.asciidoc" >}}#_search_options[search options].
+
+NOTE: If no query parameter and no configuration was provided, the wait parameter defaults to `true` to not break any existing implementations. In the future this will change to `false`.
 
 == Examples / Queries
 
 [[users]]
 === Users
 
-Endpoint: ```/api/v1/search/users```
+Endpoint: ```{apiLatest}/search/users```
 
 [source,json]
 ----
@@ -116,7 +133,7 @@ Endpoint: ```/api/v1/search/users```
 [[groups]]
 === Groups
 
-Endpoint: ```/api/v1/search/groups```
+Endpoint: ```{apiLatest}/search/groups```
 
 [source,json]
 ----
@@ -134,16 +151,16 @@ Endpoint: ```/api/v1/search/groups```
 [[roles]]
 === Roles
 
-Endpoint: ```/api/v1/search/roles```
+Endpoint: ```{apiLatest}/search/roles```
 
 [[nodes]]
 === Nodes
 
-Endpoint: ```/api/v1/search/nodes```
+Endpoint: ```{apiLatest}/search/nodes```
 
 ==== Search nodes by schema name
 
-Listed below is an example search query which can be posted to ```/api/v1/search/nodes``` in order to find all nodes across all projects which were created using the content schema.
+Listed below is an example search query which can be posted to ```{apiLatest}/search/nodes``` in order to find all nodes across all projects which were created using the content schema.
 The found nodes will be sorted ascending by creator.
 
 [source,json]
@@ -228,6 +245,29 @@ The tags field is a nested field and thus a nested query must be used to match t
 }
 ----
 
+*Search nodes which have been tagged with 'Diesel' for tagFamily 'Fuels':*
+
+[source,json]
+----
+{
+    "query": {
+        "nested": {
+            "ignore_unmapped": "true",
+            "path": "tagFamilies.Fuels.tags",
+            "query": {
+                "match": {
+                    "tagFamilies.Fuels.tags.name": "Diesel"
+                }
+            }
+        }
+    }
+}
+----
+
+
+NOTE: The `"ignore_unmapped": "true"` will suppress errors which may be returned due to missing paths. This is useful when invoking `/rawSearch` requests which will directly return the Elasticsearch response. This response would otherwise be cluttered with a lot of errors due to missing path. This can be omitted for these kinds of searches.
+
+
 ==== Search nodes by geolocation of images
 
 *Search images which were taken in specific areas*
@@ -266,12 +306,12 @@ GPS information from images will automatically be extracted and added to the sea
 [[projects]]
 === Projects
 
-Endpoint: ```/api/v1/search/projects```
+Endpoint: ```{apiLatest}/search/projects```
 
 [[tags]]
 === Tags
 
-Endpoint: ```/api/v1/search/tags```
+Endpoint: ```{apiLatest}/search/tags```
 
 [source,json]
 ----
@@ -296,7 +336,7 @@ Endpoint: ```/api/v1/search/tags```
 [[tagfamilies]]
 === Tag Families
 
-Endpoint: ```/api/v1/search/tagFamilies```
+Endpoint: ```{apiLatest}/search/tagFamilies```
 
 
 [source,json]
@@ -318,12 +358,12 @@ Endpoint: ```/api/v1/search/tagFamilies```
 [[schemas]]
 === Schemas
 
-Endpoint: ```/api/v1/search/schemas```
+Endpoint: ```{apiLatest}/search/schemas```
 
 [[microschemas]]
 === Microschemas
 
-Endpoint: ```/api/v1/search/microschemas```
+Endpoint: ```{apiLatest}/search/microschemas```
 
 === Paging
 
@@ -331,7 +371,7 @@ The paging query parameters are `perPage` and `page` . It is important to note t
 
 === Raw search
 
-Additionally it is also possible to use the ```/api/v1/rawSearch``` or ```/api/v1/:projectName/rawSearch``` endpoints.
+Additionally it is also possible to use the ```{apiLatest}/rawSearch``` or ```{apiLatest}/:projectName/rawSearch``` endpoints.
 
 These endpoints will accept the same query but return a Elasticsearch multi search response instead of the typical Gentics Mesh list response.
 This is useful if you want to use for example the Elasticsearch highlighing and aggregation features.
@@ -339,20 +379,17 @@ The endpoint will automatically select the needed indices and modify the query i
 
 ==== Index Synchronization
 
-The ```POST /api/v1/search/sync``` endpoint can be used to invoke a manual sync of the search index.
+The ```POST {apiLatest}/search/sync``` endpoint can be used to invoke a manual sync of the search index.
 
 NOTE: The index sync operation will automatically be invoked when Mesh is being started and a unclean shutdown has been detected.
 
-You can also recreate all indices if needed via the ```POST /api/v1/search/clear``` endpoint.
+You can also recreate all indices if needed via the ```POST {apiLatest}/search/clear``` endpoint.
 
 NOTE: This operation will remove all indices which have been created by Mesh and rebuild them one at a time.
 
 == Binary Search
 
-Starting with Gentics Mesh 0.21.0 it is possible to add the contents of file uploads to the search index.
-The https://www.elastic.co/guide/en/elasticsearch/plugins/6.2/ingest-attachment.html[Elasticsearch Ingest Attachment Plugin] will be utilized when installed to process text file uploads (PDF, DOC, DOCX).
-
-This is especially useful if you also want to search within document file uploads. 
+Document uploads to Gentics Mesh will automatically be parsed and the containing text will be extracted. This information will also be added to the search index and thus it is possible to search for text within uploaded documents.
 
 Currently uploads which have one of these mimetypes will be processed:
 
@@ -374,30 +411,18 @@ Example binary field within document:
     "sha512sum" : "16d3aeae9869d2915dda30866c2d7b77f50dc668daa3a49d2bc6eb6349cf6e895099349b7f8240174a788db967c87947b6a2fd41a353eec99a20358dfd4c9211",
     "mimeType" : "application/pdf",
     "filesize" : 200,
-    "dominantColor" : null,
-    "width" : null,
-    "height" : null,
     "file" : {
-      "language" : "ro",
-      "content" : "Lorem ipsum dolor sit amet",
-      "date" : "2018-05-04T21:28:30Z",
-      "author" : "Joe Doe",
-      "title" : "My Document Title"
+      "content" : "Lorem ipsum dolor sit amet"
     }
   }
 …
 ----
 
-Gentics Mesh will automatically create ingest piplines for each node index. The created pipelines will be utilized when storing documents. 
-The name of these pipelines matches the index name. No longer needed pipelines will automatically be removed.
-
-NOTE: All documents need to be re-index if you choose to enable the Elasticsearch plugin.
-
 == GraphQL
 
 It is possible to nest Elasticsearch queries within the GraphQL query in order to filter elements.
 
-See link:graphql.html#search[GraphQL examples].
+See link:{{< relref "graphql.asciidoc" >}}#search[GraphQL examples].
 
 == Document format
 
@@ -408,63 +433,63 @@ Gentics Mesh transforms elements into these documents which then can be stored w
 
 [source,json]
 ----
-include::examples/search/user.search.json[]
+include::content/docs/examples/search/user.search.json[]
 ----
 
 === Groups
 
 [source,json]
 ----
-include::examples/search/group.search.json[]
+include::content/docs/examples/search/group.search.json[]
 ----
 
 === Roles
 
 [source,json]
 ----
-include::examples/search/role.search.json[]
+include::content/docs/examples/search/role.search.json[]
 ----
 
 === Nodes
 
 [source,json]
 ----
-include::examples/search/node.search.json[]
+include::content/docs/examples/search/node.search.json[]
 ----
 
 === Projects
 
 [source,json]
 ----
-include::examples/search/project.search.json[]
+include::content/docs/examples/search/project.search.json[]
 ----
 
 === Tags
 
 [source,json]
 ----
-include::examples/search/tag.search.json[]
+include::content/docs/examples/search/tag.search.json[]
 ----
 
 === Tag Families
 
 [source,json]
 ----
-include::examples/search/tagFamily.search.json[]
+include::content/docs/examples/search/tagFamily.search.json[]
 ----
 
 === Microschemas
 
 [source,json]
 ----
-include::examples/search/microschema.search.json[]
+include::content/docs/examples/search/microschema.search.json[]
 ----
 
 === Schemas
 
 [source,json]
 ----
-include::examples/search/schema.search.json[]
+include::content/docs/examples/search/schema.search.json[]
 ----
 
 == Custom mappings / index settings
@@ -571,7 +596,6 @@ Custom mappings can currently only be specified for the following types:
 NOTE: Index settings for other elements (e.g: Users, Roles etc) can currently not be configured.
 
 == Binary Fields
-
 
 You can add custom mappings to the `mimeType` and `file.content` field. The elasticsearch property needs to contain a custom mapping for each type.
 

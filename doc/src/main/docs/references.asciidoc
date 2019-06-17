@@ -1,10 +1,12 @@
-:toc-title: APIs
+---
+title: References
+---
 
-= APIs
+include::content/docs/variables.adoc-include[]
 
 == REST API
 
-The link:raml[Gentics Mesh REST API] provides endpoints enabling you to invoke CRUD operations on just ANY Gentics Mesh element. 
+The link:/docs/api[Gentics Mesh REST API] provides endpoints enabling you to invoke CRUD operations on just ANY Gentics Mesh element. 
 There are many things you can do with the REST API. To name a few:
 
 * Obviously you can create, update & fetch multilingual content items as well as tag them.
@@ -19,25 +21,25 @@ NOTE: All REST API responses are available in JSON, only, except for binary data
 
 === Query Parameters
 
-The REST API end points can be used in combination with a set of query parameters, all of which are documented for the specific end points in the link:raml[Gentics Mesh REST API] reference. Following, we provide an overview of the most common query parameters.
+The REST API end points can be used in combination with a set of query parameters, all of which are documented for the specific end points in the link:/docs/api[Gentics Mesh REST API] reference. Following, we provide an overview of the most common query parameters.
 
 ==== Paging Parameters
 
-include::examples/tables/PagingParametersImpl.adoc[]
+include::content/docs/examples/tables/PagingParametersImpl.adoc-include[]
 
 NOTE: Paging is not applied by default. It is advised to include the `perPage` query parameter whenever possible to reduce the response size.
 
 ==== Versioning Parameters
 
-include::examples/tables/VersioningParametersImpl.adoc[]
+include::content/docs/examples/tables/VersioningParametersImpl.adoc-include[]
 
 ===== Node Parameters
 
-include::examples/tables/NodeParametersImpl.adoc[]
+include::content/docs/examples/tables/NodeParametersImpl.adoc-include[]
 
 ===== Role Permission Parameters
 
-include::examples/tables/RolePermissionParametersImpl.adoc[]
+include::content/docs/examples/tables/RolePermissionParametersImpl.adoc-include[]
 
 === Examples
 
@@ -47,37 +49,37 @@ We have set up a Gentics Mesh instance for demo purposes, that you can play with
 
 .List all projects. Well, it's just our demo project.
 [TIP]
-https://demo.getmesh.io/api/v1/projects
+https://demo.getmesh.io{apiLatest}/projects
 
 .Want to fetch all content items including media? With pretty URLs? Here you go
 [TIP]
-https://demo.getmesh.io/api/v1/demo/nodes/?resolveLinks=short
+https://demo.getmesh.io{apiLatest}/demo/nodes/?resolveLinks=short
 
 .OK, let's load a single content item.
 [TIP]
-https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0
+https://demo.getmesh.io{apiLatest}/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0
 
 .And now forget about UUIDs and do it with its corresponding WebRoot path
 [TIP]
-https://demo.getmesh.io/api/v1/demo/webroot/automobiles/ford-gt
+https://demo.getmesh.io{apiLatest}/demo/webroot/automobiles/ford-gt
 
 That's easy. Well, what about images?
 
 .That's the image node
 [TIP]
-https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6
+https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6
 
 .And that's the actual image
 [TIP]
-https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image
+https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image
 
 .Let's do some resizing
 [TIP]
-https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?width=400
+https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?width=400
 
 .And now again with a readable WebRoot path
 [TIP]
-https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?width=400
+https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?width=400
 
 TIP: The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
@@ -107,7 +109,20 @@ The Cross-Origin Resource Sharing mechanism enables Gentics Mesh to configure cr
 
 You can read up on this topic on the link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS[MDN article].
 
-The CORS header handling can be configured using the ```httpServerOptions.corsAllowedOriginPattern``` and ```httpServerOptions.enableCors``` configuration settings.
+The CORS header handling can be configured using the `httpServerOptions.corsAllowedOriginPattern`, `httpServerOptions.corsAllowCredentials` and `httpServerOptions.enableCors` configuration settings.
+
+==== Multi Site Example
+
+The `corsAllowedOriginPattern` setting accepts a regular expression pattern. It is thus possible to allow multiple origins.
+
+Example:
+
+```
+httpServer:
+  corsAllowedOriginPattern: "http://mydomain:5000|http://mydomain2:5000"
+  corsAllowCredentials: true
+  enableCors: true
+```
 
 === ETag Handling
 
@@ -119,7 +134,7 @@ ETag:W/"1125-7cc5c6fb"
 
 These headers values can be used to implement or utilize existing web caching solutions.
 
-An ETag validation ocures once the ETag is passed along a http request.  
+An ETag validation occurs once the ETag is passed along a http request.
 
 ```
 If-None-Match:W/"1125-7cc5c6fb"
@@ -127,17 +142,27 @@ If-None-Match:W/"1125-7cc5c6fb"
 
 Gentics Mesh will compare the provided ETag with the current state of the content and return a 304 response if the ETag is the same and the response did not change. Updating the requested resource will alter its ETag and thus another request would return the response which includes the current ETag.
 
-ETag Handling can be disabled for each request via the `?etag=false` query parameter. This will increase performance when etag headers are not needed.
+ETag Handling can be disabled for each request via the `?etag=false` query parameter. This will increase performance when ETag headers are not needed.
 
 //=== Error Codes
 
-== Using the API RAML Documentation in other Tools
+== API Tools
+
 Gentics Mesh provides the `/raml` endpoint to easily extract the API documentation into third party tools.
+
+=== Insomnia 
+
+The link:https://insomnia.rest/[insomnia REST and GraphQL client] can be used to quickly and efficiently interact with the API.  
+
+You can download and import link:../mesh-insomnia-v1.json[mesh-insomnia-v1.json] in your Insomnia REST workspace to get a pre-defined set of useful requests and examples.
+
+=== Postman 
 
 Here is a quick guide to import the API into link:https://www.getpostman.com/[Postman]:
 
 * Once the Postman app is started go to "Import" > "Import from Link"
 * Input the URL to the `/raml` endpoint of your Mesh instance.
-* You can also try https://demo.getmesh.io/api/v1/raml to get it form our demo
+* You can also try https://demo.getmesh.io{apiLatest}/raml to get it form our demo
 
 TIP: Make use of the params and workspace parameters to maximize your productiviy. Check out the link:https://www.getpostman.com/docs/v6/postman/sending_api_requests/requests#url[Postman documentation about URL setup] for more.
+

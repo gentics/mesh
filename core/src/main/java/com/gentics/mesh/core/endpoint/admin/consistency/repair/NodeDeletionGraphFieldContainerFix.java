@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.endpoint.admin.consistency.repair;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.INITIAL;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
 import java.util.Iterator;
 
@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.syncleus.ferma.FramedGraph;
 
@@ -31,21 +31,26 @@ public class NodeDeletionGraphFieldContainerFix {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeDeletionGraphFieldContainerFix.class);
 
-	public void repair(NodeGraphFieldContainer container) {
+	public boolean repair(NodeGraphFieldContainer container) {
 
 		BootstrapInitializer boot = MeshInternal.get().boot();
 		// Pick the first project we find to fetch the initial branchUuid
-		Project project = boot.meshRoot().getProjectRoot().findAllIt().iterator().next();
+		Project project = boot.meshRoot().getProjectRoot().findAll().iterator().next();
 		String branchUuid = project.getInitialBranch().getUuid();
 
-		SchemaContainer schemaContainer = container.getSchemaContainerVersion().getSchemaContainer();
+		SchemaContainerVersion version = container.getSchemaContainerVersion();
+		if (version == null) {
+			log.error("Container {" + container.getUuid() + "} has no schema version linked to it.");
+			return false;
+		}
+		SchemaContainer schemaContainer = version.getSchemaContainer();
 		// 1. Find the initial version to check whether the whole version history is still intact
 		NodeGraphFieldContainer initial = findInitial(container);
 
 		if (initial == null) {
 			// The container has no previous version or is not the initial version so we can just delete it.
 			container.remove();
-			return;
+			return true;
 		}
 		NodeGraphFieldContainer latest = findLatest(container);
 		NodeGraphFieldContainer published = null;
@@ -84,25 +89,24 @@ public class NodeDeletionGraphFieldContainerFix {
 
 		if (published != null) {
 			GraphFieldContainerEdge edge = node.addFramedEdge(HAS_FIELD_CONTAINER, published, GraphFieldContainerEdgeImpl.class);
-			edge.setLanguageTag(published.getLanguage().getLanguageTag());
+			edge.setLanguageTag(published.getLanguageTag());
 			edge.setBranchUuid(branchUuid);
 			edge.setType(PUBLISHED);
 		}
 
 		GraphFieldContainerEdge edge = node.addFramedEdge(HAS_FIELD_CONTAINER, draft, GraphFieldContainerEdgeImpl.class);
-		edge.setLanguageTag(draft.getLanguage().getLanguageTag());
+		edge.setLanguageTag(draft.getLanguageTag());
 		edge.setBranchUuid(branchUuid);
 		edge.setType(DRAFT);
 
 		GraphFieldContainerEdge initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
-		initialEdge.setLanguageTag(initial.getLanguage().getLanguageTag());
+		initialEdge.setLanguageTag(initial.getLanguageTag());
 		initialEdge.setBranchUuid(branchUuid);
 		initialEdge.setType(INITIAL);
 
-		SearchQueueBatch batch = MeshInternal.get().searchQueue().create();
-		BulkActionContext context = new BulkActionContext(batch);
-		node.delete(context);
-
+		BulkActionContext bac = BulkActionContext.create();
+		node.delete(bac);
+		return true;
 	}
 
 	private NodeGraphFieldContainer findDraft(NodeGraphFieldContainer latest) {
@@ -113,7 +117,8 @@ public class NodeDeletionGraphFieldContainerFix {
 			}
 			previous = previous.getPreviousVersion();
 		}
-		return null;	}
+		return null;
+	}
 
 	/**
 	 * Iterate over all versions and try to find the latest published version.

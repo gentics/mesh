@@ -18,4 +18,8 @@ public interface NumberField extends ListableField, MicroschemaListableField {
 	 */
 	NumberField setNumber(Number number);
 
+	@Override
+	default Object getValue() {
+		return getNumber();
+	}
 }

@@ -37,6 +37,10 @@ public class UserCreateRequest implements RestModel {
 	@JsonPropertyDescription("New node reference of the user. This can also explicitly set to null in order to remove the assigned node from the user")
 	private ExpandableNode nodeReference;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("When true, the user needs to change their password on the next login.")
+	private Boolean forcedPasswordChange;
+
 	public UserCreateRequest() {
 	}
 
@@ -183,4 +187,23 @@ public class UserCreateRequest implements RestModel {
 		return this;
 	}
 
+	/**
+	 * Set whether the user needs to change their password on next login.
+	 *
+	 * @param forcedPasswordChange
+	 * @return Fluent API
+	 */
+	public UserCreateRequest setForcedPasswordChange(Boolean forcedPasswordChange) {
+		this.forcedPasswordChange = forcedPasswordChange;
+		return this;
+	}
+
+	/**
+	 * Return true if the user needs to change their password on next login.
+	 *
+	 * @return
+	 */
+	public Boolean getForcedPasswordChange() {
+		return forcedPasswordChange;
+	}
 }

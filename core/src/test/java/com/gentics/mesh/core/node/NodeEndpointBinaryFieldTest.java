@@ -2,7 +2,7 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -11,18 +11,21 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
@@ -37,17 +40,25 @@ import com.gentics.mesh.parameter.client.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.rest.client.MeshBinaryResponse;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.FileUtils;
+import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.vertx.core.buffer.Buffer;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
+
+	@Before
+	public void setupPerm() {
+		grantAdminRole();
+	}
 
 	@Test
 	public void testDownloadBinaryFieldWithReadPublishPerm() throws IOException {
@@ -68,9 +79,10 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 			call(() -> client().publishNode(PROJECT_NAME, node.getUuid()));
 			// 2. Download the data using the REST API
-			NodeDownloadResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary",
+			MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary",
 				new VersioningParametersImpl().setVersion("published")));
-			assertEquals(binaryLen, response.getBuffer().length());
+			assertEquals(binaryLen, IOUtils.toByteArray(response.getStream()).length);
+			response.close();
 		}
 	}
 
@@ -94,7 +106,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 
 			// 2. Download the data using the REST API
 			call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary", new VersioningParametersImpl().setVersion("draft")),
-				FORBIDDEN, "error_missing_perm", node.getUuid());
+				FORBIDDEN, "error_missing_perm", node.getUuid(), READ_PUBLISHED_PERM.getRestPerm().getName());
 
 		}
 	}
@@ -111,7 +123,9 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		SchemaUpdateRequest schemaRequest = JsonUtil.readValue(tx(() -> schemaContainer("content").getLatestVersion().getJson()),
 			SchemaUpdateRequest.class);
 		schemaRequest.getFields().add(FieldUtil.createBinaryFieldSchema("binary"));
-		call(() -> client().updateSchema(schemaUuid, schemaRequest));
+		waitForJobs(() -> {
+			call(() -> client().updateSchema(schemaUuid, schemaRequest));
+		}, COMPLETED, 1);
 
 		SchemaReferenceImpl schemaReference = new SchemaReferenceImpl();
 		schemaReference.setName("content");
@@ -129,6 +143,33 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		// Assert that the request fails when field has been specified.
 		request.getFields().put("slug", FieldUtil.createStringField("new-page2.html"));
 		request.getFields().put("binary", new BinaryFieldImpl().setDominantColor("#2E2EFE"));
+		call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "field_binary_error_unable_to_set_before_upload", "binary");
+
+	}
+
+	@Test
+	public void testCreateNodeWithBinarySha512sum() {
+
+		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+		SchemaUpdateRequest schemaRequest = JsonUtil.readValue(tx(() -> schemaContainer("content").getLatestVersion().getJson()),
+			SchemaUpdateRequest.class);
+		schemaRequest.getFields().add(FieldUtil.createBinaryFieldSchema("binary"));
+
+		waitForJobs(() -> {
+			call(() -> client().updateSchema(schemaUuid, schemaRequest));
+		}, COMPLETED, 1);
+
+		SchemaReferenceImpl schemaReference = new SchemaReferenceImpl();
+		schemaReference.setName("content");
+
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setLanguage("en");
+		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.getFields().put("binary", new BinaryFieldImpl().setSha512sum("someValue"));
+		request.setSchema(schemaReference);
+		request.setParentNodeUuid(tx(() -> folder("news").getUuid()));
 		call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "field_binary_error_unable_to_set_before_upload", "binary");
 
 	}
@@ -196,9 +237,67 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 
 			// 2. Download the data using the REST API
-			NodeDownloadResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary"));
-			assertEquals(binaryLen, response.getBuffer().length());
+			MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary"));
+			assertEquals(binaryLen, IOUtils.toByteArray(response.getStream()).length);
+			response.close();
 		}
+	}
+
+	@Test
+	public void testDownloadBinaryFieldEncoding() throws IOException {
+		String contentType = "application/octet-stream";
+		int binaryLen = 8000;
+		String fileName = "some \u01f92a file.dat";
+		Node node = prepareSchema();
+		String uuid = tx(() -> node.getUuid());
+
+		// 1. Upload some binary data
+		call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
+
+		// 2. Download the data using the REST API
+		MeshResponse<MeshBinaryResponse> response = client().downloadBinaryField(PROJECT_NAME, uuid, "en", "binary").getResponse().blockingGet();
+
+		// Validate content disposition encoding
+		List<String> params = Arrays.asList(response.getHeader("content-disposition").get().split(";")).stream().map(String::trim)
+			.collect(Collectors.toList());
+		assertEquals("attachment", params.get(0));
+		assertEquals("filename=\"some ?2a file.dat\"", params.get(1));
+		assertEquals("filename*=utf-8''some+%C7%B92a+file.dat", params.get(2));
+	}
+
+	@Test
+	public void testDownloadBinaryFieldRange() throws IOException {
+
+		String contentType = "plain/text";
+		String data = "Hello World!";
+
+		int binaryLen = 8000;
+		String fileName = "somefile.dat";
+		Node node = prepareSchema();
+		VersionNumber version = tx(() -> node.getGraphFieldContainer("en").getVersion());
+		String uuid = tx(() -> node.getUuid());
+
+		// 1. Upload some binary data
+		Buffer buffer = Buffer.buffer(data);
+
+		ByteArrayInputStream stream = new ByteArrayInputStream(buffer.getBytes());
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), "binary", stream, buffer.length(), fileName,
+			contentType));
+
+		MeshBinaryResponse response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary", 0, 4));
+		String decoded = new String(IOUtils.toByteArray(response.getStream()));
+		assertEquals("Hello", decoded);
+		response.close();
+
+		response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary", 6, 10));
+		decoded = new String(IOUtils.toByteArray(response.getStream()));
+		assertEquals("World", decoded);
+		response.close();
+
+		response = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary", 0, 4));
+		decoded = new String(IOUtils.toByteArray(response.getStream()));
+		assertEquals("Hello", decoded);
+		response.close();
 	}
 
 	/**
@@ -224,7 +323,8 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 
 		// Upload the image
 		NodeResponse node2 = call(
-			() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", buffer, "test.jpg", "image/jpeg"));
+			() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", new ByteArrayInputStream(buffer.getBytes()),
+				buffer.length(), "test.jpg", "image/jpeg"));
 
 		// Update the stored focalpoint
 		NodeUpdateRequest nodeUpdateRequest = node2.toRequest();
@@ -266,7 +366,8 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		String blumeSum = "0b8f63eaa9893d994572a14a012c886d4b6b7b32f79df820f7aed201b374c89cf9d40f79345d5d76662ea733b23ed46dbaa243368627cbfe91a26c6452b88a29";
 
 		io.reactivex.functions.Function<String, ObservableSource<NodeResponse>> uploadBinary = (fieldName) -> client()
-			.updateNodeBinaryField(PROJECT_NAME, nodeResponse.getUuid(), nodeResponse.getLanguage(), nodeResponse.getVersion(), fieldName, buffer,
+			.updateNodeBinaryField(PROJECT_NAME, nodeResponse.getUuid(), nodeResponse.getLanguage(), nodeResponse.getVersion(), fieldName,
+				new ByteArrayInputStream(buffer.getBytes()), buffer.length(),
 				"blume.jpg", "image/jpeg")
 			.toObservable().doOnSubscribe((e) -> System.out.println("Requesting " + fieldName));
 
@@ -277,7 +378,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		imageFields.flatMap(uploadBinary).ignoreElements().blockingAwait();
 
 		// Download them again and make sure they are the same image
-		io.reactivex.functions.Function<String, ObservableSource<NodeDownloadResponse>> downloadBinary = (fieldName) -> client()
+		io.reactivex.functions.Function<String, ObservableSource<MeshBinaryResponse>> downloadBinary = (fieldName) -> client()
 			.downloadBinaryField(PROJECT_NAME, nodeResponse.getUuid(), nodeResponse.getLanguage(), fieldName).toObservable();
 
 		Consumer<String> assertSum = (sum) -> assertEquals("Checksum did not match", blumeSum, sum);
@@ -289,7 +390,15 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		assertEquals("#737042", response.getFields().getBinaryField("image1").getDominantColor());
 		assertEquals("#737042", response.getFields().getBinaryField("image2").getDominantColor());
 
-		imageFields.flatMap(downloadBinary).map(NodeDownloadResponse::getBuffer).map(FileUtils::hash).map(e -> e.blockingGet()).map(e -> assertSum)
+		imageFields.flatMap(downloadBinary)
+			.map(responseBody -> {
+				Buffer body = Buffer.buffer(IOUtils.toByteArray(responseBody.getStream()));
+				responseBody.close();
+				return body;
+			})
+			.map(FileUtils::hash)
+			.map(e -> e.blockingGet())
+			.map(e -> assertSum)
 			.ignoreElements().blockingAwait();
 	}
 

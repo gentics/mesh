@@ -62,7 +62,7 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 	 * @param message
 	 */
 	public void invokeJobAction(Message<Object> message) {
-		log.debug("Got job processing request. Getting lock to execute the request.");
+		log.info("Got job processing request. Getting lock to execute the request.");
 		Completable job = stopped ? Completable.error(new Throwable("Processing was stopped.")) : executeJob(message);
 		executeLocked(job, message);
 	}

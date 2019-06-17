@@ -1,30 +1,28 @@
 package com.gentics.mesh.image.focalpoint;
 
-import static com.gentics.mesh.parameter.image.CropMode.FOCALPOINT;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.image.Point;
+import com.gentics.mesh.etc.config.ImageManipulatorOptions;
+import com.gentics.mesh.image.AbstractImageTest;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Vector;
 
-import javax.imageio.ImageIO;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
-import com.gentics.mesh.core.rest.node.field.image.Point;
-import com.gentics.mesh.image.AbstractImageTest;
-import com.gentics.mesh.image.focalpoint.FocalPointModifier;
-import com.gentics.mesh.parameter.ImageManipulationParameters;
-import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+import static com.gentics.mesh.parameter.image.CropMode.FOCALPOINT;
 
 @RunWith(Parameterized.class)
 public class FocalPointModifierImageTest extends AbstractImageTest {
 
-	private FocalPointModifier cropper = new FocalPointModifier();
+	private FocalPointModifier cropper = new FocalPointModifier(new ImageManipulatorOptions());
 
 	private Parameter parameter;
 

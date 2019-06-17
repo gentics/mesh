@@ -1,0 +1,35 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| branch
+| true
+| object
+| Reference to the branch.
+
+| cause
+| true
+| object
+| Some events will be caused by another action. This object contains information about the cause of the event.
+
+| origin
+| true
+| string
+| Name of the mesh node from which the event originates.
+
+| project
+| true
+| object
+| Reference to the project to which the branch belonged.
+
+| tag
+| true
+| object
+| Reference to the tag.
+
+|======

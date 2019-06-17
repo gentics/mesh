@@ -21,7 +21,7 @@ public class PurgeOldJobs extends AbstractChange {
 	}
 
 	@Override
-	public void apply() {
+	public void applyInTx() {
 
 		// 1. Remove jobs
 		Vertex meshRoot = getMeshRootVertex();
@@ -34,7 +34,7 @@ public class PurgeOldJobs extends AbstractChange {
 			}
 		}
 		// 2. Remove JobImpl type since we have now specific job vertices
-		getDb().removeVertexType("JobImpl");
+		getDb().type().removeVertexType("JobImpl");
 
 	}
 

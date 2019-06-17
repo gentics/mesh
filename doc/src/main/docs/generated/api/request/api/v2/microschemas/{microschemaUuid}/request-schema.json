@@ -1,0 +1,65 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:microschema:impl:MicroschemaUpdateRequest",
+  "properties" : {
+    "version" : {
+      "type" : "string",
+      "description" : "Version of the microschema"
+    },
+    "description" : {
+      "type" : "string",
+      "description" : "Description of the microschema"
+    },
+    "name" : {
+      "type" : "string",
+      "description" : "Name of the microschema"
+    },
+    "elasticsearch" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:vertx:core:json:JsonObject",
+      "description" : "Additional elasticsearch index configuration. This can be used to setup custom analyzers and filters.",
+      "properties" : {
+        "map" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "type" : "any"
+          }
+        },
+        "empty" : {
+          "type" : "boolean"
+        }
+      }
+    },
+    "fields" : {
+      "type" : "array",
+      "description" : "List of microschema fields",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
+        "properties" : {
+          "label" : {
+            "type" : "string",
+            "description" : "Label of the field."
+          },
+          "elasticsearch" : {
+            "type" : "object",
+            "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+          },
+          "required" : {
+            "type" : "boolean"
+          },
+          "name" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Name of the field."
+          },
+          "type" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Type of the field."
+          }
+        }
+      }
+    }
+  }
+}

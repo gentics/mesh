@@ -1,0 +1,25 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| alt
+| false
+| integer
+| GPS Altitude in meters over sea level.
+
+| lat
+| true
+| number
+| GPS Latitude
+
+| lon
+| true
+| number
+| GPS Longitude
+
+|======

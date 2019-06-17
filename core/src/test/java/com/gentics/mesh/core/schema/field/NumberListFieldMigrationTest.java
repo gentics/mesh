@@ -15,33 +15,21 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import javax.script.ScriptException;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.field.number.NumberListFieldTestHelper;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest implements NumberListFieldTestHelper {
 
 	@Override
 	@Test
 	public void testRemove() throws Exception {
 		removeField(CREATENUMBERLIST, FILLNUMBERS, FETCH);
-	}
-
-	@Override
-	@Test
-	public void testRename() throws Exception {
-		renameField(CREATENUMBERLIST, FILLNUMBERS, FETCH, (container, name) -> {
-			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(NUMBERVALUE, OTHERNUMBERVALUE);
-		});
 	}
 
 	@Override
@@ -69,8 +57,7 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest imp
 	@Test
 	public void testChangeToBooleanList() throws Exception {
 		changeType(CREATENUMBERLIST, FILLNUMBERS, FETCH, CREATEBOOLEANLIST, (container, name) -> {
-			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getBooleanList(name).getValues()).as(NEWFIELDVALUE).isEmpty();
+			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNull();
 		});
 
 		changeType(CREATENUMBERLIST, FILLONEZERO, FETCH, CREATEBOOLEANLIST, (container, name) -> {
@@ -189,26 +176,4 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest imp
 		});
 	}
 
-	@Override
-	@Test
-	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATENUMBERLIST, FILLNUMBERS, FETCH,
-				"function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
-					NumberGraphFieldList field = container.getNumberList(name);
-					assertThat(field).as(NEWFIELD).isNotNull();
-					assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(OTHERNUMBERVALUE, NUMBERVALUE);
-				});
-	}
-
-	@Override
-	@Test(expected = ScriptException.class)
-	public void testInvalidMigrationScript() throws Throwable {
-		invalidMigrationScript(CREATENUMBERLIST, FILLNUMBERS, INVALIDSCRIPT);
-	}
-
-	@Override
-	@Test(expected = ClassNotFoundException.class)
-	public void testSystemExit() throws Throwable {
-		invalidMigrationScript(CREATENUMBERLIST, FILLNUMBERS, KILLERSCRIPT);
-	}
 }

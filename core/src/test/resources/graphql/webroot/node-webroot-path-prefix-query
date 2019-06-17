@@ -1,0 +1,12 @@
+{
+	# [$.data.node2=<is-null>]
+	node2: node(path:"/Neuigkeiten/2015") {
+		uuid
+	}
+	node(path:"/some/prefix/Neuigkeiten/2015") {
+		# 2015 is an english container - thus the path is actually "/News/2015"
+		# [$.data.node.path=/some/prefix/News/2015]
+		path
+	}
+}
+# [$.errors=<is-undefined>]

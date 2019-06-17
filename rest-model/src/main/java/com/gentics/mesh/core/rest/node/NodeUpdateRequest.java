@@ -1,8 +1,11 @@
 package com.gentics.mesh.core.rest.node;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.tag.TagReference;
 
 /**
  * POJO for a node update request.
@@ -17,9 +20,13 @@ public class NodeUpdateRequest implements FieldContainer {
 	@JsonPropertyDescription("Dynamic map with fields of the node content.")
 	private FieldMap fields = new FieldMapImpl();
 
-	@JsonProperty(required = true)
-	@JsonPropertyDescription("Version number which must be provided in order to handle and detect concurrent changes to the node content.")
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Version number which can be provided in order to handle and detect concurrent changes to the node content.")
 	private String version;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("List of tags that should be used to tag the node.")
+	private List<TagReference> tags;
 
 	public NodeUpdateRequest() {
 	}
@@ -36,8 +43,7 @@ public class NodeUpdateRequest implements FieldContainer {
 	/**
 	 * Set the language of the node which should be updated.
 	 * 
-	 * @param language
-	 *            Language tag for the node
+	 * @param language Language tag for the node
 	 */
 	public NodeUpdateRequest setLanguage(String language) {
 		this.language = language;
@@ -56,8 +62,7 @@ public class NodeUpdateRequest implements FieldContainer {
 	/**
 	 * Set the fields which should be updated.
 	 *
-	 * @param fields
-	 *            A field map containing all fields to be updated.
+	 * @param fields A field map containing all fields to be updated.
 	 * @return this
 	 */
 	public NodeUpdateRequest setFields(FieldMap fields) {
@@ -81,6 +86,26 @@ public class NodeUpdateRequest implements FieldContainer {
 	 */
 	public NodeUpdateRequest setVersion(String version) {
 		this.version = version;
+		return this;
+	}
+
+	/**
+	 * Return the tag list.
+	 * 
+	 * @return
+	 */
+	public List<TagReference> getTags() {
+		return tags;
+	}
+
+	/**
+	 * Set the tag list.
+	 * 
+	 * @param tags
+	 * @return Fluent API
+	 */
+	public NodeUpdateRequest setTags(List<TagReference> tags) {
+		this.tags = tags;
 		return this;
 	}
 

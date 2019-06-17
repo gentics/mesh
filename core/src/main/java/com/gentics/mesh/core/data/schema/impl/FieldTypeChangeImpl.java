@@ -3,14 +3,34 @@ package com.gentics.mesh.core.data.schema.impl;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Set;
+import java.util.function.Supplier;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.node.handler.TypeConverter;
 import com.gentics.mesh.core.data.schema.FieldTypeChange;
+import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.BooleanField;
+import com.gentics.mesh.core.rest.node.field.DateField;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.HtmlField;
+import com.gentics.mesh.core.rest.node.field.MicronodeField;
+import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.NumberField;
+import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.FieldList;
+import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -25,14 +45,19 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @see FieldTypeChange
  */
 public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements FieldTypeChange {
 
-	public static void init(Database database) {
-		database.addVertexType(FieldTypeChangeImpl.class, MeshVertexImpl.class);
+	public static Set<String> UUID_TYPES = ImmutableSet.of("binary", "node", "micronode");
+
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(FieldTypeChangeImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
@@ -60,6 +85,8 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 		setRestProperty(SchemaChangeModel.LIST_TYPE_KEY, listType);
 	}
 
+	private static TypeConverter typeConverter = new TypeConverter();
+
 	/**
 	 * Apply the field type change to the specified schema.
 	 */
@@ -68,8 +95,7 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 		FieldSchema fieldSchema = container.getField(getFieldName());
 
 		if (fieldSchema == null) {
-			throw error(BAD_REQUEST, "Could not find schema field {" + getFieldName() + "} within schema {" + container.getName() + "} for change {"
-					+ getUuid() + "}");
+			throw error(BAD_REQUEST, "schema_error_change_field_not_found", getFieldName(), container.getName(), getUuid());
 		}
 
 		FieldSchema field = null;
@@ -130,8 +156,183 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 	}
 
 	@Override
-	public String getAutoMigrationScript() throws IOException {
-		return OPERATION.getAutoMigrationScript(Arrays.asList(SchemaChangeModel.TYPE_KEY, SchemaChangeModel.LIST_TYPE_KEY).stream()
-				.filter(key -> getRestProperty(key) != null).collect(Collectors.toMap(key -> key, key -> getRestProperty(key))));
+	public Map<String, Field> createFields(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
+		String newType = getType();
+
+		switch (newType) {
+			case "boolean":
+				return Collections.singletonMap(getFieldName(), changeToBoolean(oldSchema, oldContent));
+			case "number":
+				return Collections.singletonMap(getFieldName(), changeToNumber(oldSchema, oldContent));
+			case "date":
+				return Collections.singletonMap(getFieldName(), changeToDate(oldSchema, oldContent));
+			case "html":
+				return Collections.singletonMap(getFieldName(), changeToHtml(oldSchema, oldContent));
+			case "string":
+				return Collections.singletonMap(getFieldName(), changeToString(oldSchema, oldContent));
+			case "binary":
+				return Collections.singletonMap(getFieldName(), changeToBinary(oldSchema, oldContent));
+			case "list":
+				return Collections.singletonMap(getFieldName(), changeToList(oldSchema, oldContent));
+			case "micronode":
+				return Collections.singletonMap(getFieldName(), changeToMicronode(oldSchema, oldContent));
+			case "node":
+				return Collections.singletonMap(getFieldName(), changeToNode(oldSchema, oldContent));
+			default:
+				throw error(BAD_REQUEST, "Unknown type {" + newType + "} for change " + getUuid());
+		}
 	}
+
+	private BooleanField changeToBoolean(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
+		String fieldName = getFieldName();
+		FieldSchema fieldSchema = oldSchema.getField(fieldName);
+
+		return new BooleanFieldImpl().setValue(typeConverter.toBoolean(oldContent.getFields().getField(fieldName, fieldSchema).getValue()));
+	}
+
+	private NumberField changeToNumber(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
+		String fieldName = getFieldName();
+		FieldSchema fieldSchema = oldSchema.getField(fieldName);
+
+		String oldType = fieldSchema.getType();
+		Object oldValue = oldContent.getFields().getField(fieldName, fieldSchema).getValue();
+
+		if (isUuidType(fieldSchema)) {
+			return null;
+		}
+
+		switch (oldType) {
+			case "number":
+				return oldContent.getFields().getNumberField(fieldName);
+			default:
+				return new NumberFieldImpl().setNumber(typeConverter.toNumber(oldValue));
+		}
+	}
+
+	private DateField changeToDate(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
+		String fieldName = getFieldName();
+		FieldSchema fieldSchema = oldSchema.getField(fieldName);
+
+		return new DateFieldImpl().setDate(typeConverter.toDate(oldContent.getFields().getField(fieldName, fieldSchema).getValue()));
+	}
+
+	private HtmlField changeToHtml(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
+		String fieldName = getFieldName();
+		FieldSchema fieldSchema = oldSchema.getField(fieldName);
+
+		if (isNonNodeUuidType(fieldSchema)) {
+			return null;
+		}
+		return new HtmlFieldImpl().setHTML(typeConverter.toString(oldContent.getFields().getField(fieldName, fieldSchema).getValue()));
+	}
+
+	private StringField changeToString(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
+		String fieldName = getFieldName();
+		FieldSchema fieldSchema = oldSchema.getField(fieldName);
+
+		if (isNonNodeUuidType(fieldSchema)) {
+			return null;
+		}
+		return new StringFieldImpl().setString(typeConverter.toString(oldContent.getFields().getField(fieldName, fieldSchema).getValue()));
+	}
+
+	private BinaryField changeToBinary(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
+		String fieldName = getFieldName();
+		FieldSchema fieldSchema = oldSchema.getField(fieldName);
+
+		String oldType = fieldSchema.getType();
+		switch (oldType) {
+			case "binary":
+				return oldContent.getFields().getBinaryField(fieldName);
+			default:
+				return null;
+		}
+	}
+
+	private FieldList changeToList(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
+		String fieldName = getFieldName();
+		FieldSchema fieldSchema = oldSchema.getField(fieldName);
+		String listType = getListType();
+		Field oldField = oldContent.getFields().getField(fieldName, fieldSchema);
+		Object oldValue = oldField.getValue();
+		String oldType = fieldSchema.getType();
+
+		switch (listType) {
+			case "boolean":
+				return typeConverter.toBooleanList(oldValue);
+			case "number":
+				if (isUuidType(fieldSchema)) {
+					return null;
+				}
+				switch (oldType) {
+					case "number":
+						return new NumberFieldListImpl().setItems(Collections.singletonList(oldContent.getFields().getNumberField(fieldName).getNumber()));
+					default:
+						return typeConverter.toNumberList(oldValue);
+				}
+			case "date":
+				return typeConverter.toDateList(oldValue);
+			case "html":
+				if (isNonNodeUuidType(fieldSchema)) {
+					return null;
+				} else {
+					return typeConverter.toHtmlList(oldValue);
+				}
+			case "string":
+				if (isNonNodeUuidType(fieldSchema)) {
+					return null;
+				} else {
+					return typeConverter.toStringList(oldValue);
+				}
+			case "micronode":
+				return typeConverter.toMicronodeList(oldField);
+			case "node":
+				return typeConverter.toNodeList(oldField);
+			default:
+				throw error(BAD_REQUEST, "Unknown list type {" + listType + "} for change " + getUuid());
+		}
+	}
+
+	private boolean isNonNodeUuidType(FieldSchema fieldSchema) {
+		return isUuidType(fieldSchema) && !fieldSchema.getType().equals("node");
+	}
+
+	private boolean isUuidType(FieldSchema fieldSchema) {
+		if (fieldSchema instanceof ListFieldSchema) {
+			return UUID_TYPES.contains(fieldSchema.getType()) ||
+			UUID_TYPES.contains(((ListFieldSchema) fieldSchema).getListType());
+		} else {
+			return UUID_TYPES.contains(fieldSchema.getType());
+		}
+	}
+
+	private <T> FieldList<T> nullableList(T[] input, Supplier<FieldList<T>> output) {
+		if (input == null) {
+			return null;
+		} else {
+			FieldList<T> list = output.get();
+			list.setItems(Arrays.asList(input));
+			return list;
+		}
+	}
+
+	private MicronodeField changeToMicronode(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
+		String fieldName = getFieldName();
+		FieldSchema fieldSchema = oldSchema.getField(fieldName);
+
+		return typeConverter.toMicronode(oldContent.getFields().getField(fieldName, fieldSchema));
+	}
+
+	private NodeField changeToNode(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
+		String fieldName = getFieldName();
+		FieldSchema fieldSchema = oldSchema.getField(fieldName);
+
+		return typeConverter.toNode(oldContent.getFields().getField(fieldName, fieldSchema));
+	}
+
+	@Override
+	public void delete(BulkActionContext bac) {
+		getElement().remove();
+	}
+
 }

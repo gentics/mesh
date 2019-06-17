@@ -1,32 +1,36 @@
 package com.gentics.mesh.core.endpoint.auth;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 
 @Singleton
 public class AuthenticationRestHandler extends AbstractHandler {
 
 	private MeshJWTAuthProvider authProvider;
 	private Database db;
+	private HandlerUtilities utils;
 
 	@Inject
-	public AuthenticationRestHandler(MeshJWTAuthProvider authProvider, Database db) {
+	public AuthenticationRestHandler(MeshJWTAuthProvider authProvider, Database db, HandlerUtilities utils) {
 		this.authProvider = authProvider;
 		this.db = db;
+		this.utils = utils;
 	}
 
 	/**
@@ -35,11 +39,11 @@ public class AuthenticationRestHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleMe(InternalActionContext ac) {
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 			// TODO add permission check
 			MeshAuthUser requestUser = ac.getUser();
-			return requestUser.transformToRest(ac, 0);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			return requestUser.transformToRestSync(ac, 0);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -67,7 +71,9 @@ public class AuthenticationRestHandler extends AbstractHandler {
 			if (request.getPassword() == null) {
 				throw error(BAD_REQUEST, "error_json_field_missing", "password");
 			}
-			authProvider.login(ac, request.getUsername(), request.getPassword());
+			authProvider.login(ac, request.getUsername(), request.getPassword(), request.getNewPassword());
+		} catch (GenericRestException e) {
+			throw e;
 		} catch (Exception e) {
 			throw error(UNAUTHORIZED, "auth_login_failed", e);
 		}

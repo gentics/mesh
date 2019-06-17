@@ -1,0 +1,32 @@
+{
+  "changes" : [ {
+    "operation" : "ADDFIELD",
+    "properties" : {
+      "field" : "listFieldToBeAddedField",
+      "label" : "Field Label Value",
+      "type" : "list",
+      "listType" : "html"
+    }
+  }, {
+    "operation" : "CHANGEFIELDTYPE",
+    "properties" : {
+      "field" : "fieldToBeUpdated",
+      "type" : "string"
+    }
+  }, {
+    "operation" : "REMOVEFIELD",
+    "properties" : {
+      "field" : "fieldToBeRemoved"
+    }
+  }, {
+    "operation" : "UPDATEFIELD",
+    "properties" : {
+      "field" : "fieldToBeUpdated",
+      "displayFieldname" : "newDisplayField",
+      "label" : "newLabel"
+    }
+  }, {
+    "operation" : "UPDATESCHEMA",
+    "properties" : { }
+  } ]
+}

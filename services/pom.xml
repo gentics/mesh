@@ -9,18 +9,18 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.24.1-SNAPSHOT</version>
+		<version>0.36.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<projectRoot>${project.basedir}/..</projectRoot>
 	</properties>
 
 	<modules>
 		<module>image-imgscalr</module>
 		<module>aws-s3-storage</module>
 		<module>local-storage</module>
+		<module>metrics-prometheus</module>
 		<module>keycloak-auth</module>
 	</modules>
 
@@ -38,7 +38,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 			</plugin>
-			<!-- <plugin> <groupId>org.jacoco</groupId> <artifactId>jacoco-maven-plugin</artifactId> </plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>

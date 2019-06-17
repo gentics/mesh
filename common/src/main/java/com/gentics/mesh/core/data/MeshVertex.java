@@ -3,10 +3,11 @@ package com.gentics.mesh.core.data;
 import java.util.Set;
 
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.model.MeshElement;
-import com.syncleus.ferma.VertexFrame;
+import com.gentics.mesh.madl.frame.VertexFrame;
 import com.tinkerpop.blueprints.Vertex;
 
 /**
@@ -27,10 +28,17 @@ public interface MeshVertex extends MeshElement, VertexFrame {
 	/**
 	 * Delete the element. Additional entries will be added to the batch to keep the search index in sync.
 	 * 
-	 * @param context
+	 * @param bac
 	 *            Deletion context which keeps track of the deletion process
 	 */
-	void delete(BulkActionContext context);
+	void delete(BulkActionContext bac);
+
+	/**
+	 * Invoke deletion without any given bulk action context.
+	 */
+	default void delete() {
+		delete(new DummyBulkActionContext());
+	}
 
 	/**
 	 * Grant the set of permissions and revoke the other set of permissions to this element using the role.
@@ -41,18 +49,15 @@ public interface MeshVertex extends MeshElement, VertexFrame {
 	 * @param permissionsToGrant
 	 * @param permissionsToRevoke
 	 */
-	void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-			Set<GraphPermission> permissionsToRevoke);
+	void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+		Set<GraphPermission> permissionsToRevoke);
 
 	/**
-	 * Add a unique <b>out-bound</b> link to the given vertex for the given set of labels. Note that this method will effectively ensure that only one
-	 * <b>out-bound</b> link exists between the two vertices for each label.
-	 * 
-	 * @param vertex
-	 *            Target vertex
-	 * @param labels
-	 *            Labels to handle
+	 * Tests if the {@link GraphPermission}s READ_PUBLISHED_PERM and READ_PUBLISHED can be set for this element.
+	 * @return
 	 */
-	void setUniqueLinkOutTo(VertexFrame vertex, String... labels);
+	default boolean hasPublishPermissions() {
+		return false;
+	}
 
 }

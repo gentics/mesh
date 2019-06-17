@@ -31,23 +31,6 @@ public class IndexBulkEntry extends AbstractBulkEntry {
 		this.payload = payload;
 	}
 
-	/**
-	 * Construct a new entry.
-	 * 
-	 * @param indexName
-	 *            Name of the search index
-	 * @param documentId
-	 *            Id of the document
-	 * @param payload
-	 *            Document payload
-	 * @param usePipeline
-	 *            Flag which indicated whether or not the ingest pipeline should be enabled for the entry
-	 */
-	public IndexBulkEntry(String indexName, String documentId, JsonObject payload, boolean usePipeline) {
-		this(indexName, documentId, payload);
-		this.usePipeline = usePipeline;
-	}
-
 	public JsonObject getPayload() {
 		return payload;
 	}

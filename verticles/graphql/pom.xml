@@ -8,13 +8,12 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-verticles</artifactId>
-		<version>0.24.1-SNAPSHOT</version>
+		<version>0.36.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<projectRoot>${project.basedir}/../..</projectRoot>
-		<graphql.version>7.0</graphql.version>
+		<graphql.version>10.0</graphql.version>
 	</properties>
 
 	<dependencies>

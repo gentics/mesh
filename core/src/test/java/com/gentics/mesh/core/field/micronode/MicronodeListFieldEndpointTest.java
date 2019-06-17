@@ -1,5 +1,11 @@
 package com.gentics.mesh.core.field.micronode;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -24,27 +30,38 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
+import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
+import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.client.PublishParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	protected final static String FIELD_NAME = "micronodeListField";
@@ -99,6 +116,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
+		disableAutoPurge();
 		Node node = folder("2015");
 
 		NodeGraphFieldContainer container = tx(() -> node.getGraphFieldContainer("en"));
@@ -157,13 +175,13 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 					assertNotNull("No new container version was created. {" + i % 3 + "}", newContainer);
 					assertEquals("Check version number", newContainer.getVersion().toString(), response.getVersion());
 					assertEquals("Check old value for run {" + i % 3 + "}", oldValue,
-							getListValues(container, MicronodeGraphFieldListImpl.class, FIELD_NAME));
+						getListValues(container, MicronodeGraphFieldListImpl.class, FIELD_NAME));
 					container = newContainer;
 				}
 			} else {
 				try (Tx tx = tx()) {
 					assertEquals("Check old value for run {" + i % 3 + "}", oldValue,
-							getListValues(container, MicronodeGraphFieldListImpl.class, FIELD_NAME));
+						getListValues(container, MicronodeGraphFieldListImpl.class, FIELD_NAME));
 					assertEquals("The version should not have been updated.", container.getVersion().toString(), response.getVersion());
 				}
 			}
@@ -188,6 +206,8 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		disableAutoPurge();
+
 		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
 		field.add(createItem("Max", "Böse"));
 		field.add(createItem("Moritz", "Böse"));
@@ -207,12 +227,12 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 			assertThat(latest.getMicronodeList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getMicronodeList(FIELD_NAME)).isNotNull();
 			List<String> oldValueList = latest.getPreviousVersion().getMicronodeList(FIELD_NAME).getList().stream()
-					.map(item -> item.getMicronode().getString("firstName").getString()).collect(Collectors.toList());
+				.map(item -> item.getMicronode().getString("firstName").getString()).collect(Collectors.toList());
 			assertThat(oldValueList).containsExactly("Max", "Moritz");
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
+				secondResponse.getVersion());
 		}
 	}
 
@@ -350,17 +370,147 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Override
 	public void testCreateNodeWithField() {
 		try (Tx tx = tx()) {
+			// 1. Create the node
 			FieldList<MicronodeField> field = new MicronodeFieldListImpl();
 			field.add(createItem("Max", "Böse"));
 			field.add(createItem("Moritz", "Böse"));
 			assertThat(field.getItems()).hasSize(2);
 			NodeResponse response = createNode(FIELD_NAME, field);
 
+			// Assert the response
 			FieldList<MicronodeField> responseField = response.getFields().getMicronodeFieldList(FIELD_NAME);
 			assertNotNull(responseField);
 			assertFieldEquals(field, responseField, true);
 			assertMicronodes(responseField);
 		}
+	}
+
+	/**
+	 * Assert that the source node gets updated if the target is deleted.
+	 */
+	@Test
+	public void testReferenceUpdateOnDelete() {
+		String sourceUuid = tx(() -> folder("2015").getUuid());
+		String targetUuid = contentUuid();
+
+		String vcardUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
+		MicroschemaModel vcard = tx(() -> microschemaContainers().get("vcard").getLatestVersion().getSchema());
+		vcard.addField(new NodeFieldSchemaImpl().setName("node"));
+		MicroschemaUpdateRequest request = JsonUtil.readValue(vcard.toJson(), MicroschemaUpdateRequest.class);
+		call(() -> client().updateMicroschema(vcardUuid, request));
+
+		// 1. Set the reference
+		MicronodeResponse fieldItem = new MicronodeResponse();
+		fieldItem.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
+		fieldItem.getFields().put("firstName", new StringFieldImpl().setString("Max"));
+		fieldItem.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
+		fieldItem.getFields().put("node", new NodeFieldImpl().setUuid(targetUuid));
+
+		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
+		field.add(fieldItem);
+		field.add(fieldItem);
+		field.add(fieldItem);
+		updateNode(FIELD_NAME, field);
+
+		// 2. Publish the node so that we have to update documents (draft, published) when deleting the target
+		call(() -> client().publishNode(PROJECT_NAME, sourceUuid, new PublishParametersImpl().setRecursive(true)));
+
+		// 3. Create another draft version to add more complex data for the foreign node traversal
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.setVersion("draft");
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("blub123"));
+		call(() -> client().updateNode(PROJECT_NAME, sourceUuid, nodeUpdateRequest));
+
+		expect(NODE_DELETED).one();
+		expect(NODE_REFERENCE_UPDATED)
+			.match(1, NodeMeshEventModel.class, event -> {
+				assertThat(event)
+					.hasBranchUuid(initialBranchUuid())
+					.hasLanguage("en")
+					.hasType(DRAFT)
+					.hasSchemaName("folder")
+					.hasUuid(sourceUuid);
+			}).match(1, NodeMeshEventModel.class, event -> {
+				assertThat(event)
+					.hasBranchUuid(initialBranchUuid())
+					.hasLanguage("en")
+					.hasType(PUBLISHED)
+					.hasSchemaName("folder")
+					.hasUuid(sourceUuid);
+			})
+			.two();
+
+		call(() -> client().deleteNode(PROJECT_NAME, targetUuid));
+
+		awaitEvents();
+		waitForSearchIdleEvent();
+
+	}
+
+	/**
+	 * Assert that the source node gets updated if the target is deleted.
+	 */
+	@Test
+	public void testReferenceListUpdateOnDelete() {
+		String sourceUuid = tx(() -> folder("2015").getUuid());
+		String targetUuid = contentUuid();
+
+		String vcardUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
+		MicroschemaModel vcard = tx(() -> microschemaContainers().get("vcard").getLatestVersion().getSchema());
+		vcard.addField(new ListFieldSchemaImpl().setListType("node").setName("node"));
+		MicroschemaUpdateRequest request = JsonUtil.readValue(vcard.toJson(), MicroschemaUpdateRequest.class);
+		call(() -> client().updateMicroschema(vcardUuid, request));
+
+		// 1. Set the reference
+		MicronodeResponse fieldItem = new MicronodeResponse();
+		fieldItem.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
+		fieldItem.getFields().put("firstName", new StringFieldImpl().setString("Max"));
+		fieldItem.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
+
+		NodeFieldListImpl nodeList = new NodeFieldListImpl();
+		nodeList.add(new NodeFieldListItemImpl().setUuid(targetUuid));
+		fieldItem.getFields().put("node", nodeList);
+
+		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
+		field.add(fieldItem);
+		updateNode(FIELD_NAME, field);
+
+		// 2. Publish the node so that we have to update documents (draft, published) when deleting the target
+		call(() -> client().publishNode(PROJECT_NAME, sourceUuid, new PublishParametersImpl().setRecursive(true)));
+
+		// 3. Create another draft version to add more complex data for the foreign node traversal
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.setVersion("draft");
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("blub123"));
+		call(() -> client().updateNode(PROJECT_NAME, sourceUuid, nodeUpdateRequest));
+
+		expect(NODE_DELETED).one();
+		expect(NODE_REFERENCE_UPDATED)
+		.match(1, NodeMeshEventModel.class, event -> {
+			assertThat(event)
+				.hasBranchUuid(initialBranchUuid())
+				.hasLanguage("en")
+				.hasType(DRAFT)
+				.hasSchemaName("folder")
+				.hasUuid(sourceUuid);
+		}).match(1, NodeMeshEventModel.class, event -> {
+			assertThat(event)
+			.hasBranchUuid(initialBranchUuid())
+			.hasLanguage("en")
+			.hasType(PUBLISHED)
+			.hasSchemaName("folder")
+			.hasUuid(sourceUuid);
+			
+		})
+		.two();
+
+		call(() -> client().deleteNode(PROJECT_NAME, targetUuid));
+
+		awaitEvents();
+		waitForSearchIdleEvent();
+
 	}
 
 	@Test
@@ -413,7 +563,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 			MicronodeField micronode = field.getItems().get(i);
 			for (String fieldName : Arrays.asList("firstName", "lastName")) {
 				assertEquals("Check " + fieldName + " of item # " + (i + 1), expectedMicronode.getFields().getStringField(fieldName).getString(),
-						micronode.getFields().getStringField(fieldName).getString());
+					micronode.getFields().getStringField(fieldName).getString());
 			}
 
 			// TODO enable comparing uuids
@@ -432,7 +582,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	protected void assertMicronodes(FieldList<MicronodeField> field) {
 		try (Tx tx = tx()) {
 			Set<? extends MicronodeImpl> unboundMicronodes = tx.getGraph().v().has(MicronodeImpl.class).toList(MicronodeImpl.class).stream()
-					.filter(micronode -> micronode.getContainer() == null).collect(Collectors.toSet());
+				.filter(micronode -> micronode.getContainer() == null).collect(Collectors.toSet());
 			assertThat(unboundMicronodes).as("Unbound micronodes").isEmpty();
 		}
 	}
@@ -452,6 +602,15 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 		item.getFields().put("firstName", new StringFieldImpl().setString(firstName));
 		item.getFields().put("lastName", new StringFieldImpl().setString(lastName));
 		return item;
+	}
+
+	@Override
+	public NodeResponse createNodeWithField() {
+		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
+		field.add(createItem("Max", "Böse"));
+		field.add(createItem("Moritz", "Böse"));
+		assertThat(field.getItems()).hasSize(2);
+		return createNode(FIELD_NAME, field);
 	}
 
 }

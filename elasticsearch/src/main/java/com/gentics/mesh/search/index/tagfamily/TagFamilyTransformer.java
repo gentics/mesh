@@ -29,7 +29,7 @@ public class TagFamilyTransformer extends AbstractTransformer<TagFamily> {
 		StringBuilder builder = new StringBuilder();
 		builder.append(tagFamily.getElementVersion());
 		builder.append("|");
-		tagFamily.findAllIt().forEach(tag -> {
+		tagFamily.findAll().forEach(tag -> {
 			builder.append(tag.getElementVersion());
 			builder.append("|");
 		});
@@ -48,7 +48,7 @@ public class TagFamilyTransformer extends AbstractTransformer<TagFamily> {
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, tagFamily.getName());
 		addBasicReferences(document, tagFamily);
-		addTags(document, tagFamily.findAllIt());
+		addTags(document, tagFamily.findAll());
 		addProject(document, tagFamily.getProject());
 		addPermissionInfo(document, tagFamily);
 		document.put(MappingHelper.VERSION_KEY, generateVersion(tagFamily));

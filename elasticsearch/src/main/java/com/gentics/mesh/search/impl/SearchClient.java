@@ -15,8 +15,8 @@ public class SearchClient extends ElasticsearchOkClient<JsonObject> {
 	/**
 	 * Invoke a scroll the request.
 	 * 
-	 * @param request
-	 * @param indices
+	 * @param scrollId
+	 * @param scrollTimeout
 	 * @return
 	 */
 	public RequestBuilder<JsonObject> scroll(String scrollId, String scrollTimeout) {

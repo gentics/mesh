@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.container.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -19,14 +20,15 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 /**
  * See {@link MicroschemaContainer}
  */
 public class MicroschemaContainerImpl extends
-		AbstractGraphFieldSchemaContainer<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainer, MicroschemaContainerVersion>
-		implements MicroschemaContainer {
+	AbstractGraphFieldSchemaContainer<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainer, MicroschemaContainerVersion>
+	implements MicroschemaContainer {
 
 	@Override
 	protected Class<MicroschemaContainerImpl> getContainerClass() {
@@ -38,8 +40,8 @@ public class MicroschemaContainerImpl extends
 		return MicroschemaContainerVersionImpl.class;
 	}
 
-	public static void init(Database database) {
-		database.addVertexType(MicroschemaContainerImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(MicroschemaContainerImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
@@ -53,19 +55,19 @@ public class MicroschemaContainerImpl extends
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		for (MicroschemaContainerVersion version : findAll()) {
 			if (version.findMicronodes().hasNext()) {
 				throw error(BAD_REQUEST, "microschema_delete_still_in_use", getUuid());
 			}
-			version.delete(context);
+			version.delete(bac);
 		}
-		super.delete(context);
+		super.delete(bac);
 	}
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return "/api/v1/microschemas/" + getUuid();
+		return CURRENT_API_BASE_PATH + "/microschemas/" + getUuid();
 	}
 
 	@Override

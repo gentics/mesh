@@ -1,0 +1,15 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| status
+| true
+| string
+| The current Gentics Mesh server status.
+
+|======

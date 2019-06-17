@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.AbstractGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
@@ -41,7 +40,9 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.util.CompareUtils;
 import com.gentics.mesh.util.ETag;
@@ -53,8 +54,8 @@ import io.vertx.core.logging.LoggerFactory;
 public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Micronode {
 	private static final Logger log = LoggerFactory.getLogger(MicronodeImpl.class);
 
-	public static void init(Database database) {
-		database.addVertexType(MicronodeImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(MicronodeImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
@@ -109,7 +110,8 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
+		super.delete(bac);
 		getElement().remove();
 	}
 
@@ -128,6 +130,19 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 		return container;
 	}
+	
+	@Override
+	public TraversalResult<? extends NodeGraphFieldContainer> getContainers() {
+		// First try to get the container in case for normal fields
+		Iterable<? extends NodeGraphFieldContainerImpl> containers = in(HAS_FIELD).frameExplicit(NodeGraphFieldContainerImpl.class);
+
+		// The micronode may be part of a list field
+		if (!containers.iterator().hasNext()) {
+			containers = in(HAS_ITEM).in(HAS_LIST).has(NodeGraphFieldContainerImpl.class).frameExplicit(NodeGraphFieldContainerImpl.class);
+		}
+
+		return new TraversalResult<>(containers);
+	}
 
 	@Override
 	public Node getParentNode() {
@@ -143,8 +158,8 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	 * Returns the language of the container, since the micronode itself does not have an edge to the language
 	 */
 	@Override
-	public Language getLanguage() {
-		return getContainer().getLanguage();
+	public String getLanguageTag() {
+		return getContainer().getLanguageTag();
 	}
 
 	@Override

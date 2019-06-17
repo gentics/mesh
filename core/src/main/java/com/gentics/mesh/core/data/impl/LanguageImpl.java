@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
+import static com.gentics.mesh.madl.field.FieldType.STRING;
+import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import org.apache.commons.lang.NotImplementedException;
 
@@ -9,10 +10,11 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.dagger.DB;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.util.ETag;
 
 import io.reactivex.Single;
@@ -26,39 +28,41 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	public static final String LANGUAGE_NATIVE_NAME_PROPERTY_KEY = "nativeName";
 	public static final String LANGUAGE_NAME_PROPERTY_KEY = "name";
 
-	public static void init(Database database) {
-		database.addVertexType(LanguageImpl.class, MeshVertexImpl.class);
-		database.addVertexIndex(LanguageImpl.class, true, LANGUAGE_TAG_PROPERTY_KEY, STRING);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(LanguageImpl.class, MeshVertexImpl.class);
+		index.createIndex(vertexIndex(LanguageImpl.class)
+			.withField(LANGUAGE_TAG_PROPERTY_KEY, STRING)
+			.unique());
 	}
 
 	@Override
 	public String getName() {
-		return getProperty(LANGUAGE_NAME_PROPERTY_KEY);
+		return property(LANGUAGE_NAME_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setName(String name) {
-		setProperty(LANGUAGE_NAME_PROPERTY_KEY, name);
+		property(LANGUAGE_NAME_PROPERTY_KEY, name);
 	}
 
 	@Override
 	public String getNativeName() {
-		return getProperty(LANGUAGE_NATIVE_NAME_PROPERTY_KEY);
+		return property(LANGUAGE_NATIVE_NAME_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setNativeName(String name) {
-		setProperty(LANGUAGE_NATIVE_NAME_PROPERTY_KEY, name);
+		property(LANGUAGE_NATIVE_NAME_PROPERTY_KEY, name);
 	}
 
 	@Override
 	public String getLanguageTag() {
-		return getProperty(LANGUAGE_TAG_PROPERTY_KEY);
+		return property(LANGUAGE_TAG_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setLanguageTag(String languageTag) {
-		setProperty(LANGUAGE_TAG_PROPERTY_KEY, languageTag);
+		property(LANGUAGE_TAG_PROPERTY_KEY, languageTag);
 	}
 
 	@Override
@@ -72,12 +76,12 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public boolean update(InternalActionContext rc, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext rc, EventQueueBatch batch) {
 		throw new NotImplementedException("Languages can't be updated");
 	}
 

@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.endpoint.microschema;
 
-import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -11,23 +10,21 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.Microschema;
@@ -36,10 +33,9 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
-import com.gentics.mesh.util.Tuple;
+import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
-import io.reactivex.Single;
 
 public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaContainer, MicroschemaResponse> {
 
@@ -47,15 +43,11 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 	private Lazy<BootstrapInitializer> boot;
 
-	private SearchQueue searchQueue;
-
 	@Inject
-	public MicroschemaCrudHandler(Database db, MicroschemaComparator comparator, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue,
-		HandlerUtilities utils) {
+	public MicroschemaCrudHandler(Database db, MicroschemaComparator comparator, Lazy<BootstrapInitializer> boot, HandlerUtilities utils) {
 		super(db, utils);
 		this.comparator = comparator;
 		this.boot = boot;
-		this.searchQueue = searchQueue;
 	}
 
 	@Override
@@ -67,7 +59,30 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.asyncTx(ac, () -> {
+
+		/**
+		 * The following code delegates the call to the handleUpdate method is very hacky at best.
+		 * It would be better to move the whole update code into the MicroschemaContainerImpl#update 
+		 * method and use the regular handlerUtilities. (similar to all other calls)
+		 * The current code however does not return a MicroschemaResponse for update requests. 
+		 * Instead a message will be returned. Changing this behaviour would cause a breaking change. (Changed response model).
+		 */
+		boolean delegateToCreate = db.tx(() -> {
+			RootVertex<MicroschemaContainer> root = getRootVertex(ac);
+			if (!UUIDUtil.isUUID(uuid)) {
+				return false;
+			}
+			MicroschemaContainer microschemaContainer = root.findByUuid(uuid);
+			return microschemaContainer == null;
+		});
+
+		// Delegate to handle update which will create the microschema
+		if (delegateToCreate) {
+			super.handleUpdate(ac, uuid);
+			return;
+		}
+
+		utils.syncTx(ac, (tx) -> {
 
 			RootVertex<MicroschemaContainer> root = getRootVertex(ac);
 			MicroschemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -83,8 +98,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			}
 			User user = ac.getUser();
 			SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
-			Tuple<SearchQueueBatch, String> info = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+			String version = utils.eventAction(batch -> {
 				MicroschemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
 				if (updateParams.getUpdateAssignedBranches()) {
@@ -101,18 +115,17 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 						}
 
 						// Assign the new version to the branch
-						branch.assignMicroschemaVersion(user, createdVersion);
+						branch.assignMicroschemaVersion(user, createdVersion, batch);
 					}
 				}
-				return Tuple.tuple(batch, createdVersion.getVersion());
+				return createdVersion.getVersion();
 			});
 
-			info.v1().processSync();
 			if (updateParams.getUpdateAssignedBranches()) {
-				vertx.eventBus().send(JOB_WORKER_ADDRESS, null);
-				return message(ac, "schema_updated_migration_invoked", name, info.v2());
+				MeshEvent.triggerJobWorker();
+				return message(ac, "schema_updated_migration_invoked", name, version);
 			} else {
-				return message(ac, "schema_updated_migration_deferred", name, info.v2());
+				return message(ac, "schema_updated_migration_deferred", name, version);
 			}
 
 		}, model -> ac.send(model, OK));
@@ -127,7 +140,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	 *            Schema uuid
 	 */
 	public void handleDiff(InternalActionContext ac, String uuid) {
-		utils.asyncTx(ac, () -> {
+		utils.syncTx(ac, (tx) -> {
 			MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 			requestModel.validate();
@@ -144,13 +157,11 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	 *            Schema which should be modified
 	 */
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
-		utils.asyncTx(ac, () -> {
+		utils.syncTx(ac, (tx) -> {
 			MicroschemaContainer schema = boot.get().microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
-			db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+			utils.eventAction(batch -> {
 				schema.getLatestVersion().applyChanges(ac, batch);
-				return batch;
-			}).processSync();
+			});
 			return message(ac, "migration_invoked", schema.getName());
 		}, model -> ac.send(model, OK));
 
@@ -176,42 +187,43 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	public void handleAddMicroschemaToProject(InternalActionContext ac, String microschemaUuid) {
 		validateParameter(microschemaUuid, "microschemaUuid");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 			Project project = ac.getProject();
 			if (!ac.getUser().hasPermission(project, UPDATE_PERM)) {
 				String projectUuid = project.getUuid();
-				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
+				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}
 			MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
 			MicroschemaContainerRoot root = project.getMicroschemaContainerRoot();
-			if (root.contains(microschema)) {
-				// Microschema has already been assigned. No need to do anything
-				return microschema.transformToRest(ac, 0);
-			}
 
-			return db.tx(() -> {
+			// Only assign if the microschema has not already been assigned.
+			if (!root.contains(microschema)) {
 				// Assign the microschema to the project
-				root.addMicroschema(ac.getUser(), microschema);
-				return microschema.transformToRest(ac, 0);
-			});
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+				utils.eventAction(batch -> {
+					root.addMicroschema(ac.getUser(), microschema, batch);
+				});
+			}
+			return microschema.transformToRestSync(ac, 0);
+		}, model -> ac.send(model, OK));
 	}
 
 	public void handleRemoveMicroschemaFromProject(InternalActionContext ac, String microschemaUuid) {
 		validateParameter(microschemaUuid, "microschemaUuid");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, () -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
 			if (!ac.getUser().hasPermission(project, UPDATE_PERM)) {
-				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
+				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}
-			// TODO check whether microschema is assigned to project
 			MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
-			return db.tx(() -> {
-				project.getMicroschemaContainerRoot().removeMicroschema(microschema);
-				return Single.just(Optional.empty());
-			});
-		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
+			MicroschemaContainerRoot root = project.getMicroschemaContainerRoot();
+			if (root.contains(microschema)) {
+				// Remove the microschema from the project
+				utils.eventAction(batch -> {
+					root.removeMicroschema(microschema, batch);
+				});
+			}
+		}, () -> ac.send(NO_CONTENT));
 	}
 }

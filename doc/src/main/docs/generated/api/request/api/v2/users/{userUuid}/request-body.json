@@ -1,0 +1,17 @@
+{
+  "password" : "iesiech0eewinioghaRa",
+  "lastname" : "Doe",
+  "firstname" : "Joe",
+  "username" : "jdoe42",
+  "emailAddress" : "j.doe@nowhere.com",
+  "nodeReference" : {
+    "projectName" : "dummy",
+    "uuid" : "adaf48da8c124049af48da8c12a0493e",
+    "displayName" : "DeLorean DMC-12",
+    "schema" : {
+      "name" : "vehicle",
+      "uuid" : "e287e8a7497940ac87e8a7497940ac82",
+      "version" : "1.0"
+    }
+  }
+}

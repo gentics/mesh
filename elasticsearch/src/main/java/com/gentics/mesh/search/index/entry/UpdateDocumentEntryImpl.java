@@ -3,7 +3,6 @@ package com.gentics.mesh.search.index.entry;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
-import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
@@ -31,11 +30,11 @@ public class UpdateDocumentEntryImpl extends AbstractEntry<GenericEntryContext> 
 	 * @param context
 	 * @param action
 	 */
-	public UpdateDocumentEntryImpl(IndexHandler<?> indexHandler, IndexableElement element, GenericEntryContext context,
+	public UpdateDocumentEntryImpl(IndexHandler<?> indexHandler, GenericEntryContext context,
 		SearchQueueEntryAction action) {
 		super(action);
 		this.context = context;
-		this.elementUuid = element.getUuid();
+//		this.elementUuid = element.getUuid();
 		this.indexHandler = indexHandler;
 	}
 

@@ -12,6 +12,7 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperatio
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 import org.apache.commons.io.FileUtils;
 
@@ -22,7 +23,6 @@ import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OAuth2ServerConfig;
-import com.gentics.mesh.util.TokenUtil;
 
 public class ModelExampleGenerator extends AbstractGenerator {
 
@@ -81,7 +81,7 @@ public class ModelExampleGenerator extends AbstractGenerator {
 		MeshOptions conf = new MeshOptions();
 		conf.setTempDirectory("/opt/mesh/data/tmp");
 		conf.getUploadOptions().setTempDirectory("/opt/mesh/data/tmp/temp-uploads");
-		conf.getAuthenticationOptions().setKeystorePassword(TokenUtil.randomToken());
+		conf.getAuthenticationOptions().setKeystorePassword("<Your Password>");
 		conf.getAuthenticationOptions().getOauth2().setMapperScriptPath("config/mymapper.js");
 		conf.getAuthenticationOptions().getOauth2().setMapperScriptDevMode(true);
 
@@ -93,13 +93,13 @@ public class ModelExampleGenerator extends AbstractGenerator {
 		realmConfig.setConfidentialPort(0);
 		realmConfig.addCredential("secret", "9b65c378-5b4c-4e25-b5a1-a53a381b5fb4");
 		conf.getAuthenticationOptions().getOauth2().setConfig(realmConfig);
-		writeYml(conf, "mesh-config.yml");
+		writeYml(conf, "mesh-config.example.yml");
 	}
 
 	private void writeYml(Object object, String filename) throws JsonProcessingException, IOException {
 		File outputFile = new File(outputFolder, filename);
 		ObjectMapper ymlMapper = OptionsLoader.getYAMLMapper();
-		FileUtils.writeStringToFile(outputFile, ymlMapper.writeValueAsString(object));
+		FileUtils.writeStringToFile(outputFile, ymlMapper.writeValueAsString(object), Charset.defaultCharset(), false);
 		System.out.println("Wrote: " + outputFile.getAbsolutePath());
 	}
 
@@ -107,7 +107,7 @@ public class ModelExampleGenerator extends AbstractGenerator {
 		File outputFile = new File(outputFolder, filename);
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.setSerializationInclusion(Include.NON_NULL);
-		FileUtils.writeStringToFile(outputFile, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(object));
+		FileUtils.writeStringToFile(outputFile, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(object), Charset.defaultCharset(), false);
 		System.out.println("Wrote: " + outputFile.getAbsolutePath());
 
 	}

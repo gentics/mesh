@@ -1,6 +1,5 @@
 package com.gentics.mesh.test.local;
 
-import static com.gentics.mesh.Events.STARTUP_EVENT_ADDRESS;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +16,8 @@ import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.MeshTestServer;
+
+import static com.gentics.mesh.core.rest.MeshEvent.STARTUP;
 
 public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 
@@ -115,7 +116,7 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 			}
 		}
 
-		mesh.getVertx().eventBus().consumer(STARTUP_EVENT_ADDRESS, mh -> {
+		mesh.getVertx().eventBus().consumer(STARTUP.address, mh -> {
 			waitingLatch.countDown();
 		});
 
@@ -163,7 +164,7 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 	@Override
 	public MeshRestClient client() {
 		if (client == null) {
-			client = MeshRestClient.create("localhost", httpPort, false, Mesh.vertx());
+			client = MeshRestClient.create("localhost", httpPort, false);
 			client.setLogin("admin", "admin");
 			client.login().blockingGet();
 		}

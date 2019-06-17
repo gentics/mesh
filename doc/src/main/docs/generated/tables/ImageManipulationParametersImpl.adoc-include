@@ -1,0 +1,47 @@
+[options="header",cols="10%,20%,10%,60%"]
+|======
+
+| Name
+| Type
+| Mandatory
+| Description
+
+
+| crop
+| string 
+| false
+| Set the crop mode. Possible modes: 
+rect : The rect mode will work in combination with the rect parameter and crop the specified area.
+fp : The fp mode will utilize the specified or pre-selected focal point and crop the image according to the position of the focus point and the specified image size.
+
+| fpx
+| number 
+| false
+| Set the focal point x factor between 0  and 1 where 0.5 is the middle of the image.  You can use this parameter in combination with the crop&#x3D;fp parameter in order to crop and resize the image in relation to the given point.
+
+| fpy
+| number 
+| false
+| Set the focal point y factor between 0  and 1 where 0.5 is the middle of the image. You can use this parameter in combination with the crop&#x3D;fp parameter in order to crop and resize the image in relation to the given point.
+
+| fpz
+| number 
+| false
+| Set the focal point zoom factor. The value must be greater than one.
+
+| h
+| number 
+| false
+| Set image target height. The width will automatically be calculated if the height was omitted.
+
+| rect
+| string 
+| false
+| Set image crop area.
+
+| w
+| number 
+| false
+| Set image target width. The height will automatically be calculated if the width was omitted.
+
+|======

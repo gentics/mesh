@@ -3,8 +3,6 @@ package com.gentics.mesh.core.field.node;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
@@ -22,11 +20,10 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class BasicNodeFieldEndpointTest extends AbstractMeshTest {
 
 	@Test
@@ -58,11 +55,9 @@ public class BasicNodeFieldEndpointTest extends AbstractMeshTest {
 			nodeUpdateRequest.setLanguage("en");
 			nodeUpdateRequest.setVersion("0.1");
 
-			MeshResponse<NodeResponse> updateFuture = client()
-					.updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")).invoke();
-			latchFor(updateFuture);
-			assertSuccess(updateFuture);
-			assertNotNull("The response could not be found in the result of the future.", updateFuture.result());
+			NodeResponse updateResponse = client()
+				.updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")).blockingGet();
+			assertNotNull("The response could not be found in the result of the future.", updateResponse);
 		}
 	}
 }

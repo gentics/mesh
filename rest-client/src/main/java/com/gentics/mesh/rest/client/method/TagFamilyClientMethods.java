@@ -7,6 +7,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.impl.EmptyResponse;
 
 public interface TagFamilyClientMethods {
 
@@ -46,14 +47,12 @@ public interface TagFamilyClientMethods {
 
 	/**
 	 * Delete the tag family.
-	 * 
-	 * @param projectName
-	 *            Name of the project
-	 * @param uuid
-	 *            Uuid of the tag family
+	 *
+	 * @param projectName Name of the project
+	 * @param uuid        Uuid of the tag family
 	 * @return
 	 */
-	MeshRequest<Void> deleteTagFamily(String projectName, String uuid);
+	MeshRequest<EmptyResponse> deleteTagFamily(String projectName, String uuid);
 
 	/**
 	 * Update the tag family.
@@ -66,6 +65,18 @@ public interface TagFamilyClientMethods {
 	 * @return
 	 */
 	MeshRequest<TagFamilyResponse> updateTagFamily(String projectName, String tagFamilyUuid, TagFamilyUpdateRequest request);
+
+	/**
+	 * Create the tag family with the given uuid.
+	 * 
+	 * @param projectName
+	 * @param tagFamilyUuid
+	 *            Uuid of the tag family
+	 * @param request
+	 *            Create request
+	 * @return
+	 */
+	MeshRequest<TagFamilyResponse> createTagFamily(String projectName, String tagFamilyUuid, TagFamilyCreateRequest request);
 
 	/**
 	 * Load multiple tag families.

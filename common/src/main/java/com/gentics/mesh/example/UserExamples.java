@@ -4,8 +4,11 @@ import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.util.TokenUtil.randomToken;
-import static com.gentics.mesh.util.UUIDUtil.randomUUID;
+import static com.gentics.mesh.example.ExampleUuids.GROUP_EDITORS_UUID;
+import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
+import static com.gentics.mesh.example.ExampleUuids.TOKEN_UUID;
+import static com.gentics.mesh.example.ExampleUuids.USER_EDITOR_UUID;
+import static com.gentics.mesh.example.ExampleUuids.USER_WEBCLIENT_UUID;
 
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
@@ -14,10 +17,9 @@ import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
-import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
+import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.util.UUIDUtil;
 
 public class UserExamples extends AbstractExamples {
 
@@ -30,11 +32,11 @@ public class UserExamples extends AbstractExamples {
 		UserResponse user2 = getUserResponse1("jroe");
 		user2.setFirstname("Jane");
 		user2.setLastname("Roe");
-		user2.setEdited(createTimestamp());
-		user2.setCreated(createTimestamp());
+		user2.setEdited(createNewTimestamp());
+		user2.setCreated(createOldTimestamp());
 		user2.setEmailAddress("j.roe@nowhere.com");
-		user2.getGroups().add(new GroupReference().setName("super-editors").setUuid(randomUUID()));
-		user2.getGroups().add(new GroupReference().setName("editors").setUuid(randomUUID()));
+		user2.getGroups().add(new GroupReference().setName("webclient").setUuid(USER_WEBCLIENT_UUID));
+		user2.getGroups().add(new GroupReference().setName("editors").setUuid(USER_EDITOR_UUID));
 		user2.setEnabled(true);
 		return user2;
 	}
@@ -47,10 +49,10 @@ public class UserExamples extends AbstractExamples {
 	 */
 	public UserResponse getUserResponse1(String username) {
 		UserResponse user = new UserResponse();
-		user.setUuid(randomUUID());
-		user.setCreated(createTimestamp());
+		user.setUuid(USER_EDITOR_UUID);
+		user.setCreated(createOldTimestamp());
 		user.setCreator(createUserReference());
-		user.setEdited(createTimestamp());
+		user.setEdited(createNewTimestamp());
 		user.setEditor(createUserReference());
 		user.setUsername(username);
 		user.setFirstname("Joe");
@@ -59,10 +61,13 @@ public class UserExamples extends AbstractExamples {
 
 		NodeReference reference = new NodeReference();
 		reference.setProjectName("dummy");
-		reference.setUuid(randomUUID());
+		reference.setUuid(NODE_DELOREAN_UUID);
+		reference.setDisplayName("DeLorean DMC-12");
+		reference.setSchema(getSchemaReference("vehicle"));
+		
 		user.setNodeReference(reference);
 		user.setEmailAddress("j.doe@nowhere.com");
-		user.getGroups().add(new GroupReference().setName("editors").setUuid(randomUUID()));
+		user.getGroups().add(new GroupReference().setName("editors").setUuid(GROUP_EDITORS_UUID));
 		user.setPermissions(READ, UPDATE, DELETE, CREATE);
 		return user;
 	}
@@ -94,7 +99,7 @@ public class UserExamples extends AbstractExamples {
 		userCreate.setFirstname("Joe");
 		userCreate.setLastname("Doe");
 		userCreate.setEmailAddress("j.doe@nowhere.com");
-		userCreate.setGroupUuid(randomUUID());
+		userCreate.setGroupUuid(GROUP_EDITORS_UUID);
 		userCreate.setNodeReference(getUserResponse2().getNodeReference());
 		return userCreate;
 	}
@@ -109,11 +114,11 @@ public class UserExamples extends AbstractExamples {
 	}
 
 	public UserResetTokenResponse getTokenResponse() {
-		return new UserResetTokenResponse().setToken(randomToken()).setCreated(createTimestamp());
+		return new UserResetTokenResponse().setToken("FDrbBDWRY3aS").setCreated(createNewTimestamp());
 	}
 
 	public UserAPITokenResponse getAPIKeyResponse() {
-		return new UserAPITokenResponse().setToken(UUIDUtil.randomUUID());
+		return new UserAPITokenResponse().setToken(TOKEN_UUID);
 	}
 
 }

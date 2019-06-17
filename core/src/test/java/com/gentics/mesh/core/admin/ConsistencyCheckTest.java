@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.admin;
 
+import static com.gentics.mesh.core.rest.MeshEvent.REPAIR_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.REPAIR_START;
 import static com.gentics.mesh.core.rest.admin.consistency.ConsistencyRating.CONSISTENT;
 import static com.gentics.mesh.core.rest.admin.consistency.ConsistencyRating.INCONSISTENT;
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -19,7 +21,7 @@ import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true, inMemoryDB = true)
+@MeshTestSetting(testSize = FULL, startServer = true, inMemoryDB = true)
 public class ConsistencyCheckTest extends AbstractMeshTest {
 
 	@Test
@@ -63,7 +65,11 @@ public class ConsistencyCheckTest extends AbstractMeshTest {
 		assertFalse("The check should not repair the inconsistency", info.isRepaired());
 		assertEquals(RepairAction.DELETE, info.getRepairAction());
 
+		expect(REPAIR_START).one();
+		expect(REPAIR_FINISHED).one();
 		response = call(() -> client().repairConsistency());
+		awaitEvents();
+
 		assertEquals(INCONSISTENT, response.getResult());
 		// We only see two inconsistencies because the other two were additional versions of the node and were also deleted.
 		assertThat(response.getInconsistencies()).hasSize(2);

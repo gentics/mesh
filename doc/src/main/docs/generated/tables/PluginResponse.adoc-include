@@ -1,0 +1,25 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| manifest
+| true
+| object
+| Manifest of the plugin
+
+| name
+| true
+| string
+| Name of the plugin.
+
+| uuid
+| true
+| string
+| Deployment UUUID of the plugin. Note that each deployment will get a new UUID.
+
+|======

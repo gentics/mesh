@@ -21,6 +21,8 @@ import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.util.CompareUtils;
 
 /**
@@ -81,8 +83,8 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 		return container.getDateList(fieldSchema.getName());
 	};
 
-	public static void init(Database database) {
-		database.addVertexType(DateGraphFieldListImpl.class, MeshVertexImpl.class);
+	public static void init(TypeHandler type, IndexHandler index) {
+		type.createVertexType(DateGraphFieldListImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
@@ -108,7 +110,7 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 	}
 
 	@Override
-	public void delete(BulkActionContext context) {
+	public void delete(BulkActionContext bac) {
 		getElement().remove();
 	}
 

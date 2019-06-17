@@ -1,21 +1,20 @@
 package com.gentics.mesh.graphql;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.core.http.HttpMethod.POST;
-
-import javax.inject.Inject;
-
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.context.impl.GraphQLContextImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.handler.StaticHandler;
+
+import javax.inject.Inject;
+
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
 
 public class GraphQLEndpoint extends AbstractProjectEndpoint {
 
@@ -49,7 +48,6 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 			queryHandler.handleQuery(gc, body);
 		}, false);
 
-		log.info("GraphiQL is owned and developed by Facebook, Inc. - Copyright (c) 2015, Facebook, Inc. All rights reserved.");
 		StaticHandler staticHandler = StaticHandler.create("graphiql");
 		staticHandler.setDirectoryListing(false);
 		staticHandler.setCachingEnabled(false);

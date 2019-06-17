@@ -1,4 +1,8 @@
-= Getting Started Guide
+---
+title: Getting Started Guide
+---
+
+include::content/docs/variables.adoc-include[]
 
 Here you will find everything to get you started with Gentics Mesh. 
 
@@ -16,7 +20,7 @@ If you don't have much time:
 * Changes can be viewed in the link:https://demo.getmesh.io/demo/[demo front-end]
 * You can also 
 +++
-<a href="https://demo.getmesh.io/api/v1/demo/graphql/browser/#query=%7B%0A%20%20node(path%3A%20%22%2Fyachts%2Fpelorus%22)%20%7B%0A%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20...%20on%20vehicle%20%7B%0A%20%20%20%20%20%20%20%20name%0A%20%20%20%20%20%20%20%20description%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D" target="_blank">explore the GraphQL API</a>
+<a href="https://demo.getmesh.io{apiLatest}/demo/graphql/browser/#query=%7B%0A%20%20node(path%3A%20%22%2Fyachts%2Fpelorus%22)%20%7B%0A%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20...%20on%20vehicle%20%7B%0A%20%20%20%20%20%20%20%20name%0A%20%20%20%20%20%20%20%20description%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D" target="_blank">explore the GraphQL API</a>
 +++
 * Head over to the <<tldr,TL;DR>> section to find out everything you need to know and what makes Gentics Mesh special.
 
@@ -32,39 +36,39 @@ docker run -p 8080:8080 gentics/mesh-demo
 
 === Or download the jar
 
-. Download Gentics Mesh from http://getmesh.io/Download into an *empty* folder
+. Download Gentics Mesh from https://getmesh.io/download into an *empty* folder
 . Start the JAR-file by executing ```java -jar mesh-demo-X.X.X.jar```
 . Point your browser to http://localhost:8080/mesh-ui/ to reach the Gentics Mesh user interface (use ```admin/admin``` or see <<credentials,demo credentials>>)
 
 [[tldr]]
 == TL;DR
 
-image:overview.png[Gentics Mesh Overview of Core Concepts, role="img-responsive"]
+image:../images/overview.png[Gentics Mesh Overview of Core Concepts, role="img-responsive"]
 
 __Features:__
 
-* link:references.html#_rest_api[REST API]
-* link:graphql.html[GraphQL API]
-* link:features.html#_file_upload[File Upload]
-* link:features.html#imagemanipulation[Image Manipulation]
-* link:features.html#_link_resolving[Link handling]
-* link:elasticsearch.html[Powerful search]
-* link:building-blocks.html#_user[Users, Groups, Roles]
-* link:authentication.html#_oauth2[Keycloak / OAuth 2 support]
-* link:features.html#_versioning[Versioning]
-* link:features.html#_eventbus_bridge_websocket[Web Socket]
-* link:clustering.html[Clustering]
-* link:plugin-system.html[Plugin System]
+* link:{{< relref "references.asciidoc" >}}#_rest_api[REST API]
+* link:{{< relref "graphql.asciidoc" >}}[GraphQL API]
+* link:{{< relref "features.asciidoc" >}}#_file_upload[File Upload]
+* link:{{< relref "image-manipulation.asciidoc" >}}[Image Manipulation]
+* link:{{< relref "features.asciidoc" >}}#_link_resolving[Link handling]
+* link:{{< relref "elasticsearch.asciidoc" >}}[Powerful search]
+* link:{{< relref "building-blocks.asciidoc" >}}#_user[Users, Groups, Roles]
+* link:{{< relref "authentication.asciidoc" >}}#_oauth2[Keycloak / OAuth 2 support]
+* link:{{< relref "features.asciidoc" >}}#_versioning[Versioning]
+* link:{{< relref "features.asciidoc" >}}#_eventbus_bridge_websocket[Web Socket]
+* link:{{< relref "clustering.asciidoc" >}}[Clustering]
+* link:{{< relref "plugin-system.asciidoc" >}}[Plugin System]
 
 == Intro
 
 * You organize your contents and media assets in *projects*. 
-* A *schema* is used to define the structure of a content type (e.g. product, blogpost). It has a set of standard fields (uuid, name, version etc.) and defines the types of an arbitrary number of custom fields for your content type (i.e. string, number, HTML, date, binary, list, node reference, micronode, boolean).
+* A *schema* is used to define the structure of a content type (e.g. product, blog post). It has a set of standard fields (uuid, name, version etc.) and defines the types of an arbitrary number of custom fields for your content type (i.e. string, number, HTML, date, binary, list, node reference, micronode, boolean).
 * The actual content items of your project are called *nodes* and always follow a schema.
-* *Everything is a node*, there is no separate concept for media assets.To get you started, we ship with schemas for _image_, _video_, _document_, and _audio_ that you may customize to your needs and liking!
+* *Everything is a node*, there is no separate concept for media assets. To get you started, we ship with schemas for _image_, _video_, _document_, and _audio_ that you may customize to your needs and liking!
 * Nodes can be tagged. A *tag family* groups *tags* that semantically belong together and is defined for a specific project.
 * Gentics Mesh supports building *content trees*. Nodes can be hierarchically structured if a container-schema is provided. While it’s possible to organize your contents in a simple, flat structure with tagging and referencing, content trees are the basis for leveraging the power of *automatic navigation menus, breadcrumbs, pretty URLs and link resolving*. For your convenience, Gentics Mesh is shipped with a generic _folder_ schema that you may choose for hierarchically organizing your content in a tree and ultimately following the well-known file system paradigm.
-* With *micronodes* it is possible to build complex object data structures as they are basically representing subnodes of nodes. They allow for creating custom content components, e.g. media elements of your blogpost such as YouTube videos, image galleries, Google maps, image with caption, vcards, quotes, or text paragraphs to be mixed and matched.
+* With *micronodes* it is possible to build complex object data structures as they are basically representing subnodes of nodes. They allow for creating custom content components, e.g. media elements of your blog post such as YouTube videos, image galleries, Google maps, image with caption, vcards, quotes, or text paragraphs to be mixed and matched.
 * Supporting *multi-language and localisation*, nodes can hold several language variants of your content.
 * Each user (a physical person or client app) has a *user* object counter part in Gentics Mesh, which can be extended by referencing a custom user node. By defining your custom user schema Gentics Mesh supports extensible user profiles for your apps.
 * *Groups* are used to organize users, e.g., of same access levels.
@@ -81,7 +85,7 @@ be created and an AngularJS demo project is deployed automatically.
 
 Once the demo setup is completed you will be able to access the following urls
 
-* Mesh API ```http://localhost:8080/api/v1/```
+* Mesh API ```http://localhost:8080{apiLatest}/```
 * Mesh UI on ```http://localhost:8080/mesh-ui/```
 * Demo App on ```http://localhost:8080/demo/```
 

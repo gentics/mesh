@@ -1,7 +1,11 @@
 package com.gentics.mesh.core.endpoint.webroot;
 
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
@@ -36,10 +40,11 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 		secureAll();
 
 		addErrorHandlers();
-		addPathHandler();
+		addPathReadHandler();
+		addPathUpdateCreateHandler();
 	}
 
-	private void addPathHandler() {
+	private void addPathReadHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.pathRegex("\\/(.*)");
 		endpoint.setRAMLPath("/{path}");
@@ -51,6 +56,26 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 		endpoint.addQueryParameters(ImageManipulationParametersImpl.class);
 		endpoint.handler(rc -> {
 			handler.handleGetPath(rc);
+		});
+	}
+
+	private void addPathUpdateCreateHandler() {
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.pathRegex("\\/(.*)");
+		endpoint.setRAMLPath("/{path}");
+		endpoint.addUriParameter("path", "Path to the node", "/News/2015/Images/flower.jpg");
+		endpoint.method(POST);
+		endpoint.consumes(APPLICATION_JSON);
+		endpoint.produces(APPLICATION_JSON);
+
+		endpoint.exampleRequest(nodeExamples.getNodeUpdateRequest());
+		endpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
+		endpoint.exampleResponse(CREATED, nodeExamples.getNodeResponse2(), "Created node.");
+		endpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
+
+		endpoint.description("Update or create a node for the given path.");
+		endpoint.handler(rc -> {
+			handler.handleUpdateCreatePath(rc, POST);
 		});
 	}
 

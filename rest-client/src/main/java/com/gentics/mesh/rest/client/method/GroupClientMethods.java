@@ -6,6 +6,7 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.impl.EmptyResponse;
 
 public interface GroupClientMethods {
 
@@ -54,11 +55,11 @@ public interface GroupClientMethods {
 
 	/**
 	 * Delete the group.
-	 * 
+	 *
 	 * @param uuid
 	 * @return
 	 */
-	MeshRequest<Void> deleteGroup(String uuid);
+	MeshRequest<EmptyResponse> deleteGroup(String uuid);
 
 	/**
 	 * Add the given user to the group.
@@ -71,12 +72,12 @@ public interface GroupClientMethods {
 
 	/**
 	 * Remove the given user from the group.
-	 * 
+	 *
 	 * @param groupUuid
 	 * @param userUuid
 	 * @return
 	 */
-	MeshRequest<Void> removeUserFromGroup(String groupUuid, String userUuid);
+	MeshRequest<EmptyResponse> removeUserFromGroup(String groupUuid, String userUuid);
 
 	/**
 	 * Add the role to the group.
@@ -89,11 +90,11 @@ public interface GroupClientMethods {
 
 	/**
 	 * Remove the role from the group.
-	 * 
+	 *
 	 * @param groupUuid
 	 * @param roleUuid
 	 * @return
 	 */
-	MeshRequest<Void> removeRoleFromGroup(String groupUuid, String roleUuid);
+	MeshRequest<EmptyResponse> removeRoleFromGroup(String groupUuid, String roleUuid);
 
 }

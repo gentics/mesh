@@ -14,7 +14,6 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
@@ -27,8 +26,9 @@ import com.gentics.mesh.core.rest.schema.DateFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	private static final String FIELD_NAME = "dateField";
 
@@ -58,6 +58,8 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
+		disableAutoPurge();
+
 		Node node = folder("2015");
 		for (int i = 0; i < 20; i++) {
 			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis() + (i * 10000)));
@@ -96,6 +98,8 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		disableAutoPurge();
+
 		Node node = folder("2015");
 		NodeResponse secondResponse;
 
@@ -120,7 +124,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 		try (Tx tx = tx()) {
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
+				secondResponse.getVersion());
 		}
 	}
 
@@ -187,5 +191,11 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 			assertNotNull(deserializedDateField);
 			assertEquals(toISO8601(nowEpoch), deserializedDateField.getDate());
 		}
+	}
+
+	@Override
+	public NodeResponse createNodeWithField() {
+		Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
+		return createNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
 	}
 }

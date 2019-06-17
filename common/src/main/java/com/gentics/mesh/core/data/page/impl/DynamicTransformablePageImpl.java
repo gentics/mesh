@@ -1,13 +1,5 @@
 package com.gentics.mesh.core.data.page.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-
-import java.util.Spliterator;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -22,11 +14,19 @@ import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
+import java.util.Spliterator;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+
 /**
  * This page implementation will handle paging internally and on-demand. The internal paging will only iterate over as many items as the needed operation
  * requires. Loading the first page will thus only iterate over the elements of the first page. Loading the total count on the other hand requires the
  * implementation to iterate over all edges.
- * 
+ *
  * @param <T>
  */
 public class DynamicTransformablePageImpl<T extends TransformableElement<? extends RestModel>> extends AbstractDynamicPage<T>
@@ -34,11 +34,11 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 
 	private User requestUser;
 
-	private Predicate<Vertex> extraFilter;
+	private Predicate<T> extraFilter;
 
 	private boolean frameExplicitly;
 
-	private DynamicTransformablePageImpl(User requestUser, PagingParameters pagingInfo, Predicate<Vertex> extraFilter, boolean frameExplicitly) {
+	private DynamicTransformablePageImpl(User requestUser, PagingParameters pagingInfo, Predicate<T> extraFilter, boolean frameExplicitly) {
 		super(pagingInfo);
 		this.extraFilter = extraFilter;
 		this.requestUser = requestUser;
@@ -47,7 +47,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 
 	/**
 	 * Create new dynamic page.
-	 * 
+	 *
 	 * @param requestUser
 	 *            User which is used to check permissions
 	 * @param root
@@ -61,7 +61,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 
 	/**
 	 * Create a new dynamic page.
-	 * 
+	 *
 	 * @param requestUser
 	 *            User which is used to check permissions
 	 * @param root
@@ -74,12 +74,12 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 *            Optional extra filter to filter by
 	 * @param frameExplicitly
 	 *            Whether to frame the found value explicitily
-	 * 
+	 *
 	 */
 	public DynamicTransformablePageImpl(User requestUser, RootVertex<? extends T> root, PagingParameters pagingInfo, GraphPermission perm,
-		Predicate<Vertex> extraFilter, boolean frameExplicitly) {
+		Predicate<T> extraFilter, boolean frameExplicitly) {
 		this(requestUser, pagingInfo, extraFilter, frameExplicitly);
-		init(root.getPersistanceClass(), "e." + root.getRootLabel().toLowerCase() + "_out", root.getId(), Direction.IN, root.getGraph(), perm);
+		init(root.getPersistanceClass(), "e." + root.getRootLabel().toLowerCase() + "_out", root.id(), Direction.IN, root.getGraph(), perm);
 	}
 
 	/**
@@ -91,20 +91,28 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 *            Name of the index which should be used to lookup the elements
 	 * @param indexKey
 	 *            Key to be used for the index lookup
+	 * @param dir
+	 *            The direction to be resolved for each resulting edge in order to get to the target element
 	 * @param clazz
 	 *            Class of the element to be returned
 	 * @param pagingInfo
 	 *            Paging parameters
+	 * @param perm
+	 *            Permission to check against
+	 * @param extraFilter
+	 *            Optional extra filter to filter by
+	 * @param frameExplicitly
+	 *            Whether to frame the found value explicitily
 	 */
-	public DynamicTransformablePageImpl(User requestUser, String indexName, Object indexKey, Class<T> clazz, PagingParameters pagingInfo,
-		GraphPermission perm, Predicate<Vertex> extraFilter, boolean frameExplicitly) {
+	public DynamicTransformablePageImpl(User requestUser, String indexName, Object indexKey, Direction dir, Class<T> clazz, PagingParameters pagingInfo,
+		GraphPermission perm, Predicate<T> extraFilter, boolean frameExplicitly) {
 		this(requestUser, pagingInfo, extraFilter, frameExplicitly);
-		init(clazz, indexName, indexKey, Direction.OUT, Tx.getActive().getGraph(), perm);
+		init(clazz, indexName, indexKey, dir, Tx.getActive().getGraph(), perm);
 	}
 
 	/**
 	 * Create a new dynamic page.
-	 * 
+	 *
 	 * @param user
 	 *            User to check permissions against
 	 * @param traversal
@@ -132,7 +140,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 
 	/**
 	 * Modify the given stream and add further filters and mapping functions to it in order to be able to track operations and element handling.
-	 * 
+	 *
 	 * @param stream
 	 * @param clazz
 	 * @param perm
@@ -146,45 +154,46 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 			stream = stream.filter(item -> requestUser.hasPermissionForId(item.getId(), perm));
 		}
 
-		if (extraFilter != null) {
-			stream = stream.filter(extraFilter);
-		}
-
-		stream = stream
-
-			.map(item -> {
-				totalCounter.incrementAndGet();
-				return item;
+		Stream<T> framedStream;
+		if (extraFilter == null) {
+			// We can skip a lot of framing if we don't use a filter
+			framedStream = stream.map(item -> {
+				if (pageFull.get()) {
+					return null;
+				} else {
+					return frameExplicitly
+						? graph.frameElementExplicit(item, clazz)
+						: graph.frameElement(item, clazz);
+				}
 			});
-
-		// Apply paging - skip to lower bounds
-		if (lowerBound != null) {
-			stream = stream.skip(lowerBound);
+		} else {
+			framedStream = stream.map(item -> frameExplicitly
+				? graph.frameElementExplicit(item, clazz)
+				: graph.frameElement(item, clazz)
+			).filter(extraFilter);
 		}
 
-		visibleItems = stream.map(item -> {
+		framedStream = framedStream
+			.peek(item -> totalCounter.incrementAndGet());
+
+		if (lowerBound != null) {
+			framedStream = framedStream.skip(lowerBound);
+		}
+
+		framedStream = framedStream
+			.peek(element -> {
 			// Only add elements to the list if those elements are part of selected the page
 			long elementsInPage = pageCounter.get();
 			if (perPage == null || elementsInPage < perPage) {
-				T element;
-
-				// Check how we need to frame the found element
-				if (frameExplicitly) {
-					element = graph.frameElementExplicit(item, clazz);
-				} else {
-					element = graph.frameElement(item, clazz);
-				}
 				elementsOfPage.add(element);
 				pageCounter.incrementAndGet();
-				return element;
 			} else {
 				pageFull.set(true);
 				hasNextPage.set(true);
 			}
-			return null;
-		})
+		});
 
-			.iterator();
+		visibleItems = framedStream.iterator();
 
 	}
 
@@ -192,7 +201,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 * Initialize the dynamic iterator which is bound to the most getters of this class. A stream is setup which is used to filter out the unwanted data. Paging
 	 * is also handled via the stream. At the end only a iterator is provided for the other methods. The iterator next method is invoked until the needed data
 	 * is provided or the iterator has no more items.
-	 * 
+	 *
 	 * @param clazz
 	 *            Class used to frame the found elements.
 	 * @param indexName

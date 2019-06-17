@@ -19,7 +19,7 @@ public class ChangeDummy2 extends AbstractChange {
 	}
 
 	@Override
-	public void apply() {
+	public void applyInTx() {
 		Vertex meshRootVertex = getMeshRootVertex();
 		Vertex mopedVertex = getGraph().addVertex("TheMoped2");
 		mopedVertex.setProperty("name", "moped2");

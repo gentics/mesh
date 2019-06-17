@@ -1,0 +1,80 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| created
+| true
+| string
+| ISO8601 formatted created date string.
+
+| creator
+| true
+| object
+| User reference of the creator of the element.
+
+| edited
+| true
+| string
+| ISO8601 formatted edited date string.
+
+| editor
+| false
+| object
+| User reference of the editor of the element.
+
+| name
+| true
+| string
+| Name of the group
+
+| permissions.create
+| true
+| boolean
+| Flag which indicates whether the create permission is granted.
+
+| permissions.delete
+| true
+| boolean
+| Flag which indicates whether the delete permission is granted.
+
+| permissions.publish
+| false
+| boolean
+| Flag which indicates whether the publish permission is granted.
+
+| permissions.read
+| true
+| boolean
+| Flag which indicates whether the read permission is granted.
+
+| permissions.readPublished
+| false
+| boolean
+| Flag which indicates whether the read published permission is granted.
+
+| permissions.update
+| true
+| boolean
+| Flag which indicates whether the update permission is granted.
+
+| rolePerms
+| false
+| object
+| Permission information for provided role. This property will only be populated if a role query parameter has been specified.
+
+| roles
+| true
+| array
+| List of role references
+
+| uuid
+| true
+| string
+| Uuid of the element
+
+|======

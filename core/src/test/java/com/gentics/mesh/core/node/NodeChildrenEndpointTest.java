@@ -7,7 +7,6 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.TestUtils.size;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -25,7 +24,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
@@ -36,7 +34,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
@@ -88,7 +86,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 			assertNotNull(node.getUuid());
 			NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 			assertThat(node).matches(restNode);
-			assertTrue(restNode.isContainer());
+			assertTrue(restNode.getContainer());
 
 			long subFolderCount = restNode.getChildrenInfo().get("folder").getCount();
 			assertEquals("The node should have more than {" + subFolderCount + "} children. But it got {" + subFolderCount + "}", 2, subFolderCount);
@@ -113,7 +111,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 			assertThat(node).matches(restNode);
-			assertTrue(restNode.isContainer());
+			assertTrue(restNode.getContainer());
 
 			long subFolderCount = restNode.getChildrenInfo().get("folder").getCount();
 			assertEquals("The node should have more than {" + subFolderCount + "} children. But it got {" + subFolderCount + "}", 1, subFolderCount);
@@ -133,7 +131,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 			NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 			assertThat(node).matches(restNode);
-			assertFalse("The node should not be a container", restNode.isContainer());
+			assertFalse("The node should not be a container", restNode.getContainer());
 			assertNull(restNode.getChildrenInfo().get("folder"));
 		}
 	}
@@ -189,7 +187,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(), new NodeParametersImpl()), FORBIDDEN,
-					"error_missing_perm", node.getUuid());
+					"error_missing_perm", node.getUuid(), READ_PERM.getRestPerm().getName());
 		}
 
 	}
@@ -206,8 +204,18 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 			firstChild = node.getChildren().iterator().next();
 			childrenSize = size(node.getChildren());
 			expectedItemsInPage = childrenSize > 25 ? 25 : childrenSize;
+			newBranch = createBranch("newbranch");
+			tx.success();
+		}
 
-			newBranch = project().getBranchRoot().create("newbranch", user());
+		// "migrate" the News node to the new branch, so that we can get children of it in both branches
+		try (Tx tx = tx()) {
+			NodeCreateRequest create = new NodeCreateRequest();
+			create.setLanguage("en");
+			create.getFields().put("name", FieldUtil.createStringField("News"));
+			create.setParentNodeUuid(node.getParentNode(initialBranch().getUuid()).getUuid());
+			call(() -> client().createNode(node.getUuid(), PROJECT_NAME, create));
+
 			tx.success();
 		}
 
@@ -219,13 +227,14 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 			nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
 					new VersioningParametersImpl().setBranch(newBranch.getName()).draft()));
-			assertEquals("Total children in initial branch", 0, nodeList.getMetainfo().getTotalCount());
-			assertEquals("Returned children in initial branch", 0, nodeList.getData().size());
+			assertEquals("Total children in new branch", 0, nodeList.getMetainfo().getTotalCount());
+			assertEquals("Returned children in new branch", 0, nodeList.getData().size());
 
-			NodeUpdateRequest update = new NodeUpdateRequest();
-			update.setLanguage("en");
-			update.getFields().put("name", FieldUtil.createStringField("new"));
-			call(() -> client().updateNode(PROJECT_NAME, firstChild.getUuid(), update));
+			NodeCreateRequest create = new NodeCreateRequest();
+			create.setLanguage("en");
+			create.getFields().put("name", FieldUtil.createStringField("new"));
+			create.setParentNodeUuid(node.getUuid());
+			call(() -> client().createNode(firstChild.getUuid(), PROJECT_NAME, create));
 
 			nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
 					new VersioningParametersImpl().setBranch(newBranch.getName()).draft()));

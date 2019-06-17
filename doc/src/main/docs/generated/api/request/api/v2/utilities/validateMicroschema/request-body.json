@@ -1,0 +1,15 @@
+{
+  "description" : "Microschema for Geolocations",
+  "name" : "geolocation",
+  "fields" : [ {
+    "name" : "longitude",
+    "label" : "Longitude",
+    "required" : true,
+    "type" : "number"
+  }, {
+    "name" : "latitude",
+    "label" : "Latitude",
+    "required" : true,
+    "type" : "number"
+  } ]
+}

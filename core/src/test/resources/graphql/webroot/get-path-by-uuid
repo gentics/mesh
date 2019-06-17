@@ -1,0 +1,6 @@
+query getPath($uuid: String) {
+    node(uuid: $uuid) {
+        path
+    }
+}
+# [$.errors=<is-undefined>]

@@ -1,0 +1,65 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| binaryUuid
+| true
+| string
+| Uuid of the binary data. Two fields which share the same binary data will also share the same Uuid.
+
+| dominantColor
+| false
+| string
+| The dominant color of the image. This information can be used to set the background color of the container div for an image achieve an pinterest styled gallery.
+
+| fileName
+| true
+| string
+| File name of the binary data. This information can also be use to locate the node via the webroot API. The segment field must be set accordingly.
+
+| fileSize
+| true
+| integer
+| Size of the file in bytes.
+
+| focalPoint
+| false
+| object
+| The focal point of the image. The point can be used in combination with the focal point cropping in order to keep the focused area in the center of the cropped image.
+
+| height
+| false
+| integer
+| Height of the image.
+
+| metadata
+| false
+| object
+| Metadata of the upload. This object may contain exif data of images or meta data from PDF files.
+
+| mimeType
+| true
+| string
+| Determined mimetype of the file.
+
+| plainText
+| false
+| string
+| Plain text content of the upload. This can be the text content of a word or PDF document.
+
+| sha512sum
+| true
+| string
+| SHA 512 checksum of the file.
+
+| width
+| false
+| integer
+| Width of the image.
+
+|======

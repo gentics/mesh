@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.node;
 
-import java.util.List;
-
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+
+import java.util.List;
 
 /**
  * Container object for handling nodes in combination with a specific known container.

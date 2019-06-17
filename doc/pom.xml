@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.24.1-SNAPSHOT</version>
+		<version>0.36.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>mesh-doc</artifactId>
@@ -17,7 +17,6 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<projectRoot>${project.basedir}/..</projectRoot>
 	</properties>
 
 	<dependencies>
@@ -59,7 +58,7 @@
 				<version>1.5.0</version>
 				<executions>
 					<execution>
-						<id>Generate RAML</id>
+						<id>Generate Examples</id>
 						<goals>
 							<goal>exec</goal>
 						</goals>
@@ -71,40 +70,6 @@
 								<classpath />
 								<argument>com.gentics.mesh.generator.ExampleGeneratorRunner</argument>
 							</arguments>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>dist-raml-package</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<attach>true</attach>
-							<appendAssemblyId>true</appendAssemblyId>
-							<descriptors>
-								<descriptor>src/main/assembly/raml.xml</descriptor>
-							</descriptors>
-						</configuration>
-					</execution>
-					<execution>
-						<id>dist-docs-package</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<attach>true</attach>
-							<appendAssemblyId>true</appendAssemblyId>
-							<descriptors>
-								<descriptor>src/main/assembly/docs.xml</descriptor>
-							</descriptors>
 						</configuration>
 					</execution>
 				</executions>

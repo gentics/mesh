@@ -1,27 +1,25 @@
 package com.gentics.mesh.router;
 
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.graphdb.spi.Database;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.Router;
+
+import javax.naming.InvalidNameException;
+import java.util.HashMap;
+import java.util.Map;
+
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.naming.InvalidNameException;
-
-import com.gentics.mesh.Mesh;
-import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.graphdb.spi.Database;
-
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.Router;
-
 /**
- * Router for all projects (e.g.: /api/v1/demo) The project router {@link ProjectRouter} will later contain the actual project specific endpoints. (e.g.:
- * /api/v1/demo/nodes)
+ * Router for all projects (e.g.: :apibase:/demo) The project router {@link ProjectRouter} will later contain the actual project specific endpoints. (e.g.:
+ * :apibase:/demo/nodes)
  */
 public class ProjectsRouter {
 
@@ -32,7 +30,7 @@ public class ProjectsRouter {
 	public static final String PROJECT_CONTEXT_KEY = "mesh-project";
 
 	/**
-	 * Project routers are routers that handle project rest api endpoints. E.g: /api/v1/dummy, /api/v1/yourprojectname
+	 * Project routers are routers that handle project rest api endpoints. E.g: :apibase:/dummy, :apibase:/yourprojectname
 	 */
 	private Map<String, Router> projectRouters = new HashMap<>();
 

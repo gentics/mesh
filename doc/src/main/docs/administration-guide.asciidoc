@@ -1,20 +1,80 @@
+---
+title: Administration Guide
+---
 
-= Administration Guide
+include::content/docs/variables.adoc-include[]
 
 == Software Stack
 
 [options="header"]
 |======
 | Component                                                    | Type                 | Version
-| http://orientdb.com/[OrientDB]                               | Graph Database       | 2.2.x
+| https://orientdb.com/[OrientDB]                              | Graph Database       | 3.0.x
 | https://github.com/Syncleus/Ferma[Ferma]                     | OGM                  | 2.4.x
 | https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine        | 6.1.x
-| http://vertx.io/[Vert.x]                                     | Core Framework       | 3.5.x
-| https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid  | 3.5.x
-| https://google.github.io/dagger/[Dagger 2]                   | Dependency Injection | 2.6.x
+| http://vertx.io/[Vert.x]                                     | Core Framework       | 3.7.x
+| https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid  | 3.10.x
+| https://google.github.io/dagger/[Dagger 2]                   | Dependency Injection | 2.11.x
 |======
 
-TIP: You can find the components' current version numbers by querying the Gentics Mesh demo instance https://demo.getmesh.io/api/v1/ or your local instance http://localhost:8080/api/v1/.
+TIP: You can find the components' current version numbers by querying the Gentics Mesh demo instance https://demo.getmesh.io{apiLatest}/ or your local instance http://localhost:8080{apiLatest}/.
+
+== Run with Docker
+
+Alternatively you can start Gentics Mesh using Docker via:
+
+The https://hub.docker.com/r/gentics/mesh-demo/[mesh-demo] image contains Gentics Mesh together with demo content and our demo application.
+
+[source,bash]
+----
+docker run -p 8080:8080 gentics/mesh-demo
+----
+
+The https://hub.docker.com/r/gentics/mesh/[mesh] image contains an empty Gentics Mesh server without any demo content.
+
+[source,bash]
+----
+docker run -p 8080:8080 gentics/mesh
+or
+docker run \
+ -v mesh-graphdb:/graphdb \
+ -v mesh-uploads:/uploads \
+ -p 8080:8080 \
+ gentics/mesh
+----
+
+=== Volumes / Locations
+
+[options="header"]
+|======
+| Name             | Description                          | Default Environment Setting
+| `/uploads`       | Location for fileuploads             | `MESH_BINARY_DIR=/uploads`
+| `/graphdb`       | Location for the graph database data | `MESH_GRAPH_DB_DIRECTORY=/graphdb`
+| `/config`        | Location for configuration files     | -
+| `/keystore`      | Location for the main keystore file which contains the cryptographic keys which are used to sign the JWT. | `MESH_AUTH_KEYSTORE_PATH=/keystore/keystore.jks`
+| `/backups`       | Backup data location | `MESH_GRAPH_BACKUP_DIRECTORY=/backups`
+| `/plugins`       | Plugin data and configuration location | `MESH_PLUGIN_DIR=/plugins`
+| `/mesh/data`     | Remaining data files (e.g. temp dirs, caches) | - 
+|======
+
+=== Docker Compose
+
+We also provide a ready to go link:https://docs.docker.com/compose/[docker-compose] example stack for Gentics Mesh:
+
+Single node setup with included Elasticsearch container:
+
+* https://github.com/gentics/mesh-compose/
+
+Multi node clustering setup:
+
+* https://github.com/gentics/mesh-compose/tree/clustering
+
+
+=== Environment Variables
+
+Settings within the `mesh.yml` file can be override via these environment variables.
+
+include::content/docs/examples/tables/mesh-env.adoc-include[]
 
 == Run with JAR File
 
@@ -27,7 +87,7 @@ All you need is to https://getmesh.io/Download[download the Gentics Mesh JAR] fi
 java -jar mesh-demo-X.X.X.jar
 ----
 
-Gentics Mesh comes with OrientDB, an embedded graph database, and Elasticsearch. There are no external dependencies besides Oracle Java Runtime 1.8.0_40 or newer.
+Gentics Mesh comes with OrientDB, an embedded graph database, and Elasticsearch. There are no external dependencies besides Java Runtime 8.
 On first startup, Gentics Mesh will create the data folder and subfolders, set a password for the keystore file and provide the configuration files mesh.yml and mesh-ui-config.js. See <<Installation Directory>> for a detailed discussion on Gentics Mesh files & folders.
 
 [[cli]]
@@ -37,30 +97,10 @@ Various command line arguments can be used to override or supplement previously 
 
 [source,text]
 ----
-include::examples/models/mesh-cli-help.txt[]
+include::content/docs/examples/models/mesh-cli-help.txt[]
 ----
 
-== Run with Docker
 
-Alternatively you can start Gentics Mesh using Docker via:
-
-The https://hub.docker.com/r/gentics/mesh-demo/[mesh-demo] image contains Gentics Mesh together with demo content and our demo application.
-
-[source,bash]
-----
-docker run -p 8080:8080 gentics/mesh-demo
-or
-docker run -v /opt/data/:/mesh/data -p 8080:8080 gentics/mesh-demo
-----
-
-The https://hub.docker.com/r/gentics/mesh/[mesh] image contains an empty Gentics Mesh server without any demo content.
-
-[source,bash]
-----
-docker run -p 8080:8080 gentics/mesh
-or
-docker run -v /opt/data/:/mesh/data -p 8080:8080 gentics/mesh
-----
 
 [[installdir]]
 == Installation Directory 
@@ -100,11 +140,11 @@ The ```elasticsearch``` folder contains the included Elasticsearch installation 
 
 === Server Requirements
 
-Gentics Mesh comes with OrientDB, an embedded graph database and Elasticsearch. There are no external dependencies besides Oracle Java Runtime 1.8.0_40 or newer.
+Gentics Mesh comes with OrientDB, an embedded graph database and Elasticsearch. There are no external dependencies besides Java Runtime 8.
 
 ==== System Configuration
 
-The max open file limit on Linux has to be raised on most Linux systems since the embedded graph database and Elasticsearch server often exceed the amount of concurrent open files.
+The maxium open file limit on Linux has to be raised on most Linux systems since the embedded graph database and Elasticsearch server often exceed the amount of concurrent open files.
 
 Edit _/etc/security/limits.conf_ and add these two lines:
 
@@ -137,7 +177,7 @@ Both files are located directly in the <<installdir, installation directory>>.
 
 [source,json]
 ----
-include::examples/models/mesh-config.yml[]
+include::content/docs/examples/models/mesh-config.example.yml[]
 ----
 
 === General Settings
@@ -146,11 +186,18 @@ include::examples/models/mesh-config.yml[]
 |======
 | Configuration            | Type   | Default  | Description
 | ```updateCheck```        | Flag   | true     | An update check to the Gentics Mesh update server will be invoked during startup if this flag is set to true.
-| ```defaultPageSize```    | Number | 25       | Default page size.
 | ```defaultLanguage```    | String | en       | Default language which serves as a fallback when no language has been specified within a request.
 | ```verticles```          | List   | -        | List of Vert.x java verticle classes which will be loaded during startup.
 | ```tempDirectory```      | Path   | data/tmp | Path to the main temporary filesystem directory.
+| ```languagesFilePath```  | Path   | -        | Optional path to a JSON file containing additional languages.
 |======
+
+Example for custom languages file:
+
+[source,json]
+----
+include::content/docs/examples/example-languages.json[]
+----
 
 === HTTPS/SSL
 
@@ -180,7 +227,7 @@ openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 90 -nodes
 
 === Cluster Options
 
-include::includes/cluster-options.inc[]
+include::content/docs/examples/cluster-options.inc[]
 
 === Storage Options
 
@@ -212,53 +259,84 @@ By default all specified directories are relative to the installation directory.
 [options="header"]
 |======
 | Configuration               | Type   | Default               | Description
-| ```upload.byteLimit```      | Number | 262144000 (250 MB)    | Upload limit in bytes.
-| ```upload.directory```      | Path   | data/binaryFiles      | Filesystem directory for uploaded binary data.
-| ```upload.tempDirectory```  | Path   | data/tmp/file-uploads | Temporary directory for uploaded binary data. Finished files will be moved to the upload directory.
+| ```upload.byteLimit```      | Number | `262144000` (250 MB)  | Upload limit in bytes.
+| ```upload.directory```      | Path   | `data/binaryFiles`    | Filesystem directory for uploaded binary data.
+| ```upload.tempDirectory```  | Path   | `data/tmp/file-uploads` | Temporary directory for uploaded binary data. Finished files will be moved to the upload directory.
 |======
 
 === Security Options
 
 [options="header"]
 |======
-| Configuration                        | Type    | Default               | Description
-| ```security.tokenExpirationTime```   | Number  | 3600 (1h)             | The JWT expiration timeout in seconds.
-| ```security.keystorePath```          | Path    | config/keystore.jceks | Path to Java keystore file.
-| ```security.keystorePassword```      | String  | -                     | Password for the Java keystore file.
-| ```security.algorithm```             | String  | HS256                 | Hashing algorithm used to sign, verify and generate tokens.
-| ```security.enableAnonymousAccess``` | Boolean | true                  | Flag to be used to enable the anonymous access feature.
+| Configuration                        | Type    | Default                 | Description
+| ```security.tokenExpirationTime```   | Number  | `3600` (1h)             | The JWT expiration timeout in seconds.
+| ```security.keystorePath```          | Path    | `config/keystore.jceks` | Path to Java keystore file.
+| ```security.keystorePassword```      | String  | -                       | Password for the Java keystore file.
+| ```security.algorithm```             | String  | `HS256`                 | Hashing algorithm used to sign, verify and generate tokens.
+| ```security.enableAnonymousAccess``` | Boolean | `true`                  | Flag to be used to enable the anonymous access feature.
 |======
 
-=== Environment Variables
-
-Settings within the `mesh.yml` file can be override via these environment variables.
-
-include::examples/tables/mesh-env.adoc[]
 
 === Cache Options
 
 Gentics Mesh does not manage any cache structure but it is possible to tweak the underlying OrientDB cache settings.
+
+=== Memory Settings
+
+Memory settings can be defined using the `JAVA_TOOL_OPTIONS` environment variable.
+
+[options="header"]
+|======
+| Setting                   | Description
+| `-Xmx`                    | Maximum heap size of the Gentics Mesh Java process
+| `-Xms`                    | Initial heap size of the Gentics Mesh Java process
+| `-XX:MaxDirectMemorySize` | Maximum direct memory limit. Direct memory is mostly used to buffer transactions of the Graph Database.
+|======
+
+==== Recommendations
+
+The following numbers serve the purpose to roughly estimate the memory requirements for different sized projects.
+
+[options="header"]
+|======
+| Node Count           | Memory Setting
+| 0 to 100             | `-Xms128m  -Xmx128m  -XX:MaxDirectMemorySize=128m  -Dstorage.diskCache.bufferSize=128`
+| 100 to 1_000         | `-Xms512m  -Xmx512m  -XX:MaxDirectMemorySize=256m  -Dstorage.diskCache.bufferSize=256`
+| 1_000 to 10_000      | `-Xms786m  -Xmx786m  -XX:MaxDirectMemorySize=384m  -Dstorage.diskCache.bufferSize=384`
+| 10_000 to 100_000    | `-Xms1250m -Xmx1250m -XX:MaxDirectMemorySize=512m  -Dstorage.diskCache.bufferSize=512`
+| 100_000 to 1_000_000 | `-Xms2500m -Xmx2500m -XX:MaxDirectMemorySize=1024m -Dstorage.diskCache.bufferSize=1024`
+|======
 
 == Backup & Recovery
 
 There are currently three components which can be included in a backup:
 
 * *Graph Database* - The graph database contains the main content of Gentics Mesh.
-    The DB can be backed up on demand via `/api/v1/admin/graphdb/backup` endpoint or via the OrientDB backup job using `automatic-backup.json`. 
+    The DB can be backed up on demand via `{apiLatest}/admin/graphdb/backup` endpoint or via the OrientDB backup job using `automatic-backup.json`. 
     This will automatically create a full backup. Note that both backup processes will block the application. 
     The graph database backup process will write a backup file to the configured backup location (see <<Storage Location>>).
 
 * *Binary files* - Binaries are currently stored in the filesystem and need to be backed up separately data/binaryFiles)
 
 * *Elasticsearch Index* - Optionally you can also backup the Elasticsearch index. 
-    The index can also be recreated anytime using the `POST /api/v1/search/sync` endpoint.
+    The index can also be recreated anytime using the `POST {apiLatest}/search/sync` endpoint.
 
-The ```/api/v1/admin/graphdb/restore``` endpoint can be used to restore created backups. 
+The ```POST {apiLatest}/admin/graphdb/restore``` endpoint can be used to restore created backups. 
 The endpoint will utilize the latest backup found in the backup directory.
 
-Please note that invoking these endpoints will block all execution and request processing.
+NOTE: Invoking the `backup`/`restore` endpoints will block all execution and request processing.
 
-== link:changelog.html[Changelog]
+NOTE: The restore operation can't be executed on Mesh instances which have clustering enabled.
+
+If you already run Gentics Mesh in a cluster you can start a dedicated backup instance which can run the backup process without interference of the other nodes.
+
+Take a look at our link:https://github.com/gentics/mesh-compose/tree/clustering#online-backup[docker-compose example] for a documented setup.
+
+== Import & Export
+
+The `POST {apiLatest}/admin/graphdb/export` and `POST {apiLatest}/admin/graphdb/import` endpoints can be used to generate Graph Database export files which are gzipped json files. A large database can be exported and reimported again to reduce the sparse file size.
+
+== link:{{< relref "changelog.asciidoc" >}}[Changelog]
 
 == Update handling
 
@@ -269,7 +347,7 @@ A process is invoked which will check whether any automatic changes need to be a
 
 Downgrading is possible but not recommended. You can however downgrade your Gentics Mesh instance 
 if the database revision hash of the current database matches up with the revision which is required 
-by the version which is being started. You can check your current database revision via the `/api/v1` endpoint.
+by the version which is being started. You can check your current database revision via the `{apiLatest}` endpoint.
 
 [[database-revisions]]
 === Database Revisions
@@ -278,29 +356,35 @@ This list contains an overview over Gentics Mesh releases and the their database
 The database revision is different if the used Graph Database version was updated or if the database 
 structure was altered due to an automatic change.
 
-include::examples/tables/mesh-db-revs.adoc[]
-
+include::content/docs/examples/tables/mesh-db-revs.adoc-include[]
 
 == Database Consistency
 
-It is possible to verify the database integrity via the `GET /api/v1/admin/consistency/check` endpoint.
+It is possible to verify the database integrity via the `GET {apiLatest}/admin/consistency/check` endpoint.
 
 The response contains information about the found inconsistencies and whether they have a repair action.
 
 [source,json]
 ----
-include::examples/api/response/api/v1/admin/consistency/check/200/example.json[]
+include::content/docs/api/response{apiLatest}/admin/consistency/check/200/example.json[]
 ----
 
-The `POST /api/v1/admin/consistency/repair` endpoint can be used to invoke a check and repair of repairable inconsistencies.
+The `POST {apiLatest}/admin/consistency/repair` endpoint can be used to invoke a check and repair of repairable inconsistencies.
 
 The `repaired` property will be set to true if the inconsistency could be fixed.
 
 [source,json]
 ----
-include::examples/api/response/api/v1/admin/consistency/repair/200/example.json[]
+include::content/docs/api/response{apiLatest}/admin/consistency/repair/200/example.json[]
 ----
 
+== Filesystem support
+
+The filesystem https://en.wikipedia.org/wiki/ZFS[ZFS] (ZFS on Linux) does currently not support Direct IO on Linux. 
+
+When using ZFS it is thus required to turn off direct IO usage of OrientDB. Please use the    `-Dstorage.wal.allowDirectIO=false` setting in this case.
+
+NOTE: The direct IO support will be included in ZFS 0.8
 
 == License
 

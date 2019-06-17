@@ -1,14 +1,14 @@
 package com.gentics.mesh.graphql.filter;
 
-import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.graphqlfilter.filter.DateFilter;
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.StartMainFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
+import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +42,12 @@ public class NodeFilter extends StartMainFilter<NodeContent> {
 			.add(new MappedFilter<>("schema", "Filters by schema", SchemaFilter.filter(context), content -> content.getNode().getSchemaContainer()));
 		filters.add(new MappedFilter<>("created", "Filters by node creation timestamp", DateFilter.filter(),
 			content -> content.getNode().getCreationTimestamp()));
+		filters.add(new MappedFilter<>("creator", "Filters by creator", UserFilter.filter(),
+			content -> content.getNode().getCreator()));
 		filters.add(new MappedFilter<>("edited", "Filters by node update timestamp", DateFilter.filter(),
 			content -> content.getContainer().getLastEditedTimestamp()));
+		filters.add(new MappedFilter<>("editor", "Filters by editor", UserFilter.filter(),
+			content -> content.getContainer().getEditor()));
 		filters.add(new MappedFilter<>("fields", "Filters by fields", createAllFieldFilters(), Function.identity()));
 
 		return filters;
@@ -51,7 +55,7 @@ public class NodeFilter extends StartMainFilter<NodeContent> {
 
 	private MainFilter<NodeContent> createAllFieldFilters() {
 		List<FilterField<NodeContent, ?>> schemaFields = StreamSupport
-			.stream(context.getProject().getSchemaContainerRoot().findAllIt().spliterator(), false)
+			.stream(context.getProject().getSchemaContainerRoot().findAll().spliterator(), false)
 			.map(this::createFieldFilter)
 			.collect(Collectors.toList());
 		return MainFilter.mainFilter("FieldFilter", "Filters by fields", schemaFields, false);

@@ -2,11 +2,12 @@ package com.gentics.mesh.rest.client;
 
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.rest.JWTAuthentication;
-import com.gentics.mesh.rest.client.impl.MeshRestHttpClientImpl;
+import com.gentics.mesh.rest.client.impl.MeshRestOkHttpClientImpl;
 import com.gentics.mesh.rest.client.method.AdminClientMethods;
 import com.gentics.mesh.rest.client.method.AdminPluginClientMethods;
 import com.gentics.mesh.rest.client.method.ApiInfoClientMethods;
 import com.gentics.mesh.rest.client.method.AuthClientMethods;
+import com.gentics.mesh.rest.client.method.BranchClientMethods;
 import com.gentics.mesh.rest.client.method.EventbusClientMethods;
 import com.gentics.mesh.rest.client.method.GraphQLClientMethods;
 import com.gentics.mesh.rest.client.method.GroupClientMethods;
@@ -17,7 +18,6 @@ import com.gentics.mesh.rest.client.method.NavigationClientMethods;
 import com.gentics.mesh.rest.client.method.NodeBinaryFieldClientMethods;
 import com.gentics.mesh.rest.client.method.NodeClientMethods;
 import com.gentics.mesh.rest.client.method.ProjectClientMethods;
-import com.gentics.mesh.rest.client.method.BranchClientMethods;
 import com.gentics.mesh.rest.client.method.RoleClientMethods;
 import com.gentics.mesh.rest.client.method.SchemaClientMethods;
 import com.gentics.mesh.rest.client.method.SearchClientMethods;
@@ -27,34 +27,29 @@ import com.gentics.mesh.rest.client.method.UserClientMethods;
 import com.gentics.mesh.rest.client.method.UtilityClientMethods;
 import com.gentics.mesh.rest.client.method.WebRootClientMethods;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-
 public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods,
 	SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods,
 	AdminPluginClientMethods, MicroschemaClientMethods, NodeBinaryFieldClientMethods, UtilityClientMethods, NavigationClientMethods,
 	NavRootClientMethods, EventbusClientMethods, BranchClientMethods, ApiInfoClientMethods, GraphQLClientMethods, JobClientMethods {
 
 	/**
-	 * The default base URI path to the Mesh-API.
-	 */
-	String DEFAULT_BASEURI = "/api/v1";
-
-	/**
 	 * Create a new mesh rest client.
-	 * 
+	 *
 	 * @param host
 	 *            Server host
 	 * @param port
 	 *            Server port
 	 * @param ssl
 	 *            Flag which is used to toggle ssl mode
-	 * @param vertx
-	 *            Vert.x instance to be used in combination with the vertx http client
 	 * @return
 	 */
-	static MeshRestClient create(String host, int port, boolean ssl, Vertx vertx) {
-		return new MeshRestHttpClientImpl(host, port, ssl, vertx);
+	static MeshRestClient create(String host, int port, boolean ssl) {
+		return create(new MeshRestClientConfig.Builder()
+			.setHost(host)
+			.setPort(port)
+			.setSsl(ssl)
+			.build()
+		);
 	}
 
 	/**
@@ -62,20 +57,20 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 * 
 	 * @param host
 	 *            Server host
-	 * @param vertx
-	 *            Vertx instance to be used in combination with the vertx http client
 	 * @return
 	 */
-	static MeshRestClient create(String host, Vertx vertx) {
-		return new MeshRestHttpClientImpl(host, vertx);
+	static MeshRestClient create(String host) {
+		return create(new MeshRestClientConfig.Builder().setHost(host).build());
 	}
 
 	/**
-	 * Return the underlying vertx http client.
-	 * 
+	 * Create a new mesh rest client.
+	 * @param config Client configuration
 	 * @return
 	 */
-	HttpClient getClient();
+	static MeshRestClient create(MeshRestClientConfig config) {
+		return new MeshRestOkHttpClientImpl(config);
+	}
 
 	/**
 	 * Set the login that is used to authenticate the requests.
@@ -85,6 +80,16 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 * @return Fluent API
 	 */
 	MeshRestClient setLogin(String username, String password);
+
+	/**
+	 * Set the login that is used to authenticate the requests. This will also set a new password when {@link #login()}
+	 * is called. Should be used when the user has to change the password.
+	 *
+	 * @param username
+	 * @param password
+	 * @return Fluent API
+	 */
+	MeshRestClient setLogin(String username, String password, String newPassword);
 
 	/**
 	 * Close the client.
@@ -120,20 +125,6 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 * @return Fluent API
 	 */
 	MeshRestClient setAuthenticationProvider(JWTAuthentication authentication);
-
-	/**
-	 * Get the base URI path to the Mesh-API. If the base URI is not set, the DEFAULT_BASE_URI is returned.
-	 *
-	 * @return the base URI
-	 */
-	String getBaseUri();
-
-	/**
-	 * Returns the used vertx instance.
-	 * 
-	 * @return
-	 */
-	Vertx vertx();
 
 	/**
 	 * Return the mesh version.

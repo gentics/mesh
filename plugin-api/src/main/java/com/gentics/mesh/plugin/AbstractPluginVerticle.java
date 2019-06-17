@@ -1,25 +1,19 @@
 package com.gentics.mesh.plugin;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.rest.client.impl.MeshRestHttpClientImpl;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Completable;
@@ -50,16 +44,13 @@ public abstract class AbstractPluginVerticle extends AbstractVerticle implements
 	}
 
 	/**
-	 * Return the preconfigured object mapper which is used to transform YAML documents.
-	 * 
-	 * @return Object mapper for yaml
+	 * Use {@link PluginConfigUtil#getYAMLMapper()} instead.
+	 * @deprecated
+	 * @return
 	 */
+	@Deprecated
 	public static ObjectMapper getYAMLMapper() {
-		YAMLFactory factory = new YAMLFactory();
-		ObjectMapper mapper = new ObjectMapper(factory);
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		mapper.setSerializationInclusion(Include.NON_NULL);
-		return mapper;
+		return PluginConfigUtil.getYAMLMapper();
 	}
 
 	@Override
@@ -94,18 +85,22 @@ public abstract class AbstractPluginVerticle extends AbstractVerticle implements
 	@Override
 	public <T> T readConfig(Class<T> clazz) throws FileNotFoundException, IOException {
 		File configFile = getConfigFile();
-		if (!configFile.exists()) {
+		if (!configFile.canRead()) {
 			return null;
 		}
-		try (FileInputStream fis = new FileInputStream(configFile)) {
-			return getYAMLMapper().readValue(fis, clazz);
+		T config = PluginConfigUtil.loadConfig(configFile, null, clazz);
+
+		// try to load local config file
+		File localConfigFile = getLocalConfigFile();
+		if (localConfigFile.canRead()) {
+			config = PluginConfigUtil.loadConfig(localConfigFile, config, clazz);
 		}
+		return config;
 	}
 
 	@Override
 	public <T> T writeConfig(T config) throws IOException {
-		String yaml = getYAMLMapper().writeValueAsString(config);
-		FileUtils.writeStringToFile(getConfigFile(), yaml, Charset.defaultCharset(), false);
+		PluginConfigUtil.writeConfig(getConfigFile(), config);		
 		return config;
 	}
 
@@ -173,7 +168,7 @@ public abstract class AbstractPluginVerticle extends AbstractVerticle implements
 		MeshOptions options = Mesh.mesh().getOptions();
 		int port = options.getHttpServerOptions().getPort();
 		String host = options.getHttpServerOptions().getHost();
-		adminClient = new MeshRestHttpClientImpl(host, port, false, vertx);
+		adminClient = MeshRestClient.create(host, port, false);
 	}
 
 	/**
@@ -187,7 +182,7 @@ public abstract class AbstractPluginVerticle extends AbstractVerticle implements
 		String apiName = getManifest().getApiName();
 		return new File(pluginDir, apiName);
 	}
-
+	
 	/**
 	 * Return the plugin configuration file.
 	 * 
@@ -197,4 +192,12 @@ public abstract class AbstractPluginVerticle extends AbstractVerticle implements
 		return new File(getPluginBaseDir(), "config.yml");
 	}
 
+	/**
+	 * Return the local overriding plugin configuration file.
+	 * 
+	 * @return
+	 */
+	protected File getLocalConfigFile() {
+		return new File(getPluginBaseDir(), "config.local.yml");
+	}
 }

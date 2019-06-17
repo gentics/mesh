@@ -5,22 +5,28 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_BRANCH_ASSIGN;
+import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_ASSIGN;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_START;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_UPDATED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
-import static com.gentics.mesh.test.ClientHelper.validateSet;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
+import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
-import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
-import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -33,11 +39,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
 import org.junit.After;
@@ -50,14 +52,25 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.EventCauseInfo;
+import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
+import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
+import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
+import com.gentics.mesh.core.rest.project.ProjectReference;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -66,14 +79,15 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
-import com.gentics.mesh.test.util.TestUtils;
+import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+import io.reactivex.Observable;
+
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@After
@@ -87,9 +101,17 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testCreate() throws GenericRestException, Exception {
 		SchemaCreateRequest createRequest = FieldUtil.createMinimalValidSchemaCreateRequest();
 
-		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
+		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0, 0);
+
+		expect(SCHEMA_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName(createRequest.getName()).uuidNotNull();
+		});
+
 		SchemaResponse restSchema = call(() -> client().createSchema(createRequest));
-		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+		waitForSearchIdleEvent();
+		awaitEvents();
+
+		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		assertThat(trackingSearchProvider()).hasStore(SchemaContainer.composeIndexName(), SchemaContainer.composeDocumentId(restSchema.getUuid()));
 		try (Tx tx = tx()) {
 			assertThat(createRequest).matches(restSchema);
@@ -104,6 +126,31 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	}
 
 	@Test
+	public void testCreateWithoutContainerFlag() {
+		SchemaCreateRequest createRequest = FieldUtil.createMinimalValidSchemaCreateRequest();
+		createRequest.setContainer(null);
+		SchemaResponse schema = call(() -> client().createSchema(createRequest));
+		assertFalse("The flag should be set to false", schema.getContainer());
+	}
+
+	@Test
+	public void testUpdateWithoutContainerFlag() {
+		// 1. Create schema
+		SchemaCreateRequest createRequest = FieldUtil.createMinimalValidSchemaCreateRequest();
+		createRequest.setContainer(true);
+		SchemaResponse schema = call(() -> client().createSchema(createRequest));
+		assertTrue("The flag should be set to true", schema.getContainer());
+
+		// 2. Update the schema
+		SchemaUpdateRequest updateRequest = schema.toUpdateRequest();
+		updateRequest.setContainer(null);
+		call(() -> client().updateSchema(schema.getUuid(), updateRequest));
+
+		SchemaResponse schema2 = call(() -> client().findSchemaByUuid(schema.getUuid()));
+		assertTrue("The schema container flag should still be set to true", schema2.getContainer());
+	}
+
+	@Test
 	@Override
 	public void testCreateWithNoPerm() throws Exception {
 		SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
@@ -112,13 +159,16 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			role().revokePermissions(meshRoot().getSchemaContainerRoot(), CREATE_PERM);
 			tx.success();
 		}
-		call(() -> client().createSchema(schema), FORBIDDEN, "error_missing_perm", schemaRootUuid);
+		call(() -> client().createSchema(schema), FORBIDDEN, "error_missing_perm", schemaRootUuid, CREATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
 	@Override
-	@Ignore("Not yet implemented")
 	public void testCreateWithUuid() throws Exception {
+		SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
+		String uuid = UUIDUtil.randomUUID();
+		SchemaResponse resp = call(() -> client().createSchema(uuid, schema));
+		assertEquals("The created schema did not contain the expected uuid.", uuid, resp.getUuid());
 	}
 
 	@Test
@@ -132,19 +182,22 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testCreateReadDelete() throws GenericRestException, Exception {
 
 		try (Tx tx = tx()) {
-			assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0, 0);
 			SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
 
 			SchemaResponse restSchema = call(() -> client().createSchema(schema));
-			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0);
+			waitForSearchIdleEvent();
+
+			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 			assertThat(schema).matches(restSchema);
 			assertElement(boot().meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
 			call(() -> client().findSchemaByUuid(restSchema.getUuid()));
+			trackingSearchProvider().reset();
 
-			trackingSearchProvider().clear().blockingAwait();
 			call(() -> client().deleteSchema(restSchema.getUuid()));
+			waitForSearchIdleEvent();
 			// Only schemas which are not in use can be delete and also removed from the index
-			assertThat(trackingSearchProvider()).hasEvents(0, 1, 0, 0);
+			assertThat(trackingSearchProvider()).hasEvents(0, 0, 1, 0, 0);
 		}
 
 	}
@@ -200,11 +253,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 			List<Schema> allSchemas = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				MeshResponse<SchemaListResponse> pageFuture = client().findSchemas(new PagingParametersImpl(page, perPage)).invoke();
-				latchFor(pageFuture);
-				assertSuccess(pageFuture);
-
-				restResponse = pageFuture.result();
+				restResponse = client().findSchemas(new PagingParametersImpl(page, perPage)).blockingGet();
 				allSchemas.addAll(restResponse.getData());
 			}
 			assertEquals("Somehow not all schemas were loaded when loading all pages.", totalSchemas, allSchemas.size());
@@ -260,7 +309,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		tx(() -> group().addRole(roles().get("admin")));
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(uuid, request));
-		}, MigrationStatus.COMPLETED, 1);
+		}, JobStatus.COMPLETED, 1);
 		tx(() -> group().removeRole(roles().get("admin")));
 
 		// Load the previous version
@@ -281,10 +330,10 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		String uuid = tx(() -> schemaContainer("content").getUuid());
 
 		call(() -> client().findSchemaByUuid(uuid, new VersioningParametersImpl().setVersion("5.0")), NOT_FOUND, "object_not_found_for_uuid_version",
-				uuid, "5.0");
+			uuid, "5.0");
 
 		call(() -> client().findSchemaByUuid(uuid, new VersioningParametersImpl().setVersion("sadgsdgasgd")), BAD_REQUEST, "error_illegal_version",
-				"sadgsdgasgd");
+			"sadgsdgasgd");
 	}
 
 	@Test
@@ -293,26 +342,24 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		String uuid = db().tx(() -> schemaContainer("content").getUuid());
 
 		SchemaResponse schema = call(() -> client().findSchemaByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(db().tx(() -> role()
-				.getUuid()))));
+			.getUuid()))));
 		assertNotNull(schema.getRolePerms());
-		assertThat(schema.getRolePerms()).hasPerm(Permission.values());
+		assertThat(schema.getRolePerms()).hasPerm(Permission.basicPermissions());
 	}
 
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		SchemaContainer schema = schemaContainer("content");
-		try (Tx tx = tx()) {
+		String uuid = tx(() -> schemaContainer("content").getUuid());
+		tx(() -> {
+			SchemaContainer schema = schemaContainer("content");
 			role().grantPermissions(schema, DELETE_PERM);
 			role().grantPermissions(schema, UPDATE_PERM);
 			role().grantPermissions(schema, CREATE_PERM);
 			role().revokePermissions(schema, READ_PERM);
-			tx.success();
-		}
+		});
 
-		try (Tx tx = tx()) {
-			call(() -> client().findSchemaByUuid(schema.getUuid()), FORBIDDEN, "error_missing_perm", schema.getUuid());
-		}
+		call(() -> client().findSchemaByUuid(uuid), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -346,10 +393,31 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		SchemaUpdateRequest request = JsonUtil.readValue(json, SchemaUpdateRequest.class);
 		request.setUrlFields("slug");
 
-		tx(() -> group().addRole(roles().get("admin")));
-		waitForJobs(() -> {
+		grantAdminRole();
+		waitForJob(() -> {
 			call(() -> client().updateSchema(uuid, request));
-		}, COMPLETED, 1);
+		});
+	}
+
+	@Test
+	public void testSetAutoPurgeToNull() {
+		grantAdminRole();
+		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
+		SchemaResponse response = call(() -> client().findSchemaByUuid(schemaUuid));
+		assertNull(response.getAutoPurge());
+		SchemaUpdateRequest request = response.toUpdateRequest();
+		request.setAutoPurge(true);
+
+		waitForJob(() -> {
+			call(() -> client().updateSchema(schemaUuid, request));
+		});
+
+		assertTrue("The flag should be updated", call(() -> client().findSchemaByUuid(schemaUuid)).getAutoPurge());
+		request.setAutoPurge(null);
+		waitForJob(() -> {
+			call(() -> client().updateSchema(schemaUuid, request));
+		});
+		assertNull("The flag should be updated to null", call(() -> client().findSchemaByUuid(schemaUuid)).getAutoPurge());
 	}
 
 	/**
@@ -357,37 +425,123 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	 */
 	@Test
 	public void testUpdateWithReferencedMicroschema() {
+		final String MICROSCHEMA_NAME = "TestMicroschema";
 
-		SchemaUpdateRequest schemaUpdate = db().tx(() -> JsonUtil.readValue(schemaContainer("content").getLatestVersion().getJson(),
-				SchemaUpdateRequest.class));
-		String schemaUuid = db().tx(() -> schemaContainer("content").getUuid());
+		SchemaUpdateRequest schemaUpdate = tx(() -> JsonUtil.readValue(schemaContainer("content").getLatestVersion().getJson(),
+			SchemaUpdateRequest.class));
+		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+		String schemaVersion = tx(() -> schemaContainer("content").getLatestVersion().getVersion());
 
 		// 1. Create the microschema
 		MicroschemaCreateRequest microschemaRequest = new MicroschemaCreateRequest();
-		microschemaRequest.setName("TestMicroschema");
+		microschemaRequest.setName(MICROSCHEMA_NAME);
 		microschemaRequest.addField(FieldUtil.createStringFieldSchema("text"));
 		microschemaRequest.addField(FieldUtil.createNodeFieldSchema("nodeRef").setAllowedSchemas("content"));
+
+		expect(MICROSCHEMA_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
+			assertEquals("The microschema name did not match.", MICROSCHEMA_NAME, event.getName());
+			assertNotNull("The schema uuid was not set", event.getUuid());
+			assertNotNull("The origin has not been set", event.getOrigin());
+		});
 		MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(microschemaRequest));
+		awaitEvents();
+
 		String microschemaUuid = microschemaResponse.getUuid();
 
 		List<MicroschemaResponse> filteredList = call(() -> client().findMicroschemas(PROJECT_NAME)).getData().stream().filter(
-				microschema -> microschema.getUuid().equals(microschemaUuid)).collect(Collectors.toList());
+			microschema -> microschema.getUuid().equals(microschemaUuid)).collect(Collectors.toList());
 
 		assertThat(filteredList).isEmpty();
 
 		// 2. Add micronode field to content schema
 		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("micro").setAllowedMicroSchemas("TestMicroschema"));
 
-		tx(() -> group().addRole(roles().get("admin")));
-		waitForJobs(() -> {
+		expect(SCHEMA_UPDATED).match(1, MeshElementEventModelImpl.class, event -> {
+			assertEquals("content", event.getName());
+			assertEquals(schemaUuid, event.getUuid());
+		});
+
+		// References microschemas will also be assigned to the project/branch during the schema update process.
+		expect(MICROSCHEMA_BRANCH_ASSIGN).match(1, BranchMicroschemaAssignModel.class, event -> {
+			BranchReference branch = event.getBranch();
+			assertNotNull("Branch reference was not set", branch);
+			assertNotNull(branch.getName());
+			assertEquals(initialBranchUuid(), branch.getUuid());
+
+			MicroschemaReference schema = event.getSchema();
+			assertNotNull("The microschema reference has not been set", schema);
+			assertEquals("Missing microschema name", MICROSCHEMA_NAME, schema.getName());
+			assertNotNull("Microschema uuid not set in event.", schema.getUuid());
+
+			ProjectReference project = event.getProject();
+			assertNotNull("The project reference was not set", project);
+			assertNotNull(project.getName());
+			assertNotNull(project.getUuid());
+		});
+
+		expect(SCHEMA_BRANCH_ASSIGN).match(1, BranchSchemaAssignEventModel.class, event -> {
+			BranchReference branch = event.getBranch();
+			assertNotNull("Branch reference was not set", branch);
+			assertNotNull(branch.getName());
+			assertEquals(initialBranchUuid(), branch.getUuid());
+
+			SchemaReference schema = event.getSchema();
+			assertNotNull("The schema reference has not been set", schema);
+			assertEquals("Missing Schema name", "content", schema.getName());
+			assertEquals("Schema uuid did not match.", schemaUuid, schema.getUuid());
+
+			ProjectReference project = event.getProject();
+			assertNotNull("The project reference was not set", project);
+			assertNotNull(project.getName());
+			assertNotNull(project.getUuid());
+		});
+		expect(SCHEMA_MIGRATION_START).match(1, SchemaMigrationMeshEventModel.class, event -> {
+			assertMigrationEvent(event, schemaVersion, schemaUuid);
+		});
+		expect(NODE_UPDATED).match(36, NodeMeshEventModel.class, event -> {
+			EventCauseInfo cause = event.getCause();
+			assertTrue("The cause of the node update event did not have the correct type.", cause instanceof SchemaMigrationCause);
+			SchemaMigrationCause migrationCause = (SchemaMigrationCause) cause;
+			assertMigrationEvent(migrationCause, schemaVersion, schemaUuid);
+		});
+		expect(SCHEMA_MIGRATION_FINISHED).match(1, SchemaMigrationMeshEventModel.class, event -> {
+			assertMigrationEvent(event, schemaVersion, schemaUuid);
+		});
+
+		grantAdminRole();
+		waitForJob(() -> {
 			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
-		}, MigrationStatus.COMPLETED, 1);
-		tx(() -> group().removeRole(roles().get("admin")));
+		});
+		revokeAdminRole();
+
+		awaitEvents();
 
 		filteredList = call(() -> client().findMicroschemas(PROJECT_NAME)).getData().stream().filter(microschema -> microschema.getUuid().equals(
-				microschemaUuid)).collect(Collectors.toList());
+			microschemaUuid)).collect(Collectors.toList());
 		assertThat(filteredList).hasSize(1);
 
+	}
+
+	private void assertMigrationEvent(SchemaMigrationMeshEventModel event, String schemaVersion, String schemaUuid) {
+		SchemaReference from = event.getFromVersion();
+		assertNotNull(from);
+		assertEquals("The from schema uuid did not match.", schemaUuid, from.getUuid());
+		assertEquals("The from version did not match", schemaVersion, from.getVersion());
+
+		SchemaReference to = event.getToVersion();
+		assertNotNull(to);
+		assertEquals("The to schema uuid did not match.", schemaUuid, to.getUuid());
+		System.out.println(event.toJson());
+
+		BranchReference branch = event.getBranch();
+		assertNotNull(branch);
+		assertEquals("Branch name did not match.", PROJECT_NAME, branch.getName());
+		assertEquals("Branch uuid did not match", initialBranchUuid(), branch.getUuid());
+
+		ProjectReference project = event.getProject();
+		assertNotNull(project);
+		assertEquals("The project name did not match up.", PROJECT_NAME, project.getName());
+		assertEquals("The project uuid did notmatch up.", projectUuid(), project.getUuid());
 	}
 
 	@Test
@@ -434,6 +588,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 
 		String uuid = db().tx(() -> schemaContainer("content").getUuid());
+
 		call(() -> client().deleteSchema(uuid), BAD_REQUEST, "schema_delete_still_in_use", uuid);
 
 		tx(() -> group().addRole(roles().get("admin")));
@@ -465,14 +620,20 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			return tx.getGraph().getVertices("uuid", versionUuid).iterator().hasNext();
 		}));
 
-		// We should be able to execute the deletion now that all nodes are gone. 
+		expect(SCHEMA_DELETED).match(1, MeshElementEventModelImpl.class, event -> {
+			assertThat(event).hasName("content").hasUuid(uuid);
+		});
+
+		// We should be able to execute the deletion now that all nodes are gone.
 		call(() -> client().deleteSchema(uuid));
+
+		awaitEvents();
 
 		try (Tx tx = tx()) {
 			assertFalse("The referenced job should have been deleted", tx.getGraph().getVertices("uuid", jobUuid).iterator().hasNext());
 			SchemaContainer reloaded = boot().schemaContainerRoot().findByUuid(uuid);
 			assertFalse("The version of the schema container should have been deleted as well.", tx.getGraph().getVertices("uuid", versionUuid)
-					.iterator().hasNext());
+				.iterator().hasNext());
 			assertNull("The schema should have been deleted.", reloaded);
 		}
 	}
@@ -487,28 +648,26 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().deleteSchema(schema.getUuid()), FORBIDDEN, "error_missing_perm", schema.getUuid());
+			call(() -> client().deleteSchema(schema.getUuid()), FORBIDDEN, "error_missing_perm", schema.getUuid(),
+				DELETE_PERM.getRestPerm().getName());
 			assertElement(boot().schemaContainerRoot(), schema.getUuid(), true);
 		}
 	}
 
 	@Test
 	@Override
+	@Ignore("Fails on CI pipeline. See https://github.com/gentics/mesh/issues/608")
 	public void testUpdateMultithreaded() throws Exception {
 		String uuid = tx(() -> schemaContainer("content").getUuid());
 		String json = tx(() -> schemaContainer("content").getLatestVersion().getJson());
-		SchemaUpdateRequest request = JsonUtil.readValue(json, SchemaUpdateRequest.class);
 
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		int nJobs = 20;
-		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<MeshResponse<?>> set = new HashSet<>();
-		for (int i = 0; i <= nJobs; i++) {
-			request.setName("newname" + i);
-			set.add(client().updateSchema(uuid, request).invoke());
-		}
-		validateSet(set, barrier);
-		failingLatch(latch);
+		Observable.range(0, nJobs)
+			.flatMapCompletable(i -> {
+				SchemaUpdateRequest request = JsonUtil.readValue(json, SchemaUpdateRequest.class);
+				request.setName("newname" + i);
+				return client().updateSchema(uuid, request).toCompletable();
+			}).blockingAwait();
 	}
 
 	@Test
@@ -519,12 +678,9 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("content");
 			String uuid = schema.getUuid();
-			CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<MeshResponse<?>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findSchemaByUuid(uuid).invoke());
-			}
-			validateSet(set, barrier);
+			Observable.range(0, nJobs)
+				.flatMapCompletable(i -> client().findSchemaByUuid(uuid).toCompletable())
+				.blockingAwait();
 		}
 	}
 
@@ -535,12 +691,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		int nJobs = 3;
 		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("content");
-			CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<MeshResponse<Void>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().deleteSchema(schema.getUuid()).invoke());
-			}
-			validateDeletion(set, barrier);
+			validateDeletion(i -> client().deleteSchema(schema.getUuid()), nJobs);
 		}
 	}
 
@@ -553,12 +704,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		request.setName("new schema name");
 		request.setDisplayField("name");
 
-		CyclicBarrier barrier = prepareBarrier(nJobs);
-		Set<MeshResponse<?>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			set.add(client().createSchema(request).invoke());
-		}
-		validateCreation(set, barrier);
+		validateCreation(nJobs, i -> client().createSchema(request));
 	}
 
 	@Test
@@ -567,14 +713,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		int nJobs = 200;
 		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("content");
-			Set<MeshResponse<SchemaResponse>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findSchemaByUuid(schema.getUuid()).invoke());
-			}
-			for (MeshResponse<SchemaResponse> future : set) {
-				latchFor(future);
-				assertSuccess(future);
-			}
+			awaitConcurrentRequests(nJobs, i -> client().findSchemaByUuid(schema.getUuid()));
 		}
 	}
 
@@ -591,7 +730,22 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		SchemaUpdateRequest request = new SchemaUpdateRequest();
 		request.setName("new-name");
-		call(() -> client().updateSchema(schemaUuid, request), FORBIDDEN, "error_missing_perm", schemaUuid);
+		call(() -> client().updateSchema(schemaUuid, request), FORBIDDEN, "error_missing_perm", schemaUuid, UPDATE_PERM.getRestPerm().getName());
 	}
 
+	@Test
+	@Override
+	public void testPermissionResponse() {
+		SchemaResponse schema = client().findSchemas().blockingGet().getData().get(0);
+		assertThat(schema.getPermissions()).hasNoPublishPermsSet();
+	}
+
+	@Test
+	public void testConflictingNameWithMicroschema() throws InterruptedException {
+		MicroschemaCreateRequest microSchemaRequest = new MicroschemaCreateRequest().setName("test");
+		SchemaCreateRequest schemaRequest = new SchemaCreateRequest().setName("test");
+
+		client().createMicroschema(microSchemaRequest).blockingAwait();
+		call(() -> client().createSchema(schemaRequest), CONFLICT, "microschema_conflicting_name", "test");
+	}
 }

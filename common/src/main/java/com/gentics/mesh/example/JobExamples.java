@@ -1,10 +1,12 @@
 package com.gentics.mesh.example;
 
-import static com.gentics.mesh.util.UUIDUtil.randomUUID;
+import static com.gentics.mesh.example.ExampleUuids.BRANCH_UUID;
+import static com.gentics.mesh.example.ExampleUuids.JOB_UUID;
+import static com.gentics.mesh.example.ExampleUuids.SCHEMA_VEHICLE_UUID;
 
-import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.job.JobType;
 
 public class JobExamples extends AbstractExamples {
 
@@ -17,12 +19,12 @@ public class JobExamples extends AbstractExamples {
 
 	public JobResponse createJobResponse() {
 		JobResponse response = new JobResponse();
-		response.setUuid(randomUUID());
+		response.setUuid(JOB_UUID);
 		response.setCreator(createUserReference());
-		response.setCreated(createTimestamp());
-		response.setType(MigrationType.branch);
-		response.getProperties().put("branchUuid", randomUUID());
-		response.getProperties().put("schemaUuid", randomUUID());
+		response.setCreated(createNewTimestamp());
+		response.setType(JobType.branch);
+		response.getProperties().put("branchUuid", BRANCH_UUID);
+		response.getProperties().put("schemaUuid", SCHEMA_VEHICLE_UUID);
 		response.getProperties().put("fromVersion", "1.0");
 		response.getProperties().put("toVersion", "2.0");
 		return response;

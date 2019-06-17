@@ -1,9 +1,9 @@
 package com.gentics.mesh.distributed;
 
-import static com.gentics.mesh.Events.EVENT_CLEAR_PERMISSION_STORE;
-import static com.gentics.mesh.Events.EVENT_CLUSTER_DATABASE_CHANGE_STATUS;
-import static com.gentics.mesh.Events.EVENT_CLUSTER_NODE_JOINED;
-import static com.gentics.mesh.Events.EVENT_CLUSTER_NODE_LEFT;
+import static com.gentics.mesh.core.rest.MeshEvent.CLEAR_PERMISSION_STORE;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_LEFT;
 import static com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS.ONLINE;
 
 import java.util.Map;
@@ -51,34 +51,34 @@ public class DistributedEventManager {
 		EventBus eb = Mesh.mesh().getVertx().eventBus();
 
 		// Register for events which indicate that the cluster topology changes
-		eb.consumer(EVENT_CLUSTER_NODE_JOINED, handler -> {
+		eb.consumer(CLUSTER_NODE_JOINED.address, handler -> {
 			log.info("Received node joined event. Updating content structure information");
 			handleClusterTopologyUpdate(handler);
 		});
-		eb.consumer(EVENT_CLUSTER_NODE_LEFT, handler -> {
+		eb.consumer(CLUSTER_NODE_LEFT.address, handler -> {
 			log.info("Received node left event. Updating content structure information");
 			handleClusterTopologyUpdate(handler);
 		});
 
 		// Register for events which are send whenever the permission store must be invalidated.
-		eb.consumer(EVENT_CLEAR_PERMISSION_STORE, handler -> {
+		eb.consumer(CLEAR_PERMISSION_STORE.address, handler -> {
 			log.debug("Received permissionstore clear event");
 			PermissionStore.invalidate(false);
 		});
 
 		// React on project creates
-		eb.consumer(Project.TYPE_INFO.getOnCreatedAddress(), (Message<JsonObject> handler) -> {
+		eb.consumer(Project.TYPE_INFO.getOnCreated().getAddress(), (Message<JsonObject> handler) -> {
 			log.info("Received project create event");
 			handleClusterTopologyUpdate(handler);
 		});
 
 		// React on project updates
-		eb.consumer(Project.TYPE_INFO.getOnUpdatedAddress(), (Message<JsonObject> handler) -> {
+		eb.consumer(Project.TYPE_INFO.getOnUpdated().getAddress(), (Message<JsonObject> handler) -> {
 			log.info("Received project update event.");
 			handleClusterTopologyUpdate(handler);
 		});
 
-		eb.consumer(EVENT_CLUSTER_DATABASE_CHANGE_STATUS, (Message<JsonObject> handler) -> {
+		eb.consumer(CLUSTER_DATABASE_CHANGE_STATUS.address, (Message<JsonObject> handler) -> {
 			JsonObject info = handler.body();
 			String node = info.getString("node");
 			String db = info.getString("database");
@@ -112,7 +112,7 @@ public class DistributedEventManager {
 			for (RouterStorage rs : RouterStorage.getInstances()) {
 				Map<String, Router> registeredProjectRouters = rs.root().apiRouter().projectsRouter().getProjectRouters();
 				// Load all projects and check whether they are already registered
-				for (Project project : cboot.meshRoot().getProjectRoot().findAllIt()) {
+				for (Project project : cboot.meshRoot().getProjectRoot().findAll()) {
 					if (registeredProjectRouters.containsKey(project.getName())) {
 						continue;
 					} else {

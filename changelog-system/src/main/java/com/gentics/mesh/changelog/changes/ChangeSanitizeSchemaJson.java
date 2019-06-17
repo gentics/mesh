@@ -22,7 +22,7 @@ public class ChangeSanitizeSchemaJson extends AbstractChange {
 	}
 
 	@Override
-	public void apply() {
+	public void applyInTx() {
 		Vertex meshRoot = getMeshRootVertex();
 		Vertex schemaRoot = meshRoot.getVertices(OUT, "HAS_ROOT_SCHEMA").iterator().next();
 		Iterator<Vertex> schemaIt = schemaRoot.getVertices(OUT, "HAS_SCHEMA_CONTAINER_ITEM").iterator();

@@ -17,12 +17,12 @@ import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 
 /**
@@ -42,12 +42,12 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public void setName(String name) {
-		setProperty("name", name);
+		property("name", name);
 	}
 
 	@Override
 	public String getName() {
-		return getProperty("name");
+		return property("name");
 	}
 
 	/**
@@ -66,12 +66,12 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public String getVersion() {
-		return getProperty(VERSION_PROPERTY_KEY);
+		return property(VERSION_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setVersion(String version) {
-		setProperty(VERSION_PROPERTY_KEY, version);
+		property(VERSION_PROPERTY_KEY, version);
 	}
 
 	@Override
@@ -153,21 +153,21 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public String getJson() {
-		return getProperty("json");
+		return property("json");
 	}
 
 	@Override
 	public void setJson(String json) {
-		setProperty("json", json);
+		property("json", json);
 	}
 
 	@Override
-	public boolean update(InternalActionContext ac, SearchQueueBatch batch) {
+	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
 		throw new NotImplementedException("Updating is not directly supported for schemas. Please start a schema migration");
 	}
 
 	@Override
-	public SCV applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges, SearchQueueBatch batch) {
+	public SCV applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges, EventQueueBatch batch) {
 		if (listOfChanges.getChanges().isEmpty()) {
 			throw error(BAD_REQUEST, "schema_migration_no_changes_specified");
 		}
@@ -210,12 +210,12 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 		getSchemaContainer().setLatestVersion(nextVersion);
 
 		// Update the search index
-		batch.store(getSchemaContainer(), true);
+		batch.add(getSchemaContainer().onUpdated());
 		return nextVersion;
 	}
 
 	@Override
-	public SCV applyChanges(InternalActionContext ac, SearchQueueBatch batch) {
+	public SCV applyChanges(InternalActionContext ac, EventQueueBatch batch) {
 		SchemaChangesListModel listOfChanges = JsonUtil.readValue(ac.getBodyAsString(), SchemaChangesListModel.class);
 
 		if (getNextChange() != null) {

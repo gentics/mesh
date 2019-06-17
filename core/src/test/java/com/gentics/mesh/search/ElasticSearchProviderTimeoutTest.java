@@ -1,9 +1,11 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
+import java.time.Duration;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -23,8 +25,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.http.HttpServer;
-
-@MeshTestSetting(useElasticsearch = true, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 
 	private static final Logger log = LoggerFactory.getLogger(ElasticSearchProviderTimeoutTest.class);
@@ -48,7 +49,7 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 				rh.response().end(new JsonObject().encodePrettily());
 			} else {
 				log.info("Waiting for 16 second to answer request: " + rh.absoluteURI());
-				vertx.setTimer(16000, th -> rh.response().end());
+				vertx.setTimer(Duration.ofSeconds(16).toMillis(), th -> rh.response().end());
 			}
 		});
 		server.rxListen().blockingGet();
@@ -57,7 +58,7 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 		options.setTimeout(500L).setUrl(null);
 		options.setUrl("http://localhost:" + server.actualPort());
 		provider.stop();
-		provider.start(false);
+		provider.start();
 	}
 
 	@Test

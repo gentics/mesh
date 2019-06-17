@@ -1,30 +1,29 @@
 package com.gentics.mesh.core.link;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.handler.VersionHandler;
+import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.VersioningParameters;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import com.gentics.mesh.Mesh;
-import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.ContainerType;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.parameter.LinkType;
-import com.gentics.mesh.router.APIRouter;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * This class will resolve mesh link placeholders.
@@ -63,7 +62,7 @@ public class WebRootLinkReplacer {
 	 * @return content with links (probably) replaced
 	 */
 	public String replace(InternalActionContext ac, String branchUuid, ContainerType edgeType, String content, LinkType type, String projectName,
-			List<String> languageTags) {
+		List<String> languageTags) {
 		if (isEmpty(content) || type == LinkType.OFF || type == null) {
 			return content;
 		}
@@ -109,7 +108,7 @@ public class WebRootLinkReplacer {
 				segments.add(resolve(ac, branchUuid, edgeType, linkArguments[0], type, projectName, linkArguments[1].trim()));
 			} else if (languageTags != null) {
 				segments.add(resolve(ac, branchUuid, edgeType, linkArguments[0], type, projectName,
-						languageTags.toArray(new String[languageTags.size()])));
+					languageTags.toArray(new String[languageTags.size()])));
 			} else {
 				segments.add(resolve(ac, branchUuid, edgeType, linkArguments[0], type, projectName));
 			}
@@ -143,7 +142,7 @@ public class WebRootLinkReplacer {
 	 * @return observable of the rendered link
 	 */
 	public String resolve(InternalActionContext ac, String branchUuid, ContainerType edgeType, String uuid, LinkType type, String projectName,
-			String... languageTags) {
+		String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
 		Node node = boot.meshRoot().getNodeRoot().findByUuid(uuid);
@@ -159,7 +158,7 @@ public class WebRootLinkReplacer {
 			case MEDIUM:
 				return "/" + projectName + "/error/404";
 			case FULL:
-				return APIRouter.API_MOUNTPOINT + "/" + projectName + "/webroot/error/404";
+				return VersionHandler.baseRoute(ac.getApiVersion()) + "/" + projectName + "/webroot/error/404";
 			default:
 				throw error(BAD_REQUEST, "Cannot render link with type " + type);
 			}
@@ -217,6 +216,7 @@ public class WebRootLinkReplacer {
 		if (log.isDebugEnabled()) {
 			log.debug("Resolving link to " + node.getUuid() + " in language " + Arrays.toString(languageTags) + " with type " + type.name());
 		}
+
 		String path = node.getPath(ac, branchUuid, edgeType, languageTags);
 		if (path == null) {
 			path = "/error/404";
@@ -225,11 +225,11 @@ public class WebRootLinkReplacer {
 		case SHORT:
 			// We also try to append the scheme and authority part of the uri for foreign nodes.
 			// Otherwise that part will be empty and thus the link relative.
-			return generateSchemeAuthorityForNode(node) + path;
+			return generateSchemeAuthorityForNode(node, theirProject.getBranchRoot().findByUuid(branchUuid)) + path;
 		case MEDIUM:
 			return "/" + node.getProject().getName() + path;
 		case FULL:
-			return APIRouter.API_MOUNTPOINT + "/" + node.getProject().getName() + "/webroot" + path;
+			return VersionHandler.baseRoute(ac.getApiVersion()) + "/" + node.getProject().getName() + "/webroot" + path + branchQueryParameter(theirProject.getBranchRoot().findByUuid(branchUuid));
 		default:
 			throw error(BAD_REQUEST, "Cannot render link with type " + type);
 		}
@@ -237,12 +237,12 @@ public class WebRootLinkReplacer {
 
 	/**
 	 * Return the URL prefix for the given node. The latest branch of the node's project will be used to fetch the needed information.
-	 * 
+	 *
 	 * @param node
+	 * @param branch branch
 	 * @return scheme and authority or empty string if the branch of the node does not supply the needed information
 	 */
-	private String generateSchemeAuthorityForNode(Node node) {
-		Branch branch = node.getProject().getLatestBranch();
+	private String generateSchemeAuthorityForNode(Node node, Branch branch) {
 		String hostname = branch.getHostname();
 		if (StringUtils.isEmpty(hostname)) {
 			// Fallback to urls without authority/scheme
@@ -259,4 +259,18 @@ public class WebRootLinkReplacer {
 		return buffer.toString();
 	}
 
+	/**
+	 * Returns the query parameter for the given branch. This is the query parameter that is necessary to get the
+	 * node in the correct branch.
+	 * If the given branch is the latest branch, no query parameter is necessary and thus an empty string is returned.
+	 *
+	 * @param branch The branch to generate the query parameter for.
+	 * @return Example: "?branch=test1"
+	 */
+	private String branchQueryParameter(Branch branch) {
+		if (branch.isLatest()) {
+			return "";
+		}
+		return String.format("?%s=%s", VersioningParameters.BRANCH_QUERY_PARAM_KEY, branch.getName());
+	}
 }

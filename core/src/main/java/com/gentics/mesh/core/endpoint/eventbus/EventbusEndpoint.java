@@ -2,7 +2,7 @@ package com.gentics.mesh.core.endpoint.eventbus;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.Events;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -48,10 +48,14 @@ public class EventbusEndpoint extends AbstractInternalEndpoint {
 			SockJSHandlerOptions sockJSoptions = new SockJSHandlerOptions().setHeartbeatInterval(2000);
 			handler = SockJSHandler.create(Mesh.vertx(), sockJSoptions);
 			BridgeOptions bridgeOptions = new BridgeOptions();
-			for (String addr : Events.publicEvents()) {
-				bridgeOptions.addInboundPermitted(new PermittedOptions().setAddress(addr));
-				bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress(addr));
+			for (MeshEvent event : MeshEvent.publicEvents()) {
+				bridgeOptions.addInboundPermitted(new PermittedOptions().setAddress(event.address));
+				bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress(event.address));
 			}
+
+			bridgeOptions.addInboundPermitted(new PermittedOptions().setAddressRegex("custom.*"));
+			bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddressRegex("custom.*"));
+
 			handler.bridge(bridgeOptions, event -> {
 				if (log.isDebugEnabled()) {
 					if (event.type() == BridgeEventType.SOCKET_CREATED) {

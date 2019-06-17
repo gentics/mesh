@@ -1,20 +1,21 @@
 package com.gentics.mesh.core.data.schema;
 
-import static com.gentics.mesh.Events.EVENT_SCHEMA_CREATED;
-import static com.gentics.mesh.Events.EVENT_SCHEMA_DELETED;
-import static com.gentics.mesh.Events.EVENT_SCHEMA_UPDATED;
+import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.ContainerType;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import static com.gentics.mesh.ElementType.SCHEMAVERSION;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_UPDATED;
 
 /**
  * Each schema update is stored within a dedicated schema container version in order to be able to keep track of changes in between different schema container
@@ -23,9 +24,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 public interface SchemaContainerVersion
 		extends GraphFieldSchemaContainerVersion<SchemaResponse, SchemaModel, SchemaReference, SchemaContainerVersion, SchemaContainer> {
 
-	static final String TYPE = "schemaVersion";
-
-	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_SCHEMA_CREATED, EVENT_SCHEMA_UPDATED, EVENT_SCHEMA_DELETED);
+	static final TypeInfo TYPE_INFO = new TypeInfo(SCHEMAVERSION, SCHEMA_CREATED, SCHEMA_UPDATED, SCHEMA_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {
@@ -58,5 +57,11 @@ public interface SchemaContainerVersion
 	 * @return
 	 */
 	Iterable<? extends Node> getNodes(String branchUuid, User user, ContainerType type);
+
+	/**
+	 * Check whether versioning is disabled by default or via the schema setting.
+	 * @return
+	 */
+	boolean isAutoPurgeEnabled();
 
 }

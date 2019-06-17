@@ -7,7 +7,7 @@ import org.junit.Ignore;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 @Ignore
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class ValidateSchemaTest extends AbstractValidateSchemaTest {
 
 	public ValidateSchemaTest() {

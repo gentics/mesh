@@ -1,29 +1,40 @@
 package com.gentics.mesh.assertj.impl;
 
+import com.gentics.mesh.util.DateUtils;
+import com.gentics.mesh.util.UUIDUtil;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
+import io.vertx.core.json.JsonObject;
+import org.assertj.core.api.AbstractAssert;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Scanner;
-
-import org.assertj.core.api.AbstractAssert;
-
-import com.gentics.mesh.util.DateUtils;
-import com.gentics.mesh.util.UUIDUtil;
-import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.PathNotFoundException;
-
-import io.vertx.core.json.JsonObject;
-
 public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObject> {
 	/**
 	 * Key to check
 	 */
 	protected String key;
+
+	private static Map<String, String> staticVariables = Stream.of(
+		new SimpleImmutableEntry<>("CURRENT_API_BASE_PATH", CURRENT_API_BASE_PATH)
+	).collect(Collectors.toMap(SimpleImmutableEntry::getKey, SimpleImmutableEntry::getValue));
 
 	public JsonObjectAssert(JsonObject actual) {
 		super(actual, JsonObjectAssert.class);
@@ -55,7 +66,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		try {
 			Object actualValue = getByPath(path);
 			String actualStringRep = String.valueOf(actualValue);
-			assertEquals("Value for property on path {" + path + "} did notmatch: " + msg, value, actualStringRep);
+			assertEquals("Value for property on path {" + path + "} did not match: " + msg, value, actualStringRep);
 		} catch (PathNotFoundException e) {
 			fail("Could not find property for path {" + path + "} - Json is:\n--snip--\n" + actual.encodePrettily() + "\n--snap--\n" + msg);
 		}
@@ -83,7 +94,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 
 	/**
 	 * Assert that the JSON object complies to the assertions which are stored in the comments of the GraphQL query with the given name.
-	 * 
+	 *
 	 * @param name
 	 * @return
 	 * @throws IOException
@@ -94,6 +105,20 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		if (ins == null) {
 			fail("Could not find query file {" + path + "}");
 		}
+		return compliesToAssertions(ins);
+	}
+
+	public @NotNull JsonObjectAssert compliesToAssertions(String name, String version) {
+		InputStream ins = Optional.ofNullable(getClass().getResourceAsStream("/graphql/" + name + "." + version))
+			.orElseGet(() -> getClass().getResourceAsStream("/graphql/" + name));
+		if (ins == null) {
+			fail("Could not find query file {" + name + "}");
+		}
+		return compliesToAssertions(ins);
+	}
+
+	@NotNull
+	private JsonObjectAssert compliesToAssertions(InputStream ins) {
 		Scanner scanner = new Scanner(ins);
 		try {
 			int lineNr = 1;
@@ -117,7 +142,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 	}
 
 	private void evaluteAssertion(String assertion, int lineNr) {
-		String[] parts = assertion.split("=");
+		String[] parts = assertion.split("=", 2);
 		if (parts.length <= 1) {
 			fail("Assertion on line {" + lineNr + "} is not complete {" + assertion + "}");
 		}
@@ -136,13 +161,24 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		} else if ("<is-undefined>".equals(value)) {
 			pathIsUndefined(path, msg);
 		} else {
-			has(path, value, msg);
+			has(path, replaceVariables(value), msg);
 		}
+	}
+
+	private String replaceVariables(String value) {
+		Pattern pattern = Pattern.compile("%(.*)%");
+		Matcher matcher = pattern.matcher(value);
+		while (matcher.find()) {
+			String varname = matcher.group(1);
+			value = matcher.replaceFirst(staticVariables.get(varname));
+			matcher = pattern.matcher(value);
+		}
+		return value;
 	}
 
 	/**
 	 * Assert that the path is not present in the JSON object.
-	 * 
+	 *
 	 * @param path
 	 * @param msg
 	 * @return Fluent API
@@ -160,7 +196,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 
 	/**
 	 * Assert that the string value which is present at the given path matches the pattern of a uuid.
-	 * 
+	 *
 	 * @param path
 	 * @return Fluent API
 	 */

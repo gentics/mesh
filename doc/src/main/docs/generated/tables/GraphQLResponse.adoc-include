@@ -1,0 +1,20 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| data
+| true
+| object
+| Nested JSON object which contains the query result data.
+
+| errors
+| false
+| array
+| Array of errors which were encoutered when handling the query.
+
+|======

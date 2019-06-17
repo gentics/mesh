@@ -1,20 +1,7 @@
 package com.gentics.mesh.core.graphql;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Vector;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
-
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.assertj.impl.JsonObjectAssert;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -68,14 +55,18 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.hazelcast.util.function.Consumer;
 import com.syncleus.ferma.tx.Tx;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.functions.Function;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -83,15 +74,22 @@ import org.junit.runners.Parameterized.Parameters;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Vector;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 
 @RunWith(Parameterized.class)
-@MeshTestSetting(useElasticsearch = false, testSize = TestSize.FULL, startServer = true)
+@MeshTestSetting(testSize = TestSize.FULL, startServer = true)
 public class GraphQLEndpointTest extends AbstractMeshTest {
 
 	private static final String CONTENT_UUID = "43ee8f9ff71e4016ae8f9ff71e10161c";
@@ -105,53 +103,91 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	private final boolean withMicroschema;
 
 	private final String version;
+	private final String apiVersion;
 
-	public GraphQLEndpointTest(String queryName, boolean withMicroschema, String version) {
+	private final Consumer<JsonObject> assertion;
+	private MeshRestClient client;
+
+	/**
+	 * Default constructor.
+	 *
+	 * <p>
+	 * When <code>assertion</code> is <code>null</code> the result of the GraphQL query is passed to
+	 * {@link JsonObjectAssert#compliesToAssertions(String)} which will check the assertions annotated in the
+	 * GraphQL query comments.
+	 * </p>
+	 *
+	 * @param queryName The filename of the GraphQL query to use
+	 * @param withMicroschema Whether to use micro schemas
+	 * @param version Whether to use the <code>draft</code> or <code>published</code> version
+	 * @param assertion A custom assertion to be applied on the GraphQL query result
+	 */
+	public GraphQLEndpointTest(String queryName, boolean withMicroschema, String version, Consumer<JsonObject> assertion, String apiVersion) {
 		this.queryName = queryName;
 		this.withMicroschema = withMicroschema;
 		this.version = version;
+		this.assertion = assertion;
+		this.apiVersion = apiVersion;
 	}
 
-	@Parameters(name = "query={0},version={2}")
+	@Parameters(name = "query={0},version={2},apiVersion={4}")
 	public static Collection<Object[]> paramData() {
-		Collection<Object[]> testData = new Vector<>();
-		testData.add(new Object[] { "full-query", true, "draft" });
-		testData.add(new Object[] { "role-user-group-query", true, "draft" });
-		testData.add(new Object[] { "group-query", true, "draft" });
-		testData.add(new Object[] { "schema-query", true, "draft" });
-		// testData.add(new Object[] { "schema-projects-query", true, "draft" });
-		testData.add(new Object[] { "microschema-query", true, "draft" });
-		testData.add(new Object[] { "paging-query", true, "draft" });
-		testData.add(new Object[] { "tagFamily-query", true, "draft" });
-		testData.add(new Object[] { "node-query", true, "draft" });
-		testData.add(new Object[] { "node-tag-query", true, "draft" });
-		testData.add(new Object[] { "nodes-query", true, "draft" });
-		testData.add(new Object[] { "node-breadcrumb-query", true, "draft" });
-		testData.add(new Object[] { "node-language-fallback-query", true, "draft" });
-		testData.add(new Object[] { "node-languages-query", true, "draft" });
-		testData.add(new Object[] { "node-webroot-query", true, "draft" });
-		testData.add(new Object[] { "node-webroot-urlfield-query", true, "draft" });
-		testData.add(new Object[] { "node-relations-query", true, "draft" });
-		testData.add(new Object[] { "node-fields-query", true, "draft" });
-		testData.add(new Object[] { "node-fields-no-microschema-query", false, "draft" });
-		testData.add(new Object[] { "node/link/webroot", true, "draft" });
-		testData.add(new Object[] { "node/link/children", true, "draft" });
-		testData.add(new Object[] { "node/link/webroot-language", true, "draft" });
-		testData.add(new Object[] { "node/link/reference", true, "draft" });
-		testData.add(new Object[] { "node-field-list-path-query", true, "draft" });
-		testData.add(new Object[] { "project-query", true, "draft" });
-		testData.add(new Object[] { "tag-query", true, "draft" });
-		testData.add(new Object[] { "branch-query", true, "draft" });
-		testData.add(new Object[] { "user-query", true, "draft" });
-		testData.add(new Object[] { "mesh-query", true, "draft" });
-		testData.add(new Object[] { "microschema-projects-query", true, "draft" });
-		testData.add(new Object[] { "node-version-published-query", true, "published" });
-		testData.add(new Object[] { "filtering/children", true, "draft" });
-		testData.add(new Object[] { "filtering/nodes", true, "draft" });
-		testData.add(new Object[] { "filtering/nodes-en", true, "draft" });
-		testData.add(new Object[] { "filtering/nodes-jp", true, "draft" });
-		testData.add(new Object[] { "node/breadcrumb-root", true, "draft" });
-		return testData;
+		return Stream.<List<Object>>of(
+			Arrays.asList("full-query", true, "draft"),
+			Arrays.asList("role-user-group-query", true, "draft"),
+			Arrays.asList("group-query", true, "draft"),
+			Arrays.asList("schema-query", true, "draft"),
+			// Arrays.asList("schema-projects-query", true, "draft"),
+			Arrays.asList("microschema-query", true, "draft"),
+			Arrays.asList("paging-query", true, "draft"),
+			Arrays.asList("tagFamily-query", true, "draft"),
+			Arrays.asList("node-query", true, "draft"),
+			Arrays.asList("node-tag-query", true, "draft"),
+			Arrays.asList("nodes-query", true, "draft"),
+			Arrays.asList("nodes-query-by-uuids", true, "draft"),
+			Arrays.asList("node-breadcrumb-query", true, "draft"),
+			Arrays.asList("node-language-fallback-query", true, "draft"),
+			Arrays.asList("node-languages-query", true, "draft"),
+			Arrays.asList("node-not-found-webroot-query", true, "draft"),
+			Arrays.asList("node-webroot-query", true, "draft"),
+			Arrays.asList("node-webroot-urlfield-query", true, "draft"),
+			Arrays.asList("node-relations-query", true, "draft"),
+			Arrays.asList("node-fields-query", true, "draft"),
+			Arrays.asList("node-fields-no-microschema-query", false, "draft"),
+			Arrays.asList("node/link/webroot", true, "draft"),
+			Arrays.asList("node/link/children", true, "draft", (Consumer<JsonObject>) GraphQLEndpointTest::checkNodeLinkChildrenResponse),
+			Arrays.asList("node/link/webroot-language", true, "draft"),
+			Arrays.asList("node/link/reference", true, "draft"),
+			Arrays.asList("node-field-list-path-query", true, "draft"),
+			Arrays.asList("project-query", true, "draft"),
+			Arrays.asList("tag-query", true, "draft"),
+			Arrays.asList("branch-query", true, "draft"),
+			Arrays.asList("user-query", true, "draft"),
+			Arrays.asList("mesh-query", true, "draft"),
+			Arrays.asList("microschema-projects-query", true, "draft"),
+			Arrays.asList("node-version-published-query", true, "published"),
+			Arrays.asList("filtering/children", true, "draft"),
+			Arrays.asList("filtering/nodes", true, "draft"),
+			Arrays.asList("filtering/nodes-en", true, "draft"),
+			Arrays.asList("filtering/nodes-jp", true, "draft"),
+			Arrays.asList("filtering/nodes-creator-editor", true, "draft"),
+			Arrays.asList("filtering/users", true, "draft"),
+			Arrays.asList("filtering/groups", true, "draft"),
+			Arrays.asList("filtering/roles", true, "draft"),
+			Arrays.asList("node/breadcrumb-root", true, "draft"),
+			Arrays.asList("node/versionslist", true, "draft")
+		)
+		.flatMap(testCase -> IntStream.rangeClosed(1, CURRENT_API_VERSION).mapToObj(version -> {
+			// Make sure all testData entries have five parts.
+			Object[] array = testCase.toArray(new Object[5]);
+			array[4] = "v" + version;
+			return array;
+		})).collect(Collectors.toList());
+	}
+
+	@Before
+	public void setUp() throws Exception {
+		this.client = client(apiVersion);
 	}
 
 	@Test
@@ -164,12 +200,12 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			microschemaRequest.addField(FieldUtil.createStringFieldSchema("text"));
 			microschemaRequest.addField(FieldUtil.createNodeFieldSchema("nodeRef").setAllowedSchemas("content"));
 			microschemaRequest.addField(FieldUtil.createListFieldSchema("nodeList", "node"));
-			MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(microschemaRequest));
+			MicroschemaResponse microschemaResponse = call(() -> client.createMicroschema(microschemaRequest));
 			microschemaUuid = microschemaResponse.getUuid();
-			call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschemaResponse.getUuid()));
+			call(() -> client.assignMicroschemaToProject(PROJECT_NAME, microschemaResponse.getUuid()));
 		} else {
 			try (Tx tx = db().tx()) {
-				for (MicroschemaContainer microschema : meshRoot().getMicroschemaContainerRoot().findAllIt()) {
+				for (MicroschemaContainer microschema : meshRoot().getMicroschemaContainerRoot().findAll()) {
 					microschema.remove();
 				}
 				tx.success();
@@ -178,9 +214,15 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			Node node = folder("2015");
-			folder("news").setUuid(NEWS_UUID);
+			Node folder = folder("news");
+			folder.setUuid(NEWS_UUID);
+			folder.getGraphFieldContainer("de").updateWebrootPathInfo(initialBranchUuid(), null);
+			folder.getGraphFieldContainer("de").updateWebrootPathInfo(initialBranchUuid(), null);
+
 			Node node2 = content();
 			node2.setUuid(CONTENT_UUID);
+			node2.getGraphFieldContainer("en").updateWebrootPathInfo(initialBranchUuid(), null);
+			node2.getGraphFieldContainer("de").updateWebrootPathInfo(initialBranchUuid(), null);
 			Node node3 = folder("2014");
 
 			// Update the folder schema to contain all fields
@@ -188,6 +230,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			schemaContainer.setUuid(FOLDER_SCHEMA_UUID);
 			SchemaModel schema = schemaContainer.getLatestVersion().getSchema();
 			schema.setUrlFields("niceUrl");
+			schema.setAutoPurge(true);
 			NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
 			nodeFieldSchema.setName("nodeRef");
 			nodeFieldSchema.setLabel("Some label");
@@ -372,14 +415,13 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				micronodeField.getMicronode().createString("address").setString("Somewhere");
 				micronodeField.getMicronode().createString("postcode").setString("1010");
 			}
-			// folder("news").getChildren().forEach(e -> role().revokePermissions(e, GraphPermission.READ_PUBLISHED_PERM));
 			container.updateWebrootPathInfo(initialBranchUuid(), null);
 			tx.success();
 		}
 
 		// Publish all nodes
 		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
-		call(() -> client().publishNode(PROJECT_NAME, baseNodeUuid, new PublishParametersImpl().setRecursive(true)));
+		call(() -> client.publishNode(PROJECT_NAME, baseNodeUuid, new PublishParametersImpl().setRecursive(true)));
 
 		// Create a draft node
 		NodeCreateRequest request = new NodeCreateRequest();
@@ -389,7 +431,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
 		request.getFields().put("slug", FieldUtil.createStringField("new-page"));
 		request.setParentNode(new NodeReference().setUuid(baseNodeUuid));
-		call(() -> client().createNode(PROJECT_NAME, request));
+		call(() -> client.createNode(PROJECT_NAME, request));
 
 		// Create a node which contains mesh links
 		createLanguageLinkResolvingNode(NODE_WITH_LINKS_UUID, baseNodeUuid, CONTENT_UUID).blockingAwait();
@@ -402,7 +444,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		request2.getFields().put("nodeList", FieldUtil.createNodeListField(NODE_WITH_LINKS_UUID));
 		request2.getFields().put("slug", FieldUtil.createStringField("node-with-reference-en"));
 		request2.setParentNode(new NodeReference().setUuid(NEWS_UUID));
-		call(() -> client().createNode(NODE_WITH_NODE_REF_UUID, PROJECT_NAME, request2));
+		call(() -> client.createNode(NODE_WITH_NODE_REF_UUID, PROJECT_NAME, request2));
 
 		// Create referencing node content (de)
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
@@ -411,13 +453,17 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		nodeUpdateRequest.getFields().put("nodeRef", FieldUtil.createNodeField(NODE_WITH_LINKS_UUID));
 		nodeUpdateRequest.getFields().put("nodeList", FieldUtil.createNodeListField(NODE_WITH_LINKS_UUID));
 		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("node-with-reference-de"));
-		call(() -> client().updateNode(PROJECT_NAME, NODE_WITH_NODE_REF_UUID, nodeUpdateRequest));
+		call(() -> client.updateNode(PROJECT_NAME, NODE_WITH_NODE_REF_UUID, nodeUpdateRequest));
 
 		// Now execute the query and assert it
 		GraphQLResponse response = call(
-			() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName), new VersioningParametersImpl().setVersion(version)));
-		System.out.println(response.toJson());
-		assertThat(new JsonObject(response.toJson())).compliesToAssertions(queryName);
+			() -> client.graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName, apiVersion), new VersioningParametersImpl().setVersion(version)));
+		JsonObject jsonResponse = new JsonObject(response.toJson());
+		if (assertion == null) {
+			assertThat(jsonResponse).compliesToAssertions(queryName, apiVersion);
+		} else {
+			assertion.accept(jsonResponse);
+		}
 	}
 
 	private long dateToMilis(String date) throws ParseException {
@@ -459,7 +505,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
 			updateRequest.setFields(createFields.apply("de"));
 			updateRequest.setLanguage("de");
-			return client().updateNode(PROJECT_NAME, response.getUuid(), updateRequest).toSingle();
+			return client.updateNode(PROJECT_NAME, response.getUuid(), updateRequest).toSingle();
 		};
 
 		NodeCreateRequest createRequest = new NodeCreateRequest();
@@ -468,8 +514,51 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		createRequest.setParentNode(new NodeReference().setUuid(parentUuid));
 		createRequest.setFields(createFields.apply("en"));
 
-		return client().createNode(nodeUuid, PROJECT_NAME, createRequest).toSingle()
+		return client.createNode(nodeUuid, PROJECT_NAME, createRequest).toSingle()
 			.flatMap(updateNode)
 			.toCompletable();
+	}
+
+	/**
+	 * Special assertion for the <code>node/link/children</code> test query.
+	 *
+	 * <p>
+	 * This asserts that the children of certain elements eacht contain two german and to english nodes respectively,
+	 * and that the language of the loaded node is german.
+	 * </p>
+	 *
+	 * <p>
+	 * The special assertions are used because the order of children is not deterministic and the default
+	 * {@link JsonObjectAssert#compliesToAssertions(String) assertion} can randomly fail.
+	 * </p>
+	 *
+	 * @param result The JSON object from the GraphQL response
+	 */
+	private static void checkNodeLinkChildrenResponse(JsonObject result) {
+		Collector<Object, ?, Map<String, List<Object>>> groupByLanguage = Collectors.groupingBy(o -> ((JsonObject) o).getString("language"));
+		System.out.println(result.encodePrettily());
+		JsonObject node = result.getJsonObject("data").getJsonObject("node");
+
+		assertThat(node.getString("language")).as("Node language").isEqualTo("de");
+
+		Map<String, List<Object>> childCount = node.getJsonObject("c1").getJsonArray("elements").stream().collect(groupByLanguage);
+
+		assertThat(childCount.get("de").size()).as("German children of c1").isEqualTo(2);
+		assertThat(childCount.get("en").size()).as("English children of c1").isEqualTo(2);
+
+		childCount = node.getJsonObject("c2").getJsonArray("elements").stream().collect(groupByLanguage);
+		assertThat(childCount.get("de").size()).as("German children of c2").isEqualTo(2);
+		assertThat(childCount.get("en").size()).as("English children of c2").isEqualTo(2);
+
+		JsonArray hipChildren = node.getJsonObject("hip").getJsonArray("elements");
+
+		IntStream.range(0, hipChildren.size())
+			.mapToObj(idx -> hipChildren.getJsonObject(idx).put("idx", idx))
+			.forEach(c ->  {
+				Map<String, List<Object>> count = c.getJsonObject("parent").getJsonObject("children").getJsonArray("elements").stream().collect(groupByLanguage);
+
+				assertThat(count.get("de").size()).as("{} german children of hip", c.getInteger("idx")).isEqualTo(2);
+				assertThat(count.get("en").size()).as("{} english children of hip", c.getInteger("idx")).isEqualTo(2);
+			});
 	}
 }

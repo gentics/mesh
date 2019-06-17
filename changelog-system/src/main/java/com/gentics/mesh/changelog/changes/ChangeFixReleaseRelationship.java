@@ -25,7 +25,7 @@ public class ChangeFixReleaseRelationship extends AbstractChange {
 	}
 
 	@Override
-	public void apply() {
+	public void applyInTx() {
 		Vertex meshRoot = MeshGraphHelper.getMeshRootVertex(getGraph());
 		Vertex projectRoot = meshRoot.getVertices(Direction.OUT, "HAS_PROJECT_ROOT").iterator().next();
 		for (Vertex project : projectRoot.getVertices(Direction.OUT, "HAS_PROJECT")) {

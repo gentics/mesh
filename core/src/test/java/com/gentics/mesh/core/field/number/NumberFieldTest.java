@@ -32,7 +32,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = false)
+@MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = false)
 public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 
 	private static final String NUMBER_FIELD = "numberField";

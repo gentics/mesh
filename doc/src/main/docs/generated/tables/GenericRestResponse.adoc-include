@@ -1,0 +1,55 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| creator.firstName
+| false
+| string
+| Firstname of the user
+
+| creator.lastName
+| false
+| string
+| Lastname of the user
+
+| creator.uuid
+| true
+| string
+| Uuid of the user
+
+| permissions.create
+| true
+| boolean
+| Flag which indicates whether the create permission is granted.
+
+| permissions.delete
+| true
+| boolean
+| Flag which indicates whether the delete permission is granted.
+
+| permissions.publish
+| false
+| boolean
+| Flag which indicates whether the publish permission is granted.
+
+| permissions.read
+| true
+| boolean
+| Flag which indicates whether the read permission is granted.
+
+| permissions.readPublished
+| false
+| boolean
+| Flag which indicates whether the read published permission is granted.
+
+| permissions.update
+| true
+| boolean
+| Flag which indicates whether the update permission is granted.
+
+|======

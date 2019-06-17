@@ -1,14 +1,16 @@
-:icons: font
+---
+title: Security
+---
 
-= Security
+include::content/docs/variables.adoc-include[]
 
 This section will cover information about Gentics Mesh security related topics.
 
 == API Tokens
 
-API tokens can be generated via the `/api/v1/users/:uuid/token`.
-These tokens should not be publicly exposed since they they are equivant to user credentials.
-Tokens can be reset via the `/api/v1/users/:uuid/reset_token` endpoint.
+API tokens can be generated via the `{apiLatest}/users/:uuid/token`.
+These tokens should not be publicly exposed since they they are equivalent to user credentials.
+Tokens can be reset via the `{apiLatest}/users/:uuid/reset_token` endpoint.
 This will invalidate any previously generated API token.
 
 == Network Security
@@ -20,7 +22,7 @@ The REST and GraphQL API is secured by the Gentics Mesh authentication mechanism
 IMPORTANT: Exposing this service would allow anyone to modify, read and delete any of the data within the search index. 
 User passwords are not stored within this index.
 
-NOTE: Search queries can be submitted via the `/api/v1/:project/search/:type` endpoints. These endpoints are secured by Gentics Mesh.
+NOTE: Search queries can be submitted via the `{apiLatest}/:project/search/:type` endpoints. These endpoints are secured by Gentics Mesh.
 
 The *storage.startServer* setting can be used to start the OrientDB server on port 2424 and 2480. 
 This server will automatically be started if the *cluster.enabled* setting is enabled. It is advised to not expose this service.
@@ -29,7 +31,7 @@ The *cluster.enabled* setting will startup the OrientDB server as described abov
 Additionally the Vert.x eventbus, ElasticSearch clustering and Hazelcast service will be started. 
 All these services will open dedicated ports which will bind to the network which can be configured via the *cluster.networkHost* setting.
 
-IMPORTANT: Do not expose the service ports which are listed in the link:clustering.html#_port_mapping[clustering] documentation to the internet.
+IMPORTANT: Do not expose the service ports which are listed in the link:{{< relref "clustering.asciidoc" >}}#_port_mapping[clustering] documentation to the internet.
 
 == ElasticSearch
 
@@ -42,7 +44,7 @@ User passwords are stored as link:https://en.wikipedia.org/wiki/Bcrypt[bcrypt] h
 
 == Vulnerability Disclosure Policy
 
-Please do *not* post security issues to our github issues page. Instead we encourage you to submit security issues to us via support@gentics.com
+Please do *not* post security issues to our GitHub issues page. Instead we encourage you to submit security issues to us via support@gentics.com
 
 Publicly disclosing a vulnerability can put the entire community which makes use of Gentics Mesh at risk.
 
@@ -50,5 +52,4 @@ Your disclosure should include:
 
 * A description of the issues
 * A list of steps which can be followed to reproduce the issue
-
 

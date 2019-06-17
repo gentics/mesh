@@ -6,76 +6,78 @@ import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.root.impl.UserRootImpl;
-import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
-import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
+import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.google.common.collect.Sets;
+import com.syncleus.ferma.tx.Tx;
 
 /**
  * User specific checks.
  */
-public class UserCheck implements ConsistencyCheck {
+public class UserCheck extends AbstractConsistencyCheck {
 
 	@Override
-	public void invoke(Database db, ConsistencyCheckResponse response, boolean attemptRepair) {
-		Iterator<? extends User> it = db.getVerticesForType(UserImpl.class);
-		while (it.hasNext()) {
-			checkUser(it.next(), response);
-		}
+	public String getName() {
+		return "users";
 	}
 
-	private void checkUser(User user, ConsistencyCheckResponse response) {
+	@Override
+	public ConsistencyCheckResult invoke(Database db, Tx tx, boolean attemptRepair) {
+		return processForType(db, UserImpl.class, (user, result) -> {
+			checkUser(user, result);
+		}, attemptRepair, tx);
+	}
+
+	private void checkUser(User user, ConsistencyCheckResult result) {
 		String uuid = user.getUuid();
 
-		checkIn(user, HAS_USER, UserRootImpl.class, response, HIGH);
+		checkIn(user, HAS_USER, UserRootImpl.class, result, HIGH);
 		// checkOut(user, HAS_CREATOR, UserImpl.class, response, MEDIUM);
 		// checkOut(user, HAS_EDITOR, UserImpl.class, response, MEDIUM);
 
 		if (isEmpty(user.getUsername())) {
-			response.addInconsistency("Username is empty or not set", uuid, HIGH);
+			result.addInconsistency("Username is empty or not set", uuid, HIGH);
 		}
 		if (user.getCreationTimestamp() == null) {
-			response.addInconsistency("The user creation date is not set", uuid, MEDIUM);
+			result.addInconsistency("The user creation date is not set", uuid, MEDIUM);
 		}
 		if (user.getLastEditedTimestamp() == null) {
-			response.addInconsistency("The user edit timestamp is not set", uuid, MEDIUM);
+			result.addInconsistency("The user edit timestamp is not set", uuid, MEDIUM);
 		}
 
-		assertShortcutRoleEdges(user, response);
+		assertShortcutRoleEdges(user, result);
 	}
 
-	private void assertShortcutRoleEdges(User user, ConsistencyCheckResponse response) {
+	private void assertShortcutRoleEdges(User user, ConsistencyCheckResult result) {
 		String uuid = user.getUuid();
-
+		Set<Role> roles = user.getGroups().stream()
+			.flatMap(g -> g.getRoles().stream())
+			.collect(Collectors.toSet());
 		Set<Role> shortCutRoles = new HashSet<>();
+
 		for (Role role : user.getRolesViaShortcut()) {
 			shortCutRoles.add(role);
 		}
 
-		for (Group group : user.getGroups()) {
-			for (Role role : group.getRoles()) {
-				if (!shortCutRoles.contains(role)) {
-					response.addInconsistency(
-							"The user's shortcut role edges do not match up with the currently configured groups/roles. Missing role {"
-									+ role.getUuid() + "}",
-							uuid, HIGH);
-				} else {
-					shortCutRoles.remove(role);
-				}
-			}
+		String missingShortcutMsg = "The user's shortcut role edges do not match up with the currently configured "
+			+ "groups/roles. Missing shortcut role {%s}";
+		String extraShortcutMsg = "Found shortcut role edge for role {%s} which should not exist for the user.";
+
+		for (Role role : Sets.difference(roles, shortCutRoles)) {
+			result.addInconsistency(String.format(missingShortcutMsg, role.getUuid()), uuid, HIGH);
 		}
 
-		for (Role role : shortCutRoles) {
-			response.addInconsistency("Found shortcut role edge for role {" + role.getUuid() + "} which should not exist for the user.", uuid, HIGH);
+		for (Role role : Sets.difference(shortCutRoles, roles)) {
+			result.addInconsistency(String.format(extraShortcutMsg, role.getUuid()), uuid, HIGH);
 		}
-
 	}
 
 }

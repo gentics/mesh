@@ -28,4 +28,8 @@ public interface FieldList<T> extends Field {
 	 */
 	FieldList<T> setItems(List<T> items);
 
+	@Override
+	default Object getValue() {
+		return getItems();
+	}
 }

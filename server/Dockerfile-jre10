@@ -3,6 +3,7 @@ FROM    openjdk:10-slim
 ENV ESVERSION 6.1.2
 
 EXPOSE 8080
+EXPOSE 8081
 
 RUN adduser --disabled-password --disabled-login --uid 1000 --home /mesh mesh
 USER mesh

@@ -1,0 +1,57 @@
+{
+  "uuid" : "c5ac82fa1a9c43b6ac82fa1a9ca3b61c",
+  "displayField" : "name",
+  "segmentField" : "name",
+  "container" : false,
+  "description" : "Example schema description",
+  "name" : "ExampleSchema",
+  "fields" : [ {
+    "name" : "name",
+    "label" : "Name",
+    "required" : false,
+    "type" : "string"
+  }, {
+    "name" : "number",
+    "label" : "Number",
+    "required" : false,
+    "type" : "number"
+  }, {
+    "name" : "html",
+    "label" : "Teaser",
+    "required" : false,
+    "type" : "html"
+  }, {
+    "name" : "list",
+    "label" : "List of nodes",
+    "required" : false,
+    "listType" : "node",
+    "type" : "list",
+    "allow" : [ "content", "video" ]
+  }, {
+    "name" : "node",
+    "required" : false,
+    "type" : "node",
+    "allow" : [ "content", "video", "image" ]
+  }, {
+    "name" : "location",
+    "label" : "Location",
+    "required" : false,
+    "type" : "micronode",
+    "allow" : [ "geolocation" ]
+  }, {
+    "name" : "locationlist",
+    "label" : "List of Locations",
+    "required" : false,
+    "listType" : "micronode",
+    "type" : "list",
+    "allow" : [ "geolocation" ]
+  } ],
+  "permissions" : {
+    "create" : true,
+    "read" : true,
+    "update" : true,
+    "delete" : true,
+    "publish" : false,
+    "readPublished" : false
+  }
+}

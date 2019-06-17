@@ -1,0 +1,15 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| name
+| true
+| string
+| Deployment name of the plugin. This can either be a filesystem or maven deployment.
+
+|======

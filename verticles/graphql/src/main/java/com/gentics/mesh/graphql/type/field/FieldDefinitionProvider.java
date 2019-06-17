@@ -133,6 +133,9 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return field.getImageFocalPoint();
 			}));
 
+		// .plainText
+		type.field(newFieldDefinition().name("plainText").description("Extracted plain text of the uploaded document.").type(GraphQLString));
+
 		return type.build();
 	}
 
@@ -196,7 +199,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					GraphQLContext gc = env.getContext();
 					LinkType type = getLinkType(env);
 					String content = htmlField.getHTML();
-					return linkReplacer.replace(gc, null, null, content, type, gc.getProject().getName(), Arrays.asList(container.getLanguage().getLanguageTag()));
+					return linkReplacer.replace(gc, gc.getBranch()
+						.getUuid(), null, content, type, gc.getProject().getName(), Arrays.asList(container.getLanguageTag()));
 				}
 				return null;
 			}).build();
@@ -211,7 +215,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					GraphQLContext gc = env.getContext();
 					LinkType type = getLinkType(env);
 					String content = field.getString();
-					return linkReplacer.replace(gc, null, null, content, type, gc.getProject().getName(), Arrays.asList(container.getLanguage().getLanguageTag()));
+					return linkReplacer.replace(gc, gc.getBranch()
+						.getUuid(), null, content, type, gc.getProject().getName(), Arrays.asList(container.getLanguageTag()));
 				}
 				return null;
 			}).build();
@@ -271,7 +276,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return htmlList.getList().stream().map(item -> {
 					String content = item.getHTML();
 					LinkType linkType = getLinkType(env);
-					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(), Arrays.asList(container.getLanguage().getLanguageTag()));
+					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(), Arrays.asList(container.getLanguageTag()));
 				}).collect(Collectors.toList());
 			case "string":
 				StringGraphFieldList stringList = container.getStringList(schema.getName());
@@ -281,7 +286,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return stringList.getList().stream().map(item -> {
 					String content = item.getString();
 					LinkType linkType = getLinkType(env);
-					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(), Arrays.asList(container.getLanguage().getLanguageTag()));
+					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(), Arrays.asList(container.getLanguageTag()));
 				}).collect(Collectors.toList());
 			case "number":
 				NumberGraphFieldList numberList = container.getNumberList(schema.getName());
@@ -305,10 +310,10 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					Node node = item.getNode();
 					List<String> languageTags;
 					if (container instanceof NodeGraphFieldContainer) {
-						languageTags = Arrays.asList(container.getLanguage().getLanguageTag());
+						languageTags = Arrays.asList(container.getLanguageTag());
 					} else if (container instanceof Micronode) {
 						Micronode micronode = (Micronode)container;
-						languageTags = Arrays.asList(micronode.getContainer().getLanguage().getLanguageTag());
+						languageTags = Arrays.asList(micronode.getContainer().getLanguageTag());
 					} else {
 						throw Errors.error(HttpResponseStatus.INTERNAL_SERVER_ERROR, "container can only be NodeGraphFieldContainer or Micronode");
 					}

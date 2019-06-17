@@ -17,8 +17,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.common.ListResponse;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
+import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
@@ -95,9 +98,11 @@ public class JsonUtilTest {
 	@Test
 	public void testPermMap() {
 		UserResponse group = new UserResponse();
-		group.getPermissions().setOthers(false);
-		group.getPermissions().set(READ, true);
-		group.getPermissions().setCreate(true);
+		PermissionInfo info = new PermissionInfo();
+		info.setOthers(false);
+		info.set(READ, true);
+		info.setCreate(true);
+		group.setPermissions(info);
 		assertNotNull(group.toJson());
 	}
 
@@ -132,7 +137,9 @@ public class JsonUtilTest {
 
 		StringField stringField = FieldUtil.createStringField("test");
 		stringField.setString("testtext");
-		node.getFields().put("test", stringField);
+		FieldMap fields = new FieldMapImpl();
+		fields.put("test", stringField);
+		node.setFields(fields);
 
 		String json = node.toJson();
 		assertNotNull(json);

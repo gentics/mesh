@@ -20,11 +20,6 @@ public class ChangeReindexAll extends AbstractChange {
 	}
 
 	@Override
-	public void apply() {
-
-	}
-
-	@Override
 	public boolean requiresReindex() {
 		return true;
 	}

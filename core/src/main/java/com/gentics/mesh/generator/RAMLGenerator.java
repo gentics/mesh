@@ -1,27 +1,5 @@
 package com.gentics.mesh.generator;
 
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.mockito.Mockito.mock;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
-
-import org.apache.commons.io.FileUtils;
-import org.mockito.Mockito;
-import org.raml.emitter.RamlEmitter;
-import org.raml.model.Action;
-import org.raml.model.ActionType;
-import org.raml.model.MimeType;
-import org.raml.model.Protocol;
-import org.raml.model.Raml;
-import org.raml.model.Resource;
-import org.raml.model.Response;
-
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.core.endpoint.admin.AdminEndpoint;
 import com.gentics.mesh.core.endpoint.admin.RestInfoEndpoint;
@@ -52,12 +30,33 @@ import com.gentics.mesh.search.ProjectRawSearchEndpointImpl;
 import com.gentics.mesh.search.ProjectSearchEndpointImpl;
 import com.gentics.mesh.search.RawSearchEndpointImpl;
 import com.gentics.mesh.search.SearchEndpointImpl;
-
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
+import org.apache.commons.io.FileUtils;
+import org.mockito.Mockito;
+import org.raml.emitter.RamlEmitter;
+import org.raml.model.Action;
+import org.raml.model.ActionType;
+import org.raml.model.MimeType;
+import org.raml.model.Protocol;
+import org.raml.model.Raml;
+import org.raml.model.Resource;
+import org.raml.model.Response;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
+
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.mockito.Mockito.mock;
 
 /**
  * Generator for RAML documentation. The generation mocks all endpoint classes and extracts the routes from these endpoints in order to generate the RAML.
@@ -107,7 +106,7 @@ public class RAMLGenerator extends AbstractGenerator {
 		log.info("Starting RAML generation...");
 		raml.setTitle("Gentics Mesh REST API");
 		raml.setVersion(MeshVersion.getBuildInfo().getVersion());
-		raml.setBaseUri("http://localhost:8080/api/v1");
+		raml.setBaseUri("http://localhost:8080/api/v" + CURRENT_API_VERSION);
 		raml.getProtocols().add(Protocol.HTTP);
 		raml.getProtocols().add(Protocol.HTTPS);
 		raml.setMediaType("application/json");
@@ -147,9 +146,9 @@ public class RAMLGenerator extends AbstractGenerator {
 		}
 		for (InternalEndpointRoute endpoint : verticle.getEndpoints().stream().sorted().collect(Collectors.toList())) {
 
-			String fullPath = "api/v1" + basePath + "/" + verticle.getBasePath() + endpoint.getRamlPath();
+			String fullPath = "api/v" + CURRENT_API_VERSION + basePath + "/" + verticle.getBasePath() + endpoint.getRamlPath();
 			if (isEmpty(verticle.getBasePath())) {
-				fullPath = "api/v1" + basePath + endpoint.getRamlPath();
+				fullPath = "api/v" + CURRENT_API_VERSION + basePath + endpoint.getRamlPath();
 			}
 			Action action = new Action();
 			action.setIs(Arrays.asList(endpoint.getTraits()));

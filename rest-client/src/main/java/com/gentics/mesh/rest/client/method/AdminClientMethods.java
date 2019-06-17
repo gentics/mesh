@@ -5,6 +5,7 @@ import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 
 /**
  * Admin specific client methods
@@ -15,14 +16,18 @@ public interface AdminClientMethods {
 	 * Return the Gentics Mesh server status.
 	 * 
 	 * @return
+	 * @deprecated Use {@link MonitoringRestClient#status()} instead.
 	 */
+	@Deprecated
 	MeshRequest<MeshStatusResponse> meshStatus();
 
 	/**
 	 * Return the Gentics Mesh cluster status.
 	 * 
 	 * @return
+	 * @deprecated Use {@link MonitoringRestClient#clusterStatus()} instead.
 	 */
+	@Deprecated
 	MeshRequest<ClusterStatusResponse> clusterStatus();
 
 	/**

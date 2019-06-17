@@ -1,0 +1,78 @@
+{
+  "available" : true,
+  "indexSyncRunning" : false,
+  "metrics" : {
+    "tagfamily" : {
+      "insert.total" : 0,
+      "delete.pending" : 0,
+      "insert.pending" : 0,
+      "update.pending" : 0,
+      "delete.total" : 0,
+      "update.total" : 0
+    },
+    "schema" : {
+      "insert.total" : 0,
+      "delete.pending" : 0,
+      "insert.pending" : 0,
+      "update.pending" : 0,
+      "delete.total" : 0,
+      "update.total" : 0
+    },
+    "node" : {
+      "insert.total" : 0,
+      "delete.pending" : 0,
+      "insert.pending" : 0,
+      "update.pending" : 0,
+      "delete.total" : 0,
+      "update.total" : 0
+    },
+    "role" : {
+      "insert.total" : 0,
+      "delete.pending" : 0,
+      "insert.pending" : 0,
+      "update.pending" : 0,
+      "delete.total" : 0,
+      "update.total" : 0
+    },
+    "microschema" : {
+      "insert.total" : 0,
+      "delete.pending" : 0,
+      "insert.pending" : 0,
+      "update.pending" : 0,
+      "delete.total" : 0,
+      "update.total" : 0
+    },
+    "project" : {
+      "insert.total" : 0,
+      "delete.pending" : 0,
+      "insert.pending" : 0,
+      "update.pending" : 0,
+      "delete.total" : 0,
+      "update.total" : 0
+    },
+    "tag" : {
+      "insert.total" : 0,
+      "delete.pending" : 0,
+      "insert.pending" : 0,
+      "update.pending" : 0,
+      "delete.total" : 0,
+      "update.total" : 0
+    },
+    "user" : {
+      "insert.total" : 0,
+      "delete.pending" : 0,
+      "insert.pending" : 0,
+      "update.pending" : 0,
+      "delete.total" : 0,
+      "update.total" : 0
+    },
+    "group" : {
+      "insert.total" : 0,
+      "delete.pending" : 0,
+      "insert.pending" : 0,
+      "update.pending" : 0,
+      "delete.total" : 0,
+      "update.total" : 0
+    }
+  }
+}

@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = false)
+@MeshTestSetting(testSize = PROJECT, startServer = false)
 public class AtomicLanguageTest extends AbstractMeshTest {
 
 	@Test
@@ -23,9 +23,9 @@ public class AtomicLanguageTest extends AbstractMeshTest {
 			try (Tx tx2 = tx()) {
 				assertNotNull(languageRoot);
 				Language lang = languageRoot.create("Deutsch1", "de1");
-				db().setVertexType(lang.getElement(), LanguageImpl.class);
+				db().type().setVertexType(lang.getElement(), LanguageImpl.class);
 				lang = languageRoot.create("English1", "en1");
-				db().setVertexType(lang.getElement(), LanguageImpl.class);
+				db().type().setVertexType(lang.getElement(), LanguageImpl.class);
 				tx2.success();
 			}
 

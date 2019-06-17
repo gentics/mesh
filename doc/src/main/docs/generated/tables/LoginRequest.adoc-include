@@ -1,0 +1,25 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| newPassword
+| false
+| string
+| New password that will be set after successful login.
+
+| password
+| true
+| string
+| Password of the user which should be logged in.
+
+| username
+| true
+| string
+| Username of the user which should be logged in.
+
+|======

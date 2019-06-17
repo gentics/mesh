@@ -1,23 +1,29 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.INITIAL;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.Errors;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.version.VersionInfo;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
@@ -26,26 +32,6 @@ import com.gentics.mesh.util.VersionNumber;
  * A node field container is an aggregation node that holds localized fields (e.g.: StringField, NodeField...)
  */
 public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrackingVertex {
-
-	// Webroot index
-
-	String WEBROOT_PROPERTY_KEY = "webrootPathInfo";
-
-	String WEBROOT_INDEX_NAME = "webrootPathInfoIndex";
-
-	String PUBLISHED_WEBROOT_PROPERTY_KEY = "publishedWebrootPathInfo";
-
-	String PUBLISHED_WEBROOT_INDEX_NAME = "publishedWebrootPathInfoIndex";
-
-	// Url Field index
-
-	String WEBROOT_URLFIELD_PROPERTY_KEY = "webrootUrlInfo";
-
-	String WEBROOT_URLFIELD_INDEX_NAME = "webrootUrlInfoIndex";
-
-	String PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY = "publishedWebrootUrlInfo";
-
-	String PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME = "publishedWebrootInfoIndex";
 
 	/**
 	 * Type Value: {@value #TYPE}
@@ -125,29 +111,12 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	}
 
 	/**
-	 * Creates the key for the webroot index.
-	 *
-	 * @param segmentValue Value of the segment field
-	 * @param branchUuid Uuid of the branch
-	 * @param parent Parent of the node
-	 * @return The composed key
-	 */
-	static String composeWebrootIndexKey(String segmentValue, String branchUuid, Node parent) {
-		StringBuilder webRootInfo = new StringBuilder(segmentValue);
-		webRootInfo.append("-").append(branchUuid);
-		if (parent != null) {
-			webRootInfo.append("-").append(parent.getUuid());
-		}
-		return webRootInfo.toString();
-	}
-
-	/**
 	 * Return the document id for the container.
 	 * 
 	 * @return
 	 */
 	default String getDocumentId() {
-		return composeDocumentId(getParentNode().getUuid(), getLanguage().getLanguageTag());
+		return composeDocumentId(getParentNode().getUuid(), getLanguageTag());
 	}
 
 	/**
@@ -279,8 +248,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	void clone(NodeGraphFieldContainer container);
 
 	/**
-	 * Check whether this field container is the initial version for any
-	 * branch.
+	 * Check whether this field container is the initial version for any branch.
 	 * 
 	 * @return true if it is the initial, false if not
 	 */
@@ -315,8 +283,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	boolean isType(ContainerType type);
 
 	/**
-	 * Check whether this field container is the initial version for the given
-	 * branch.
+	 * Check whether this field container is the initial version for the given branch.
 	 * 
 	 * @param branchUuid
 	 *            branch Uuid
@@ -449,4 +416,99 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 */
 	Path getPath(InternalActionContext ac);
 
+	/**
+	 * Return an iterator over the edges for the given type and branch.
+	 * 
+	 * @param type
+	 * @param branchUuid
+	 * @return
+	 */
+	Iterator<? extends GraphFieldContainerEdge> getContainerEdge(ContainerType type, String branchUuid);
+
+	/**
+	 * Create the specific delete event.
+	 * 
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	NodeMeshEventModel onDeleted(String branchUuid, ContainerType type);
+
+	/**
+	 * Create the specific create event.
+	 * 
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	NodeMeshEventModel onCreated(String branchUuid, ContainerType type);
+
+	/**
+	 * Create the specific update event.
+	 * 
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	NodeMeshEventModel onUpdated(String branchUuid, ContainerType type);
+
+	/**
+	 * Create the taken offline event.
+	 * 
+	 * @param branchUuid
+	 * @return
+	 */
+	NodeMeshEventModel onTakenOffline(String branchUuid);
+
+	/**
+	 * Create the publish event.
+	 * 
+	 * @param branchUuid
+	 * @return
+	 */
+	NodeMeshEventModel onPublish(String branchUuid);
+
+	/**
+	 * Transform the container into a version info object.
+	 * 
+	 * @param ac
+	 * @return
+	 */
+	VersionInfo transformToVersionInfo(InternalActionContext ac);
+
+	/**
+	 * A container is purgeable when it is not being utilized as draft, published or initial version in any branch.
+	 * 
+	 * @return
+	 */
+	boolean isPurgeable();
+
+	/**
+	 * Check whether auto purge is enabled globally or for the schema of the container.
+	 * 
+	 * @return
+	 */
+	boolean isAutoPurgeEnabled();
+
+	/**
+	 * Purge the container from the version history and ensure that the links between versions are consistent.
+	 * 
+	 * @param bac
+	 *            Action context for the deletion process
+	 */
+	void purge(BulkActionContext bac);
+
+	/**
+	 * Purge the container from the version without the use of a Bulk Action Context.
+	 */
+	default void purge() {
+		purge(new DummyBulkActionContext());
+	}
+
+	/**
+	 * Return all versions.
+	 * 
+	 * @return
+	 */
+	TraversalResult<NodeGraphFieldContainer> versions();
 }

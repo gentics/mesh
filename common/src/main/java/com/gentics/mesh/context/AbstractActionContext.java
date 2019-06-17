@@ -126,4 +126,5 @@ public abstract class AbstractActionContext implements ActionContext {
 	public String i18n(String i18nKey, String... parameters) {
 		return I18NUtil.get(this, i18nKey, parameters);
 	}
+
 }

@@ -1,8 +1,14 @@
 package com.gentics.mesh.core.field.node;
 
-import static com.gentics.mesh.test.ClientHelper.expectException;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -18,23 +24,26 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.parameter.client.PublishParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Override
@@ -78,9 +87,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			NodeFieldListImpl listField = new NodeFieldListImpl();
 			listField.add(new NodeFieldListItemImpl("bogus"));
 
-			MeshResponse<NodeResponse> future = createNodeAsync("listField", listField).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "node_list_item_not_found", "bogus");
+			call(() -> createNodeAsync("listField", listField), BAD_REQUEST, "node_list_item_not_found", "bogus");
 		}
 	}
 
@@ -103,12 +110,14 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
+		disableAutoPurge();
+
 		Node node = folder("2015");
 		Node targetNode = folder("news");
 		Node targetNode2 = folder("deals");
 
 		List<List<Node>> valueCombinations = Arrays.asList(Arrays.asList(targetNode), Arrays.asList(targetNode2, targetNode), Collections.emptyList(),
-				Arrays.asList(targetNode, targetNode2), Arrays.asList(targetNode2));
+			Arrays.asList(targetNode, targetNode2), Arrays.asList(targetNode2));
 
 		NodeGraphFieldContainer container = tx(() -> node.getGraphFieldContainer("en"));
 		for (int i = 0; i < 20; i++) {
@@ -156,6 +165,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		disableAutoPurge();
+
 		Node targetNode = folder("news");
 		Node targetNode2 = folder("deals");
 
@@ -177,12 +188,12 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(latest.getNodeList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNodeList(FIELD_NAME)).isNotNull();
 			List<String> oldValueList = latest.getPreviousVersion().getNodeList(FIELD_NAME).getList().stream().map(item -> item.getNode().getUuid())
-					.collect(Collectors.toList());
+				.collect(Collectors.toList());
 			assertThat(oldValueList).containsExactly(targetNode.getUuid(), targetNode2.getUuid());
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
 			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
+				secondResponse.getVersion());
 		}
 	}
 
@@ -212,14 +223,64 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Tx tx = tx()) {
-			NodeFieldListImpl listField = new NodeFieldListImpl();
-			NodeFieldListItemImpl item = new NodeFieldListItemImpl().setUuid(folder("news").getUuid());
-			listField.add(item);
-			NodeResponse response = createNode(FIELD_NAME, listField);
-			NodeFieldList listFromResponse = response.getFields().getNodeFieldList(FIELD_NAME);
-			assertEquals(1, listFromResponse.getItems().size());
-		}
+		NodeFieldListImpl listField = new NodeFieldListImpl();
+		NodeFieldListItemImpl item = new NodeFieldListItemImpl().setUuid(folderUuid());
+		listField.add(item);
+		NodeResponse response = createNode(FIELD_NAME, listField);
+		NodeFieldList listFromResponse = response.getFields().getNodeFieldList(FIELD_NAME);
+		assertEquals(1, listFromResponse.getItems().size());
+	}
+
+	/**
+	 * Assert that the source node gets updated if the target is deleted.
+	 */
+	@Test
+	public void testReferenceListUpdateOnDelete() {
+		String sourceUuid = tx(() -> folder("2015").getUuid());
+		String targetUuid = contentUuid();
+
+		NodeFieldListImpl listField = new NodeFieldListImpl();
+		NodeFieldListItemImpl item = new NodeFieldListItemImpl().setUuid(targetUuid);
+		listField.add(item);
+		listField.add(item);
+		listField.add(item);
+		updateNode(FIELD_NAME, listField);
+
+		// 2. Publish the node so that we have to update documents (draft, published) when deleting the target
+		call(() -> client().publishNode(PROJECT_NAME, sourceUuid, new PublishParametersImpl().setRecursive(true)));
+
+		// 3. Create another draft version to add more complex data for the foreign node traversal
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.setVersion("draft");
+		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("blub123"));
+		call(() -> client().updateNode(PROJECT_NAME, sourceUuid, nodeUpdateRequest));
+
+		expect(NODE_DELETED).one();
+		expect(NODE_REFERENCE_UPDATED)
+			.match(1, NodeMeshEventModel.class, event -> {
+				assertThat(event)
+					.hasBranchUuid(initialBranchUuid())
+					.hasLanguage("en")
+					.hasType(DRAFT)
+					.hasSchemaName("folder")
+					.hasUuid(sourceUuid);
+			}).match(1, NodeMeshEventModel.class, event -> {
+				assertThat(event)
+					.hasBranchUuid(initialBranchUuid())
+					.hasLanguage("en")
+					.hasType(PUBLISHED)
+					.hasSchemaName("folder")
+					.hasUuid(sourceUuid);
+
+			})
+			.two();
+
+		call(() -> client().deleteNode(PROJECT_NAME, targetUuid));
+
+		awaitEvents();
+		waitForSearchIdleEvent();
+
 	}
 
 	@Test
@@ -262,7 +323,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			NodeFieldList deserializedNodeListField = responseCollapsed.getFields().getNodeFieldList(FIELD_NAME);
 			assertNotNull(deserializedNodeListField);
 			assertEquals("The newsNode should not be within in the list thus the list should be empty.", 0,
-					deserializedNodeListField.getItems().size());
+				deserializedNodeListField.getItems().size());
 
 			// 2. Read node with expanded fields
 			NodeResponse responseExpanded = readNode(node, FIELD_NAME, "bogus");
@@ -271,7 +332,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			deserializedNodeListField = responseExpanded.getFields().getNodeFieldList(FIELD_NAME);
 			assertNotNull(deserializedNodeListField);
 			assertEquals("The item should also not be included in the list even if we request an expanded node.", 0,
-					deserializedNodeListField.getItems().size());
+				deserializedNodeListField.getItems().size());
 		}
 	}
 
@@ -295,7 +356,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			NodeFieldList deserializedNodeListField = responseCollapsed.getFields().getNodeFieldList(FIELD_NAME);
 			assertNotNull(deserializedNodeListField);
 			assertEquals("The newsNode should be the first item in the list.", newsNode.getUuid(),
-					deserializedNodeListField.getItems().get(0).getUuid());
+				deserializedNodeListField.getItems().get(0).getUuid());
 
 			// Check whether it is possible to read the field in an expanded form.
 			NodeResponse nodeListItem = (NodeResponse) deserializedNodeListField.getItems().get(0);
@@ -320,5 +381,13 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 				fail("The returned item should be a NodeResponse object");
 			}
 		}
+	}
+
+	@Override
+	public NodeResponse createNodeWithField() {
+		NodeFieldListImpl listField = new NodeFieldListImpl();
+		NodeFieldListItemImpl item = new NodeFieldListItemImpl().setUuid(folderUuid());
+		listField.add(item);
+		return createNode(FIELD_NAME, listField);
 	}
 }

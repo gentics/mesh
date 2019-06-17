@@ -1,41 +1,54 @@
 package com.gentics.mesh.core.node;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Arrays;
-
-import org.junit.Test;
-
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
+import org.junit.Before;
+import org.junit.Test;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+import java.util.Arrays;
+
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNPUBLISHED;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.junit.Assert.assertFalse;
+
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
+	@Before
+	public void addAdminPerms() {
+		// Grant admin perms. Otherwise we can't check the jobs
+		tx(() -> group().addRole(roles().get("admin")));
+	}
 
 	@Test
-	public void testTakeNodeOzfflineManyChildren() {
+	public void testTakeNodeOfflineManyChildren() throws Exception {
 		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
 		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+		String folderSchemaUuid = tx(() -> schemaContainer("folder").getUuid());
+		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
 		String parentNodeUuid = tx(() -> folder("news").getUuid());
 
 		// Create a lot of test nodes
@@ -47,38 +60,77 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
 			request.getFields().put("slug", FieldUtil.createStringField("new-page" + i + ".html"));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			request.setSchema(schemaReference);
 			request.setLanguage("en");
+			request.setSchema(schemaReference);
 			request.setParentNodeUuid(parentNodeUuid);
 			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
 			call(() -> client().publishNode(PROJECT_NAME, response.getUuid()));
 		}
 
+		expect(NODE_UNPUBLISHED).match(1029, NodeMeshEventModel.class, event -> {
+			assertThat(event)
+				.uuidNotNull()
+				.hasBranchUuid(initialBranchUuid());
+			assertThat(event.getSchema().getUuid()).matches(contentSchemaUuid + "|" + folderSchemaUuid);
+			assertThat(event.getLanguageTag()).matches("en|de");
+			assertThat(event.getSchema().getName()).matches("folder|content");
+		}).total(1029);
+
+		expect(NODE_DELETED).none();
+		expect(NODE_CONTENT_DELETED).none();
+
 		call(() -> client().takeNodeOffline(PROJECT_NAME, baseNodeUuid, new PublishParametersImpl().setRecursive(true)));
+		awaitEvents();
 
 	}
 
 	@Test
 	public void testTakeNodeOffline() {
+		Node node = folder("products");
+		String nodeUuid = tx(() -> node.getUuid());
+		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
+		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
 
-		String nodeUuid = db().tx(() -> {
-			Node node = folder("products");
-			String uuid = node.getUuid();
-
-			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
-
-			assertThat(call(() -> client().publishNode(PROJECT_NAME, uuid))).as("Publish Status").isPublished("en").isPublished("de");
-			return uuid;
+		expect(NODE_UNPUBLISHED).match(1, NodeMeshEventModel.class, event -> {
+			assertThat(event)
+				.hasUuid(baseNodeUuid)
+				.hasSchema("folder", schemaUuid)
+				.hasBranchUuid(initialBranchUuid())
+				.hasLanguage("en")
+				.hasProject(PROJECT_NAME, projectUuid());
 		});
+		expect(NODE_UNPUBLISHED).total(29);
+		call(() -> client().takeNodeOffline(PROJECT_NAME, baseNodeUuid, new PublishParametersImpl().setRecursive(true)));
+		awaitEvents();
+
+		expect(NODE_PUBLISHED).match(1, NodeMeshEventModel.class, event -> {
+			assertThat(event)
+				.hasUuid(nodeUuid)
+				.hasSchema("folder", schemaUuid)
+				.hasBranchUuid(initialBranchUuid())
+				.hasLanguage("de")
+				.hasProject(PROJECT_NAME, projectUuid());
+		});
+		expect(NODE_PUBLISHED).match(1, NodeMeshEventModel.class, event -> {
+			assertThat(event)
+				.hasUuid(nodeUuid)
+				.hasSchema("folder", schemaUuid)
+				.hasBranchUuid(initialBranchUuid())
+				.hasLanguage("en")
+				.hasProject(PROJECT_NAME, projectUuid());
+		});
+		expect(NODE_PUBLISHED).total(2);
+		assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
+		awaitEvents();
 
 		// assert that the containers have both webrootpath properties set
 		try (Tx tx1 = tx()) {
 			for (String language : Arrays.asList("en", "de")) {
-				for (String property : Arrays.asList(NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY,
-					NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY)) {
-					assertThat(folder("products").getGraphFieldContainer(language).getProperty(property, String.class))
-						.as("Property " + property + " for " + language).isNotNull();
-				}
+				NodeGraphFieldContainer container = folder("products").getGraphFieldContainer(language);
+				GraphFieldContainerEdge draftEdge = container.getContainerEdge(DRAFT, initialBranchUuid()).next();
+				assertThat(draftEdge.getSegmentInfo()).isNotNull();
+				GraphFieldContainerEdge publishEdge = container.getContainerEdge(PUBLISHED, initialBranchUuid()).next();
+				assertThat(publishEdge.getSegmentInfo()).isNotNull();
 			}
 		}
 
@@ -88,14 +140,10 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		// assert that the containers have only the draft webrootpath properties set
 		try (Tx tx2 = tx()) {
 			for (String language : Arrays.asList("en", "de")) {
-				String property = NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY;
-				assertThat(folder("products").getGraphFieldContainer(language).getProperty(property, String.class))
-					.as("Property " + property + " for " + language).isNotNull();
-
-				property = NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY;
-				assertThat(folder("products").getGraphFieldContainer(language).getProperty(property, String.class))
-					.as("Property " + property + " for " + language).isNull();
-
+				NodeGraphFieldContainer container = folder("products").getGraphFieldContainer(language);
+				GraphFieldContainerEdge draftEdge = container.getContainerEdge(DRAFT, initialBranchUuid()).next();
+				assertThat(draftEdge.getSegmentInfo()).isNotNull();
+				assertFalse(container.getContainerEdge(PUBLISHED, initialBranchUuid()).hasNext());
 			}
 		}
 
@@ -114,14 +162,14 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
 			// 3. Take only en offline
-			call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "en"));
+			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"));
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en");
 
 			// 4. Assert status
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en").isPublished("de");
 
 			// 5. Take also de offline
-			call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "de"));
+			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"));
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("de");
 
 			// 6. Assert that both are offline
@@ -142,7 +190,8 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 				role().revokePermissions(node, PUBLISH_PERM);
 				return null;
 			});
-			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid), FORBIDDEN, "error_missing_perm", nodeUuid);
+			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid), FORBIDDEN, "error_missing_perm", nodeUuid,
+				PUBLISH_PERM.getRestPerm().getName());
 		}
 	}
 
@@ -158,7 +207,8 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 				role().revokePermissions(node, PUBLISH_PERM);
 				return null;
 			});
-			call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "en"), FORBIDDEN, "error_missing_perm", nodeUuid);
+			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"), FORBIDDEN, "error_missing_perm", nodeUuid,
+				PUBLISH_PERM.getRestPerm().getName());
 		}
 	}
 
@@ -187,10 +237,10 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			assertThat(call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "en"))).as("Initial publish status").isPublished();
 
 			// All nodes are initially published so lets take german offline
-			call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "de"));
+			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"));
 
 			// Another take offline call should fail since there is no german page online anymore.
-			call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "de"), NOT_FOUND, "error_language_not_found", "de");
+			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"), NOT_FOUND, "error_language_not_found", "de");
 		}
 	}
 
@@ -205,7 +255,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
-			call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "fr"), NOT_FOUND, "error_language_not_found", "fr");
+			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "fr"), NOT_FOUND, "error_language_not_found", "fr");
 		}
 	}
 
@@ -230,9 +280,9 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		call(() -> client().publishNode(PROJECT_NAME, newsUuid));
 		call(() -> client().publishNode(PROJECT_NAME, news2015Uuid));
 
-		call(() -> client().takeNodeLanguage(PROJECT_NAME, newsUuid, "de"));
+		call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, newsUuid, "de"));
 
-		call(() -> client().takeNodeLanguage(PROJECT_NAME, newsUuid, "en"), BAD_REQUEST, "node_error_children_containers_still_published",
+		call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, newsUuid, "en"), BAD_REQUEST, "node_error_children_containers_still_published",
 			news2015Uuid);
 
 	}
@@ -240,39 +290,27 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testTakeOfflineForBranch() {
 		Node news = folder("news");
-		Branch newBranch;
 		Branch initialBranch = db().tx(() -> latestBranch());
 
-		try (Tx tx = tx()) {
-			Project project = project();
-			newBranch = project.getBranchRoot().create("newbranch", user());
-			tx.success();
-		}
+		Branch newBranch = createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
-			// save the folder in new branch
-			NodeUpdateRequest update = new NodeUpdateRequest();
-			update.setLanguage("en");
-			update.getFields().put("name", FieldUtil.createStringField("News"));
-			call(() -> client().updateNode(PROJECT_NAME, news.getUuid(), update, new VersioningParametersImpl().setBranch(newBranch.getName())));
-
 			// publish in initial and new branch
 			call(() -> client().publishNode(PROJECT_NAME, news.getUuid(), new VersioningParametersImpl().setBranch(initialBranch.getName())));
 			call(() -> client().publishNode(PROJECT_NAME, news.getUuid(), new VersioningParametersImpl().setBranch(newBranch.getName())));
 
 			// take offline in initial branch
 			call(() -> client().takeNodeOffline(PROJECT_NAME, news.getUuid(), new VersioningParametersImpl().setBranch(initialBranch.getName()),
-					new PublishParametersImpl().setRecursive(true)));
+				new PublishParametersImpl().setRecursive(true)));
 		}
 
 		try (Tx tx = tx()) {
 			// check publish status
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, news.getUuid(),
-					new VersioningParametersImpl().setBranch(initialBranch.getName())))).as("Initial branch publish status").isNotPublished("en")
-							.isNotPublished("de");
+				new VersioningParametersImpl().setBranch(initialBranch.getName())))).as("Initial branch publish status").isNotPublished("en")
+					.isNotPublished("de");
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, news.getUuid(),
-					new VersioningParametersImpl().setBranch(newBranch.getName())))).as("New branch publish status").isPublished("en")
-							.doesNotContain("de");
+				new VersioningParametersImpl().setBranch(newBranch.getName())))).as("New branch publish status").isPublished("en").isPublished("de");
 
 		}
 

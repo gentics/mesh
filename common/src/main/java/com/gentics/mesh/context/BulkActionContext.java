@@ -1,31 +1,21 @@
 package com.gentics.mesh.context;
 
-import java.util.concurrent.atomic.AtomicLong;
+import com.gentics.mesh.ElementType;
+import com.gentics.mesh.context.impl.BulkActionContextImpl;
+import com.gentics.mesh.core.rest.event.EventCauseAction;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
+import com.gentics.mesh.event.EventQueueBatch;
+import io.reactivex.Completable;
 
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.syncleus.ferma.tx.Tx;
+public interface BulkActionContext {
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
-/**
- * Context which tracks recursive and bulk actions.
- * 
- * Some operations may affect a lot of elements and thus it is needed to commit the transaction at specific safe points in order to reduce the memory footprint.
- */
-public class BulkActionContext {
-
-	private static final Logger log = LoggerFactory.getLogger(BulkActionContext.class);
-
-	private static final int DEFAULT_BATCH_SIZE = 100;
-
-	private final AtomicLong batchCounter = new AtomicLong(1);
-	private final AtomicLong elementCounter = new AtomicLong(0);
-
-	private SearchQueueBatch batch;
-
-	public BulkActionContext(SearchQueueBatch batch) {
-		this.batch = batch;
+	/**
+	 * Create a new context.
+	 * 
+	 * @return
+	 */
+	static BulkActionContext create() {
+		return new BulkActionContextImpl();
 	}
 
 	/**
@@ -33,16 +23,12 @@ public class BulkActionContext {
 	 * 
 	 * @return
 	 */
-	public long inc() {
-		return elementCounter.incrementAndGet();
-	}
+	long inc();
 
 	/**
 	 * Process the deletion by processing the batch and committing the transaction.
 	 */
-	public void process() {
-		process(false);
-	}
+	void process();
 
 	/**
 	 * Process the actions by processing the batch and committing the transaction. The method will also automatically increase the counter.
@@ -50,23 +36,40 @@ public class BulkActionContext {
 	 * @param force
 	 *            Force the commit / process even if the batch is not yet full
 	 */
-	public void process(boolean force) {
-		if (elementCounter.incrementAndGet() >= DEFAULT_BATCH_SIZE || force) {
-			log.info("Processing transaction batch {" + batchCounter.get() + "}. I counted {" + elementCounter.get() + "} elements.");
-			batch.processSync();
-			Tx.getActive().getGraph().commit();
-			// Reset the counter back to zero
-			elementCounter.set(0);
-			batchCounter.incrementAndGet();
-		}
+	void process(boolean force);
+
+	/**
+	 * Return the batch of this context.
+	 * 
+	 * @return
+	 */
+	EventQueueBatch batch();
+
+	/**
+	 * Shortcut for {@link #batch()#add(MeshEventModel)}
+	 * 
+	 * @param event
+	 */
+	default void add(MeshEventModel event) {
+		batch().add(event);
 	}
 
-	public void dropIndex(String composeIndexName) {
-		batch.dropIndex(composeIndexName);
+	/**
+	 * Set the root cause of the action being invoked.
+	 * 
+	 * @param type
+	 * @param uuid
+	 * @param action
+	 */
+	default void setRootCause(ElementType type, String uuid, EventCauseAction action) {
+		batch().setCause(type, uuid, action);
 	}
 
-	public SearchQueueBatch batch() {
-		return batch;
-	}
+	/**
+	 * Add action which will be invoked once the context will be processed.
+	 * 
+	 * @param action
+	 */
+	void add(Completable action);
 
 }

@@ -1,6 +1,8 @@
-:icons: font
+---
+title: Contribution Guide
+---
 
-= Contribution Guide
+include::content/docs/variables.adoc-include[]
 
 This document is for developers which are interested in contributing to the Gentics Mesh project.
 It aims to provide you with a big picture and starting points to get your bearings within the Gentics Mesh codebase.
@@ -21,6 +23,52 @@ In order for any contributions to be accepted you MUST sign the https://www.clah
 
 The purpose of this agreement is to protect users of this codebase by ensuring that all code is free to use under the stipulations of the Apache2 license.
 
+== IDE Setup
+
+=== Eclipse 
+
+Make sure that you use at least Eclipse Neon.
+
+Install the following Maven m2e workshop plugins:
+
+* m2e-apt-plugin
+
+NOTE: Make sure that your Eclipse Maven APT settings are set to "Automatically configure JDT APT". If you don't find this option, you most likely need to install the M2E APT Plugin for eclipse.
+
+Import all Maven modules in your IDE.
+
+Please note that this project is using Google Dagger for dependency injection. 
+Adding new dependencies or beans may require a fresh build (via Project->Clean) of the `mesh-core` and `mesh-api` modules.
+
+=== IntelliJ
+
+Import the project and select the `pom.xml` under the `mesh` folder.
+
+To run the server from IntelliJ:
+
+ * Create an Application in run configuration.
+ * In the `Main Class` field, put `com.gentics.mesh.server.ServerRunner`.
+ * In the `Use classpath of module` field, select the `mesh-server` module.
+ * In the `Working directory` field, choose an empty folder.
+ * Build the project by executing the maven command below before starting up mesh.
+
+NOTE: You need to manually set the `Working directory` in your `Run/Debug Configuration` to an empty folder if you run the `ServerRunner` or `DemoRunner` application. Otherwise Gentics Mesh will not be able to start the embedded Elasticsearch service.
+
+=== Building
+
+You can build Gentics Mesh locally using link:https://maven.apache.org/[Apache Maven].
+
+NOTE: Running all test locally is *not* recommended since the execution time is *very high*. Some tests also require a docker environment to run integration components.+
+
+```
+git clone git@github.com:gentics/mesh.git
+cd mesh
+git checkout master
+JAVA_HOME=<PATH-TO-YOUR-JAVA8> mvn clean package -Denv.JAVA_1_8_HOME=$JAVA_HOME -DskipTests -Dskip.unit.tests -Dskip.performance.tests -Dskip.cluster.tests
+```
+
+The master branch should be used as the branch to be build since the dev branch can be unstable.
+
 == Components
 
 The main components which are used to build Gentics Mesh are:
@@ -30,7 +78,7 @@ The main components which are used to build Gentics Mesh are:
 |======
 | Component | Usage
 | http://vertx.io[Vert.x]                       | Provides HTTP server, Authentication, Upload handling, Eventbus and request routing.
-| http://orientdb.com/[OrientDB]                | Embedded Graph Database       
+| https://orientdb.com/[OrientDB]               | Embedded Graph Database
 | https://github.com/Syncleus/Ferma[Ferma]      | OGM which forms an access layer ontop of the Graph Database.
 | https://google.github.io/dagger/[Dagger 2]    | Dependency injection library
 | https://github.com/ReactiveX/RxJava[RxJava2]  | Library which is used to composing asynchronous requests/processes.
@@ -38,7 +86,7 @@ The main components which are used to build Gentics Mesh are:
 
 == Big Picture
 
-Since you are most likely already familiar with the Gentics Mesh link:raml[REST API] I assume it is best to start there.
+Since you are most likely already familiar with the Gentics Mesh link:/docs/api[REST API] I assume it is best to start there.
 
 We'll start on how the REST API is setup and continue how requests are handled. 
 After that I will explain how data is being handled by the graph database and how the graph is structured.
@@ -55,7 +103,7 @@ The `RestAPIVerticle` will setup the actual Http server which accepts the reques
 
 The `RouterStorage` is the main class which manages all the REST API routes. A storage will be assigned to each `RestAPIVerticle` instance. 
 The storage is used organize routes by its purpose and to also make routes re-usable.
-There are for example core routes (e.g. /api/v1/users) and project specific routes (e.g. /api/v1/:projectName/nodes).
+There are for example core routes (e.g. {apiLatest}/users) and project specific routes (e.g. {apiLatest}/:projectName/nodes).
 
 The `RestAPIVerticle` pulls Endpoints from various Endpoint classes like `UserEndpoint`, `RoleEndpoint`, `NodeEndpoint`. 
 Each of those Endpoint classes will be assigned a dedicated router to which the `EndpointRoutes` can be registered. 
@@ -67,15 +115,16 @@ How a request is being processed will be described in the next section.
 
 Lets follow the following request:
 
+[subs=attributes]
 ```
-GET /api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6
+GET {apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6
 ```
 
 1. The request is accepted by the `HttpServer` request handler and directed to the `RootRouter` (_/_).
-2. This router which is part of the `RouterStorage` will direct the request to the `APIRouter` (_/api/v1_).
-3. Next the request is routed to the `ProjectRouter` (_/api/v1/demo/)_ During this step the reference to the `demo` project is loaded and added to the `RoutingContext` for later use.
-4. After that to the `Router` which was assigned to the `NodeEndpoint` instance (_/api/v1/demo/nodes/_).
-5. Finally the request is being directed to the `Route` which matches the remaining path and Http method. (GET _/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6_)
+2. This router which is part of the `RouterStorage` will direct the request to the `APIRouter` (_{apiLatest}_).
+3. Next the request is routed to the `ProjectRouter` (_{apiLatest}/demo/)_ During this step the reference to the `demo` project is loaded and added to the `RoutingContext` for later use.
+4. After that to the `Router` which was assigned to the `NodeEndpoint` instance (_{apiLatest}/demo/nodes/_).
+5. Finally the request is being directed to the `Route` which matches the remaining path and Http method. (GET _{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6_)
 
 == Request Handling
 
@@ -254,29 +303,12 @@ NOTE: These kind of changes will alter the database structure and thus not be ab
       A cluster of Gentics Mesh instances is required to split and later to reform. 
       An entry should be added to the `CHANGELOG.adoc` file which informs the users about this change.
 
-== IDE Setup
-
-=== Eclipse 
-
-Make sure that you use at least Eclipse Neon.
-
-Install the following Maven m2e workshop plugins:
-
-* m2e-apt-plugin
-
-NOTE: Make sure that your Eclipse Maven APT settings are set to "Automatically configure JDT APT". If you don't find this option, you most likely need to install the M2E APT Plugin for eclipse.
-
-Import all Maven modules in your IDE.
-
-Please note that this project is using Google Dagger for dependency injection. 
-Adding new dependencies or beans may require a fresh build (via Project->Clean) of the mesh-core and mesh-api modules.
-
 == TL;DR
 
 The short form for the inpatient:
 
 * `RestAPIVerticle` contains all EndpointRouters
-* `NodeEndpoint` contains the routes for `/api/v1/:projectName/nodes`
+* `NodeEndpoint` contains the routes for `{apiLatest}/:projectName/nodes`
 * Elements in Mesh have each dedicated classes which directly represent the graph data (e.g. `NodeImpl`, `UserImpl`)
 * Endpoint classes like `NodeEndpoint` also have a CRUD class (e.g. `NodeCrudHandler`)
 

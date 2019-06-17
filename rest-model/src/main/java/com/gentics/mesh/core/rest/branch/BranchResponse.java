@@ -1,8 +1,12 @@
 package com.gentics.mesh.core.rest.branch;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
+import com.gentics.mesh.core.rest.tag.TagReference;
 
 /**
  * POJO for a branch response.
@@ -21,11 +25,23 @@ public class BranchResponse extends AbstractGenericRestResponse {
 	@JsonPropertyDescription("SSL flag of the branch which will be used to generate links across multiple projects.")
 	private Boolean ssl;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Optional path prefix for webroot path and rendered links.")
+	private String pathPrefix;
+
 	// private boolean active;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Flag which indicates whether any active node migration for this branch is still running or whether all nodes have been migrated to this branch.")
-	private boolean migrated;
+	private Boolean migrated;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Flag which indicates whether this is the latest branch. Requests that do not specify a specific branch will be performed in the scope of the latest branch.")
+	private Boolean latest;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("List of tags that were used to tag the branch.")
+	private List<TagReference> tags;
 
 	public BranchResponse() {
 	}
@@ -60,11 +76,22 @@ public class BranchResponse extends AbstractGenericRestResponse {
 	// this.active = active;
 	// }
 
+	/**
+	 * Get the migration status for the branch.
+	 * @return
+	 * @deprecated Use {@link #getMigrated()} instead.
+	 */
+	@JsonIgnore
+	@Deprecated
 	public boolean isMigrated() {
+		return migrated != null ? migrated : false;
+	}
+
+	public Boolean getMigrated() {
 		return migrated;
 	}
 
-	public void setMigrated(boolean migrated) {
+	public void setMigrated(Boolean migrated) {
 		this.migrated = migrated;
 	}
 
@@ -82,5 +109,46 @@ public class BranchResponse extends AbstractGenericRestResponse {
 
 	public void setSsl(Boolean ssl) {
 		this.ssl = ssl;
+	}
+
+	public Boolean getLatest() {
+		return latest;
+	}
+
+	public void setLatest(Boolean latest) {
+		this.latest = latest;
+	}
+
+	/**
+	 * Return the tags which were used to tag the branch. The tags are nested within their tag families.
+	 * 
+	 * @return
+	 */
+	public List<TagReference> getTags() {
+		return tags;
+	}
+
+	public void setTags(List<TagReference> tags) {
+		this.tags = tags;
+	}
+
+	/**
+	 * Return the path prefix.
+	 * 
+	 * @return
+	 */
+	public String getPathPrefix() {
+		return pathPrefix;
+	}
+
+	/**
+	 * Set the path prefix.
+	 * 
+	 * @param pathPrefix
+	 * @return Fluent API
+	 */
+	public BranchResponse setPathPrefix(String pathPrefix) {
+		this.pathPrefix = pathPrefix;
+		return this;
 	}
 }

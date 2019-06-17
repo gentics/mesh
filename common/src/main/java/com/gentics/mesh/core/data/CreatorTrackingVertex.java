@@ -34,7 +34,7 @@ public interface CreatorTrackingVertex extends MeshVertex {
 	 * @return Creation timestamp
 	 */
 	default Long getCreationTimestamp() {
-		return getProperty(CREATION_TIMESTAMP_PROPERTY_KEY);
+		return property(CREATION_TIMESTAMP_PROPERTY_KEY);
 	}
 
 	/**
@@ -53,7 +53,7 @@ public interface CreatorTrackingVertex extends MeshVertex {
 	 *            Creation timestamp
 	 */
 	default void setCreationTimestamp(long timestamp) {
-		setProperty(CREATION_TIMESTAMP_PROPERTY_KEY, timestamp);
+		property(CREATION_TIMESTAMP_PROPERTY_KEY, timestamp);
 	}
 
 	/**

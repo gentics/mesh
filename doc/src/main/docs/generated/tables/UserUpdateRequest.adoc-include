@@ -1,0 +1,45 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| emailAddress
+| false
+| string
+| New email address of the user
+
+| firstname
+| false
+| string
+| New firstname of the user
+
+| forcedPasswordChange
+| false
+| boolean
+| When true, the user needs to change their password on the next login.
+
+| lastname
+| false
+| string
+| New lastname of the user
+
+| nodeReference
+| false
+| object
+| New node reference of the user. This can also explicitly set to null in order to remove the assigned node from the user
+
+| password
+| false
+| string
+| New password of the user
+
+| username
+| false
+| string
+| New username of the user
+
+|======

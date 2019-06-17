@@ -1,9 +1,7 @@
 package com.gentics.mesh.core.tagfamily;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -11,25 +9,18 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.Test;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
-import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
@@ -40,7 +31,7 @@ import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.ext.web.RoutingContext;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
@@ -78,7 +69,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
 			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
-			List<? extends TagFamily> families = root.findAll();
+			List<? extends TagFamily> families = root.findAll().list();
 			assertNotNull(families);
 			assertEquals(2, families.size());
 
@@ -156,50 +147,14 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Test
 	@Override
 	public void testDelete() {
+		BulkActionContext context = createBulkContext();
 		try (Tx tx = tx()) {
-			BulkActionContext context = createBulkContext();
-			Map<String, ElementEntry> affectedElements = new HashMap<>();
-			try (Tx tx2 = tx()) {
-				TagFamily tagFamily = tagFamily("colors");
-				affectedElements.put("tagFamily", new ElementEntry(DELETE_ACTION, tagFamily.getUuid()));
-
-				Project project = project();
-				Branch branch = project.getLatestBranch();
-
-				int i = 0;
-				Tag redTag = tag("red");
-				affectedElements.put("tagFamily.red", new ElementEntry(DELETE_ACTION, redTag.getUuid()));
-				// Tagged nodes should be updated
-				for (Node node : redTag.getNodes(branch)) {
-					affectedElements.put("red tagged node " + i,
-							new ElementEntry(STORE_ACTION, node.getUuid(), project.getUuid(), branch.getUuid(),
-									ContainerType.DRAFT, node.getAvailableLanguageNames()));
-					i++;
-				}
-
-				Tag greenTag = tag("green");
-				affectedElements.put("tagFamily.green", new ElementEntry(DELETE_ACTION, greenTag.getUuid()));
-				for (Node node : greenTag.getNodes(branch)) {
-					affectedElements.put("green tagged node " + i,
-							new ElementEntry(STORE_ACTION, node.getUuid(), project.getUuid(), branch.getUuid(),
-									ContainerType.DRAFT, node.getAvailableLanguageNames()));
-					i++;
-				}
-
-				Tag blueTag = tag("blue");
-				affectedElements.put("tagFamily.blue", new ElementEntry(DELETE_ACTION, blueTag.getUuid()));
-				for (Node node : blueTag.getNodes(branch)) {
-					affectedElements.put("blue tagged node " + i,
-							new ElementEntry(STORE_ACTION, node.getUuid(), project.getUuid(), branch.getUuid(),
-									ContainerType.DRAFT, node.getAvailableLanguageNames()));
-					i++;
-				}
-
-				tagFamily.delete(context);
-				tx2.success();
-			}
-			assertThat(context.batch()).containsEntries(affectedElements);
+			TagFamily tagFamily = tagFamily("colors");
+			tagFamily.delete(context);
+			tx.success();
 		}
+		// 6 = 1 Tag family + 3 color tags + 2 tagged nodes
+		assertEquals("The batch should contain 6 entries.", 6, context.batch().size());
 	}
 
 	@Test
@@ -272,8 +227,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 			String uuid = tagFamily.getUuid();
 			TagFamily foundTagFamily = root.findByUuid(uuid);
 			assertNotNull(foundTagFamily);
-			BulkActionContext context = createBulkContext();
-			tagFamily.delete(context);
+			BulkActionContext bac = createBulkContext();
+			tagFamily.delete(bac);
 			// TODO check for attached nodes
 			Project project = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertNull(project);

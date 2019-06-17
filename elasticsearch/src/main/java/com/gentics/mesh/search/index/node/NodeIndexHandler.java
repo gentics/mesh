@@ -1,9 +1,7 @@
 package com.gentics.mesh.search.index.node;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -15,15 +13,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
@@ -31,8 +30,6 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.MoveDocumentEntry;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.bulk.DeleteBulkEntry;
@@ -42,20 +39,26 @@ import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.Transactional;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
-import com.gentics.mesh.search.index.entry.UpdateDocumentEntryImpl;
 import com.gentics.mesh.search.index.metric.SyncMetric;
+import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.reactivex.functions.Action;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -83,11 +86,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public NodeContainerMappingProvider mappingProvider;
 
 	@Inject
-	public AttachmentIngestConfigProvider ingestConfigProvider;
-
-	@Inject
-	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
-		super(searchProvider, db, boot, searchQueue);
+	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper) {
+		super(searchProvider, db, boot, helper);
 	}
 
 	@Override
@@ -127,78 +127,106 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	public Map<String, IndexInfo> getIndices() {
-		return db.tx(() -> {
+		return db.tx(tx -> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
 
 			// Iterate over all projects and construct the index names
-			for (Project project : boot.meshRoot().getProjectRoot().findAllIt()) {
-				// Add the draft and published index names per branch to the map
-				for (Branch branch : project.getBranchRoot().findAllIt()) {
-					// Each branch specific index has also document type specific mappings
-					for (SchemaContainerVersion containerVersion : branch.findActiveSchemaVersions()) {
-						String draftIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
-							.getUuid(), DRAFT);
-						String publishIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
-							.getUuid(), PUBLISHED);
-						if (log.isDebugEnabled()) {
-							log.debug("Adding index to map of known idices {" + draftIndexName + "}");
-							log.debug("Adding index to map of known idices {" + publishIndexName + "}");
-						}
-						branch.findAllMicroschemaVersions();
-						// Load the index mapping information for the index
-						SchemaModel schema = containerVersion.getSchema();
-						JsonObject mapping = getMappingProvider().getMapping(schema, branch);
-						JsonObject settings = schema.getElasticsearch();
-						IndexInfo draftInfo = new IndexInfo(draftIndexName, settings, mapping, schema.getName() + "@" + schema.getVersion());
-						IndexInfo publishInfo = new IndexInfo(publishIndexName, settings, mapping, schema.getName() + "@" + schema.getVersion());
-
-						// Check whether we also need to create an ingest pipeline config which corresponds to the index/schema
-						JsonObject ingestConfig = ingestConfigProvider.getConfig(schema);
-						draftInfo.setIngestPipelineSettings(ingestConfig);
-						publishInfo.setIngestPipelineSettings(ingestConfig);
-
-						indexInfo.put(draftIndexName, draftInfo);
-						indexInfo.put(publishIndexName, publishInfo);
-
-					}
+			for (Project project : boot.meshRoot().getProjectRoot().findAll()) {
+				for (Branch branch : project.getBranchRoot().findAll()) {
+					indexInfo.putAll(getIndices(project, branch).runInExistingTx(tx));
 				}
 			}
 			return indexInfo;
 		});
 	}
 
-	@Override
-	public Completable syncIndices() {
-		return Completable.defer(() -> {
-			return db.tx(() -> {
-				SyncMetric metric = new SyncMetric(getType());
-				Set<Completable> actions = new HashSet<>();
-				for (Project project : boot.meshRoot().getProjectRoot().findAllIt()) {
-					for (Branch branch : project.getBranchRoot().findAllIt()) {
-						for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
-							for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
-								actions.add(diffAndSync(project, branch, version, type, metric));
-							}
-						}
-					}
-				}
-				// Nothing will be synced if there is no managed index
-				return Completable.merge(actions);
-			});
+	public Transactional<Map<String, IndexInfo>> getIndices(Project project, Branch branch) {
+		return db.transactional(tx -> {
+			Map<String, IndexInfo> indexInfo = new HashMap<>();
+			// Each branch specific index has also document type specific mappings
+			for (SchemaContainerVersion containerVersion : branch.findActiveSchemaVersions()) {
+				indexInfo.putAll(getIndices(project, branch, containerVersion).runInExistingTx(tx));
+			}
+			return indexInfo;
 		});
 	}
 
-	private Map<String, String> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type) {
-		Map<String, String> versions = new HashMap<>();
-		String branchUuid = branch.getUuid();
-		version.getFieldContainers(branchUuid)
-			.filter(c -> c.getSchemaContainerVersion().equals(version))
-			.filter(c -> c.isType(type, branchUuid))
-			.forEach(c -> {
-				String v = generateVersion(c, branchUuid, type);
-				versions.put(c.getParentNode().getUuid() + "-" + c.getLanguage().getLanguageTag(), v);
-			});
-		return versions;
+	public Transactional<Map<String, IndexInfo>> getIndices(Project project, Branch branch, SchemaContainerVersion containerVersion) {
+		return db.transactional(tx -> {
+			Map<String, IndexInfo> indexInfo = new HashMap<>();
+			String draftIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
+				.getUuid(), DRAFT);
+			String publishIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
+				.getUuid(), PUBLISHED);
+			if (log.isDebugEnabled()) {
+				log.debug("Adding index to map of known indices {" + draftIndexName + "}");
+				log.debug("Adding index to map of known indices {" + publishIndexName + "}");
+			}
+			// Load the index mapping information for the index
+			SchemaModel schema = containerVersion.getSchema();
+			JsonObject mapping = getMappingProvider().getMapping(schema, branch);
+			JsonObject settings = schema.getElasticsearch();
+			IndexInfo draftInfo = new IndexInfo(draftIndexName, settings, mapping, schema.getName() + "@" + schema.getVersion());
+			IndexInfo publishInfo = new IndexInfo(publishIndexName, settings, mapping, schema.getName() + "@" + schema.getVersion());
+
+			indexInfo.put(draftIndexName, draftInfo);
+			indexInfo.put(publishIndexName, publishInfo);
+			return indexInfo;
+		});
+	}
+
+
+	@Override
+	public Set<String> filterUnknownIndices(Set<String> indices) {
+		Set<String> activeIndices = new HashSet<>();
+		db.tx(() -> {
+			for (Project currentProject : boot.meshRoot().getProjectRoot().findAll()) {
+				for (Branch branch : currentProject.getBranchRoot().findAll()) {
+					for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
+						Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
+							activeIndices
+								.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(), branch.getUuid(), version.getUuid(),
+										type));
+						});
+					}
+				}
+			}
+		});
+
+		if (log.isDebugEnabled()) {
+			for (String name : activeIndices) {
+				log.debug("Active index: {" + name + "}");
+			}
+		}
+		return indices.stream()
+			// Only handle indices of the handler's type
+			.filter(i -> i.startsWith(getType()))
+			// Filter out indices which are active
+			.filter(i -> !activeIndices.contains(i))
+			.collect(Collectors.toSet());
+	}
+
+	@Override
+	public Flowable<SearchRequest> syncIndices() {
+		return Flowable.defer(() -> db.tx(() -> {
+			SyncMetric metric = new SyncMetric(getType());
+			return boot.meshRoot().getProjectRoot().findAll().stream()
+				.flatMap(project -> project.getBranchRoot().findAll().stream()
+				.flatMap(branch -> branch.findActiveSchemaVersions().stream()
+				.flatMap(version -> Stream.of(DRAFT, PUBLISHED)
+				.map(type -> diffAndSync(project, branch, version, type, metric)))))
+				.collect(Collectors.collectingAndThen(Collectors.toList(), Flowable::merge));
+		}));
+	}
+
+	private Map<String, NodeGraphFieldContainer> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type) {
+		return db.tx(() -> {
+			String branchUuid = branch.getUuid();
+			return version.getFieldContainers(branchUuid)
+				.filter(c -> c.getSchemaContainerVersion().equals(version))
+				.filter(c -> c.isType(type, branchUuid))
+				.collect(Collectors.toMap(c -> c.getParentNode().getUuid() + "-" + c.getLanguageTag(), Function.identity()));
+		});
 	}
 
 	/**
@@ -216,91 +244,56 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		}
 	}
 
-	private Completable diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type, SyncMetric metric)
-		throws HttpErrorException {
+	private Flowable<SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type, SyncMetric metric) {
 		String indexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(),
 			version.getUuid(), type);
 
-		log.info("Handling index sync on handler {" + getClass().getName() + "}");
+		return Single.zip(
+			loadVersionsFromIndex(indexName),
+			Single.fromCallable(() -> loadVersionsFromGraph(branch, version, type)),
+			(sinkVersions, sourceNodes) -> {
+				log.info("Handling index sync on handler {" + getClass().getName() + "}");
+				String branchUuid = branch.getUuid();
 
-		try (Tx tx = db.tx()) {
+				Map<String, String> sourceVersions = db.tx(() -> sourceNodes.entrySet().stream()
+					.collect(Collectors.toMap(Map.Entry::getKey, x -> generateVersion(x.getValue(), branchUuid, type))));
 
-			// 1. Load versions from the local graph (source of truth)
-			Map<String, String> sourceVersions = loadVersionsFromGraph(branch, version, type);
+				// 3. Diff the maps
+				MapDifference<String, String> diff = Maps.difference(sourceVersions, sinkVersions);
+				if (diff.areEqual()) {
+					return Flowable.<SearchRequest>empty();
+				}
+				Set<String> needInsertionInES = diff.entriesOnlyOnLeft().keySet();
+				Set<String> needRemovalInES = diff.entriesOnlyOnRight().keySet();
+				Set<String> needUpdateInEs = diff.entriesDiffering().keySet();
 
-			// 2. Load the version from the elasticsearch index (sink)
-			Map<String, String> sinkVersions = loadVersionsFromIndex(indexName);
+				log.info("Pending insertions on {" + indexName + "}:" + needInsertionInES.size());
+				log.info("Pending removals on {" + indexName + "}:" + needRemovalInES.size());
+				log.info("Pending updates on {" + indexName + "}:" + needUpdateInEs.size());
 
-			// 3. Diff the maps
-			MapDifference<String, String> diff = Maps.difference(sourceVersions, sinkVersions);
-			if (diff.areEqual()) {
-				return Completable.complete();
-			}
-			Set<String> needInsertionInES = diff.entriesOnlyOnLeft().keySet();
-			Set<String> needRemovalInES = diff.entriesOnlyOnRight().keySet();
-			Set<String> needUpdate = diff.entriesDiffering().keySet();
+				metric.incInsert(needInsertionInES.size());
+				metric.incDelete(needRemovalInES.size());
+				metric.incUpdate(needUpdateInEs.size());
 
-			log.info("Pending insertions on {" + indexName + "}:" + needInsertionInES.size());
-			log.info("Pending removals on {" + indexName + "}:" + needRemovalInES.size());
-			log.info("Pending updates on {" + indexName + "}:" + needUpdate.size());
+				io.reactivex.functions.Function<
+					Action,
+					io.reactivex.functions.Function<String, CreateDocumentRequest>
+					> toCreateRequest = action -> uuid -> {
+					JsonObject doc = db.tx(() -> getTransformer().toDocument(sourceNodes.get(uuid), branchUuid, type));
+					return helper.createDocumentRequest(indexName, uuid, doc, action);
+				};
 
-			metric.incInsert(needInsertionInES.size());
-			metric.incDelete(needRemovalInES.size());
-			metric.incUpdate(needUpdate.size());
+				Flowable<SearchRequest> toInsert = Flowable.fromIterable(needInsertionInES)
+					.map(toCreateRequest.apply(metric::decInsert));
 
-			String versionUuid = version.getUuid();
-			String projectUuid = project.getUuid();
-			String branchUuid = branch.getUuid();
+				Flowable<SearchRequest> toUpdate = Flowable.fromIterable(needUpdateInEs)
+					.map(toCreateRequest.apply(metric::decUpdate));
 
-			// 4. Create the SQB's
-			SearchQueueBatch storeBatch = searchQueue.create();
-			for (String uuidLang : needInsertionInES) {
-				String uuid = uuidLang.substring(0, uuidLang.indexOf("-"));
-				String lang = uuidLang.substring(uuidLang.indexOf("-") + 1);
-				GenericEntryContext context = new GenericEntryContextImpl();
-				context.setContainerType(type);
-				context.setProjectUuid(projectUuid);
-				context.setBranchUuid(branchUuid);
-				context.setLanguageTag(lang);
-				context.setSchemaContainerVersionUuid(versionUuid);
-				UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(this, uuid, context, STORE_ACTION);
-				entry.setOnProcessAction(metric::decInsert);
-				storeBatch.addEntry(entry);
-			}
-			SearchQueueBatch removalBatch = searchQueue.create();
-			for (String uuidLang : needRemovalInES) {
-				String uuid = uuidLang.substring(0, uuidLang.indexOf("-"));
-				String lang = uuidLang.substring(uuidLang.indexOf("-") + 1);
-				GenericEntryContext context = new GenericEntryContextImpl();
-				context.setContainerType(type);
-				context.setProjectUuid(projectUuid);
-				context.setBranchUuid(branchUuid);
-				context.setSchemaContainerVersionUuid(versionUuid);
-				context.setLanguageTag(lang);
-				UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(this, uuid, context, DELETE_ACTION);
-				entry.setOnProcessAction(metric::decDelete);
-				removalBatch.addEntry(entry);
-			}
-			SearchQueueBatch updateBatch = searchQueue.create();
-			for (String uuidLang : needUpdate) {
-				String uuid = uuidLang.substring(0, uuidLang.indexOf("-"));
-				String lang = uuidLang.substring(uuidLang.indexOf("-") + 1);
-				GenericEntryContext context = new GenericEntryContextImpl();
-				context.setContainerType(type);
-				context.setProjectUuid(projectUuid);
-				context.setBranchUuid(branchUuid);
-				context.setSchemaContainerVersionUuid(versionUuid);
-				context.setLanguageTag(lang);
-				UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(this, uuid, context, STORE_ACTION);
-				entry.setOnProcessAction(metric::decUpdate);
-				updateBatch.addEntry(entry);
-			}
+				Flowable<SearchRequest> toDelete = Flowable.fromIterable(needRemovalInES)
+					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, metric::decDelete));
 
-			// 5. Process the SQB's
-			return Completable.mergeArray(removalBatch.processAsync(), storeBatch.processAsync(), updateBatch.processAsync());
-
-		}
-
+				return Flowable.merge(toInsert, toUpdate, toDelete);
+		}).flatMapPublisher(x -> x);
 	}
 
 	@Override
@@ -318,8 +311,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			} else {
 				// The project was not specified. Maybe a global search wants to know which indices must be searched.
 				// In that case we just iterate over all projects and collect index names per branch.
-				for (Project currentProject : boot.meshRoot().getProjectRoot().findAllIt()) {
-					for (Branch branch : currentProject.getBranchRoot().findAllIt()) {
+				for (Project currentProject : boot.meshRoot().getProjectRoot().findAll()) {
+					for (Branch branch : currentProject.getBranchRoot().findAll()) {
 						for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
 							indices.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(), branch.getUuid(), version.getUuid(),
 								ContainerType.forVersion(ac.getVersioningParameters().getVersion())));
@@ -366,7 +359,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 */
 	private void store(Set<Single<String>> obs, Node node, GenericEntryContext context) {
 		if (context.getBranchUuid() == null) {
-			for (Branch branch : node.getProject().getBranchRoot().findAllIt()) {
+			for (Branch branch : node.getProject().getBranchRoot().findAll()) {
 				store(obs, node, branch.getUuid(), context);
 			}
 		} else {
@@ -436,7 +429,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	private Observable<IndexBulkEntry> storeForBulk(Node node, GenericEntryContext context) {
 		if (context.getBranchUuid() == null) {
 			Set<Observable<IndexBulkEntry>> obs = new HashSet<>();
-			for (Branch branch : node.getProject().getBranchRoot().findAllIt()) {
+			for (Branch branch : node.getProject().getBranchRoot().findAll()) {
 				obs.add(storeForBulk(node, branch.getUuid(), context));
 			}
 			return Observable.merge(obs);
@@ -526,21 +519,20 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String oldIndexName = NodeGraphFieldContainer.composeIndexName(oldProjectUuid, releaseUuid,
 			oldContainer.getSchemaContainerVersion().getUuid(),
 			type);
-		String oldLanguageTag = oldContainer.getLanguage().getLanguageTag();
+		String oldLanguageTag = oldContainer.getLanguageTag();
 		String oldDocumentId = NodeGraphFieldContainer.composeDocumentId(oldContainer.getParentNode().getUuid(), oldLanguageTag);
-		DeleteBulkEntry deleteEntry = new DeleteBulkEntry(oldIndexName, oldDocumentId);
+		Observable<DeleteBulkEntry> deleteEntry = Observable.just(new DeleteBulkEntry(oldIndexName, oldDocumentId));
 
 		NodeGraphFieldContainer newContainer = context.getNewContainer();
 		String newProjectUuid = newContainer.getParentNode().getProject().getUuid();
 		String newIndexName = NodeGraphFieldContainer.composeIndexName(newProjectUuid, releaseUuid,
 			newContainer.getSchemaContainerVersion().getUuid(),
 			type);
-		String newLanguageTag = newContainer.getLanguage().getLanguageTag();
+		String newLanguageTag = newContainer.getLanguageTag();
 		String newDocumentId = NodeGraphFieldContainer.composeDocumentId(newContainer.getParentNode().getUuid(), newLanguageTag);
 		JsonObject doc = transformer.toDocument(newContainer, releaseUuid, type);
-		IndexBulkEntry addEntry = new IndexBulkEntry(newIndexName, newDocumentId, doc, searchProvider.hasIngestPipelinePlugin());
+		return 	Observable.just(new IndexBulkEntry(newIndexName, newDocumentId, doc));
 
-		return Observable.fromArray(addEntry, deleteEntry);
 	}
 
 	/**
@@ -571,7 +563,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		if (log.isDebugEnabled()) {
 			log.debug("Storing node {" + container.getParentNode().getUuid() + "} into index {" + indexName + "}");
 		}
-		String languageTag = container.getLanguage().getLanguageTag();
+		String languageTag = container.getLanguageTag();
 		String documentId = NodeGraphFieldContainer.composeDocumentId(container.getParentNode().getUuid(), languageTag);
 		return searchProvider.storeDocument(indexName, documentId, doc).andThen(Single.just(indexName));
 	}
@@ -591,10 +583,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		if (log.isDebugEnabled()) {
 			log.debug("Storing node {" + container.getParentNode().getUuid() + "} into index {" + indexName + "}");
 		}
-		String languageTag = container.getLanguage().getLanguageTag();
+		String languageTag = container.getLanguageTag();
 		String documentId = NodeGraphFieldContainer.composeDocumentId(container.getParentNode().getUuid(), languageTag);
 
-		return Single.just(new IndexBulkEntry(indexName, documentId, doc, searchProvider.hasIngestPipelinePlugin()));
+		return Single.just(new IndexBulkEntry(indexName, documentId, doc));
 	}
 
 	@Override
@@ -622,7 +614,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			List<UpdateBulkEntry> entries = new ArrayList<>();
 
 			// Determine which documents need to be updated. The node could have multiple documents in various indices.
-			for (Branch branch : project.getBranchRoot().findAllIt()) {
+			for (Branch branch : project.getBranchRoot().findAll()) {
 				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 					JsonObject json = getTransformer().toPermissionPartial(node, type);
 					for (NodeGraphFieldContainer container : node.getGraphFieldContainersIt(branch, type)) {
@@ -682,5 +674,4 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public String generateVersion(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
 		return getTransformer().generateVersion(container, branchUuid, type);
 	}
-
 }

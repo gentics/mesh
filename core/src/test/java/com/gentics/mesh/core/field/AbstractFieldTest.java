@@ -1,17 +1,7 @@
 package com.gentics.mesh.core.field;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-
-import java.util.function.Consumer;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
@@ -29,10 +19,20 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
+import org.mockito.Mockito;
+
+import java.util.function.Consumer;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 public abstract class AbstractFieldTest<FS extends FieldSchema> extends AbstractMeshTest implements FieldTestcases {
 
@@ -51,10 +51,10 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		}
 		version.setSchema(schema);
 		Node node = meshRoot().getNodeRoot().create(user(), version, project());
-		Branch branch = Tx.getActive().getGraph().addFramedVertex(BranchImpl.class);
-		branch.assignSchemaVersion(user(), version);
-		project().getBranchRoot().addItem(branch);
-		NodeGraphFieldContainer nodeContainer = node.createGraphFieldContainer(english(), branch, user());
+		node.setParentNode(initialBranchUuid(), project().getBaseNode());
+		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
+		initialBranch().assignSchemaVersion(user(), version, batch);
+		NodeGraphFieldContainer nodeContainer = node.createGraphFieldContainer(english(), initialBranch(), user());
 
 		return Tuple.tuple(node, nodeContainer);
 	}

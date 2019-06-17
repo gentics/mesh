@@ -22,7 +22,9 @@
 			</pattern>
 		</encoder>
 	</appender>
-	
+
+	<logger name="com.gentics.mesh.rest.client.impl.OkHttpWebsocket" level="TRACE"/>
+
 	<!-- <logger name="io.vertx" level="INFO"/> <logger name="com.gentics.mesh" level="INFO"/> <logger name="org.elasticsearch" level="INFO"/> <logger name="com.gentics.mesh.rest.MeshResponseHandler" 
 		level="TRACE"/> -->
 	<!-- <logger name="com.gentics" level="ERROR" additivity="false"> <appender-ref ref="STDERR"/> </logger> -->
@@ -32,7 +34,6 @@
 	<logger name="com.gentics.mesh.search.index.AbstractSearchHandler" level="DEBUG" />
 	
 	<logger name="com.gentics.mesh.rest.client.handler.impl.MeshJsonResponseHandler" level="DEBUG"/>
-	<logger name="com.gentics.mesh.rest.MeshRestRequestUtil" level="DEBUG"/>
 	<logger name="com.gentics.mesh.etc.RouterStorage" level="DEBUG"/>
 	<logger name="com.gentics.mesh.search.index.NodeIndexHandler" level="DEBUG"/>
 	
@@ -42,6 +43,11 @@
 	<logger name="com.gentics.mesh.core.binary.impl" level="DEBUG" />
 	 -->
 	<!-- <logger name="com.gentics.mesh.core.data.search.impl.SearchQueueBatchImpl" level="DEBUG" /> -->
+	<!-- 
+	<logger name="com.gentics.mesh.search.index" level="DEBUG" />
+	<logger name="com.gentics.mesh.event.impl.EventQueueBatchImpl" level="TRACE" />
+	<logger name="com.gentics.mesh.search.verticle" level="TRACE" />
+	 -->
 	<root level="INFO">
 		<appender-ref ref="STDOUT"/>
 	</root>

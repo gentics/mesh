@@ -34,7 +34,7 @@ public interface EditorTrackingVertex extends MeshVertex {
 	 * @return Edit timestamp
 	 */
 	default Long getLastEditedTimestamp() {
-		return getProperty(LAST_EDIT_TIMESTAMP_PROPERTY_KEY);
+		return property(LAST_EDIT_TIMESTAMP_PROPERTY_KEY);
 	}
 
 	/**
@@ -44,7 +44,7 @@ public interface EditorTrackingVertex extends MeshVertex {
 	 *            Edit timestamp
 	 */
 	default void setLastEditedTimestamp(long timestamp) {
-		setProperty(LAST_EDIT_TIMESTAMP_PROPERTY_KEY, timestamp);
+		property(LAST_EDIT_TIMESTAMP_PROPERTY_KEY, timestamp);
 	}
 
 	/**

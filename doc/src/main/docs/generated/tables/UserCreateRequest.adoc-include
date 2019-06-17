@@ -1,0 +1,50 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| emailAddress
+| false
+| string
+| Email address of the user.
+
+| firstname
+| false
+| string
+| Firstname of the user.
+
+| forcedPasswordChange
+| false
+| boolean
+| When true, the user needs to change their password on the next login.
+
+| groupUuid
+| false
+| string
+| Optional group id for the user. If provided the user will automatically be assigned to the identified group.
+
+| lastname
+| false
+| string
+| Lastname of the user.
+
+| nodeReference
+| false
+| object
+| New node reference of the user. This can also explicitly set to null in order to remove the assigned node from the user
+
+| password
+| true
+| string
+| Password of the new user.
+
+| username
+| true
+| string
+| Username of the user.
+
+|======

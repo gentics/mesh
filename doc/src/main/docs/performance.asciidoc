@@ -1,6 +1,8 @@
-:icons: font
+---
+title: Performance Guide
+---
 
-= Performance Guide
+include::content/docs/variables.adoc-include[]
 
 This document contains useful information about performance related topics. 
 It will help you make the right modelling choices when using Gentics Mesh.
@@ -32,14 +34,14 @@ It is advised to apply paging when possible. Without the `perPage` parameter all
 Regular paging performance will be impacted by the amount of nodes that are stored within a node container.
 It is advised to use GraphQL when accessing nodes in this situation. GraphQL will allow you to fine tune the paging information.
 
-include::examples/graphql/node-light-paging-query[]
+include::content/docs/examples/graphql/node-light-paging-query[]
 
 The paging performance can be greatly increased by omitting the *pageCount* and *totalCount* field.
 Including these fields will require Gentics Mesh to check all elements for permissions in order to count them.
 
 == Contents
 
-If you plan to use a caching layer or rely on the browser caching of node requests you can use the link:references.html#_etag_handling[ETag] value to cache these contents.
-In other cases it may be better to use the link:graphql.html[GraphQL] endpoint which allows you to only load specific data. 
+If you plan to use a caching layer or rely on the browser caching of node requests you can use the link:{{< relref "references.asciidoc" >}}#_etag_handling[ETag] value to cache these contents.
+In other cases it may be better to use the link:{{< relref "graphql.asciidoc" >}}[GraphQL] endpoint which allows you to only load specific data. 
 GraphQL can possibly also be used to reduce the amount of requests which need to be invoked and thus increase your implementation performance.
 

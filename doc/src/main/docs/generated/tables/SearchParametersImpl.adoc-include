@@ -1,0 +1,15 @@
+[options="header",cols="10%,20%,10%,60%"]
+|======
+
+| Name
+| Type
+| Mandatory
+| Description
+
+
+| wait
+| boolean 
+| false
+| Specify whether search should wait for the search to be idle before responding.
+
+|======

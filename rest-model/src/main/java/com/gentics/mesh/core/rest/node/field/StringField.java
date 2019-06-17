@@ -18,4 +18,8 @@ public interface StringField extends ListableField, MicroschemaListableField {
 	 */
 	StringField setString(String string);
 
+	@Override
+	default Object getValue() {
+		return getString();
+	}
 }

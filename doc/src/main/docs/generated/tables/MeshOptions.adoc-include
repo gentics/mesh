@@ -1,0 +1,285 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| defaultLanguage
+| false
+| string
+| Configure system wide default language. This language is automatically used if no language has been specified within the REST query parameters or GraphQL query arguments.
+
+| languagesFilePath
+| false
+| string
+| Optional path to a JSON file containing additional languages
+
+| updateCheck
+| false
+| boolean
+| Turn on or off the update checker.
+
+| httpServerOptions.port
+| false
+| int
+| Configure the Gentics Mesh HTTP server port. Default is: 8080
+
+| httpServerOptions.host
+| false
+| string
+| Configure the Gentics Mesh HTTP server host to bind to. Default is: 0.0.0.0
+
+| httpServerOptions.corsAllowedOriginPattern
+| false
+| string
+| Configured CORS allowed origin pattern. You can specify a regex to include multiple hosts if you want to do so.
+
+| httpServerOptions.corsAllowCredentials
+| false
+| boolean
+| Flag which indicates whether credentials are allowed to be passed along using CORS requests.
+
+| httpServerOptions.enableCors
+| false
+| boolean
+| Flag which indicates whether CORS handling should be enabled.
+
+| httpServerOptions.ssl
+| false
+| boolean
+| Flag which indicates whether SSL support be enabled.
+
+| httpServerOptions.certPath
+| false
+| string
+| Flag which indicates whether SSL support be enabled.
+
+| httpServerOptions.keyPath
+| false
+| string
+| Path to the SSL private key. Default: config/key.pem
+
+| monitoringOptions.enabled
+| false
+| boolean
+| Enable or disable the monitoring system. Default is: true
+
+| monitoringOptions.port
+| false
+| int
+| Configure the Gentics Mesh monitoring HTTP server port. Default is: 8081
+
+| monitoringOptions.host
+| false
+| string
+| Configure the Gentics Mesh monitoring HTTP server host to bind to. Default is: 127.0.0.1
+
+| vertxOptions.workerPoolSize
+| false
+| int
+| Configure worker pool size. Default is: 20
+
+| vertxOptions.eventPoolSize
+| false
+| int
+| Configure event pool size. Default is 2 * CPU Cores
+
+| clusterOptions.networkHost
+| false
+| string
+| IP or host which is used to announce and reach the instance in the cluster. Gentics Mesh will try to determine the IP automatically but you may use this setting to override this automatic IP handling.
+
+| clusterOptions.enabled
+| false
+| boolean
+| Flag to enable or disable the cluster mode.
+
+| clusterOptions.clusterName
+| false
+| string
+| Name of the cluster. Only instances with a common cluster name will form a cluster.
+
+| clusterOptions.vertxPort
+| false
+| integer
+| Port used by Vert.x for the eventbus server. A random free port will be selected if set to 0.
+
+| storageOptions.directory
+| true
+| string
+| Path to the graph database data directory.
+
+| storageOptions.backupDirectory
+| true
+| string
+| Path to the graph database backup directory.
+
+| storageOptions.exportDirectory
+| true
+| string
+| Path to the graph database export directory.
+
+| storageOptions.startServer
+| true
+| boolean
+| Flag which indicates whether the graph database admin web server should be started.
+
+| storageOptions.parameters
+| false
+| map
+| Additional set of graph database parameters.
+
+| searchOptions.url
+| false
+| string
+| Elasticsearch connection url to be used. Set this setting to null will disable the Elasticsearch support.
+
+| searchOptions.timeout
+| false
+| long
+| Timeout for Elasticsearch operations. Default: 8000ms
+
+| searchOptions.startupTimeout
+| false
+| integer
+| Timeout for Elasticsearch startup. Default: 45sec
+
+| searchOptions.startEmbedded
+| false
+| boolean
+| Flag which indicates whether to deploy and start the included Elasticsearch server.
+
+| searchOptions.embeddedArguments
+| false
+| string
+| String of arguments which will be used for starting the Elasticsearch server instance
+
+| searchOptions.prefix
+| false
+| string
+| Search server prefix for this installation. Choosing different prefixes for each Gentics Mesh instance will allow you to use a single Elasticsearch cluster for multiple Gentics Mesh instances. Default: mesh-
+
+| searchOptions.bulkLimit
+| false
+| int
+| Upper limit for the size of bulk requests. Default: 2000
+
+| searchOptions.eventBufferSize
+| false
+| int
+| Upper limit for mesh events that are to be mapped to elastic search requests. Default: 1000
+
+| searchOptions.bulkDebounceTime
+| false
+| int
+| The maximum amount of time in milliseconds between two bulkable requests before they are sent. Default: 2000
+
+| searchOptions.idleDebounceTime
+| false
+| int
+| The maximum amount of time in milliseconds between two successful requests before the idle event is emitted. Default: 100
+
+| searchOptions.retryInterval
+| false
+| int
+| The time in milliseconds between retries of elastic search requests in case of a failure. Default: 5000
+
+| searchOptions.waitForIdle
+| false
+| boolean
+| If true, search endpoints wait for elasticsearch to be idle before sending a response. Default: true
+
+| uploadOptions.byteLimit
+| false
+| long
+| The upload size limit in bytes. Default: 250
+
+| uploadOptions.directory
+| false
+| string
+| Path binary data storage directory. Fileuploads will be placed here.
+
+| uploadOptions.tempDirectory
+| false
+| string
+| Path to the file upload temporary directory. Inbound file uploads will be placed here before they are processed.
+
+| uploadOptions.parserLimit
+| false
+| int
+| The parser limit for uploaded documents (pdf, doc, docx). Default: 40000
+
+| authenticationOptions.tokenExpirationTime
+| true
+| int
+| Time in minutes which an issued token stays valid.
+
+| authenticationOptions.keystorePassword
+| true
+| string
+| The Java keystore password for the keystore file.
+
+| authenticationOptions.keystorePath
+| true
+| string
+| Path to the java keystore file which will be used to store cryptographic keys.
+
+| authenticationOptions.algorithm
+| true
+| string
+| Algorithm which is used to verify and sign JWT.
+
+| authenticationOptions.enableAnonymousAccess
+| false
+| boolean
+| Flag which indicates whether anonymous access should be enabled.
+
+| authenticationOptions.oauth2
+| false
+| oauth2options
+| OAuth2 related configuration options.
+
+| imageOptions.maxWidth
+| false
+| integer
+| Configure the maximum allowed image resize width. Resizing is a memory intensive operation and thus this limit can help avoid memory issues. Default: 2048
+
+| imageOptions.maxHeight
+| false
+| integer
+| Configure the maximum allowed image resize height. Resizing is a memory intensive operation and thus this limit can help avoid memory issues. Default: 2048
+
+| imageOptions.jpegQuality
+| false
+| float
+| Configure the quality of the output of JPEG images. Must be a value between inclusive 0 and inclusive 1. Default: 0.95
+
+| imageOptions.resampleFilter
+| false
+| resamplefilter
+| Configure the filter that is used when resizing images. Default: LANCZOS
+
+| contentOptions.autoPurge
+| false
+| boolean
+| Flag which controls the global setting for the auto purge mechanism. The setting can be overriden by the schema &#x27;autoPurge&#x27; flag. Default: true
+
+| tempDirectory
+| false
+| string
+| Path to the central tmp directory.
+
+| pluginDirectory
+| false
+| string
+| Path to the plugin directory.
+
+| nodeName
+| false
+| string
+| Name of the cluster node instance. If not specified a name will be generated.
+
+|======

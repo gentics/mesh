@@ -1,0 +1,35 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| fields
+| true
+| object
+| Dynamic map with fields of the node content.
+
+| language
+| true
+| string
+| ISO 639-1 language tag of the node content.
+
+| parentNode
+| true
+| object
+| Reference to the parent node in which the node will be created. The uuid of this object must be set.
+
+| schema
+| true
+| object
+| Reference to the schema of the node.
+
+| tags
+| false
+| array
+| List of tags that should be used to tag the node.
+
+|======

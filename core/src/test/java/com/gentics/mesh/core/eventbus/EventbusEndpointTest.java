@@ -1,9 +1,35 @@
 
 package com.gentics.mesh.core.eventbus;
 
-import static com.gentics.mesh.Events.EVENT_NODE_DELETED;
-import static com.gentics.mesh.Events.EVENT_NODE_UPDATED;
-import static com.gentics.mesh.Events.MESH_MIGRATION;
+import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.assertj.MeshAssertions;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.rest.client.MeshRestClientUtil;
+import com.gentics.mesh.rest.client.MeshWebsocket;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.RxUtil;
+import io.reactivex.Completable;
+import io.reactivex.subjects.CompletableSubject;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -12,43 +38,17 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
-
-import io.vertx.core.http.WebSocket;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 @RunWith(VertxUnitRunner.class)
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class EventbusEndpointTest extends AbstractMeshTest {
 
-	private WebSocket ws;
+	private MeshWebsocket ws;
 
 	@Before
 	public void setupEventbus() throws Exception {
-		CompletableFuture<WebSocket> fut = new CompletableFuture<>();
-		client().eventbus(ws -> {
-			fut.complete(ws);
-		}, fh -> {
-			fh.printStackTrace();
-			fail("Could not connect to eventbus.");
-		});
-		ws = fut.get(4, TimeUnit.SECONDS);
+		ws = client().eventbus();
+		// Wait for initial connection
+		ws.connections().blockingFirst();
 	}
 
 	@After
@@ -62,43 +62,32 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 	public void testExternalEventbusMessage(TestContext context) throws Exception {
 
 		Async async = context.async();
-		String allowedAddress = MESH_MIGRATION;
+		MeshEvent allowedAddress = USER_CREATED;
 
 		// Register
-		JsonObject msg = new JsonObject().put("type", "register").put("address", allowedAddress);
-		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
+		ws.registerEvents(allowedAddress);
 
 		// Handle msgs
-		ws.handler(buff -> {
-			String str = buff.toString();
-			System.out.println("msg:" + str);
-			JsonObject received = new JsonObject(str);
-			JsonObject rec = received.getJsonObject("body");
-			String value = rec.getString("test");
-			assertEquals("someValue", value);
+		ws.events().firstOrError().subscribe(event -> {
+			MeshAssertions.assertThat(event.getBodyAsJson().get("test").textValue()).isEqualTo("someValue");
 			async.complete();
 		});
 
 		Thread.sleep(1000);
-		Mesh.vertx().eventBus().send(allowedAddress, new JsonObject().put("test", "someValue"));
-
+		Mesh.vertx().eventBus().publish(allowedAddress.address, new JsonObject().put("test", "someValue"));
 	}
 
 	@Test(timeout = 4_000)
 	public void testNodeDeleteEvent(TestContext context) throws Exception {
 		Async async = context.async();
 
-		// Register
-		JsonObject msg = new JsonObject().put("type", "register").put("address", EVENT_NODE_DELETED);
-		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
+		ws.registerEvents(NODE_DELETED);
 
 		// Handle msgs
-		ws.handler(buff -> {
-			String str = buff.toString();
-			JsonObject received = new JsonObject(str);
-			context.assertNotNull(received.getJsonObject("body").getString("uuid"));
-			context.assertEquals("content", received.getJsonObject("body").getString("schemaName"));
-			context.assertNull(received.getJsonObject("body").getString("languageTag"));
+		ws.events().firstOrError().subscribe(event -> {
+			NodeMeshEventModel body = JsonUtil.readValue(event.getBodyAsJson().toString(), NodeMeshEventModel.class);
+			context.assertNotNull(body.getUuid());
+			context.assertEquals("content", body.getSchema().getName());
 			async.complete();
 		});
 		call(() -> client().deleteNode(PROJECT_NAME, contentUuid()));
@@ -108,37 +97,33 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 	public void testNodeDeleteLanguageEvent(TestContext context) throws Exception {
 		Async async = context.async();
 
-		// Register
-		JsonObject msg = new JsonObject().put("type", "register").put("address", EVENT_NODE_DELETED);
-		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
+		ws.registerEvents(NODE_CONTENT_DELETED);
+
+		ws.errors().subscribe(context::fail);
 
 		// Handle msgs
-		ws.handler(buff -> {
-			String str = buff.toString();
-			JsonObject received = new JsonObject(str);
-			System.out.println(received.encodePrettily());
-			context.assertNotNull(received.getJsonObject("body").getString("uuid"));
-			context.assertEquals("content", received.getJsonObject("body").getString("schemaName"));
-			context.assertEquals("en", received.getJsonObject("body").getString("languageTag"));
+		ws.events().firstOrError().subscribe(event -> {
+			NodeMeshEventModel body = JsonUtil.readValue(event.getBodyAsJson().toString(), NodeMeshEventModel.class);
+			context.assertNotNull(body.getUuid());
+			context.assertEquals("content", body.getSchema().getName());
+			context.assertEquals("en", body.getLanguageTag());
 			async.complete();
 		});
 		call(() -> client().deleteNode(PROJECT_NAME, contentUuid(), "en"));
 	}
 
 	@Test(timeout = 4_000)
-	public void testNodeUpdateEvent(TestContext context) throws Exception {
+	public void testNodeUpdateEvent(TestContext context) {
 		Async async = context.async();
 
 		// Register
-		JsonObject msg = new JsonObject().put("type", "register").put("address", EVENT_NODE_UPDATED);
-		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
+		ws.registerEvents(NODE_UPDATED);
 
 		// Handle msgs
-		ws.handler(buff -> {
-			String str = buff.toString();
-			JsonObject received = new JsonObject(str);
-			assertNotNull(received.getJsonObject("body").getString("uuid"));
-			assertEquals("content", received.getJsonObject("body").getString("schemaName"));
+		ws.events().firstOrError().subscribe(event -> {
+			NodeMeshEventModel body = JsonUtil.readValue(event.getBodyAsJson().toString(), NodeMeshEventModel.class);
+			assertNotNull(body.getUuid());
+			assertEquals("content", body.getSchema().getName());
 			async.complete();
 		});
 
@@ -151,54 +136,106 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 
 		NodeResponse response2 = call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));
 		assertNotEquals(response.getVersion(), response2.getVersion());
-
 	}
 
 	@Test
-	public void testEventbusHeartbeatHandling(TestContext context) throws InterruptedException {
+	public void testCustomEventHandling(TestContext context) {
 		Async asyncRec = context.async();
 
-		// Register
-		JsonObject msg = new JsonObject().put("type", "register").put("address", "some-address");
-		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
+		ws.registerEvents("custom.myEvent");
 
 		// Handle msgs
-		ws.handler(buff -> {
-			String str = buff.toString();
-			JsonObject received = new JsonObject(str);
-			Object rec = received.getValue("body");
-			System.out.println("Handler:" + rec.toString());
+		ws.events().firstOrError().subscribe(event -> {
+			String body = event.getBodyAsString();
+			assertEquals("someText", body);
 			asyncRec.complete();
 		});
 
-		Thread.sleep(10_000);
-
 		// Send msg
-		msg = new JsonObject().put("type", "publish").put("address", "some-address").put("body", "someText");
-		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
-
+		ws.publishEvent("custom.myEvent", "someText");
 	}
 
-	@Test(timeout = 4_000)
-	public void testRegisterToEventbus(TestContext context) throws Exception {
-		Async asyncRec = context.async();
+	@Test(timeout = 20_000)
+	public void testAutoReconnect(TestContext context) {
+		Async nodesCreated = context.strictAsync(2);
+		Async connections = context.strictAsync(2);
+		// The first error is the disconnect itself, the second one is the failing first reconnect.
+		Async errors = context.strictAsync(2);
+		CompletableSubject firstReconnect = CompletableSubject.create();
 
-		// Register
-		JsonObject msg = new JsonObject().put("type", "register").put("address", "custom.address");
-		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
+		ws.registerEvents(MeshEvent.NODE_CREATED);
+		ws.events().subscribe(event -> nodesCreated.countDown(), context::fail);
 
-		// Handle msgs
-		ws.handler(buff -> {
-			String str = buff.toString();
-			JsonObject received = new JsonObject(str);
-			Object rec = received.getValue("body");
-			System.out.println("Handler:" + rec.toString());
-			asyncRec.complete();
+		ws.connections()
+			.doOnNext(ignore -> connections.countDown())
+			// Skip initial connection
+			.skip(1)
+			.subscribe(ignore -> createBinaryContent().subscribe());
+
+		ws.errors().take(2).subscribe(ignore -> {
+			errors.countDown();
+
+			if (errors.count() == 0) {
+				// The first reconnect failed, we can now start the REST verticle again.
+				firstReconnect.onComplete();
+			}
 		});
 
-		// Send msg
-		msg = new JsonObject().put("type", "publish").put("address", "custom.address").put("body", "someText");
-		ws.writeFrame(io.vertx.core.http.WebSocketFrame.textFrame(msg.encode(), true));
+		createBinaryContent().toCompletable()
+			.andThen(stopRestVerticle())
+			.andThen(verifyStoppedRestVerticle())
+			.andThen(firstReconnect)
+			.andThen(startRestVerticle())
+			.subscribe(() -> {}, context::fail);
+	}
+
+	@Test
+	public void testOneOfHelper(TestContext context) {
+		Async async = context.async(2);
+
+		// Register
+		ws.registerEvents(NODE_UPDATED);
+
+		// Handle msgs
+		ws.events().firstOrError().subscribe(event -> {
+			NodeMeshEventModel body = JsonUtil.readValue(event.getBodyAsJson().toString(), NodeMeshEventModel.class);
+			assertNotNull(body.getUuid());
+			assertEquals("content", body.getSchema().getName());
+			async.countDown();
+		});
+
+		ws.events().filter(MeshRestClientUtil.isOneOf(NODE_UPDATED)).subscribe(ignore -> async.countDown());
+		ws.events().filter(MeshRestClientUtil.isOneOf(NODE_CREATED))
+			.subscribe(ignore -> context.fail("No node should have been created"));
+
+		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));
+		NodeUpdateRequest request = new NodeUpdateRequest();
+		request.getFields().put("slug", FieldUtil.createStringField("blub"));
+		request.setVersion(response.getVersion());
+		request.setLanguage("en");
+		call(() -> client().updateNode(PROJECT_NAME, contentUuid(), request));
+
+		NodeResponse response2 = call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));
+		assertNotEquals(response.getVersion(), response2.getVersion());
+	}
+
+	@Test
+	public void testHeartbeat() throws InterruptedException {
+		// Simply tests if the connections has no errors for 10 seconds.
+
+		ws.errors().subscribe(ignore -> fail());
+
+		Thread.sleep(10000);
+	}
+
+	/**
+	 * Verifies that the rest verticle is actually stopped.
+	 * @return
+	 */
+	private Completable verifyStoppedRestVerticle() {
+		return client().me()
+			.toCompletable()
+			.compose(RxUtil::flip);
 	}
 
 }

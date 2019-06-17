@@ -2,29 +2,23 @@ package com.gentics.mesh.core.webroot.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.ClientHelper.expectException;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import io.reactivex.Observable;
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class NavRootEndpointTest extends AbstractMeshTest {
 
 	/**
@@ -36,16 +30,9 @@ public class NavRootEndpointTest extends AbstractMeshTest {
 			int nJobs = 200;
 			String path = "/";
 
-			List<MeshResponse<NavigationResponse>> futures = new ArrayList<>();
-			for (int i = 0; i < nJobs; i++) {
-				futures.add(client().navroot(PROJECT_NAME, path, new NodeParametersImpl().setLanguages("en", "de")).invoke());
-			}
-
-			for (MeshResponse<NavigationResponse> fut : futures) {
-				latchFor(fut);
-				assertSuccess(fut);
-				assertThat(fut.result()).isValid(7).hasDepth(3);
-			}
+			Observable.range(0, 200)
+				.flatMapSingle(i -> client().navroot(PROJECT_NAME, path, new NodeParametersImpl().setLanguages("en", "de")).toSingle())
+				.blockingForEach(result -> assertThat(result).isValid(7).hasDepth(3));
 		}
 	}
 
@@ -82,12 +69,10 @@ public class NavRootEndpointTest extends AbstractMeshTest {
 			// System.out.println(container.isPublished(project().getLatestBranch().getUuid()));
 			// }
 			String path = "/";
-			MeshResponse<NavigationResponse> future = client().navroot(PROJECT_NAME, path, new NavigationParametersImpl().setMaxDepth(10)).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			assertThat(future.result()).isValid(7).hasDepth(3);
+			NavigationResponse response = client().navroot(PROJECT_NAME, path, new NavigationParametersImpl().setMaxDepth(10)).blockingGet();
+			assertThat(response).isValid(7).hasDepth(3);
 			assertEquals("The root element of the navigation did not contain the project basenode uuid.", project().getBaseNode().getUuid(),
-					future.result().getUuid());
+				response.getUuid());
 		}
 	}
 
@@ -98,9 +83,7 @@ public class NavRootEndpointTest extends AbstractMeshTest {
 	public void testReadNavWithInvalidPath() {
 		try (Tx tx = tx()) {
 			String path = "/blub";
-			MeshResponse<NavigationResponse> future = client().navroot(PROJECT_NAME, path).invoke();
-			latchFor(future);
-			expectException(future, NOT_FOUND, "node_not_found_for_path", "/blub");
+			call(() -> client().navroot(PROJECT_NAME, path), NOT_FOUND, "node_not_found_for_path", "/blub");
 		}
 	}
 
@@ -111,10 +94,7 @@ public class NavRootEndpointTest extends AbstractMeshTest {
 	public void testReadNavWithPathToContent() {
 		try (Tx tx = tx()) {
 			String path = "/News/2015/News_2015.en.html";
-			MeshResponse<NavigationResponse> future = client().navroot(PROJECT_NAME, path, new NodeParametersImpl().setLanguages("en", "de"))
-					.invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "navigation_error_no_container");
+			call(() -> client().navroot(PROJECT_NAME, path, new NodeParametersImpl().setLanguages("en", "de")), BAD_REQUEST, "navigation_error_no_container");
 		}
 	}
 }

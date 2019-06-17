@@ -1,5 +1,18 @@
 package com.gentics.mesh.core.data.root;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+
+import java.util.Iterator;
+import java.util.Spliterator;
+import java.util.Stack;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -7,33 +20,20 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.google.common.collect.Iterators;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Spliterator;
-import java.util.Stack;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 /**
  * A root vertex is an aggregation vertex that is used to aggregate various basic elements such as users, nodes, groups.
@@ -45,59 +45,42 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	Database database();
 
 	/**
-	 * Return a list of all elements. Only use this method if you know that the root->item relation only yields a specific kind of item.
-	 * 
-	 * @deprecated Use {@link #findAllIt()} instead.
-	 * @return
-	 */
-	@Deprecated
-	default List<? extends T> findAll() {
-		return out(getRootLabel()).toListExplicit(getPersistanceClass());
-	}
-
-	/**
-	 * Iterate over all items and return the count.
+	 * Return a traversal of all elements. Only use this method if you know that the root->item relation only yields a specific kind of item.
 	 * 
 	 * @return
 	 */
-	default long computeCount() {
-		return Iterators.size(findAllIt().iterator());
+	default TraversalResult<? extends T> findAll() {
+		return new TraversalResult<>(out(getRootLabel()).frameExplicit(getPersistanceClass()));
 	}
 
 	/**
-	 * Return an iterator of all elements. Only use this method if you know that the root->item relation only yields a specific kind of item.
-	 * 
-	 * @return
-	 */
-	default Iterable<? extends T> findAllIt() {
-		return out(getRootLabel()).frameExplicit(getPersistanceClass());
-	}
-
-	/**
-	 * Return an iterator of all elements. Only use this method if you know that the root->item relation only yields a specific kind of item.
-	 * This also checks permissions.
+	 * Return an iterator of all elements. Only use this method if you know that the root->item relation only yields a specific kind of item. This also checks
+	 * permissions.
 	 *
-	 * @param ac The context of the request
+	 * @param ac
+	 *            The context of the request
+	 * @param permission Needed permission
 	 */
-	default Stream<? extends T> findAllStream(InternalActionContext ac) {
+	default Stream<? extends T> findAllStream(InternalActionContext ac, GraphPermission permission) {
 		MeshAuthUser user = ac.getUser();
 		FramedTransactionalGraph graph = Tx.getActive().getGraph();
 
-		Spliterator<Edge> itemEdges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_out", getId()).spliterator();
+		String idx = "e." + getRootLabel().toLowerCase() + "_out";
+		Spliterator<Edge> itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();
 		return StreamSupport.stream(itemEdges, false)
 			.map(edge -> edge.getVertex(Direction.IN))
-			.filter(vertex -> user.hasPermissionForId(vertex.getId(), READ_PERM))
+			.filter(vertex -> user.hasPermissionForId(vertex.getId(), permission))
 			.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 
 	/**
-	 * Return an iterator of all elements and use the stored type information to load the items. The {@link #findAllIt()} will use explicit typing and thus will
-	 * be faster. Only use that method if you know that your relation only yields a specific kind of item.
+	 * Return an traversal result of all elements and use the stored type information to load the items. The {@link #findAll()} will use explicit typing and
+	 * thus will be faster. Only use that method if you know that your relation only yields a specific kind of item.
 	 * 
 	 * @return
 	 */
-	default Iterable<? extends T> findAllDynamic() {
-		return out(getRootLabel()).frame(getPersistanceClass());
+	default TraversalResult<? extends T> findAllDynamic() {
+		return new TraversalResult<>(out(getRootLabel()).frame(getPersistanceClass()));
 	}
 
 	/**
@@ -125,7 +108,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Additional filter to be applied
 	 * @return
 	 */
-	default TransformablePage<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Vertex> extraFilter) {
+	default TransformablePage<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<T> extraFilter) {
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, READ_PERM, extraFilter, true);
 	}
 
@@ -174,7 +157,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 		if (requestUser.hasPermission(element, perm)) {
 			return element;
 		} else {
-			throw error(FORBIDDEN, "error_missing_perm", elementUuid);
+			throw error(FORBIDDEN, "error_missing_perm", elementUuid, perm.getRestPerm().getName());
 		}
 	}
 
@@ -191,9 +174,10 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 		Iterator<Vertex> it = database().getVertices(getPersistanceClass(), new String[] { MeshVertex.UUID_KEY }, new String[] { uuid });
 		if (it.hasNext()) {
 			Vertex potentialElement = it.next();
+			// FIXME Add check again
 			// 2. Use the edge index to determine whether the element is part of this root vertex
 			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(potentialElement
-				.getId(), getId()));
+				.getId(), id()));
 			if (edges.iterator().hasNext()) {
 				return graph.frameElementExplicit(potentialElement, getPersistanceClass());
 			}
@@ -245,7 +229,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 		if (requestUser.hasPermission(element, perm)) {
 			return element;
 		} else {
-			throw error(FORBIDDEN, "error_missing_perm", elementUuid);
+			throw error(FORBIDDEN, "error_missing_perm", elementUuid, perm.getRestPerm().getName());
 		}
 	}
 
@@ -306,7 +290,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Context which is used to load information needed for the object creation
 	 * @param batch
 	 */
-	default T create(InternalActionContext ac, SearchQueueBatch batch) {
+	default T create(InternalActionContext ac, EventQueueBatch batch) {
 		return create(ac, batch, null);
 	}
 
@@ -319,7 +303,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param uuid
 	 *            optional uuid to create the object with a given uuid (null to create a random uuid)
 	 */
-	T create(InternalActionContext ac, SearchQueueBatch batch, String uuid);
+	T create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	/**
 	 * Add the given item to the this root vertex.
@@ -329,8 +313,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	default void addItem(T item) {
 		FramedGraph graph = getGraph();
 		// Check whether the item was already added by checking the index
-		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(item.getId(),
-			getId()));
+		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(item.id(),
+			id()));
 		if (!edges.iterator().hasNext()) {
 			linkOut(item, getRootLabel());
 		}
@@ -358,5 +342,9 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return
 	 */
 	Class<? extends T> getPersistanceClass();
+
+	default long computeCount() {
+		return findAll().count();
+	}
 
 }

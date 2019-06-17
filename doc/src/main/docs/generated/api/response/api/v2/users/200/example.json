@@ -1,0 +1,97 @@
+{
+  "data" : [ {
+    "uuid" : "589319933be24ec79319933be24ec7fe",
+    "creator" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "589319933be24ec79319933be24ec7fe"
+    },
+    "created" : "2018-10-12T14:15:06.024Z",
+    "editor" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "589319933be24ec79319933be24ec7fe"
+    },
+    "edited" : "2018-11-20T20:12:01.084Z",
+    "lastname" : "Doe",
+    "firstname" : "Joe",
+    "username" : "jdoe",
+    "emailAddress" : "j.doe@nowhere.com",
+    "nodeReference" : {
+      "projectName" : "dummy",
+      "uuid" : "adaf48da8c124049af48da8c12a0493e",
+      "displayName" : "DeLorean DMC-12",
+      "schema" : {
+        "name" : "vehicle",
+        "uuid" : "e287e8a7497940ac87e8a7497940ac82",
+        "version" : "1.0"
+      }
+    },
+    "enabled" : true,
+    "groups" : [ {
+      "name" : "editors",
+      "uuid" : "e728c2fc5a0146a2a8c2fc5a0186a28d"
+    } ],
+    "permissions" : {
+      "create" : true,
+      "read" : true,
+      "update" : true,
+      "delete" : true,
+      "publish" : false,
+      "readPublished" : false
+    }
+  }, {
+    "uuid" : "589319933be24ec79319933be24ec7fe",
+    "creator" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "589319933be24ec79319933be24ec7fe"
+    },
+    "created" : "2018-10-12T14:15:06.024Z",
+    "editor" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "589319933be24ec79319933be24ec7fe"
+    },
+    "edited" : "2018-11-20T20:12:01.084Z",
+    "lastname" : "Roe",
+    "firstname" : "Jane",
+    "username" : "jroe",
+    "emailAddress" : "j.roe@nowhere.com",
+    "nodeReference" : {
+      "projectName" : "dummy",
+      "uuid" : "adaf48da8c124049af48da8c12a0493e",
+      "displayName" : "DeLorean DMC-12",
+      "schema" : {
+        "name" : "vehicle",
+        "uuid" : "e287e8a7497940ac87e8a7497940ac82",
+        "version" : "1.0"
+      }
+    },
+    "enabled" : true,
+    "groups" : [ {
+      "name" : "editors",
+      "uuid" : "e728c2fc5a0146a2a8c2fc5a0186a28d"
+    }, {
+      "name" : "webclient",
+      "uuid" : "4267d8bf30824e36a7d8bf3082de36a3"
+    }, {
+      "name" : "editors",
+      "uuid" : "589319933be24ec79319933be24ec7fe"
+    } ],
+    "permissions" : {
+      "create" : true,
+      "read" : true,
+      "update" : true,
+      "delete" : true,
+      "publish" : false,
+      "readPublished" : false
+    }
+  } ],
+  "_metainfo" : {
+    "currentPage" : 1,
+    "perPage" : 2,
+    "pageCount" : 10,
+    "totalCount" : 20
+  }
+}

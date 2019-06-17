@@ -1,30 +1,5 @@
 package com.gentics.mesh.image;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Transparency;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.imageio.ImageIO;
-
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.AutoDetectParser;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.Parser;
-import org.apache.tika.sax.BodyContentHandler;
-import org.imgscalr.Scalr;
-import org.imgscalr.Scalr.Mode;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
@@ -34,14 +9,44 @@ import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.util.PropReadFileStream;
 import com.gentics.mesh.util.RxUtil;
-
+import com.twelvemonkeys.image.ResampleOp;
 import io.reactivex.Flowable;
+import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.WorkerExecutor;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
+import org.apache.tika.sax.BodyContentHandler;
+import org.imgscalr.Scalr;
+import org.imgscalr.Scalr.Mode;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
+import javax.imageio.stream.FileImageOutputStream;
+import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 /**
  * The ImgScalr Manipulator uses a pure java imageio image resizer.
@@ -50,7 +55,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 	private static final Logger log = LoggerFactory.getLogger(ImgscalrImageManipulator.class);
 
-	private FocalPointModifier focalPointModifier = new FocalPointModifier();
+	private FocalPointModifier focalPointModifier;
 
 	private WorkerExecutor workerPool;
 
@@ -60,13 +65,14 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 	ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options) {
 		super(vertx, options);
+		focalPointModifier = new FocalPointModifier(options);
 		// 10 seconds
 		workerPool = vertx.createSharedWorkerExecutor("resizeWorker", 5, Duration.ofSeconds(10).toNanos());
 	}
 
 	/**
 	 * Crop the image if the request contains cropping parameters. Fail if the crop parameters are invalid or incomplete.
-	 * 
+	 *
 	 * @param originalImage
 	 * @param cropArea
 	 * @return cropped image or return original image if no cropping is requested
@@ -88,7 +94,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 	/**
 	 * Resize the image if the request contains resize parameters.
-	 * 
+	 *
 	 * @param originalImage
 	 * @param parameters
 	 * @return Resized image or original image if no resize operation was requested
@@ -123,7 +129,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			int width = pWidth == null ? (int) (pHeight * aspectRatio) : pWidth;
 			int height = pHeight == null ? (int) (width / aspectRatio) : pHeight;
 			try {
-				BufferedImage image = Scalr.resize(originalImage, Mode.FIT_EXACT, width, height);
+				BufferedImage image = Scalr.apply(originalImage, new ResampleOp(width, height, options.getResampleFilter().getFilter()));
 				originalImage.flush();
 				return image;
 			} catch (IllegalArgumentException e) {
@@ -132,6 +138,108 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		}
 
 		return originalImage;
+	}
+
+	/**
+	 * Create an image reader for the given input.
+	 *
+	 * @param input The input stream to read the original image from.
+	 * @return An image reader reading from the given input stream
+	 */
+	private ImageReader getImageReader(ImageInputStream input) {
+		Iterator<ImageReader> it = ImageIO.getImageReaders(input);
+
+		if (!it.hasNext()) {
+			// No reader available for this image type.
+			log.error("No suitable image reader found for input image");
+
+			throw error(BAD_REQUEST, "image_error_reading_failed");
+		}
+
+		ImageReader reader = it.next();
+
+		reader.setInput(input, true);
+
+		return reader;
+	}
+
+	/**
+	 * Create an image writer from the same image format as the specified image reader writing
+	 * to the given output stream.
+	 *
+	 * When no respective writer to the given reader is available, a PNG writer will be created.
+	 *
+	 * @param reader The reader used to read the original image
+	 * @param out The output stream the writer should use
+	 * @return An image writer for the same type as the specified reader, or a PNG writer if that is not available
+	 */
+	private ImageWriter getImageWriter(ImageReader reader, ImageOutputStream out) {
+		ImageWriter writer = ImageIO.getImageWriter(reader);
+
+		if (writer == null) {
+			// This would mean we have a reader but no writer plugin available for the image type, which is highly unlikely, but just to be sure.
+			log.debug("No suitable writer found for input image type");
+
+			Iterator<ImageWriter> pngWriters = ImageIO.getImageWritersByFormatName("png");
+
+			if (pngWriters.hasNext()) {
+				log.debug("Trying to fall back to PNG");
+
+				writer = pngWriters.next();
+			}
+		}
+
+		if (writer == null) {
+			throw error(BAD_REQUEST, "image_error_writing_failed");
+		}
+
+		writer.setOutput(out);
+
+		if (log.isDebugEnabled()) {
+			log.debug("Using writer " + writer.getClass().getName() + " for output");
+		}
+
+		ImageWriteParam params = writer.getDefaultWriteParam();
+
+		if (params.canWriteProgressive()) {
+			// TODO Maybe make this configurable or read from metadata of original image.
+			// Note that it depends on the writer plugin used, if this setting is actually used.
+			params.setProgressiveMode(ImageWriteParam.MODE_DEFAULT);
+		}
+
+		// TODO Maybe make compression configurable or read from metadata of original image.
+
+		return writer;
+	}
+
+	/**
+	 * Resize the given image with the specified manipulation parameters.
+	 *
+	 * @param image The image to process
+	 * @param parameters The parameters defining cropping and resizing requests
+	 * @return The modified image
+	 */
+	private BufferedImage cropAndResize(BufferedImage image, ImageManipulationParameters parameters) {
+		CropMode cropMode = parameters.getCropMode();
+		boolean omitResize = false;
+		if (cropMode != null) {
+			switch (cropMode) {
+				case RECT:
+					image = crop(image, parameters.getRect());
+					break;
+				case FOCALPOINT:
+					image = focalPointModifier.apply(image, parameters);
+					// We don't need to resize the image again. The dimensions already match up with the target dimension
+					omitResize = true;
+					break;
+			}
+		}
+
+		if (!omitResize) {
+			image = resizeIfRequested(image, parameters);
+		}
+
+		return image;
 	}
 
 	@Override
@@ -153,90 +261,62 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		// TODO handle execution timeout
 		// Make sure to run that code in the dedicated thread pool it may be CPU intensive for larger images and we don't want to exhaust the regular worker
 		// pool
-		return workerPool.rxExecuteBlocking(bh -> {
+		Maybe<PropReadFileStream> result = workerPool.rxExecuteBlocking(bh -> {
+			try (ImageInputStream ins = ImageIO.createImageInputStream(RxUtil.toInputStream(stream, vertx))) {
+				BufferedImage image;
+				ImageReader reader = getImageReader(ins);
 
-			// Read the image and apply the changes -
-			readImage(stream).flatMap(bi -> {
-				if (bi == null) {
+				try {
+					image = reader.read(0);
+				} catch (IOException e) {
+					log.error("Could not read input image", e);
+
 					throw error(BAD_REQUEST, "image_error_reading_failed");
 				}
-				if (bi.getTransparency() == Transparency.TRANSLUCENT) {
-					// NOTE: For BITMASK images, the color model is likely IndexColorModel,
-					// and this model will contain the "real" color of the transparent parts
-					// which is likely a better fit than unconditionally setting it to white.
-					// Fill background with white
-					Graphics2D graphics = bi.createGraphics();
-					try {
-						graphics.setComposite(AlphaComposite.DstOver); // Set composite rules to paint "behind"
-						graphics.setPaint(Color.WHITE);
-						graphics.fillRect(0, 0, bi.getWidth(), bi.getHeight());
-					} finally {
-						graphics.dispose();
-					}
-				}
-				// Convert the image to RGB for images with transparency (gif, png)
-				BufferedImage rgbCopy = bi;
-				if (bi.getTransparency() == Transparency.TRANSLUCENT || bi.getTransparency() == Transparency.BITMASK) {
-					rgbCopy = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
-					Graphics2D graphics = rgbCopy.createGraphics();
-					graphics.drawImage(bi, 0, 0, Color.WHITE, null);
-					graphics.dispose();
+
+				if (log.isDebugEnabled()) {
+					log.debug("Read image from stream " + stream.hashCode() + " with reader " + reader.getClass().getName());
 				}
 
-				// Manipulate image
-				CropMode cropMode = parameters.getCropMode();
-				boolean omitResize = false;
-				if (cropMode != null) {
-					switch (cropMode) {
-					case RECT:
-						rgbCopy = crop(rgbCopy, parameters.getRect());
-						break;
-					case FOCALPOINT:
-						rgbCopy = focalPointModifier.apply(rgbCopy, parameters);
-						// We don't need to resize the image again. The dimensions already match up with the target dimension
-						omitResize = true;
-						break;
-					}
-				}
+				image = cropAndResize(image, parameters);
 
-				if (!omitResize) {
-					rgbCopy = resizeIfRequested(rgbCopy, parameters);
-				}
+				String[] extensions = reader.getOriginatingProvider().getFileSuffixes();
+				String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
+				File outCacheFile = new File(cacheFile.getAbsolutePath() + "." + extension);
 
 				// Write image
-				try {
-					ImageIO.write(rgbCopy, "jpg", cacheFile);
-				} catch (Exception e) {
-					throw error(BAD_REQUEST, "image_error_writing_failed", e);
-				}
-				// Return buffer to written cache file
-				return PropReadFileStream.openFile(this.vertx, cacheFile.getAbsolutePath());
-			}).subscribe(result -> bh.complete(result), bh::fail);
-		});
+				try (ImageOutputStream out = new FileImageOutputStream(outCacheFile)) {
+					ImageWriteParam params = getImageWriteparams(extension);
 
+					// same as write(image), but with image parameters
+					getImageWriter(reader, out).write(null, new IIOImage(image, null, null), params);
+				} catch (Exception e) {
+					throw error(BAD_REQUEST, "image_error_writing_failed");
+				}
+
+				// Return buffer to written cache file
+				PropReadFileStream.openFile(this.vertx, outCacheFile.getAbsolutePath()).subscribe(bh::complete, bh::fail);
+			} catch (Exception e) {
+				bh.fail(e);
+			}
+		});
+		return result.toSingle();
 	}
 
-	/**
-	 * Read the image data stream and return the decoded image.
-	 * 
-	 * @param stream
-	 * @return
-	 */
-	private Single<BufferedImage> readImage(Flowable<Buffer> stream) {
-		return workerPool.rxExecuteBlocking(bc -> {
-			try (InputStream ins = RxUtil.toInputStream(stream, vertx)) {
-				if (log.isDebugEnabled()) {
-					log.debug("Reading image from stream.." + stream.hashCode());
-				}
-				BufferedImage image = ImageIO.read(ins);
-				if (log.isDebugEnabled()) {
-					log.debug("Read image from stream.." + stream.hashCode());
-				}
-				bc.complete(image);
-			} catch (IOException e) {
-				bc.fail(e);
-			}
-		}, false);
+	private ImageWriteParam getImageWriteparams(String extension) {
+		if (isJpeg(extension)) {
+			JPEGImageWriteParam params = new JPEGImageWriteParam(null);
+			params.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+			params.setCompressionQuality(options.getJpegQuality());
+			return params;
+		} else {
+			return null;
+		}
+	}
+
+	private boolean isJpeg(String extension) {
+		extension = extension.toLowerCase();
+		return extension.endsWith("jpg") || extension.endsWith("jpeg");
 	}
 
 	@Override

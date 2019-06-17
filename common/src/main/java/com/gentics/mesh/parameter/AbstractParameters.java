@@ -5,6 +5,10 @@ import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.MultiMap;
 
+import java.util.Map;
+
+import static com.gentics.mesh.util.HttpQueryUtils.toMap;
+
 /**
  * Abstract class for parameter provider implementations.
  */
@@ -28,7 +32,7 @@ public abstract class AbstractParameters implements ParameterProvider {
 
 	/**
 	 * Returns the human readable name of the parameters.
-	 * 
+	 *
 	 * @return
 	 */
 	public abstract String getName();
@@ -39,8 +43,8 @@ public abstract class AbstractParameters implements ParameterProvider {
 	}
 
 	@Override
-	public MultiMap getParameters() {
-		return parameters;
+	public Map<String, String> getParameters() {
+		return toMap(parameters);
 	}
 
 	@Override

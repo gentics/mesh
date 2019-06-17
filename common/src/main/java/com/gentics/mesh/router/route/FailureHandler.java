@@ -41,18 +41,23 @@ public class FailureHandler implements Handler<RoutingContext> {
 	 * Return the response status that may be stored within the exception.
 	 * 
 	 * @param failure
+	 * @param code
 	 * @return
 	 */
-	private int getResponseStatusCode(Throwable failure) {
+	private int getResponseStatusCode(Throwable failure, int code) {
 		if (failure instanceof AbstractRestException) {
 			AbstractRestException error = (AbstractRestException) failure;
 			return error.getStatus().code();
 		}
-		return 500;
+		return code;
 	}
 
 	@Override
 	public void handle(RoutingContext rc) {
+		if (rc.response().closed() && rc.failed()) {
+			log.error("Error in request for path {" + rc.request().method().name() + " " + rc.request().path() + "}", rc.failure());
+			return;
+		}
 
 		// Handle "callback route is not configured" error from OAuthHandler
 		if (rc.failed()) {
@@ -99,7 +104,8 @@ public class FailureHandler implements Handler<RoutingContext> {
 				return;
 			}
 
-			int code = getResponseStatusCode(failure);
+			int code = getResponseStatusCode(failure, rc.statusCode());
+			String failureMsg = failure != null ? failure.getMessage() : "-";
 			switch (code) {
 			case 401:
 				log.error("Unauthorized - Request for path {" + toPath(rc) + "} was not authorized.");
@@ -111,8 +117,12 @@ public class FailureHandler implements Handler<RoutingContext> {
 				log.error("Request for request in path: " + toPath(rc) + " is not authorized.");
 				break;
 			case 400:
-				log.error("Bad request in path: " + toPath(rc) + " with message " + failure.getMessage());
+				log.error("Bad request in path: " + toPath(rc) + " with message " + failureMsg);
 				break;
+			case 413:
+				log.error("Entity too large to be processed for path: " + toPath(rc));
+				rc.next();
+				return;
 			default:
 				log.error("Error for request in path: " + toPath(rc));
 				if (failure != null) {

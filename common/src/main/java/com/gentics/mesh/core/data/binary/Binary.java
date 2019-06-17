@@ -3,9 +3,9 @@ package com.gentics.mesh.core.data.binary;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.node.field.image.Point;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 
 import io.reactivex.Flowable;
-import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 
 /**
@@ -29,18 +29,11 @@ public interface Binary extends MeshVertex {
 	Flowable<Buffer> getStream();
 
 	/**
-	 * Return the base64 data stream.
-	 * 
+	 * Return the data as base 64 encoded string in the same thread blockingly.
+	 *
 	 * @return
 	 */
-	Flowable<String> getBase64Stream();
-
-	/**
-	 * Return the data as base 64 encoded string.
-	 * 
-	 * @return
-	 */
-	Single<String> getBase64Content();
+	String getBase64ContentSync();
 
 	/**
 	 * Return the sha512 checksum.
@@ -48,7 +41,7 @@ public interface Binary extends MeshVertex {
 	 * @return
 	 */
 	default String getSHA512Sum() {
-		return getProperty(SHA512SUM_KEY);
+		return property(SHA512SUM_KEY);
 	}
 
 	/**
@@ -58,7 +51,7 @@ public interface Binary extends MeshVertex {
 	 * @return
 	 */
 	default Binary setSHA512Sum(String sha512sum) {
-		setProperty(SHA512SUM_KEY, sha512sum);
+		property(SHA512SUM_KEY, sha512sum);
 		return this;
 	}
 
@@ -68,7 +61,7 @@ public interface Binary extends MeshVertex {
 	 * @return
 	 */
 	default long getSize() {
-		Long size = getProperty(BINARY_FILESIZE_PROPERTY_KEY);
+		Long size = property(BINARY_FILESIZE_PROPERTY_KEY);
 		return size == null ? 0 : size;
 	}
 
@@ -79,7 +72,7 @@ public interface Binary extends MeshVertex {
 	 * @return Fluent API
 	 */
 	default Binary setSize(long sizeInBytes) {
-		setProperty(BINARY_FILESIZE_PROPERTY_KEY, sizeInBytes);
+		property(BINARY_FILESIZE_PROPERTY_KEY, sizeInBytes);
 		return this;
 	}
 
@@ -89,7 +82,7 @@ public interface Binary extends MeshVertex {
 	 * @return
 	 */
 	default Integer getImageHeight() {
-		return getProperty(BINARY_IMAGE_HEIGHT_PROPERTY_KEY);
+		return property(BINARY_IMAGE_HEIGHT_PROPERTY_KEY);
 	}
 
 	/**
@@ -98,7 +91,7 @@ public interface Binary extends MeshVertex {
 	 * @return
 	 */
 	default Integer getImageWidth() {
-		return getProperty(BINARY_IMAGE_WIDTH_PROPERTY_KEY);
+		return property(BINARY_IMAGE_WIDTH_PROPERTY_KEY);
 	}
 
 	/**
@@ -108,7 +101,7 @@ public interface Binary extends MeshVertex {
 	 * @return Fluent API
 	 */
 	default Binary setImageHeight(Integer heigth) {
-		setProperty(BINARY_IMAGE_HEIGHT_PROPERTY_KEY, heigth);
+		property(BINARY_IMAGE_HEIGHT_PROPERTY_KEY, heigth);
 		return this;
 	}
 
@@ -119,7 +112,7 @@ public interface Binary extends MeshVertex {
 	 * @return Fluent API
 	 */
 	default Binary setImageWidth(Integer width) {
-		setProperty(BINARY_IMAGE_WIDTH_PROPERTY_KEY, width);
+		property(BINARY_IMAGE_WIDTH_PROPERTY_KEY, width);
 		return this;
 	}
 
@@ -143,6 +136,6 @@ public interface Binary extends MeshVertex {
 	 * 
 	 * @return
 	 */
-	Iterable<? extends BinaryGraphField> findFields();
+	TraversalResult<? extends BinaryGraphField> findFields();
 
 }

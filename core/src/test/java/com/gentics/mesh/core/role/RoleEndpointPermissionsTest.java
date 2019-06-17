@@ -3,6 +3,10 @@ package com.gentics.mesh.core.role;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_PERMISSIONS_CHANGED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
@@ -11,13 +15,18 @@ import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
@@ -26,21 +35,26 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
+import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
+import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 	@Test
 	public void testRevokeAllPermissionFromProject() {
+
+		final String roleName = tx(() -> role().getName());
+
 		try (Tx tx = tx()) {
 			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
@@ -48,10 +62,31 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			tx.success();
 		}
 
+		// All elements in the project should be affected.
+		// +2 for the project and the branch
+		int totalEvents = getNodeCount() + tagFamilies().size() + tags().size() + 2;
+
+		expect(ROLE_PERMISSIONS_CHANGED).match(totalEvents, PermissionChangedEventModelImpl.class, event -> {
+			RoleReference roleRef = event.getRole();
+			assertEquals("The uuid of the role did not match for the event.", roleUuid(), roleRef.getUuid());
+			assertEquals("The name of the role did not match for the event.", roleName, roleRef.getName());
+		}).total(totalEvents);
+
+		RolePermissionRequest request = new RolePermissionRequest();
+		request.setRecursive(true);
+		GenericMessageResponse message = call(() -> client().updateRolePermissions(roleUuid(), "projects/" + projectUuid(), request));
+
+		awaitEvents();
+		waitForSearchIdleEvent();
+
+		long nodecontainerCount = tx(() -> getAllContents().count());
+
+		// +1 for Project (Branch is not indexed)
+		long updateEvents = nodecontainerCount + tagFamilies().size() + tags().size() + 1;
+
+		assertThat(trackingSearchProvider()).hasEvents(0, updateEvents, 0, 0, 0);
+
 		try (Tx tx = tx()) {
-			RolePermissionRequest request = new RolePermissionRequest();
-			request.setRecursive(true);
-			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(), "projects/" + project().getUuid(), request));
 			assertThat(message).matches("role_updated_permission", role().getName());
 			assertFalse(role().hasPermission(GraphPermission.READ_PERM, tagFamily("colors")));
 		}
@@ -132,20 +167,73 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 	}
 
 	@Test
+	public void testSetOnlyCreatePerm() {
+		String pathToElement = "groups";
+
+		RolePermissionRequest request = new RolePermissionRequest();
+		request.setRecursive(true);
+		request.getPermissions().add(CREATE);
+
+		tx(() -> {
+			assertTrue("The role should have read permission on the group.", role().hasPermission(GraphPermission.READ_PERM, group()));
+		});
+
+		GenericMessageResponse message = call(() -> client().updateRolePermissions(roleUuid(), pathToElement, request));
+		assertThat(message).matches("role_updated_permission", tx(() -> role().getName()));
+
+		tx(() -> {
+			assertFalse("The role should no longer have read permission on the group.", role().hasPermission(GraphPermission.READ_PERM, group()));
+		});
+	}
+
+	@Test
 	public void testAddPermissionsOnGroup() {
+		String pathToElement = "groups";
+		String roleName = tx(() -> role().getName());
+
+		RolePermissionRequest request = new RolePermissionRequest();
+		request.setRecursive(true);
+		request.getPermissions().add(READ);
+		request.getPermissions().add(UPDATE);
+		request.getPermissions().add(CREATE);
+
 		try (Tx tx = tx()) {
-			String pathToElement = "groups";
+			assertTrue("The role should have delete permission on the group.", role().hasPermission(DELETE_PERM, group()));
+		}
 
-			RolePermissionRequest request = new RolePermissionRequest();
-			request.setRecursive(true);
-			request.getPermissions().add(READ);
-			request.getPermissions().add(UPDATE);
-			request.getPermissions().add(CREATE);
-			assertTrue("The role should have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
+		expect(ROLE_PERMISSIONS_CHANGED).match(9, PermissionChangedEventModelImpl.class, event -> {
+			RoleReference roleRef = event.getRole();
+			assertEquals("The role name in the event did not match.", roleName, roleRef.getName());
+			assertEquals("The role uuid in the event did not match.", roleUuid(), roleRef.getUuid());
+			ElementType type = event.getType();
+			switch (type) {
+			case ROLE:
+				assertThat(event.getName()).as("The listed roles should have been affected.").containsPattern("anonymous|joe1_role");
+				break;
+			case USER:
+				assertThat(event.getName()).as("All users in the groups should be affected due to recursive true.")
+					.containsPattern("joe1|anonymous|guest|admin");
+				break;
+			case GROUP:
+				assertThat(event.getName()).as("All groups should be affected.")
+					.containsPattern("anonymous|joe1_group|extra_group|guests|admin");
+				break;
+			default:
+				fail("Unexpected event for type {" + type + "}");
+			}
 
-			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(), pathToElement, request));
-			assertThat(message).matches("role_updated_permission", role().getName());
-			assertFalse("The role should no longer have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
+		}).total(9);
+		expect(ROLE_UPDATED).none();
+		expect(USER_UPDATED).none();
+		expect(GROUP_UPDATED).none();
+
+		GenericMessageResponse message = call(() -> client().updateRolePermissions(roleUuid(), pathToElement, request));
+		assertThat(message).matches("role_updated_permission", roleName);
+
+		awaitEvents();
+
+		try (Tx tx = tx()) {
+			assertFalse("The role should no longer have delete permission on the group.", role().hasPermission(DELETE_PERM, group()));
 		}
 
 	}
@@ -160,10 +248,10 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 		String pathToElement = PROJECT_NAME + "/tagFamilies/" + tx(() -> tagFamily("colors").getUuid());
 		RolePermissionResponse response = call(() -> client().readRolePermissions(roleUuid(), pathToElement));
-		assertThat(response).hasPerm(Permission.values());
+		assertThat(response).hasPerm(Permission.basicPermissions());
 
 		response = call(() -> client().readRolePermissions(roleUuid(), "/" + PROJECT_NAME));
-		assertThat(response).hasPerm(Permission.values());
+		assertThat(response).hasPerm(Permission.basicPermissions());
 
 		tx(() -> role().revokePermissions(project(), DELETE_PERM));
 
@@ -187,7 +275,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		String pathToElement = tx(() -> "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid());
 		RolePermissionResponse response = call(() -> client().readRolePermissions(roleUuid(), pathToElement));
 		assertNotNull(response);
-		assertThat(response).hasPerm(Permission.values());
+		assertThat(response).hasPerm(Permission.basicPermissions());
 	}
 
 	@Test

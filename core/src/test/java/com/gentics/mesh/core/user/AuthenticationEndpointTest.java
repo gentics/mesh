@@ -1,30 +1,25 @@
 package com.gentics.mesh.core.user;
 
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.ClientHelper.expectException;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.reactivex.Single;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class AuthenticationEndpointTest extends AbstractMeshTest {
 
 	@Test
@@ -34,7 +29,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			String username = user.getUsername();
 			String uuid = user.getUuid();
 
-			MeshRestClient client = MeshRestClient.create("localhost", port(), false, Mesh.vertx());
+			MeshRestClient client = MeshRestClient.create("localhost", port(), false);
 			client.setLogin(username, data().getUserInfo().getPassword());
 			Single<GenericMessageResponse> future = client.login();
 
@@ -42,10 +37,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			assertNotNull(loginResponse);
 			assertEquals("OK", loginResponse.getMessage());
 
-			MeshResponse<UserResponse> meResponse = client.me().invoke();
-			latchFor(meResponse);
-			UserResponse me = meResponse.result();
-			assertFalse("The request failed.", meResponse.failed());
+			UserResponse me = client().me().blockingGet();
 
 			assertNotNull(me);
 			assertEquals(uuid, me.getUuid());
@@ -55,9 +47,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			Single<GenericMessageResponse> logoutFuture = client.logout();
 			logoutFuture.blockingGet();
 
-			meResponse = client.me().invoke();
-			latchFor(meResponse);
-			expectException(meResponse, UNAUTHORIZED, "error_not_authorized");
+			call(() -> client.me(), UNAUTHORIZED, "error_not_authorized");
 		}
 	}
 
@@ -74,7 +64,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 	public void testLoginAndDisableUser() {
 		String username = db().tx(() -> user().getUsername());
 
-		MeshRestClient client = MeshRestClient.create("localhost", port(), false, Mesh.vertx());
+		MeshRestClient client = MeshRestClient.create("localhost", port(), false);
 		client.setLogin(username, data().getUserInfo().getPassword());
 		Single<GenericMessageResponse> future = client.login();
 
@@ -97,7 +87,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			User user = user();
 			String username = user.getUsername();
 
-			MeshRestClient client = MeshRestClient.create("localhost", port(), false, Mesh.vertx());
+			MeshRestClient client = MeshRestClient.create("localhost", port(), false);
 			client.setLogin(username, data().getUserInfo().getPassword());
 			Single<GenericMessageResponse> future = client.login();
 
@@ -105,15 +95,11 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			assertNotNull(loginResponse);
 			assertEquals("OK", loginResponse.getMessage());
 
-			MeshResponse<UserResponse> response = client.me().invoke();
-			latchFor(response);
-			String meshTokenCookie1 = response.getRawResponse().getHeader("Set-Cookie");
+			String meshTokenCookie1 = client.me().getResponse().blockingGet().getHeader("Set-Cookie").orElse(null);
 
 			Thread.sleep(2000);
 
-			response = client.me().invoke();
-			latchFor(response);
-			String meshTokenCookie2 = response.getRawResponse().getHeader("Set-Cookie");
+			String meshTokenCookie2 = client.me().getResponse().blockingGet().getHeader("Set-Cookie").orElse(null);
 
 			assertNotEquals("Both cookies should be different. Otherwise the token was not regenerated and the exp. date was not bumped.",
 					meshTokenCookie1, meshTokenCookie2);

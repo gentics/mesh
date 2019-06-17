@@ -1,0 +1,30 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| inconsistencies
+| true
+| array
+| List of found inconsistencies.
+
+| outputTruncated
+| true
+| boolean
+| Flag which indicates whether the output was truncated because more than 250 have been found.
+
+| repairCount
+| true
+| object
+| Counter for repair operations
+
+| result
+| true
+| string
+| Result of the consistency check.
+
+|======

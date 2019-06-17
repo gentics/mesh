@@ -1,7 +1,7 @@
 package com.gentics.mesh.router;
 
-import static com.gentics.mesh.Events.EVENT_PROJECT_CREATED;
-import static com.gentics.mesh.Events.EVENT_PROJECT_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -16,6 +16,7 @@ import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.VersionHandler;
 import com.syncleus.ferma.tx.Tx;
 
 import dagger.Lazy;
@@ -64,16 +65,19 @@ public class RouterStorage {
 
 	public BodyHandler bodyHandler;
 
+	public final VersionHandler versionHandler;
+
 	private MeshAuthChain authChain;
 
 	@Inject
 	public RouterStorage(Vertx vertx, MeshAuthChain authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler, Lazy<BootstrapInitializer> boot,
-		Lazy<Database> db) {
+						 Lazy<Database> db, VersionHandler versionHandler) {
 		this.boot = boot;
 		this.db = db;
 		this.corsHandler = corsHandler;
 		this.bodyHandler = bodyHandler;
 		this.authChain = authChain;
+		this.versionHandler = versionHandler;
 
 		// Initialize the router chain. The root router will create additional routers which will be mounted.
 		rootRouter = new RootRouter(vertx, this);
@@ -115,7 +119,7 @@ public class RouterStorage {
 	private void registerEventbusHandlers() {
 		ProjectsRouter projectsRouter = rootRouter.apiRouter().projectsRouter();
 		EventBus eb = Mesh.vertx().eventBus();
-		eb.consumer(EVENT_PROJECT_CREATED, (Message<JsonObject> rh) -> {
+		eb.consumer(PROJECT_CREATED.address, (Message<JsonObject> rh) -> {
 			JsonObject json = rh.body();
 
 			// Check whether this is a local message. We only need to react on foreign messages.
@@ -139,13 +143,13 @@ public class RouterStorage {
 			}
 		});
 
-		eb.consumer(EVENT_PROJECT_UPDATED, (Message<JsonObject> rh) -> {
+		eb.consumer(PROJECT_UPDATED.address, (Message<JsonObject> rh) -> {
 			Database database = db.get();
 
 			try (Tx tx = database.tx()) {
 				// Check whether there are any projects which do not have an
 				// active project router
-				for (Project project : boot.get().projectRoot().findAllIt()) {
+				for (Project project : boot.get().projectRoot().findAll()) {
 					if (!projectsRouter.hasProjectRouter(project.getName())) {
 						log.info("Mounting project {" + project.getName() + "}");
 						projectsRouter.addProjectRouter(project.getName());

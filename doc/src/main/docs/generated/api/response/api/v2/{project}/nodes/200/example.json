@@ -1,0 +1,219 @@
+{
+  "data" : [ {
+    "uuid" : "adaf48da8c124049af48da8c12a0493e",
+    "creator" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "589319933be24ec79319933be24ec7fe"
+    },
+    "created" : "2018-10-12T14:15:06.024Z",
+    "edited" : "2018-11-20T20:12:01.084Z",
+    "availableLanguages" : {
+      "de" : {
+        "published" : true,
+        "version" : "1.0",
+        "publisher" : {
+          "firstName" : "Joe",
+          "lastName" : "Doe",
+          "uuid" : "589319933be24ec79319933be24ec7fe"
+        },
+        "publishDate" : "2018-10-12T14:15:06.024Z"
+      },
+      "en" : {
+        "published" : false,
+        "version" : "1.1",
+        "publisher" : {
+          "firstName" : "Joe",
+          "lastName" : "Doe",
+          "uuid" : "589319933be24ec79319933be24ec7fe"
+        },
+        "publishDate" : "2018-10-12T14:15:06.024Z"
+      }
+    },
+    "languagePaths" : {
+      "de" : "/api/v2/yourProject/webroot/Bilder",
+      "en" : "/api/v2/yourProject/webroot/Images"
+    },
+    "parentNode" : {
+      "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
+      "displayName" : "parentNodeDisplayName"
+    },
+    "tags" : [ {
+      "name" : "red",
+      "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
+      "tagFamily" : "colors"
+    }, {
+      "name" : "green",
+      "uuid" : "8931caed445d4d1cb1caed445d0d1c8c",
+      "tagFamily" : "colors"
+    }, {
+      "name" : "car",
+      "uuid" : "c5ac82fa1a9c43b6ac82fa1a9ca3b61c"
+    }, {
+      "name" : "ship",
+      "uuid" : "86c0a2b6435d434280a2b6435da34247"
+    } ],
+    "childrenInfo" : {
+      "folder" : {
+        "schemaUuid" : "4c83d010122c4a2783d010122c4a2782",
+        "count" : 5
+      },
+      "blogpost" : {
+        "schemaUuid" : "86c0a2b6435d434280a2b6435da34247",
+        "count" : 1
+      }
+    },
+    "schema" : {
+      "name" : "content",
+      "uuid" : "e287e8a7497940ac87e8a7497940ac82",
+      "version" : "1.0"
+    },
+    "fields" : {
+      "name" : "Name for language tag de-DE",
+      "filename" : "dummy-content.de.html",
+      "teaser" : "Dummy teaser for de-DE",
+      "content" : "Content for language tag de-DE",
+      "relatedProduct" : {
+        "uuid" : "c5ac82fa1a9c43b6ac82fa1a9ca3b61c"
+      },
+      "price" : 100.1,
+      "enabled" : true,
+      "branch" : "2018-10-12T14:15:06.024Z",
+      "categories" : [ {
+        "uuid" : "cf26ed6198204bf0a6ed6198207bf046"
+      }, {
+        "uuid" : "dff59dcc9f8e4061b59dcc9f8e80615b"
+      }, {
+        "uuid" : "986fae0301fc4715afae0301fc27158f"
+      } ],
+      "names" : [ "Jack", "Joe", "Mary", "Tom" ],
+      "categoryIds" : [ 1, 42, 133, 7 ],
+      "binary" : {
+        "fileName" : "flower.jpg",
+        "width" : 800,
+        "height" : 600,
+        "sha512sum" : "ec582eb760034dd91d5fd33656c0b56f082b7365d32e2a139dd9c87ebc192bff3525f32ff4c4137463a31cad020ac19e6e356508db2b90e32d737b6d725e14c1",
+        "fileSize" : 95365,
+        "mimeType" : "image/jpeg",
+        "dominantColor" : "#22a7f0",
+        "focalPoint" : {
+          "x" : 0.1,
+          "y" : 0.2
+        }
+      },
+      "location" : {
+        "microschema" : {
+          "name" : "geolocation"
+        },
+        "fields" : {
+          "latitude" : 48.208330230278,
+          "longitude" : 16.373063840833
+        }
+      },
+      "locations" : [ {
+        "microschema" : {
+          "name" : "geolocation"
+        },
+        "fields" : {
+          "latitude" : 48.208330230278,
+          "longitude" : 16.373063840833
+        }
+      }, {
+        "microschema" : {
+          "name" : "geolocation"
+        },
+        "fields" : {
+          "latitude" : 48.137222,
+          "longitude" : 11.575556
+        }
+      } ]
+    },
+    "path" : "/api/v2/yourProject/webroot/Images",
+    "breadcrumb" : [ {
+      "uuid" : "adaf48da8c124049af48da8c12a0493e",
+      "displayName" : "news",
+      "path" : "/news"
+    }, {
+      "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
+      "displayName" : "2015",
+      "path" : "/automobiles/delorean-dmc-12"
+    } ],
+    "permissions" : {
+      "create" : true,
+      "read" : true,
+      "update" : true,
+      "delete" : true,
+      "publish" : false,
+      "readPublished" : false
+    }
+  }, {
+    "uuid" : "c5ac82fa1a9c43b6ac82fa1a9ca3b61c",
+    "creator" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "589319933be24ec79319933be24ec7fe"
+    },
+    "created" : "2018-10-12T14:15:06.024Z",
+    "editor" : {
+      "firstName" : "Joe",
+      "lastName" : "Doe",
+      "uuid" : "589319933be24ec79319933be24ec7fe"
+    },
+    "edited" : "2018-11-20T20:12:01.084Z",
+    "parentNode" : {
+      "uuid" : "688f7beae8d240bf8f7beae8d2a0bf2e",
+      "displayName" : "parentNodeDisplayName"
+    },
+    "tags" : [ {
+      "name" : "red",
+      "uuid" : "2e1c9ac190fe49d69c9ac190fee9d6fe",
+      "tagFamily" : "colors"
+    }, {
+      "name" : "green",
+      "uuid" : "8931caed445d4d1cb1caed445d0d1c8c",
+      "tagFamily" : "colors"
+    }, {
+      "name" : "car",
+      "uuid" : "c5ac82fa1a9c43b6ac82fa1a9ca3b61c",
+      "tagFamily" : "vehicles"
+    }, {
+      "name" : "ship",
+      "uuid" : "86c0a2b6435d434280a2b6435da34247",
+      "tagFamily" : "vehicles"
+    } ],
+    "schema" : {
+      "name" : "content",
+      "uuid" : "e287e8a7497940ac87e8a7497940ac82",
+      "version" : "1.0"
+    },
+    "fields" : {
+      "name" : "Name for language tag en",
+      "filename" : "dummy-content.en.html",
+      "teaser" : "Dummy teaser for en",
+      "content" : "Content for language tag en"
+    },
+    "breadcrumb" : [ {
+      "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
+      "displayName" : "Automobiles",
+      "path" : "/automobiles"
+    }, {
+      "uuid" : "adaf48da8c124049af48da8c12a0493e",
+      "displayName" : "DeLorean DMC-12",
+      "path" : "/automobiles/delorean-dmc-12"
+    } ],
+    "permissions" : {
+      "create" : true,
+      "read" : true,
+      "update" : false,
+      "delete" : false,
+      "publish" : false,
+      "readPublished" : false
+    }
+  } ],
+  "_metainfo" : {
+    "currentPage" : 1,
+    "perPage" : 2,
+    "pageCount" : 10,
+    "totalCount" : 20
+  }
+}

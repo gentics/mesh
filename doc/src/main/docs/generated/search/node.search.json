@@ -1,0 +1,70 @@
+{
+  "uuid" : "adaf48da8c124049af48da8c12a0493e",
+  "editor" : {
+    "uuid" : "589319933be24ec79319933be24ec7fe"
+  },
+  "edited" : "1970-01-01T00:00:00Z",
+  "creator" : {
+    "uuid" : "589319933be24ec79319933be24ec7fe"
+  },
+  "created" : "1970-01-01T00:00:00Z",
+  "project" : {
+    "name" : "dummyProject",
+    "uuid" : "d3b1840b01464b54b1840b0146cb54f5"
+  },
+  "tags" : {
+    "name" : [ "green", "red" ],
+    "uuid" : [ "6e6f1d9f055447d2af1d9f055417d289", "6e6f1d9f055447d2af1d9f055417d289" ]
+  },
+  "tagFamilies" : {
+    "colors" : {
+      "uuid" : "f36400b436d244c3a400b436d244c3f4",
+      "tags" : [ {
+        "name" : "green",
+        "uuid" : "6e6f1d9f055447d2af1d9f055417d289"
+      }, {
+        "name" : "red",
+        "uuid" : "6e6f1d9f055447d2af1d9f055417d289"
+      } ]
+    }
+  },
+  "_roleUuids" : [ ],
+  "parentNode" : {
+    "uuid" : "adaf48da8c124049af48da8c12a0493e"
+  },
+  "language" : "de",
+  "schema" : {
+    "name" : "content",
+    "uuid" : "2aa83a2b3cba40a1a83a2b3cba90a1de",
+    "version" : null
+  },
+  "fields" : {
+    "date" : 1542746513,
+    "string" : "The name value",
+    "htmlList" : [ "somehtml", "somehtml", "somehtml" ],
+    "nodeList" : [ "adaf48da8c124049af48da8c12a0493e", "adaf48da8c124049af48da8c12a0493e", "adaf48da8c124049af48da8c12a0493e" ],
+    "number" : 0.146,
+    "node" : "adaf48da8c124049af48da8c12a0493e",
+    "boolean" : true,
+    "stringList" : [ "The name value", "The name value", "The name value" ],
+    "micronode" : {
+      "microschema" : {
+        "name" : null,
+        "uuid" : null
+      },
+      "fields-null" : {
+        "latitude" : 16.373063840833,
+        "longitude" : 16.373063840833
+      }
+    },
+    "html" : "somehtml",
+    "numberList" : [ 0.146, 0.146, 0.146 ],
+    "booleanList" : [ "true", "true", "true" ],
+    "dateList" : [ 1542746513, 1542746513, 1542746513 ]
+  },
+  "displayField" : {
+    "key" : "string",
+    "value" : null
+  },
+  "version" : "cbfd7867"
+}

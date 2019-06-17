@@ -1,0 +1,166 @@
+---
+title: Logging
+---
+
+include::content/docs/variables.adoc-include[]
+
+Gentics Mesh uses https://logback.qos.ch/[logback] as the main logging facility. Logging can be configured using the `config/logback.xml` file.
+
+[[levels]]
+== Log Levels
+
+Log levels can be configured per package/class
+
+```
+<logger name="io.vertx" level="INFO"/>
+<logger name="com.gentics" level="INFO"/>
+```
+
+For all remaining loggers the root level will be used:
+
+```
+<root level="ERROR">
+```
+
+Possible values: `ERROR`, `WARN`, `INFO`, `TRACE`, `DEBUG`
+
+Logging levels `TRACE` and `DEBUG` should only turned on for specific classes. Those levels will cause excessive log output.
+
+[[examples]]
+== Examples
+
+=== Stdout/Errout (default)
+
+By default Gentics Mesh will log errors to `errout` and other messages to `stdout`.
+
+.logback.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds"> 
+	<conversionRule conversionWord="meshName" converterClass="com.gentics.mesh.log.MeshLogNameConverter"/>
+	<statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
+	<appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+		<target>System.err</target>
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] - %msg%n</pattern>
+		</encoder>
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>ERROR</level>
+			<onMatch>ACCEPT</onMatch>
+			<onMismatch>DENY</onMismatch>
+		</filter>
+	</appender>
+
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="io.vertx" level="INFO"/>
+	<logger name="com.gentics" level="INFO"/>
+
+	<root level="ERROR">
+		<appender-ref ref="STDOUT"/>
+	</root>
+</configuration>
+----
+
+
+=== Syslog
+
+Syslog logging can be configured using the `SyslogAppender`. In this example messages will be logged to syslog and console out via the `ConsoleAppender`.
+
+.logback.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds"> 
+    <conversionRule conversionWord="meshName" converterClass="com.gentics.mesh.log.MeshLogNameConverter"/>
+	<statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
+
+	<appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+		<target>System.err</target>
+		<encoder>
+			<pattern> %d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] - %msg%n</pattern>
+		</encoder>
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>ERROR</level>
+			<onMatch>ACCEPT</onMatch>
+			<onMismatch>DENY</onMismatch>
+		</filter>
+	</appender>
+
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
+		<syslogHost>localhost</syslogHost>
+		<facility>DAEMON</facility>
+		<suffixPattern>[%thread] %logger %msg</suffixPattern>
+	</appender>
+
+	<logger name="io.vertx" level="INFO"/>
+	<logger name="com.gentics" level="INFO"/>
+
+	<root level="ERROR">
+		<appender-ref ref="SYSLOG"/>
+		<appender-ref ref="STDOUT"/>
+	</root>
+</configuration>
+----
+
+
+=== File logging
+
+The following example uses the `RollingFileAppender` to log into the `log/mesh.log` file. The `TimeBasedRollingPolicy` will automatically create rotated log and compress old logs.
+
+The `INFO` lines will be logged to the file and to stdout.
+
+.logback.xml
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds">
+        <conversionRule conversionWord="meshName" converterClass="com.gentics.mesh.log.MeshLogNameConverter"/>
+
+        <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+                <file>log/mesh.log</file>
+                <target>System.err</target>
+                <append>true</append>
+                <encoder>
+                        <pattern>%d [%meshName] %-5level [%file:%line] - %msg%n</pattern>
+                </encoder>
+                <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                        <fileNamePattern>log/mesh-%d{yyyy-MM}.log.gz</fileNamePattern>
+                        <maxHistory>12</maxHistory>
+                </rollingPolicy>
+        </appender>
+        <appender name="STDOUT-out" class="ch.qos.logback.core.ConsoleAppender">
+                <target>System.err</target>
+                <encoder>
+                        <pattern>%d [%meshName] %-5level [%file:%line] - %msg%n</pattern>
+                </encoder>
+        </appender>
+
+        <logger name="io.vertx" level="INFO"/>
+        <logger name="com.gentics" level="INFO"/>
+
+        <root level="ERROR">
+                <appender-ref ref="FILE"/>
+                <appender-ref ref="STDOUT-out"/>
+        </root>
+</configuration>
+----
+
+
+== OrientDB
+
+The OrientDB server logging can be configured using the `orientdb-server-config.xml` and `orientdb-server-log.properties` files.
+
+More detailed information can be found in the https://orientdb.com/docs/3.0.x/admin/Logging.html[OrientDB Docs].

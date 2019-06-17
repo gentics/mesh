@@ -1,13 +1,18 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.Events.EVENT_BRANCH_CREATED;
-import static com.gentics.mesh.Events.EVENT_BRANCH_DELETED;
-import static com.gentics.mesh.Events.EVENT_BRANCH_UPDATED;
+import static com.gentics.mesh.ElementType.BRANCH;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
 
+import java.util.List;
+
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -15,6 +20,15 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
+import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
+import com.gentics.mesh.core.rest.event.branch.BranchTaggedEventModel;
+import com.gentics.mesh.core.rest.event.project.ProjectBranchEventModel;
+import com.gentics.mesh.core.rest.job.JobStatus;
+import com.gentics.mesh.event.Assignment;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.parameter.PagingParameters;
 
 /**
  * The Branch domain model interface.
@@ -36,14 +50,10 @@ import com.gentics.mesh.core.rest.branch.BranchResponse;
  * migrations and identify which branch specific search indices should be used when using the search indices.
  * 
  */
-public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedElement, ReferenceableElement<BranchReference>, UserTrackingVertex {
+public interface Branch
+	extends MeshCoreVertex<BranchResponse, Branch>, NamedElement, ReferenceableElement<BranchReference>, UserTrackingVertex, Taggable, ProjectElement {
 
-	/**
-	 * Type Value: {@value #TYPE}
-	 */
-	String TYPE = "branch";
-
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_BRANCH_CREATED, EVENT_BRANCH_UPDATED, EVENT_BRANCH_DELETED);
+	TypeInfo TYPE_INFO = new TypeInfo(BRANCH, BRANCH_CREATED, BRANCH_UPDATED, BRANCH_DELETED);
 
 	@Override
 	default TypeInfo getTypeInfo() {
@@ -55,6 +65,8 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	static final String HOSTNAME = "hostname";
 
 	static final String SSL = "ssl";
+
+	static final String PATH_PREFIX = "pathPrefix";
 
 	/**
 	 * Get whether the branch is active.
@@ -99,7 +111,7 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	 * Set the hostname of the branch.
 	 * 
 	 * @param hostname
-	 * @return
+	 * @return Fluent API
 	 */
 	Branch setHostname(String hostname);
 
@@ -114,9 +126,38 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	 * Set the ssl flag of the branch.
 	 * 
 	 * @param ssl
-	 * @return
+	 * @return Fluent API
 	 */
 	Branch setSsl(boolean ssl);
+
+	/**
+	 * Return the webroot path prefix.
+	 * 
+	 * @return
+	 */
+	String getPathPrefix();
+
+	/**
+	 * Set the path prefix.
+	 * 
+	 * @param pathPrefix
+	 * @return Fluent API
+	 */
+	Branch setPathPrefix(String pathPrefix);
+
+	/**
+	 * Get whether the branch is the latest branch
+	 * 
+	 * @return
+	 */
+	boolean isLatest();
+
+	/**
+	 * Make the branch the latest branch of the project
+	 * 
+	 * @return
+	 */
+	Branch setLatest();
 
 	/**
 	 * Get the next Branch.
@@ -153,9 +194,10 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	 * 
 	 * @param user
 	 * @param schemaContainerVersion
+	 * @param batch
 	 * @return Job which was created to trigger the migration or null if no job was created because the version has already been assigned before
 	 */
-	Job assignSchemaVersion(User user, SchemaContainerVersion schemaContainerVersion);
+	Job assignSchemaVersion(User user, SchemaContainerVersion schemaContainerVersion, EventQueueBatch batch);
 
 	/**
 	 * Unassign all schema versions of the given schema from this branch.
@@ -196,9 +238,10 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	 * @param user
 	 * 
 	 * @param microschemaContainerVersion
+	 * @param batch
 	 * @return Job which has been created if the version has not yet been assigned. Otherwise null will be returned.
 	 */
-	Job assignMicroschemaVersion(User user, MicroschemaContainerVersion microschemaContainerVersion);
+	Job assignMicroschemaVersion(User user, MicroschemaContainerVersion microschemaContainerVersion, EventQueueBatch batch);
 
 	/**
 	 * Unassigns all versions of the given microschema from this branch.
@@ -246,7 +289,15 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	 * 
 	 * @return Iterable
 	 */
-	Iterable<? extends SchemaContainerVersion> findActiveSchemaVersions();
+	TraversalResult<? extends SchemaContainerVersion> findActiveSchemaVersions();
+
+	/**
+	 * Get an iterable over all active microschema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one
+	 * which is queued and will soon contain containers due to an executed node migration.
+	 *
+	 * @return Iterable
+	 */
+	Iterable<? extends MicroschemaContainerVersion> findActiveMicroschemaVersions();
 
 	/**
 	 * Get an iterable of all latest schema container versions.
@@ -254,13 +305,6 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	 * @return Iterable
 	 */
 	Iterable<? extends BranchSchemaEdge> findAllLatestSchemaVersionEdges();
-
-	/**
-	 * Project to which the branch belongs.
-	 * 
-	 * @return Project of the branch
-	 */
-	Project getProject();
 
 	/**
 	 * Assign the branch to a specific project.
@@ -315,5 +359,93 @@ public interface Branch extends MeshCoreVertex<BranchResponse, Branch>, NamedEle
 	 * @return Found version or null if no version could be found.
 	 */
 	MicroschemaContainerVersion findLatestMicroschemaVersion(MicroschemaContainer schemaContainer);
+
+	/**
+	 * Add the given tag to the list of tags for this branch.
+	 * 
+	 * @param tag
+	 */
+	void addTag(Tag tag);
+
+	/**
+	 * Remove the given tag from the list of tags for this branch.
+	 * 
+	 * @param tag
+	 */
+	void removeTag(Tag tag);
+
+	/**
+	 * Remove all tags.
+	 */
+	void removeAllTags();
+
+	/**
+	 * Return a list of all tags that were assigned to this branch.
+	 *
+	 * @return
+	 */
+	List<? extends Tag> getTags();
+
+	/**
+	 * Return a page of all visible tags that are assigned to the branch.
+	 * 
+	 * @param user
+	 * @param params
+	 * @return Page which contains the result
+	 */
+	TransformablePage<? extends Tag> getTags(User user, PagingParameters params);
+
+	/**
+	 * Tests if the branch is tagged with the given tag.
+	 *
+	 * @param tag
+	 * @return
+	 */
+	boolean hasTag(Tag tag);
+
+	/**
+	 * Handle the update tags request.
+	 *
+	 * @param ac
+	 * @param batch
+	 * @return Page which includes the new set of tags
+	 */
+	TransformablePage<? extends Tag> updateTags(InternalActionContext ac, EventQueueBatch batch);
+
+	/**
+	 * Generate event which is send when the branch is set to be the latest of the project.
+	 *
+	 * @return
+	 */
+	ProjectBranchEventModel onSetLatest();
+
+	/**
+	 * Generate a tagging event for the branch.
+	 *
+	 * @param tag
+	 * @param assignment
+	 * @return
+	 */
+	BranchTaggedEventModel onTagged(Tag tag, Assignment assignment);
+
+	/**
+	 * Create a project schema assignment event.
+	 *
+	 * @param schemaContainerVersion
+	 * @param assigned
+	 * @param status
+	 * @return
+	 */
+	BranchSchemaAssignEventModel onSchemaAssignEvent(SchemaContainerVersion schemaContainerVersion, Assignment assigned, JobStatus status);
+
+	/**
+	 * Create a project microschema assignment event.
+	 *
+	 * @param microschemaContainerVersion
+	 * @param assigned
+	 * @param status
+	 * @return
+	 */
+	BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion, Assignment assigned, JobStatus status);
 
 }

@@ -1,0 +1,40 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| baseBranch
+| false
+| object
+| Optional reference to the base branch. If not set, the new branch will be based on the current &#x27;latest&#x27; branch.
+
+| hostname
+| false
+| string
+| The hostname of the branch which will be used to generate links across multiple projects.
+
+| latest
+| false
+| boolean
+| Whether the new branch will be set as &#x27;latest&#x27; branch. Defaults to &#x27;true&#x27;.
+
+| name
+| true
+| string
+| Name of the branch.
+
+| pathPrefix
+| false
+| string
+| Optional path prefix for webroot path and rendered links.
+
+| ssl
+| false
+| boolean
+| SSL flag of the branch which will be used to generate links across multiple projects.
+
+|======

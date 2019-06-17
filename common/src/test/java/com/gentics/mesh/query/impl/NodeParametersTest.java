@@ -1,5 +1,6 @@
 package com.gentics.mesh.query.impl;
 
+import static com.gentics.mesh.util.HttpQueryUtils.splitQuery;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -9,6 +10,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+
+import java.util.Map;
 
 public class NodeParametersTest {
 
@@ -36,7 +39,12 @@ public class NodeParametersTest {
 		assertEquals("The method did not return a fluent API", params, params.setResolveLinks(LinkType.FULL));
 		assertEquals("The parameter should have been changed.", LinkType.FULL, params.getResolveLinks());
 
-		assertEquals("expandAll=true&expand=ä,b,c&resolveLinks=full", params.getQueryParameters());
+		Map<String, String> paramMap = splitQuery(params.getQueryParameters());
+		assertEquals(3, paramMap.size());
+		assertEquals("ä,b,c", paramMap.get("expand"));
+		assertEquals("full", paramMap.get("resolveLinks"));
+		assertEquals("true", paramMap.get("expandAll"));
 	}
+
 
 }

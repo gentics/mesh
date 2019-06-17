@@ -36,13 +36,15 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	String BINARY_ALT_KEY = "metadata-alt";
 
+	String PLAIN_TEXT_KEY = "plainText"; 
+
 	/**
 	 * Return the binary filename.
 	 * 
 	 * @return
 	 */
 	default String getFileName() {
-		return getProperty(BINARY_FILENAME_PROPERTY_KEY);
+		return property(BINARY_FILENAME_PROPERTY_KEY);
 	}
 
 	/**
@@ -60,7 +62,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return Fluent API
 	 */
 	default BinaryGraphField setFileName(String fileName) {
-		setProperty(BINARY_FILENAME_PROPERTY_KEY, fileName);
+		property(BINARY_FILENAME_PROPERTY_KEY, fileName);
 		return this;
 	}
 
@@ -89,7 +91,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return
 	 */
 	default String getMimeType() {
-		return getProperty(BINARY_CONTENT_TYPE_PROPERTY_KEY);
+		return property(BINARY_CONTENT_TYPE_PROPERTY_KEY);
 	}
 
 	/**
@@ -99,7 +101,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return Fluent API
 	 */
 	default BinaryGraphField setMimeType(String mimeType) {
-		setProperty(BINARY_CONTENT_TYPE_PROPERTY_KEY, mimeType);
+		property(BINARY_CONTENT_TYPE_PROPERTY_KEY, mimeType);
 		return this;
 	}
 
@@ -117,7 +119,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return Fluent API
 	 */
 	default BinaryGraphField setImageDominantColor(String dominantColor) {
-		setProperty(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY, dominantColor);
+		property(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY, dominantColor);
 		return this;
 	}
 
@@ -127,7 +129,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return
 	 */
 	default String getImageDominantColor() {
-		return getProperty(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY);
+		return property(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY);
 	}
 
 	/**
@@ -136,8 +138,8 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return Focal point or null if no focal point has been set
 	 */
 	default FocalPoint getImageFocalPoint() {
-		Float x = getProperty(BINARY_IMAGE_FOCAL_POINT_X);
-		Float y = getProperty(BINARY_IMAGE_FOCAL_POINT_Y);
+		Float x = property(BINARY_IMAGE_FOCAL_POINT_X);
+		Float y = property(BINARY_IMAGE_FOCAL_POINT_Y);
 		if (x == null || y == null) {
 			return null;
 		}
@@ -150,8 +152,8 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @param point
 	 */
 	default void setImageFocalPoint(FocalPoint point) {
-		setProperty(BINARY_IMAGE_FOCAL_POINT_X, point.getX());
-		setProperty(BINARY_IMAGE_FOCAL_POINT_Y, point.getY());
+		property(BINARY_IMAGE_FOCAL_POINT_X, point.getX());
+		property(BINARY_IMAGE_FOCAL_POINT_Y, point.getY());
 	}
 
 	/**
@@ -174,13 +176,6 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return
 	 */
 	Binary getBinary();
-
-	/**
-	 * Check whether the binary data represents a ingestable document(e.g.: pdf, doc, txt).
-	 * 
-	 * @return
-	 */
-	boolean isIngestableDocument();
 
 	/**
 	 * Set the metadata property.
@@ -218,7 +213,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return
 	 */
 	default Double getLocationLatitude() {
-		return getProperty(BINARY_LAT_KEY);
+		return property(BINARY_LAT_KEY);
 	}
 
 	/**
@@ -227,7 +222,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @param lat
 	 */
 	default void setLocationLatitude(Double lat) {
-		setProperty(BINARY_LAT_KEY, lat);
+		property(BINARY_LAT_KEY, lat);
 	}
 
 	/**
@@ -236,7 +231,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return
 	 */
 	default Double getLocationLongitude() {
-		return getProperty(BINARY_LON_KEY);
+		return property(BINARY_LON_KEY);
 	}
 
 	/**
@@ -245,7 +240,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @param lon
 	 */
 	default void setLocationLongitude(Double lon) {
-		setProperty(BINARY_LON_KEY, lon);
+		property(BINARY_LON_KEY, lon);
 	}
 
 	/**
@@ -254,7 +249,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return
 	 */
 	default Integer getLocationAltitude() {
-		return getProperty(BINARY_ALT_KEY);
+		return property(BINARY_ALT_KEY);
 	}
 
 	/**
@@ -263,7 +258,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @param alt
 	 */
 	default void setLocationAltitude(Integer alt) {
-		setProperty(BINARY_ALT_KEY, alt);
+		property(BINARY_ALT_KEY, alt);
 	}
 
 	/**
@@ -288,4 +283,17 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return
 	 */
 	BinaryMetadata getMetadata();
+
+	/**
+	 * Set the plain text content.
+	 * @param text
+	 */
+	void setPlainText(String text);
+
+	/**
+	 * Return the extracted plain text content of the binary.
+	 * @return
+	 */
+	String getPlainText();
+
 }

@@ -3,6 +3,7 @@ package com.gentics.mesh.search;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -41,8 +42,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-@MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
 public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 
 	private static final Logger log = LoggerFactory.getLogger(CustomIndexSettingsTest.class);
@@ -199,15 +199,18 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 			nodeCreateRequest.getFields().put("content", FieldUtil.createStringField(content));
 			call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 		}
+
+		waitForSearchIdleEvent();
+
 		// 3. Invoke search
 		String searchQuery = getText("/elasticsearch/custom/customSearchQuery.es");
-		JsonObject searchResult = call(() -> client().searchNodesRaw(PROJECT_NAME, searchQuery));
+		JsonObject searchResult = new JsonObject(call(() -> client().searchNodesRaw(PROJECT_NAME, searchQuery)).toString());
 		System.out.println(searchResult.encodePrettily());
 
 		String query = "Content t";
 		JsonObject autocompleteQuery = new JsonObject(getText("/elasticsearch/custom/autocompleteQuery.es"));
 		autocompleteQuery.getJsonObject("query").getJsonObject("match").getJsonObject("fields.content.auto").put("query", query);
-		JsonObject autocompleteResult = call(() -> client().searchNodesRaw(PROJECT_NAME, autocompleteQuery.encodePrettily()));
+		JsonObject autocompleteResult = new JsonObject(call(() -> client().searchNodesRaw(PROJECT_NAME, autocompleteQuery.encodePrettily())).toString());
 		System.out.println(autocompleteResult.encodePrettily());
 		System.out.println("------------------------------");
 		System.out.println(new JsonObject(parseResult(autocompleteResult, query)).encodePrettily());
@@ -251,7 +254,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 
 	/**
 	 * Construct autocompletion options from the found tokens and the initial set of partials.
-	 * 
+	 *
 	 * @param map
 	 * @param foundTokens
 	 * @param partials

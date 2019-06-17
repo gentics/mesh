@@ -1,0 +1,35 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| backupDirectory
+| true
+| string
+| Path to the graph database backup directory.
+
+| directory
+| true
+| string
+| Path to the graph database data directory.
+
+| exportDirectory
+| true
+| string
+| Path to the graph database export directory.
+
+| parameters
+| false
+| object
+| Additional set of graph database parameters.
+
+| startServer
+| true
+| boolean
+| Flag which indicates whether the graph database admin web server should be started.
+
+|======

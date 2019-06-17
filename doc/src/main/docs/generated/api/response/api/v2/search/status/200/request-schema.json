@@ -1,0 +1,22 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:search:SearchStatusResponse",
+  "properties" : {
+    "available" : {
+      "type" : "boolean",
+      "required" : true,
+      "description" : "Flag which indicates whether Elasticsearch is available and search queries can be executed."
+    },
+    "indexSyncRunning" : {
+      "type" : "boolean",
+      "description" : "Flag which indicates whether a index synchronization is currently running."
+    },
+    "metrics" : {
+      "type" : "object",
+      "description" : "Map which contains various metric values.",
+      "additionalProperties" : {
+        "type" : "any"
+      }
+    }
+  }
+}

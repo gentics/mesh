@@ -7,15 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Stream;
 
-import io.reactivex.Completable;
-import io.reactivex.CompletableSource;
-import io.reactivex.Flowable;
-import io.reactivex.Single;
 import org.json.JSONException;
 import org.junit.Test;
 
@@ -28,15 +20,18 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.MeshJSONAssert;
 import com.syncleus.ferma.tx.Tx;
 
+import io.reactivex.Completable;
+import io.reactivex.Flowable;
+import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(useElasticsearch = false, testSize = TestSize.FULL, startServer = true)
+@MeshTestSetting(testSize = TestSize.FULL, startServer = true)
 public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 
 	@Test
 	public void testIntrospection() throws IOException {
 		try (Tx tx = tx()) {
-			for (MicroschemaContainer microschema : meshRoot().getMicroschemaContainerRoot().findAllIt()) {
+			for (MicroschemaContainer microschema : meshRoot().getMicroschemaContainerRoot().findAll()) {
 				microschema.remove();
 			}
 			tx.success();

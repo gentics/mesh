@@ -25,7 +25,7 @@ import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(useElasticsearch = false, testSize = TestSize.FULL, startServer = true)
+@MeshTestSetting(testSize = TestSize.FULL, startServer = true)
 @RunWith(Parameterized.class)
 public class GraphQLPermissionTest extends AbstractMeshTest {
 
@@ -51,7 +51,7 @@ public class GraphQLPermissionTest extends AbstractMeshTest {
 
 		// 2. Revoke all read perm from all nodes also read_published from /News
 		try (Tx tx = tx()) {
-			for (Node node : project().getNodeRoot().findAllIt()) {
+			for (Node node : project().getNodeRoot().findAll()) {
 				role().revokePermissions(node, GraphPermission.READ_PERM);
 			}
 			// Explicitly remove read_publish for a single node

@@ -1,0 +1,15 @@
+package com.gentics.mesh.graphdb.spi;
+
+import com.syncleus.ferma.tx.Tx;
+import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Function;
+
+public interface Transactional<T> {
+	T runInExistingTx(Tx tx);
+	T runInNewTx();
+//	<R> Transactional<R> map(Function<T, R> mapper);
+	<R> Transactional<R> mapInTx(BiFunction<Tx, T, R> mapper);
+	<R> Transactional<R> flatMap(Function<T, Transactional<R>> mapper);
+
+
+}

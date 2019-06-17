@@ -1,0 +1,12 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:status:MeshStatusResponse",
+  "properties" : {
+    "status" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "The current Gentics Mesh server status.",
+      "enum" : [ "STARTING", "WAITING_FOR_CLUSTER", "READY", "SHUTTING_DOWN", "BACKUP", "RESTORE" ]
+    }
+  }
+}

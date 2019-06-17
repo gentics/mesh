@@ -1,0 +1,27 @@
+{
+  endsWithGroup: groups(filter:{
+    name: { regex: "group$"}
+  }) {
+    # [$.data.endsWithGroup.totalCount=2]
+    totalCount
+    elements {
+      name
+      uuid
+    }
+  }
+
+  endsWithGroupAndAdmin: groups(filter:{
+    or: [
+    	{name: { equals:"admin"}}
+    	{name: { regex: "group$"}}
+    ]
+  }) {
+    # [$.data.endsWithGroupAndAdmin.totalCount=3]
+    totalCount
+    elements {
+      name
+      uuid
+    }
+  }
+}
+# [$.errors=<is-undefined>]

@@ -1,0 +1,43 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:branch:BranchCreateRequest",
+  "properties" : {
+    "name" : {
+      "type" : "string",
+      "required" : true,
+      "description" : "Name of the branch."
+    },
+    "hostname" : {
+      "type" : "string",
+      "description" : "The hostname of the branch which will be used to generate links across multiple projects."
+    },
+    "ssl" : {
+      "type" : "boolean",
+      "description" : "SSL flag of the branch which will be used to generate links across multiple projects."
+    },
+    "latest" : {
+      "type" : "boolean",
+      "description" : "Whether the new branch will be set as 'latest' branch. Defaults to 'true'."
+    },
+    "baseBranch" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:branch:BranchReference",
+      "description" : "Optional reference to the base branch. If not set, the new branch will be based on the current 'latest' branch.",
+      "properties" : {
+        "name" : {
+          "type" : "string",
+          "description" : "Name of the referenced element"
+        },
+        "uuid" : {
+          "type" : "string",
+          "required" : true,
+          "description" : "Uuid of the referenced element"
+        }
+      }
+    },
+    "pathPrefix" : {
+      "type" : "string",
+      "description" : "Optional path prefix for webroot path and rendered links."
+    }
+  }
+}

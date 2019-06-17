@@ -1,18 +1,20 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.Events.EVENT_TAG_FAMILY_CREATED;
-import static com.gentics.mesh.Events.EVENT_TAG_FAMILY_DELETED;
-import static com.gentics.mesh.Events.EVENT_TAG_FAMILY_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_UPDATED;
+
 import java.util.Objects;
 
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
@@ -22,14 +24,9 @@ import com.gentics.mesh.parameter.PagingParameters;
  * projects via the {@link TagFamilyRootImpl} class.
  */
 public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>, ReferenceableElement<TagFamilyReference>, UserTrackingVertex,
-		IndexableElement, RootVertex<Tag> {
+	RootVertex<Tag>, ProjectElement {
 
-	/**
-	 * Type Value: {@value #TYPE}
-	 */
-	String TYPE = "tagFamily";
-
-	TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_TAG_FAMILY_CREATED, EVENT_TAG_FAMILY_UPDATED, EVENT_TAG_FAMILY_DELETED);
+	TypeInfo TYPE_INFO = new TypeInfo(ElementType.TAGFAMILY, TAG_FAMILY_CREATED, TAG_FAMILY_UPDATED, TAG_FAMILY_DELETED);
 
 	/**
 	 * Construct the index name for tag family indices. Use the projectUuid in order to create a project specific index.
@@ -40,7 +37,7 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	static String composeIndexName(String projectUuid) {
 		Objects.requireNonNull(projectUuid, "A projectUuid must be provided.");
 		StringBuilder indexName = new StringBuilder();
-		indexName.append(TYPE.toLowerCase());
+		indexName.append("tagfamily");
 		indexName.append("-").append(projectUuid);
 		return indexName.toString();
 	}
@@ -124,13 +121,6 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	TagFamilyRoot getTagFamilyRoot();
 
 	/**
-	 * Return the project to which the tag family has been assigned.
-	 * 
-	 * @return
-	 */
-	Project getProject();
-
-	/**
 	 * Set the project to which the tag family should be assigned.
 	 * 
 	 * @param project
@@ -144,7 +134,7 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	 * @param batch
 	 * @return
 	 */
-	Tag create(InternalActionContext ac, SearchQueueBatch batch);
+	Tag create(InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Add the given tag to the aggregation vertex.

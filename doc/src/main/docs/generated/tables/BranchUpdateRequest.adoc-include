@@ -1,0 +1,30 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| hostname
+| false
+| string
+| The hostname of the branch which will be used to generate links across multiple projects.
+
+| name
+| true
+| string
+| Name of the branch.
+
+| pathPrefix
+| false
+| string
+| Optional path prefix for webroot path and rendered links.
+
+| ssl
+| false
+| boolean
+| SSL flag of the branch which will be used to generate links across multiple projects.
+
+|======

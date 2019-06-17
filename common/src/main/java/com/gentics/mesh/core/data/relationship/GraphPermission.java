@@ -6,9 +6,12 @@ import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
+import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
 import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.IndexHandler;
+import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 /**
  * Internal enum which provides labels for graph permission edges that are created between the target element and a role.
@@ -27,9 +30,10 @@ public enum GraphPermission {
 
 	PUBLISH_PERM("HAS_PUBLISH_PERMISSION", PUBLISH);
 
-	public static void init(Database database) {
+	public static void init(TypeHandler type, IndexHandler index) {
 		for (String label : GraphPermission.labels()) {
-			database.addEdgeIndex(label, true, false, false);
+			type.createType(edgeType(label));
+			index.createIndex(edgeIndex(label).withInOut());
 		}
 	}
 
@@ -100,5 +104,9 @@ public enum GraphPermission {
 	@Override
 	public String toString() {
 		return label;
+	}
+
+	public static GraphPermission[] basicPermissions() {
+		return new GraphPermission[] { CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM };
 	}
 }

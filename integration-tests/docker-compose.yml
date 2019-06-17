@@ -6,7 +6,7 @@ services:
     entrypoint: bash -c "while ! timeout 1 wget -qO- http://selenium:4444/wd/hub > /dev/null ; do sleep 1; done; protractor --seleniumAddress http://selenium:4444/wd/hub /app/protractor.conf.js --params.meshHost mesh --params.meshPort 8080"
   selenium:
     image: selenium/standalone-firefox
-    entrypoint: bash -c "while ! timeout 1 wget -qO- http://mesh:8080/api/v1/admin/status > /dev/null ; do sleep 1; done ; ./opt/bin/entry_point.sh"
+    entrypoint: bash -c "while ! timeout 1 wget -qO- http://mesh:8080/api/v2/admin/status > /dev/null ; do sleep 1; done ; ./opt/bin/entry_point.sh"
   mesh:
     image: gentics/mesh-demo:${MESH_VERSION}
 

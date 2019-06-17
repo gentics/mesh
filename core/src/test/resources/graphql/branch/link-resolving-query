@@ -1,0 +1,17 @@
+{
+  node(path: "/test2") {
+    ... on content {
+      fields {
+		    # [$.data.node.fields.content=/test1]
+        content(linkType: SHORT)
+		    # [$.data.node.fields.teaser=/test1]
+        teaser(linkType: SHORT)
+
+        # [$.data.node.fields.contentFull=%CURRENT_API_BASE_PATH%/dummy/webroot/test1?branch=testBranch]
+        contentFull: content(linkType: FULL)
+        # [$.data.node.fields.teaserFull=%CURRENT_API_BASE_PATH%/dummy/webroot/test1?branch=testBranch]
+        teaserFull: teaser(linkType: FULL)
+      }
+    }
+  }
+}

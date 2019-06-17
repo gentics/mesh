@@ -1,8 +1,5 @@
 package com.gentics.mesh.core.endpoint.schema;
 
-import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -14,14 +11,13 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -31,10 +27,8 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -45,10 +39,9 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
-import com.gentics.mesh.util.Tuple;
+import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
-import io.reactivex.Single;
 
 public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, SchemaResponse> {
 
@@ -56,15 +49,12 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 	private Lazy<BootstrapInitializer> boot;
 
-	private SearchQueue searchQueue;
-
 	@Inject
-	public SchemaCrudHandler(Database db, SchemaComparator comparator, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue,
-			HandlerUtilities utils) {
+	public SchemaCrudHandler(Database db, SchemaComparator comparator, Lazy<BootstrapInitializer> boot,
+		HandlerUtilities utils) {
 		super(db, utils);
 		this.comparator = comparator;
 		this.boot = boot;
-		this.searchQueue = searchQueue;
 	}
 
 	@Override
@@ -79,7 +69,29 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		GenericMessageResponse message = db.tx(tx1 -> {
+		/**
+		 * The following code delegates the call to the handleUpdate method is very hacky at best.
+		 * It would be better to move the whole update code into the SchemaContainerImpl#update 
+		 * method and use the regular handlerUtilities. (similar to all other calls)
+		 * The current code however does not return a SchemaResponse for update requests. 
+		 * Instead a message will be returned. Changing this behaviour would cause a breaking change. (Changed response model).
+		 */
+		boolean delegateToCreate = db.tx(() -> {
+			RootVertex<SchemaContainer> root = getRootVertex(ac);
+			if (!UUIDUtil.isUUID(uuid)) {
+				return false;
+			}
+			SchemaContainer schemaContainer = root.findByUuid(uuid);
+			return schemaContainer == null;
+		});
+
+		// Delegate to handle update which will create the schema
+		if (delegateToCreate) {
+			super.handleUpdate(ac, uuid);
+			return;
+		}
+
+		utils.syncTx(ac, tx1 -> {
 
 			// 1. Load the schema container with update permissions
 			RootVertex<SchemaContainer> root = getRootVertex(ac);
@@ -100,7 +112,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 			SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
 			User user = ac.getUser();
-			Tuple<SearchQueueBatch, String> info = db.tx(tx -> {
+			String version = utils.eventAction(batch -> {
 
 				// Check whether there are any microschemas which are referenced by the schema
 				for (FieldSchema field : requestModel.getFields()) {
@@ -128,7 +140,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 							for (SchemaContainerRoot roots : schemaContainer.getRoots()) {
 								Project project = roots.getProject();
 								if (project != null) {
-									project.getMicroschemaContainerRoot().addMicroschema(user, microschema);
+									project.getMicroschemaContainerRoot().addMicroschema(user, microschema, batch);
 								}
 							}
 						}
@@ -136,7 +148,6 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				}
 
 				// 3. Apply the found changes to the schema
-				SearchQueueBatch batch = searchQueue.create();
 				SchemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
 				// Check whether the assigned branches of the schema should also directly be updated.
@@ -155,21 +166,19 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 						}
 
 						// Assign the new version to the branch
-						branch.assignSchemaVersion(user, createdVersion);
+						branch.assignSchemaVersion(user, createdVersion, batch);
 					}
 				}
-				return Tuple.tuple(batch, createdVersion.getVersion());
+				return createdVersion.getVersion();
 			});
 
-			info.v1().processSync();
 			if (updateParams.getUpdateAssignedBranches()) {
-				vertx.eventBus().send(JOB_WORKER_ADDRESS, null);
-				return message(ac, "schema_updated_migration_invoked", schemaName, info.v2());
+				MeshEvent.triggerJobWorker();
+				return message(ac, "schema_updated_migration_invoked", schemaName, version);
 			} else {
-				return message(ac, "schema_updated_migration_deferred", schemaName, info.v2());
+				return message(ac, "schema_updated_migration_deferred", schemaName, version);
 			}
-		});
-		ac.send(message, OK);
+		}, message -> ac.send(message, OK));
 	}
 
 	/**
@@ -183,7 +192,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleDiff(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.asyncTx(ac, () -> {
+		utils.syncTx(ac, (tx) -> {
 			SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
 			requestModel.validate();
@@ -211,33 +220,25 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleAddSchemaToProject(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
 			if (!ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
-				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
+				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}
 			SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
 			SchemaContainerRoot root = project.getSchemaContainerRoot();
 			if (root.contains(schema)) {
 				// Schema has already been assigned. No need to create indices
-				return schema.transformToRest(ac, 0);
+				return schema.transformToRestSync(ac, 0);
 			}
 
-			Tuple<SearchQueueBatch, Single<SchemaResponse>> tuple = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
-
-				// Assign the schema to the project
-				root.addSchemaContainer(ac.getUser(), schema);
-				String branchUuid = project.getLatestBranch().getUuid();
-				SchemaContainerVersion schemaContainerVersion = schema.getLatestVersion();
-				batch.createNodeIndex(projectUuid, branchUuid, schemaContainerVersion.getUuid(), DRAFT, schemaContainerVersion.getSchema());
-				batch.createNodeIndex(projectUuid, branchUuid, schemaContainerVersion.getUuid(), PUBLISHED, schemaContainerVersion.getSchema());
-				return Tuple.tuple(batch, schema.transformToRest(ac, 0));
+			// Assign the schema to the project
+			utils.eventAction(batch -> {
+				root.addSchemaContainer(ac.getUser(), schema, batch);
 			});
-			tuple.v1().processSync();
-			return tuple.v2();
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			return schema.transformToRestSync(ac, 0);
+		}, model -> ac.send(model, OK));
 
 	}
 
@@ -251,21 +252,26 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleRemoveSchemaFromProject(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, () -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
 			if (!ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
-				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
+				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}
 
-			// TODO check whether schema is assigned to project
-
 			SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, READ_PERM);
-			db.tx(() -> {
-				project.getSchemaContainerRoot().removeSchemaContainer(schema);
+
+			// No need to invoke the removal if the schema is not assigned
+			if (!project.getSchemaContainerRoot().contains(schema)) {
+				return;
+			}
+
+			utils.eventAction(batch -> {
+				project.getSchemaContainerRoot().removeSchemaContainer(schema, batch);
+				batch.add(schema.onUpdated());
 			});
-			return Single.just(Optional.empty());
-		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
+
+		}, () -> ac.send(NO_CONTENT));
 	}
 
 	public void handleGetSchemaChanges(InternalActionContext ac) {
@@ -283,15 +289,13 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		utils.asyncTx(ac, () -> {
+		utils.syncTx(ac, (tx) -> {
 			SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
-			Tuple<SearchQueueBatch, String> info = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+			String version = utils.eventAction(batch -> {
 				SchemaContainerVersion newVersion = schema.getLatestVersion().applyChanges(ac, batch);
-				return Tuple.tuple(batch, newVersion.getVersion());
+				return newVersion.getVersion();
 			});
-			info.v1().processSync();
-			return message(ac, "schema_changes_applied", schema.getName(), info.v2());
+			return message(ac, "schema_changes_applied", schema.getName(), version);
 		}, model -> ac.send(model, OK));
 
 	}

@@ -62,7 +62,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	 * Action which will be invoked once the mesh instance is ready.
 	 */
 	private Runnable startupAction = () -> {
-		client = MeshRestClient.create("localhost", getMappedPort(8080), false, vertx);
+		client = MeshRestClient.create("localhost", getMappedPort(8080), false);
 	};
 
 	private StartupLatchingConsumer startupConsumer = new StartupLatchingConsumer(startupAction);
@@ -124,7 +124,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 		List<Integer> exposedPorts = new ArrayList<>();
 		addEnv(MeshOptions.MESH_NODE_NAME_ENV, nodeName);
 		addEnv(ClusterOptions.MESH_CLUSTER_NAME_ENV, clusterName);
-
+		addEnv(ClusterOptions.MESH_CLUSTER_VERTX_PORT_ENV, "8123");
 		if (startEmbeddedES) {
 			exposedPorts.add(9200);
 			exposedPorts.add(9300);
@@ -265,7 +265,8 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 			dockerImage.withFileFromString("Dockerfile", dockerFile);
 
 			// Add custom mesh.yml
-			dockerImage.withFileFromString("/mesh.yml", generateMeshYML(enableClustering));
+			String yaml = generateMeshYML(enableClustering);
+			dockerImage.withFileFromString("/mesh.yml", yaml);
 
 			return dockerImage;
 		} catch (IOException e) {

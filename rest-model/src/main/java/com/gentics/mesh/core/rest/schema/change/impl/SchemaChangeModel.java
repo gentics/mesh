@@ -30,6 +30,8 @@ public class SchemaChangeModel implements RestModel {
 	public static final String URLFIELDS_KEY = "urlFieldsname";
 
 	public static final String DISPLAY_FIELD_NAME_KEY = "displayFieldname";
+	
+	public static final String AUTO_PURGE_FLAG_KEY = "autoPurge";
 
 	public static final String FIELD_ORDER_KEY = "order";
 
@@ -52,9 +54,6 @@ public class SchemaChangeModel implements RestModel {
 
 	@JsonPropertyDescription("Type of operation for this change")
 	private SchemaChangeOperation operation;
-
-	@JsonPropertyDescription("Optional migation script")
-	private String migrationScript;
 
 	private Map<String, Object> properties = new HashMap<>();
 
@@ -135,31 +134,6 @@ public class SchemaChangeModel implements RestModel {
 	 */
 	public void setProperty(String key, Object value) {
 		properties.put(key, value);
-	}
-
-	/**
-	 * Return the custom migration script.
-	 * 
-	 * @return
-	 */
-	public String getMigrationScript() {
-		return migrationScript;
-	}
-
-	/**
-	 * Set the custom migration script.
-	 * 
-	 * @param migrationScript
-	 */
-	public void setMigrationScript(String migrationScript) {
-		this.migrationScript = migrationScript;
-	}
-
-	/**
-	 * Load the default (auto) migration script for the operation of the change.
-	 */
-	public void loadMigrationScript() {
-		setMigrationScript(getOperation().getAutoMigrationScript(getProperties()));
 	}
 
 	/**

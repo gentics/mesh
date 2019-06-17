@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.schema.change;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -7,7 +8,6 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.schema.FieldTypeChange;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
@@ -20,9 +20,9 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
+import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(testSize = FULL, startServer = false)
 public class FieldTypeChangeTest extends AbstractChangeTest {
 
 	@Test
@@ -102,28 +102,13 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	public void testUpdateFromRest() throws IOException {
 		try (Tx tx = tx()) {
 			SchemaChangeModel model = SchemaChangeModel.createChangeFieldTypeChange("testField", "list");
-			model.setMigrationScript("test");
 			model.setProperty(SchemaChangeModel.LIST_TYPE_KEY, "html");
 			FieldTypeChange change = tx.getGraph().addFramedVertex(FieldTypeChangeImpl.class);
 			change.updateFromRest(model);
 
-			assertEquals("test", change.getMigrationScript());
 			assertEquals("testField", change.getFieldName());
 			assertEquals("list", change.getType());
 			assertEquals("html", change.getListType());
-		}
-	}
-
-	@Test
-	@Override
-	public void testGetMigrationScript() throws IOException {
-		try (Tx tx = tx()) {
-			FieldTypeChange change = tx.getGraph().addFramedVertex(FieldTypeChangeImpl.class);
-			assertNotNull("Field Type changes have a auto migation script.", change.getAutoMigrationScript());
-
-			assertNotNull("Intitially the default migration script should be set.", change.getMigrationScript());
-			change.setCustomMigrationScript("test");
-			assertEquals("The custom migration script was not changed.", "test", change.getMigrationScript());
 		}
 	}
 
@@ -133,14 +118,12 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			FieldTypeChange change = tx.getGraph().addFramedVertex(FieldTypeChangeImpl.class);
 			change.setFieldName("test");
-			change.setCustomMigrationScript("script");
 			change.setListType("html");
 			change.setType("list");
 
 			SchemaChangeModel model = change.transformToRest();
 			assertEquals("html", model.getProperty(SchemaChangeModel.LIST_TYPE_KEY));
 			assertEquals("list", model.getProperty(SchemaChangeModel.TYPE_KEY));
-			assertEquals("script", model.getMigrationScript());
 		}
 	}
 

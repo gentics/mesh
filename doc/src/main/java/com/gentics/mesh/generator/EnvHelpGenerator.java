@@ -15,6 +15,9 @@ import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 
 public class EnvHelpGenerator extends AbstractRenderingGenerator {
 
+	public static File DOCS_FOLDER = new File("src/main/docs");
+	public static File OUTPUT_ROOT_FOLDER = new File(DOCS_FOLDER, "generated");
+	
 	public static final String ENV_TABLE_TEMPLATE_NAME = "env-table.hbs";
 
 	public EnvHelpGenerator(File outputFolder) throws IOException {
@@ -22,7 +25,7 @@ public class EnvHelpGenerator extends AbstractRenderingGenerator {
 	}
 
 	public static void main(String[] args) throws IOException {
-		new EnvHelpGenerator(new File("target", "output")).run();
+		new EnvHelpGenerator(OUTPUT_ROOT_FOLDER).run();
 	}
 
 	public void run() throws IOException {
@@ -45,7 +48,7 @@ public class EnvHelpGenerator extends AbstractRenderingGenerator {
 		Map<String, Object> context = new HashMap<>();
 		context.put("entries", list);
 		String table = renderTable(context, getTemplate(ENV_TABLE_TEMPLATE_NAME));
-		writeFile("mesh-env.adoc", table);
+		writeFile("mesh-env.adoc-include", table);
 	}
 
 }

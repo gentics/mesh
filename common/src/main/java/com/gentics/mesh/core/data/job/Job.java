@@ -1,16 +1,18 @@
 package com.gentics.mesh.core.data.job;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
-import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.job.JobStatus;
+import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.util.DateUtils;
+
+import io.reactivex.Completable;
 
 /**
  * A job can be added to the {@link JobRoot} vertex. Jobs are used to persist information about long running tasks.
@@ -45,14 +47,14 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	 * 
 	 * @return
 	 */
-	MigrationType getType();
+	JobType getType();
 
 	/**
 	 * Set the job type.
 	 * 
-	 * @param schema
+	 * @param type
 	 */
-	void setType(MigrationType type);
+	void setType(JobType type);
 
 	/**
 	 * Return the branch reference for the job.
@@ -125,14 +127,9 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	void setToMicroschemaVersion(MicroschemaContainerVersion toVersion);
 
 	/**
-	 * Prepare the job.
-	 */
-	void prepare();
-
-	/**
 	 * Process the job.
 	 */
-	void process();
+	Completable process();
 
 	/**
 	 * Mark the job as failed.
@@ -270,14 +267,14 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	 * 
 	 * @return
 	 */
-	MigrationStatus getStatus();
+	JobStatus getStatus();
 
 	/**
 	 * Set migration status.
 	 * 
 	 * @param status
 	 */
-	void setStatus(MigrationStatus status);
+	void setStatus(JobStatus status);
 
 	/**
 	 * Return the name of the node on which the job is being executed.

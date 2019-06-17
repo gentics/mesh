@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -15,16 +16,18 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetric;
 
+import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 
 /**
@@ -45,8 +48,8 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	TagMappingProvider mappingProvider;
 
 	@Inject
-	public TagIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
-		super(searchProvider, db, boot, searchQueue);
+	public TagIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper) {
+		super(searchProvider, db, boot, helper);
 	}
 
 	@Override
@@ -96,29 +99,41 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 		return db.tx(() -> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
 			ProjectRoot projectRoot = boot.meshRoot().getProjectRoot();
-			for (Project project : projectRoot.findAllIt()) {
-				String indexName = Tag.composeIndexName(project.getUuid());
-				IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "tag");
-				indexInfo.put(indexName, info);
+			for (Project project : projectRoot.findAll()) {
+				IndexInfo info = getIndex(project.getUuid());
+				indexInfo.put(info.getIndexName(), info);
 			}
 			return indexInfo;
 		});
 	}
 
-	@Override
-	public Completable syncIndices() {
-		return Completable.defer(() -> {
-			return db.tx(() -> {
-				ProjectRoot root = boot.meshRoot().getProjectRoot();
-				Set<Completable> actions = new HashSet<>();
-				SyncMetric metric = new SyncMetric(getType());
-				for (Project project : root.findAllIt()) {
-					String uuid = project.getUuid();
-					actions.add(diffAndSync(Tag.composeIndexName(uuid), uuid, metric));
-				}
+	public IndexInfo getIndex(String projectUuid) {
+		return new IndexInfo(Tag.composeIndexName(projectUuid), null, getMappingProvider().getMapping(), "tag");
+	}
 
-				return Completable.merge(actions);
-			});
+	@Override
+	public Flowable<SearchRequest> syncIndices() {
+		return Flowable.defer(() -> db.tx(() -> {
+			SyncMetric metric = new SyncMetric(getType());
+			return boot.meshRoot().getProjectRoot().findAll().stream()
+				.map(project -> {
+					String uuid = project.getUuid();
+					return diffAndSync(Tag.composeIndexName(uuid), uuid, metric);
+				}).collect(Collectors.collectingAndThen(Collectors.toList(), Flowable::merge));
+		}));
+	}
+
+	@Override
+	public Set<String> filterUnknownIndices(Set<String> indices) {
+		return db.tx(() -> {
+			Set<String> activeIndices = new HashSet<>();
+			for (Project project : boot.meshRoot().getProjectRoot().findAll()) {
+				activeIndices.add(Tag.composeIndexName(project.getUuid()));
+			}
+			return indices.stream()
+				.filter(i -> i.startsWith(getType() + "-"))
+				.filter(i -> !activeIndices.contains(i))
+				.collect(Collectors.toSet());
 		});
 	}
 
