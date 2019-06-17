@@ -5,10 +5,6 @@ import com.gentics.*
 // Make the helpers aware of this jobs environment
 JobContext.set(this)
 
-final def dockerRegistry       = "gentics-docker-jenkinsbuilds.docker.apa-it.at"
-final def dockerImageName      = dockerRegistry + "/gentics/jenkinsbuilds/mesh-slave-openjdk11"
-
-
 properties([
 	parameters([
 		booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests"),
@@ -240,5 +236,3 @@ stage("Setup Build Environment") {
 		}
 	}
 }
-
-
