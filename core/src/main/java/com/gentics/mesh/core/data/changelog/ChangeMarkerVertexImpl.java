@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.changelog;
 
+import com.gentics.madl.index.IndexHandler;
+import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.graphdb.spi.IndexHandler;
-import com.gentics.mesh.graphdb.spi.TypeHandler;
 
 public class ChangeMarkerVertexImpl extends MeshVertexImpl implements ChangeMarkerVertex {
 

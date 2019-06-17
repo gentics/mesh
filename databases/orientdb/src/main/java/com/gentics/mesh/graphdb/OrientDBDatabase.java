@@ -15,6 +15,8 @@ import javax.inject.Singleton;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Timer;
+import com.gentics.madl.tx.Tx;
+import com.gentics.madl.tx.TxAction;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -42,8 +44,6 @@ import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.syncleus.ferma.ext.orientdb3.OrientDBTx;
-import com.syncleus.ferma.tx.Tx;
-import com.syncleus.ferma.tx.TxAction;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;

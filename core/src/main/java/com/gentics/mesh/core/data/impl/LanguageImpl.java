@@ -5,6 +5,8 @@ import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.madl.index.IndexHandler;
+import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
@@ -13,8 +15,6 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.IndexHandler;
-import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.util.ETag;
 
 import io.reactivex.Single;

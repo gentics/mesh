@@ -5,8 +5,8 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.madl.index.IndexHandler;
 import com.gentics.mesh.graphdb.model.MeshElement;
-import com.gentics.mesh.graphdb.spi.IndexHandler;
 import com.gentics.mesh.madl.field.FieldMap;
 import com.gentics.mesh.madl.index.ElementIndexDefinition;
 import com.syncleus.ferma.ElementFrame;
@@ -61,7 +61,7 @@ public class Neo4jIndexHandler implements IndexHandler {
 	}
 
 	@Override
-	public <T extends MeshElement> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key) {
+	public <T extends ElementFrame> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key) {
 		// TODO Auto-generated method stub
 		return null;
 	}

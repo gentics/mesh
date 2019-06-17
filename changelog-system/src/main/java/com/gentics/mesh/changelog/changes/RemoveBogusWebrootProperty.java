@@ -1,7 +1,7 @@
 package com.gentics.mesh.changelog.changes;
 
 import com.gentics.mesh.changelog.AbstractChange;
-import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
+import com.syncleus.ferma.ElementFrame;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -24,7 +24,7 @@ public class RemoveBogusWebrootProperty extends AbstractChange {
 	public void applyInTx() {
 
 		// Iterate over all field container
-		Iterable<Vertex> vertices = getGraph().getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, "NodeGraphFieldContainerImpl");
+		Iterable<Vertex> vertices = getGraph().getVertices(ElementFrame.TYPE_RESOLUTION_KEY, "NodeGraphFieldContainerImpl");
 		for (Vertex container : vertices) {
 			migrateContainer(container);
 		}

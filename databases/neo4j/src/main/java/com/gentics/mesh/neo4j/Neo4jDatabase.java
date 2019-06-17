@@ -10,6 +10,8 @@ import javax.inject.Singleton;
 
 import org.neo4j.kernel.internal.Version;
 
+import com.gentics.madl.tx.Tx;
+import com.gentics.madl.tx.TxAction;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -20,8 +22,6 @@ import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.neo4j.tx.Neo4jTx;
 import com.gentics.mesh.neo4j.type.Neo4jTypeResolver;
 import com.syncleus.ferma.EdgeFrame;
-import com.syncleus.ferma.tx.Tx;
-import com.syncleus.ferma.tx.TxAction;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;

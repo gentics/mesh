@@ -3,12 +3,11 @@ package com.gentics.mesh.graphdb.orientdb.graph;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.AbstractVertexFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.VertexFrame;
-import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
@@ -84,7 +83,7 @@ public class AbstractInterceptingVertexFrame extends AbstractVertexFrame {
 	}
 
 	public String getFermaType() {
-		return getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY);
+		return getProperty(TYPE_RESOLUTION_KEY);
 	}
 
 	@Override

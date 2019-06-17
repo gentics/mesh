@@ -10,6 +10,7 @@ import static org.junit.Assert.fail;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -20,7 +21,6 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.google.common.collect.Iterators;
-import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Vertex;
 
 @MeshTestSetting(testSize = TestSize.PROJECT, startServer = false)

@@ -1,10 +1,9 @@
 package com.gentics.mesh.graphdb.orientdb.graph;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.AbstractEdgeFrame;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedEdge;
@@ -27,7 +26,7 @@ public class AbstractInterceptingEdgeFrame extends AbstractEdgeFrame {
 	}
 
 	public String getFermaType() {
-		return getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY);
+		return getProperty(TYPE_RESOLUTION_KEY);
 	}
 
 	public String getUuid() {

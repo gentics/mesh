@@ -6,6 +6,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 
 import org.junit.Test;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
@@ -15,7 +16,6 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
-import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class NodeGraphFieldContainerTest extends AbstractMeshTest {

@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.cache.PermissionStore;
@@ -19,7 +20,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorage;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
-import com.syncleus.ferma.tx.Tx;
 
 import dagger.Lazy;
 import io.vertx.core.eventbus.EventBus;

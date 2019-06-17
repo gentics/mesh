@@ -31,6 +31,7 @@ import com.tinkerpop.pipes.PipeFunction;
  * The A type is the argument type of the compute() method.
  * The B type is the return type of the compute() method.
  */
+@Deprecated
 public interface TraversalFunction<A, B> extends PipeFunction<A, B> {
 
 }

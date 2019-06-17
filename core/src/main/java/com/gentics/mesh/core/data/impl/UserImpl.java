@@ -32,6 +32,8 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import com.gentics.madl.index.IndexHandler;
+import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
@@ -62,8 +64,6 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.IndexHandler;
-import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
@@ -298,8 +298,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public Set<GraphPermission> getPermissions(MeshVertex vertex) {
-		Predicate<? super GraphPermission> isValidPermission = perm ->
-			perm != READ_PUBLISHED_PERM && perm != PUBLISH_PERM || vertex.hasPublishPermissions();
+		Predicate<? super GraphPermission> isValidPermission = perm -> perm != READ_PUBLISHED_PERM && perm != PUBLISH_PERM
+			|| vertex.hasPublishPermissions();
 
 		return Stream.of(GraphPermission.values())
 			// Don't check for publish perms if it does not make sense for the vertex type
@@ -495,7 +495,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	public User addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
 		// 1. Determine all roles that grant given permission on the source
 		// node.
-		List<? extends Role> rolesThatGrantPermission = sourceNode.in(permission.label()).toListExplicit(RoleImpl.class);
+		List<? extends Role> rolesThatGrantPermission = new TraversalResult(sourceNode.in(permission.label()).frameExplicit(RoleImpl.class)).list();
 
 		// 2. Add CRUD permission to identified roles and target node
 		for (Role role : rolesThatGrantPermission) {

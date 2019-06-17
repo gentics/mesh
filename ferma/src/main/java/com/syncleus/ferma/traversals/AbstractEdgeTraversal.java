@@ -23,10 +23,15 @@
  */
 package com.syncleus.ferma.traversals;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 import com.google.common.base.Function;
-import com.google.common.collect.*;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.TEdge;
@@ -34,14 +39,7 @@ import com.syncleus.ferma.pipes.FermaGremlinPipeline;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Predicate;
-import com.tinkerpop.gremlin.Tokens;
-import com.tinkerpop.gremlin.java.GremlinPipeline;
 import com.tinkerpop.pipes.Pipe;
-import com.tinkerpop.pipes.branch.LoopPipe;
-import com.tinkerpop.pipes.transform.TransformPipe.Order;
-import com.tinkerpop.pipes.util.structures.Pair;
-import com.tinkerpop.pipes.util.structures.Table;
-import com.tinkerpop.pipes.util.structures.Tree;
 
 /**
  * Edge specific traversal.
@@ -53,6 +51,7 @@ import com.tinkerpop.pipes.util.structures.Tree;
  * @param <M>
  *            The current marked type for the current pipe.
  */
+@Deprecated
 abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFrame, C, S, M> implements EdgeTraversal<C, S, M> {
 	protected AbstractEdgeTraversal(FramedGraph graph, FermaGremlinPipeline pipeline) {
 		super(graph, pipeline);
@@ -112,17 +111,6 @@ abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFram
 	}
 
 	@Override
-	public EdgeTraversal<?, ?, M> identity() {
-
-		return (EdgeTraversal) super.identity();
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> interval(final String key, final Comparable startValue, final Comparable endValue) {
-		return (EdgeTraversal) super.interval(key, startValue, endValue);
-	}
-
-	@Override
 	public VertexTraversal<?, ?, M> inV() {
 		getPipeline().inV();
 		return castToVertices();
@@ -131,12 +119,6 @@ abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFram
 	@Override
 	public VertexTraversal<?, ?, M> outV() {
 		getPipeline().outV();
-		return castToVertices();
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> bothV() {
-		getPipeline().bothV();
 		return castToVertices();
 	}
 
@@ -151,45 +133,12 @@ abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFram
 	}
 
 	@Override
-	public <T> List<? extends T> next(final int amount, final Class<T> kind) {
-		return Lists.transform(getPipeline().next(amount), new Function() {
-
-			@Override
-			public Object apply(final Object input) {
-				return graph().frameElement((Element) input, kind);
-			}
-		});
-	}
-
-	@Override
-	public <T> List<? extends T> nextExplicit(final int amount, final Class<T> kind) {
-		return Lists.transform(getPipeline().next(amount), new Function() {
-
-			@Override
-			public Object apply(final Object input) {
-				return graph().frameElementExplicit((Element) input, kind);
-			}
-		});
-	}
-
-	@Override
 	public <N> N nextOrDefaultExplicit(final Class<N> kind, final N defaultValue) {
 		if (getPipeline().hasNext()) {
 			return nextExplicit(kind);
 		} else {
 			return defaultValue;
 		}
-	}
-
-	@Override
-	public <T> Iterable<T> frame(final Class<T> kind) {
-		return Iterables.transform(getPipeline(), new Function() {
-
-			@Override
-			public Object apply(final Object input) {
-				return graph().frameElement((Element) input, kind);
-			}
-		});
 	}
 
 	@Override
@@ -226,16 +175,6 @@ abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFram
 	}
 
 	@Override
-	public <T> Set<? extends T> toSet(final Class<T> kind) {
-		return Sets.newHashSet(toList(kind));
-	}
-
-	@Override
-	public <T> Set<? extends T> toSetExplicit(final Class<T> kind) {
-		return Sets.newHashSet(toListExplicit(kind));
-	}
-
-	@Override
 	public Traversal<String, ?, ?, M> label() {
 		getPipeline().label();
 		return castToTraversal();
@@ -244,19 +183,6 @@ abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFram
 	@Override
 	public EdgeTraversal<?, ?, M> filter(final TraversalFunction<EdgeFrame, Boolean> filterFunction) {
 		return (EdgeTraversal<?, ?, M>) super.filter(filterFunction);
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> and(final TraversalFunction<EdgeFrame, Traversal<?, ?, ?, ?>>... pipes) {
-		final Collection<Pipe> extractedPipes = Collections2.transform(Arrays.asList(pipes), new Function<TraversalFunction, Pipe>() {
-
-			@Override
-			public Pipe apply(final TraversalFunction input) {
-				return ((AbstractTraversal) input.compute(new TEdge())).getPipeline();
-			}
-		});
-		getPipeline().and(extractedPipes.toArray(new Pipe[extractedPipes.size()]));
-		return this;
 	}
 
 	@Override
@@ -278,38 +204,6 @@ abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFram
 	}
 
 	@Override
-	public EdgeTraversal<?, ?, M> order() {
-		return (EdgeTraversal<?, ?, M>) super.order();
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> order(final Order order) {
-		return (EdgeTraversal<?, ?, M>) super.order(order);
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> order(final Comparator<? super EdgeFrame> compareFunction) {
-		return (EdgeTraversal<?, ?, M>) super.order(compareFunction);
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> order(final Tokens.T order) {
-		return (EdgeTraversal<?, ?, M>) super.order(order);
-	}
-
-	@Override
-	public <N> Collection<N> fill(final Collection<? super N> collection, final Class<N> kind) {
-
-		return getPipeline().fill(new FramingCollection(collection, graph(), kind));
-	}
-
-	@Override
-	public <N> Collection<N> fillExplicit(final Collection<? super N> collection, final Class<N> kind) {
-
-		return getPipeline().fill(new FramingCollection(collection, graph(), kind, true));
-	}
-
-	@Override
 	public java.util.Iterator<EdgeFrame> iterator() {
 		return Iterators.transform(getPipeline(), new Function() {
 
@@ -325,7 +219,6 @@ abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFram
 
 		return (EdgeTraversal<?, ?, M>) super.retain(Arrays.asList(edges));
 	}
-	
 
 	@Override
 	public EdgeTraversal<?, ?, M> retain(final Iterable<?> collection) {
@@ -342,37 +235,6 @@ abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFram
 	@Override
 	public void removeAll() {
 		getPipeline().removeAll();
-	}
-
-	@Override
-	public <N> SplitTraversal<? extends Traversal<N, ?, ?, M>> copySplit(
-		final TraversalFunction<EdgeFrame, ? extends Traversal<N, ?, ?, ?>>... traversals) {
-		final Collection<Pipe> extractedPipes = Collections2.transform(Arrays.asList(traversals),
-			new Function<TraversalFunction, Pipe>() {
-
-				@Override
-				public Pipe apply(final TraversalFunction input) {
-					return ((AbstractTraversal) input.compute(new TEdge())).getPipeline();
-				}
-			});
-		getPipeline().copySplit(extractedPipes.toArray(new Pipe[extractedPipes.size()]));
-		return castToSplit();
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> loop(final TraversalFunction<EdgeFrame, ? extends EdgeTraversal<?, ?, ?>> traversal) {
-		final GremlinPipeline pipeline = ((AbstractTraversal) traversal.compute(new TEdge())).getPipeline();
-		getPipeline().add(new LoopPipe(pipeline, LoopPipe.createTrueFunction(), null));
-
-		return this;
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, M> loop(final TraversalFunction<EdgeFrame, ? extends EdgeTraversal<?, ?, ?>> traversal, final int depth) {
-		final GremlinPipeline pipeline = ((AbstractTraversal) traversal.compute(new TEdge())).getPipeline();
-		getPipeline().add(new LoopPipe(pipeline, LoopPipe.createLoopsFunction(depth), null));
-
-		return this;
 	}
 
 }

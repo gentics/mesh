@@ -374,7 +374,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 *            microschema container version
 	 * @return list of micronode list fields
 	 */
-	List<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaContainerVersion version);
+	TraversalResult<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaContainerVersion version);
 
 	/**
 	 * Return the ETag for the field container.

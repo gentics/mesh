@@ -2,7 +2,7 @@ package com.gentics.mesh.changelog;
 
 import java.util.Iterator;
 
-import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
+import com.syncleus.ferma.ElementFrame;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -21,7 +21,7 @@ public final class MeshGraphHelper {
 		if (it.hasNext()) {
 			return it.next();
 		} else {
-			Iterator<Vertex> itLegacy = graph.getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, MESH_ROOT_LEGACY_TYPE).iterator();
+			Iterator<Vertex> itLegacy = graph.getVertices(ElementFrame.TYPE_RESOLUTION_KEY, MESH_ROOT_LEGACY_TYPE).iterator();
 			if (itLegacy.hasNext()) {
 				return itLegacy.next();
 			} else {

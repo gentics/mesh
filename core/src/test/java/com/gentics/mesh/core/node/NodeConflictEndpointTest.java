@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.node;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.i18n.I18NUtil;
@@ -19,7 +20,7 @@ import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.Tuple;
-import com.syncleus.ferma.tx.Tx;
+
 import org.junit.Test;
 
 import java.util.Arrays;

@@ -26,10 +26,8 @@ package com.syncleus.ferma.pipes;
 import java.util.List;
 
 import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.pipes.PipeFunction;
-import com.tinkerpop.pipes.transform.PathPipe;
-import com.tinkerpop.pipes.util.FluentUtility;
 
+@Deprecated
 public class FermaGremlinPipeline<S, E> extends com.tinkerpop.gremlin.java.GremlinPipeline<S, E> {
 
 	private E current;

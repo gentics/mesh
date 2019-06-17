@@ -15,11 +15,11 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(testSize = PROJECT, startServer = false)
 public class BootstrapInitializerTest extends AbstractMeshTest {

@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.junit.Test;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.job.impl.BranchMigrationJobImpl;
@@ -23,7 +24,6 @@ import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
-import com.syncleus.ferma.tx.Tx;
 
 import io.reactivex.exceptions.CompositeException;
 

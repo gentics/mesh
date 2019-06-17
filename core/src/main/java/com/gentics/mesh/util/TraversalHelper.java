@@ -1,11 +1,11 @@
 package com.gentics.mesh.util;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
-import com.syncleus.ferma.tx.Tx;
 
 /**
  * This class contains a collection of traversal methods that can be used for pagination and other traversals.
@@ -19,7 +19,7 @@ public final class TraversalHelper {
 	 *            Traversal to be debugged
 	 */
 	public static void debug(VertexTraversal<?, ?, ?> traversal) {
-		for (MeshVertexImpl v : traversal.toListExplicit(MeshVertexImpl.class)) {
+		for (MeshVertexImpl v : traversal.frameExplicit(MeshVertexImpl.class)) {
 			System.out.println(v.getProperty("name") + " type: " + v.getFermaType() + " json: " + v.toJson());
 
 		}

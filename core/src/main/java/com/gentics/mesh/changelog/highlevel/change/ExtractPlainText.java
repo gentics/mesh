@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.changelog.highlevel.AbstractHighLevelChange;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.binary.impl.TikaBinaryProcessor;
@@ -20,7 +21,6 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.storage.LocalBinaryStorage;
 import com.syncleus.ferma.FramedTransactionalGraph;
-import com.syncleus.ferma.tx.Tx;
 
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;

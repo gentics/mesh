@@ -23,17 +23,12 @@
  */
 package com.syncleus.ferma.traversals;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang.NotImplementedException;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
@@ -41,23 +36,18 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.Path;
 import com.syncleus.ferma.TEdge;
 import com.syncleus.ferma.TVertex;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.pipes.FermaGremlinPipeline;
-import com.syncleus.ferma.pipes.TraversalFunctionPipe;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Predicate;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.gremlin.Tokens;
 import com.tinkerpop.gremlin.java.GremlinPipeline;
 import com.tinkerpop.pipes.transform.TransformPipe.Order;
 import com.tinkerpop.pipes.util.structures.Pair;
-import com.tinkerpop.pipes.util.structures.Table;
-import com.tinkerpop.pipes.util.structures.Tree;
 
 /**
  * The root traversal class. Wraps a Tinkerpop {@link GremlinPipeline}
@@ -71,6 +61,7 @@ import com.tinkerpop.pipes.util.structures.Tree;
  * @param <M>
  *            The current marked type for the current pipe.
  */
+@Deprecated
 abstract class AbstractTraversal<T, C, S, M> implements Traversal<T, C, S, M> {
 	private final FramedGraph graph;
 	private final FermaGremlinPipeline pipeline;
@@ -152,25 +143,6 @@ abstract class AbstractTraversal<T, C, S, M> implements Traversal<T, C, S, M> {
 		return this;
 	}
 
-	protected <Z> Traversal<T, ?, ?, M> interval(final String key, final Comparable<Z> startValue, final Comparable<Z> endValue) {
-		Comparable pipelineStart = startValue;
-		if (startValue instanceof Enum)
-			pipelineStart = startValue.toString();
-
-		Comparable pipelineEnd = endValue;
-		if (endValue instanceof Enum)
-			pipelineEnd = endValue.toString();
-
-		getPipeline().interval(key, pipelineStart, pipelineEnd);
-		return this;
-	}
-
-	@Override
-	public Traversal<T, ?, ?, M> identity() {
-		getPipeline()._();
-		return this;
-	}
-
 	@Override
 	public Traversal<T, ?, ?, M> dedup(final TraversalFunction<T, ?> dedupFunction) {
 		getPipeline().dedup(dedupFunction);
@@ -208,12 +180,6 @@ abstract class AbstractTraversal<T, C, S, M> implements Traversal<T, C, S, M> {
 
 	@Override
 	public Traversal<T, ?, ?, M> order(final Order order) {
-		getPipeline().order(order);
-		return this;
-	}
-
-	@Override
-	public Traversal<T, ?, ?, M> order(final Tokens.T order) {
 		getPipeline().order(order);
 		return this;
 	}

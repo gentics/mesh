@@ -32,60 +32,59 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.pipes.util.structures.Pair;
 
+@Deprecated
 class FrameMaker {
 
-    private final FramedGraph graph;
-    private final Class<?> kind;
+	private final FramedGraph graph;
+	private final Class<?> kind;
 
-    public FrameMaker(final FramedGraph graph, final Class<?> kind) {
-        this.graph = graph;
-        this.kind = kind;
-    }
+	public FrameMaker(final FramedGraph graph, final Class<?> kind) {
+		this.graph = graph;
+		this.kind = kind;
+	}
 
-    public FrameMaker(final FramedGraph graph) {
-        this(graph, null);
-    }
+	public FrameMaker(final FramedGraph graph) {
+		this(graph, null);
+	}
 
-    <N> N makeFrame(Object o) {
-        if (o instanceof FramingMap)
-            o = ((FramingMap) o).getDelegate();
-        if (o instanceof Pair) {
-            final Pair pair = (Pair) o;
-            o = new Pair(makeFrame(pair.getA()), makeFrame(pair.getB()));
-        }
-        if (kind == null) {
-            if (o instanceof Edge)
-                o = graph.frameElement((Element) o, TEdge.class);
-            else if (o instanceof Vertex)
-                o = graph.frameElement((Element) o, TVertex.class);
-        }
-        else if (o instanceof Element)
-            o = graph.frameElement((Element) o, (Class<ElementFrame>) kind);
-        return (N) o;
-    }
+	<N> N makeFrame(Object o) {
+		if (o instanceof FramingMap)
+			o = ((FramingMap) o).getDelegate();
+		if (o instanceof Pair) {
+			final Pair pair = (Pair) o;
+			o = new Pair(makeFrame(pair.getA()), makeFrame(pair.getB()));
+		}
+		if (kind == null) {
+			if (o instanceof Edge)
+				o = graph.frameElement((Element) o, TEdge.class);
+			else if (o instanceof Vertex)
+				o = graph.frameElement((Element) o, TVertex.class);
+		} else if (o instanceof Element)
+			o = graph.frameElement((Element) o, (Class<ElementFrame>) kind);
+		return (N) o;
+	}
 
-    <N> N makeFrameExplicit(Object o) {
-        if (o instanceof FramingMap)
-            o = ((FramingMap) o).getDelegate();
-        if (o instanceof Pair) {
-            final Pair pair = (Pair) o;
-            o = new Pair(makeFrameExplicit(pair.getA()), makeFrameExplicit(pair.getB()));
-        }
-        if (kind == null) {
-            if (o instanceof Edge)
-                o = graph.frameElementExplicit((Element) o, TEdge.class);
-            else if (o instanceof Vertex)
-                o = graph.frameElementExplicit((Element) o, TVertex.class);
-        }
-        else if (o instanceof Element)
-            o = graph.frameElementExplicit((Element) o, (Class<ElementFrame>) kind);
-        return (N) o;
-    }
+	<N> N makeFrameExplicit(Object o) {
+		if (o instanceof FramingMap)
+			o = ((FramingMap) o).getDelegate();
+		if (o instanceof Pair) {
+			final Pair pair = (Pair) o;
+			o = new Pair(makeFrameExplicit(pair.getA()), makeFrameExplicit(pair.getB()));
+		}
+		if (kind == null) {
+			if (o instanceof Edge)
+				o = graph.frameElementExplicit((Element) o, TEdge.class);
+			else if (o instanceof Vertex)
+				o = graph.frameElementExplicit((Element) o, TVertex.class);
+		} else if (o instanceof Element)
+			o = graph.frameElementExplicit((Element) o, (Class<ElementFrame>) kind);
+		return (N) o;
+	}
 
-    protected Object removeFrame(final Object object) {
-        if (object instanceof ElementFrame)
-            return ((ElementFrame) object).getElement();
-        return object;
-    }
+	protected Object removeFrame(final Object object) {
+		if (object instanceof ElementFrame)
+			return ((ElementFrame) object).getElement();
+		return object;
+	}
 
 }

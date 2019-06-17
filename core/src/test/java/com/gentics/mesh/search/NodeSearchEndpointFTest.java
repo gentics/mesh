@@ -16,6 +16,7 @@ import java.util.Date;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -25,7 +26,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.tx.Tx;
 @MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
 public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 

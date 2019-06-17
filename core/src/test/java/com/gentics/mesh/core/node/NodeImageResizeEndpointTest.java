@@ -24,6 +24,7 @@ import javax.imageio.ImageIO;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -38,7 +39,6 @@ import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.test.assertj.MeshCoreAssertion;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.buffer.Buffer;
 

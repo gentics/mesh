@@ -2,12 +2,12 @@ package com.gentics.mesh.core.endpoint.admin.consistency.check;
 
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.tx.Tx;
 
 /**
  * Microschema container specific consistency checks.

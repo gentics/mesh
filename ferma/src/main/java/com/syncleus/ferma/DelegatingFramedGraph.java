@@ -23,7 +23,6 @@
  */
 package com.syncleus.ferma;
 
-import java.util.Collection;
 import java.util.Iterator;
 
 import com.google.common.base.Function;
@@ -34,7 +33,6 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.GlobalVertexTraversal;
 import com.syncleus.ferma.traversals.SimpleTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
-import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.syncleus.ferma.typeresolvers.UntypedTypeResolver;
 import com.tinkerpop.blueprints.Edge;
@@ -74,20 +72,6 @@ public class DelegatingFramedGraph<G extends Graph> extends WrappedGraph<G> impl
 	}
 
 	/**
-	 * Construct an untyped framed graph without annotation support
-	 *
-	 * @param delegate
-	 *            The graph to wrap.
-	 */
-	public DelegatingFramedGraph(final G delegate) {
-		super(delegate);
-
-		this.defaultResolver = new UntypedTypeResolver();
-		this.untypedResolver = this.defaultResolver;
-		this.builder = new DefaultFrameFactory();
-	}
-
-	/**
 	 * Construct a framed graph without annotation support.
 	 *
 	 * @param delegate
@@ -97,106 +81,6 @@ public class DelegatingFramedGraph<G extends Graph> extends WrappedGraph<G> impl
 	 */
 	public DelegatingFramedGraph(final G delegate, final TypeResolver defaultResolver) {
 		this(delegate, new DefaultFrameFactory(), defaultResolver);
-	}
-
-	/**
-	 * Construct a framed graph with the specified typeResolution and annotation support
-	 *
-	 * @param delegate
-	 *            The graph to wrap.
-	 * @param typeResolution
-	 *            True if type resolution is to be automatically handled by default, false causes explicit typing by
-	 * @param annotationsSupported
-	 *            True if annotated classes will be supported, false otherwise.
-	 */
-	public DelegatingFramedGraph(final G delegate, final boolean typeResolution, final boolean annotationsSupported) {
-		super(delegate);
-
-		final ReflectionCache reflections = new ReflectionCache();
-		if (typeResolution) {
-			this.defaultResolver = new PolymorphicTypeResolver(reflections);
-			this.untypedResolver = new UntypedTypeResolver();
-		} else {
-			this.defaultResolver = new UntypedTypeResolver();
-			this.untypedResolver = this.defaultResolver;
-		}
-		this.builder = new DefaultFrameFactory();
-	}
-
-	/**
-	 * Construct a framed graph with the specified typeResolution and annotation support
-	 *
-	 * @param delegate
-	 *            The graph to wrap.
-	 * @param reflections
-	 *            A RefelctionCache used to determine reflection and hierarchy of classes.
-	 * @param typeResolution
-	 *            True if type resolution is to be automatically handled by default, false causes explicit typing by
-	 * @param annotationsSupported
-	 *            True if annotated classes will be supported, false otherwise.
-	 */
-	public DelegatingFramedGraph(final G delegate, final ReflectionCache reflections, final boolean typeResolution,
-		final boolean annotationsSupported) {
-		super(delegate);
-
-		if (reflections == null)
-			throw new IllegalArgumentException("reflections can not be null");
-
-		if (typeResolution) {
-			this.defaultResolver = new PolymorphicTypeResolver(reflections);
-			this.untypedResolver = new UntypedTypeResolver();
-		} else {
-			this.defaultResolver = new UntypedTypeResolver();
-			this.untypedResolver = this.defaultResolver;
-		}
-		this.builder = new DefaultFrameFactory();
-	}
-
-	/**
-	 * Construct a Typed framed graph with the specified type resolution and with annotation support
-	 *
-	 * @param delegate
-	 *            The graph to wrap.
-	 * @param types
-	 *            The types to be consider for type resolution.
-	 */
-	public DelegatingFramedGraph(final G delegate, final Collection<? extends Class<?>> types) {
-		super(delegate);
-
-		if (types == null)
-			throw new IllegalArgumentException("types can not be null");
-
-		final ReflectionCache reflections = new ReflectionCache(types);
-		this.defaultResolver = new PolymorphicTypeResolver(reflections);
-		this.untypedResolver = new UntypedTypeResolver();
-		this.builder = new DefaultFrameFactory();
-	}
-
-	/**
-	 * Construct an framed graph with the specified type resolution and with annotation support
-	 *
-	 * @param delegate
-	 *            The graph to wrap.
-	 * @param typeResolution
-	 *            True if type resolution is to be automatically handled by default, false causes explicit typing by default.
-	 * @param types
-	 *            The types to be consider for type resolution.
-	 */
-	public DelegatingFramedGraph(final G delegate, final boolean typeResolution, final Collection<? extends Class<?>> types) {
-		super(delegate);
-
-		if (types == null)
-			throw new IllegalArgumentException("types can not be null");
-
-		final ReflectionCache reflections = new ReflectionCache(types);
-		if (typeResolution) {
-			this.defaultResolver = new PolymorphicTypeResolver(reflections);
-			this.untypedResolver = new UntypedTypeResolver();
-		} else {
-			this.defaultResolver = new UntypedTypeResolver();
-			this.untypedResolver = this.defaultResolver;
-		}
-		this.builder = new DefaultFrameFactory();
 	}
 
 	/**
@@ -375,18 +259,6 @@ public class DelegatingFramedGraph<G extends Graph> extends WrappedGraph<G> impl
 	@Override
 	public EdgeTraversal<?, ?, ?> e(final Object... ids) {
 		return new SimpleTraversal(this, Iterators.transform(Iterators.forArray(ids), new Function<Object, Edge>() {
-
-			@Override
-			public Edge apply(final Object input) {
-				return getBaseGraph().getEdge(input);
-			}
-
-		})).castToEdges();
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, ?> e(final Collection<?> ids) {
-		return new SimpleTraversal(this, Iterators.transform(ids.iterator(), new Function<Object, Edge>() {
 
 			@Override
 			public Edge apply(final Object input) {

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.branch;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
@@ -48,7 +49,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
-import com.syncleus.ferma.tx.Tx;
+
 import io.reactivex.Observable;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;

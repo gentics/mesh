@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.rest.branch.BranchReference;
@@ -32,7 +33,6 @@ import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class BranchTagEndpointTest extends AbstractMeshTest {
@@ -45,7 +45,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		String branchUuid = tx(() -> branch.getUuid());
 
 		try (Tx tx = tx()) {
-			assertFalse(branch.getTags().contains(tag));
+			assertFalse(branch.getTags().list().contains(tag));
 		}
 
 		expect(BRANCH_TAGGED).match(1, BranchTaggedEventModel.class, event -> {
@@ -70,7 +70,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			assertThat(branchResponse).contains(tag);
-			assertTrue(branch.getTags().contains(tag));
+			assertTrue(branch.getTags().list().contains(tag));
 		}
 	}
 
@@ -82,7 +82,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		String branchUuid = tx(() -> branch.getUuid());
 
 		try (Tx tx = tx()) {
-			assertFalse(branch.getTags().contains(tag));
+			assertFalse(branch.getTags().list().contains(tag));
 			role().revokePermissions(branch, UPDATE_PERM);
 			tx.success();
 		}
@@ -91,7 +91,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			assertFalse(branch.getTags().contains(tag));
+			assertFalse(branch.getTags().list().contains(tag));
 		}
 	}
 
@@ -103,7 +103,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		String branchUuid = tx(() -> branch.getUuid());
 
 		try (Tx tx = tx()) {
-			assertFalse(branch.getTags().contains(tag));
+			assertFalse(branch.getTags().list().contains(tag));
 			role().revokePermissions(tag, READ_PERM);
 			tx.success();
 		}
@@ -112,7 +112,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			READ_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			assertFalse(branch.getTags().contains(tag));
+			assertFalse(branch.getTags().list().contains(tag));
 		}
 	}
 
@@ -141,7 +141,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, tagUuid));
 		try (Tx tx = tx()) {
-			assertTrue(branch.getTags().contains(tag));
+			assertTrue(branch.getTags().list().contains(tag));
 		}
 
 		expect(BRANCH_UNTAGGED).match(1, BranchTaggedEventModel.class, event -> {
@@ -165,7 +165,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		call(() -> client().removeTagFromBranch(PROJECT_NAME, branchUuid, tagUuid));
 		awaitEvents();
 		try (Tx tx = tx()) {
-			assertFalse(branch.getTags().contains(tag));
+			assertFalse(branch.getTags().list().contains(tag));
 		}
 
 	}
@@ -179,7 +179,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, tagUuid));
 		try (Tx tx = tx()) {
-			assertTrue(branch.getTags().contains(tag));
+			assertTrue(branch.getTags().list().contains(tag));
 			role().revokePermissions(branch, UPDATE_PERM);
 			tx.success();
 		}
@@ -188,7 +188,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			assertTrue(branch.getTags().contains(tag));
+			assertTrue(branch.getTags().list().contains(tag));
 		}
 	}
 
@@ -201,7 +201,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, tagUuid));
 		try (Tx tx = tx()) {
-			assertTrue(branch.getTags().contains(tag));
+			assertTrue(branch.getTags().list().contains(tag));
 			role().revokePermissions(tag, READ_PERM);
 			tx.success();
 		}
@@ -210,7 +210,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 			READ_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			assertTrue(branch.getTags().contains(tag));
+			assertTrue(branch.getTags().list().contains(tag));
 		}
 	}
 

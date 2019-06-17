@@ -8,6 +8,11 @@ import java.util.Set;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.madl.annotations.GraphElement;
+import com.gentics.madl.frame.AbstractVertexFrame;
+import com.gentics.madl.index.IndexHandler;
+import com.gentics.madl.tx.Tx;
+import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -15,16 +20,9 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.IndexHandler;
-import com.gentics.mesh.graphdb.spi.TypeHandler;
 import com.gentics.mesh.madl.field.FieldType;
-import com.gentics.mesh.madl.frame.AbstractVertexFrame;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.VertexFrame;
-import com.syncleus.ferma.annotations.GraphElement;
-import com.syncleus.ferma.tx.Tx;
-import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
@@ -99,7 +97,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	}
 
 	public String getFermaType() {
-		return property(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY);
+		return property(TYPE_RESOLUTION_KEY);
 	}
 
 	@Override

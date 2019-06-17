@@ -11,13 +11,13 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.naming.InvalidNameException;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.VersionHandler;
-import com.syncleus.ferma.tx.Tx;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;

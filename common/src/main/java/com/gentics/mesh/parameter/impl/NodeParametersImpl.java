@@ -10,7 +10,7 @@ import java.util.Map;
 import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.NodeParameters;

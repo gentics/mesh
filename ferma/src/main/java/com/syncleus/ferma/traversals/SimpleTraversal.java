@@ -23,15 +23,12 @@
  */
 package com.syncleus.ferma.traversals;
 
-import com.syncleus.ferma.ElementFrame;
-import com.syncleus.ferma.FramedGraph;
 import java.util.ArrayDeque;
-import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
 
-import org.apache.commons.lang.NotImplementedException;
-
+import com.syncleus.ferma.ElementFrame;
+import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.pipes.FermaGremlinPipeline;
 import com.tinkerpop.blueprints.Graph;
 
@@ -47,6 +44,7 @@ import com.tinkerpop.blueprints.Graph;
  * @param <M>
  *            The current marked type for the current pipe.
  */
+@Deprecated
 public class SimpleTraversal<T, C, S, M> extends AbstractTraversal<T, C, S, M> {
 	private final Deque<MarkId> marks = new ArrayDeque<>();
 	private int markId = 0;
