@@ -27,6 +27,12 @@ include::content/docs/variables.adoc-include[]
 [[v0.36.1]]
 == 0.36.1 (TBD)
 
+icon:plus[] Core: Support for Java 11 runtime has been added.
+
+icon:plus[] Docker: The base image of the `gentics/mesh` and `gentics/mesh-demo` images have been updated to use the `adoptopenjdk/openjdk11:x86_64-alpine-jre-11.0.3_7` image.
+
+icon:plus[] Docker: The included Elasticsearch version has been updated to version 6.8.0. Please note that support for embedded Elasticsearch will be dropped in the future.
+
 icon:check[] REST: The deletion of microschemas which contain changes has been fixed. Previously a `NotImplementedException` was thrown for microschemas which contained changes. link:https://github.com/gentics/mesh/issues/589[#589]
 
 icon:plus[] Core: Various internal structures and dependencies were re-organized and refactored.
