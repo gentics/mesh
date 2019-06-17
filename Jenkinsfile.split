@@ -81,11 +81,12 @@ stage("Setup Build Environment") {
 											postfix = "0" + current
 										}
 										sshagent(["git"]) {
-											 try {
+											try {
 												sh ".jenkins/run-splits.sh includes-${postfix}"
 												stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
 											} finally {
 												step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+												deleteDir()
 											}
 										}
 									}
@@ -231,6 +232,7 @@ stage("Setup Build Environment") {
 			}
 			throw e
 		} finally {
+			deleteDir()
 			githubBuildEnded()
 			notifyMattermostUsers()
 		}
