@@ -21,8 +21,7 @@ include::content/docs/variables.adoc-include[]
 
 * The `html` field type will be **removed** in the future. Instead the `string` should be used in combination with an additional configuration property for this field in the schema.
 
-* The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref 
-"elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
+* The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 [[v0.36.1]]
 == 0.36.1 (TBD)
@@ -37,6 +36,8 @@ icon:check[] REST: The deletion of microschemas which contain changes has been f
 
 icon:check[] REST: Error messages should now always be wrapped in JSON. Previously, internal server errors were returned as plain text.
 
+icon:check[] GraphQL: Fixed a bug that caused the default language of a node to be fetched when loading a node list of a micronode.
+
 icon:plus[] Core: Various internal structures and dependencies were re-organized and refactored.
 
 icon:plus[] UI: The default set of enabled languages within the `mesh-ui-config.js` file has been updated to include more languages.
@@ -49,7 +50,7 @@ CAUTION: Java Rest Client
 [quote]
 ____
 
-The default field values for `NodeResponse` and `AbstractGenericRestResponse` has been updated. 
+The default field values for `NodeResponse` and `AbstractGenericRestResponse` has been updated.
 
 The following values have been changed:
 
@@ -446,7 +447,7 @@ icon:plus[] Core: Performance of the deletion process has been increased.
 
 icon:plus[] Consistency Checks: Additional consistency checks and repair actions have been added.
 
-icon:plus[] Consistency Checks: The consistency endpoint response will now also list a `repairCount` property which lists the count of repair operations. 
+icon:plus[] Consistency Checks: The consistency endpoint response will now also list a `repairCount` property which lists the count of repair operations.
             The response will now only contain the first 200 results. The `outputTruncated` property indicates whether the result has been truncated.
 
 icon:check[] Image: Resizing and cropping will no longer transform the image to JPG format but return an image in the original format. When no image writing plugin for this format is available the fallback is PNG.
@@ -682,7 +683,7 @@ icon:plus[] Consistency Checks: Additional consistency checks and repair actions
 
 icon:plus[] Memory: The memory footprint of various operations has been reduced.
 
-icon:plus[] Consistency Checks: The consistency endpoint response will now also list a `repairCount` property which lists the count of repair operations. 
+icon:plus[] Consistency Checks: The consistency endpoint response will now also list a `repairCount` property which lists the count of repair operations.
             The response will now only contain the first 200 results. The `outputTruncated` property indicates whether the result has been truncated.
 
 icon:check[] Core: Node deletion will now also remove connected lists and micronodes. Previously these elements were not properly removed. On large systems this could lead to increased disk usage.

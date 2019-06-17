@@ -1,10 +1,10 @@
 package com.gentics.mesh.graphql.type.field;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -37,11 +37,11 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -49,6 +49,7 @@ import java.util.stream.Stream;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider.MICRONODE_TYPE_NAME;
 import static graphql.Scalars.GraphQLBigDecimal;
@@ -307,14 +308,14 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				Map<String, ?> filterArgument = env.getArgument("filter");
 				Stream<NodeContent> nodes = nodeList.getList().stream().map(item -> {
 					Node node = item.getNode();
-					List<String> languageTags = Collections.emptyList();
+					List<String> languageTags;
 					if (container instanceof NodeGraphFieldContainer) {
 						languageTags = Arrays.asList(container.getLanguageTag());
+					} else if (container instanceof Micronode) {
+						Micronode micronode = (Micronode)container;
+						languageTags = Arrays.asList(micronode.getContainer().getLanguageTag());
 					} else {
-						// Other containers (e.g. micronodes do not have a language thus we can't use that language to define the loaded language variant. We
-						// thus fallback to the default mesh language.
-						String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
-						languageTags = Arrays.asList(defaultLanguage);
+						throw error(HttpResponseStatus.INTERNAL_SERVER_ERROR, "container can only be NodeGraphFieldContainer or Micronode");
 					}
 					// TODO we need to add more assertions and check what happens if the itemContainer is null
 					NodeGraphFieldContainer itemContainer = node.findVersion(gc, languageTags);
