@@ -54,6 +54,7 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.branch.BranchReference;
+import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
@@ -697,14 +698,20 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	@Override
-	@Ignore("not yet supported")
 	public void testCreateMultithreaded() throws Exception {
-		int nJobs = 5;
-		SchemaCreateRequest request = new SchemaCreateRequest();
-		request.setName("new schema name");
-		request.setDisplayField("name");
+		int nJobs = 20;
 
-		validateCreation(nJobs, i -> client().createSchema(request));
+		List<String> uuids = Observable.range(0, nJobs)
+			.flatMapSingle(i -> {
+				SchemaCreateRequest request = new SchemaCreateRequest();
+				request.setName("new_schema_name_" + i);
+				return client().createSchema(request).toSingle();
+			})
+			.map(AbstractResponse::getUuid)
+			.toList()
+			.blockingGet();
+		validateCreation(uuids);
+
 	}
 
 	@Test
