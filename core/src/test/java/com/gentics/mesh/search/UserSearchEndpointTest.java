@@ -16,7 +16,6 @@ import java.io.IOException;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -34,9 +33,7 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	@Test
 	public void testSimpleQuerySearch() throws IOException {
 		String username = "testuser42a";
-		try (Tx tx = tx()) {
-			createUser(username);
-		}
+		createUser(username);
 
 		waitForSearchIdleEvent();
 
@@ -45,16 +42,31 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		UserListResponse list = call(() -> client().searchUsers(json));
 		assertEquals(1, list.getData().size());
 		assertEquals("The found element is not the user we were looking for", username, list.getData().get(0).getUsername());
+	}
 
+	@Test
+	public void testSearchWithUTF8() throws IOException {
+		String TEST_CN = "\u6D4B\u8BD5"; // test
+		String LONG_DASH = "\u2013";
+		String name = "testuser_" + TEST_CN + "_" + LONG_DASH + "_" + TEST_CN;
+		createUser(name);
+
+		waitForSearchIdleEvent();
+
+		String json = getESText("userWildcard.es");
+
+		UserListResponse list = call(() -> client().searchUsers(json));
+		assertEquals("The page should be full.", 1, list.getData().size());
+		assertEquals("The page did not match.", 1, list.getMetainfo().getCurrentPage());
+		assertEquals("The page count did not match.", 1, list.getMetainfo().getPageCount());
+		assertEquals("The total count did not match.", 1, list.getMetainfo().getTotalCount());
 	}
 
 	@Test
 	public void testPaging() throws IOException {
 		String username = "testuser";
-		try (Tx tx = tx()) {
-			for (int i = 0; i < 100; i++) {
-				createUser(username + i);
-			}
+		for (int i = 0; i < 100; i++) {
+			createUser(username + i);
 		}
 
 		waitForSearchIdleEvent();
@@ -66,16 +78,13 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		assertEquals("The page did not match.", 2, list.getMetainfo().getCurrentPage());
 		assertEquals("The page count did not match.", 4, list.getMetainfo().getPageCount());
 		assertEquals("The total count did not match.", 100, list.getMetainfo().getTotalCount());
-
 	}
 
 	@Test
 	public void testPagingWithoutPagingParameters() throws IOException {
 		String username = "testuser";
-		try (Tx tx = tx()) {
-			for (int i = 0; i < 20; i++) {
-				createUser(username + i);
-			}
+		for (int i = 0; i < 20; i++) {
+			createUser(username + i);
 		}
 
 		waitForSearchIdleEvent();
@@ -87,15 +96,12 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		assertEquals("The page did not match.", 1, list.getMetainfo().getCurrentPage());
 		assertEquals("The page count did not match.", 2, list.getMetainfo().getPageCount());
 		assertEquals("The total count did not match.", 20, list.getMetainfo().getTotalCount());
-
 	}
 
 	@Test
 	public void testBogusQuery() throws IOException {
 		String username = "testuser42a";
-		try (Tx tx = tx()) {
-			createUser(username);
-		}
+		createUser(username);
 
 		waitForSearchIdleEvent();
 
@@ -106,9 +112,7 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	@Test
 	public void testEmptyResult() throws IOException {
 		String username = "testuser42a";
-		try (Tx tx = tx()) {
-			createUser(username);
-		}
+		createUser(username);
 
 		waitForSearchIdleEvent();
 
@@ -122,9 +126,7 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	@Override
 	public void testDocumentCreation() throws InterruptedException, JSONException {
 		String username = "testuser42a";
-		try (Tx tx = tx()) {
-			createUser(username);
-		}
+		createUser(username);
 
 		waitForSearchIdleEvent();
 
@@ -135,11 +137,9 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	@Test
 	public void testTokenzierIssueQuery() throws Exception {
 		String impossibleName = "Jöhä@sRe2";
-		try (Tx tx = tx()) {
-			UserUpdateRequest updateRequest = new UserUpdateRequest();
-			updateRequest.setLastname(impossibleName);
-			call(() -> client().updateUser(user().getUuid(), updateRequest));
-		}
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		updateRequest.setLastname(impossibleName);
+		call(() -> client().updateUser(userUuid(), updateRequest));
 
 		waitForSearchIdleEvent();
 
@@ -153,11 +153,9 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	@Test
 	public void testTokenzierIssueQuery2() throws Exception {
 		String impossibleName = "Jöhä@sRe";
-		try (Tx tx = tx()) {
-			UserUpdateRequest updateRequest = new UserUpdateRequest();
-			updateRequest.setLastname(impossibleName);
-			call(() -> client().updateUser(user().getUuid(), updateRequest));
-		}
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		updateRequest.setLastname(impossibleName);
+		call(() -> client().updateUser(userUuid(), updateRequest));
 
 		waitForSearchIdleEvent();
 
@@ -171,11 +169,9 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	@Test
 	public void testTokenzierIssueLowercasedQuery() throws Exception {
 		String impossibleName = "Jöhä@sRe";
-		try (Tx tx = tx()) {
-			UserUpdateRequest updateRequest = new UserUpdateRequest();
-			updateRequest.setLastname(impossibleName);
-			call(() -> client().updateUser(user().getUuid(), updateRequest));
-		}
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		updateRequest.setLastname(impossibleName);
+		call(() -> client().updateUser(userUuid(), updateRequest));
 
 		waitForSearchIdleEvent();
 
@@ -196,7 +192,7 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		request.setUsername("testuser42a");
 		request.setPassword("test1234");
 		request.setEmailAddress(email);
-		request.setGroupUuid(db().tx(() -> group().getUuid()));
+		request.setGroupUuid(tx(() -> group().getUuid()));
 
 		call(() -> client().createUser(request));
 
@@ -210,10 +206,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	public void testSearchUserForGroup() throws Exception {
 		recreateIndices();
 		String username = "extrauser42a";
-		String groupName = db().tx(() -> group().getName());
-		try (Tx tx = tx()) {
-			createUser(username);
-		}
+		String groupName = tx(() -> group().getName());
+		createUser(username);
 
 		waitForSearchIdleEvent();
 
@@ -276,8 +270,7 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		request.setUsername(username);
 		request.setPassword("test1234");
 		request.setGroupUuid(group.getUuid());
-
-		UserResponse response = client().createUser(request).blockingGet();
+		UserResponse response = call(() -> client().createUser(request));
 
 		String userUuid = response.getUuid();
 
@@ -300,7 +293,6 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 		request.setUsername(username);
 		request.setPassword("test1234");
 		request.setGroupUuid(group.getUuid());
-
 		UserResponse user = call(() -> client().createUser(request));
 
 		String userUuid = user.getUuid();
@@ -315,11 +307,9 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	@Test
 	public void testSearchUserWithPerPageZero() throws Exception {
 		recreateIndices();
-		String groupName = db().tx(() -> group().getName());
+		String groupName = tx(() -> group().getName());
 		String username = "extrauser42a";
-		try (Tx tx = tx()) {
-			createUser(username);
-		}
+		createUser(username);
 
 		waitForSearchIdleEvent();
 
@@ -333,10 +323,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	@Override
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
 		String userName = "testuser42a";
-		try (Tx tx = tx()) {
-			UserResponse user = createUser(userName);
-			call(() -> client().deleteUser(user.getUuid()));
-		}
+		UserResponse user = createUser(userName);
+		call(() -> client().deleteUser(user.getUuid()));
 
 		waitForSearchIdleEvent();
 
@@ -349,10 +337,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	public void testDocumentUpdate() throws InterruptedException, JSONException {
 		String userName = "testuser42a";
 		String newUserName = "testgrouprenamed";
-		try (Tx tx = tx()) {
-			UserResponse user = createUser(userName);
-			user = updateUser(user.getUuid(), newUserName);
-		}
+		UserResponse user = createUser(userName);
+		user = updateUser(user.getUuid(), newUserName);
 
 		waitForSearchIdleEvent();
 

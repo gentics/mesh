@@ -1,6 +1,7 @@
 package com.gentics.mesh.util;
 
 import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.test.util.TestUtils.getJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -9,7 +10,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 
+import org.apache.commons.io.Charsets;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -40,6 +43,22 @@ public class JsonUtilTest {
 	@Test(expected = GenericRestException.class)
 	public void testToJson() {
 		JsonUtil.toJson(new Loop());
+	}
+
+	@Test
+	public void testJsonEncoding() throws IOException {
+		// Reading UTF16BE - The string will be converted to utf8.
+		validateEncodingHandling("UTF16BE.json", Charsets.UTF_16BE, "The\uD801\uDC37 Na\uD834\uDD1Em\uD834\uDD1Ee\uD801\uDC37");
+		validateEncodingHandling("ISO8859-1.json", Charsets.ISO_8859_1, "³ for ?, ¿ for ?");
+		// Reading ISO8859-1 as UTF8 will result in mapping errors. This is expected and can't be avoided if the wrong encoding has been specified.
+		validateEncodingHandling("ISO8859-1.json", Charsets.UTF_8, "� for ?, � for ?");
+	}
+
+	public void validateEncodingHandling(String name, Charset encoding, String expected) throws IOException {
+		String json = getJson(name, encoding);
+		json = EncodeUtil.ensureUtf8(json);
+		SchemaUpdateRequest schema = JsonUtil.readValue(json, SchemaUpdateRequest.class);
+		assertEquals("The name did not match the expected value.", expected, schema.getName());
 	}
 
 	@Test
@@ -115,7 +134,7 @@ public class JsonUtilTest {
 		} catch (GenericRestException e) {
 			assertEquals("error_json_malformed", e.getI18nKey());
 			assertThat(e.getI18nParameters()).containsExactly("1", "3",
-					"Unexpected character ('b' (code 98)): was expecting double-quote to start field name");
+				"Unexpected character ('b' (code 98)): was expecting double-quote to start field name");
 		}
 	}
 

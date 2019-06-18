@@ -1,12 +1,5 @@
 package com.gentics.mesh.test.util;
 
-import com.gentics.mesh.core.rest.common.ListResponse;
-import io.reactivex.Observable;
-import io.reactivex.Single;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.io.IOUtils;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
@@ -21,6 +14,15 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import org.apache.commons.io.IOUtils;
+
+import com.gentics.mesh.core.rest.common.ListResponse;
+
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public final class TestUtils {
 
@@ -123,15 +125,20 @@ public final class TestUtils {
 		}
 	}
 
+	public static String getJson(String name) throws IOException {
+		return getJson(name, Charset.defaultCharset());
+	}
+
 	/**
 	 * Return the json data from classpath.
 	 * 
 	 * @param name
+	 * @param charset
 	 * @return
 	 * @throws IOException
 	 */
-	public static String getJson(String name) throws IOException {
-		return IOUtils.toString(TestUtils.class.getResourceAsStream("/json/" + name), Charset.defaultCharset());
+	public static String getJson(String name, Charset charset) throws IOException {
+		return IOUtils.toString(TestUtils.class.getResourceAsStream("/json/" + name), charset);
 	}
 
 	public static void sleep(long millis) {

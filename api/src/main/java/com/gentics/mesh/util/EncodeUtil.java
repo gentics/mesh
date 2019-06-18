@@ -13,6 +13,7 @@ public final class EncodeUtil {
 
 	private static final Charset ISO88591_CHARSET = Charset.forName("ISO-8859-1");
 	private static final Charset UTF8_CHARSET = Charset.forName("UTF-8");
+	public static final String UTF8_BOM = "\uFEFF";
 
 	public static final String REPLACEMENT = "?";
 
@@ -46,6 +47,39 @@ public final class EncodeUtil {
 		} catch (CharacterCodingException e) {
 			throw new RuntimeException("Error while encoding {" + text + "} to ISO-8859-1");
 		}
+	}
+
+	/**
+	 * Decodes the given text using Utf8 and replaces all unmappable characters with the replacement char.
+	 * 
+	 * @param text
+	 * @return
+	 * @throws CharacterCodingException
+	 */
+	public static String ensureUtf8(String text) throws CharacterCodingException {
+		text = removeUTF8BOM(text);
+		ByteBuffer inputBuffer = ByteBuffer.wrap(text.getBytes(UTF8_CHARSET));
+
+		// Decode UTF-8
+		CharBuffer data = UTF8_CHARSET.newDecoder()
+			.onMalformedInput(REPLACE)
+			.onUnmappableCharacter(REPLACE)
+			.replaceWith(REPLACEMENT)
+			.decode(inputBuffer);
+		return data.toString();
+	}
+
+	/**
+	 * Removed the BOM character from the string if it starts with one.
+	 * 
+	 * @param s
+	 * @return
+	 */
+	public static String removeUTF8BOM(String s) {
+		if (s.startsWith(UTF8_BOM)) {
+			s = s.substring(1);
+		}
+		return s;
 	}
 
 	/**
