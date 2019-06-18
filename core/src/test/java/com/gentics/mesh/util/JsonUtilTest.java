@@ -47,18 +47,18 @@ public class JsonUtilTest {
 
 	@Test
 	public void testJsonEncoding() throws IOException {
-		validateEncodingHandling("UTF16BE.json", Charsets.UTF_16BE);
-		//validateEncodingHandling("ISO8859-1.json", Charsets.ISO_8859_1);
-		//validateEncodingHandling("ISO8859-1.json", Charsets.UTF_8);
+		// Reading UTF16BE - The string will be converted to utf8.
+		validateEncodingHandling("UTF16BE.json", Charsets.UTF_16BE, "The\uD801\uDC37 Na\uD834\uDD1Em\uD834\uDD1Ee\uD801\uDC37");
+		validateEncodingHandling("ISO8859-1.json", Charsets.ISO_8859_1, "³ for ?, ¿ for ?");
+		// Reading ISO8859-1 as UTF8 will result in mapping errors. This is expected and can't be avoided if the wrong encoding has been specified.
+		validateEncodingHandling("ISO8859-1.json", Charsets.UTF_8, "� for ?, � for ?");
 	}
 
-	public void validateEncodingHandling(String name, Charset encoding) throws IOException {
+	public void validateEncodingHandling(String name, Charset encoding, String expected) throws IOException {
 		String json = getJson(name, encoding);
 		json = EncodeUtil.ensureUtf8(json);
-		System.out.println(json);
 		SchemaUpdateRequest schema = JsonUtil.readValue(json, SchemaUpdateRequest.class);
-		System.out.println(schema.getName());
-		System.out.println(json);
+		assertEquals("The name did not match the expected value.", expected, schema.getName());
 	}
 
 	@Test
