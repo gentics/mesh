@@ -27,6 +27,8 @@ import com.gentics.mesh.rest.client.method.UserClientMethods;
 import com.gentics.mesh.rest.client.method.UtilityClientMethods;
 import com.gentics.mesh.rest.client.method.WebRootClientMethods;
 
+import okhttp3.OkHttpClient;
+
 public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods,
 	SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods,
 	AdminPluginClientMethods, MicroschemaClientMethods, NodeBinaryFieldClientMethods, UtilityClientMethods, NavigationClientMethods,
@@ -70,6 +72,16 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 */
 	static MeshRestClient create(MeshRestClientConfig config) {
 		return new MeshRestOkHttpClientImpl(config);
+	}
+
+	/**
+	 * Create a new mesh rest client.
+	 * @param config Client configuration
+	 * @param client Ok http client to be used
+	 * @return
+	 */
+	static MeshRestClient create(MeshRestClientConfig config, OkHttpClient client) {
+		return new MeshRestOkHttpClientImpl(config, client);
 	}
 
 	/**

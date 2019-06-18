@@ -3,7 +3,6 @@ package com.gentics.mesh.core.ssl;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -19,7 +18,6 @@ public class SSLServerTest extends AbstractMeshTest {
 	}
 
 	@Test
-	@Ignore("Fails on CI pipeline. See https://github.com/gentics/mesh/issues/608")
 	public void testReadByUUID() throws Exception {
 		String uuid = userUuid();
 		call(() -> client().findUserByUuid(uuid));

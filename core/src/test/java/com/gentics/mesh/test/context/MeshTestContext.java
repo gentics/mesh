@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.cert.CertificateException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +18,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.rules.TestWatcher;
@@ -86,12 +94,7 @@ public class MeshTestContext extends TestWatcher {
 
 	public static ContainerProxy proxy;
 
-	public static OkHttpClient okHttp = new OkHttpClient.Builder()
-		.callTimeout(Duration.ofMinutes(1))
-		.connectTimeout(Duration.ofMinutes(1))
-		.writeTimeout(Duration.ofMinutes(1))
-		.readTimeout(Duration.ofMinutes(1))
-		.build();
+	public static OkHttpClient okHttp = createTestClient();
 
 	private List<File> tmpFolders = new ArrayList<>();
 	private MeshComponent meshDagger;
@@ -147,6 +150,51 @@ public class MeshTestContext extends TestWatcher {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static OkHttpClient createTestClient() {
+
+		try {
+			// Create a trust manager that does not validate certificate chains
+			final TrustManager[] trustAllCerts = new TrustManager[] {
+				new X509TrustManager() {
+					@Override
+					public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+					}
+
+					@Override
+					public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+					}
+
+					@Override
+					public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+						return new java.security.cert.X509Certificate[] {};
+					}
+				}
+			};
+
+			// Install the all-trusting trust manager
+			final SSLContext sslContext = SSLContext.getInstance("SSL");
+			sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+			// Create an ssl socket factory with our all-trusting manager
+			final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+			OkHttpClient.Builder builder = new OkHttpClient.Builder();
+			builder.callTimeout(Duration.ofMinutes(1));
+			builder.connectTimeout(Duration.ofMinutes(1));
+			builder.writeTimeout(Duration.ofMinutes(1));
+			builder.readTimeout(Duration.ofMinutes(1));
+			builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0]);
+			builder.hostnameVerifier(new HostnameVerifier() {
+				@Override
+				public boolean verify(String hostname, SSLSession session) {
+					return true;
+				}
+			});
+			return builder.build();
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -241,7 +289,7 @@ public class MeshTestContext extends TestWatcher {
 				.setBasePath(CURRENT_API_BASE_PATH)
 				.setSsl(ssl);
 
-			MeshRestClient defaultClient = MeshRestClient.create(config.build());
+			MeshRestClient defaultClient = MeshRestClient.create(config.build(), okHttp);
 			defaultClient.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
 			defaultClient.login().blockingGet();
 			clients.put("v" + CURRENT_API_VERSION, defaultClient);
