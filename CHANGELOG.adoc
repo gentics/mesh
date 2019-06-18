@@ -24,7 +24,7 @@ include::content/docs/variables.adoc-include[]
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 [[v0.36.1]]
-== 0.36.1 (TBD)
+== 0.36.1 (18.06.2019)
 
 icon:plus[] Core: Support for Java 11 runtime has been added.
 
