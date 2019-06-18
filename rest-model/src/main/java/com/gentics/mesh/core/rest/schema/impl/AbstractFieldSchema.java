@@ -35,6 +35,8 @@ import io.vertx.core.json.JsonObject;
  */
 public abstract class AbstractFieldSchema implements FieldSchema {
 
+	public static final String FIELDNAME_REGEX = "^[_a-zA-Z][_a-zA-Z0-9]*$";
+
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Name of the field")
 	private String name;
@@ -116,6 +118,9 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 	public void validate() {
 		if (StringUtils.isEmpty(getName())) {
 			throw error(BAD_REQUEST, "schema_error_fieldname_not_set");
+		}
+		if (!getName().matches(FIELDNAME_REGEX)) {
+			throw error(BAD_REQUEST, "schema_error_fieldname_invalid", getName());
 		}
 	}
 
