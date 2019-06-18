@@ -24,7 +24,7 @@ final def splits = 40;
 final def runs = 40;
 
 stage("Setup Build Environment") {
-	node("mesh-worker") {
+	node("mesh-root-worker") {
 		githubBuildStarted()
 		try {
 			stage("Checkout") {
