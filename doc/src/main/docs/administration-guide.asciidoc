@@ -287,10 +287,11 @@ Memory settings can be defined using the `JAVA_TOOL_OPTIONS` environment variabl
 
 [options="header"]
 |======
-| Setting                   | Description
-| `-Xmx`                    | Maximum heap size of the Gentics Mesh Java process
-| `-Xms`                    | Initial heap size of the Gentics Mesh Java process
-| `-XX:MaxDirectMemorySize` | Maximum direct memory limit. Direct memory is mostly used to buffer transactions of the Graph Database.
+| Setting                           | Description
+| `-Xmx`                            | Maximum heap size of the Gentics Mesh Java process
+| `-Xms`                            | Initial heap size of the Gentics Mesh Java process
+| `-XX:MaxDirectMemorySize`         | Maximum direct memory limit. Direct memory is mostly used to buffer transactions of the Graph database
+| `-Dstorage.diskCache.bufferSize`  | Disk buffer size in megabytes used for the Graph database
 |======
 
 ==== Recommendations

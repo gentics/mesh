@@ -32,7 +32,7 @@ We are currently working on providing a Helm Chart for K8S deployment.
 
 Gentics Mesh can quickly be installed on a Linux by registering a systemd service.
 
-First you need to install Java 8 on your server. After that step you can link:/download[download the Gentics Mesh] server jar to your installation folder.
+First you need to install Java 11 on your server. After that step you can link:/download[download the Gentics Mesh] server jar to your installation folder.
 
 Store the service file in the same folder.
 
@@ -47,7 +47,7 @@ After=basic.target network.target syslog.target
 [Service]
 User=node
 Restart=on-failure
-ExecStart=/usr/bin/java -Xms1024m -Xmx1024m -XX:MaxDirectMemorySize=1024m -jar mesh-server.jar
+ExecStart=/usr/bin/java -Xms1024m -Xmx1024m -XX:MaxDirectMemorySize=512m -Dstorage.diskCache.bufferSize=512 -jar mesh-server.jar
 WorkingDirectory=/opt/mesh-server
 LimitMEMLOCK=infinity
 LimitNOFILE=65536
