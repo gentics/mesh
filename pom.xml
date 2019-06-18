@@ -26,7 +26,7 @@
 		<netty.version>4.1.34.Final</netty.version>
 		<tika.version>1.21</tika.version>
 
-		<surefire.forkcount>2</surefire.forkcount>
+		<surefire.forkcount>3</surefire.forkcount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>
 		<skip.unit.tests>false</skip.unit.tests>
 		<skip.cluster.tests>false</skip.cluster.tests>
