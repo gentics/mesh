@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "0.36.0"
+version: "0.36.1"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -4972,6 +4972,9 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
+                                                "required" : {
+                                                  "type" : "boolean"
+                                                },
                                                 "label" : {
                                                   "type" : "string",
                                                   "description" : "Label of the field."
@@ -4979,9 +4982,6 @@ mediaType: application/json
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                                },
-                                                "required" : {
-                                                  "type" : "boolean"
                                                 },
                                                 "name" : {
                                                   "type" : "string",
@@ -5255,6 +5255,9 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "required" : {
+                                    "type" : "boolean"
+                                  },
                                   "label" : {
                                     "type" : "string",
                                     "description" : "Label of the field."
@@ -5262,9 +5265,6 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "required" : {
-                                    "type" : "boolean"
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -5408,6 +5408,9 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "required" : {
+                                            "type" : "boolean"
+                                          },
                                           "label" : {
                                             "type" : "string",
                                             "description" : "Label of the field."
@@ -5415,9 +5418,6 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "required" : {
-                                            "type" : "boolean"
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -5677,6 +5677,9 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "required" : {
+                                            "type" : "boolean"
+                                          },
                                           "label" : {
                                             "type" : "string",
                                             "description" : "Label of the field."
@@ -5684,9 +5687,6 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "required" : {
-                                            "type" : "boolean"
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -5883,6 +5883,9 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "required" : {
+                                    "type" : "boolean"
+                                  },
                                   "label" : {
                                     "type" : "string",
                                     "description" : "Label of the field."
@@ -5890,9 +5893,6 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "required" : {
-                                    "type" : "boolean"
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -6029,6 +6029,9 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "required" : {
+                                            "type" : "boolean"
+                                          },
                                           "label" : {
                                             "type" : "string",
                                             "description" : "Label of the field."
@@ -6036,9 +6039,6 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "required" : {
-                                            "type" : "boolean"
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -6390,6 +6390,9 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "required" : {
+                                    "type" : "boolean"
+                                  },
                                   "label" : {
                                     "type" : "string",
                                     "description" : "Label of the field."
@@ -6397,9 +6400,6 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "required" : {
-                                    "type" : "boolean"
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -6632,6 +6632,9 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "required" : {
+                                    "type" : "boolean"
+                                  },
                                   "label" : {
                                     "type" : "string",
                                     "description" : "Label of the field."
@@ -6639,9 +6642,6 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "required" : {
-                                    "type" : "boolean"
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -6763,6 +6763,9 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "required" : {
+                                            "type" : "boolean"
+                                          },
                                           "label" : {
                                             "type" : "string",
                                             "description" : "Label of the field."
@@ -6770,9 +6773,6 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "required" : {
-                                            "type" : "boolean"
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -6968,6 +6968,9 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
+                                                "required" : {
+                                                  "type" : "boolean"
+                                                },
                                                 "label" : {
                                                   "type" : "string",
                                                   "description" : "Label of the field."
@@ -6975,9 +6978,6 @@ mediaType: application/json
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                                },
-                                                "required" : {
-                                                  "type" : "boolean"
                                                 },
                                                 "name" : {
                                                   "type" : "string",
@@ -7237,6 +7237,9 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "required" : {
+                                            "type" : "boolean"
+                                          },
                                           "label" : {
                                             "type" : "string",
                                             "description" : "Label of the field."
@@ -7244,9 +7247,6 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "required" : {
-                                            "type" : "boolean"
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -7373,6 +7373,9 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "required" : {
+                                    "type" : "boolean"
+                                  },
                                   "label" : {
                                     "type" : "string",
                                     "description" : "Label of the field."
@@ -7380,9 +7383,6 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "required" : {
-                                    "type" : "boolean"
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -7602,6 +7602,9 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "required" : {
+                                    "type" : "boolean"
+                                  },
                                   "label" : {
                                     "type" : "string",
                                     "description" : "Label of the field."
@@ -7609,9 +7612,6 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "required" : {
-                                    "type" : "boolean"
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -9295,6 +9295,9 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
+                                                "required" : {
+                                                  "type" : "boolean"
+                                                },
                                                 "label" : {
                                                   "type" : "string",
                                                   "description" : "Label of the field."
@@ -9302,9 +9305,6 @@ mediaType: application/json
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                                },
-                                                "required" : {
-                                                  "type" : "boolean"
                                                 },
                                                 "name" : {
                                                   "type" : "string",
@@ -10690,6 +10690,9 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
+                                                "required" : {
+                                                  "type" : "boolean"
+                                                },
                                                 "label" : {
                                                   "type" : "string",
                                                   "description" : "Label of the field."
@@ -10697,9 +10700,6 @@ mediaType: application/json
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                                },
-                                                "required" : {
-                                                  "type" : "boolean"
                                                 },
                                                 "name" : {
                                                   "type" : "string",
@@ -12056,6 +12056,9 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "required" : {
+                                    "type" : "boolean"
+                                  },
                                   "label" : {
                                     "type" : "string",
                                     "description" : "Label of the field."
@@ -12063,9 +12066,6 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "required" : {
-                                    "type" : "boolean"
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -12437,6 +12437,9 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "required" : {
+                                    "type" : "boolean"
+                                  },
                                   "label" : {
                                     "type" : "string",
                                     "description" : "Label of the field."
@@ -12444,9 +12447,6 @@ mediaType: application/json
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "required" : {
-                                    "type" : "boolean"
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -13084,7 +13084,7 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "0.36.0",
+                                  "meshVersion" : "0.36.1",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
@@ -26742,6 +26742,9 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
+                                                "required" : {
+                                                  "type" : "boolean"
+                                                },
                                                 "label" : {
                                                   "type" : "string",
                                                   "description" : "Label of the field."
@@ -26749,9 +26752,6 @@ mediaType: application/json
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                                },
-                                                "required" : {
-                                                  "type" : "boolean"
                                                 },
                                                 "name" : {
                                                   "type" : "string",
@@ -27086,6 +27086,9 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "required" : {
+                                            "type" : "boolean"
+                                          },
                                           "label" : {
                                             "type" : "string",
                                             "description" : "Label of the field."
@@ -27093,9 +27096,6 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "required" : {
-                                            "type" : "boolean"
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -27326,6 +27326,9 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "required" : {
+                                            "type" : "boolean"
+                                          },
                                           "label" : {
                                             "type" : "string",
                                             "description" : "Label of the field."
@@ -27333,9 +27336,6 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "required" : {
-                                            "type" : "boolean"
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -27562,6 +27562,9 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
+                                                "required" : {
+                                                  "type" : "boolean"
+                                                },
                                                 "label" : {
                                                   "type" : "string",
                                                   "description" : "Label of the field."
@@ -27569,9 +27572,6 @@ mediaType: application/json
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                                },
-                                                "required" : {
-                                                  "type" : "boolean"
                                                 },
                                                 "name" : {
                                                   "type" : "string",
@@ -27817,6 +27817,9 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "required" : {
+                                            "type" : "boolean"
+                                          },
                                           "label" : {
                                             "type" : "string",
                                             "description" : "Label of the field."
@@ -27824,9 +27827,6 @@ mediaType: application/json
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "required" : {
-                                            "type" : "boolean"
                                           },
                                           "name" : {
                                             "type" : "string",
