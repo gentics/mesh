@@ -179,7 +179,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		server = vertx.createHttpServer(options);
 		RouterStorage storage = routerStorage.get();
 		Router rootRouter = storage.root().getRouter();
-		server.requestHandler(rootRouter::accept);
+		server.requestHandler(rootRouter::handle);
 
 		if (initialProjects != null) {
 			for (Object project : initialProjects) {
