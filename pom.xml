@@ -19,7 +19,7 @@
 		<spring.security.version>4.2.12.RELEASE</spring.security.version>
 		<ferma.version>${project.version}</ferma.version>
 		<elasticsearch.client.version>0.5.2</elasticsearch.client.version>
-		<orientdb.version>3.0.19</orientdb.version>
+		<orientdb.version>3.0.21</orientdb.version>
 		<dagger.version>2.11</dagger.version>
 		<hazelcast.version>3.10.4</hazelcast.version>
 		<jackson.version>2.9.8</jackson.version>
