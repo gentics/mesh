@@ -1,0 +1,14 @@
+{
+  "name": "MicroReferences",
+  "fields": [
+    {
+      "name": "microSimpleNodeRef",
+      "type": "node"
+    },
+    {
+      "name": "microListNodeRef",
+      "type": "list",
+      "listType": "node"
+    }
+  ]
+}

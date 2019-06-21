@@ -125,6 +125,14 @@ public final class TestUtils {
 		}
 	}
 
+	public static String getResourceAsString(String path) {
+		try {
+			return IOUtils.toString(TestUtils.class.getResourceAsStream(path), Charset.forName("UTF-8"));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public static String getJson(String name) throws IOException {
 		return getJson(name, Charset.defaultCharset());
 	}

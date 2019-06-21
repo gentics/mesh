@@ -1,11 +1,17 @@
 package com.gentics.mesh.assertj.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.util.function.Function;
+
 import org.assertj.core.api.AbstractAssert;
 import org.codehaus.jettison.json.JSONException;
+
+import com.google.common.collect.ImmutableMultiset;
+import com.google.common.collect.Multiset;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -39,6 +45,16 @@ public class JsonArrayAssert extends AbstractAssert<JsonArrayAssert, JsonArray> 
 				assertEquals(descriptionText() + " entry #" + i, expected[i], actual.getValue(i));
 			}
 		}
+
+		return this;
+	}
+
+	public JsonArrayAssert containsJsonObjectHashesInAnyOrder(Function<JsonObject, Integer> hashMapper, Integer... expectedHashes) {
+		Multiset<Integer> actualHashes = ImmutableMultiset.copyOf(actual.stream()
+			.map(item -> hashMapper.apply((JsonObject) item))
+			.iterator());
+
+		assertThat(actualHashes).containsOnly(expectedHashes);
 
 		return this;
 	}
