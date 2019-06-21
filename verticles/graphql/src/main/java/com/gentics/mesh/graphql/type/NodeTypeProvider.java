@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+import static com.gentics.mesh.graphql.filter.NodeReferenceFilter.nodeReferenceFilter;
 import static com.gentics.mesh.graphql.type.NodeReferenceTypeProvider.NODE_REFERENCE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_PAGE_TYPE_NAME;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -52,6 +54,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.NodeFilter;
+import com.gentics.mesh.graphql.model.NodeReferenceIn;
 import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
 import com.gentics.mesh.handler.Versioned;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -341,13 +344,14 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			newFieldDefinition()
 				.name("referencedBy")
 				.description("Loads nodes that reference this node.")
+				.argument(nodeReferenceFilter(context).createFilterArgument())
 				.type(new GraphQLTypeReference(NODE_REFERENCE_PAGE_TYPE_NAME))
 				.dataFetcher(env -> {
 					NodeContent content = env.getSource();
 					GraphQLContext gc = env.getContext();
 					String branchUuid = gc.getBranch().getUuid();
 
-					Stream<NodeReferenceTypeProvider.NodeReference> stream = content.getNode()
+					Stream<NodeReferenceIn> stream = content.getNode()
 						.getInReferences()
 						.flatMap(ref -> toStream(ref.getReferencingContents()
 						.filter(container ->
@@ -356,11 +360,17 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 							container.isType(PUBLISHED, branchUuid)
 						).findAny())
 						// TODO permissions
-						.map(node -> new NodeReferenceTypeProvider.NodeReference(
+						.map(node -> new NodeReferenceIn(
 							// TODO fill holes
 							new NodeContent(null, node, Collections.emptyList()),
 							ref
 						)));
+
+					Map<String, ?> filterInput = env.getArgument("filter");
+					if (filterInput != null) {
+						stream = stream.filter(nodeReferenceFilter(context).createPredicate(filterInput));
+					}
+
 					return new DynamicStreamPageImpl<>(stream, getPagingInfo(env));
 				}).build(),
 
