@@ -31,6 +31,7 @@ import static com.gentics.mesh.madl.field.FieldType.LINK;
 import static com.gentics.mesh.madl.field.FieldType.STRING;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
+import static com.gentics.mesh.util.StreamUtil.toStream;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import static com.tinkerpop.blueprints.Direction.IN;
 import static com.tinkerpop.blueprints.Direction.OUT;
@@ -1468,56 +1469,35 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		bac.process();
 	}
 
+	@Override
+	public Stream<? extends NodeGraphField> getInReferences() {
+		return toStream(inE(HAS_FIELD, HAS_ITEM)
+			.has(NodeGraphFieldImpl.class)
+			.frameExplicit(NodeGraphFieldImpl.class));
+	}
+
 	private void addReferenceUpdates(BulkActionContext bac) {
 		Set<String> handledNodeUuids = new HashSet<>();
 
-		// Check whether NodeGraphFields (in either NGFC, or Micronode) reference this node.
-		for (NodeGraphField field : inE(HAS_FIELD).has(NodeGraphFieldImpl.class).frameExplicit(NodeGraphFieldImpl.class)) {
-			for (GraphFieldContainer container : field.outV().frame(GraphFieldContainer.class)) {
-				followContainer(bac, container, handledNodeUuids);
-			}
-		}
-
-		// Check whether Node lists (in either NGFC, or Micronode) reference this node.
-		for (NodeGraphField listItem : inE(HAS_ITEM).has(NodeGraphFieldImpl.class).frameExplicit(NodeGraphFieldImpl.class)) {
-			NodeGraphFieldListImpl list = listItem.outV().nextExplicit(NodeGraphFieldListImpl.class);
-			for (GraphFieldContainer container : list.in(HAS_LIST).frame(GraphFieldContainer.class)) {
-				followContainer(bac, container, handledNodeUuids);
-			}
-		}
-
-	}
-
-	private void followContainer(BulkActionContext bac, GraphFieldContainer container, Set<String> handledNodeUuids) {
-		if (container instanceof NodeGraphFieldContainer) {
-			NodeGraphFieldContainer nodeContainer = ((NodeGraphFieldContainer) container);
-			checkAndAddReferenceEvent(bac, nodeContainer, handledNodeUuids);
-		} else if (container instanceof Micronode) {
-			Micronode micronode = (Micronode) container;
-			// We need to check all containers that the micronode references. Due to the deduplication process the micronode may be used by multiple containers
-			for (NodeGraphFieldContainer nodeContainer : micronode.getContainers()) {
-				checkAndAddReferenceEvent(bac, nodeContainer, handledNodeUuids);
-			}
-		}
-	}
-
-	private void checkAndAddReferenceEvent(BulkActionContext bac, NodeGraphFieldContainer nodeContainer, Set<String> handledNodeUuids) {
-		for (GraphFieldContainerEdgeImpl edge : nodeContainer.inE(HAS_FIELD_CONTAINER).frameExplicit(GraphFieldContainerEdgeImpl.class)) {
-			ContainerType type = edge.getType();
-			// Only handle published or draft contents
-			if (type.equals(DRAFT) || type.equals(PUBLISHED)) {
-				Node node = nodeContainer.getParentNode();
-				String uuid = node.getUuid();
-				String languageTag = nodeContainer.getLanguageTag();
-				String branchUuid = edge.getBranchUuid();
-				String key = uuid + languageTag + branchUuid + type.getCode();
-				if (!handledNodeUuids.contains(key)) {
-					bac.add(onReferenceUpdated(node.getUuid(), node.getSchemaContainer(), branchUuid, type, languageTag));
-					handledNodeUuids.add(key);
+		getInReferences()
+			.flatMap(NodeGraphField::getReferencingContents)
+			.forEach(nodeContainer -> {
+				for (GraphFieldContainerEdgeImpl edge : nodeContainer.inE(HAS_FIELD_CONTAINER).frameExplicit(GraphFieldContainerEdgeImpl.class)) {
+					ContainerType type = edge.getType();
+					// Only handle published or draft contents
+					if (type.equals(DRAFT) || type.equals(PUBLISHED)) {
+						Node node = nodeContainer.getParentNode();
+						String uuid = node.getUuid();
+						String languageTag = nodeContainer.getLanguageTag();
+						String branchUuid = edge.getBranchUuid();
+						String key = uuid + languageTag + branchUuid + type.getCode();
+						if (!handledNodeUuids.contains(key)) {
+							bac.add(onReferenceUpdated(node.getUuid(), node.getSchemaContainer(), branchUuid, type, languageTag));
+							handledNodeUuids.add(key);
+						}
+					}
 				}
-			}
-		}
-
+			});
 	}
 
 	@Override

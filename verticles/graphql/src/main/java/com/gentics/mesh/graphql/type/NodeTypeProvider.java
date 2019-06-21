@@ -3,9 +3,12 @@ package com.gentics.mesh.graphql.type;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+import static com.gentics.mesh.graphql.type.NodeReferenceTypeProvider.NODE_REFERENCE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_TYPE_NAME;
+import static com.gentics.mesh.util.StreamUtil.toStream;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
@@ -16,6 +19,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.ExecutionException;
@@ -36,6 +40,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -331,6 +336,33 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				Node node = content.getNode();
 				return node.getSchemaContainer().getLatestVersion().getSchema().getContainer();
 			}).build(),
+
+			// .referencedBy
+			newFieldDefinition()
+				.name("referencedBy")
+				.description("Loads nodes that reference this node.")
+				.type(new GraphQLTypeReference(NODE_REFERENCE_PAGE_TYPE_NAME))
+				.dataFetcher(env -> {
+					NodeContent content = env.getSource();
+					GraphQLContext gc = env.getContext();
+					String branchUuid = gc.getBranch().getUuid();
+
+					Stream<NodeReferenceTypeProvider.NodeReference> stream = content.getNode()
+						.getInReferences()
+						.flatMap(ref -> toStream(ref.getReferencingContents()
+						.filter(container ->
+							// TODO Optimize
+							container.isType(DRAFT, branchUuid) ||
+							container.isType(PUBLISHED, branchUuid)
+						).findAny())
+						// TODO permissions
+						.map(node -> new NodeReferenceTypeProvider.NodeReference(
+							// TODO fill holes
+							new NodeContent(null, node, Collections.emptyList()),
+							ref
+						)));
+					return new DynamicStreamPageImpl<>(stream, getPagingInfo(env));
+				}).build(),
 
 			// Content specific fields
 

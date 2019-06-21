@@ -22,7 +22,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
 import static com.gentics.mesh.search.verticle.entity.MeshEntities.findElementByUuidStream;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.concat;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.toStream;
+import static com.gentics.mesh.util.StreamUtil.toStream;
 
 @Singleton
 public class TagEventHandler implements EventHandler {

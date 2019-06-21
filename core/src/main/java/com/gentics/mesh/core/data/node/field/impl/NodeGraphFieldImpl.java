@@ -1,13 +1,19 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.StreamUtil.toStream;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -16,13 +22,16 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.list.ListGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -33,6 +42,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.util.CompareUtils;
+import com.syncleus.ferma.VertexFrame;
 
 public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
@@ -114,6 +124,20 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	}
 
 	@Override
+	public Stream<? extends NodeGraphFieldContainer> getReferencingContents() {
+		return getReferencingFieldContainers()
+			.flatMap(GraphFieldContainer::getContents);
+	}
+
+	private Stream<GraphFieldContainer> getReferencingFieldContainers() {
+		if (label().equals(HAS_FIELD)) {
+			return toStream(outV().frame(GraphFieldContainer.class));
+		} else { // if HAS_ITEM
+			return toStream(outV().in(HAS_LIST).frame(GraphFieldContainer.class));
+		}
+	}
+
+	@Override
 	public Node getNode() {
 		return inV().nextOrDefaultExplicit(NodeImpl.class, null);
 	}
@@ -180,6 +204,30 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	}
 
 	@Override
+	public String getFieldName() {
+		ListSkipper skipper = new ListSkipper();
+
+		if (skipper.nextVertex instanceof NodeGraphFieldContainer) {
+			return skipper.getName();
+		} else {
+			return skipper.nextVertex.inE(HAS_FIELD, HAS_ITEM)
+				.nextExplicit(NodeGraphFieldImpl.class)
+				.getFieldName();
+		}
+	}
+
+	@Override
+	public Optional<String> getMicronodeFieldName() {
+		ListSkipper skipper = new ListSkipper();
+
+		if (skipper.nextVertex instanceof MicronodeImpl) {
+			return Optional.of(skipper.getName());
+		} else {
+			return Optional.empty();
+		}
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof NodeGraphField) {
 			Node nodeA = getNode();
@@ -206,5 +254,25 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			}
 		}
 		return false;
+	}
+
+	private class ListSkipper {
+		VertexFrame nextVertex;
+		Supplier<String> nameSupplier;
+		private ListSkipper() {
+			VertexFrame framedVertex = outV().next();
+
+			if (framedVertex instanceof ListGraphField) {
+				nameSupplier = ((ListGraphField) framedVertex)::getFieldKey;
+				nextVertex = framedVertex.in(HAS_LIST).next();
+			} else {
+				nextVertex = framedVertex;
+				nameSupplier = NodeGraphFieldImpl.this::getFieldKey;
+			}
+		}
+
+		public String getName() {
+			return nameSupplier.get();
+		}
 	}
 }

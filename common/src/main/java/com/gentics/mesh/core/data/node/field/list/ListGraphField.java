@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.node.field.list;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.MicroschemaListableGraphField;
@@ -63,6 +64,12 @@ public interface ListGraphField<T extends ListableGraphField, RM extends Field, 
 	 * @return
 	 */
 	Class<? extends T> getListType();
+
+	/**
+	 * Return the GraphFieldContainer that this list belongs to.
+	 * @return
+	 */
+	GraphFieldContainer getGraphFieldContainer();
 
 	/**
 	 * Transform the list to the rest model.

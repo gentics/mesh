@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.node.field.list;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
+
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
@@ -40,5 +43,10 @@ public abstract class AbstractGraphFieldList<T extends ListableGraphField, RM ex
 	@Override
 	public void validate() {
 		getList().stream().forEach(GraphField::validate);
+	}
+
+	@Override
+	public GraphFieldContainer getGraphFieldContainer() {
+		return inE(HAS_LIST).next(GraphFieldContainer.class);
 	}
 }

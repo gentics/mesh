@@ -19,7 +19,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.GROUP_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_UPDATED;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.toStream;
+import static com.gentics.mesh.util.StreamUtil.toStream;
 
 @Singleton
 public class GroupEventHandler implements EventHandler {

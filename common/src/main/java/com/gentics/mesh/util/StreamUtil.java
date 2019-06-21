@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -23,6 +24,17 @@ public final class StreamUtil {
 
 	public static <T> Stream<T> toStream(Iterator<T> iterator) {
 		return toStream(() -> iterator);
+	}
+
+	/**
+	 * Turns an optional into a stream.
+	 * TODO Remove this with Java 9
+	 * @param opt
+	 * @param <T>
+	 * @return
+	 */
+	public static <T> Stream<T> toStream(Optional<T> opt) {
+		return opt.map(Stream::of).orElseGet(Stream::empty);
 	}
 
 	/**

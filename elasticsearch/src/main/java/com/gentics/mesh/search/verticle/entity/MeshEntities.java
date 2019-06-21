@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.gentics.mesh.search.verticle.eventhandler.Util.latestVersionTypes;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.toStream;
+import static com.gentics.mesh.util.StreamUtil.toStream;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.warningOptional;
 
 /**
