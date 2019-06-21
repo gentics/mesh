@@ -3,7 +3,6 @@ package com.gentics.mesh.graphql.type;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
-import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.graphql.filter.NodeReferenceFilter.nodeReferenceFilter;
 import static com.gentics.mesh.graphql.type.NodeReferenceTypeProvider.NODE_REFERENCE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
@@ -20,7 +19,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -348,24 +346,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.type(new GraphQLTypeReference(NODE_REFERENCE_PAGE_TYPE_NAME))
 				.dataFetcher(env -> {
 					NodeContent content = env.getSource();
-					GraphQLContext gc = env.getContext();
-					String branchUuid = gc.getBranch().getUuid();
 
-					Stream<NodeReferenceIn> stream = content.getNode()
-						.getInReferences()
-						.flatMap(ref -> toStream(ref.getReferencingContents()
-						.filter(container ->
-							// TODO Optimize
-							container.isType(DRAFT, branchUuid) ||
-							container.isType(PUBLISHED, branchUuid)
-						).findAny())
-						// TODO permissions
-						.map(node -> new NodeReferenceIn(
-							// TODO fill holes
-							new NodeContent(null, node, Collections.emptyList()),
-							ref
-						)));
-
+					Stream<NodeReferenceIn> stream = NodeReferenceIn.fromContent(context, content);
 					Map<String, ?> filterInput = env.getArgument("filter");
 					if (filterInput != null) {
 						stream = stream.filter(nodeReferenceFilter(context).createPredicate(filterInput));
