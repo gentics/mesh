@@ -142,11 +142,13 @@ stage("Setup Build Environment") {
 
 			stage("Cluster Tests") {
 				if (Boolean.valueOf(params.runTests)) {
-					try {
-						sh "mvn -B -DskipTests clean install -pl '!demo,!doc'"
-						sh "mvn -B test -pl distributed"
-					} finally {
-						step([$class: 'JUnitResultArchiver', testResults: 'distributed/target/surefire-reports/*.xml'])
+					node("mesh-cluster-worker") {
+						try {
+							sh "mvn -B -DskipTests clean install -pl '!demo,!doc'"
+							sh "mvn -B test -pl distributed"
+						} finally {
+							step([$class: 'JUnitResultArchiver', testResults: 'distributed/target/surefire-reports/*.xml'])
+						}
 					}
 				} else {
 					echo "Cluster tests skipped.."
@@ -169,10 +171,12 @@ stage("Setup Build Environment") {
 
 			stage("Performance Tests") {
 				if (Boolean.valueOf(params.runPerformanceTests)) {
-					try {
-						sh "mvn -B -U clean package -pl '!doc,!demo,!distributed,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true"
-					} finally {
-						step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
+					node("mesh-performance-worker") {
+						try {
+							sh "mvn -B -U clean package -pl '!doc,!demo,!distributed,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true"
+						} finally {
+							step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
+						}
 					}
 				} else {
 					echo "Performance tests skipped.."
