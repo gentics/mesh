@@ -14,6 +14,7 @@ properties([
 		booleanParam(name: 'splitTests',          defaultValue: false, description: "Whether to split tests or not"),
 		booleanParam(name: 'runSonar',            defaultValue: false, description: "Whether to run the sonarqube checks"),
 		booleanParam(name: 'runPerformanceTests', defaultValue: false, description: "Whether to run performance tests."),
+		booleanParam(name: 'runClusterTests',     defaultValue: false, description: "Whether to run cluster tests."),
 		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
 		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
 		booleanParam(name: 'runMavenBuild',       defaultValue: false, description: "Whether to run the maven build steps."),
@@ -141,7 +142,7 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Cluster Tests") {
-				if (Boolean.valueOf(params.runTests)) {
+				if (Boolean.valueOf(params.runClusterTests)) {
 					node("mesh-cluster-worker") {
 						try {
 							sh "mvn -B -DskipTests clean install -pl '!demo,!doc'"
