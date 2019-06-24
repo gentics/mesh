@@ -19,6 +19,8 @@ import com.gentics.mesh.distributed.containers.MeshDockerServer;
  */
 public class NodeRejectionClusterTest extends AbstractClusterTest {
 
+	private static final int STARTUP_TIMEOUT = 110;
+
 	private static String clusterPostFix = randomUUID();
 
 	public static MeshDockerServer serverA = new MeshDockerServer(vertx)
@@ -42,7 +44,7 @@ public class NodeRejectionClusterTest extends AbstractClusterTest {
 
 	@BeforeClass
 	public static void waitForNodes() throws InterruptedException {
-		serverA.awaitStartup(20);
+		serverA.awaitStartup(STARTUP_TIMEOUT);
 		serverA.login();
 	}
 

@@ -174,7 +174,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 		super.start();
 		if (waitForStartup) {
 			try {
-				awaitStartup(200);
+				awaitStartup(500);
 			} catch (InterruptedException e) {
 				throw new ContainerLaunchException("Container did not not startup on-time", e);
 			}

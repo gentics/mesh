@@ -20,6 +20,8 @@ import io.vertx.core.Vertx;
  */
 public class MultiNodeClusterTest extends AbstractClusterTest {
 
+	private static final int STARTUP_TIMEOUT = 500;
+
 	private static String clusterPostFix = randomUUID();
 
 	private static Vertx vertx = Vertx.vertx();
@@ -56,13 +58,13 @@ public class MultiNodeClusterTest extends AbstractClusterTest {
 
 	@BeforeClass
 	public static void login() throws InterruptedException {
-		serverB.awaitStartup(200);
+		serverB.awaitStartup(STARTUP_TIMEOUT);
 		serverB.login();
-		serverC.awaitStartup(200);
+		serverC.awaitStartup(STARTUP_TIMEOUT);
 		serverC.login();
-		serverD.awaitStartup(200);
+		serverD.awaitStartup(STARTUP_TIMEOUT);
 		serverD.login();
-		serverA.awaitStartup(200);
+		serverA.awaitStartup(STARTUP_TIMEOUT);
 		serverA.login();
 	}
 

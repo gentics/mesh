@@ -61,6 +61,8 @@ public class BasicClusterTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();
 
+	private static final int STARTUP_TIMEOUT = 500;
+
 	private static final Logger log = LoggerFactory.getLogger(BasicClusterTest.class);
 
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
@@ -88,7 +90,7 @@ public class BasicClusterTest extends AbstractClusterTest {
 	@BeforeClass
 	public static void waitForNodes() throws InterruptedException {
 		LoggingConfigurator.init();
-		serverB.awaitStartup(200);
+		serverB.awaitStartup(STARTUP_TIMEOUT);
 		clientA = serverA.client();
 		clientB = serverB.client();
 	}
@@ -306,7 +308,8 @@ public class BasicClusterTest extends AbstractClusterTest {
 		permRequest.getPermissions().setRead(false);
 		call(() -> clientA.updateRolePermissions(roleResponse.getUuid(), "projects/" + projectResponse.getUuid(), permRequest));
 		Thread.sleep(2000);
-		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()), FORBIDDEN, "error_missing_perm", projectResponse.getUuid(), READ_PERM.getRestPerm().getName());
+		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()), FORBIDDEN, "error_missing_perm", projectResponse.getUuid(),
+			READ_PERM.getRestPerm().getName());
 		permRequest.getPermissions().setRead(true);
 		call(() -> clientA.updateRolePermissions(roleResponse.getUuid(), "projects/" + projectResponse.getUuid(), permRequest));
 		Thread.sleep(2000);
@@ -317,8 +320,10 @@ public class BasicClusterTest extends AbstractClusterTest {
 		clientA.logout().blockingGet();
 		clientA.setLogin(username, password);
 		clientA.login().blockingGet();
-		call(() -> clientA.findProjectByUuid(projectResponse.getUuid()), FORBIDDEN, "error_missing_perm", projectResponse.getUuid(), READ_PERM.getRestPerm().getName());
-		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()), FORBIDDEN, "error_missing_perm", projectResponse.getUuid(), READ_PERM.getRestPerm().getName());
+		call(() -> clientA.findProjectByUuid(projectResponse.getUuid()), FORBIDDEN, "error_missing_perm", projectResponse.getUuid(),
+			READ_PERM.getRestPerm().getName());
+		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()), FORBIDDEN, "error_missing_perm", projectResponse.getUuid(),
+			READ_PERM.getRestPerm().getName());
 	}
 
 	/**

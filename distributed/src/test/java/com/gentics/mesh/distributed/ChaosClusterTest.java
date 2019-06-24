@@ -24,7 +24,7 @@ public class ChaosClusterTest extends AbstractClusterTest {
 
 	private static Random random = new Random();
 
-	private static final int STARTUP_TIMEOUT = 40;
+	private static final int STARTUP_TIMEOUT = 100;
 
 	private static final int TOTAL_ACTIONS = 30;
 
