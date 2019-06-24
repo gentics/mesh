@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 
@@ -34,7 +33,6 @@ import io.reactivex.Observable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-@Ignore("Fails on CI pipeline. See https://github.com/gentics/mesh/issues/608")
 public class ClusterConcurrencyTest extends AbstractClusterTest {
 
 	private static final Logger log = LoggerFactory.getLogger(ClusterConcurrencyTest.class);

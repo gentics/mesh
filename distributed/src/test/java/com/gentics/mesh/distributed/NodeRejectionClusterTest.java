@@ -8,7 +8,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 
@@ -18,7 +17,6 @@ import com.gentics.mesh.distributed.containers.MeshDockerServer;
 /**
  * Assert that a node will not be able to join the cluster if the mesh versions and the database revision are not matching.
  */
-@Ignore("Fails on CI pipeline. See https://github.com/gentics/mesh/issues/608")
 public class NodeRejectionClusterTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();

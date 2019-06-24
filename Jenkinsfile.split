@@ -150,12 +150,15 @@ stage("Setup Build Environment") {
 
 			stage("Cluster Tests") {
 				if (Boolean.valueOf(params.runClusterTests)) {
+					stash includes: '**', name: 'project'
 					node("mesh-cluster-worker") {
 						try {
+							unstash 'project'
 							sh "mvn -B -DskipTests clean install -pl '!demo,!doc'"
 							sh "mvn -B test -pl distributed"
 						} finally {
 							step([$class: 'JUnitResultArchiver', testResults: 'distributed/target/surefire-reports/*.xml'])
+							deleteDir()
 						}
 					}
 				} else {
@@ -179,11 +182,14 @@ stage("Setup Build Environment") {
 
 			stage("Performance Tests") {
 				if (Boolean.valueOf(params.runPerformanceTests)) {
+					stash includes: '**', name: 'project'
 					node("mesh-performance-worker") {
 						try {
+							unstash 'project'
 							sh "mvn -B -U clean package -pl '!doc,!demo,!distributed,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true"
 						} finally {
 							step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
+							deleteDir()
 						}
 					}
 				} else {

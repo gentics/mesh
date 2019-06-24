@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
@@ -50,7 +49,6 @@ public class ChaosClusterTest extends AbstractClusterTest {
 	};
 
 	@Test
-	@Ignore("Fails on CI pipeline. See https://github.com/gentics/mesh/issues/608")
 	public void runTest() throws InterruptedException, IOException {
 		startInitialServer();
 
