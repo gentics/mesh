@@ -62,7 +62,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	 * Action which will be invoked once the mesh instance is ready.
 	 */
 	private Runnable startupAction = () -> {
-		client = MeshRestClient.create("localhost", getMappedPort(8080), false);
+		client = MeshRestClient.create(getContainerIpAddress(), getMappedPort(8080), false);
 	};
 
 	private StartupLatchingConsumer startupConsumer = new StartupLatchingConsumer(startupAction);
@@ -477,6 +477,16 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 
 	public String getClusterName() {
 		return clusterName;
+	}
+
+	@Override
+	public String getContainerIpAddress() {
+		String containerHost = System.getenv("CONTAINER_HOST");
+		if (containerHost != null) {
+			return containerHost;
+		} else {
+			return super.getContainerIpAddress();
+		}
 	}
 
 }
