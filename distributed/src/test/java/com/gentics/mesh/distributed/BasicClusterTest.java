@@ -109,7 +109,7 @@ public class BasicClusterTest extends AbstractClusterTest {
 		assertThat(response.getInstances()).hasSize(2);
 		Set<String> names = response.getInstances().stream().map(i -> i.getName()).collect(Collectors.toSet());
 		Set<String> stati = response.getInstances().stream().map(i -> i.getStatus()).collect(Collectors.toSet());
-		assertThat(names).containsExactly("nodeA", "nodeB");
+		assertThat(names).containsExactlyInAnyOrder("nodeA", "nodeB");
 		assertThat(stati).containsExactly("ONLINE", "ONLINE");
 	}
 
