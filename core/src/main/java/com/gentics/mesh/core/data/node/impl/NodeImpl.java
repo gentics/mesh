@@ -1476,6 +1476,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			.frameExplicit(NodeGraphFieldImpl.class));
 	}
 
+	/**
+	 * Adds reference update events to the context for all draft and published contents that reference this node.
+	 * @param bac
+	 */
 	private void addReferenceUpdates(BulkActionContext bac) {
 		Set<String> handledNodeUuids = new HashSet<>();
 

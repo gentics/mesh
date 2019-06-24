@@ -129,6 +129,10 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			.flatMap(GraphFieldContainer::getContents);
 	}
 
+	/**
+	 * Creates a stream of all field containers that are connected to this edge.
+	 * @return
+	 */
 	private Stream<GraphFieldContainer> getReferencingFieldContainers() {
 		if (label().equals(HAS_FIELD)) {
 			return toStream(outV().frame(GraphFieldContainer.class));
@@ -256,6 +260,10 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		return false;
 	}
 
+	/**
+	 * Used in {@link #getFieldName()} and {@link #getMicronodeFieldName()} to skip lists and abstract
+	 * the retrieval of the field name.
+	 */
 	private class ListSkipper {
 		VertexFrame nextVertex;
 		Supplier<String> nameSupplier;

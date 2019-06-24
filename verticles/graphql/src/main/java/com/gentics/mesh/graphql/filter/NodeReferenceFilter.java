@@ -10,6 +10,9 @@ import com.gentics.graphqlfilter.filter.StringFilter;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.model.NodeReferenceIn;
 
+/**
+ * Filters ingoing node references.
+ */
 public class NodeReferenceFilter extends StartMainFilter<NodeReferenceIn> {
 	private final GraphQLContext context;
 	private static final String NAME = "NodeReferenceFilter";
