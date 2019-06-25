@@ -186,7 +186,7 @@ stage("Setup Build Environment") {
 					node("mesh-performance-worker") {
 						try {
 							unstash 'project'
-							sh "mvn -B -U clean package -pl '!doc,!demo,!distributed,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true"
+							sh "mvn -B -U clean package -pl '!doc,!demo,!server' -Dskip.unit.tests=true -Dskip.cluster.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true"
 						} finally {
 							step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
 							deleteDir()
