@@ -816,5 +816,5 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * Gets all NodeGraphField edges that reference this node.
 	 * @return
 	 */
-	Stream<? extends NodeGraphField> getInReferences();
+	Stream<? extends NodeGraphField> getInboundReferences();
 }

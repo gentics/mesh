@@ -9,7 +9,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CRE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
@@ -83,12 +82,10 @@ import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagEdgeImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
-import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
@@ -1470,7 +1467,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Stream<? extends NodeGraphField> getInReferences() {
+	public Stream<? extends NodeGraphField> getInboundReferences() {
 		return toStream(inE(HAS_FIELD, HAS_ITEM)
 			.has(NodeGraphFieldImpl.class)
 			.frameExplicit(NodeGraphFieldImpl.class));
@@ -1483,7 +1480,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	private void addReferenceUpdates(BulkActionContext bac) {
 		Set<String> handledNodeUuids = new HashSet<>();
 
-		getInReferences()
+		getInboundReferences()
 			.flatMap(NodeGraphField::getReferencingContents)
 			.forEach(nodeContainer -> {
 				for (GraphFieldContainerEdgeImpl edge : nodeContainer.inE(HAS_FIELD_CONTAINER).frameExplicit(GraphFieldContainerEdgeImpl.class)) {

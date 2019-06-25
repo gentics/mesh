@@ -45,13 +45,13 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 	Stream<? extends NodeGraphFieldContainer> getReferencingContents();
 
 	/**
-	 * Gets the name of the field where the reference originated.
+	 * Gets the name of the field where the node reference originated.
 	 * @return
 	 */
 	String getFieldName();
 
 	/**
-	 * Gets the name of the field in the micronode where the reference originated.
+	 * Gets the name of the field in the micronode where the node reference originated.
 	 * Empty if the reference did not originate from a micronode.
 	 * @return
 	 */

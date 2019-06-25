@@ -53,6 +53,12 @@ public class RolePermissionRequest implements RestModel {
 		return this;
 	}
 
+	/**
+	 * Creates a {@link RolePermissionRequest} that is non-recursive and only has the given permissions set to true.
+	 * All other permissions are set to false.
+	 * @param permissions
+	 * @return
+	 */
 	public static RolePermissionRequest withPermissions(Permission... permissions) {
 		RolePermissionRequest rolePermissionRequest = new RolePermissionRequest();
 		PermissionInfo permissionsInfo = rolePermissionRequest.getPermissions();

@@ -38,13 +38,14 @@ public class NodeReferenceIn {
 	public static Stream<NodeReferenceIn> fromContent(GraphQLContext context, NodeContent content) {
 		String branchUuid = context.getBranch().getUuid();
 		MeshAuthUser user = context.getUser();
+		String version = context.getVersioningParameters().getVersion();
 		return content.getNode()
-			.getInReferences()
+			.getInboundReferences()
 			.flatMap(ref -> toStream(ref.getReferencingContents()
 			.filter(container -> {
 				Node node = container.getParentNode();
-				return container.isType(DRAFT, branchUuid) && user.hasPermission(node, GraphPermission.READ_PERM) ||
-					container.isType(PUBLISHED, branchUuid) && user.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM);
+				return version.equals("draft") && container.isType(DRAFT, branchUuid) && user.hasPermission(node, GraphPermission.READ_PERM) ||
+					version.equals("published") && container.isType(PUBLISHED, branchUuid) && user.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM);
 			}).findAny())
 			.map(referencingContent -> new NodeReferenceIn(
 				new NodeContent(null, referencingContent, content.getLanguageFallback()),
