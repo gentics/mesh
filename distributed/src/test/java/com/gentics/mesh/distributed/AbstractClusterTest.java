@@ -56,11 +56,31 @@ public abstract class AbstractClusterTest {
 		return "random" + System.currentTimeMillis();
 	}
 
-	protected MeshDockerServer addSlave(String clusterName, String nodeName, String dataPathPostfix, boolean clearFolders) {
+	public MeshDockerServer addSlave(String string, String name, String name2, boolean b) {
+		return addSlave(string, name, name2, b, -1);
+	}
+
+	/**
+	 * Add a new slave and block until the slave is ready.
+	 * 
+	 * @param clusterName
+	 *            Name of the cluster for the slave
+	 * @param nodeName
+	 *            Name of the slave instance
+	 * @param dataPathPostfix
+	 *            Prefix used for data storage
+	 * @param clearFolders
+	 *            Whether to clear any existing data folder of the slave
+	 * @param writeQuorum
+	 *            Write quorum to be used for the configuration.
+	 * @return
+	 */
+	protected MeshDockerServer addSlave(String clusterName, String nodeName, String dataPathPostfix, boolean clearFolders, int writeQuorum) {
 		MeshDockerServer server = new MeshDockerServer(vertx)
 			.withDataPathPostfix(dataPathPostfix)
 			.withClusterName(clusterName)
 			.withNodeName(nodeName)
+			.withWriteQuorum(writeQuorum)
 			.waitForStartup();
 		if (clearFolders) {
 			server.withClearFolders();
