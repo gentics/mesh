@@ -4,7 +4,7 @@ Please read this if you intend to contribute to the project.
 
 ## Legal stuff
 
-In order for any contributions to be accepted you MUST sign the Gentics Mesh's [Contributor License Agreement](https://www.clahub.com/agreements/gentics/mesh).
+In order for any contributions to be accepted you MUST sign the Gentics Mesh's [Contributor License Agreement](https://cla-assistant.io/gentics/mesh).
 
 The purpose of this agreement is to protect users of this codebase by ensuring that all code is free to use under the stipulations of the [Apache2 license](http://www.apache.org/licenses/LICENSE-2.0.html). 
 
