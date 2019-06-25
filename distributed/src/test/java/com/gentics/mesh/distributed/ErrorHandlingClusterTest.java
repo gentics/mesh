@@ -24,8 +24,6 @@ public class ErrorHandlingClusterTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();
 
-	private static final int STARTUP_TIMEOUT = 100;
-
 	@ClassRule
 	public static MeshDockerServer serverA = new MeshDockerServer(vertx)
 		.withClusterName("dockerCluster" + clusterPostFix)
@@ -56,7 +54,6 @@ public class ErrorHandlingClusterTest extends AbstractClusterTest {
 		ProjectResponse response = call(() -> serverA.client().createProject(request));
 
 		MeshDockerServer serverB = addSlave("dockerCluster" + clusterPostFix, "nodeB", randomToken(), true, 1);
-		serverB.awaitStartup(STARTUP_TIMEOUT);
 		serverB.login();
 		// serverB.dropTraffic();
 		call(() -> serverB.client().findProjectByUuid(response.getUuid()));
@@ -86,7 +83,6 @@ public class ErrorHandlingClusterTest extends AbstractClusterTest {
 		// Now start the stopped instance again
 		Thread.sleep(2000);
 		MeshDockerServer serverB2 = addSlave("dockerCluster" + clusterPostFix, "nodeB", dataPathPostfix, false, 1)
-			.awaitStartup(STARTUP_TIMEOUT)
 			.login();
 
 		ProjectCreateRequest request3 = new ProjectCreateRequest().setName(randomName()).setSchemaRef("folder");
@@ -118,7 +114,7 @@ public class ErrorHandlingClusterTest extends AbstractClusterTest {
 
 		String dataPathPostfix = randomToken();
 		MeshDockerServer serverB = addSlave("dockerCluster" + clusterPostFix, "nodeB", dataPathPostfix, true, 1)
-			.awaitStartup(STARTUP_TIMEOUT).login();
+			.login();
 
 		// Stop and restart each of the nodes alternatively and create projects in between each phase of the start/stop actions.
 		for (int i = 0; i < 2; i++) {
@@ -144,7 +140,6 @@ public class ErrorHandlingClusterTest extends AbstractClusterTest {
 			System.out.println("Starting server {" + server.getNodeName() + "}");
 			MeshDockerServer serverAfterRestart = addSlave("dockerCluster" + clusterPostFix, server.getNodeName(), server.getDataPathPostfix(), false,
 				1)
-					.awaitStartup(STARTUP_TIMEOUT)
 					.login();
 			if (handleFirst) {
 				serverA = serverAfterRestart;
@@ -186,12 +181,10 @@ public class ErrorHandlingClusterTest extends AbstractClusterTest {
 
 		// Start slave NodeB
 		String dataPathPostfix = randomToken();
-		MeshDockerServer serverB1 = addSlave("dockerCluster" + clusterPostFix, "nodeB", dataPathPostfix, true, 1)
-			.awaitStartup(STARTUP_TIMEOUT);
+		MeshDockerServer serverB1 = addSlave("dockerCluster" + clusterPostFix, "nodeB", dataPathPostfix, true, 1);
 
 		// Start slave NodeC
-		MeshDockerServer serverC1 = addSlave("dockerCluster" + clusterPostFix, "nodeC", dataPathPostfix, true, 1)
-			.awaitStartup(STARTUP_TIMEOUT);
+		MeshDockerServer serverC1 = addSlave("dockerCluster" + clusterPostFix, "nodeC", dataPathPostfix, true, 1);
 
 		// Now stop NodeB and a bit later NodeC
 		serverB1.stop();
@@ -204,14 +197,12 @@ public class ErrorHandlingClusterTest extends AbstractClusterTest {
 
 		// Now start the stopped NodeC again
 		Thread.sleep(2000);
-		MeshDockerServer serverC2 = addSlave("dockerCluster" + clusterPostFix, "nodeC", dataPathPostfix, false, 1).awaitStartup(STARTUP_TIMEOUT)
-			.login();
+		MeshDockerServer serverC2 = addSlave("dockerCluster" + clusterPostFix, "nodeC", dataPathPostfix, false, 1).login();
 		ProjectCreateRequest request3 = new ProjectCreateRequest().setName("onNodeC").setSchemaRef("folder");
 		ProjectResponse response3 = call(() -> serverC2.client().createProject(request3));
 
 		Thread.sleep(2000);
-		MeshDockerServer serverB2 = addSlave("dockerCluster" + clusterPostFix, "nodeB", dataPathPostfix, false, 1).awaitStartup(STARTUP_TIMEOUT)
-			.login();
+		MeshDockerServer serverB2 = addSlave("dockerCluster" + clusterPostFix, "nodeB", dataPathPostfix, false, 1).login();
 		ProjectCreateRequest request4 = new ProjectCreateRequest().setName("onNodeB").setSchemaRef("folder");
 		ProjectResponse response4 = call(() -> serverB2.client().createProject(request4));
 
