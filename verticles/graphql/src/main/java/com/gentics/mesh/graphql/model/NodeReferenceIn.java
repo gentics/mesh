@@ -4,12 +4,14 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 
-import java.util.Collections;
 import java.util.stream.Stream;
 
 import com.gentics.graphqlfilter.util.Lazy;
+import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 /**
@@ -34,28 +36,18 @@ public class NodeReferenceIn {
 	 * @return
 	 */
 	public static Stream<NodeReferenceIn> fromContent(GraphQLContext context, NodeContent content) {
-		return fromContent(context.getBranch().getUuid(), content);
-	}
-
-	/**
-	 * Creates a stream of ingoing node references for the given content.
-	 * @param branchUuid
-	 * @param content
-	 * @return
-	 */
-	public static Stream<NodeReferenceIn> fromContent(String branchUuid, NodeContent content) {
+		String branchUuid = context.getBranch().getUuid();
+		MeshAuthUser user = context.getUser();
 		return content.getNode()
 			.getInReferences()
 			.flatMap(ref -> toStream(ref.getReferencingContents()
-			.filter(container ->
-				// TODO Optimize
-				container.isType(DRAFT, branchUuid) ||
-				container.isType(PUBLISHED, branchUuid)
-			).findAny())
-			// TODO permissions
-			.map(node -> new NodeReferenceIn(
-				// TODO fill holes
-				new NodeContent(null, node, Collections.emptyList()),
+			.filter(container -> {
+				Node node = container.getParentNode();
+				return container.isType(DRAFT, branchUuid) && user.hasPermission(node, GraphPermission.READ_PERM) ||
+					container.isType(PUBLISHED, branchUuid) && user.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM);
+			}).findAny())
+			.map(referencingContent -> new NodeReferenceIn(
+				new NodeContent(null, referencingContent, content.getLanguageFallback()),
 				ref
 			)));
 	}
