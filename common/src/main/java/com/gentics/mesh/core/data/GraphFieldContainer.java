@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.binary.Binary;
@@ -362,4 +363,12 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * </ul>
 	 */
     Iterable<? extends Node> getReferencedNodes();
+
+	/**
+	 * Gets the NodeGraphFieldContainers connected to this FieldContainer.
+	 * For NodeGraphFieldContainers this is simply the same object.
+	 * For Micronodes this is will return all contents that use this micronode.
+	 * @return
+	 */
+	Stream<? extends NodeGraphFieldContainer> getContents();
 }

@@ -1,0 +1,39 @@
+{
+  "parentNode": {
+    "uuid": "%UUID%"
+  },
+  "language": "en",
+  "schema": {
+    "name": "References"
+  },
+  "fields": {
+    "simpleNodeRef": {"uuid": "%UUID%"},
+    "listNodeRef": [
+      {"uuid": "%UUID%"}
+    ],
+    "simpleMicronode": {
+      "microschema": {
+        "name": "MicroReferences"
+      },
+      "fields": {
+        "microSimpleNodeRef": {"uuid": "%UUID%"},
+        "microListNodeRef": [
+          {"uuid": "%UUID%"}
+        ]
+      }
+    },
+    "listMicronode": [
+      {
+        "microschema": {
+          "name": "MicroReferences"
+        },
+        "fields": {
+          "microSimpleNodeRef": {"uuid": "%UUID%"},
+          "microListNodeRef": [
+            {"uuid": "%UUID%"}
+          ]
+        }
+      }
+    ]
+  }
+}

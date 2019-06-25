@@ -3,9 +3,12 @@ package com.gentics.mesh.graphql.type;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.graphql.filter.NodeReferenceFilter.nodeReferenceFilter;
+import static com.gentics.mesh.graphql.type.NodeReferenceTypeProvider.NODE_REFERENCE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_TYPE_NAME;
+import static com.gentics.mesh.util.StreamUtil.toStream;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
@@ -17,6 +20,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -36,6 +40,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -47,6 +52,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.NodeFilter;
+import com.gentics.mesh.graphql.model.NodeReferenceIn;
 import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
 import com.gentics.mesh.handler.Versioned;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -331,6 +337,24 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				Node node = content.getNode();
 				return node.getSchemaContainer().getLatestVersion().getSchema().getContainer();
 			}).build(),
+
+			// .referencedBy
+			newFieldDefinition()
+				.name("referencedBy")
+				.description("Loads nodes that reference this node.")
+				.argument(nodeReferenceFilter(context).createFilterArgument())
+				.type(new GraphQLTypeReference(NODE_REFERENCE_PAGE_TYPE_NAME))
+				.dataFetcher(env -> {
+					NodeContent content = env.getSource();
+
+					Stream<NodeReferenceIn> stream = NodeReferenceIn.fromContent(context, content);
+					Map<String, ?> filterInput = env.getArgument("filter");
+					if (filterInput != null) {
+						stream = stream.filter(nodeReferenceFilter(context).createPredicate(filterInput));
+					}
+
+					return new DynamicStreamPageImpl<>(stream, getPagingInfo(env));
+				}).build(),
 
 			// Content specific fields
 

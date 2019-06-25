@@ -101,17 +101,6 @@ public final class Util {
 	}
 
 	/**
-	 * Turns an optional into a stream.
-	 * TODO Remove this with Java 9
-	 * @param opt
-	 * @param <T>
-	 * @return
-	 */
-	public static <T> Stream<T> toStream(Optional<T> opt) {
-		return opt.map(Stream::of).orElse(Stream.empty());
-	}
-
-	/**
 	 * Collects all values of a stream to a list and then returns a flowable of that list.
 	 * @param <T>
 	 * @return

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -287,5 +288,10 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		return MeshInternal.get().database().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
+	}
+
+	@Override
+	public Stream<? extends NodeGraphFieldContainer> getContents() {
+		return getContainers().stream();
 	}
 }

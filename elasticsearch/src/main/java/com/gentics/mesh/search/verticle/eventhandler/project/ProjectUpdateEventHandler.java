@@ -5,7 +5,7 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toFlowable;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.toStream;
+import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.Arrays;
 import java.util.Collection;

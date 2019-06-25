@@ -1,0 +1,23 @@
+{
+  "name": "References",
+  "fields": [
+    {
+      "name": "simpleNodeRef",
+      "type": "node"
+    },
+    {
+      "name": "listNodeRef",
+      "type": "list",
+      "listType": "node"
+    },
+    {
+      "name": "simpleMicronode",
+      "type": "micronode"
+    },
+    {
+      "name": "listMicronode",
+      "type": "list",
+      "listType": "micronode"
+    }
+  ]
+}

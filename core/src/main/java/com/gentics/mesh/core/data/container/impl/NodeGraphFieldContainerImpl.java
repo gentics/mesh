@@ -819,4 +819,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		return new TraversalResult<>(StreamUtil.untilNull(() -> this, NodeGraphFieldContainer::getPreviousVersion));
 	}
 
+	@Override
+	public Stream<NodeGraphFieldContainer> getContents() {
+		return Stream.of(this);
+	}
 }

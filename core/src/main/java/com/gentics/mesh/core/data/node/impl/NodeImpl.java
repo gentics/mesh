@@ -9,7 +9,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CRE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
@@ -31,6 +30,7 @@ import static com.gentics.mesh.madl.field.FieldType.LINK;
 import static com.gentics.mesh.madl.field.FieldType.STRING;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
+import static com.gentics.mesh.util.StreamUtil.toStream;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import static com.tinkerpop.blueprints.Direction.IN;
 import static com.tinkerpop.blueprints.Direction.OUT;
@@ -82,12 +82,10 @@ import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagEdgeImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
-import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
@@ -1468,56 +1466,39 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		bac.process();
 	}
 
+	@Override
+	public Stream<? extends NodeGraphField> getInboundReferences() {
+		return toStream(inE(HAS_FIELD, HAS_ITEM)
+			.has(NodeGraphFieldImpl.class)
+			.frameExplicit(NodeGraphFieldImpl.class));
+	}
+
+	/**
+	 * Adds reference update events to the context for all draft and published contents that reference this node.
+	 * @param bac
+	 */
 	private void addReferenceUpdates(BulkActionContext bac) {
 		Set<String> handledNodeUuids = new HashSet<>();
 
-		// Check whether NodeGraphFields (in either NGFC, or Micronode) reference this node.
-		for (NodeGraphField field : inE(HAS_FIELD).has(NodeGraphFieldImpl.class).frameExplicit(NodeGraphFieldImpl.class)) {
-			for (GraphFieldContainer container : field.outV().frame(GraphFieldContainer.class)) {
-				followContainer(bac, container, handledNodeUuids);
-			}
-		}
-
-		// Check whether Node lists (in either NGFC, or Micronode) reference this node.
-		for (NodeGraphField listItem : inE(HAS_ITEM).has(NodeGraphFieldImpl.class).frameExplicit(NodeGraphFieldImpl.class)) {
-			NodeGraphFieldListImpl list = listItem.outV().nextExplicit(NodeGraphFieldListImpl.class);
-			for (GraphFieldContainer container : list.in(HAS_LIST).frame(GraphFieldContainer.class)) {
-				followContainer(bac, container, handledNodeUuids);
-			}
-		}
-
-	}
-
-	private void followContainer(BulkActionContext bac, GraphFieldContainer container, Set<String> handledNodeUuids) {
-		if (container instanceof NodeGraphFieldContainer) {
-			NodeGraphFieldContainer nodeContainer = ((NodeGraphFieldContainer) container);
-			checkAndAddReferenceEvent(bac, nodeContainer, handledNodeUuids);
-		} else if (container instanceof Micronode) {
-			Micronode micronode = (Micronode) container;
-			// We need to check all containers that the micronode references. Due to the deduplication process the micronode may be used by multiple containers
-			for (NodeGraphFieldContainer nodeContainer : micronode.getContainers()) {
-				checkAndAddReferenceEvent(bac, nodeContainer, handledNodeUuids);
-			}
-		}
-	}
-
-	private void checkAndAddReferenceEvent(BulkActionContext bac, NodeGraphFieldContainer nodeContainer, Set<String> handledNodeUuids) {
-		for (GraphFieldContainerEdgeImpl edge : nodeContainer.inE(HAS_FIELD_CONTAINER).frameExplicit(GraphFieldContainerEdgeImpl.class)) {
-			ContainerType type = edge.getType();
-			// Only handle published or draft contents
-			if (type.equals(DRAFT) || type.equals(PUBLISHED)) {
-				Node node = nodeContainer.getParentNode();
-				String uuid = node.getUuid();
-				String languageTag = nodeContainer.getLanguageTag();
-				String branchUuid = edge.getBranchUuid();
-				String key = uuid + languageTag + branchUuid + type.getCode();
-				if (!handledNodeUuids.contains(key)) {
-					bac.add(onReferenceUpdated(node.getUuid(), node.getSchemaContainer(), branchUuid, type, languageTag));
-					handledNodeUuids.add(key);
+		getInboundReferences()
+			.flatMap(NodeGraphField::getReferencingContents)
+			.forEach(nodeContainer -> {
+				for (GraphFieldContainerEdgeImpl edge : nodeContainer.inE(HAS_FIELD_CONTAINER).frameExplicit(GraphFieldContainerEdgeImpl.class)) {
+					ContainerType type = edge.getType();
+					// Only handle published or draft contents
+					if (type.equals(DRAFT) || type.equals(PUBLISHED)) {
+						Node node = nodeContainer.getParentNode();
+						String uuid = node.getUuid();
+						String languageTag = nodeContainer.getLanguageTag();
+						String branchUuid = edge.getBranchUuid();
+						String key = uuid + languageTag + branchUuid + type.getCode();
+						if (!handledNodeUuids.contains(key)) {
+							bac.add(onReferenceUpdated(node.getUuid(), node.getSchemaContainer(), branchUuid, type, languageTag));
+							handledNodeUuids.add(key);
+						}
+					}
 				}
-			}
-		}
-
+			});
 	}
 
 	@Override

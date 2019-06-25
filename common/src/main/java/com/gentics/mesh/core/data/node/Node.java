@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.ProjectElement;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -811,4 +812,9 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 */
 	NodeVersionsResponse transformToVersionList(InternalActionContext ac);
 
+	/**
+	 * Gets all NodeGraphField edges that reference this node.
+	 * @return
+	 */
+	Stream<? extends NodeGraphField> getInboundReferences();
 }
