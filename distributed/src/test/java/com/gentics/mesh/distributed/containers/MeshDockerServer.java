@@ -40,6 +40,7 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 
 /**
  * Test container for a mesh instance which uses local class files. The image for the container will automatically be rebuild during each startup.
@@ -72,6 +73,11 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	 */
 	private String nodeName;
 
+	/**
+	 * -1 = "majority"
+	 */
+	private int writeQuorum = -1;
+
 	private boolean initCluster = false;
 
 	private boolean waitForStartup;
@@ -102,7 +108,9 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 
 	@Override
 	protected void configure() {
-		String dataPath = "/opt/jenkins-slave/" + clusterName + "-" + nodeName + "-data-" + dataPathPostfix;
+		String basePath = "/opt/jenkins-slave/" + clusterName + "-" + nodeName;
+		String dataPath = basePath + "/data-" + dataPathPostfix;
+		String confPath = basePath + "/config";
 		// Ensure that the folder is created upfront. This is important to keep the uid and gids correct.
 		// Otherwise the folder would be created by docker using root.
 
@@ -116,6 +124,16 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 		new File(dataPath).mkdirs();
 		addFileSystemBind(dataPath, "/data", BindMode.READ_WRITE);
 		// withCreateContainerCmdModifier(it -> it.withVolumes(new Volume("/data")));
+
+		try {
+			new File(confPath).mkdirs();
+			File confFile = new File(confPath, "default-distributed-db-config.json");
+			String jsonConfig = generateDistributedConfig(writeQuorum).encodePrettily();
+			FileUtils.writeStringToFile(confFile, jsonConfig, Charset.forName("UTF-8"));
+			addFileSystemBind(confFile.getAbsolutePath(), "/config/default-distributed-db-config.json", BindMode.READ_ONLY);
+		} catch (Exception e) {
+			throw new RuntimeException("Error while creating default-distributed-db-config.json", e);
+		}
 
 		changeUserInContainer();
 		if (initCluster) {
@@ -280,6 +298,22 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 		options.getClusterOptions().setVertxPort(8600);
 		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
 		return OptionsLoader.getYAMLMapper().writeValueAsString(options);
+	}
+
+	private static JsonObject generateDistributedConfig(int writeQuorum) {
+		JsonObject json;
+		try {
+			json = new JsonObject(IOUtils.toString(MeshDockerServer.class.getResourceAsStream("/config/default-distributed-db-config.json")));
+			if (writeQuorum == -1) {
+				json.put("writeQuorum", "majority");
+			} else {
+				json.put("writeQuorum", writeQuorum);
+			}
+			return json;
+		} catch (IOException e) {
+			throw new RuntimeException("Could not find default config", e);
+		}
+
 	}
 
 	private static String generateCommand(String classpath) {
@@ -487,6 +521,11 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 		} else {
 			return super.getContainerIpAddress();
 		}
+	}
+
+	public MeshDockerServer withWriteQuorum(int writeQuorum) {
+		this.writeQuorum = writeQuorum;
+		return this;
 	}
 
 }

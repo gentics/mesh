@@ -162,6 +162,8 @@ public class ChaosClusterTest extends AbstractClusterTest {
 		runningServers.add(server);
 	}
 
+	
+
 	private void stopServer() {
 		MeshDockerServer s = randomServer();
 		System.err.println("Stopping server: " + s.getNodeName());
