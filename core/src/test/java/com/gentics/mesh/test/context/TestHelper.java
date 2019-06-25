@@ -363,7 +363,9 @@ public interface TestHelper {
 	default public RoleResponse createRole(String roleName, String groupUuid) {
 		RoleCreateRequest roleCreateRequest = new RoleCreateRequest();
 		roleCreateRequest.setName(roleName);
-		return call(() -> client().createRole(roleCreateRequest));
+		RoleResponse roleResponse = call(() -> client().createRole(roleCreateRequest));
+		client().addRoleToGroup(groupUuid, roleResponse.getUuid()).blockingAwait();
+		return roleResponse;
 	}
 
 	default public RoleResponse readRole(String uuid) {
@@ -617,13 +619,28 @@ public interface TestHelper {
 			contentType));
 	}
 
-	default public UserResponse createUser(String username) {
+	default UserResponse createUser(String username) {
+		return createUser(username, groupUuid());
+	}
+
+	default public UserResponse createUser(String username, String groupUuid) {
 		UserCreateRequest request = new UserCreateRequest();
 		request.setUsername(username);
 		request.setPassword("test1234");
-		request.setGroupUuid(groupUuid());
+		request.setGroupUuid(groupUuid);
 
 		return call(() -> client().createUser(request));
+	}
+
+	/**
+	 * Creates a new role, group and user and connects these elements.
+	 * @param name
+	 */
+	default Rug createUserGroupRole(String name) {
+		GroupResponse group = createGroup(name + "Group");
+		RoleResponse role = createRole(name + "Role", group.getUuid());
+		UserResponse user = createUser(name + "User", group.getUuid());
+		return new Rug(user, group, role);
 	}
 
 	default MeshComponent meshDagger() {

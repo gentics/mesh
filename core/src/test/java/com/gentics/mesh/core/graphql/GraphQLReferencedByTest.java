@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.graphql;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.role.RolePermissionRequest.withPermissions;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.util.TestUtils.getResourceAsString;
 import static java.util.Collections.singletonMap;
@@ -9,6 +11,7 @@ import static java.util.Objects.hash;
 import java.io.IOException;
 import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
@@ -22,6 +25,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.context.Rug;
 
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
@@ -30,23 +34,21 @@ import io.vertx.core.json.JsonObject;
 @MeshTestSetting(testSize = TestSize.FULL, startServer = true)
 public class GraphQLReferencedByTest extends AbstractMeshTest {
 
+	private NodeResponse sourceNode;
+	private NodeResponse targetNode;
+
+	@Before
+	public void setUp() throws Exception {
+		createSchema();
+		targetNode = readNode(projectName(), tx(() -> folder("2015").getUuid()));
+		sourceNode = createReferenceNode(targetNode.getUuid());
+	}
+
 	@Test
 	public void testAllReferences() throws IOException {
-		createSchema();
-		NodeResponse targetNode = readNode(projectName(), tx(() -> folder("2015").getUuid()));
+		JsonArray responseData = query();
 
-		NodeResponse node = createReferenceNode(targetNode.getUuid());
-		GraphQLResponse response = graphQl(
-			getGraphQLQuery("referencedBy/query"),
-			singletonMap("uuid", targetNode.getUuid())
-		);
-
-		JsonArray responseData = response.getData()
-			.getJsonObject("node")
-			.getJsonObject("referencedBy")
-			.getJsonArray("elements");
-
-		String sourceUuid = node.getUuid();
+		String sourceUuid = sourceNode.getUuid();
 		assertThat(responseData).containsJsonObjectHashesInAnyOrder(
 			obj -> hash(
 				obj.getString("fieldName"),
@@ -60,6 +62,38 @@ public class GraphQLReferencedByTest extends AbstractMeshTest {
 			hash("listMicronode", "microSimpleNodeRef", sourceUuid),
 			hash("listMicronode", "microListNodeRef", sourceUuid)
 		);
+	}
+
+	@Test
+	public void testPermissions() throws IOException {
+		Rug tester = createUserGroupRole("tester");
+
+		client().updateRolePermissions(
+			tester.getRole().getUuid(),
+			String.format("/projects/%s/nodes/%s", projectUuid(), targetNode.getUuid()),
+			withPermissions(READ)
+		).blockingAwait();
+
+		client().setLogin(tester.getUser().getUsername(), "test1234");
+		client().login().blockingGet();
+
+		JsonArray resultData = query();
+		assertThat(resultData.getList()).isEmpty();
+	}
+
+	private JsonArray query() throws IOException {
+		String queryName = "referencedBy/query";
+
+		GraphQLResponse response = graphQl(
+			getGraphQLQuery(queryName),
+			singletonMap("uuid", targetNode.getUuid())
+		);
+		assertThat(new JsonObject(response.toJson())).compliesToAssertions(queryName);
+
+		return response.getData()
+			.getJsonObject("node")
+			.getJsonObject("referencedBy")
+			.getJsonArray("elements");
 	}
 
 	private GraphQLResponse graphQl(String query, Map<String, Object> variables) {
