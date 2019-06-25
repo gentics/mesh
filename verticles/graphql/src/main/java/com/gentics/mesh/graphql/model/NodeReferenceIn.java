@@ -44,6 +44,7 @@ public class NodeReferenceIn {
 			.flatMap(ref -> toStream(ref.getReferencingContents()
 			.filter(container -> {
 				Node node = container.getParentNode();
+				// TODO extract this common behaviour, see https://github.com/gentics/mesh/issues/698
 				return version.equals("draft") && container.isType(DRAFT, branchUuid) && user.hasPermission(node, GraphPermission.READ_PERM) ||
 					version.equals("published") && container.isType(PUBLISHED, branchUuid) && user.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM);
 			}).findAny())
