@@ -1,0 +1,20 @@
+++++
+<div class="graphql-example" style="height: 46em">
+{
+  node(path: "/images/yacht-pelorus.jpg") {
+    # Loads ingoing references
+    referencedBy {
+      elements {
+        # You can see the field name that was used to reference the node
+        fieldName
+        # And get the referencing node itself.
+        node {
+          uuid
+          path
+        }
+      }
+    }
+  }
+}
+</div>
+++++
