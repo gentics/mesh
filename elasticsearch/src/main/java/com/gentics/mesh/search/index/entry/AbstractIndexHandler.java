@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
-import com.gentics.elasticsearch.client.okhttp.ElasticsearchOkClient;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -242,7 +242,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			String fullIndexName = searchProvider.installationPrefix() + indexName;
 			Map<String, String> versions = new HashMap<>();
 			log.debug("Loading document info from index {" + fullIndexName + "}");
-			ElasticsearchOkClient<JsonObject> client = searchProvider.getClient();
+			ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 			JsonObject query = new JsonObject();
 			query.put("size", ES_SYNC_FETCH_BATCH_SIZE);
 			query.put("_source", new JsonArray().add("uuid").add("version"));

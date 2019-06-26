@@ -80,7 +80,7 @@ public class ElasticSearchOptions implements Option {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which controls whether hostname verification should be enabled. Default: " + DEFAULT_HOSTNAME_VERIFICATION)
-	@EnvironmentVariable(name = MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION_ENV, description = "Override the configured elasticsearch password.")
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION_ENV, description = "Override the configured hostname verification flag.")
 	private boolean hostnameVerification = DEFAULT_HOSTNAME_VERIFICATION;
 
 	@JsonProperty(required = false)

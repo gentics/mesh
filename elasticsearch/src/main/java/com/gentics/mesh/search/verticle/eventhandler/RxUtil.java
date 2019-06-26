@@ -4,7 +4,7 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.LongStream;
 
-import com.gentics.elasticsearch.client.okhttp.ElasticsearchOkClient;
+import com.gentics.elasticsearch.client.ElasticsearchClient;
 
 import io.reactivex.Flowable;
 import io.reactivex.functions.Function;
@@ -29,12 +29,12 @@ public final class RxUtil {
 	 * @param indices
 	 * @return
 	 */
-	public static Flowable<JsonObject> scrollAll(ElasticsearchOkClient<JsonObject> client, JsonObject query, String scrollAge, String... indices) {
+	public static Flowable<JsonObject> scrollAll(ElasticsearchClient<JsonObject> client, JsonObject query, String scrollAge, String... indices) {
 		return client.searchScroll(query, scrollAge, indices).async()
 			.flatMapPublisher(continueScroll(client, scrollAge));
 	}
 
-	private static Function<JsonObject, Flowable<JsonObject>> continueScroll(ElasticsearchOkClient<JsonObject> client, String scrollAge) {
+	private static Function<JsonObject, Flowable<JsonObject>> continueScroll(ElasticsearchClient<JsonObject> client, String scrollAge) {
 		return response -> {
 			String scrollId = response.getString("_scroll_id");
 			if (response.getJsonObject("hits").getJsonArray("hits").isEmpty()) {

@@ -16,8 +16,8 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
-import com.gentics.elasticsearch.client.okhttp.ElasticsearchOkClient;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -77,7 +77,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 	 */
 	public Page<? extends NodeContent> handleContainerSearch(InternalActionContext ac, String query, PagingParameters pagingInfo,
 		GraphPermission... permissions) throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
-		ElasticsearchOkClient<JsonObject> client = searchProvider.getClient();
+		ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 		if (client == null) {
 			throw error(HttpResponseStatus.SERVICE_UNAVAILABLE, "search_error_elasticsearch_not_available");
 		}

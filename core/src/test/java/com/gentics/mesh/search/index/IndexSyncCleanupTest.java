@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
-import com.gentics.elasticsearch.client.okhttp.ElasticsearchOkClient;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -96,7 +96,7 @@ public class IndexSyncCleanupTest extends AbstractMeshTest {
 	}
 
 	private void createThirdPartyIndex(String name) throws HttpErrorException {
-		ElasticsearchOkClient<JsonObject> searchClient = searchProvider().getClient();
+		ElasticsearchClient<JsonObject> searchClient = searchProvider().getClient();
 		JsonObject response = searchClient.createIndex(name, new JsonObject()).sync();
 		assertTrue(response.getBoolean("acknowledged"));
 	}
@@ -106,7 +106,7 @@ public class IndexSyncCleanupTest extends AbstractMeshTest {
 	}
 
 	public Set<String> indices() throws HttpErrorException {
-		ElasticsearchOkClient<JsonObject> searchClient = searchProvider().getClient();
+		ElasticsearchClient<JsonObject> searchClient = searchProvider().getClient();
 		JsonObject indicesAfter = searchClient.readIndex("*").sync();
 		return indicesAfter.fieldNames();
 	}

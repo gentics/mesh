@@ -6,6 +6,7 @@ import java.net.URL;
 import javax.annotation.Nullable;
 import javax.inject.Singleton;
 
+import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.okhttp.ElasticsearchOkClient;
 import com.gentics.elasticsearch.client.okhttp.ElasticsearchOkClient.Builder;
 import com.gentics.mesh.dagger.SearchProviderType;
@@ -45,7 +46,7 @@ public class SearchProviderModule {
 	}
 
 	@Provides
-	public static ElasticsearchOkClient<JsonObject> searchClient(MeshOptions options) {
+	public static ElasticsearchClient<JsonObject> searchClient(MeshOptions options) {
 
 		ElasticSearchOptions searchOptions = options.getSearchOptions();
 		URL url;
@@ -76,8 +77,7 @@ public class SearchProviderModule {
 		builder.setCertPath(searchOptions.getCertPath());
 		builder.setVerifyHostnames(searchOptions.isHostnameVerification());
 
-		ElasticsearchOkClient<JsonObject> client = builder.build();
-		return client;
+		return builder.build();
 	}
 
 }

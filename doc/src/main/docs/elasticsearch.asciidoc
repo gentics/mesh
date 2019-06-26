@@ -98,7 +98,55 @@ NOTE: The Gentics Mesh UI currently requires the Elasticsearch support to functi
 
 == Compatibility
 
-We currently run and test against Elasticsearch version 6.1.2. Other versions have not yet been tested.
+We currently run and test against Elasticsearch version 6.8.0. Other versions have not yet been tested.
+
+== Security
+
+Gentics Mesh support basic authentication and TLS in-transit encrypted connections for Elasticsearch communication.
+
+== Encrypting communications
+
+The Elasticsearch server can be configured to use TLS/SSL encryption. Details on this topic can be found in the link:https://www.elastic.co/guide/en/elasticsearch/reference/current/configuring-tls.html[Elasticsearch documentation].
+
+You can specify the certificate chain (server certificate and common authority certificate) of the Elasticsearch server in the Gentics Mesh configuration in order to only trust this connection.
+
+.example settings
+```
+search:
+  url: "https://127.0.0.1:9200"
+  username: "elastic"
+  password: "iucee7dohjaedemiShoshie9eiz4af0Oiceish6a"
+  certPath: "certs/elastic-certificates.crt.pem"
+  caPath: "certs/elastic-stack-ca.crt.pem"
+  hostnameVerification: true
+  startEmbedded: false
+```
+
+NOTE: The `certPath` and `caPath` setting only accept certificate files in `PEM` format.
+
+NOTE: Elasticsearch servers which already use a trusted certificate don't need to specify this cert in the configuration. It can however be configured to only trust the given cert chain.
+
+The settings can be also configured via environment variables:
+
+* `MESH_ELASTICSEARCH_CERT_PATH` - Override the cert path
+* `MESH_ELASTICSEARCH_CA_PATH` - Override the ca path
+* `MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION` - Override the hostname verification
+
+== Basic Authentication
+
+Connections to Elasticsearch can be authenticated using a user. Details on how to configure this in Elasticsearch can be found in the link:https://www.elastic.co/guide/en/elastic-stack-overview/current/built-in-users.html[Elasticsearch documentation].
+
+When `xpack.security.enabled` has been enabled in Elasticsearch you can use the `elasticsearch-setup-passwords`
+
+The authentication details can be configured using the `search.username` and `search.password` settings in the `mesh.yml`.
+
+The `username` and `password` will only be used when specified. By default no user will be used.
+
+The settings can be also configured via environment variables:
+
+* `MESH_ELASTICSEARCH_USERNAME` - Override the configured username
+* `MESH_ELASTICSEARCH_PASSWORD` - Override the configured password
+
 
 [[endpoints]]
 == REST endpoints

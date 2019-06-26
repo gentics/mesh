@@ -20,8 +20,8 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
-import com.gentics.elasticsearch.client.okhttp.ElasticsearchOkClient;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.Bulkable;
@@ -60,7 +60,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private final Lazy<Vertx> vertx;
 
-	private final ElasticsearchOkClient<JsonObject> client;
+	private final ElasticsearchClient<JsonObject> client;
 
 	private ElasticsearchProcessManager processManager;
 
@@ -68,7 +68,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		: Completable.error(error);
 
 	@Inject
-	public ElasticSearchProvider(Lazy<Vertx> vertx, MeshOptions options, ElasticsearchOkClient<JsonObject>  client) {
+	public ElasticSearchProvider(Lazy<Vertx> vertx, MeshOptions options, ElasticsearchClient<JsonObject>  client) {
 		this.vertx = vertx;
 		this.options = options;
 		this.client = client;

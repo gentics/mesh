@@ -21,8 +21,8 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
-import com.gentics.elasticsearch.client.okhttp.ElasticsearchOkClient;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
@@ -148,7 +148,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		}
 
 		awaitSync(ac).andThen(Single.defer(() -> {
-			ElasticsearchOkClient<JsonObject> client = searchProvider.getClient();
+			ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 			String searchQuery = ac.getBodyAsString();
 			if (log.isDebugEnabled()) {
 				log.debug("Invoking search with query {" + searchQuery + "}");
@@ -215,7 +215,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		RL listResponse = classOfRL.newInstance();
 
 		awaitSync(ac).andThen(Single.defer(() -> {
-			ElasticsearchOkClient<JsonObject> client = searchProvider.getClient();
+			ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 			String searchQuery = ac.getBodyAsString();
 			if (log.isDebugEnabled()) {
 				log.debug("Invoking search with query {" + searchQuery + "} for {" + classOfRL.getName() + "}");
@@ -361,7 +361,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	@Override
 	public Page<? extends T> query(InternalActionContext ac, String query, PagingParameters pagingInfo, GraphPermission... permissions)
 		throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
-		ElasticsearchOkClient<JsonObject> client = searchProvider.getClient();
+		ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + query + "} for {" + indexHandler.getElementClass().getName() + "}");
 		}

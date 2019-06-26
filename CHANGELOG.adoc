@@ -28,32 +28,7 @@ include::content/docs/variables.adoc-include[]
 
 icon:check[] Search: Encoding issues which happen on systems which were not using `UTF-8` as default locale have been fixed by updating the underlying Elasticsearch client. link:https://github.com/gentics/mesh/issues/498[498]
 
-icon:plus[] Search: It is now possible to use encrypted and authenticated connections between Gentics Mesh and Elasticsearch. New settings and environment variables have been added. https://github.com/gentics/mesh/issues/759[#759]
-
-.example settings
-```
-search:
-  url: "https://127.0.0.1:9200"
-  username: "elastic"
-  password: "finger"
-  certPath: "certs/elastic-certificates.crt.pem"
-  caPath: "certs/elastic-stack-ca.crt.pem"
-  hostnameVerification: true
-  startEmbedded: false
-```
-
-The `username` and `password` will only be used when specified. These settings can be used to configure basic auth for Elasticsearch.
-
-Please note that SSL support for Elasticsearch connections was already part of Gentics Mesh. The newly added `certPath` and `caPath` settings can be used to configure self-signed certificates which may be used for Elasticsearch in-transit encryption.
-Both paths only accept certificates in the *PEM* format. You don't need to configure the cert paths if you are using a already trusted certificate.
-
-The following environment variables have been added.
-
-* `MESH_ELASTICSEARCH_USERNAME` - Override the configured username
-* `MESH_ELASTICSEARCH_PASSWORD` - Override the configured password
-* `MESH_ELASTICSEARCH_CERT_PATH` - Override the cert path
-* `MESH_ELASTICSEARCH_CA_PATH` - Override the ca path
-* `MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION` - Override the hostname verification
+icon:plus[] Search: It is now possible to use encrypted and authenticated connections between Gentics Mesh and Elasticsearch. New settings and environment variables have been added. Details can be found in the link:{{< relref "elasticsearch.asciidoc" >}}#_security[Elasticsearch documentation] https://github.com/gentics/mesh/issues/759[#759]
 
 icon:plus[] OrientDB: The included OrientDB version has been updated to version 3.0.21
 

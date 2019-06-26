@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.elasticsearch.client.okhttp.ElasticsearchOkClient;
+import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
@@ -66,7 +66,7 @@ public class RoleDeletedEventHandler implements EventHandler {
 	}
 
 	private Flowable<DocRoles> getDocuments(MeshElementEventModelImpl model) {
-		ElasticsearchOkClient<JsonObject> client = searchProvider.getClient();
+		ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 		// No client is set when using dev-null or tracking search provider
 		if (client == null) {
 			return Flowable.empty();
