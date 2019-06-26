@@ -13,7 +13,6 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
-import com.gentics.mesh.graphdb.spi.Database;
 
 /**
  * @see UpdateMicroschemaChange

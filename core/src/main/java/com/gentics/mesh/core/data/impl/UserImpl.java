@@ -231,7 +231,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public TraversalResult<? extends Group> getGroups() {
-		return new TraversalResult<>(out(HAS_USER).frameExplicit(GroupImpl.class));
+		return out(HAS_USER, GroupImpl.class);
 	}
 
 	@Override
@@ -254,7 +254,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	@Override
 	public TraversalResult<? extends Role> getRolesViaShortcut() {
 		// TODO Use shortcut index.
-		return new TraversalResult<>(out(ASSIGNED_TO_ROLE).frameExplicit(RoleImpl.class));
+		return out(ASSIGNED_TO_ROLE, RoleImpl.class);
 	}
 
 	@Override
@@ -275,7 +275,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public Node getReferencedNode() {
-		return out(HAS_NODE_REFERENCE).nextOrDefaultExplicit(NodeImpl.class, null);
+		return out(HAS_NODE_REFERENCE, NodeImpl.class).nextOrNull();
 	}
 
 	@Override
@@ -680,12 +680,12 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public User getCreator() {
-		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+		return out(HAS_CREATOR, UserImpl.class).nextOrNull();
 	}
 
 	@Override
 	public User getEditor() {
-		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+		return out(HAS_EDITOR, UserImpl.class).nextOrNull();
 	}
 
 	@Override

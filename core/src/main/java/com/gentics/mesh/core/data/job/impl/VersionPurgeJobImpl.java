@@ -38,7 +38,7 @@ public class VersionPurgeJobImpl extends JobImpl {
 	}
 
 	public Project getProject() {
-		return out(HAS_PROJECT).nextOrDefaultExplicit(ProjectImpl.class, null);
+		return out(HAS_PROJECT, ProjectImpl.class).nextOrNull();
 	}
 
 	public void setProject(Project project) {

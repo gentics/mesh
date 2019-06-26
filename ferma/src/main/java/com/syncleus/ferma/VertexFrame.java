@@ -15,9 +15,9 @@
  */
 package com.syncleus.ferma;
 
-import com.syncleus.ferma.traversals.VertexTraversal;
-import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.google.gson.JsonObject;
+import com.syncleus.ferma.traversals.EdgeTraversal;
+import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
 
 public interface VertexFrame extends ElementFrame {

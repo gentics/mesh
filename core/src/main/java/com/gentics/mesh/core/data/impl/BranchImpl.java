@@ -285,7 +285,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public Branch getNextBranch() {
-		return out(HAS_NEXT_BRANCH).nextOrDefaultExplicit(BranchImpl.class, null);
+		return out(HAS_NEXT_BRANCH, BranchImpl.class).nextOrNull();
 	}
 
 	@Override
@@ -296,12 +296,12 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public Branch getPreviousBranch() {
-		return in(HAS_NEXT_BRANCH).nextOrDefaultExplicit(BranchImpl.class, null);
+		return in(HAS_NEXT_BRANCH, BranchImpl.class).nextOrNull();
 	}
 
 	@Override
 	public BranchRoot getRoot() {
-		return in(HAS_BRANCH).nextOrDefaultExplicit(BranchRootImpl.class, null);
+		return in(HAS_BRANCH, BranchRootImpl.class).nextOrNull();
 	}
 
 	@Override
@@ -343,8 +343,8 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public Iterable<? extends SchemaContainerVersion> findAllSchemaVersions() {
-		return out(HAS_SCHEMA_VERSION).frameExplicit(SchemaContainerVersionImpl.class);
+	public TraversalResult<? extends SchemaContainerVersion> findAllSchemaVersions() {
+		return out(HAS_SCHEMA_VERSION, SchemaContainerVersionImpl.class);
 	}
 
 	@Override
@@ -360,23 +360,24 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public Iterable<? extends BranchSchemaEdge> findAllSchemaVersionEdges() {
-		return outE(HAS_SCHEMA_VERSION).frameExplicit(BranchSchemaEdgeImpl.class);
+	public TraversalResult<? extends BranchSchemaEdge> findAllSchemaVersionEdges() {
+		return outE(HAS_SCHEMA_VERSION, BranchSchemaEdgeImpl.class);
 	}
 
 	@Override
-	public Iterable<? extends BranchMicroschemaEdge> findAllMicroschemaVersionEdges() {
-		return outE(HAS_MICROSCHEMA_VERSION).frameExplicit(BranchMicroschemaEdgeImpl.class);
+	public TraversalResult<? extends BranchMicroschemaEdge> findAllMicroschemaVersionEdges() {
+		return outE(HAS_MICROSCHEMA_VERSION, BranchMicroschemaEdgeImpl.class);
 	}
 
 	@Override
-	public Iterable<? extends BranchMicroschemaEdge> findAllLatestMicroschemaVersionEdges() {
+	public TraversalResult<? extends BranchMicroschemaEdge> findAllLatestMicroschemaVersionEdges() {
 		// Locate one version (latest) of all versions per schema
-		return Observable.fromIterable(outE(HAS_MICROSCHEMA_VERSION).frameExplicit(BranchMicroschemaEdgeImpl.class)).groupBy(it -> it
+		Iterable<BranchMicroschemaEdgeImpl> it2 = Observable.fromIterable(outE(HAS_MICROSCHEMA_VERSION).frameExplicit(BranchMicroschemaEdgeImpl.class)).groupBy(it -> it
 			.getMicroschemaContainerVersion().getSchemaContainer().getUuid()).flatMapMaybe(it -> it.reduce(
 				(a, b) -> a
 					.getMicroschemaContainerVersion().compareTo(b.getMicroschemaContainerVersion()) > 0 ? a : b))
 			.blockingIterable();
+		return new TraversalResult<>(it2);
 	}
 
 	@Override
@@ -495,8 +496,8 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public Iterable<? extends MicroschemaContainerVersion> findAllMicroschemaVersions() {
-		return out(HAS_MICROSCHEMA_VERSION).frameExplicit(MicroschemaContainerVersionImpl.class);
+	public TraversalResult<? extends MicroschemaContainerVersion> findAllMicroschemaVersions() {
+		return out(HAS_MICROSCHEMA_VERSION, MicroschemaContainerVersionImpl.class);
 	}
 
 	/**
@@ -537,7 +538,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public Project getProject() {
-		return out(ASSIGNED_TO_PROJECT).nextOrDefaultExplicit(ProjectImpl.class, null);
+		return out(ASSIGNED_TO_PROJECT, ProjectImpl.class).nextOrNull();
 	}
 
 	@Override
@@ -548,12 +549,12 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public User getCreator() {
-		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+		return out(HAS_CREATOR, UserImpl.class).nextOrNull();
 	}
 
 	@Override
 	public User getEditor() {
-		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+		return out(HAS_EDITOR, UserImpl.class).nextOrNull();
 	}
 
 	@Override

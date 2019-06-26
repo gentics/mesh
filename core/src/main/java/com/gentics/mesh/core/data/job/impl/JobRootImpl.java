@@ -74,7 +74,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	 * @return Found element or null if the element could not be located
 	 */
 	public Job findByUuid(String uuid) {
-		FramedGraph graph = Tx.getActive().getGraph();
+		FramedGraph graph = Tx.get().getGraph();
 		// 1. Find the element with given uuid within the whole graph
 		Iterator<Vertex> it = database().getVertices(MeshVertexImpl.class, new String[] { "uuid" }, new String[] { uuid });
 		if (it.hasNext()) {

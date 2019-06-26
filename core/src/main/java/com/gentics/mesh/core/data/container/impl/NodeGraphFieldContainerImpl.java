@@ -82,7 +82,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -123,7 +122,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public SchemaContainerVersion getSchemaContainerVersion() {
-		return out(HAS_SCHEMA_CONTAINER_VERSION).has(SchemaContainerVersionImpl.class).nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
+		return out(HAS_SCHEMA_CONTAINER_VERSION, SchemaContainerVersionImpl.class).nextOrNull();
 	}
 
 	@Override
@@ -448,7 +447,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public TraversalResult<? extends NodeGraphFieldContainer> getNextVersions() {
-		return new TraversalResult<>(out(HAS_VERSION).frameExplicit(NodeGraphFieldContainerImpl.class));
+		return out(HAS_VERSION, NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
@@ -463,7 +462,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public NodeGraphFieldContainer getPreviousVersion() {
-		return in(HAS_VERSION).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
+		return in(HAS_VERSION, NodeGraphFieldContainerImpl.class).nextOrNull();
 	}
 
 	@Override

@@ -104,7 +104,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public TraversalResult<? extends Language> getLanguages() {
-		return new TraversalResult<>(out(HAS_LANGUAGE).frameExplicit((LanguageImpl.class)));
+		return out(HAS_LANGUAGE, LanguageImpl.class);
 	}
 
 	@Override
@@ -119,7 +119,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public TagFamilyRoot getTagFamilyRoot() {
-		TagFamilyRoot root = out(HAS_TAGFAMILY_ROOT).nextOrDefaultExplicit(TagFamilyRootImpl.class, null);
+		TagFamilyRoot root = out(HAS_TAGFAMILY_ROOT, TagFamilyRootImpl.class).nextOrNull();
 		if (root == null) {
 			root = getGraph().addFramedVertex(TagFamilyRootImpl.class);
 			linkOut(root, HAS_TAGFAMILY_ROOT);
@@ -129,7 +129,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public SchemaContainerRoot getSchemaContainerRoot() {
-		SchemaContainerRoot root = out(HAS_SCHEMA_ROOT).nextOrDefaultExplicit(ProjectSchemaContainerRootImpl.class, null);
+		SchemaContainerRoot root = out(HAS_SCHEMA_ROOT, ProjectSchemaContainerRootImpl.class).nextOrNull();
 		if (root == null) {
 			root = getGraph().addFramedVertex(ProjectSchemaContainerRootImpl.class);
 			linkOut(root, HAS_SCHEMA_ROOT);
@@ -139,7 +139,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public MicroschemaContainerRoot getMicroschemaContainerRoot() {
-		MicroschemaContainerRoot root = out(HAS_MICROSCHEMA_ROOT).nextOrDefaultExplicit(ProjectMicroschemaContainerRootImpl.class, null);
+		MicroschemaContainerRoot root = out(HAS_MICROSCHEMA_ROOT, ProjectMicroschemaContainerRootImpl.class).nextOrNull();
 		if (root == null) {
 			root = getGraph().addFramedVertex(ProjectMicroschemaContainerRootImpl.class);
 			linkOut(root, HAS_MICROSCHEMA_ROOT);
@@ -149,12 +149,12 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public Node getBaseNode() {
-		return out(HAS_ROOT_NODE).nextOrDefaultExplicit(NodeImpl.class, null);
+		return out(HAS_ROOT_NODE, NodeImpl.class).nextOrNull();
 	}
 
 	@Override
 	public NodeRoot getNodeRoot() {
-		NodeRoot root = out(HAS_NODE_ROOT).nextOrDefaultExplicit(NodeRootImpl.class, null);
+		NodeRoot root = out(HAS_NODE_ROOT, NodeRootImpl.class).nextOrNull();
 		if (root == null) {
 			root = getGraph().addFramedVertex(NodeRootImpl.class);
 			linkOut(root, HAS_NODE_ROOT);
@@ -288,7 +288,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public BranchRoot getBranchRoot() {
-		BranchRoot root = out(HAS_BRANCH_ROOT).nextOrDefaultExplicit(BranchRootImpl.class, null);
+		BranchRoot root = out(HAS_BRANCH_ROOT, BranchRootImpl.class).nextOrNull();
 		if (root == null) {
 			root = getGraph().addFramedVertex(BranchRootImpl.class);
 			linkOut(root, HAS_BRANCH_ROOT);
@@ -308,12 +308,12 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public User getCreator() {
-		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+		return out(HAS_CREATOR, UserImpl.class).nextOrNull();
 	}
 
 	@Override
 	public User getEditor() {
-		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+		return out(HAS_EDITOR, UserImpl.class).nextOrNull();
 	}
 
 	@Override

@@ -37,7 +37,7 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 
 	@Override
 	public TraversalResult<? extends BinaryGraphField> findFields() {
-		return new TraversalResult<>(inE(HAS_FIELD).frameExplicit(BinaryGraphFieldImpl.class));
+		return inE(HAS_FIELD, BinaryGraphFieldImpl.class);
 	}
 
 	@Override

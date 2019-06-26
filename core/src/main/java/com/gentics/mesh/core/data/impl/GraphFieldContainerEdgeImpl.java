@@ -32,6 +32,8 @@ import com.syncleus.ferma.traversals.TraversalFunction;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Edge;
 
+import graphql.language.IntValue;
+
 /**
  * @see GraphFieldContainerEdge
  */
@@ -188,7 +190,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 * @return
 	 */
 	public static boolean matchesBranchAndType(Object nodeId, String branchUuid, String code) {
-		FramedGraph graph = Tx.getActive().getGraph();
+		FramedGraph graph = Tx.get().getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
 				MeshInternal.get().database().index().createComposedIndexKey(nodeId, branchUuid, code));
 		return edges.iterator().hasNext();

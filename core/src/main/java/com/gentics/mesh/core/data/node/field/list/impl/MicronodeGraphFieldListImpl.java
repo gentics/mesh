@@ -31,7 +31,6 @@ import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.CompareUtils;
 
 import io.reactivex.Observable;

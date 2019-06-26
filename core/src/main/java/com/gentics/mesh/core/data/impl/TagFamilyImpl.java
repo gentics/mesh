@@ -114,7 +114,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public Project getProject() {
-		return out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
+		return out(ASSIGNED_TO_PROJECT, ProjectImpl.class).nextOrNull();
 	}
 
 	@Override
@@ -249,12 +249,12 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public User getCreator() {
-		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+		return out(HAS_CREATOR, UserImpl.class).nextOrNull();
 	}
 
 	@Override
 	public User getEditor() {
-		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+		return out(HAS_EDITOR, UserImpl.class).nextOrNull();
 	}
 
 	@Override

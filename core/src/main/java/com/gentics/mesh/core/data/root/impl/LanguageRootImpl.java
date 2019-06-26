@@ -83,7 +83,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 		if (it.hasNext()) {
 			//TODO check whether the language was assigned to this root node?
 			//return out(HAS_LANGUAGE).has(LanguageImpl.class).has("languageTag", languageTag).nextOrDefaultExplicit(LanguageImpl.class, null);
-			FramedGraph graph = Tx.getActive().getGraph();
+			FramedGraph graph = Tx.get().getGraph();
 			return graph.frameElementExplicit(it.next(), LanguageImpl.class);
 		} else {
 			return null;

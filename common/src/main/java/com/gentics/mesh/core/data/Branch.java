@@ -5,8 +5,6 @@ import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
 
-import java.util.List;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
@@ -226,11 +224,11 @@ public interface Branch
 	boolean contains(SchemaContainerVersion schemaContainerVersion);
 
 	/**
-	 * Get an iterable of all schema container versions.
+	 * Get an traversal result of all schema container versions.
 	 * 
-	 * @return Iterable
+	 * @return
 	 */
-	Iterable<? extends SchemaContainerVersion> findAllSchemaVersions();
+	TraversalResult<? extends SchemaContainerVersion> findAllSchemaVersions();
 
 	/**
 	 * Assign the given microschema version to the branch and queue a job which executes the migration.
@@ -274,14 +272,14 @@ public interface Branch
 	 * 
 	 * @return Iterable
 	 */
-	Iterable<? extends MicroschemaContainerVersion> findAllMicroschemaVersions();
+	TraversalResult<? extends MicroschemaContainerVersion> findAllMicroschemaVersions();
 
 	/**
 	 * Get an iterable of all latest microschema container versions.
 	 * 
 	 * @return Iterable
 	 */
-	Iterable<? extends BranchMicroschemaEdge> findAllLatestMicroschemaVersionEdges();
+	TraversalResult<? extends BranchMicroschemaEdge> findAllLatestMicroschemaVersionEdges();
 
 	/**
 	 * Get an iterable over all active schema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one which
@@ -319,14 +317,14 @@ public interface Branch
 	 * 
 	 * @return
 	 */
-	Iterable<? extends BranchSchemaEdge> findAllSchemaVersionEdges();
+	TraversalResult<? extends BranchSchemaEdge> findAllSchemaVersionEdges();
 
 	/**
 	 * Return all microschema versions which are linked to the branch.
 	 * 
 	 * @return
 	 */
-	Iterable<? extends BranchMicroschemaEdge> findAllMicroschemaVersionEdges();
+	TraversalResult<? extends BranchMicroschemaEdge> findAllMicroschemaVersionEdges();
 
 	/**
 	 * Find the branch schema edge for the given version.
