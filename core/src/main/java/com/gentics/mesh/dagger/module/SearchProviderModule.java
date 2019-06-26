@@ -7,8 +7,10 @@ import javax.annotation.Nullable;
 import javax.inject.Singleton;
 
 import com.gentics.elasticsearch.client.okhttp.ElasticsearchOkClient;
+import com.gentics.elasticsearch.client.okhttp.ElasticsearchOkClient.Builder;
 import com.gentics.mesh.dagger.SearchProviderType;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
@@ -44,9 +46,11 @@ public class SearchProviderModule {
 
 	@Provides
 	public static ElasticsearchOkClient<JsonObject> searchClient(MeshOptions options) {
+
+		ElasticSearchOptions searchOptions = options.getSearchOptions();
 		URL url;
 		try {
-			url = new URL(options.getSearchOptions().getUrl());
+			url = new URL(searchOptions.getUrl());
 		} catch (MalformedURLException e) {
 			throw new RuntimeException("Invalid search provider url", e);
 		}
@@ -59,12 +63,20 @@ public class SearchProviderModule {
 			port = 443;
 		}
 
-		ElasticsearchOkClient<JsonObject> client = new ElasticsearchOkClient.Builder<JsonObject>()
+		Builder<JsonObject> builder = new ElasticsearchOkClient.Builder<JsonObject>()
 			.setScheme(proto)
 			.setHostname(url.getHost())
 			.setPort(port)
-			.setConverterFunction(JsonObject::new)
-			.build();
+			.setConverterFunction(JsonObject::new);
+
+		String username = searchOptions.getUsername();
+		String password = searchOptions.getPassword();
+		builder.setLogin(username, password);
+		builder.setCaPath(searchOptions.getCaPath());
+		builder.setCertPath(searchOptions.getCertPath());
+		builder.setVerifyHostnames(searchOptions.isHostnameVerification());
+
+		ElasticsearchOkClient<JsonObject> client = builder.build();
 		return client;
 	}
 
