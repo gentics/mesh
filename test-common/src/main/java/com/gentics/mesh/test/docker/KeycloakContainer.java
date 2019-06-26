@@ -2,7 +2,7 @@ package com.gentics.mesh.test.docker;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -84,7 +84,7 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
 	public static JsonObject loadConfig(String classPath) {
 		try (InputStream ins = KeycloakContainer.class.getResourceAsStream(classPath)) {
 			Objects.requireNonNull(ins, "Could not find file {" + classPath + "}");
-			String json = IOUtils.toString(ins, Charset.defaultCharset());
+			String json = IOUtils.toString(ins, StandardCharsets.UTF_8);
 			return new JsonObject(json);
 		} catch (IOException e) {
 			throw new RuntimeException("Could not loadrealm server config file.", e);

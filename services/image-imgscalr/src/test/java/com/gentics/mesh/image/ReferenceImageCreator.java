@@ -1,22 +1,24 @@
 package com.gentics.mesh.image;
 
+import static com.gentics.mesh.image.ImgscalrImageManipulatorTest.getReferenceFilename;
+
+import java.io.File;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+
+import org.apache.commons.io.IOUtils;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONObject;
+
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.util.PropReadFileStream;
+
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileSystem;
 import io.vertx.reactivex.core.Vertx;
-import org.apache.commons.io.IOUtils;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONObject;
-
-import java.io.File;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-
-import static com.gentics.mesh.image.ImgscalrImageManipulatorTest.getReferenceFilename;
 
 public class ReferenceImageCreator {
 	public static void main(String[] args) throws Exception {
@@ -60,7 +62,7 @@ public class ReferenceImageCreator {
 	}
 
 	private Observable<JSONObject> readImageConfig() throws Exception {
-		JSONObject json = new JSONObject(IOUtils.toString(getClass().getResourceAsStream("/pictures/images.json"), Charset.defaultCharset()));
+		JSONObject json = new JSONObject(IOUtils.toString(getClass().getResourceAsStream("/pictures/images.json"), StandardCharsets.UTF_8));
 		JSONArray array = json.getJSONArray("images");
 		return Observable.range(0, array.length())
 			.map(array::getJSONObject);

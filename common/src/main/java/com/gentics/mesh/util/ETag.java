@@ -1,6 +1,7 @@
 package com.gentics.mesh.util;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import com.google.common.hash.Hashing;
 
@@ -25,7 +26,7 @@ public class ETag {
 	 * @return Computed hash
 	 */
 	public static String hash(String key) {
-		return Hashing.crc32c().hashString(key.toString(), Charset.defaultCharset()).toString();
+		return Hashing.crc32c().hashString(key.toString(), StandardCharsets.UTF_8).toString();
 	}
 
 	/**

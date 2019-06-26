@@ -3,7 +3,7 @@ package com.gentics.mesh.plugin;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
 
@@ -63,7 +63,7 @@ public class PluginConfigUtil {
 	 */
 	public static <T> void writeConfig(File file, T config) throws IOException {
 		String yaml = getYAMLMapper().writeValueAsString(config);
-		FileUtils.writeStringToFile(file, yaml, Charset.defaultCharset(), false);
+		FileUtils.writeStringToFile(file, yaml, StandardCharsets.UTF_8, false);
 	}
 	
 	/**

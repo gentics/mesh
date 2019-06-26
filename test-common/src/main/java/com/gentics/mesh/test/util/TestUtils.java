@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -127,14 +128,14 @@ public final class TestUtils {
 
 	public static String getResourceAsString(String path) {
 		try {
-			return IOUtils.toString(TestUtils.class.getResourceAsStream(path), Charset.forName("UTF-8"));
+			return IOUtils.toString(TestUtils.class.getResourceAsStream(path), StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	public static String getJson(String name) throws IOException {
-		return getJson(name, Charset.defaultCharset());
+		return getJson(name, StandardCharsets.UTF_8);
 	}
 
 	/**

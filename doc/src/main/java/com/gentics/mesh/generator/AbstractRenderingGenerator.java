@@ -3,7 +3,7 @@ package com.gentics.mesh.generator;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
 
@@ -37,7 +37,7 @@ public class AbstractRenderingGenerator extends AbstractGenerator {
 	public void writeFile(String filename, String content) throws IOException {
 		File outputFile = new File(outputFolder, filename);
 		System.out.println("Wrote: " + outputFile.getAbsolutePath());
-		FileUtils.writeStringToFile(outputFile, content, Charset.defaultCharset(), false);
+		FileUtils.writeStringToFile(outputFile, content, StandardCharsets.UTF_8, false);
 	}
 
 	/**
@@ -49,7 +49,7 @@ public class AbstractRenderingGenerator extends AbstractGenerator {
 	public String getTemplate(String templateName) throws IOException {
 		InputStream ins = TableGenerator.class.getResourceAsStream("/" + templateName);
 		Objects.requireNonNull(ins, "Could not find template file {" + templateName + "}");
-		return IOUtils.toString(ins, Charset.defaultCharset());
+		return IOUtils.toString(ins, StandardCharsets.UTF_8);
 	}
 
 }
