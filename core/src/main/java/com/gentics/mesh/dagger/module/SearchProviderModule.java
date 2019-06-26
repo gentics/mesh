@@ -1,19 +1,22 @@
 package com.gentics.mesh.dagger.module;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import javax.annotation.Nullable;
+import javax.inject.Singleton;
+
+import com.gentics.elasticsearch.client.okhttp.ElasticsearchOkClient;
 import com.gentics.mesh.dagger.SearchProviderType;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
-import com.gentics.mesh.search.impl.SearchClient;
+
 import dagger.Module;
 import dagger.Provides;
-
-import javax.annotation.Nullable;
-import javax.inject.Singleton;
-import java.net.MalformedURLException;
-import java.net.URL;
+import io.vertx.core.json.JsonObject;
 
 @Module
 public class SearchProviderModule {
@@ -29,18 +32,18 @@ public class SearchProviderModule {
 			}
 		}
 		switch (type) {
-			case NULL:
-				return new DevNullSearchProvider();
-			case TRACKING:
-				return new TrackingSearchProvider();
-			case ELASTICSEARCH:
-			default:
-				return elasticsearchProvider;
+		case NULL:
+			return new DevNullSearchProvider();
+		case TRACKING:
+			return new TrackingSearchProvider();
+		case ELASTICSEARCH:
+		default:
+			return elasticsearchProvider;
 		}
 	}
 
 	@Provides
-	public static SearchClient searchClientProvider(MeshOptions options) {
+	public static ElasticsearchOkClient<JsonObject> searchClient(MeshOptions options) {
 		URL url;
 		try {
 			url = new URL(options.getSearchOptions().getUrl());
@@ -55,7 +58,14 @@ public class SearchProviderModule {
 		if ("https".equals(proto) && port == -1) {
 			port = 443;
 		}
-		return new SearchClient(proto, url.getHost(), port);
+
+		ElasticsearchOkClient<JsonObject> client = new ElasticsearchOkClient.Builder<JsonObject>()
+			.setScheme(proto)
+			.setHostname(url.getHost())
+			.setPort(port)
+			.setConverterFunction(JsonObject::new)
+			.build();
+		return client;
 	}
 
 }

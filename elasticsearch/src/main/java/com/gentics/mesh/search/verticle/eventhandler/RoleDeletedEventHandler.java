@@ -1,26 +1,28 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
-import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
-import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
-import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.impl.SearchClient;
-import com.gentics.mesh.search.verticle.MessageEvent;
-import io.reactivex.Flowable;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import static com.gentics.mesh.search.index.AbstractMappingProvider.ROLE_UUIDS;
+import static com.gentics.mesh.search.verticle.eventhandler.RxUtil.scrollAll;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.gentics.mesh.search.index.AbstractMappingProvider.ROLE_UUIDS;
-import static com.gentics.mesh.search.verticle.eventhandler.RxUtil.scrollAll;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import com.gentics.elasticsearch.client.okhttp.ElasticsearchOkClient;
+import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
+import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.verticle.MessageEvent;
+
+import io.reactivex.Flowable;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Deletes all _roleUuid entries for the deleted role
@@ -54,19 +56,17 @@ public class RoleDeletedEventHandler implements EventHandler {
 			.put(ROLE_UUIDS,
 				doc.roleUuids.stream()
 					.filter(uuid -> !uuid.equals(model.getUuid()))
-					.collect(Collectors.toList())
-			);
+					.collect(Collectors.toList()));
 
 		return new UpdateDocumentRequest(
 			null,
 			doc.index,
 			doc.id,
-			partial
-		);
+			partial);
 	}
 
 	private Flowable<DocRoles> getDocuments(MeshElementEventModelImpl model) {
-		SearchClient client = searchProvider.getClient();
+		ElasticsearchOkClient<JsonObject> client = searchProvider.getClient();
 		// No client is set when using dev-null or tracking search provider
 		if (client == null) {
 			return Flowable.empty();
@@ -88,9 +88,7 @@ public class RoleDeletedEventHandler implements EventHandler {
 			.put("size", ELASTIC_SEARCH_PAGE_SIZE)
 			.put("query", new JsonObject()
 				.put("term", new JsonObject()
-					.put(ROLE_UUIDS, model.getUuid())
-				)
-			);
+					.put(ROLE_UUIDS, model.getUuid())));
 	}
 
 	private static class DocRoles {
@@ -109,8 +107,7 @@ public class RoleDeletedEventHandler implements EventHandler {
 			return new DocRoles(
 				obj.getString("_index"),
 				obj.getString("_id"),
-				obj.getJsonObject("_source").getJsonArray(ROLE_UUIDS).getList()
-			);
+				obj.getJsonObject("_source").getJsonArray(ROLE_UUIDS).getList());
 		}
 	}
 }

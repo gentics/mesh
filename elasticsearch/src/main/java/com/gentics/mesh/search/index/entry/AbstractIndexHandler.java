@@ -1,6 +1,16 @@
 package com.gentics.mesh.search.index.entry;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.gentics.elasticsearch.client.HttpErrorException;
+import com.gentics.elasticsearch.client.okhttp.ElasticsearchOkClient;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -18,7 +28,6 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.impl.SearchClient;
 import com.gentics.mesh.search.index.MappingProvider;
 import com.gentics.mesh.search.index.Transformer;
 import com.gentics.mesh.search.index.metric.SyncMetric;
@@ -36,15 +45,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 /**
  * Abstract class for index handlers.
@@ -207,10 +207,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				metric.incUpdate(needUpdateInEs.size());
 				metric.incDelete(needRemovalInES.size());
 
-				Function <
-					Action,
-					Function<String, CreateDocumentRequest>
-				> toCreateRequest = action -> uuid -> {
+				Function<Action, Function<String, CreateDocumentRequest>> toCreateRequest = action -> uuid -> {
 					JsonObject doc = db.tx(() -> getTransformer().toDocument(getElement(uuid)));
 					return helper.createDocumentRequest(indexName, uuid, doc, action);
 				};
@@ -225,8 +222,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, metric::decDelete));
 
 				return Flowable.merge(toInsert, toUpdate, toDelete);
-			}
-		).flatMapPublisher(x -> x);
+			}).flatMapPublisher(x -> x);
 	}
 
 	protected T getElement(String elementUuid) {
@@ -237,8 +233,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		return db.tx(() -> getRootVertex().findAll().stream()
 			.collect(Collectors.toMap(
 				MeshElement::getUuid,
-				this::generateVersion
-			)));
+				this::generateVersion)));
 	}
 
 	// TODO Async
@@ -247,7 +242,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			String fullIndexName = searchProvider.installationPrefix() + indexName;
 			Map<String, String> versions = new HashMap<>();
 			log.debug("Loading document info from index {" + fullIndexName + "}");
-			SearchClient client = searchProvider.getClient();
+			ElasticsearchOkClient<JsonObject> client = searchProvider.getClient();
 			JsonObject query = new JsonObject();
 			query.put("size", ES_SYNC_FETCH_BATCH_SIZE);
 			query.put("_source", new JsonArray().add("uuid").add("version"));
@@ -271,7 +266,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 						while (true) {
 							final String currentScroll = nextScrollId;
 							log.debug("Fetching scroll result using scrollId {" + currentScroll + "}");
-							JsonObject scrollResult = client.scroll(currentScroll, "1m").sync();
+							JsonObject scrollResult = client.scroll("1m", currentScroll).sync();
 							JsonArray scrollHits = scrollResult.getJsonObject("hits").getJsonArray("hits");
 							if (log.isTraceEnabled()) {
 								log.trace("Got response {" + scrollHits.encodePrettily() + "}");
@@ -343,14 +338,15 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 					if (log.isDebugEnabled()) {
 						log.debug("Creating index {" + info + "}");
 					}
-				}), 1).ignoreElements();
+				}), 1)
+			.ignoreElements();
 	}
 
-//	@Override
-//	public Flowable<SearchRequest> init() {
-//		return Flowable.defer(() -> Flowable.fromIterable(getIndices().values()))
-//			.map(CreateIndexRequest::new);
-//	}
+	// @Override
+	// public Flowable<SearchRequest> init() {
+	// return Flowable.defer(() -> Flowable.fromIterable(getIndices().values()))
+	// .map(CreateIndexRequest::new);
+	// }
 
 	@Override
 	public boolean accepts(Class<?> clazzOfElement) {
