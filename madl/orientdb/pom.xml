@@ -40,6 +40,10 @@
 			<groupId>com.orientechnologies</groupId>
 			<artifactId>orientdb-graphdb</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.orientechnologies</groupId>
+			<artifactId>orientdb-gremlin</artifactId>
+		</dependency>
 	</dependencies>
 
 
@@ -53,6 +57,11 @@
 			<dependency>
 				<groupId>com.orientechnologies</groupId>
 				<artifactId>orientdb-graphdb</artifactId>
+				<version>${orientdb.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.orientechnologies</groupId>
+				<artifactId>orientdb-gremlin</artifactId>
 				<version>${orientdb.version}</version>
 			</dependency>
 			<dependency>
