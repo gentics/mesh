@@ -76,16 +76,4 @@ public class MeshTypeResolver implements TypeResolver {
 		return traverser.has(typeResolutionKey, Tokens.T.in, allAllowedValues);
 	}
 
-	@Override
-	public VertexTraversal<?, ?, ?> hasNotType(VertexTraversal<?, ?, ?> traverser, Class<?> type) {
-		final Set<? extends String> allAllowedValues = this.reflectionCache.getSubTypeNames(type.getSimpleName());
-		return traverser.has(typeResolutionKey, Tokens.T.notin, allAllowedValues);
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, ?> hasNotType(EdgeTraversal<?, ?, ?> traverser, Class<?> type) {
-		final Set<? extends String> allAllowedValues = this.reflectionCache.getSubTypeNames(type.getSimpleName());
-		return traverser.has(typeResolutionKey, Tokens.T.notin, allAllowedValues);
-	}
-
 }

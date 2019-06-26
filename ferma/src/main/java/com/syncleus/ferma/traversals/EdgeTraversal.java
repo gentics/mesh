@@ -122,15 +122,6 @@ public interface EdgeTraversal<C, S, M> extends Traversal<EdgeFrame, C, S, M> {
 	EdgeTraversal<?, ?, M> hasNot(String key, Object value);
 
 	/**
-	 * If the incoming edge has not the provided ferma_type property that is checked against the given class, then let the edge pass.
-	 *
-	 * @param clazz
-	 *            the class to check against
-	 * @return the extended Pipeline
-	 */
-	EdgeTraversal<?, ?, M> hasNot(Class<?> clazz);
-
-	/**
 	 * Add an InVertexPipe to the end of the Pipeline. Emit the head vertex of the incoming edge.
 	 *
 	 * @return the extended Pipeline

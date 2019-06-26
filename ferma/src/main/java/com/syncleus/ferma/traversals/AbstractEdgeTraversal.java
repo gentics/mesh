@@ -105,12 +105,6 @@ abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFram
 	}
 
 	@Override
-	public EdgeTraversal<?, ?, M> hasNot(Class<?> clazz) {
-		graph().getTypeResolver().hasNotType(this, clazz);
-		return this;
-	}
-
-	@Override
 	public VertexTraversal<?, ?, M> inV() {
 		getPipeline().inV();
 		return castToVertices();

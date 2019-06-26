@@ -73,13 +73,4 @@ public class UntypedTypeResolver implements TypeResolver {
 		});
 	}
 
-	@Override
-	public VertexTraversal<?, ?, ?> hasNotType(VertexTraversal<?, ?, ?> traverser, Class<?> type) {
-		return traverser;
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, ?> hasNotType(EdgeTraversal<?, ?, ?> traverser, Class<?> type) {
-		return traverser;
-	}
 }

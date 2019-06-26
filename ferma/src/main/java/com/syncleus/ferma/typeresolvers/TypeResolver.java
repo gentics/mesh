@@ -93,25 +93,4 @@ public interface TypeResolver {
 	 */
 	EdgeTraversal<?, ?, ?> hasType(EdgeTraversal<?, ?, ?> traverser, Class<?> type);
 
-	/**
-	 * Filters out the objects on the traversal that are not satisfying a requested type.
-	 * 
-	 * @param traverser
-	 *            A traversal pointing to the current set of vertex to be filtered
-	 * @param type
-	 *            The type to filter by.
-	 * @return The traversal stream filtered by the desired type.
-	 */
-	VertexTraversal<?, ?, ?> hasNotType(VertexTraversal<?, ?, ?> traverser, Class<?> type);
-
-	/**
-	 * Filters out the objects on the traversal that are not satisfying a requested type.
-	 * 
-	 * @param traverser
-	 *            A traversal pointing to the current set of edges to be filtered
-	 * @param type
-	 *            The type to filter by.
-	 * @return The traversal stream filtered by the desired type.
-	 */
-	EdgeTraversal<?, ?, ?> hasNotType(EdgeTraversal<?, ?, ?> traverser, Class<?> type);
 }
