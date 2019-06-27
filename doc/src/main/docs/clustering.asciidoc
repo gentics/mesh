@@ -17,7 +17,7 @@ Clustering is also a way to increase redundancy and fault tolerance since each i
 
 == Configuration
 
-include::content/docs/examples/cluster-options.inc[]
+include::content/docs/snippets/config/cluster.inc[]
 
 .mesh.yml
 [source,yaml]
