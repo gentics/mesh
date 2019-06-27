@@ -56,19 +56,11 @@
 			<artifactId>mesh-rest-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
+		<!-- Plugin Support -->
 		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-maven-service-factory</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.vertx</groupId>
-			<artifactId>vertx-filesystem-service-factory</artifactId>
-			<version>3.7.1</version>
-		</dependency>
-		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-http-service-factory</artifactId>
-			<version>${vertx.version}</version>
+			<groupId>org.pf4j</groupId>
+			<artifactId>pf4j</artifactId>
 		</dependency>
 
 		<!-- Common Tools -->
@@ -255,9 +247,7 @@
 						<!-- Before the test phase -->
 						<phase>process-test-classes</phase>
 						<configuration>
-							<!--
-							<skipInvocation>${skip.unit.tests}</skipInvocation>
-							 -->
+							<!-- <skipInvocation>${skip.unit.tests}</skipInvocation> -->
 							<properties>
 								<mesh.version>${project.version}</mesh.version>
 							</properties>

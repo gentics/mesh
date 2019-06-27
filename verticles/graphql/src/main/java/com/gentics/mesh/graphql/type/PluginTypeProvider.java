@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
-import com.gentics.mesh.plugin.Plugin;
+import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.PluginManager;
 
 import graphql.schema.GraphQLFieldDefinition;
@@ -57,8 +57,8 @@ public class PluginTypeProvider extends AbstractTypeProvider {
 				if (!gc.getUser().hasAdminRole()) {
 					return new PermissionException("plugins", "Missing admin permission");
 				}
-				Map<String, Plugin> deployments = manager.getPlugins();
-				Page<Plugin> page = new DynamicStreamPageImpl<>(deployments.values().stream(), getPagingInfo(env));
+				Map<String, MeshPlugin> deployments = manager.getPlugins();
+				Page<MeshPlugin> page = new DynamicStreamPageImpl<>(deployments.values().stream(), getPagingInfo(env));
 				return page;
 			}).build();
 	}
@@ -70,49 +70,49 @@ public class PluginTypeProvider extends AbstractTypeProvider {
 
 		// .uuid
 		root.field(newFieldDefinition().name("uuid").description("The deployment uuid of the plugin").type(GraphQLString).dataFetcher((env) -> {
-			Plugin plugin = env.getSource();
+			MeshPlugin plugin = env.getSource();
 			return plugin.deploymentID();
 		}));
 
 		// .name
 		root.field(newFieldDefinition().name("name").description("The name of the plugin").type(GraphQLString).dataFetcher((env) -> {
-			Plugin plugin = env.getSource();
+			MeshPlugin plugin = env.getSource();
 			return plugin.getName();
 		}));
 
 		// .description
 		root.field(newFieldDefinition().name("description").description("The description of the plugin").type(GraphQLString).dataFetcher((env) -> {
-			Plugin plugin = env.getSource();
+			MeshPlugin plugin = env.getSource();
 			return plugin.getManifest().getDescription();
 		}));
 
 		// .apiName
 		root.field(newFieldDefinition().name("apiName").description("The apiName of the plugin").type(GraphQLString).dataFetcher((env) -> {
-			Plugin plugin = env.getSource();
+			MeshPlugin plugin = env.getSource();
 			return plugin.getManifest().getApiName();
 		}));
 
 		// .license
 		root.field(newFieldDefinition().name("license").description("The license of the plugin").type(GraphQLString).dataFetcher((env -> {
-			Plugin plugin = env.getSource();
+			MeshPlugin plugin = env.getSource();
 			return plugin.getManifest().getLicense();
 		})));
 
 		// .author
 		root.field(newFieldDefinition().name("author").description("The author of the plugin").type(GraphQLString).dataFetcher((env) -> {
-			Plugin plugin = env.getSource();
+			MeshPlugin plugin = env.getSource();
 			return plugin.getManifest().getAuthor();
 		}));
 
 		// .inception
 		root.field(newFieldDefinition().name("inception").description("The inception date of the plugin").type(GraphQLString).dataFetcher((env) -> {
-			Plugin plugin = env.getSource();
+			MeshPlugin plugin = env.getSource();
 			return plugin.getManifest().getInception();
 		}));
 
 		// .version
 		root.field(newFieldDefinition().name("version").description("The version of the plugin").type(GraphQLString).dataFetcher((env) -> {
-			Plugin plugin = env.getSource();
+			MeshPlugin plugin = env.getSource();
 			return plugin.getManifest().getVersion();
 		}));
 

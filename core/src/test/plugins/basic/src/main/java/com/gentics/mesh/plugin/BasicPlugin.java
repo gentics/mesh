@@ -1,15 +1,19 @@
 package com.gentics.mesh.plugin;
 
-import com.gentics.mesh.plugin.AbstractPluginVerticle;
+import org.pf4j.PluginWrapper;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 
-public class BasicPlugin extends AbstractPluginVerticle {
+public class BasicPlugin extends AbstractPlugin {
 
 	private static final Logger log = LoggerFactory.getLogger(BasicPlugin.class);
+
+	public BasicPlugin(PluginWrapper wrapper) {
+		super(wrapper);
+	}
 
 	public StaticHandler staticHandler = StaticHandler.create("webroot", getClass().getClassLoader());
 

@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.codehaus.plexus.util.FileUtils;
+import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,7 +57,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 
 	@AfterClass
 	public static void cleanup() throws IOException {
-		FileUtils.deleteDirectory(PLUGIN_DIR);
+		FileUtils.forceDelete(new File(PLUGIN_DIR));
 	}
 
 	@Test
@@ -121,7 +121,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testPluginAuth() throws IOException {
-		Plugin plugin = new ClientPlugin();
+		MeshPlugin plugin = new ClientPlugin(null);
 		manager.deploy(plugin).blockingGet();
 		JsonObject json = new JsonObject(getJSONViaClient(CURRENT_API_BASE_PATH + "/plugins/client/user"));
 		assertNotNull(json.getString("uuid"));
@@ -134,7 +134,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testClientAPI() throws IOException {
-		Plugin plugin = new ClientPlugin();
+		MeshPlugin plugin = new ClientPlugin(null);
 		manager.deploy(plugin).blockingGet();
 
 		ProjectCreateRequest request = new ProjectCreateRequest();
@@ -175,7 +175,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 
 	@Test
 	public void testJavaDeployment() throws IOException {
-		Plugin plugin = new DummyPlugin();
+		MeshPlugin plugin = new DummyPlugin(null);
 		manager.deploy(plugin).blockingGet();
 		assertEquals(1, manager.getPlugins().size());
 
@@ -195,13 +195,13 @@ public class PluginManagerTest extends AbstractMeshTest {
 	@Test
 	public void testRedeployAfterInitFailure() {
 		try {
-			manager.deploy(new FailingPlugin()).blockingGet();
+			manager.deploy(new FailingPlugin(null)).blockingGet();
 			fail("Deployment should have failed");
 		} catch (Exception e) {
 		}
 		assertEquals(0, manager.getPlugins().size());
 
-		manager.deploy(new SucceedingPlugin()).blockingGet();
+		manager.deploy(new SucceedingPlugin(null)).blockingGet();
 		assertEquals(1, manager.getPlugins().size());
 	}
 

@@ -2,6 +2,8 @@ package com.gentics.mesh.plugin;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.pf4j.PluginWrapper;
+
 import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.json.JsonUtil;
 
@@ -10,7 +12,11 @@ import io.vertx.ext.web.Router;
 /**
  * A plugin which fakes the manifest in order to be deployable multiple times. This is useful to test deployments of multiple plugins.
  */
-public class ClonePlugin extends AbstractPluginVerticle {
+public class ClonePlugin extends AbstractPlugin {
+
+	public ClonePlugin(PluginWrapper wrapper) {
+		super(wrapper);
+	}
 
 	public static AtomicInteger counter = new AtomicInteger(0);
 

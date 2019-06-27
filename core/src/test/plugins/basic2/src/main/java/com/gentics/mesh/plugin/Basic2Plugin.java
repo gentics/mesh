@@ -1,11 +1,17 @@
 package com.gentics.mesh.plugin;
 
+import org.pf4j.PluginWrapper;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 
-public class Basic2Plugin extends AbstractPluginVerticle {
+public class Basic2Plugin extends AbstractPlugin {
+
+	public Basic2Plugin(PluginWrapper wrapper) {
+		super(wrapper);
+	}
 
 	private static final Logger log = LoggerFactory.getLogger(Basic2Plugin.class);
 

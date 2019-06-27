@@ -7,6 +7,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
+import org.pf4j.Plugin;
+import org.pf4j.PluginWrapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
@@ -14,11 +16,8 @@ import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Completable;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.ServiceHelper;
 import io.vertx.core.logging.Logger;
@@ -28,14 +27,14 @@ import io.vertx.ext.web.RoutingContext;
 /**
  * Abstract implementation for a Gentics Mesh plugin verticle.
  */
-public abstract class AbstractPluginVerticle extends AbstractVerticle implements Plugin {
+public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 
 	private static String MANIFEST_FILENAME = "mesh-plugin.json";
 
 	private static PluginManager manager = ServiceHelper.loadFactory(PluginManager.class);
 
-	private static final Logger log = LoggerFactory.getLogger(AbstractPluginVerticle.class);
-	
+	private static final Logger log = LoggerFactory.getLogger(AbstractPlugin.class);
+
 	private static final String WILDCARD_IP = "0.0.0.0";
 
 	private static final String LOOPBACK_IP = "127.0.0.1";
@@ -44,11 +43,13 @@ public abstract class AbstractPluginVerticle extends AbstractVerticle implements
 
 	private MeshRestClient adminClient;
 
-	public AbstractPluginVerticle() {
+	public AbstractPlugin(PluginWrapper wrapper) {
+		super(wrapper);
 	}
 
 	/**
 	 * Use {@link PluginConfigUtil#getYAMLMapper()} instead.
+	 * 
 	 * @deprecated
 	 * @return
 	 */
@@ -104,19 +105,18 @@ public abstract class AbstractPluginVerticle extends AbstractVerticle implements
 
 	@Override
 	public <T> T writeConfig(T config) throws IOException {
-		PluginConfigUtil.writeConfig(getConfigFile(), config);		
+		PluginConfigUtil.writeConfig(getConfigFile(), config);
 		return config;
 	}
 
 	@Override
-	public void start(Future<Void> startFuture) throws Exception {
+	public void start() {
 		log.info("Starting plugin {" + getName() + "}");
 		createAdminClient();
 		getPluginBaseDir().mkdirs();
 		getStorageDir().mkdirs();
 
-		manager.registerPlugin(this)
-			.subscribe(startFuture::complete, startFuture::fail);
+		manager.registerPlugin(this).blockingAwait();
 	}
 
 	@Override
@@ -126,19 +126,17 @@ public abstract class AbstractPluginVerticle extends AbstractVerticle implements
 
 	@Override
 	public String deploymentID() {
-		// In Gentics Mesh we use shortened UUIDs instead of the full Uuids.
-		return UUIDUtil.toShortUuid(super.deploymentID());
+		return getWrapper().getPluginId();
 	}
 
 	@Override
-	public void stop(Future<Void> stopFuture) throws Exception {
+	public void stop() {
 		log.info("Stopping plugin {" + getName() + "}");
 		if (adminClient != null) {
 			adminClient.close();
 		}
 
-		manager.deregisterPlugin(this)
-			.subscribe(stopFuture::complete, stopFuture::fail);
+		manager.deregisterPlugin(this).blockingAwait();
 	}
 
 	@Override
@@ -191,7 +189,7 @@ public abstract class AbstractPluginVerticle extends AbstractVerticle implements
 		String apiName = getManifest().getApiName();
 		return new File(pluginDir, apiName);
 	}
-	
+
 	/**
 	 * Return the plugin configuration file.
 	 * 

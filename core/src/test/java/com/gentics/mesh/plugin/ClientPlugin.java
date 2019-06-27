@@ -1,5 +1,7 @@
 package com.gentics.mesh.plugin;
 
+import org.pf4j.PluginWrapper;
+
 import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.dagger.MeshInternal;
 
@@ -8,7 +10,11 @@ import io.vertx.ext.web.Router;
 /**
  * Plugin which is used to test the interaction with the Gentics Mesh REST clients
  */
-public class ClientPlugin extends AbstractPluginVerticle {
+public class ClientPlugin extends AbstractPlugin {
+
+	public ClientPlugin(PluginWrapper wrapper) {
+		super(wrapper);
+	}
 
 	@Override
 	public PluginManifest getManifest() {
@@ -34,7 +40,7 @@ public class ClientPlugin extends AbstractPluginVerticle {
 		});
 
 		globalRouter.route("/user").handler(rc -> {
-			//TODO We currently need a transaction to read the principal. It would be better to avoid this or handle the needed tx internally.
+			// TODO We currently need a transaction to read the principal. It would be better to avoid this or handle the needed tx internally.
 			MeshInternal.get().database().tx(() -> {
 				rc.response().end(rc.user().principal().encodePrettily());
 			});

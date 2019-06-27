@@ -4,19 +4,18 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.reactivex.Completable;
-import io.vertx.core.Verticle;
 import io.vertx.ext.web.Router;
 
 /**
- * Interface for a Gentics Mesh plugin. Plugins are essentially verticles which can be deployed and undeployed. After deployment a plugin needs to register
- * itself at the plugin manager.
+ * Interface for a Gentics Mesh plugin. After deployment a plugin needs to register itself at the plugin manager.
  */
-public interface Plugin extends Verticle {
+public interface MeshPlugin {
 
 	/**
 	 * Shortcut for loading the name from the {@link #getManifest()}
@@ -125,7 +124,7 @@ public interface Plugin extends Verticle {
 	 * @return RX Java variant Vert.x Instance
 	 */
 	default io.vertx.reactivex.core.Vertx getRxVertx() {
-		return new io.vertx.reactivex.core.Vertx(getVertx());
+		return new io.vertx.reactivex.core.Vertx(Mesh.vertx());
 	}
 
 }

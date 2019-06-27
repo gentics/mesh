@@ -30,7 +30,7 @@ public class GraphQLPluginTest extends AbstractMeshTest {
 		grantAdminRole();
 
 		String uuid = "261f779ff7954d0ca60c1f10c6434f28";
-		ClonePlugin first = new ClonePlugin();
+		ClonePlugin first = new ClonePlugin(null);
 		first.getManifest();
 		first.setUuid(uuid);
 		manager.getPlugins().put(uuid, first);

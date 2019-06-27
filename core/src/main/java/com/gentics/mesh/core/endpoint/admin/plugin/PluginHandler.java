@@ -25,7 +25,7 @@ import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.plugin.Plugin;
+import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.PluginManager;
 
 import io.reactivex.Single;
@@ -52,7 +52,7 @@ public class PluginHandler extends AbstractHandler {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			Plugin plugin = manager.getPlugin(uuid);
+			MeshPlugin plugin = manager.getPlugin(uuid);
 			if (plugin == null) {
 				throw error(NOT_FOUND, "admin_plugin_error_plugin_not_found", uuid);
 			}
@@ -70,7 +70,7 @@ public class PluginHandler extends AbstractHandler {
 			String name = requestModel.getName();
 			return manager.deploy(name).map(deploymentId -> {
 				log.debug("Deployed plugin with deployment name {" + name + "} - Deployment Uuid {" + deploymentId + "}");
-				Plugin plugin = manager.getPlugin(deploymentId);
+				MeshPlugin plugin = manager.getPlugin(deploymentId);
 				if (plugin == null) {
 					log.error("The plugin was deployed but it could not be found by the manager. It seems that the plugin registration failed.");
 					throw error(NOT_FOUND, "admin_plugin_error_plugin_not_found", deploymentId);
@@ -99,9 +99,9 @@ public class PluginHandler extends AbstractHandler {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			Map<String, Plugin> deployments = manager.getPlugins();
+			Map<String, MeshPlugin> deployments = manager.getPlugins();
 			PluginListResponse response = new PluginListResponse();
-			Page<PluginResponse> page = new DynamicStreamPageImpl<>(deployments.values().stream().map(Plugin::toResponse), ac.getPagingParameters());
+			Page<PluginResponse> page = new DynamicStreamPageImpl<>(deployments.values().stream().map(MeshPlugin::toResponse), ac.getPagingParameters());
 			page.setPaging(response);
 			response.getData().addAll(page.getWrappedList());
 			return Single.just(response);

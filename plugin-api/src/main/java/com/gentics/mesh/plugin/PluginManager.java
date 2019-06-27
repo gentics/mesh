@@ -25,7 +25,7 @@ public interface PluginManager {
 	 * 
 	 * @param plugin
 	 */
-	Single<String> deploy(Plugin plugin);
+	Single<String> deploy(MeshPlugin plugin);
 
 	/**
 	 * Deploy the plugin file.
@@ -41,14 +41,14 @@ public interface PluginManager {
 	 * @param plugin
 	 * @return
 	 */
-	Completable registerPlugin(Plugin plugin);
+	Completable registerPlugin(MeshPlugin plugin);
 
 	/**
 	 * de-register the given plugin.
 	 * 
 	 * @param plugin
 	 */
-	Completable deregisterPlugin(Plugin plugin);
+	Completable deregisterPlugin(MeshPlugin plugin);
 
 	/**
 	 * Find the plugin with the given uuid and return it.
@@ -56,7 +56,7 @@ public interface PluginManager {
 	 * @param uuid
 	 * @return
 	 */
-	Plugin getPlugin(String uuid);
+	MeshPlugin getPlugin(String uuid);
 
 	/**
 	 * Deploy the plugin with the given service name.
@@ -71,7 +71,7 @@ public interface PluginManager {
 	 * 
 	 * @return
 	 */
-	Map<String, Plugin> getPlugins();
+	Map<String, MeshPlugin> getPlugins();
 
 	/**
 	 * Undeploy and de-register the plugin with the given uuid.
@@ -87,7 +87,7 @@ public interface PluginManager {
 	 * @param plugin
 	 * @return
 	 */
-	Completable validate(Plugin plugin);
+	Completable validate(MeshPlugin plugin);
 
 	/**
 	 * Stop the manager and undeploy all currently deployed plugins.

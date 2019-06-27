@@ -19,6 +19,7 @@ public class PluginConfigTest {
 
 	public static String PLUGIN_DIR = "target/plugins" + System.currentTimeMillis();
 
+
 	@BeforeClass
 	public static void setupMeshOptions() {
 		MeshOptions options = new MeshOptions();
@@ -28,21 +29,21 @@ public class PluginConfigTest {
 	
 	@Before
 	public void cleanConfigFiles() {		
-		DummyPlugin plugin = new DummyPlugin();
+		DummyPlugin plugin = new DummyPlugin(null);
 		plugin.getConfigFile().delete();
 		plugin.getLocalConfigFile().delete();
 	}
 
 	@Test
 	public void testMissingConfig() throws Exception {
-		DummyPlugin plugin = new DummyPlugin();
+		DummyPlugin plugin = new DummyPlugin(null);
 		assertNull(plugin.readConfig(DummyPluginConfig.class));
 	}
 
 	@Test
 	public void testWriteConfig() throws Exception {
 
-		DummyPlugin plugin = new DummyPlugin();
+		DummyPlugin plugin = new DummyPlugin(null);
 
 		DummyPluginConfig config = new DummyPluginConfig();
 		config.setName("test");
@@ -57,7 +58,7 @@ public class PluginConfigTest {
 
 	@Test
 	public void testReadConfigOverride() throws FileNotFoundException, IOException {
-		DummyPlugin plugin = new DummyPlugin();
+		DummyPlugin plugin = new DummyPlugin(null);
 		
 		DummyPluginConfig config = new DummyPluginConfig();
 		config.setName("local");
