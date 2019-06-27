@@ -17,6 +17,7 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 
+import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
 import io.vertx.core.json.JsonObject;
@@ -26,12 +27,12 @@ public class SearchProviderModule {
 
 	@Provides
 	@Singleton
-	public static SearchProvider searchProvider(@Nullable SearchProviderType type, MeshOptions options, ElasticSearchProvider elasticsearchProvider) {
+	public static SearchProvider searchProvider(@Nullable SearchProviderType type, MeshOptions options, Lazy<ElasticSearchProvider> elasticsearchProvider) {
 		if (type == null) {
 			if (options.getSearchOptions().getUrl() == null) {
 				return new DevNullSearchProvider();
 			} else {
-				return elasticsearchProvider;
+				return elasticsearchProvider.get();
 			}
 		}
 		switch (type) {
@@ -41,11 +42,12 @@ public class SearchProviderModule {
 			return new TrackingSearchProvider();
 		case ELASTICSEARCH:
 		default:
-			return elasticsearchProvider;
+			return elasticsearchProvider.get();
 		}
 	}
 
 	@Provides
+	@Singleton
 	public static ElasticsearchClient<JsonObject> searchClient(MeshOptions options) {
 
 		ElasticSearchOptions searchOptions = options.getSearchOptions();
@@ -53,7 +55,7 @@ public class SearchProviderModule {
 		try {
 			url = new URL(searchOptions.getUrl());
 		} catch (MalformedURLException e) {
-			throw new RuntimeException("Invalid search provider url", e);
+			throw new RuntimeException("Invalid search provider url {" + searchOptions.getUrl() + "}", e);
 		}
 		int port = url.getPort();
 		String proto = url.getProtocol();
