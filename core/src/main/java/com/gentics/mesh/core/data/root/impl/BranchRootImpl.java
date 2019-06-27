@@ -53,7 +53,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 
 	@Override
 	public Project getProject() {
-		return in(HAS_BRANCH_ROOT, ProjectImpl.class).nextOrNull();
+		return in(HAS_BRANCH_ROOT, ProjectImpl.class).next();
 	}
 
 	@Override

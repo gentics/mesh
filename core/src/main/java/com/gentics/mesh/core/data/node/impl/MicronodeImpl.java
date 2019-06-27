@@ -101,7 +101,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public MicroschemaContainerVersion getSchemaContainerVersion() {
-		return out(HAS_MICROSCHEMA_CONTAINER, MicroschemaContainerVersionImpl.class).nextOrNull();
+		return out(HAS_MICROSCHEMA_CONTAINER, MicroschemaContainerVersionImpl.class).next();
 	}
 
 	@Override
