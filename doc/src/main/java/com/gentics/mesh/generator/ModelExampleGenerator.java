@@ -12,7 +12,7 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperatio
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
 
@@ -99,7 +99,7 @@ public class ModelExampleGenerator extends AbstractGenerator {
 	private void writeYml(Object object, String filename) throws JsonProcessingException, IOException {
 		File outputFile = new File(outputFolder, filename);
 		ObjectMapper ymlMapper = OptionsLoader.getYAMLMapper();
-		FileUtils.writeStringToFile(outputFile, ymlMapper.writeValueAsString(object), Charset.defaultCharset(), false);
+		FileUtils.writeStringToFile(outputFile, ymlMapper.writeValueAsString(object), StandardCharsets.UTF_8, false);
 		System.out.println("Wrote: " + outputFile.getAbsolutePath());
 	}
 
@@ -107,7 +107,7 @@ public class ModelExampleGenerator extends AbstractGenerator {
 		File outputFile = new File(outputFolder, filename);
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.setSerializationInclusion(Include.NON_NULL);
-		FileUtils.writeStringToFile(outputFile, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(object), Charset.defaultCharset(), false);
+		FileUtils.writeStringToFile(outputFile, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(object), StandardCharsets.UTF_8, false);
 		System.out.println("Wrote: " + outputFile.getAbsolutePath());
 
 	}

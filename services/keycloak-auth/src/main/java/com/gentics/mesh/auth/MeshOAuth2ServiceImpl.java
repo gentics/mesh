@@ -7,7 +7,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -102,7 +102,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		File scriptFile = new File(path);
 		if (scriptFile.exists()) {
 			try {
-				return FileUtils.readFileToString(scriptFile, Charset.defaultCharset());
+				return FileUtils.readFileToString(scriptFile, StandardCharsets.UTF_8);
 			} catch (IOException e) {
 				throw error(INTERNAL_SERVER_ERROR, "oauth_mapper_file_not_readable", e);
 			}

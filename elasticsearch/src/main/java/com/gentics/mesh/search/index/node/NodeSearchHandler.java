@@ -16,6 +16,7 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -36,7 +37,6 @@ import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.impl.SearchClient;
 import com.gentics.mesh.search.index.AbstractSearchHandler;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -77,8 +77,8 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 	 */
 	public Page<? extends NodeContent> handleContainerSearch(InternalActionContext ac, String query, PagingParameters pagingInfo,
 		GraphPermission... permissions) throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
-		SearchClient client = searchProvider.getClient();
-		if (client==null) {
+		ElasticsearchClient<JsonObject> client = searchProvider.getClient();
+		if (client == null) {
 			throw error(HttpResponseStatus.SERVICE_UNAVAILABLE, "search_error_elasticsearch_not_available");
 		}
 		if (log.isDebugEnabled()) {
@@ -142,7 +142,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 
 					ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 					Language language = boot.languageRoot().findByLanguageTag(languageTag);
-					if (language== null) {
+					if (language == null) {
 						log.warn("Could not find language {" + languageTag + "}");
 						totalCount--;
 						continue;

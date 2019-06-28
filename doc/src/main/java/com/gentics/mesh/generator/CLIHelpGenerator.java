@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.io.FileUtils;
@@ -30,7 +30,7 @@ public class CLIHelpGenerator extends AbstractGenerator {
 		pw.flush();
 		File outputFile = new File(outputFolder, "mesh-cli-help.txt");
 		String text = pw.toString();
-		FileUtils.writeStringToFile(outputFile, text, Charset.defaultCharset(), false);
+		FileUtils.writeStringToFile(outputFile, text, StandardCharsets.UTF_8, false);
 	}
 
 }

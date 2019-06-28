@@ -9,7 +9,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Ignore;
@@ -21,10 +21,10 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
-import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestContext;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -167,7 +167,7 @@ public class OAuth2KeycloakTest extends AbstractMeshTest {
 	}
 
 	protected JsonObject loadJson(String path) throws IOException {
-		return new JsonObject(IOUtils.toString(getClass().getResource(path), Charset.defaultCharset()));
+		return new JsonObject(IOUtils.toString(getClass().getResource(path), StandardCharsets.UTF_8));
 	}
 
 	private JsonObject loginKeycloak() throws IOException {

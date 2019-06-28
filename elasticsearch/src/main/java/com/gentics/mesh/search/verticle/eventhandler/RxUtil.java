@@ -1,16 +1,16 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
-import com.gentics.mesh.search.impl.SearchClient;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.LongStream;
+
+import com.gentics.elasticsearch.client.ElasticsearchClient;
+
 import io.reactivex.Flowable;
 import io.reactivex.functions.Function;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import java.time.Duration;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.LongStream;
-
 
 public final class RxUtil {
 	private static final Logger log = LoggerFactory.getLogger(RxUtil.class);
@@ -20,8 +20,8 @@ public final class RxUtil {
 	}
 
 	/**
-	 * Executes a search request to elasticsearch with the scrolling option. Then continues the scroll and fetches all
-	 * documents from the request and returns them in the flow.
+	 * Executes a search request to elasticsearch with the scrolling option. Then continues the scroll and fetches all documents from the request and returns
+	 * them in the flow.
 	 *
 	 * @param client
 	 * @param query
@@ -29,19 +29,19 @@ public final class RxUtil {
 	 * @param indices
 	 * @return
 	 */
-	public static Flowable<JsonObject> scrollAll(SearchClient client, JsonObject query, String scrollAge, String... indices) {
+	public static Flowable<JsonObject> scrollAll(ElasticsearchClient<JsonObject> client, JsonObject query, String scrollAge, String... indices) {
 		return client.searchScroll(query, scrollAge, indices).async()
 			.flatMapPublisher(continueScroll(client, scrollAge));
 	}
 
-	private static Function<JsonObject, Flowable<JsonObject>> continueScroll(SearchClient client, String scrollAge) {
+	private static Function<JsonObject, Flowable<JsonObject>> continueScroll(ElasticsearchClient<JsonObject> client, String scrollAge) {
 		return response -> {
 			String scrollId = response.getString("_scroll_id");
 			if (response.getJsonObject("hits").getJsonArray("hits").isEmpty()) {
 				return client.clearScroll(scrollId).async().toCompletable()
 					.andThen(Flowable.just(response));
 			} else {
-				return client.scroll(scrollId, scrollAge).async()
+				return client.scroll(scrollAge, scrollId).async()
 					.flatMapPublisher(continueScroll(client, scrollAge))
 					.startWith(response);
 			}
@@ -51,8 +51,7 @@ public final class RxUtil {
 	/**
 	 * To be used with {@link Flowable#retryWhen(Function)}.
 	 *
-	 * Resubscribes to the upstream flowable when an error occurs after the given delay. Does so indefinitely
-	 * Also logs the number of tries.
+	 * Resubscribes to the upstream flowable when an error occurs after the given delay. Does so indefinitely Also logs the number of tries.
 	 *
 	 * @param delay
 	 * @return
@@ -61,8 +60,8 @@ public final class RxUtil {
 		return attempts -> attempts
 			.zipWith(
 				LongStream.iterate(1, i -> i + 1)::iterator,
-				(n, i) -> i
-			).doOnNext(i -> log.info("Retry #{} after {}ms", i, delay.toMillis()))
+				(n, i) -> i)
+			.doOnNext(i -> log.info("Retry #{} after {}ms", i, delay.toMillis()))
 			.delay(delay.toMillis(), TimeUnit.MILLISECONDS);
 	}
 }

@@ -26,6 +26,10 @@ include::content/docs/variables.adoc-include[]
 [[v0.36.2]]
 == 0.36.2 (TBD)
 
+icon:check[] Search: Encoding issues which happen on systems which were not using `UTF-8` as default locale have been fixed by updating the underlying Elasticsearch client. link:https://github.com/gentics/mesh/issues/498[498]
+
+icon:plus[] Search: It is now possible to use encrypted and authenticated connections between Gentics Mesh and Elasticsearch. New settings and environment variables have been added. Details can be found in the link:{{< relref "elasticsearch.asciidoc" >}}#_security[Elasticsearch documentation] https://github.com/gentics/mesh/issues/759[#759]
+
 icon:plus[] OrientDB: The included OrientDB version has been updated to version 3.0.21
 
 icon:plus[] GraphQL: You can now track ingoing node references. See the link:{{< relref "graphql.asciidoc" >}}#_loading_ingoing_references[example] in the documentation.

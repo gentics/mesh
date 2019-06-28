@@ -3,9 +3,9 @@ package com.gentics.mesh.search;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
-import com.gentics.mesh.search.impl.SearchClient;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -20,7 +20,7 @@ public class ScrollingIterator implements Iterator<JsonObject> {
 
 	private Iterator<JsonObject> currentIterator;
 	private JsonObject currentResponse;
-	private SearchClient client;
+	private ElasticsearchClient<JsonObject> client;
 
 	/**
 	 * Create a new iterator.
@@ -30,7 +30,7 @@ public class ScrollingIterator implements Iterator<JsonObject> {
 	 * @param scrollResp
 	 *            Current scroll which will provide the initial results and the scroll reference id.
 	 */
-	public ScrollingIterator(SearchClient client, JsonObject scrollResp) {
+	public ScrollingIterator(ElasticsearchClient<JsonObject> client, JsonObject scrollResp) {
 		// TODO add type check
 		this.currentIterator = scrollResp.getJsonObject("hits").getJsonArray("hits").stream().map(o -> (JsonObject) o).iterator();
 		this.currentResponse = scrollResp;

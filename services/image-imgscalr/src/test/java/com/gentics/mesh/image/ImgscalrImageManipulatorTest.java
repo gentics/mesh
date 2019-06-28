@@ -11,7 +11,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -135,7 +135,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 	private void checkImages(ImageAction<String, Integer, Integer, String, BufferedImage, Flowable<Buffer>> action) throws JSONException,
 		IOException {
-		JSONObject json = new JSONObject(IOUtils.toString(getClass().getResourceAsStream("/pictures/images.json"), Charset.defaultCharset()));
+		JSONObject json = new JSONObject(IOUtils.toString(getClass().getResourceAsStream("/pictures/images.json"), StandardCharsets.UTF_8));
 		JSONArray array = json.getJSONArray("images");
 		for (int i = 0; i < array.length(); i++) {
 			JSONObject image = array.getJSONObject(i);

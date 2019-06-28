@@ -182,15 +182,7 @@ include::content/docs/examples/models/mesh-config.example.yml[]
 
 === General Settings
 
-[options="header"]
-|======
-| Configuration            | Type   | Default  | Description
-| ```updateCheck```        | Flag   | true     | An update check to the Gentics Mesh update server will be invoked during startup if this flag is set to true.
-| ```defaultLanguage```    | String | en       | Default language which serves as a fallback when no language has been specified within a request.
-| ```verticles```          | List   | -        | List of Vert.x java verticle classes which will be loaded during startup.
-| ```tempDirectory```      | Path   | data/tmp | Path to the main temporary filesystem directory.
-| ```languagesFilePath```  | Path   | -        | Optional path to a JSON file containing additional languages.
-|======
+include::content/docs/snippets/config/general.inc[]
 
 Example for custom languages file:
 
@@ -212,70 +204,37 @@ openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 90 -nodes
 
 === Server Options
 
-[options="header"]
-|======
-| Configuration                              | Type    | Default | Description 
-| ```httpServer.port```                      | Number  | 8080    | HTTP Port number.
-| ```httpServer.host```                      | String  | 0.0.0.0 | Host to bind mesh to
-| ```httpServer.ssl```                       | Boolean | false   | Enable or disable SSL support.
-| ```httpServer.corsAllowedOriginPattern```  | RegEx   | -       | Regex which will validate the origin CORS header.
-| ```httpServer.scorsAllowCredentials```     | Boolean | false   | Enable CORS credential support.
-| ```httpServer.enableCors```                | Boolean | false   | Enable CORS support.
-| ```httpServer.certPath```                  | Path    | -       | SSL certificate path.
-| ```httpServer.keyPath```                   | Path    | -       | SSL key path.
-|======
+include::content/docs/snippets/config/server.inc[]
 
 === Cluster Options
 
-include::content/docs/examples/cluster-options.inc[]
+include::content/docs/snippets/config/cluster.inc[]
 
 === Storage Options
 
 By default all specified directories are relative to the installation directory.
 
-[options="header"]
-|======
-| Configuration                   | Type    | Default      | Description
-| ```storage.directory```         | Path    | data/graphdb | Path to the graph database storage location.
-| ```storage.backupDirectory```   | Path    | data/backup  | Backup directory.
-| ```storage.exportDirectory```   | Path    | data/export  | Export directory.
-| ```storage.startServer```       | Boolean | false        | Flag that indicates whether the graph database server component should be started. By default only an embedded graph database is used which does not start a graph server.
-| ```storage.parameters```        | JSON    | -            | Additional JSON parameters that will be passed on to the used graph database implementation.
-|======
+include::content/docs/snippets/config/storage.inc[]
 
 === Search Options
 
-[options="header"]
-|======
-| Configuration                  | Type       | Default                 | Description
-| ```search.url```               | String     | http://localhost:9200   | URL to the Elasticsearch server.
-| ```search.timeout```           | Number     | 3000                    | Timeout for interactions with the search server.
-| ```search.startEmbedded```     | Boolean    | true                    | Flag that is used to enable or disable the automatic startup and handling of the embedded Elasticsearch server.
-| ```search.embeddedArguments``` | String     | Default JVM Arguments   | Set the JVM arguments for the embedded Elasticsearch server process.
-|======
+include::content/docs/snippets/config/search.inc[]
 
 === Upload Options
 
-[options="header"]
-|======
-| Configuration               | Type   | Default               | Description
-| ```upload.byteLimit```      | Number | `262144000` (250 MB)  | Upload limit in bytes.
-| ```upload.directory```      | Path   | `data/binaryFiles`    | Filesystem directory for uploaded binary data.
-| ```upload.tempDirectory```  | Path   | `data/tmp/file-uploads` | Temporary directory for uploaded binary data. Finished files will be moved to the upload directory.
-|======
+include::content/docs/snippets/config/upload.inc[]
 
 === Security Options
 
-[options="header"]
-|======
-| Configuration                        | Type    | Default                 | Description
-| ```security.tokenExpirationTime```   | Number  | `3600` (1h)             | The JWT expiration timeout in seconds.
-| ```security.keystorePath```          | Path    | `config/keystore.jceks` | Path to Java keystore file.
-| ```security.keystorePassword```      | String  | -                       | Password for the Java keystore file.
-| ```security.algorithm```             | String  | `HS256`                 | Hashing algorithm used to sign, verify and generate tokens.
-| ```security.enableAnonymousAccess``` | Boolean | `true`                  | Flag to be used to enable the anonymous access feature.
-|======
+include::content/docs/snippets/config/security.inc[]
 
+=== Monitoring Options
+
+include::content/docs/snippets/config/monitoring.inc[]
+
+=== Image Options
+
+include::content/docs/snippets/config/image.inc[]
 
 === Cache Options
 

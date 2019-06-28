@@ -1,5 +1,27 @@
 package com.gentics.mesh.search.index;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapError;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapToMeshError;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
+
+import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.madl.tx.Tx;
@@ -27,7 +49,6 @@ import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.SearchHandler;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
-import com.gentics.mesh.search.impl.SearchClient;
 import com.gentics.mesh.util.Tuple;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -38,25 +59,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Supplier;
-
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapError;
-import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapToMeshError;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
 /**
  * Abstract implementation for a mesh search handler.
@@ -146,7 +148,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		}
 
 		awaitSync(ac).andThen(Single.defer(() -> {
-			SearchClient client = searchProvider.getClient();
+			ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 			String searchQuery = ac.getBodyAsString();
 			if (log.isDebugEnabled()) {
 				log.debug("Invoking search with query {" + searchQuery + "}");
@@ -160,7 +162,8 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			}
 
 			JsonObject queryOption = new JsonObject();
-			queryOption.put("index", StringUtils.join(indices.stream().map(i -> searchProvider.installationPrefix() + i).toArray(String[]::new), ","));
+			queryOption.put("index",
+				StringUtils.join(indices.stream().map(i -> searchProvider.installationPrefix() + i).toArray(String[]::new), ","));
 			queryOption.put("search_type", "dfs_query_then_fetch");
 			log.debug("Using options {" + queryOption.encodePrettily() + "}");
 
@@ -212,7 +215,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		RL listResponse = classOfRL.newInstance();
 
 		awaitSync(ac).andThen(Single.defer(() -> {
-			SearchClient client = searchProvider.getClient();
+			ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 			String searchQuery = ac.getBodyAsString();
 			if (log.isDebugEnabled()) {
 				log.debug("Invoking search with query {" + searchQuery + "} for {" + classOfRL.getName() + "}");
@@ -231,7 +234,8 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			}
 
 			JsonObject queryOption = new JsonObject();
-			queryOption.put("index", StringUtils.join(indices.stream().map(i -> searchProvider.installationPrefix() + i).toArray(String[]::new), ","));
+			queryOption.put("index",
+				StringUtils.join(indices.stream().map(i -> searchProvider.installationPrefix() + i).toArray(String[]::new), ","));
 			queryOption.put("search_type", "dfs_query_then_fetch");
 			log.debug("Using options {" + queryOption.encodePrettily() + "}");
 
@@ -357,7 +361,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	@Override
 	public Page<? extends T> query(InternalActionContext ac, String query, PagingParameters pagingInfo, GraphPermission... permissions)
 		throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
-		SearchClient client = searchProvider.getClient();
+		ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + query + "} for {" + indexHandler.getElementClass().getName() + "}");
 		}

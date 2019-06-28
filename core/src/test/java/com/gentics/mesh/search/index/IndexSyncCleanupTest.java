@@ -4,7 +4,8 @@ import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_FINISHED;
 import static com.gentics.mesh.test.ClientHelper.call;
 /**
  * Test that bogus indices will be detected and removed during index sync operation.
- */import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+ */
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Project;
@@ -26,12 +28,12 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
-import com.gentics.mesh.search.impl.SearchClient;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
+
 @MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.FULL, startServer = true)
 public class IndexSyncCleanupTest extends AbstractMeshTest {
 
@@ -94,7 +96,7 @@ public class IndexSyncCleanupTest extends AbstractMeshTest {
 	}
 
 	private void createThirdPartyIndex(String name) throws HttpErrorException {
-		SearchClient searchClient = searchProvider().getClient();
+		ElasticsearchClient<JsonObject> searchClient = searchProvider().getClient();
 		JsonObject response = searchClient.createIndex(name, new JsonObject()).sync();
 		assertTrue(response.getBoolean("acknowledged"));
 	}
@@ -104,7 +106,7 @@ public class IndexSyncCleanupTest extends AbstractMeshTest {
 	}
 
 	public Set<String> indices() throws HttpErrorException {
-		SearchClient searchClient = searchProvider().getClient();
+		ElasticsearchClient<JsonObject> searchClient = searchProvider().getClient();
 		JsonObject indicesAfter = searchClient.readIndex("*").sync();
 		return indicesAfter.fieldNames();
 	}

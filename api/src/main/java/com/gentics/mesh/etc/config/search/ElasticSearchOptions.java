@@ -33,7 +33,14 @@ public class ElasticSearchOptions implements Option {
 
 	public static final String DEFAULT_ARGS = "-Xms1g -Xmx1g -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -client -Xss1m -Djava.awt.headless=true -Dfile.encoding=UTF-8 -Djna.nosys=true -XX:-OmitStackTraceInFastThrow -Dio.netty.noUnsafe=true -Dio.netty.noKeySetOptimization=true -Dio.netty.recycler.maxCapacityPerThread=0 -Dlog4j.shutdownHookEnabled=false -Dlog4j2.disable.jmx=true -XX:+HeapDumpOnOutOfMemoryError";
 
+	public static final boolean DEFAULT_HOSTNAME_VERIFICATION = true;
+
 	public static final String MESH_ELASTICSEARCH_URL_ENV = "MESH_ELASTICSEARCH_URL";
+	public static final String MESH_ELASTICSEARCH_USERNAME_ENV = "MESH_ELASTICSEARCH_USERNAME";
+	public static final String MESH_ELASTICSEARCH_PASSWORD_ENV = "MESH_ELASTICSEARCH_PASSWORD";
+	public static final String MESH_ELASTICSEARCH_CERT_PATH_ENV = "MESH_ELASTICSEARCH_CERT_PATH";
+	public static final String MESH_ELASTICSEARCH_CA_PATH_ENV = "MESH_ELASTICSEARCH_CA_PATH";
+
 	public static final String MESH_ELASTICSEARCH_TIMEOUT_ENV = "MESH_ELASTICSEARCH_TIMEOUT";
 	public static final String MESH_ELASTICSEARCH_STARTUP_TIMEOUT_ENV = "MESH_ELASTICSEARCH_STARTUP_TIMEOUT";
 	public static final String MESH_ELASTICSEARCH_START_EMBEDDED_ENV = "MESH_ELASTICSEARCH_START_EMBEDDED";
@@ -44,11 +51,37 @@ public class ElasticSearchOptions implements Option {
 	public static final String MESH_ELASTICSEARCH_IDLE_DEBOUNCE_TIME_ENV = "MESH_ELASTICSEARCH_IDLE_DEBOUNCE_TIME";
 	public static final String MESH_ELASTICSEARCH_RETRY_INTERVAL_ENV = "MESH_ELASTICSEARCH_RETRY_INTERVAL";
 	public static final String MESH_ELASTICSEARCH_WAIT_FOR_IDLE_ENV = "MESH_ELASTICSEARCH_WAIT_FOR_IDLE";
+	public static final String MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION_ENV = "MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Elasticsearch connection url to be used. Set this setting to null will disable the Elasticsearch support.")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_URL_ENV, description = "Override the configured elasticsearch server url. The value can be set to null in order to disable the Elasticsearch support.")
 	private String url = DEFAULT_URL;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Username to be used for Elasticsearch authentication.")
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_USERNAME_ENV, description = "Override the configured Elasticsearch connection username.")
+	private String username;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Password to be used for Elasticsearch authentication.")
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_PASSWORD_ENV, description = "Override the configured Elasticsearch connection password.")
+	private String password;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Path to the trusted server certificate (PEM format). This setting can be used when the Elasticsearch server is using a self-signed certificate which would otherwise not be trusted.")
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_CERT_PATH_ENV, description = "Override the configured trusted server certificate.")
+	private String certPath;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Path to the trusted common authority certificate (PEM format)")
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_CA_PATH_ENV, description = "Override the configured common authority certificate path.")
+	private String caPath;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Flag which controls whether hostname verification should be enabled. Default: " + DEFAULT_HOSTNAME_VERIFICATION)
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION_ENV, description = "Override the configured hostname verification flag.")
+	private boolean hostnameVerification = DEFAULT_HOSTNAME_VERIFICATION;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Timeout for Elasticsearch operations. Default: " + DEFAULT_TIMEOUT + "ms")
@@ -154,12 +187,68 @@ public class ElasticSearchOptions implements Option {
 		return this;
 	}
 
+	/**
+	 * Return the elasticsearch connection url.
+	 * 
+	 * @return
+	 */
 	public String getUrl() {
 		return url;
 	}
 
+	/**
+	 * Set the connection url.
+	 * 
+	 * @param url
+	 * @return Fluent API
+	 */
 	public ElasticSearchOptions setUrl(String url) {
 		this.url = url;
+		return this;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public ElasticSearchOptions setUsername(String username) {
+		this.username = username;
+		return this;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public ElasticSearchOptions setPassword(String password) {
+		this.password = password;
+		return this;
+	}
+
+	public String getCertPath() {
+		return certPath;
+	}
+
+	public ElasticSearchOptions setCertPath(String certPath) {
+		this.certPath = certPath;
+		return this;
+	}
+
+	public String getCaPath() {
+		return caPath;
+	}
+
+	public ElasticSearchOptions setCaPath(String caPath) {
+		this.caPath = caPath;
+		return this;
+	}
+
+	public boolean isHostnameVerification() {
+		return hostnameVerification;
+	}
+
+	public ElasticSearchOptions setHostnameVerification(boolean hostnameVerification) {
+		this.hostnameVerification = hostnameVerification;
 		return this;
 	}
 
@@ -170,10 +259,6 @@ public class ElasticSearchOptions implements Option {
 	public ElasticSearchOptions setEmbeddedArguments(String embeddedArguments) {
 		this.embeddedArguments = embeddedArguments;
 		return this;
-	}
-
-	public void validate(MeshOptions meshOptions) {
-
 	}
 
 	public long getStartupTimeout() {
@@ -246,6 +331,10 @@ public class ElasticSearchOptions implements Option {
 	public ElasticSearchOptions setWaitForIdle(boolean waitForIdle) {
 		this.waitForIdle = waitForIdle;
 		return this;
+	}
+
+	public void validate(MeshOptions meshOptions) {
+
 	}
 
 }

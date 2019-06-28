@@ -1,5 +1,26 @@
 package com.gentics.mesh.search.impl;
 
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_CLEAR_FINISHED;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isConflictError;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isNotFoundError;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isResourceAlreadyExistsError;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
@@ -9,6 +30,7 @@ import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.search.ElasticsearchProcessManager;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.UUIDUtil;
+
 import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.CompletableSource;
@@ -24,27 +46,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import net.lingala.zip4j.exception.ZipException;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
-
-import static com.gentics.mesh.core.rest.MeshEvent.INDEX_CLEAR_FINISHED;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isConflictError;
-import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isNotFoundError;
-import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isResourceAlreadyExistsError;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-
 /**
  * Elastic search provider class which implements the {@link SearchProvider} interface.
  */
@@ -53,23 +54,24 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(ElasticSearchProvider.class);
 
-	private SearchClient client;
-
-	private MeshOptions options;
-
-	private ElasticsearchProcessManager processManager;
-
 	private final static int MAX_RETRY_ON_ERROR = 5;
 
-	private Lazy<Vertx> vertx;
+	private final MeshOptions options;
+
+	private final Lazy<Vertx> vertx;
+
+	private final ElasticsearchClient<JsonObject> client;
+
+	private ElasticsearchProcessManager processManager;
 
 	private Function<Throwable, CompletableSource> ignore404 = error -> isNotFoundError(error) ? Completable.complete()
 		: Completable.error(error);
 
 	@Inject
-	public ElasticSearchProvider(Lazy<Vertx> vertx, MeshOptions options) {
+	public ElasticSearchProvider(Lazy<Vertx> vertx, MeshOptions options, ElasticsearchClient<JsonObject>  client) {
 		this.vertx = vertx;
 		this.options = options;
+		this.client = client;
 	}
 
 	/**
@@ -89,21 +91,6 @@ public class ElasticSearchProvider implements SearchProvider {
 				log.error("Error while starting embedded Elasticsearch server.", e);
 				throw new RuntimeException("Error while starting embedded Elasticsearch server", e);
 			}
-		}
-
-		try {
-			URL url = new URL(searchOptions.getUrl());
-			int port = url.getPort();
-			String proto = url.getProtocol();
-			if ("http".equals(proto) && port == -1) {
-				port = 80;
-			}
-			if ("https".equals(proto) && port == -1) {
-				port = 443;
-			}
-			client = new SearchClient(proto, url.getHost(), port);
-		} catch (MalformedURLException e) {
-			throw error(INTERNAL_SERVER_ERROR, "Invalid search provider url", e);
 		}
 
 	}

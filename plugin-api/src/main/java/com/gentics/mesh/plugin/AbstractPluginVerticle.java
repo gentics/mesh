@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
 
@@ -60,7 +60,7 @@ public abstract class AbstractPluginVerticle extends AbstractVerticle implements
 				if (in == null) {
 					throw new RuntimeException("Could find {" + MANIFEST_FILENAME + "} file in plugin classpath.");
 				}
-				String json = IOUtils.toString(in, Charset.defaultCharset());
+				String json = IOUtils.toString(in, StandardCharsets.UTF_8);
 				manifest = JsonUtil.readValue(json, PluginManifest.class);
 				manifest.validate();
 			} catch (IOException e) {
