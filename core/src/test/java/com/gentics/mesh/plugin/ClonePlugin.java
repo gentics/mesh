@@ -2,10 +2,12 @@ package com.gentics.mesh.plugin;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.pf4j.Extension;
 import org.pf4j.PluginWrapper;
 
 import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.plugin.ext.AbstractRestExtension;
 
 import io.vertx.ext.web.Router;
 
@@ -47,19 +49,21 @@ public class ClonePlugin extends AbstractPlugin {
 		this.uuid = uuid;
 	}
 
-	@Override
-	public void registerEndpoints(Router globalRouter, Router projectRouter) {
-		globalRouter.route("/hello").handler(rc -> {
-			rc.response().end("world");
-		});
+	@Extension
+	public static class BasicRestExtension extends AbstractRestExtension {
+		@Override
+		public void registerEndpoints(Router globalRouter, Router projectRouter) {
+			globalRouter.route("/hello").handler(rc -> {
+				rc.response().end("world");
+			});
 
-		projectRouter.route("/hello").handler(rc -> {
-			rc.response().end("project");
-		});
+			projectRouter.route("/hello").handler(rc -> {
+				rc.response().end("project");
+			});
 
-		globalRouter.route("/manifest").handler(rc -> {
-			rc.response().end(JsonUtil.toJson(getManifest()));
-		});
+			globalRouter.route("/manifest").handler(rc -> {
+				rc.response().end(JsonUtil.toJson(getManifest()));
+			});
+		}
 	}
-
 }

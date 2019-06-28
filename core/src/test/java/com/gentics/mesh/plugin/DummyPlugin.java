@@ -1,8 +1,10 @@
 package com.gentics.mesh.plugin;
 
+import org.pf4j.Extension;
 import org.pf4j.PluginWrapper;
 
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.plugin.ext.AbstractRestExtension;
 
 import io.vertx.ext.web.Router;
 
@@ -15,19 +17,23 @@ public class DummyPlugin extends AbstractPlugin {
 		super(wrapper);
 	}
 
-	@Override
-	public void registerEndpoints(Router globalRouter, Router projectRouter) {
-		globalRouter.route("/hello").handler(rc -> {
-			rc.response().end("world");
-		});
+	@Extension
+	public static class BasicRestExtension extends AbstractRestExtension {
 
-		projectRouter.route("/hello").handler(rc -> {
-			rc.response().end("project");
-		});
+		@Override
+		public void registerEndpoints(Router globalRouter, Router projectRouter) {
+			globalRouter.route("/hello").handler(rc -> {
+				rc.response().end("world");
+			});
 
-		globalRouter.route("/manifest").handler(rc -> {
-			rc.response().end(JsonUtil.toJson(getManifest()));
-		});
+			projectRouter.route("/hello").handler(rc -> {
+				rc.response().end("project");
+			});
+
+			globalRouter.route("/manifest").handler(rc -> {
+				rc.response().end(JsonUtil.toJson(getManifest()));
+			});
+		}
 	}
 
 }

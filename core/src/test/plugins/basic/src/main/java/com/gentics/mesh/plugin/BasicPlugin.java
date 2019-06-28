@@ -1,6 +1,9 @@
 package com.gentics.mesh.plugin;
 
+import org.pf4j.Extension;
 import org.pf4j.PluginWrapper;
+
+import com.gentics.mesh.plugin.ext.AbstractRestExtension;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -15,22 +18,26 @@ public class BasicPlugin extends AbstractPlugin {
 		super(wrapper);
 	}
 
-	public StaticHandler staticHandler = StaticHandler.create("webroot", getClass().getClassLoader());
+	@Extension
+	public static class BasicRestExtension extends AbstractRestExtension {
 
-	@Override
-	public void registerEndpoints(Router globalRouter, Router projectRouter) {
-		log.info("Registering routes for {" + getName() + "}");
+		public StaticHandler staticHandler = StaticHandler.create("webroot", getClass().getClassLoader());
 
-		globalRouter.route("/hello").handler(rc -> {
-			rc.response().end("world");
-		});
+		@Override
+		public void registerEndpoints(Router globalRouter, Router projectRouter) {
+			log.info("Registering routes for {" + getName() + "}");
 
-		projectRouter.route("/hello").handler(rc -> {
-			rc.response().end("world-project");
-		});
+			globalRouter.route("/hello").handler(rc -> {
+				rc.response().end("world");
+			});
 
-		globalRouter.route("/static/*").handler(staticHandler);
+			projectRouter.route("/hello").handler(rc -> {
+				rc.response().end("world-project");
+			});
 
+			globalRouter.route("/static/*").handler(staticHandler);
+
+		}
 	}
 
 }

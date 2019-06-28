@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
+import org.pf4j.Extension;
 import org.pf4j.Plugin;
 import org.pf4j.PluginWrapper;
 
@@ -15,7 +16,9 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.plugin.ext.RestExtension;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.test.pf4j.api.Greeting;
 
 import io.reactivex.Completable;
 import io.vertx.core.Handler;
@@ -207,4 +210,5 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 	protected File getLocalConfigFile() {
 		return new File(getPluginBaseDir(), "config.local.yml");
 	}
+
 }
