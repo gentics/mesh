@@ -19,7 +19,7 @@ public class BasicPlugin extends AbstractPlugin {
 	}
 
 	@Extension
-	public static class BasicRestExtension extends AbstractRestExtension {
+	public class BasicRestExtension extends AbstractRestExtension {
 
 		public StaticHandler staticHandler = StaticHandler.create("webroot", getClass().getClassLoader());
 

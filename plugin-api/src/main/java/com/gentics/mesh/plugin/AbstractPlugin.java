@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-import org.pf4j.Extension;
 import org.pf4j.Plugin;
 import org.pf4j.PluginWrapper;
 
@@ -16,16 +15,10 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.plugin.ext.RestExtension;
-import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.test.pf4j.api.Greeting;
 
 import io.reactivex.Completable;
-import io.vertx.core.Handler;
-import io.vertx.core.ServiceHelper;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 
 /**
  * Abstract implementation for a Gentics Mesh plugin verticle.
@@ -33,8 +26,6 @@ import io.vertx.ext.web.RoutingContext;
 public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 
 	private static String MANIFEST_FILENAME = "mesh-plugin.json";
-
-	private static PluginManager manager = ServiceHelper.loadFactory(PluginManager.class);
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractPlugin.class);
 
@@ -44,10 +35,11 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 
 	private PluginManifest manifest;
 
-	private MeshRestClient adminClient;
+	private static PluginWrapper wrapper;
 
 	public AbstractPlugin(PluginWrapper wrapper) {
 		super(wrapper);
+		AbstractPlugin.wrapper = wrapper;
 	}
 
 	/**
@@ -76,13 +68,6 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 			}
 		}
 		return manifest;
-	}
-
-	@Override
-	public MeshRestClient adminClient() {
-		String token = manager.adminToken();
-		adminClient.setAPIKey(token);
-		return adminClient;
 	}
 
 	@Override

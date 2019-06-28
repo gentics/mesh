@@ -26,18 +26,18 @@ public class Basic2Plugin extends AbstractPlugin {
 		@Override
 		public void registerEndpoints(Router globalRouter, Router projectRouter) {
 			log.info("Registering routes for {" + getName() + "}");
-			
+
 			globalRouter.route("/hello").handler(rc -> {
 				rc.response().end("world2");
 			});
-			
+
 			projectRouter.route("/hello").handler(rc -> {
 				rc.response().end("world2-project");
 			});
-			
-			globalRouter.route("/static/*").handler(staticHandler);
-			
-		}
 
+			globalRouter.route("/static/*").handler(staticHandler);
+
+		}
+	}
 
 }

@@ -10,8 +10,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.pf4j.DefaultPluginManager;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.core.data.User;
@@ -20,6 +18,8 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.plugin.ext.RestExtension;
+import com.gentics.mesh.plugin.pf4j.MeshPluginManager;
 import com.gentics.mesh.router.PluginRouter;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.util.UUIDUtil;
@@ -39,7 +39,7 @@ public class PluginManagerImpl implements PluginManager {
 
 	private static Set<String> syncSet = Collections.synchronizedSet(new HashSet<>());
 
-	private static org.pf4j.PluginManager pluginManager = new DefaultPluginManager();
+	private static org.pf4j.PluginManager pluginManager = new MeshPluginManager();
 
 	public PluginManagerImpl() {
 	}
@@ -179,7 +179,9 @@ public class PluginManagerImpl implements PluginManager {
 
 					Router globalRouter = globalPluginRouter.getRouter(apiName);
 					Router projectRouter = projectPluginRouter.getRouter(apiName);
-					plugin.registerEndpoints(globalRouter, projectRouter);
+					for (RestExtension extension : pluginManager.getExtensions(RestExtension.class)) {
+						extension.registerEndpoints(globalRouter, projectRouter);
+					}
 				}
 				// deployments.put(plugin.deploymentID(), plugin);
 				sub.onComplete();

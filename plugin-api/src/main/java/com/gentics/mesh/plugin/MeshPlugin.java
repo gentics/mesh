@@ -103,13 +103,6 @@ public interface MeshPlugin {
 	<T> T readConfig(Class<T> clazz) throws FileNotFoundException, IOException;
 
 	/**
-	 * Return a mesh client which will utilize the admin user.
-	 * 
-	 * @return
-	 */
-	MeshRestClient adminClient();
-
-	/**
 	 * Return the rx java variant of Vert.x
 	 * 
 	 * @return RX Java variant Vert.x Instance
