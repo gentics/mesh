@@ -1,43 +1,38 @@
 package com.gentics.mesh.plugin;
 
-import org.pf4j.Extension;
 import org.pf4j.PluginWrapper;
 
-import com.gentics.mesh.plugin.ext.AbstractRestExtension;
+import com.gentics.mesh.plugin.env.PluginEnvironment;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 
-public class BasicPlugin extends AbstractPlugin {
+public class BasicPlugin extends AbstractPlugin implements RestPlugin {
 
 	private static final Logger log = LoggerFactory.getLogger(BasicPlugin.class);
 
-	public BasicPlugin(PluginWrapper wrapper) {
-		super(wrapper);
+	public BasicPlugin(PluginWrapper wrapper, PluginEnvironment env) {
+		super(wrapper, env);
 	}
 
-	@Extension
-	public class BasicRestExtension extends AbstractRestExtension {
+	public StaticHandler staticHandler = StaticHandler.create("webroot", getClass().getClassLoader());
 
-		public StaticHandler staticHandler = StaticHandler.create("webroot", getClass().getClassLoader());
+	@Override
+	public void registerEndpoints(Router globalRouter, Router projectRouter) {
+		log.info("Registering routes for {" + getName() + "}");
 
-		@Override
-		public void registerEndpoints(Router globalRouter, Router projectRouter) {
-			log.info("Registering routes for {" + getName() + "}");
+		globalRouter.route("/hello").handler(rc -> {
+			rc.response().end("world");
+		});
 
-			globalRouter.route("/hello").handler(rc -> {
-				rc.response().end("world");
-			});
+		projectRouter.route("/hello").handler(rc -> {
+			rc.response().end("world-project");
+		});
 
-			projectRouter.route("/hello").handler(rc -> {
-				rc.response().end("world-project");
-			});
+		globalRouter.route("/static/*").handler(staticHandler);
 
-			globalRouter.route("/static/*").handler(staticHandler);
-
-		}
 	}
 
 }

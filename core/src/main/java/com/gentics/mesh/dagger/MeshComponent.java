@@ -27,6 +27,8 @@ import com.gentics.mesh.dagger.module.SearchProviderModule;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.plugin.env.PluginEnvironment;
+import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.router.EndpointRegistry;
@@ -129,6 +131,10 @@ public interface MeshComponent {
 	ProjectBranchNameCacheImpl branchCache();
 
 	ProjectNameCacheImpl projectNameCache();
+
+	PluginEnvironment pluginEnv();
+
+	MeshPluginManager pluginManager();
 
 	@Component.Builder
 	interface Builder {

@@ -3,6 +3,7 @@ package com.gentics.mesh.plugin;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -11,14 +12,15 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.pf4j.PluginWrapper;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.plugin.env.PluginEnvironment;
 
 public class PluginConfigTest {
 
 	public static String PLUGIN_DIR = "target/plugins" + System.currentTimeMillis();
-
 
 	@BeforeClass
 	public static void setupMeshOptions() {
@@ -26,25 +28,29 @@ public class PluginConfigTest {
 		options.setPluginDirectory(PLUGIN_DIR);
 		Mesh.mesh(options);
 	}
-	
+
 	@Before
-	public void cleanConfigFiles() {		
-		DummyPlugin plugin = new DummyPlugin(null);
+	public void cleanConfigFiles() {
+		PluginWrapper wrapper = mock(PluginWrapper.class);
+		PluginEnvironment env = mock(PluginEnvironment.class);
+		DummyPlugin plugin = new DummyPlugin(wrapper, env);
 		plugin.getConfigFile().delete();
 		plugin.getLocalConfigFile().delete();
 	}
 
 	@Test
 	public void testMissingConfig() throws Exception {
-		DummyPlugin plugin = new DummyPlugin(null);
+		PluginWrapper wrapper = mock(PluginWrapper.class);
+		PluginEnvironment env = mock(PluginEnvironment.class);
+		DummyPlugin plugin = new DummyPlugin(wrapper, env);
 		assertNull(plugin.readConfig(DummyPluginConfig.class));
 	}
 
 	@Test
 	public void testWriteConfig() throws Exception {
-
-		DummyPlugin plugin = new DummyPlugin(null);
-
+		PluginWrapper wrapper = mock(PluginWrapper.class);
+		PluginEnvironment env = mock(PluginEnvironment.class);
+		DummyPlugin plugin = new DummyPlugin(wrapper, env);
 		DummyPluginConfig config = new DummyPluginConfig();
 		config.setName("test");
 
@@ -54,26 +60,26 @@ public class PluginConfigTest {
 		assertEquals(PLUGIN_DIR + "/dummy/config.yml", plugin.getConfigFile().getPath());
 		assertEquals(PLUGIN_DIR + "/dummy/storage", plugin.getStorageDir().getPath());
 	}
-	
 
 	@Test
 	public void testReadConfigOverride() throws FileNotFoundException, IOException {
-		DummyPlugin plugin = new DummyPlugin(null);
-		
+		PluginWrapper wrapper = mock(PluginWrapper.class);
+		PluginEnvironment env = mock(PluginEnvironment.class);
+		DummyPlugin plugin = new DummyPlugin(wrapper, env);
+
 		DummyPluginConfig config = new DummyPluginConfig();
 		config.setName("local");
-		
+
 		plugin.writeConfig(config);
 		assertTrue(plugin.getConfigFile().exists());
-		
+
 		FileUtils.copyFile(plugin.getConfigFile(), plugin.getLocalConfigFile());
 		assertTrue(plugin.getLocalConfigFile().exists());
-		
-		
+
 		config.setName("original");
 		plugin.writeConfig(config);
 		assertTrue(plugin.getConfigFile().exists());
-		
+
 		config = plugin.readConfig(DummyPluginConfig.class);
 		assertEquals("local", config.getName());
 

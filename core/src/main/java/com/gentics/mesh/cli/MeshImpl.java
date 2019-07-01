@@ -24,11 +24,9 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
-import com.gentics.mesh.plugin.PluginManager;
 import com.gentics.mesh.util.VersionUtil;
 
 import io.vertx.core.MultiMap;
-import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
@@ -56,8 +54,6 @@ public class MeshImpl implements Mesh {
 	private CountDownLatch latch = new CountDownLatch(1);
 
 	private MeshStatus status = MeshStatus.STARTING;
-
-	private static PluginManager pluginManager = ServiceHelper.loadFactory(PluginManager.class);
 
 	static {
 		// Use slf4j instead of jul
@@ -341,10 +337,12 @@ public class MeshImpl implements Mesh {
 
 	@Override
 	public void shutdown() throws Exception {
+		MeshComponent meshInternal = MeshInternal.get();
+		
 		log.info("Mesh shutting down...");
 		setStatus(MeshStatus.SHUTTING_DOWN);
 		try {
-			pluginManager.stop().blockingAwait(10, TimeUnit.SECONDS);
+			meshInternal.pluginManager().stop().blockingAwait(10, TimeUnit.SECONDS);
 		} catch (Exception e) {
 			log.error("One of the plugins could not be undeployed in the allotted time.", e);
 		}
@@ -352,13 +350,13 @@ public class MeshImpl implements Mesh {
 		if (rxVertx != null) {
 			rxVertx.rxClose().blockingAwait();
 		}
-		MeshComponent meshInternal = MeshInternal.get();
-		meshInternal.database().stop();
 		try {
 			meshInternal.searchProvider().stop();
 		} catch (Exception e) {
 			log.error("The search provider did encounter an error while stopping", e);
 		}
+		meshInternal.database().stop();
+
 		MeshFactoryImpl.clear();
 		BootstrapInitializerImpl.clearReferences();
 		deleteLock();

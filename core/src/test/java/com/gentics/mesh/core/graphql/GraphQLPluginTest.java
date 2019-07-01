@@ -11,18 +11,14 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.plugin.ClonePlugin;
-import com.gentics.mesh.plugin.PluginManager;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-import io.vertx.core.ServiceHelper;
 import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(testSize = TestSize.FULL, startServer = true)
 public class GraphQLPluginTest extends AbstractMeshTest {
-
-	private static PluginManager manager = ServiceHelper.loadFactory(PluginManager.class);
 
 	@Test
 	public void testGraphQL() throws IOException {
@@ -30,10 +26,10 @@ public class GraphQLPluginTest extends AbstractMeshTest {
 		grantAdminRole();
 
 		String uuid = "261f779ff7954d0ca60c1f10c6434f28";
-		ClonePlugin first = new ClonePlugin(null);
+		ClonePlugin first = new ClonePlugin(null, null);
 		first.getManifest();
 		first.setUuid(uuid);
-		manager.getPlugins().put(uuid, first);
+		pluginManager().getPluginsMap().put(uuid, first);
 
 		final String CLONE_PLUGIN_DEPLOYMENT_NAME = ClonePlugin.class.getCanonicalName();
 		for (int i = 0; i < 100; i++) {

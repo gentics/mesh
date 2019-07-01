@@ -3,22 +3,23 @@ package com.gentics.mesh.plugin;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 
-import org.apache.commons.io.IOUtils;
 import org.pf4j.Plugin;
+import org.pf4j.PluginDescriptor;
 import org.pf4j.PluginWrapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.plugin.env.PluginEnvironment;
+import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.reactivex.Completable;
+import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.RoutingContext;
 
 /**
  * Abstract implementation for a Gentics Mesh plugin verticle.
@@ -35,11 +36,13 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 
 	private PluginManifest manifest;
 
-	private static PluginWrapper wrapper;
+	private MeshRestClient adminClient;
 
-	public AbstractPlugin(PluginWrapper wrapper) {
+	private final PluginEnvironment env;
+
+	public AbstractPlugin(PluginWrapper wrapper, PluginEnvironment env) {
 		super(wrapper);
-		AbstractPlugin.wrapper = wrapper;
+		this.env = env;
 	}
 
 	/**
@@ -55,18 +58,16 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 
 	@Override
 	public PluginManifest getManifest() {
-		if (manifest == null) {
-			try (InputStream in = getClass().getResourceAsStream("/" + MANIFEST_FILENAME)) {
-				if (in == null) {
-					throw new RuntimeException("Could find {" + MANIFEST_FILENAME + "} file in plugin classpath.");
-				}
-				String json = IOUtils.toString(in, StandardCharsets.UTF_8);
-				manifest = JsonUtil.readValue(json, PluginManifest.class);
-				manifest.validate();
-			} catch (IOException e) {
-				throw new RuntimeException("Could not load {" + MANIFEST_FILENAME + "} file.");
-			}
-		}
+		PluginDescriptor descriptor = getWrapper().getDescriptor();
+		PluginManifest manifest = new PluginManifest();
+		manifest.setApiName(descriptor.getPluginId());
+		manifest.setDescription(descriptor.getPluginDescription());
+		manifest.setLicense(descriptor.getLicense());
+		manifest.setVersion(descriptor.getVersion());
+		//TODO how can we handle more metadata?
+		//manifest.setInception(descriptor)
+		//manifest.setAuthor(descriptor.get)
+		manifest.validate();
 		return manifest;
 	}
 
@@ -103,8 +104,6 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 		createAdminClient();
 		getPluginBaseDir().mkdirs();
 		getStorageDir().mkdirs();
-
-		manager.registerPlugin(this).blockingAwait();
 	}
 
 	@Override
@@ -123,8 +122,6 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 		if (adminClient != null) {
 			adminClient.close();
 		}
-
-		manager.deregisterPlugin(this).blockingAwait();
 	}
 
 	@Override
@@ -194,6 +191,42 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 	 */
 	protected File getLocalConfigFile() {
 		return new File(getPluginBaseDir(), "config.local.yml");
+	}
+
+	/**
+	 * Return a wrapped routing context.
+	 * 
+	 * @param rc
+	 *            Vert.x routing context
+	 * @return Wrapped context
+	 */
+	public PluginContext wrap(RoutingContext rc) {
+		return new PluginContext(rc);
+	}
+
+	@Override
+	public MeshRestClient adminClient() {
+		String token = env.adminToken();
+		adminClient.setAPIKey(token);
+		return adminClient;
+	}
+
+	/**
+	 * Return a wrapped routing context handler
+	 * 
+	 * @param handler
+	 *            Handler to be wrapped
+	 * @return Wrapped handler
+	 */
+	public Handler<RoutingContext> wrapHandler(Handler<PluginContext> handler) {
+		return rc -> handler.handle(wrap(rc));
+	}
+
+	protected void createAdminClient() {
+		MeshOptions options = Mesh.mesh().getOptions();
+		int port = options.getHttpServerOptions().getPort();
+		String host = options.getHttpServerOptions().getHost();
+		adminClient = MeshRestClient.create(host, port, false);
 	}
 
 }

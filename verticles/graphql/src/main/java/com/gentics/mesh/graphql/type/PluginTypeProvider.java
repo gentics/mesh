@@ -15,13 +15,12 @@ import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.plugin.MeshPlugin;
-import com.gentics.mesh.plugin.PluginManager;
+import com.gentics.mesh.plugin.manager.MeshPluginManager;
 
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
-import io.vertx.core.ServiceHelper;
 
 @Singleton
 public class PluginTypeProvider extends AbstractTypeProvider {
@@ -29,10 +28,11 @@ public class PluginTypeProvider extends AbstractTypeProvider {
 	public static final String PLUGIN_TYPE_NAME = "Plugin";
 	public static final String PLUGIN_PAGE_TYPE_NAME = "PluginPage";
 
-	private static PluginManager manager = ServiceHelper.loadFactory(PluginManager.class);
+	private final MeshPluginManager manager;
 
 	@Inject
-	public PluginTypeProvider() {
+	public PluginTypeProvider(MeshPluginManager manager) {
+		this.manager = manager;
 	}
 
 	public GraphQLFieldDefinition createPluginField() {
@@ -57,7 +57,7 @@ public class PluginTypeProvider extends AbstractTypeProvider {
 				if (!gc.getUser().hasAdminRole()) {
 					return new PermissionException("plugins", "Missing admin permission");
 				}
-				Map<String, MeshPlugin> deployments = manager.getPlugins();
+				Map<String, MeshPlugin> deployments = manager.getPluginsMap();
 				Page<MeshPlugin> page = new DynamicStreamPageImpl<>(deployments.values().stream(), getPagingInfo(env));
 				return page;
 			}).build();

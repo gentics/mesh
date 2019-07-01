@@ -57,12 +57,6 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<!-- Plugin Support -->
-		<dependency>
-			<groupId>org.pf4j</groupId>
-			<artifactId>pf4j</artifactId>
-		</dependency>
-
 		<!-- Common Tools -->
 		<dependency>
 			<groupId>commons-cli</groupId>

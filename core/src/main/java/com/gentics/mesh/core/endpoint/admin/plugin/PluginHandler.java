@@ -5,6 +5,7 @@ import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -14,6 +15,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import org.pf4j.Plugin;
+import org.pf4j.PluginWrapper;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.page.Page;
@@ -26,25 +29,28 @@ import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.MeshPlugin;
-import com.gentics.mesh.plugin.PluginManager;
+import com.gentics.mesh.plugin.manager.MeshPluginManager;
 
 import io.reactivex.Single;
-import io.vertx.core.ServiceHelper;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Rest API handler for plugin related tasks.
+ */
 @Singleton
 public class PluginHandler extends AbstractHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminHandler.class);
 
-	private static PluginManager manager = ServiceHelper.loadFactory(PluginManager.class);
-
 	private Database db;
 
+	private MeshPluginManager manager;
+
 	@Inject
-	public PluginHandler(Database db) {
+	public PluginHandler(Database db, MeshPluginManager manager) {
 		this.db = db;
+		this.manager = manager;
 	}
 
 	public void handleRead(InternalActionContext ac, String uuid) {
@@ -52,12 +58,17 @@ public class PluginHandler extends AbstractHandler {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			MeshPlugin plugin = manager.getPlugin(uuid);
-			if (plugin == null) {
+			PluginWrapper pluginWrapper = manager.getPlugin(uuid);
+			if (pluginWrapper == null) {
 				throw error(NOT_FOUND, "admin_plugin_error_plugin_not_found", uuid);
 			}
-			PluginResponse response = plugin.toResponse();
-			return Single.just(response);
+			Plugin plugin = pluginWrapper.getPlugin();
+			if (plugin instanceof MeshPlugin) {
+				PluginResponse response = ((MeshPlugin) plugin).toResponse();
+				return Single.just(response);
+			}
+			// TODO i18n
+			throw error(INTERNAL_SERVER_ERROR, "Found plugin wrong type");
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 	}
 
@@ -70,12 +81,18 @@ public class PluginHandler extends AbstractHandler {
 			String name = requestModel.getName();
 			return manager.deploy(name).map(deploymentId -> {
 				log.debug("Deployed plugin with deployment name {" + name + "} - Deployment Uuid {" + deploymentId + "}");
-				MeshPlugin plugin = manager.getPlugin(deploymentId);
-				if (plugin == null) {
+				PluginWrapper pluginWrapper = manager.getPlugin(deploymentId);
+				if (pluginWrapper == null) {
 					log.error("The plugin was deployed but it could not be found by the manager. It seems that the plugin registration failed.");
 					throw error(NOT_FOUND, "admin_plugin_error_plugin_not_found", deploymentId);
 				}
-				return plugin.toResponse();
+				Plugin plugin = pluginWrapper.getPlugin();
+				if (plugin instanceof MeshPlugin) {
+					PluginResponse response = ((MeshPlugin) plugin).toResponse();
+					return response;
+				}
+				// TODO i18n
+				throw error(INTERNAL_SERVER_ERROR, "Found plugin wrong type");
 			});
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 	}
@@ -99,9 +116,10 @@ public class PluginHandler extends AbstractHandler {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			Map<String, MeshPlugin> deployments = manager.getPlugins();
+			Map<String, MeshPlugin> deployments = manager.getPluginsMap();
 			PluginListResponse response = new PluginListResponse();
-			Page<PluginResponse> page = new DynamicStreamPageImpl<>(deployments.values().stream().map(MeshPlugin::toResponse), ac.getPagingParameters());
+			Page<PluginResponse> page = new DynamicStreamPageImpl<>(deployments.values().stream().map(MeshPlugin::toResponse),
+				ac.getPagingParameters());
 			page.setPaging(response);
 			response.getData().addAll(page.getWrappedList());
 			return Single.just(response);

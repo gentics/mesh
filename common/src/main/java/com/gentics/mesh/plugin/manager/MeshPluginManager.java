@@ -1,9 +1,14 @@
-package com.gentics.mesh.plugin;
+package com.gentics.mesh.plugin.manager;
 
 import java.io.File;
 import java.util.Map;
 
+import org.pf4j.Plugin;
+import org.pf4j.PluginManager;
+
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.plugin.AbstractPlugin;
+import com.gentics.mesh.plugin.MeshPlugin;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -11,7 +16,7 @@ import io.reactivex.Single;
 /**
  * The plugin manager can be used to deploy plugins and register them in Gentics Mesh.
  */
-public interface PluginManager {
+public interface MeshPluginManager extends PluginManager {
 
 	/**
 	 * Initialize the plugin manager.
@@ -24,8 +29,9 @@ public interface PluginManager {
 	 * Deploy the given plugin.
 	 * 
 	 * @param plugin
+	 * @return
 	 */
-	Single<String> deploy(MeshPlugin plugin);
+	Single<String> deploy(AbstractPlugin plugin);
 
 	/**
 	 * Deploy the plugin file.
@@ -36,42 +42,12 @@ public interface PluginManager {
 	Single<String> deploy(File file);
 
 	/**
-	 * Register the given plugin.
-	 * 
-	 * @param plugin
-	 * @return
-	 */
-	Completable registerPlugin(MeshPlugin plugin);
-
-	/**
-	 * de-register the given plugin.
-	 * 
-	 * @param plugin
-	 */
-	Completable deregisterPlugin(MeshPlugin plugin);
-
-	/**
-	 * Find the plugin with the given uuid and return it.
-	 * 
-	 * @param uuid
-	 * @return
-	 */
-	MeshPlugin getPlugin(String uuid);
-
-	/**
 	 * Deploy the plugin with the given service name.
 	 * 
 	 * @param name
 	 * @return Single which contains the plugin deployment uuid.
 	 */
 	Single<String> deploy(String name);
-
-	/**
-	 * Return a map of all deployed plugins.
-	 * 
-	 * @return
-	 */
-	Map<String, MeshPlugin> getPlugins();
 
 	/**
 	 * Undeploy and de-register the plugin with the given uuid.
@@ -102,10 +78,17 @@ public interface PluginManager {
 	Completable deployExistingPluginFiles();
 
 	/**
-	 * Return an admin API token.
+	 * Return a map of all deployed plugins.
 	 * 
 	 * @return
 	 */
-	String adminToken();
+	Map<String, MeshPlugin> getPluginsMap();
 
+	/**
+	 * Add the given plugin and register it.
+	 * 
+	 * @param plugin
+	 * @return
+	 */
+	String addPlugin(Plugin plugin);
 }

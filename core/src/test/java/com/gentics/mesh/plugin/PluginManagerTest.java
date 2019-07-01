@@ -6,6 +6,7 @@ import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,8 +17,8 @@ import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
+import org.pf4j.PluginWrapper;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -25,11 +26,11 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.twelvemonkeys.io.FileUtil;
 
-import io.vertx.core.ServiceHelper;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 import okhttp3.HttpUrl;
@@ -40,16 +41,16 @@ public class PluginManagerTest extends AbstractMeshTest {
 
 	private static final String NAME = "basic";
 
-	private static PluginManager manager = ServiceHelper.loadFactory(PluginManager.class);
-
-	private static final String DEPLOYMENT_NAME = "filesystem:target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar";
+	private static final String PLUGIN_PATH = "target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar";
 
 	public static final String PLUGIN_DIR = "target/plugins" + System.currentTimeMillis();
 
 	@Before
 	public void clearDeployments() {
+		MeshPluginManager manager = pluginManager();
+
 		// Copy the uuids to avoid concurrency issues
-		Set<String> uuids = new HashSet<>(manager.getPlugins().keySet());
+		Set<String> uuids = new HashSet<>(manager.getPluginsMap().keySet());
 		for (String uuid : uuids) {
 			manager.undeploy(uuid).blockingAwait();
 		}
@@ -62,6 +63,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 
 	@Test
 	public void testStop() {
+		MeshPluginManager manager = pluginManager();
 		int before = vertx().deploymentIDs().size();
 		final String CLONE_PLUGIN_DEPLOYMENT_NAME = ClonePlugin.class.getCanonicalName();
 		for (int i = 0; i < 100; i++) {
@@ -78,9 +80,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 	@Test
 	public void testFilesystemDeployment() throws Exception {
 		setPluginBaseDir(".");
-
-		Mesh mesh = Mesh.mesh();
-		mesh.getRxVertx().rxDeployVerticle(DEPLOYMENT_NAME).blockingGet();
+		pluginManager().deploy(PLUGIN_PATH).blockingGet();
 
 		for (int i = 0; i < 2; i++) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
@@ -96,6 +96,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartupDeployment() throws IOException {
+		MeshPluginManager manager = pluginManager();
 		setPluginBaseDir(PLUGIN_DIR);
 		FileUtil.copy(new File("target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar"), new File(PLUGIN_DIR, "plugin.jar"));
 		FileUtil.copy(new File("target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar"), new File(PLUGIN_DIR, "duplicate-plugin.jar"));
@@ -121,7 +122,8 @@ public class PluginManagerTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testPluginAuth() throws IOException {
-		MeshPlugin plugin = new ClientPlugin(null);
+		MeshPluginManager manager = pluginManager();
+		ClientPlugin plugin = new ClientPlugin(null, null);
 		manager.deploy(plugin).blockingGet();
 		JsonObject json = new JsonObject(getJSONViaClient(CURRENT_API_BASE_PATH + "/plugins/client/user"));
 		assertNotNull(json.getString("uuid"));
@@ -134,8 +136,9 @@ public class PluginManagerTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testClientAPI() throws IOException {
-		MeshPlugin plugin = new ClientPlugin(null);
-		manager.deploy(plugin).blockingGet();
+		PluginWrapper wrapper = mock(PluginWrapper.class);
+		ClientPlugin plugin = new ClientPlugin(wrapper, pluginEnv());
+		pluginManager().deploy(plugin).blockingGet();
 
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName("testabc");
@@ -175,7 +178,8 @@ public class PluginManagerTest extends AbstractMeshTest {
 
 	@Test
 	public void testJavaDeployment() throws IOException {
-		MeshPlugin plugin = new DummyPlugin(null);
+		MeshPluginManager manager = pluginManager();
+		DummyPlugin plugin = new DummyPlugin(null, null);
 		manager.deploy(plugin).blockingGet();
 		assertEquals(1, manager.getPlugins().size());
 
@@ -194,14 +198,15 @@ public class PluginManagerTest extends AbstractMeshTest {
 
 	@Test
 	public void testRedeployAfterInitFailure() {
+		MeshPluginManager manager = pluginManager();
 		try {
-			manager.deploy(new FailingPlugin(null)).blockingGet();
+			manager.deploy(new FailingPlugin(null, null)).blockingGet();
 			fail("Deployment should have failed");
 		} catch (Exception e) {
 		}
 		assertEquals(0, manager.getPlugins().size());
 
-		manager.deploy(new SucceedingPlugin(null)).blockingGet();
+		manager.deploy(new SucceedingPlugin(null, null)).blockingGet();
 		assertEquals(1, manager.getPlugins().size());
 	}
 
@@ -210,6 +215,6 @@ public class PluginManagerTest extends AbstractMeshTest {
 		pluginDir.mkdirs();
 		MeshOptions options = new MeshOptions();
 		options.setPluginDirectory(baseDir);
-		manager.init(options);
+		pluginManager().init(options);
 	}
 }

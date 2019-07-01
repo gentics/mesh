@@ -10,7 +10,6 @@ import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.reactivex.Completable;
-import io.vertx.ext.web.Router;
 
 /**
  * Interface for a Gentics Mesh plugin. After deployment a plugin needs to register itself at the plugin manager.
@@ -111,4 +110,10 @@ public interface MeshPlugin {
 		return new io.vertx.reactivex.core.Vertx(Mesh.vertx());
 	}
 
+	/**
+	 * Return a mesh client which will utilize the admin user.
+	 * 
+	 * @return
+	 */
+	MeshRestClient adminClient();
 }

@@ -2,22 +2,21 @@ package com.gentics.mesh.plugin;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.pf4j.Extension;
 import org.pf4j.PluginWrapper;
 
 import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.plugin.ext.AbstractRestExtension;
+import com.gentics.mesh.plugin.env.PluginEnvironment;
 
 import io.vertx.ext.web.Router;
 
 /**
  * A plugin which fakes the manifest in order to be deployable multiple times. This is useful to test deployments of multiple plugins.
  */
-public class ClonePlugin extends AbstractPlugin {
+public class ClonePlugin extends AbstractPlugin implements RestPlugin {
 
-	public ClonePlugin(PluginWrapper wrapper) {
-		super(wrapper);
+	public ClonePlugin(PluginWrapper wrapper, PluginEnvironment env) {
+		super(wrapper, env);
 	}
 
 	public static AtomicInteger counter = new AtomicInteger(0);
@@ -49,21 +48,18 @@ public class ClonePlugin extends AbstractPlugin {
 		this.uuid = uuid;
 	}
 
-	@Extension
-	public static class BasicRestExtension extends AbstractRestExtension {
-		@Override
-		public void registerEndpoints(Router globalRouter, Router projectRouter) {
-			globalRouter.route("/hello").handler(rc -> {
-				rc.response().end("world");
-			});
+	@Override
+	public void registerEndpoints(Router globalRouter, Router projectRouter) {
+		globalRouter.route("/hello").handler(rc -> {
+			rc.response().end("world");
+		});
 
-			projectRouter.route("/hello").handler(rc -> {
-				rc.response().end("project");
-			});
+		projectRouter.route("/hello").handler(rc -> {
+			rc.response().end("project");
+		});
 
-			globalRouter.route("/manifest").handler(rc -> {
-				rc.response().end(JsonUtil.toJson(getManifest()));
-			});
-		}
+		globalRouter.route("/manifest").handler(rc -> {
+			rc.response().end(JsonUtil.toJson(getManifest()));
+		});
 	}
 }

@@ -31,12 +31,11 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.plugin.ClonePlugin;
 import com.gentics.mesh.plugin.ManifestInjectorPlugin;
 import com.gentics.mesh.plugin.NonMeshPluginVerticle;
-import com.gentics.mesh.plugin.PluginManager;
+import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.vertx.core.ServiceHelper;
 import io.vertx.reactivex.core.Vertx;
 
 @MeshTestSetting(testSize = PROJECT, startServer = true, inMemoryDB = true)
@@ -48,12 +47,11 @@ public class AdminPluginEndpointTest extends AbstractMeshTest {
 
 	private static final String DEPLOYMENT2_NAME = "filesystem:target/test-plugins/basic2/target/basic2-plugin-0.0.1-SNAPSHOT.jar";
 
-	private static PluginManager manager = ServiceHelper.loadFactory(PluginManager.class);
-
 	@Before
 	public void clearDeployments() {
+		MeshPluginManager manager = pluginManager();
 		// Copy the uuids to avoid concurrency issues
-		Set<String> uuids = new HashSet<>(manager.getPlugins().keySet());
+		Set<String> uuids = new HashSet<>(manager.getPluginsMap().keySet());
 		for (String uuid : uuids) {
 			manager.undeploy(uuid).blockingAwait();
 		}
@@ -137,7 +135,7 @@ public class AdminPluginEndpointTest extends AbstractMeshTest {
 	public void testPluginList() {
 		grantAdminRole();
 		PluginResponse response = call(() -> client().deployPlugin(new PluginDeploymentRequest().setName(DEPLOYMENT_NAME)));
-		assertEquals(1, manager.getPlugins().size());
+		assertEquals(1, pluginManager().getPlugins().size());
 
 		String bogusName = "filesystem:bogus.jar";
 
@@ -251,13 +249,13 @@ public class AdminPluginEndpointTest extends AbstractMeshTest {
 	public void testDuplicateDeployment() {
 		grantAdminRole();
 		call(() -> client().deployPlugin(new PluginDeploymentRequest().setName(DEPLOYMENT_NAME)));
-		assertEquals(1, manager.getPlugins().size());
+		assertEquals(1, pluginManager().getPlugins().size());
 
 		int before = Vertx.vertx().deploymentIDs().size();
 		call(() -> client().deployPlugin(new PluginDeploymentRequest().setName(DEPLOYMENT_NAME)), BAD_REQUEST,
 			"admin_plugin_error_plugin_already_deployed", "Basic Plugin", "basic");
 		assertEquals("No additional plugins should have been deployed", before, Vertx.vertx().deploymentIDs().size());
-		assertEquals(1, manager.getPlugins().size());
+		assertEquals(1, pluginManager().getPlugins().size());
 	}
 
 	private void setPluginBaseDir(String baseDir) {
@@ -265,7 +263,7 @@ public class AdminPluginEndpointTest extends AbstractMeshTest {
 		pluginDir.mkdirs();
 		MeshOptions options = new MeshOptions();
 		options.setPluginDirectory(baseDir);
-		manager.init(options);
+		pluginManager().init(options);
 	}
 
 }

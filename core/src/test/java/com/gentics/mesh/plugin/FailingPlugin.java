@@ -2,15 +2,17 @@ package com.gentics.mesh.plugin;
 
 import org.pf4j.PluginWrapper;
 
+import com.gentics.mesh.plugin.env.PluginEnvironment;
+
 import io.reactivex.Completable;
 
 /**
- * Plugin that will fail the initialization
+ * Plugin that will fail the initialisation
  */
 public class FailingPlugin extends AbstractPlugin {
 
-	public FailingPlugin(PluginWrapper wrapper) {
-		super(wrapper);
+	public FailingPlugin(PluginWrapper wrapper, PluginEnvironment env) {
+		super(wrapper, env);
 	}
 
 	@Override
