@@ -2,6 +2,7 @@ package com.gentics.mesh.dagger.module;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Duration;
 
 import javax.annotation.Nullable;
 import javax.inject.Singleton;
@@ -78,6 +79,12 @@ public class SearchProviderModule {
 		builder.setCaPath(searchOptions.getCaPath());
 		builder.setCertPath(searchOptions.getCertPath());
 		builder.setVerifyHostnames(searchOptions.isHostnameVerification());
+
+		Duration timeout = Duration.ofMillis(searchOptions.getTimeout());
+
+		builder.setConnectTimeout(timeout);
+		builder.setReadTimeout(timeout);
+		builder.setWriteTimeout(timeout);
 
 		return builder.build();
 	}

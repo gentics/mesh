@@ -34,6 +34,8 @@ icon:plus[] OrientDB: The included OrientDB version has been updated to version 
 
 icon:plus[] GraphQL: You can now track ingoing node references. See the link:{{< relref "graphql.asciidoc" >}}#_loading_ingoing_references[example] in the documentation.
 
+icon:check[] Search: Fixed a bug that caused configured timeouts to not be applied correctly.
+
 [[v0.36.1]]
 == 0.36.1 (18.06.2019)
 
