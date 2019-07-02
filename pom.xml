@@ -410,12 +410,12 @@
 		<repository>
 			<id>lan.releases</id>
 			<name>Gentics Releases Repository</name>
-			<url>https://repo-internal.apa-it.at/artifactory/gtx-maven-releases-staging-mesh</url>
+			<url>https://repo.apa-it.at/artifactory/gtx-maven-releases-staging-mesh</url>
 		</repository>
 		<snapshotRepository>
 			<id>lan.snapshots</id>
 			<name>Gentics Snapshots Repository</name>
-			<url>https://repo-internal.apa-it.at/artifactory/gtx-maven-snapshots-mesh</url>
+			<url>https://repo.apa-it.at/artifactory/gtx-maven-snapshots-mesh</url>
 		</snapshotRepository>
 	</distributionManagement>
 </project>
