@@ -11,4 +11,4 @@ if [ -z "$tests" ] ; then
 fi
 echo "Running tests: $tests"
 
-time mvn -X -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -e -pl '!demo,!doc,!performance-tests' test -Dtest=$tests -DfailIfNoTests=false
+time mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -e -pl '!demo,!doc,!performance-tests' test -Dtest=$tests -DfailIfNoTests=false
