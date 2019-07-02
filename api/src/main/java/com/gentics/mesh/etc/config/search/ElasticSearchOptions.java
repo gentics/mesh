@@ -31,6 +31,7 @@ public class ElasticSearchOptions implements Option {
 	public static final int DEFAULT_RETRY_LIMIT = 3;
 	public static final boolean DEFAULT_WAIT_FOR_IDLE = true;
 	public static final boolean DEFAULT_INCLUDE_BINARY_FIELDS = true;
+	public static final boolean DEFAULT_FIELD_MAPPINGS = true;
 
 	public static final String DEFAULT_PREFIX = "mesh-";
 
@@ -56,6 +57,7 @@ public class ElasticSearchOptions implements Option {
 	public static final String MESH_ELASTICSEARCH_RETRY_INTERVAL_ENV = "MESH_ELASTICSEARCH_RETRY_INTERVAL";
 	public static final String MESH_ELASTICSEARCH_RETRY_LIMIT_ENV = "MESH_ELASTICSEARCH_RETRY_LIMIT";
 	public static final String MESH_ELASTICSEARCH_WAIT_FOR_IDLE_ENV = "MESH_ELASTICSEARCH_WAIT_FOR_IDLE";
+	public static final String MESH_ELASTICSEARCH_DEFAULT_FIELD_MAPPINGS_ENV = "MESH_ELASTICSEARCH_DEFAULT_FIELD_MAPPINGS";
 	public static final String MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION_ENV = "MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION";
 	public static final String MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS_ENV = "MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS";
 
@@ -166,6 +168,12 @@ public class ElasticSearchOptions implements Option {
 		+ DEFAULT_INCLUDE_BINARY_FIELDS)
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS_ENV, description = "Override the search include binary fields flag.")
 	private boolean includeBinaryFields = DEFAULT_INCLUDE_BINARY_FIELDS;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("If false, no default mappings will be created for node fields without a custom elasticsearch mapping. Default: "
+		+ DEFAULT_FIELD_MAPPINGS)
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_DEFAULT_FIELD_MAPPINGS_ENV, description = "Override the search default field mappings flag.")
+	private boolean defaultFieldMappings = DEFAULT_FIELD_MAPPINGS;
 
 	public ElasticSearchOptions() {
 
@@ -375,8 +383,13 @@ public class ElasticSearchOptions implements Option {
 		return this;
 	}
 
-	public void validate(MeshOptions meshOptions) {
+	public boolean isDefaultFieldMappings() {
+		return defaultFieldMappings;
+	}
 
+	public ElasticSearchOptions setDefaultFieldMappings(boolean defaultFieldMappings) {
+		this.defaultFieldMappings = defaultFieldMappings;
+		return this;
 	}
 
 	public int getRetryLimit() {
@@ -387,4 +400,9 @@ public class ElasticSearchOptions implements Option {
 		this.retryLimit = retryLimit;
 		return this;
 	}
+
+	public void validate(MeshOptions meshOptions) {
+
+	}
+
 }

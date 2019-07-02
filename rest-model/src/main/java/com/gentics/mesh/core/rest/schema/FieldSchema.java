@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 
 import io.vertx.core.json.JsonObject;
 
@@ -118,13 +119,27 @@ public interface FieldSchema {
 	 */
 	FieldSchema setElasticsearch(JsonObject elasticsearch);
 
-
 	/**
 	 * Checks if the field can be used as a display field.
+	 * 
 	 * @return
 	 */
 	@JsonIgnore
 	default boolean isDisplayField() {
 		return false;
+	}
+
+	/**
+	 * Check whether the mapping is required. A mapping can not be required when the default mappings option has been disabled and the field schema does not
+	 * specify a custom mapping.
+	 * 
+	 * @param options
+	 *            Search options
+	 * @return
+	 */
+	@JsonIgnore
+	default boolean isMappingRequired(ElasticSearchOptions options) {
+		boolean defaultMappingEnabled = options.isDefaultFieldMappings();
+		return defaultMappingEnabled || !defaultMappingEnabled && getElasticsearch() != null;
 	}
 }

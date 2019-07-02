@@ -26,6 +26,8 @@ include::content/docs/variables.adoc-include[]
 [[NEXT]]
 == NEXT
 
+icon:plus[] Search: A new search option `search.defaultFieldMappings` has been added. When disabled no default field mappings and fields will be added to the search index. Only those fields which specify a custom elasticsearch mapping will be added to the index. This is useful if you want to have finer control of what contents should be added to Elasticsearch. The setting is enabled by default. This way this change will not affect existing setups.
+
 icon:plus[] Graph: The default value for `tx.retry.delay` has been set to 0. The tx delay will thus be disabled by default.
 
 icon:plus[] Clustering: The `storage.synchronizeWrites` option will be enabled by default when clustering is active.
