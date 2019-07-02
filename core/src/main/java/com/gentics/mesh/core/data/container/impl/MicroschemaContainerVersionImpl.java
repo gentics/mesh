@@ -84,7 +84,7 @@ public class MicroschemaContainerVersionImpl extends
 
 	@Override
 	public TraversalResult<? extends Micronode> findMicronodes() {
-		return new TraversalResult<>(in(HAS_MICROSCHEMA_CONTAINER).frameExplicit(MicronodeImpl.class));
+		return in(HAS_MICROSCHEMA_CONTAINER, MicronodeImpl.class);
 	}
 
 	@Override
@@ -146,7 +146,7 @@ public class MicroschemaContainerVersionImpl extends
 
 	@Override
 	public TraversalResult<? extends Branch> getBranches() {
-		return new TraversalResult<>(in(HAS_MICROSCHEMA_VERSION).frameExplicit(BranchImpl.class));
+		return in(HAS_MICROSCHEMA_VERSION, BranchImpl.class);
 	}
 
 	@Override

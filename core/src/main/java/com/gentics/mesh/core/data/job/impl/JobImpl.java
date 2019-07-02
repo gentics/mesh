@@ -191,7 +191,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public Branch getBranch() {
-		return out(HAS_BRANCH).nextOrDefaultExplicit(BranchImpl.class, null);
+		return out(HAS_BRANCH, BranchImpl.class).nextOrNull();
 	}
 
 	@Override
@@ -309,7 +309,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public User getCreator() {
-		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+		return out(HAS_CREATOR, UserImpl.class).nextOrNull();
 	}
 
 	@Override

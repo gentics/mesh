@@ -51,7 +51,7 @@ public interface SchemaContainer extends GraphFieldSchemaContainer<SchemaRespons
 	 * 
 	 * @return
 	 */
-	Iterable<? extends Node> getNodes();
+	TraversalResult<? extends Node> getNodes();
 
 	/**
 	 * Return a list of all schema container roots to which the schema container was added.

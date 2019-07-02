@@ -147,7 +147,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public void revokePermissions(MeshVertex vertex, GraphPermission... permissions) {
-		FramedGraph graph = Tx.getActive().getGraph();
+		FramedGraph graph = Tx.get().getGraph();
 		Object indexKey = MeshInternal.get().database().createComposedIndexKey(vertex.id(), getId());
 
 		long edgesRemoved = Arrays.stream(permissions).map(perm -> "e." + perm.label() + "_inout")
@@ -222,12 +222,12 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public User getCreator() {
-		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+		return out(HAS_CREATOR, UserImpl.class).nextOrNull();
 	}
 
 	@Override
 	public User getEditor() {
-		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+		return out(HAS_EDITOR, UserImpl.class).nextOrNull();
 	}
 
 	@Override

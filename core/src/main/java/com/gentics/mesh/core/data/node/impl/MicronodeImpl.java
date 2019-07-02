@@ -101,8 +101,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public MicroschemaContainerVersion getSchemaContainerVersion() {
-		return out(HAS_MICROSCHEMA_CONTAINER).has(MicroschemaContainerVersionImpl.class).nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class,
-				null);
+		return out(HAS_MICROSCHEMA_CONTAINER, MicroschemaContainerVersionImpl.class).next();
 	}
 
 	@Override
@@ -121,7 +120,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		// TODO this only returns ONE container, but with versioning, the micronode may have multiple containers
 
 		// first try to get the container in case for normal fields
-		NodeGraphFieldContainerImpl container = in(HAS_FIELD).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
+		NodeGraphFieldContainerImpl container = in(HAS_FIELD, NodeGraphFieldContainerImpl.class).nextOrNull();
 
 		if (container == null) {
 			// the micronode may be part of a list field

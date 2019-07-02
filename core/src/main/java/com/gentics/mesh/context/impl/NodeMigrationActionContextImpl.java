@@ -462,7 +462,17 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
+			public <T extends ElementFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz) {
+				return null;
+			}
+
+			@Override
 			public <T extends ElementFrame> TraversalResult<T> in(String label, Class<T> clazz) {
+				return null;
+			}
+
+			@Override
+			public <T extends ElementFrame> TraversalResult<? extends T> inE(String label, Class<T> clazz) {
 				return null;
 			}
 

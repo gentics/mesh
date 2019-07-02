@@ -5,8 +5,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDI
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Iterator;
@@ -32,7 +32,6 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 
 /**
@@ -63,7 +62,7 @@ public class SchemaContainerImpl extends
 
 	@Override
 	public TraversalResult<? extends SchemaContainerRoot> getRoots() {
-		return new TraversalResult<>(in(HAS_SCHEMA_CONTAINER_ITEM).frameExplicit(SchemaContainerRootImpl.class));
+		return in(HAS_SCHEMA_CONTAINER_ITEM, SchemaContainerRootImpl.class);
 	}
 
 	@Override
@@ -72,8 +71,8 @@ public class SchemaContainerImpl extends
 	}
 
 	@Override
-	public Iterable<? extends NodeImpl> getNodes() {
-		return in(HAS_SCHEMA_CONTAINER).frameExplicit(NodeImpl.class);
+	public TraversalResult<? extends NodeImpl> getNodes() {
+		return in(HAS_SCHEMA_CONTAINER, NodeImpl.class);
 	}
 
 	@Override
@@ -112,12 +111,12 @@ public class SchemaContainerImpl extends
 
 	@Override
 	public User getCreator() {
-		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+		return out(HAS_CREATOR, UserImpl.class).nextOrNull();
 	}
 
 	@Override
 	public User getEditor() {
-		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+		return out(HAS_EDITOR, UserImpl.class).nextOrNull();
 	}
 
 }

@@ -1,4 +1,18 @@
 <settings>
+	<mirrors>
+		<mirror>
+			<id>lan.mirror</id>
+			<name>Gentics LAN Mirror Repository</name>
+			<url>https://repo.apa-it.at/artifactory/gtx-maven-mirror/</url>
+			<mirrorOf>central,maven2,maven2-repository,oss.sonatype.org,jboss-repository,maven-repository.dev.java.net,repo.jenkins-ci.org</mirrorOf>
+		</mirror>
+		<mirror>
+			<id>lan.internal</id>
+			<name>Gentics LAN Mirror Repository</name>
+			<url>https://repo.apa-it.at/artifactory/gtx-maven-internal/</url>
+			<mirrorOf>maven.gentics.com</mirrorOf>
+		</mirror>
+	</mirrors>
 	<servers>
 		<server>
 			<id>lan.snapshots</id>

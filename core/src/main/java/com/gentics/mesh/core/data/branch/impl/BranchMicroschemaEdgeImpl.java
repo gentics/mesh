@@ -9,7 +9,6 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.graphdb.spi.Database;
 
 /**
  * @see BranchMicroschemaEdge

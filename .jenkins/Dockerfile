@@ -10,11 +10,16 @@ RUN echo 'deb http://security.debian.org/ stretch/updates main contrib' >> /etc/
 
 RUN apt-get update && apt-get -y upgrade && apt-get install -y git-core gawk sed wget curl sudo \
   less vim curl tar wget sed psmisc file pwgen locales zip unzip software-properties-common devscripts \
-  bzip2 rsync maven
+  bzip2 rsync
+
+# Maven
+RUN cd /opt && wget -nv -O maven.tar.gz "http://mirror.klaus-uwe.me/apache/maven/maven-3/3.6.1/binaries/apache-maven-3.6.1-bin.tar.gz" && \
+    tar -xzf maven.tar.gz && mv apache-maven* maven && rm maven.tar.gz && \
+    ln -s /opt/maven/bin/mvn /usr/local/bin/mvn
 
 # Docker
 RUN curl "https://get.docker.com/builds/`uname -s`/`uname -m`/docker-latest.tgz" > docker.tgz &&\
-    tar -xvzf docker.tgz &&\
+    tar -xzf docker.tgz &&\
     mv docker/* /usr/bin &&\
     rm -rf docke*
 

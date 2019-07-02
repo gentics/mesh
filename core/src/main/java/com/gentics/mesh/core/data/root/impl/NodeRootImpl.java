@@ -119,7 +119,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	@Override
 	public Stream<? extends Node> findAllStream(InternalActionContext ac, GraphPermission permission) {
 		MeshAuthUser user = ac.getUser();
-		FramedTransactionalGraph graph = Tx.getActive().getGraph();
+		FramedTransactionalGraph graph = Tx.get().getGraph();
 
 		Branch branch = ac.getBranch();
 		String branchUuid = branch.getUuid();

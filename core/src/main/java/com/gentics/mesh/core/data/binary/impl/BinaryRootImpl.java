@@ -49,7 +49,7 @@ public class BinaryRootImpl extends MeshVertexImpl implements BinaryRoot {
 
 	@Override
 	public Binary findByHash(String hash) {
-		FramedGraph graph = Tx.getActive().getGraph();
+		FramedGraph graph = Tx.get().getGraph();
 		// 1. Find the element with given uuid within the whole graph
 		Iterator<Vertex> it = database().getVertices(getPersistanceClass(), new String[] { Binary.SHA512SUM_KEY }, new String[] { hash });
 		if (it.hasNext()) {

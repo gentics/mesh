@@ -56,7 +56,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		job.setCompletionCount(completionCount);
 		job.setStatus(status);
 
-		Tx.getActive().getGraph().commit();
+		Tx.get().getGraph().commit();
 		return this;
 
 	}
