@@ -24,7 +24,7 @@ include::content/docs/variables.adoc-include[]
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 [[v0.36.2]]
-== 0.36.2 (TBD)
+== 0.36.2 (02.07.2019)
 
 icon:check[] Search: Encoding issues which happen on systems which were not using `UTF-8` as default locale have been fixed by updating the underlying Elasticsearch client. link:https://github.com/gentics/mesh/issues/498[498]
 
