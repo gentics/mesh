@@ -50,7 +50,7 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 				rh.response().end(new JsonObject().encodePrettily());
 			} else {
 				log.info("Waiting for 16 second to answer request: " + rh.absoluteURI());
-				vertx.setTimer(Duration.ofSeconds(16).toMillis(), th -> rh.response().end());
+				vertx.setTimer(Duration.ofSeconds(3).toMillis(), th -> rh.response().end());
 			}
 		});
 		server.rxListen().blockingGet();
