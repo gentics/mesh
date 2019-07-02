@@ -16,6 +16,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+
 @MeshTestSetting(elasticsearch = CONTAINER, startServer = true, testSize = FULL)
 public class TagSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
 
@@ -36,8 +37,8 @@ public class TagSearchEndpointTest extends AbstractMeshTest implements BasicSear
 	@Test
 	@Override
 	public void testDocumentUpdate() throws InterruptedException, JSONException {
-		String uuid = db().tx(() -> tag("red").getUuid());
-		String parentTagFamilyUuid = db().tx(() -> tagFamily("colors").getUuid());
+		String uuid = tx(() -> tag("red").getUuid());
+		String parentTagFamilyUuid = tx(() -> tagFamily("colors").getUuid());
 
 		String newName = "redish";
 		updateTag(PROJECT_NAME, parentTagFamilyUuid, uuid, newName);
@@ -60,9 +61,9 @@ public class TagSearchEndpointTest extends AbstractMeshTest implements BasicSear
 			recreateIndices();
 		}
 
-		String name = db().tx(() -> tag("red").getName());
-		String uuid = db().tx(() -> tag("red").getUuid());
-		String parentTagFamilyUuid = db().tx(() -> tagFamily("colors").getUuid());
+		String name = tx(() -> tag("red").getName());
+		String uuid = tx(() -> tag("red").getUuid());
+		String parentTagFamilyUuid = tx(() -> tagFamily("colors").getUuid());
 
 		waitForSearchIdleEvent();
 
