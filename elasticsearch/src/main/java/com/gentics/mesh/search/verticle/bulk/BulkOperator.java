@@ -74,6 +74,9 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 					log.trace("Emitting bulk of size {} to subscriber", bulkableRequests.size());
 					BulkRequest request = new BulkRequest(bulkableRequests.asList());
 					bulkableRequests.clear();
+					if (log.isInfoEnabled()) {
+						log.info("Sending bulk to elasticsearch:\n{}", request);
+					}
 					subscriber.onNext(request);
 					BackpressureHelper.produced(requested, 1);
 				}
@@ -129,10 +132,10 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 					if (bulkableRequests.size() >= requestLimit || bulkableRequests.getBulkLength() >= lengthLimit) {
 						if (log.isTraceEnabled()) {
 							if (bulkableRequests.size() >= requestLimit) {
-								log.trace("Flushing {} requests because size limit of {} has been reached.",
+								log.info("Flushing {} requests because request amount limit of {} has been reached.",
 									bulkableRequests.size(), requestLimit);
 							} else {
-								log.trace("Flushing {} requests with total size of {} because size limit of {} has been exceeded.",
+								log.info("Flushing {} requests with total size of {} because size limit of {} has been exceeded.",
 									bulkableRequests.size(), bulkableRequests.getBulkLength(), lengthLimit);
 							}
 						}

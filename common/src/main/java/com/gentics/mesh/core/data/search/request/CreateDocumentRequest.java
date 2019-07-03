@@ -78,4 +78,12 @@ public class CreateDocumentRequest implements Bulkable {
 		// +2 for newlines
 		return bulkPreamble.length() + doc.encode().length() + 2;
 	}
+
+	@Override
+	public String toString() {
+		return "CreateDocumentRequest{" +
+			"transformedIndex='" + transformedIndex + '\'' +
+			", id='" + id + '\'' +
+			'}';
+	}
 }

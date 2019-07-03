@@ -54,7 +54,7 @@ public class BulkRequest implements Bulkable {
 
 	@Override
 	public String toString() {
-		return requests.size() + " bulked requests";
+		return requests.size() + " bulked requests. " + requests;
 	}
 
 	public Collection<Bulkable> getRequests() {

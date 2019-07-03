@@ -32,7 +32,8 @@ public class DropIndexRequest implements SearchRequest {
 
 	@Override
 	public String toString() {
-		return indexName;
+		return "DropIndexRequest{" +
+			"indexName='" + indexName + '\'' +
+			'}';
 	}
-
 }

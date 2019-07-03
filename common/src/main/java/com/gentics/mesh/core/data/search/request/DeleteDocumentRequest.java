@@ -73,4 +73,12 @@ public class DeleteDocumentRequest implements Bulkable {
 		// + 1 for newline
 		return bulkString.length() + 1;
 	}
+
+	@Override
+	public String toString() {
+		return "DeleteDocumentRequest{" +
+			"transformedIndex='" + transformedIndex + '\'' +
+			", id='" + id + '\'' +
+			'}';
+	}
 }

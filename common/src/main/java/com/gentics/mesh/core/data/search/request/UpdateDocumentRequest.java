@@ -43,7 +43,7 @@ public class UpdateDocumentRequest implements Bulkable {
 		return Single.just(Arrays.asList(
 			bulkPreamble,
 			new JsonObject()
-				.put("doc", doc).encode()
+				.put("doc", doc.getProxyTarget()).encode()
 		));
 	}
 
@@ -67,5 +67,13 @@ public class UpdateDocumentRequest implements Bulkable {
 	public long bulkLength() {
 		// +10 for 2 newlines and {"doc":}
 		return bulkPreamble.length() + doc.encode().length() + 10;
+	}
+
+	@Override
+	public String toString() {
+		return "UpdateDocumentRequest{" +
+			"transformedIndex='" + transformedIndex + '\'' +
+			", id='" + id + '\'' +
+			'}';
 	}
 }
