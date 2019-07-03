@@ -302,7 +302,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String branchUuid = branch.getUuid();
 		// Check whether the node got a published version and thus is published
 
-		boolean isPublished = hasPublishedContent(branch.getUuid());
+		boolean isPublished = hasPublishedContent(branchUuid);
 
 		// A published node must have also a published parent node.
 		if (isPublished) {
@@ -314,7 +314,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 				// Check whether the parent node has a published field container
 				// for the given branch and language
-				if (!parentNode.hasPublishedContent(branch.getUuid())) {
+				if (!parentNode.hasPublishedContent(branchUuid)) {
 					log.error("Could not find published field container for node {" + parentNode.getUuid() + "} in branch {" + branchUuid + "}");
 					throw error(BAD_REQUEST, "node_error_parent_containers_not_published", parentNode.getUuid());
 				}
@@ -324,9 +324,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// A draft node can't have any published child nodes.
 		if (!isPublished) {
 
-			// TODO handle branch
-			for (Node node : getChildren()) {
-				if (node.hasPublishedContent(branch.getUuid())) {
+			for (Node node : getChildren(branchUuid)) {
+				if (node.hasPublishedContent(branchUuid)) {
 					log.error("Found published field container for node {" + node.getUuid() + "} in branch {" + branchUuid + "}. Node is child of {"
 						+ getUuid() + "}");
 					throw error(BAD_REQUEST, "node_error_children_containers_still_published", node.getUuid());
