@@ -45,7 +45,7 @@ ENV JAVA_1_11_HOME /usr/lib/jvm/java-11
 RUN echo "jenkins:jenkins" | chpasswd
 RUN mkdir -p /home/jenkins/workspace && mkdir -p /home/jenkins/.ssh
 
-ADD ./files/settings.xml /home/jenkins/.m2/settings.xml
+ADD ./files/settings.xml /opt/maven/conf/settings.xml
 #ADD ./files/gentics /home/jenkins/.gnupg/gentics
 RUN chown jenkins: /home/jenkins -R
 
