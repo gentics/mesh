@@ -40,7 +40,7 @@
     },
     "recursive" : {
       "type" : "boolean",
-      "description" : "Flag which indicates whether the permission update should be applied recursivly."
+      "description" : "Flag which indicates whether the permission update should be applied recursively."
     }
   }
 }

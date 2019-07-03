@@ -56,6 +56,9 @@
 | *MESH_ELASTICSEARCH_WAIT_FOR_IDLE*
 | Override the search idle wait flag.
 
+| *MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION*
+| Override the configured hostname verification flag.
+
 | *MESH_CLUSTER_VERTX_PORT*
 | Override the vert.x eventbus server port.
 
@@ -85,6 +88,12 @@
 
 | *MESH_AUTH_OAUTH2_SERVER_CONF_RESOURCE*
 | Override the configured OAuth2 server resource name.
+
+| *MESH_ELASTICSEARCH_CERT_PATH*
+| Override the configured trusted server certificate.
+
+| *MESH_ELASTICSEARCH_PASSWORD*
+| Override the configured Elasticsearch connection password.
 
 | *MESH_BINARY_UPLOAD_LIMIT*
 | Override the configured binary byte upload limit.
@@ -125,6 +134,9 @@
 | *MESH_ELASTICSEARCH_RETRY_INTERVAL*
 | Override the retry interval.
 
+| *MESH_ELASTICSEARCH_USERNAME*
+| Override the configured Elasticsearch connection username.
+
 | *MESH_ELASTICSEARCH_EVENT_BUFFER_SIZE*
 | Override the configured event buffer size.
 
@@ -148,6 +160,9 @@
 
 | *MESH_AUTH_OAUTH2_SERVER_CONF_REALM*
 | Override the configured OAuth2 server realm.
+
+| *MESH_ELASTICSEARCH_CA_PATH*
+| Override the configured common authority certificate path.
 
 | *MESH_ELASTICSEARCH_TIMEOUT*
 | Override the configured elasticsearch server timeout.

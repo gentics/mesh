@@ -17,6 +17,16 @@
 | integer
 | Upper limit for the size of bulk requests. Default: 2000
 
+| caPath
+| false
+| string
+| Path to the trusted common authority certificate (PEM format)
+
+| certPath
+| false
+| string
+| Path to the trusted server certificate (PEM format). This setting can be used when the Elasticsearch server is using a self-signed certificate which would otherwise not be trusted.
+
 | embeddedArguments
 | false
 | string
@@ -27,10 +37,20 @@
 | integer
 | Upper limit for mesh events that are to be mapped to elastic search requests. Default: 1000
 
+| hostnameVerification
+| false
+| boolean
+| Flag which controls whether hostname verification should be enabled. Default: true
+
 | idleDebounceTime
 | false
 | integer
 | The maximum amount of time in milliseconds between two successful requests before the idle event is emitted. Default: 100
+
+| password
+| false
+| string
+| Password to be used for Elasticsearch authentication.
 
 | prefix
 | false
@@ -61,6 +81,11 @@
 | false
 | string
 | Elasticsearch connection url to be used. Set this setting to null will disable the Elasticsearch support.
+
+| username
+| false
+| string
+| Username to be used for Elasticsearch authentication.
 
 | waitForIdle
 | false

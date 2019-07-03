@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "0.36.1"
+version: "0.36.2"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -942,7 +942,7 @@ mediaType: application/json
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
                         | permissions | true | object | Set of permissions which should be applied. |
-                        | recursive | false | boolean | Flag which indicates whether the permission update should be applied recursivly. |
+                        | recursive | false | boolean | Flag which indicates whether the permission update should be applied recursively. |
                     example: |
                         {
                           "permissions" : {
@@ -5702,7 +5702,7 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "0.36.1",
+                                  "meshVersion" : "0.36.2",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",

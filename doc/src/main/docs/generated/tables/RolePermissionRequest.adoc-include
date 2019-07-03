@@ -15,6 +15,6 @@
 | recursive
 | false
 | boolean
-| Flag which indicates whether the permission update should be applied recursivly.
+| Flag which indicates whether the permission update should be applied recursively.
 
 |======

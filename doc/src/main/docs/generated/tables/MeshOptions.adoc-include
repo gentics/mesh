@@ -137,6 +137,31 @@
 | string
 | Elasticsearch connection url to be used. Set this setting to null will disable the Elasticsearch support.
 
+| searchOptions.username
+| false
+| string
+| Username to be used for Elasticsearch authentication.
+
+| searchOptions.password
+| false
+| string
+| Password to be used for Elasticsearch authentication.
+
+| searchOptions.certPath
+| false
+| string
+| Path to the trusted server certificate (PEM format). This setting can be used when the Elasticsearch server is using a self-signed certificate which would otherwise not be trusted.
+
+| searchOptions.caPath
+| false
+| string
+| Path to the trusted common authority certificate (PEM format)
+
+| searchOptions.hostnameVerification
+| false
+| boolean
+| Flag which controls whether hostname verification should be enabled. Default: true
+
 | searchOptions.timeout
 | false
 | long
