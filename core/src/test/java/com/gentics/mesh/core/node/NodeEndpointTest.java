@@ -11,7 +11,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
-import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.rest.client.MeshRestClientUtil.onErrorCodeResumeNext;
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -27,7 +26,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.System.out;
@@ -53,7 +51,6 @@ import org.junit.Test;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
@@ -1876,19 +1873,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
-	public void testDeleteBaseNode() throws Exception {
-		try (Tx tx = tx()) {
-			Node node = project().getBaseNode();
-			String uuid = node.getUuid();
-
-			call(() -> client().deleteNode(PROJECT_NAME, uuid), METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
-
-			Node foundNode = meshRoot().getNodeRoot().findByUuid(uuid);
-			assertNotNull("The node should still exist.", foundNode);
-		}
-	}
-
-	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		Node node = content("concorde");
@@ -1967,76 +1951,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		nodeUpdateRequest.setVersion("0.2");
 		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("new-page.de3.html"));
 		call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest));
-	}
-
-	@Test
-	public void testDeleteForBranch() throws Exception {
-		Node node = content("concorde");
-		String uuid = tx(() -> node.getUuid());
-
-		// Create new branch
-		Branch newBranch = tx(() -> createBranch("newbranch"));
-
-		BranchMigrationContextImpl context = new BranchMigrationContextImpl();
-		context.setNewBranch(newBranch);
-		context.setOldBranch(tx(() -> initialBranch()));
-		meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
-
-		String newBranchUuid = tx(() -> newBranch.getUuid());
-		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setBranch(initialBranchUuid())));
-		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setBranch(newBranchUuid)));
-
-		// Delete node in new branch
-		call(() -> client().deleteNode(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(newBranch.getUuid())));
-
-		// Assert that the node was only deleted in the new branch
-		try (Tx tx = tx()) {
-			assertElement(meshRoot().getNodeRoot(), uuid, true);
-			assertThat(node.getGraphFieldContainers(initialBranch(), DRAFT)).as("draft containers for initial branch").isNotEmpty();
-			assertThat(node.getGraphFieldContainers(newBranch, DRAFT)).as("draft containers for new branch").isEmpty();
-		}
-
-	}
-
-	@Test
-	public void testDeletePublishedForBranch() throws Exception {
-		Node node = content("concorde");
-		Project project = project();
-		String uuid = tx(() -> node.getUuid());
-
-		Branch newBranch = tx(() -> {
-			// Publish the node
-			BulkActionContext bac = createBulkContext();
-			node.publish(mockActionContext(), bac);
-
-			// Create new branch
-			Branch b = createBranch("newbranch");
-
-			// Migrate nodes
-			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
-			context.setNewBranch(b);
-			context.setOldBranch(initialBranch());
-			meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
-			return b;
-		});
-
-		String newBranchUuid = tx(() -> newBranch.getUuid());
-		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setBranch(initialBranchUuid())));
-		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setBranch(newBranchUuid)));
-
-		// Delete node in new branch
-		call(() -> client().deleteNode(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(newBranchUuid)));
-
-		// Assert deletion - nodes should only be deleted for new branch
-		try (Tx tx = tx()) {
-			assertElement(meshRoot().getNodeRoot(), uuid, true);
-			assertThat(node.getGraphFieldContainers(initialBranch(), ContainerType.DRAFT)).as("draft containers for initial branch").isNotEmpty();
-			assertThat(node.getGraphFieldContainers(initialBranch(), ContainerType.PUBLISHED)).as("published containers for initial branch")
-				.isNotEmpty();
-			assertThat(node.getGraphFieldContainers(newBranch, ContainerType.DRAFT)).as("draft containers for new branch").isEmpty();
-			assertThat(node.getGraphFieldContainers(newBranch, ContainerType.PUBLISHED)).as("published containers for new branch").isEmpty();
-		}
-
 	}
 
 	@Test
