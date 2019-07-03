@@ -63,6 +63,7 @@ import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.docker.ElasticsearchContainer;
 import com.gentics.mesh.test.docker.KeycloakContainer;
+import com.gentics.mesh.test.util.MeshAssert;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -182,10 +183,11 @@ public class MeshTestContext extends TestWatcher {
 			final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
 
 			OkHttpClient.Builder builder = new OkHttpClient.Builder();
-			builder.callTimeout(Duration.ofMinutes(1));
-			builder.connectTimeout(Duration.ofMinutes(1));
-			builder.writeTimeout(Duration.ofMinutes(1));
-			builder.readTimeout(Duration.ofMinutes(1));
+			int timeout = MeshAssert.getTimeout();
+			builder.callTimeout(Duration.ofMinutes(timeout));
+			builder.connectTimeout(Duration.ofMinutes(timeout));
+			builder.writeTimeout(Duration.ofMinutes(timeout));
+			builder.readTimeout(Duration.ofMinutes(timeout));
 			builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0]);
 			builder.hostnameVerifier(new HostnameVerifier() {
 				@Override

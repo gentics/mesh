@@ -20,7 +20,7 @@ public final class MeshAssert {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshAssert.class);
 
-	private static final Integer CI_TIMEOUT_SECONDS = 200;
+	private static final Integer CI_TIMEOUT_SECONDS = 60;
 
 	private static final Integer DEV_TIMEOUT_SECONDS = 10000;
 
