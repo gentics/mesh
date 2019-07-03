@@ -546,7 +546,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public Stream<Node> getChildrenStream(InternalActionContext ac) {
 		Database db = MeshInternal.get().database();
-		FramedGraph graph = Tx.getActive().getGraph();
+		FramedGraph graph = Tx.get().getGraph();
 		MeshAuthUser user = ac.getUser();
 
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_branch",
@@ -585,7 +585,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Project getProject() {
-		return out(ASSIGNED_TO_PROJECT).nextOrDefaultExplicit(ProjectImpl.class, null);
+		return out(ASSIGNED_TO_PROJECT, ProjectImpl.class).nextOrNull();
 	}
 
 	@Override
