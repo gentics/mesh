@@ -13,4 +13,10 @@ public interface Bulkable extends SearchRequest {
 	 * @return
 	 */
 	Single<List<String>> toBulkActions();
+
+	/**
+	 * Returns the length of the string of the encoded request.
+	 * @return
+	 */
+	long bulkLength();
 }

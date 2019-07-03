@@ -15,7 +15,8 @@ public class CreateDocumentRequest implements Bulkable {
 	private final String index;
 	private final String transformedIndex;
 	private final String id;
-	private final JsonObject doc;
+	private final String bulkPreamble;
+	private final CachedJsonObjectProxy doc;
 	private final Action onComplete;
 
 	public CreateDocumentRequest(String index, String transformedIndex, String id, JsonObject doc) {
@@ -26,8 +27,12 @@ public class CreateDocumentRequest implements Bulkable {
 		this.index = index;
 		this.transformedIndex = transformedIndex;
 		this.id = id;
-		this.doc = doc;
+		this.doc = new CachedJsonObjectProxy(doc);
 		this.onComplete = onComplete;
+		this.bulkPreamble = new JsonObject().put("index", new JsonObject()
+			.put("_index", transformedIndex)
+			.put("_type", SearchProvider.DEFAULT_TYPE)
+			.put("_id", id)).encode();
 	}
 
 	@Override
@@ -37,20 +42,13 @@ public class CreateDocumentRequest implements Bulkable {
 
 	@Override
 	public Completable execute(SearchProvider searchProvider) {
-		return searchProvider.storeDocument(index, id, doc).doOnComplete(onComplete);
+		return searchProvider.storeDocument(index, id, doc.getProxyTarget()).doOnComplete(onComplete);
 	}
 
 	@Override
 	public Single<List<String>> toBulkActions() {
-
-		JsonObject metadata = new JsonObject()
-			.put("_index", transformedIndex)
-			.put("_type", SearchProvider.DEFAULT_TYPE)
-			.put("_id", id);
-
-		JsonObject jsonDoc = new JsonObject().put("index", metadata);
 		return Single.just(Arrays.asList(
-			jsonDoc.encode(),
+			bulkPreamble,
 			doc.encode()));
 	}
 
@@ -72,6 +70,12 @@ public class CreateDocumentRequest implements Bulkable {
 	}
 
 	public JsonObject getDoc() {
-		return doc;
+		return doc.getProxyTarget();
+	}
+
+	@Override
+	public long bulkLength() {
+		// +2 for newlines
+		return bulkPreamble.length() + doc.encode().length() + 2;
 	}
 }

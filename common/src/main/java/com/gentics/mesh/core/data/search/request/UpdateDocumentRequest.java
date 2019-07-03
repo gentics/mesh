@@ -12,13 +12,20 @@ public class UpdateDocumentRequest implements Bulkable {
 	private final String index;
 	private final String transformedIndex;
 	private final String id;
-	private final JsonObject doc;
+	private final String bulkPreamble;
+	private final CachedJsonObjectProxy doc;
 
 	public UpdateDocumentRequest(String index, String transformedIndex, String id, JsonObject doc) {
 		this.index = index;
 		this.transformedIndex = transformedIndex;
 		this.id = id;
-		this.doc = doc;
+		this.doc = new CachedJsonObjectProxy(doc);
+		this.bulkPreamble = new JsonObject()
+			.put("update", new JsonObject()
+				.put("_index", transformedIndex)
+				.put("_type", SearchProvider.DEFAULT_TYPE)
+				.put("_id", id)
+			).encode();
 	}
 
 	@Override
@@ -28,18 +35,13 @@ public class UpdateDocumentRequest implements Bulkable {
 
 	@Override
 	public Completable execute(SearchProvider searchProvider) {
-		return searchProvider.updateDocument(index, id, doc, true);
+		return searchProvider.updateDocument(index, id, doc.getProxyTarget(), true);
 	}
 
 	@Override
 	public Single<List<String>> toBulkActions() {
 		return Single.just(Arrays.asList(
-			new JsonObject()
-				.put("update", new JsonObject()
-					.put("_index", transformedIndex)
-					.put("_type", SearchProvider.DEFAULT_TYPE)
-					.put("_id", id)
-				).encode(),
+			bulkPreamble,
 			new JsonObject()
 				.put("doc", doc).encode()
 		));
@@ -58,6 +60,12 @@ public class UpdateDocumentRequest implements Bulkable {
 	}
 
 	public JsonObject getDoc() {
-		return doc;
+		return doc.getProxyTarget();
+	}
+
+	@Override
+	public long bulkLength() {
+		// +10 for 2 newlines and {"doc":}
+		return bulkPreamble.length() + doc.encode().length() + 10;
 	}
 }
