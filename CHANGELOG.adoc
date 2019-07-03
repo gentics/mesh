@@ -23,6 +23,13 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.36.3]]
+== 0.36.3 (02.07.2019)
+
+icon:plus[] Search: Two new options have been added to the mesh search configuration. When the encoded request length exceeds the new `bulkLengthLimit`, no new documents will be added to the bulk and the bulk will be sent to Elasticsearch. The new `retryLimit` causes Gentics Mesh to drop a request to Elasticsearch after the configured limit has been reached.
+
+icon:check[] Search: Backpressure for handling index requests has been improved. This reduces memory usage when indexing large amounts of data in a short period of time.
+
 [[v0.36.2]]
 == 0.36.2 (02.07.2019)
 
