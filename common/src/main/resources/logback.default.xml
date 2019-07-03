@@ -7,7 +7,7 @@
 	<appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
 		<target>System.err</target>
 		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] - %msg%n</pattern>
+			<pattern>%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] [%logger{20}:] - %msg%n</pattern>
 		</encoder>
 		<filter class="ch.qos.logback.classic.filter.LevelFilter">
 			<level>ERROR</level>
@@ -18,7 +18,7 @@
 
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] - %msg%n</pattern>
+			<pattern>%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] [%logger{20}] - %msg%n</pattern>
 		</encoder>
 	</appender>
 

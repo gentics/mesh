@@ -3,6 +3,7 @@ package com.gentics.mesh.search.verticle.bulk;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -58,7 +59,7 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 			private final AtomicBoolean canceled = new AtomicBoolean(false);
 			private Subscription subscription;
 			private final BulkQueue bulkableRequests = new BulkQueue();
-			private SearchRequest outstandingNonBulkableRequest;
+			private final AtomicReference<SearchRequest> outstandingNonBulkableRequest = new AtomicReference<>();
 
 			private final BulkTimer timer = new BulkTimer(vertx, bulkTime, () -> {
 				log.trace("Flushing {} requests because time limit of {}ms has been reached.",
@@ -77,14 +78,13 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 					BackpressureHelper.produced(requested, 1);
 				}
 
-				if (!canceled.get() && requested.get() > 0 && outstandingNonBulkableRequest != null) {
+				if (!canceled.get() && requested.get() > 0 && outstandingNonBulkableRequest.get() != null) {
 					log.trace("Emitting remaining non bulkable request to subscriber", bulkableRequests.size());
-					subscriber.onNext(outstandingNonBulkableRequest);
-					outstandingNonBulkableRequest = null;
+					subscriber.onNext(outstandingNonBulkableRequest.getAndSet(null));
 					BackpressureHelper.produced(requested, 1);
 				}
 
-				if (upstreamCompleted && bulkableRequests.isEmpty() && outstandingNonBulkableRequest == null) {
+				if (upstreamCompleted && bulkableRequests.isEmpty() && outstandingNonBulkableRequest.get() == null) {
 					log.trace("Sending onComplete event to subscriber");
 					subscriber.onComplete();
 				}
@@ -113,7 +113,7 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 
 			@Override
 			public void onNext(SearchRequest searchRequest) {
-				log.trace("Search request of class {{}} received from upstream.",
+				log.trace("Search request of class [{}] received from upstream.",
 					searchRequest.getClass().getSimpleName());
 
 				if (canceled.get()) {
@@ -124,7 +124,7 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 						timer.restart();
 					}
 					bulkableRequests.add((Bulkable) searchRequest);
-					log.trace("Added request of class {{}} to the current bulk with the size of now {}.",
+					log.trace("Added request of class [{}] to the current bulk with the size of now {}.",
 						searchRequest.getClass().getSimpleName(), bulkableRequests.size());
 					if (bulkableRequests.size() >= requestLimit || bulkableRequests.getBulkLength() >= lengthLimit) {
 						if (log.isTraceEnabled()) {
@@ -143,7 +143,7 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 				} else {
 					log.trace("Flushing {} requests because non-bulkable request of class {{}} has been received.",
 						bulkableRequests.size(), searchRequest.getClass().getSimpleName());
-					outstandingNonBulkableRequest = searchRequest;
+					outstandingNonBulkableRequest.set(searchRequest);
 					flush();
 				}
 			}

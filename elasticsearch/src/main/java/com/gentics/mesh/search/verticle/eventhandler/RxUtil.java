@@ -4,6 +4,8 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.LongStream;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 
 import io.reactivex.Flowable;
@@ -56,12 +58,21 @@ public final class RxUtil {
 	 * @param delay
 	 * @return
 	 */
-	public static Function<Flowable<Throwable>, Flowable<?>> retryWithDelay(Duration delay) {
+	public static Function<Flowable<Throwable>, Flowable<?>> retryWithDelay(Duration delay, int retryLimit) {
 		return attempts -> attempts
 			.zipWith(
 				LongStream.iterate(1, i -> i + 1)::iterator,
-				(n, i) -> i)
+				Pair::of
+			)
+			.flatMap(item -> {
+				if (item.getRight() > retryLimit) {
+					return Flowable.error(new Exception("Retry limit of " + retryLimit + " reached: ", item.getLeft()));
+				} else {
+					return Flowable.just(item.getRight());
+				}
+			})
 			.doOnNext(i -> log.info("Retry #{} after {}ms", i, delay.toMillis()))
+			.doOnError(err -> log.error("Retry limit of {} reached.", retryLimit))
 			.delay(delay.toMillis(), TimeUnit.MILLISECONDS);
 	}
 }

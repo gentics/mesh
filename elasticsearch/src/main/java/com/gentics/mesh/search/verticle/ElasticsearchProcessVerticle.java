@@ -176,12 +176,18 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			options.getBulkLimit(),
 			options.getBulkLengthLimit()
 		);
-		requests.concatMap(this::generateRequests, 1)
+		requests
+			.compose(this::bufferEvents)
+			.concatMap(this::generateRequests, 1)
 			.lift(bulker)
-			.to(this::bufferRequests)
-			.concatMap(this::sendRequest,1)
+			.concatMap(request ->
+				this.sendRequest(request)
+				// To make sure the subscription stays alive
+				.onErrorResumeNext(Flowable.empty())
+			, 1)
 			// To make sure the subscription stays alive
-			.onErrorResumeNext(Flowable.empty())
+			.doOnError(err -> log.info("Error at end of ES process chain", err))
+			.retry()
 			.subscribe();
 	}
 
@@ -193,24 +199,22 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	 * @param upstream
 	 * @return
 	 */
-	private Flowable<SearchRequest> bufferRequests(Flowable<SearchRequest> upstream) {
-		AtomicInteger bufferedRequests = new AtomicInteger(0);
+	private <T> Flowable<T> bufferEvents(Flowable<T> upstream) {
+		AtomicInteger bufferedEvents = new AtomicInteger(0);
 		return upstream
 			.doOnNext(request -> {
-				int count = request.requestCount();
-				bufferedRequests.addAndGet(count);
+				bufferedEvents.incrementAndGet();
 			})
 			.onBackpressureBuffer(
 				options.getEventBufferSize(),
 				() -> {
-					log.info("Request buffer size of {} was reached. Dropping all pending requests and scheduling index sync.", options.getEventBufferSize());
-					idleChecker.addAndGetRequests(-bufferedRequests.get());
-					bufferedRequests.set(0);
+					log.info("Event buffer size of {} was reached. Dropping all pending events and scheduling index sync.", options.getEventBufferSize());
+					bufferedEvents.set(0);
 					idleChecker.resetTransformations();
 					startSync();
 				}
 		).retry(err -> err instanceof MissingBackpressureException)
-		.doOnNext(request -> bufferedRequests.addAndGet(-request.requestCount()));
+		.doOnNext(request -> bufferedEvents.decrementAndGet());
 	}
 
 	/**
@@ -250,14 +254,17 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			? Flowable.empty()
 			: request.execute(searchProvider)
 			.doOnSubscribe(ignore -> {
-				log.trace("Sending request to Elasticsearch:\n" + request);
+				log.trace("Sending request to Elasticsearch: {}", request);
 			})
-			.doOnComplete(() -> log.trace("Request completed:\n" + request))
+			.doOnComplete(() -> log.trace("Request completed: {}", request))
 			.doOnError(err -> logElasticSearchError(err, () -> log.error("Error after sending request to Elasticsearch", err)))
 			.andThen(Flowable.just(request))
 			.onErrorResumeNext(this::syncIndices)
 			.onErrorResumeNext(ignoreElasticsearchErrors(request))
-			.retryWhen(retryWithDelay(Duration.ofMillis(options.getRetryInterval())))
+			.retryWhen(retryWithDelay(
+				Duration.ofMillis(options.getRetryInterval()),
+				options.getRetryLimit()
+			))
 			.doFinally(() -> idleChecker.addAndGetRequests(-request.requestCount()));
 	}
 
@@ -311,7 +318,10 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 					}
 					idleChecker.addAndGetRequests(request.requestCount());
 				})
-				.retryWhen(retryWithDelay(Duration.ofMillis(options.getRetryInterval())))
+				.retryWhen(retryWithDelay(
+					Duration.ofMillis(options.getRetryInterval()),
+					options.getRetryLimit()
+				))
 				.doOnComplete(() -> log.trace("Done transforming event {}. Transformations pending: {}", messageEvent.event, idleChecker.getTransformations()))
 				.doOnTerminate(idleChecker::decrementAndGetTransformations);
 		} catch (Exception e) {
