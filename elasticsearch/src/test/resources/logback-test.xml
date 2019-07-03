@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration>
+<configuration debug="true">
 
 	<conversionRule conversionWord="meshName" converterClass="com.gentics.mesh.log.MeshLogNameConverter"/>
 
@@ -23,10 +23,10 @@
 		</encoder>
 	</appender>
 
+
 <!-- 
 	<logger name="com.gentics.mesh.rest.client.impl.OkHttpWebsocket" level="TRACE"/>
 	<logger name="io.vertx" level="INFO"/> 
-	<logger name="com.gentics.mesh" level="INFO"/>
 	<logger name="org.elasticsearch" level="INFO"/>
 	<logger name="com.gentics.mesh.rest.MeshResponseHandler" level="TRACE"/>
 	<logger name="com.gentics.mesh.router" level="DEBUG"/>
@@ -42,8 +42,10 @@
 	<logger name="com.gentics.mesh.search.index" level="DEBUG" />
 	<logger name="com.gentics.mesh.event.impl.EventQueueBatchImpl" level="TRACE" />
  -->
-	<logger name="com.gentics.mesh.search.verticle" level="TRACE" />
-	<root level="TRACE">
+
+	<root level="INFO">
 		<appender-ref ref="STDOUT"/>
 	</root>
+	<logger name="com.gentics.mesh" level="INFO"/>
+	<logger name="com.gentics.mesh.search.verticle" level="TRACE" />
 </configuration>

@@ -17,11 +17,12 @@ public class ElasticSearchOptions implements Option {
 	 * Default ES connection details.
 	 */
 	public static final String DEFAULT_URL = "http://localhost:9200";
-	public static final long DEFAULT_TIMEOUT = 8000L;
+	public static final long DEFAULT_TIMEOUT = 60_000L;
 
 	public static final int DEFAULT_STARTUP_TIMEOUT = 45;
 
-	public static final int DEFAULT_BULK_LIMIT = 2000;
+	public static final int DEFAULT_BULK_LIMIT = 100;
+	public static final int DEFAULT_BULK_LENGTH_LIMIT = 100;
 
 	public static final int DEFAULT_EVENT_BUFFER_SIZE = 1000;
 	public static final int DEFAULT_BULK_DEBOUNCE_TIME = 2000;
@@ -46,6 +47,7 @@ public class ElasticSearchOptions implements Option {
 	public static final String MESH_ELASTICSEARCH_START_EMBEDDED_ENV = "MESH_ELASTICSEARCH_START_EMBEDDED";
 	public static final String MESH_ELASTICSEARCH_PREFIX_ENV = "MESH_ELASTICSEARCH_PREFIX";
 	public static final String MESH_ELASTICSEARCH_BULK_LIMIT_ENV = "MESH_ELASTICSEARCH_BULK_LIMIT";
+	public static final String MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT_ENV = "MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT";
 	public static final String MESH_ELASTICSEARCH_EVENT_BUFFER_SIZE_ENV = "MESH_ELASTICSEARCH_EVENT_BUFFER_SIZE";
 	public static final String MESH_ELASTICSEARCH_BULK_DEBOUNCE_TIME_ENV = "MESH_ELASTICSEARCH_BULK_DEBOUNCE_TIME";
 	public static final String MESH_ELASTICSEARCH_IDLE_DEBOUNCE_TIME_ENV = "MESH_ELASTICSEARCH_IDLE_DEBOUNCE_TIME";
@@ -112,6 +114,11 @@ public class ElasticSearchOptions implements Option {
 	@JsonPropertyDescription("Upper limit for the size of bulk requests. Default: " + DEFAULT_BULK_LIMIT)
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_BULK_LIMIT_ENV, description = "Override the batch bulk limit. Default: " + DEFAULT_BULK_LIMIT)
 	private int bulkLimit = DEFAULT_BULK_LIMIT;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Upper limit for the total encoded string length of the bulk requests. Default: " + DEFAULT_BULK_LENGTH_LIMIT)
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT_ENV, description = "Override the batch bulk limit. Default: " + DEFAULT_BULK_LENGTH_LIMIT)
+	private long bulkLengthLimit;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Upper limit for mesh events that are to be mapped to elastic search requests. Default: "
@@ -279,6 +286,15 @@ public class ElasticSearchOptions implements Option {
 		return this;
 	}
 
+	public long getBulkLengthLimit() {
+		return bulkLengthLimit;
+	}
+
+	public ElasticSearchOptions setBulkLengthLimit(long bulkLengthLimit) {
+		this.bulkLengthLimit = bulkLengthLimit;
+		return this;
+	}
+
 	public String getPrefix() {
 		return prefix;
 	}
@@ -336,5 +352,4 @@ public class ElasticSearchOptions implements Option {
 	public void validate(MeshOptions meshOptions) {
 
 	}
-
 }
