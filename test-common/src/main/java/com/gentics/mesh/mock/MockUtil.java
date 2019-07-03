@@ -1,12 +1,21 @@
 package com.gentics.mesh.mock;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collector;
+import java.util.stream.Stream;
 
+import io.vertx.core.http.CaseInsensitiveHeaders;
+import io.vertx.ext.web.Route;
+import org.apache.commons.lang3.tuple.Pair;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.plugin.PluginContext;
@@ -37,32 +46,58 @@ public class MockUtil {
 		T rc = mock(clazz);
 		Session session = mock(Session.class);
 		HttpServerRequest request = mock(HttpServerRequest.class);
+
 		when(request.query()).thenReturn(query);
-		Map<String, String> paramMap = new HashMap<>();
-		MultiMap paramMultiMap = MultiMap.caseInsensitiveMultiMap();
-		for (Entry<String, String> entry : paramMap.entrySet()) {
-			paramMultiMap.add(entry.getKey(), entry.getValue());
-		}
+
+		MultiMap params = createParameterMap(query);
+		Route routeMock = mock(Route.class);
+
+		when(routeMock.getPath()).thenReturn(uri);
+		when(rc.currentRoute()).thenReturn(routeMock);
 		when(request.absoluteURI()).thenReturn(uri);
-		when(request.params()).thenReturn(paramMultiMap);
-		when(request.getParam(Mockito.anyString())).thenAnswer(in -> {
-			String key = (String) in.getArguments()[0];
-			return paramMap.get(key);
-		});
-		paramMap.entrySet().stream().forEach(entry -> when(request.getParam(entry.getKey())).thenReturn(entry.getValue()));
+		when(request.params()).thenReturn(params);
+		when(request.getParam(anyString())).thenAnswer(in -> params.get(in.getArgumentAt(0, String.class)));
 
 		when(rc.data()).thenReturn(map);
-		MultiMap headerMap = mock(MultiMap.class);
-		when(headerMap.get("Accept-Language")).thenReturn("en, en-gb;q=0.8, en;q=0.72");
+		when(rc.put(anyString(), any())).thenAnswer(in -> {
+			map.put(in.getArgumentAt(0, String.class), in.getArgumentAt(1, Object.class));
+			return rc;
+		});
+		when(rc.get(anyString())).thenAnswer(in -> map.get(in.getArgumentAt(0, String.class)));
+
+		MultiMap headerMap = new CaseInsensitiveHeaders();
+
+		headerMap.add("Accept-Language", "en, en-gb;q=0.8, en;q=0.72");
 		when(request.headers()).thenReturn(headerMap);
 		when(rc.request()).thenReturn(request);
 		when(rc.session()).thenReturn(session);
 
 		// Response
 		HttpServerResponse response = mock(HttpServerResponse.class);
-		when(response.setStatusCode(Mockito.anyInt())).thenReturn(response);
-		when(response.putHeader((CharSequence) Mockito.anyObject(), (CharSequence) Mockito.anyObject())).thenReturn(response);
+		when(response.setStatusCode(anyInt())).thenReturn(response);
+		when(response.putHeader(anyObject(), (CharSequence) anyObject())).thenReturn(response);
+		when(response.setStatusCode(anyInt())).thenReturn(response);
+		when(response.setStatusMessage(anyString())).thenReturn(response);
 		when(rc.response()).thenReturn(response);
+
 		return rc;
+	}
+
+	/**
+	 * Create a parameter {@link MultiMap} from the specified query string.
+	 *
+	 * @param query The query part of an URI
+	 * @return A parameter map containing the elements in the specified query string
+	 */
+	private static MultiMap createParameterMap(String query) {
+		Collector<Entry<String, String>, MultiMap, MultiMap> multiMapCollector = Collector.of(
+			MultiMap::caseInsensitiveMultiMap,
+			(map, item) -> map.add(item.getKey(), item.getValue()),
+			(u, v) -> u.addAll(v));
+
+		return Stream.of(query.split("&"))
+			.map(p -> p.split("="))
+			.map(p -> Pair.of(p[0], p.length > 1 ? p[1] : null))
+			.collect(multiMapCollector);
 	}
 }
