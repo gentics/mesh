@@ -24,13 +24,15 @@ include::content/docs/variables.adoc-include[]
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 [[v0.36.3]]
-== 0.36.3 (02.07.2019)
+== 0.36.3 (04.07.2019)
 
-icon:plus[] Search: Two new options have been added to the mesh search configuration. When the encoded request length exceeds the new `bulkLengthLimit`, no new documents will be added to the bulk and the bulk will be sent to Elasticsearch. The new `retryLimit` causes Gentics Mesh to drop a request to Elasticsearch after the configured limit has been reached.
+icon:plus[] Search: Two new options have been added to the mesh search configuration. When the encoded request length exceeds the new `bulkLengthLimit`, no new documents will be added to the bulk and the bulk will be sent to Elasticsearch. The new `retryLimit` causes Gentics Mesh to drop a request to Elasticsearch after the configured limit has been reached. link:https://github.com/gentics/mesh/issues/784[#784]
 
-icon:check[] Search: Backpressure for handling index requests has been improved. This reduces memory usage when indexing large amounts of data in a short period of time.
+icon:check[] Search: Backpressure for handling index requests has been improved. This reduces memory usage when indexing large amounts of data in a short period of time. link:https://github.com/gentics/mesh/issues/785[#785]
 
 icon:check[] Search: Some default configuration values have been changed. `timeout`: `8000` -> `60000`, `bulkLimit`: `2000` ->  `100`. These changes will not be applied to existing configurations.
+
+icon:check[] REST: Various branch specific internal checks have been updated to fix potential error cases. link:https://github.com/gentics/mesh/issues/787[#787]
 
 icon:check[] Logging: The default logging configuration now includes the Java class for each log message.
 
@@ -39,7 +41,7 @@ icon:check[] Logging: The default logging configuration now includes the Java cl
 
 icon:check[] Search: Encoding issues which happen on systems which were not using `UTF-8` as default locale have been fixed by updating the underlying Elasticsearch client. link:https://github.com/gentics/mesh/issues/498[498]
 
-icon:plus[] Search: It is now possible to use encrypted and authenticated connections between Gentics Mesh and Elasticsearch. New settings and environment variables have been added. Details can be found in the link:{{< relref "elasticsearch.asciidoc" >}}#_security[Elasticsearch documentation] https://github.com/gentics/mesh/issues/759[#759]
+icon:plus[] Search: It is now possible to use encrypted and authenticated connections between Gentics Mesh and Elasticsearch. New settings and environment variables have been added. Details can be found in the link:{{< relref "elasticsearch.asciidoc" >}}#_security[Elasticsearch documentation] link:https://github.com/gentics/mesh/issues/759[#759]
 
 icon:plus[] Security: The 'spring-security' library has been updated.
 
