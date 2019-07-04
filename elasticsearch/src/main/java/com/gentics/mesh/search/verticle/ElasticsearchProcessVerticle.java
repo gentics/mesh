@@ -257,7 +257,10 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 				log.trace("Sending request to Elasticsearch: {}", request);
 			})
 			.doOnComplete(() -> log.trace("Request completed: {}", request))
-			.doOnError(err -> logElasticSearchError(err, () -> log.error("Error after sending request to Elasticsearch", err)))
+			.doOnError(err -> logElasticSearchError(err, () -> {
+				log.error("Error for request: {}", request);
+				log.error("Error after sending request to Elasticsearch", err);
+			}))
 			.andThen(Flowable.just(request))
 			.onErrorResumeNext(this::syncIndices)
 			.onErrorResumeNext(ignoreElasticsearchErrors(request))
@@ -265,7 +268,10 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 				Duration.ofMillis(options.getRetryInterval()),
 				options.getRetryLimit()
 			))
-			.doFinally(() -> idleChecker.addAndGetRequests(-request.requestCount()));
+			.doFinally(() -> {
+				log.trace("Request-{}", request);
+				idleChecker.addAndGetRequests(-request.requestCount());
+			});
 	}
 
 	/**
@@ -279,6 +285,11 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 				.anyMatch(err -> "index_not_found_exception".equals(err.getType()));
 			if (indexNotFound && !stopped.get()) {
 				return syncEventHandler.generateSyncRequests()
+					.doOnNext(request -> {
+						log.trace("SyncRequest+{}", request);
+						idleChecker.addAndGetRequests(request.requestCount());
+					})
+					.doOnSubscribe(ignore -> log.trace("Index not found. Resyncing."))
 					.concatMap(this::sendRequest, 1);
 			}
 		}
@@ -314,7 +325,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			return this.mainEventhandler.handle(messageEvent)
 				.doOnNext(request -> {
 					if (log.isTraceEnabled()) {
-						log.trace(String.format("Generated request of class {%s}", request.getClass().getSimpleName()));
+						log.trace("Request+{}", request);
 					}
 					idleChecker.addAndGetRequests(request.requestCount());
 				})

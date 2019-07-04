@@ -1,9 +1,10 @@
 package com.gentics.mesh.search.verticle.bulk;
 
 import java.time.Duration;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -54,12 +55,13 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 			log.warn("More than one subscriber for the same operator detected. Flush will only work for the newest subscriber.");
 		}
 		operator = new ActualBulkOperator<SearchRequest>() {
+			private final AtomicBoolean flushing = new AtomicBoolean(false);
 			private boolean upstreamCompleted = false;
 			private final AtomicLong requested = new AtomicLong(0);
 			private final AtomicBoolean canceled = new AtomicBoolean(false);
 			private Subscription subscription;
 			private final BulkQueue bulkableRequests = new BulkQueue();
-			private final AtomicReference<SearchRequest> outstandingNonBulkableRequest = new AtomicReference<>();
+			private final Queue<SearchRequest> nonBulkableRequests = new ConcurrentLinkedQueue<>();
 
 			private final BulkTimer timer = new BulkTimer(vertx, bulkTime, () -> {
 				log.trace("Flushing {} requests because time limit of {}ms has been reached.",
@@ -69,8 +71,13 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 
 			@Override
 			public void flush() {
-				timer.stop();
-				if (!canceled.get() && requested.get() > 0 && !bulkableRequests.isEmpty()) {
+				flushing.set(true);
+				drain();
+			}
+
+			public void drain() {
+				if (!canceled.get() && requested.get() > 0 && !bulkableRequests.isEmpty() && flushing.compareAndSet(true, false)) {
+					timer.stop();
 					log.trace("Emitting bulk of size {} to subscriber", bulkableRequests.size());
 					BulkRequest request = new BulkRequest(bulkableRequests.asList());
 					bulkableRequests.clear();
@@ -81,13 +88,14 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 					BackpressureHelper.produced(requested, 1);
 				}
 
-				if (!canceled.get() && requested.get() > 0 && outstandingNonBulkableRequest.get() != null) {
-					log.trace("Emitting remaining non bulkable request to subscriber", bulkableRequests.size());
-					subscriber.onNext(outstandingNonBulkableRequest.getAndSet(null));
+				if (!canceled.get() && requested.get() > 0 && !nonBulkableRequests.isEmpty()) {
+					SearchRequest request = nonBulkableRequests.remove();
+					log.trace("Emitting remaining non bulkable request to subscriber: {}", request);
+					subscriber.onNext(request);
 					BackpressureHelper.produced(requested, 1);
 				}
 
-				if (upstreamCompleted && bulkableRequests.isEmpty() && outstandingNonBulkableRequest.get() == null) {
+				if (upstreamCompleted && bulkableRequests.isEmpty() && !nonBulkableRequests.isEmpty()) {
 					log.trace("Sending onComplete event to subscriber");
 					subscriber.onComplete();
 				}
@@ -117,7 +125,7 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 			@Override
 			public void onNext(SearchRequest searchRequest) {
 				log.trace("Search request of class [{}] received from upstream.",
-					searchRequest.getClass().getSimpleName());
+					searchRequest.getClass());
 
 				if (canceled.get()) {
 					return;
@@ -128,7 +136,7 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 					}
 					bulkableRequests.add((Bulkable) searchRequest);
 					log.trace("Added request of class [{}] to the current bulk with the size of now {}.",
-						searchRequest.getClass().getSimpleName(), bulkableRequests.size());
+						searchRequest.getClass(), bulkableRequests.size());
 					if (bulkableRequests.size() >= requestLimit || bulkableRequests.getBulkLength() >= lengthLimit) {
 						if (log.isTraceEnabled()) {
 							if (bulkableRequests.size() >= requestLimit) {
@@ -145,8 +153,8 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 					}
 				} else {
 					log.trace("Flushing {} requests because non-bulkable request of class {{}} has been received.",
-						bulkableRequests.size(), searchRequest.getClass().getSimpleName());
-					outstandingNonBulkableRequest.set(searchRequest);
+						bulkableRequests.size(), searchRequest.getClass());
+					nonBulkableRequests.add(searchRequest);
 					flush();
 				}
 			}
@@ -175,7 +183,7 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 			public void request(long n) {
 				log.trace("Downstream requested {} items", n);
 				BackpressureHelper.add(requested, n);
-				flush();
+				drain();
 			}
 
 			@Override
