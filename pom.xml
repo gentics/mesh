@@ -30,8 +30,13 @@
 		<surefire.jvm.postfix></surefire.jvm.postfix>
 		<skip.unit.tests>false</skip.unit.tests>
 		<skip.cluster.tests>false</skip.cluster.tests>
-		<skip.jacoco.merge>true</skip.jacoco.merge>
+
+		<!-- Jacoco -->
+		<jacoco.skip.merge>true</jacoco.skip.merge>
 		<jacoco.version>0.8.4</jacoco.version>
+		<jacoco.skip>true</jacoco.skip>
+		<jacoco.env></jacoco.env>
+
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
 		<mesh.image.provider>mesh-service-image-imgscalr</mesh.image.provider>
 		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
@@ -271,7 +276,7 @@
 							</goals>
 							<phase>install</phase>
 							<configuration>
-								<skip>${skip.jacoco.merge}</skip>
+								<skip>${jacoco.skip.merge}</skip>
 								<destFile>${project.build.directory}/jacoco.exec</destFile>
 								<fileSets>
 									<fileSet>
@@ -347,6 +352,8 @@
 							<goal>prepare-agent</goal>
 						</goals>
 						<configuration>
+							<skip>${jacoco.skip}</skip>
+							<propertyName>jacoco.env</propertyName>
 							<destFile>${project.build.directory}/jacoco-partial.exec</destFile>
 							<excludes>
 								<exclude>*OrientSqlTokenManager*</exclude>
@@ -361,7 +368,7 @@
 				<configuration>
 					<skip>${skip.unit.tests}</skip>
 					<jvm>${env.JAVA_1_11_HOME}/bin/java</jvm>
-					<argLine>-Xms128m -Xmx256m -XX:MaxDirectMemorySize=128m -Dstorage.diskCache.bufferSize=128 ${argLine}</argLine>
+					<argLine>-Xms128m -Xmx256m -XX:MaxDirectMemorySize=128m -Dstorage.diskCache.bufferSize=128 ${jacoco.env}</argLine>
 					<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
 					<rerunFailingTestsCount>0</rerunFailingTestsCount>
 					<reuseForks>false</reuseForks>

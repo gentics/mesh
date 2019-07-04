@@ -51,10 +51,14 @@ stage("Setup Build Environment") {
 
 			stage("Prebuild") {
 				if (Boolean.valueOf(params.runTests)) {
+					def extraFlags = ""
+					if (Boolean.valueOf(params.runSonar)) {
+						extraFlags = "-Djacoco.skip=false"
+					}
 					// Install is needed to provide deps for the test plugin build
-					sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -DskipTests clean install"
+					sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -DskipTests ${extraFlags} clean install"
 				} else {
-				        echo "Omitted since we don't execute tests"
+				    echo "Omitted since we don't execute tests"
 				}
 			}
 
@@ -83,7 +87,8 @@ stage("Setup Build Environment") {
 										}
 										sshagent(["git"]) {
 											try {
-												sh ".jenkins/run-splits.sh includes-${postfix}"
+												def jacoco = Boolean.valueOf(params.runSonar);
+												sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco}"
 												stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
 											} finally {
 												step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
@@ -136,7 +141,7 @@ stage("Setup Build Environment") {
 						for (int i = 0; i < runs; i++) {
 							echo "Invoking merge for " + i
 							unstash "jacoco" + i
-							sh "mvn jacoco:merge@merge-all-jacoco -Dskip.jacoco.merge=false"
+							sh "mvn jacoco:merge@merge-all-jacoco -Djacoco.skip.merge=false"
 							sh "find -name jacoco-partial.exec -exec rm {} \\;"
 						}
 					}

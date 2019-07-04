@@ -10,5 +10,6 @@ if [ -z "$tests" ] ; then
   exit 10
 fi
 echo "Running tests: $tests"
-
-time mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -e -pl '!demo,!doc,!performance-tests' test -Dtest=$tests -DfailIfNoTests=false
+jacoco=$2
+echo "Using jacoco: $jacoco"
+time mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -e -pl '!demo,!doc,!performance-tests' test -Dtest=$tests -DfailIfNoTests=false -Djacoco.skip=$jacoco
