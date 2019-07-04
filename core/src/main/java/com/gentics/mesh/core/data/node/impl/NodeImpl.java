@@ -518,18 +518,18 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public SchemaContainer getSchemaContainer() {
-		return out(HAS_SCHEMA_CONTAINER).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
+		return out(HAS_SCHEMA_CONTAINER, SchemaContainerImpl.class).nextOrNull();
 	}
 
 	@Override
 	public TraversalResult<? extends Node> getChildren() {
-		return new TraversalResult<>(in(HAS_PARENT_NODE).frameExplicit(NodeImpl.class));
+		return in(HAS_PARENT_NODE, NodeImpl.class);
 	}
 
 	@Override
 	public TraversalResult<Node> getChildren(String branchUuid) {
 		Database db = MeshInternal.get().database();
-		FramedGraph graph = Tx.getActive().getGraph();
+		FramedGraph graph = Tx.get().getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_branch", db.createComposedIndexKey(id(), branchUuid));
 		Iterator<Edge> it = edges.iterator();
 		Iterable<Edge> iterable = () -> it;
@@ -565,7 +565,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public Node getParentNode(String branchUuid) {
 		Database db = MeshInternal.get().database();
-		FramedGraph graph = Tx.getActive().getGraph();
+		FramedGraph graph = Tx.get().getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_branch_out", db.createComposedIndexKey(id(), branchUuid));
 		Iterator<Edge> it = edges.iterator();
 		if (it.hasNext()) {
@@ -1191,13 +1191,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public void publish(InternalActionContext ac, Branch branch, BulkActionContext bac) {
 		PublishParameters parameters = ac.getPublishParameters();
 
-		// .store(this, branchUuid, ContainerType.PUBLISHED, false);
 		bac.batch().add(onUpdated());
 
 		// Handle recursion
 		if (parameters.isRecursive()) {
-			// TODO handle specific branch
-			for (Node child : getChildren()) {
+			for (Node child : getChildren(branch.getUuid())) {
 				child.publish(ac, branch, bac);
 			}
 		}
@@ -1226,8 +1224,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// level the consistency is correct.
 		PublishParameters parameters = ac.getPublishParameters();
 		if (parameters.isRecursive()) {
-			// TODO handle specific branch
-			for (Node node : getChildren()) {
+			for (Node node : getChildren(branchUuid)) {
 				node.publish(ac, bac);
 			}
 		}
@@ -1239,7 +1236,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Handle recursion first to start at the leafs
 		if (parameters.isRecursive()) {
-			for (Node node : getChildren()) {
+			for (Node node : getChildren(branch.getUuid())) {
 				node.takeOffline(ac, bac, branch, parameters);
 			}
 		}
@@ -1442,8 +1439,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting node {" + getUuid() + "}");
 		}
-		// TODO Only affect a specific branch?
 		if (recursive) {
+			// No need to check the branch since this delete must affect all branches
 			for (Node child : getChildren()) {
 				child.delete(bac);
 				bac.process();
@@ -1618,7 +1615,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
 		Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
-			// TODO for branch?
+			// We don't need to filter by branch. Branch nodes can't have dedicated perms
 			for (Node child : getChildren()) {
 				child.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 			}
