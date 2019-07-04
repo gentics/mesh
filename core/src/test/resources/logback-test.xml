@@ -43,7 +43,7 @@
 	<logger name="com.gentics.mesh.event.impl.EventQueueBatchImpl" level="TRACE" />
 	<logger name="com.gentics.mesh.search.verticle" level="TRACE" />
  -->
-	<root level="INFO">
+	<root level="ERROR">
 		<appender-ref ref="STDOUT"/>
 	</root>
 </configuration>
