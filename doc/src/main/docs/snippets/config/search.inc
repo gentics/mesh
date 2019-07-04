@@ -11,7 +11,7 @@
 | ```search.startEmbedded```        | Boolean    | `true`                  | Flag that is used to enable or disable the automatic startup and handling of the embedded Elasticsearch server.
 | ```search.embeddedArguments```    | String     | Default JVM Arguments   | Set the JVM arguments for the embedded Elasticsearch server process.
 | ```search.prefix```               | String     | `mesh-`                 | Elasticsearch installation prefix. Multiple Gentics Mesh installations with different prefixes can utilize the same Elasticsearch server.
-| ```search.bulkLimit```            | Number     | `2000`                  | Upper size limit for bulk requests.
+| ```search.bulkLimit```            | Number     | `100`                  | Upper size limit for bulk requests.
 | ```search.bulkLengthLimit```      | Number     | `5000000`               | Upper limit for the total encoded string length of the bulk requests.
 | ```search.eventBufferSize```      | Number     | `1000`                  | Upper limit for mesh events that are to be mapped to elastic search requests.
 | ```search.bulkDebounceTime```     | Number     | `2000`                  | The maximum amount of time in milliseconds between two bulkable requests before they are sent.
