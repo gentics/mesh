@@ -464,7 +464,7 @@ public class MeshTestContext extends TestWatcher {
 
 		switch (settings.elasticsearch()) {
 		case CONTAINER:
-			elasticsearch = new ElasticsearchContainer(false);
+			elasticsearch = new ElasticsearchContainer();
 			if (!elasticsearch.isRunning()) {
 				elasticsearch.start();
 			}
@@ -475,7 +475,7 @@ public class MeshTestContext extends TestWatcher {
 			break;
 		case CONTAINER_TOXIC:
 			network = Network.newNetwork();
-			elasticsearch = new ElasticsearchContainer(false).withNetwork(network);
+			elasticsearch = new ElasticsearchContainer().withNetwork(network);
 			elasticsearch.waitingFor(Wait.forHttp(("/")));
 			toxiproxy = new ToxiproxyContainer().withNetwork(network);
 			if (!toxiproxy.isRunning()) {
