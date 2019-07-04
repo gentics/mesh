@@ -33,6 +33,7 @@ public class BulkRequest implements Bulkable {
 
 	@Override
 	public int requestCount() {
+		// TODO cache
 		return requests.stream()
 			.mapToInt(SearchRequest::requestCount)
 			.sum();
@@ -53,10 +54,18 @@ public class BulkRequest implements Bulkable {
 
 	@Override
 	public String toString() {
-		return requests.size() + " bulked requests";
+		return requests.size() + " bulked requests. " + requests;
 	}
 
 	public Collection<Bulkable> getRequests() {
 		return requests;
+	}
+
+	@Override
+	public long bulkLength() {
+		// TODO cache
+		return requests.stream()
+			.mapToLong(Bulkable::bulkLength)
+			.sum();
 	}
 }

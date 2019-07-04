@@ -17,16 +17,18 @@ public class ElasticSearchOptions implements Option {
 	 * Default ES connection details.
 	 */
 	public static final String DEFAULT_URL = "http://localhost:9200";
-	public static final long DEFAULT_TIMEOUT = 8000L;
+	public static final long DEFAULT_TIMEOUT = 60_000L;
 
 	public static final int DEFAULT_STARTUP_TIMEOUT = 45;
 
-	public static final int DEFAULT_BULK_LIMIT = 2000;
+	public static final int DEFAULT_BULK_LIMIT = 100;
+	public static final int DEFAULT_BULK_LENGTH_LIMIT = 5_000_000;
 
 	public static final int DEFAULT_EVENT_BUFFER_SIZE = 1000;
 	public static final int DEFAULT_BULK_DEBOUNCE_TIME = 2000;
 	public static final int DEFAULT_IDLE_DEBOUNCE_TIME = 100;
 	public static final int DEFAULT_RETRY_INTERVAL = 5000;
+	public static final int DEFAULT_RETRY_LIMIT = 3;
 	public static final boolean DEFAULT_WAIT_FOR_IDLE = true;
 
 	public static final String DEFAULT_PREFIX = "mesh-";
@@ -46,10 +48,12 @@ public class ElasticSearchOptions implements Option {
 	public static final String MESH_ELASTICSEARCH_START_EMBEDDED_ENV = "MESH_ELASTICSEARCH_START_EMBEDDED";
 	public static final String MESH_ELASTICSEARCH_PREFIX_ENV = "MESH_ELASTICSEARCH_PREFIX";
 	public static final String MESH_ELASTICSEARCH_BULK_LIMIT_ENV = "MESH_ELASTICSEARCH_BULK_LIMIT";
+	public static final String MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT_ENV = "MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT";
 	public static final String MESH_ELASTICSEARCH_EVENT_BUFFER_SIZE_ENV = "MESH_ELASTICSEARCH_EVENT_BUFFER_SIZE";
 	public static final String MESH_ELASTICSEARCH_BULK_DEBOUNCE_TIME_ENV = "MESH_ELASTICSEARCH_BULK_DEBOUNCE_TIME";
 	public static final String MESH_ELASTICSEARCH_IDLE_DEBOUNCE_TIME_ENV = "MESH_ELASTICSEARCH_IDLE_DEBOUNCE_TIME";
 	public static final String MESH_ELASTICSEARCH_RETRY_INTERVAL_ENV = "MESH_ELASTICSEARCH_RETRY_INTERVAL";
+	public static final String MESH_ELASTICSEARCH_RETRY_LIMIT_ENV = "MESH_ELASTICSEARCH_RETRY_LIMIT";
 	public static final String MESH_ELASTICSEARCH_WAIT_FOR_IDLE_ENV = "MESH_ELASTICSEARCH_WAIT_FOR_IDLE";
 	public static final String MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION_ENV = "MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION";
 
@@ -114,6 +118,11 @@ public class ElasticSearchOptions implements Option {
 	private int bulkLimit = DEFAULT_BULK_LIMIT;
 
 	@JsonProperty(required = false)
+	@JsonPropertyDescription("Upper limit for the total encoded string length of the bulk requests. Default: " + DEFAULT_BULK_LENGTH_LIMIT)
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT_ENV, description = "Override the batch bulk length limit. Default: " + DEFAULT_BULK_LENGTH_LIMIT)
+	private long bulkLengthLimit = DEFAULT_BULK_LENGTH_LIMIT;
+
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Upper limit for mesh events that are to be mapped to elastic search requests. Default: "
 		+ DEFAULT_EVENT_BUFFER_SIZE)
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_EVENT_BUFFER_SIZE_ENV, description = "Override the configured event buffer size.")
@@ -136,6 +145,12 @@ public class ElasticSearchOptions implements Option {
 		+ DEFAULT_RETRY_INTERVAL)
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_RETRY_INTERVAL_ENV, description = "Override the retry interval.")
 	private int retryInterval = DEFAULT_RETRY_INTERVAL;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("The amount of retries on a single request before the request is discarded. Default: "
+		+ DEFAULT_RETRY_LIMIT)
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_RETRY_LIMIT_ENV, description = "Override the retry limit.")
+	private int retryLimit = DEFAULT_RETRY_LIMIT;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("If true, search endpoints wait for elasticsearch to be idle before sending a response. Default: "
@@ -279,6 +294,15 @@ public class ElasticSearchOptions implements Option {
 		return this;
 	}
 
+	public long getBulkLengthLimit() {
+		return bulkLengthLimit;
+	}
+
+	public ElasticSearchOptions setBulkLengthLimit(long bulkLengthLimit) {
+		this.bulkLengthLimit = bulkLengthLimit;
+		return this;
+	}
+
 	public String getPrefix() {
 		return prefix;
 	}
@@ -337,4 +361,12 @@ public class ElasticSearchOptions implements Option {
 
 	}
 
+	public int getRetryLimit() {
+		return retryLimit;
+	}
+
+	public ElasticSearchOptions setRetryLimit(int retryLimit) {
+		this.retryLimit = retryLimit;
+		return this;
+	}
 }

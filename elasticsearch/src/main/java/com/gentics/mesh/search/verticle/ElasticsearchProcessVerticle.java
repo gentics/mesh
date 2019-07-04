@@ -1,33 +1,12 @@
 package com.gentics.mesh.search.verticle;
 
-import com.gentics.mesh.core.data.search.request.SearchRequest;
-import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.event.MeshEventModel;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
-import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.impl.ElasticsearchResponseErrorStreamable;
-import com.gentics.mesh.search.verticle.eventhandler.MainEventHandler;
-import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.Observable;
-import io.reactivex.Single;
-import io.reactivex.exceptions.MissingBackpressureException;
-import io.reactivex.subjects.BehaviorSubject;
-import io.reactivex.subjects.PublishSubject;
-import io.reactivex.subjects.Subject;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.core.eventbus.MessageConsumer;
+import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_REQUEST;
+import static com.gentics.mesh.core.rest.MeshEvent.IS_SEARCH_IDLE;
+import static com.gentics.mesh.core.rest.MeshEvent.SEARCH_FLUSH_REQUEST;
+import static com.gentics.mesh.core.rest.MeshEvent.SEARCH_REFRESH_REQUEST;
+import static com.gentics.mesh.search.verticle.eventhandler.RxUtil.retryWithDelay;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.logElasticSearchError;
 
-import javax.inject.Inject;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -36,12 +15,35 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_REQUEST;
-import static com.gentics.mesh.core.rest.MeshEvent.IS_SEARCH_IDLE;
-import static com.gentics.mesh.core.rest.MeshEvent.SEARCH_FLUSH_REQUEST;
-import static com.gentics.mesh.core.rest.MeshEvent.SEARCH_REFRESH_REQUEST;
-import static com.gentics.mesh.search.verticle.eventhandler.RxUtil.retryWithDelay;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.logElasticSearchError;
+import javax.inject.Inject;
+
+import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
+import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.impl.ElasticsearchResponseErrorStreamable;
+import com.gentics.mesh.search.verticle.bulk.BulkOperator;
+import com.gentics.mesh.search.verticle.eventhandler.MainEventHandler;
+import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
+
+import io.reactivex.Completable;
+import io.reactivex.Flowable;
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.exceptions.MissingBackpressureException;
+import io.reactivex.processors.FlowableProcessor;
+import io.reactivex.processors.PublishProcessor;
+import io.reactivex.subjects.BehaviorSubject;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.eventbus.MessageConsumer;
 
 /**
  * <p>Listens to events that require a change in elasticsearch.</p>
@@ -62,7 +64,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	private final SyncEventHandler syncEventHandler;
 	private final ElasticSearchOptions options;
 
-	private Subject<MessageEvent> requests = PublishSubject.create();
+	private FlowableProcessor<MessageEvent> requests = PublishProcessor.create();
 
 	private List<MessageConsumer<JsonObject>> vertxHandlers;
 	private final AtomicBoolean stopped = new AtomicBoolean(false);
@@ -169,13 +171,23 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	 * Assembles the main Flowable through which all requests are processed.
 	 */
 	private void assemble() {
-		BulkOperator bulker = new BulkOperator(vertx, Duration.ofMillis(options.getBulkDebounceTime()), options.getBulkLimit());
-		requests.concatMap(event -> generateRequests(event).toObservable(), 1)
+		BulkOperator bulker = new BulkOperator(vertx,
+			Duration.ofMillis(options.getBulkDebounceTime()),
+			options.getBulkLimit(),
+			options.getBulkLengthLimit()
+		);
+		requests
+			.compose(this::bufferEvents)
+			.concatMap(this::generateRequests, 1)
 			.lift(bulker)
-			.to(this::bufferRequests)
-			.concatMap(this::sendRequest,1)
+			.concatMap(request ->
+				this.sendRequest(request)
+				// To make sure the subscription stays alive
+				.onErrorResumeNext(Flowable.empty())
+			, 1)
 			// To make sure the subscription stays alive
-			.onErrorResumeNext(Flowable.empty())
+			.doOnError(err -> log.info("Error at end of ES process chain", err))
+			.retry()
 			.subscribe();
 	}
 
@@ -187,25 +199,22 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	 * @param upstream
 	 * @return
 	 */
-	private Flowable<SearchRequest> bufferRequests(Observable<SearchRequest> upstream) {
-		AtomicInteger bufferedRequests = new AtomicInteger(0);
+	private <T> Flowable<T> bufferEvents(Flowable<T> upstream) {
+		AtomicInteger bufferedEvents = new AtomicInteger(0);
 		return upstream
 			.doOnNext(request -> {
-				int count = request.requestCount();
-				bufferedRequests.addAndGet(count);
+				bufferedEvents.incrementAndGet();
 			})
-			.toFlowable(BackpressureStrategy.MISSING)
 			.onBackpressureBuffer(
 				options.getEventBufferSize(),
 				() -> {
-					log.info("Request buffer size of {} was reached. Dropping all pending requests and scheduling index sync.", options.getEventBufferSize());
-					idleChecker.addAndGetRequests(-bufferedRequests.get());
-					bufferedRequests.set(0);
+					log.info("Event buffer size of {} was reached. Dropping all pending events and scheduling index sync.", options.getEventBufferSize());
+					bufferedEvents.set(0);
 					idleChecker.resetTransformations();
 					startSync();
 				}
 		).retry(err -> err instanceof MissingBackpressureException)
-		.doOnNext(request -> bufferedRequests.addAndGet(-request.requestCount()));
+		.doOnNext(request -> bufferedEvents.decrementAndGet());
 	}
 
 	/**
@@ -245,15 +254,24 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			? Flowable.empty()
 			: request.execute(searchProvider)
 			.doOnSubscribe(ignore -> {
-				log.trace("Sending request to Elasticsearch:\n" + request);
+				log.trace("Sending request to Elasticsearch: {}", request);
 			})
-			.doOnComplete(() -> log.trace("Request completed:\n" + request))
-			.doOnError(err -> logElasticSearchError(err, () -> log.error("Error after sending request to Elasticsearch", err)))
+			.doOnComplete(() -> log.trace("Request completed: {}", request))
+			.doOnError(err -> logElasticSearchError(err, () -> {
+				log.error("Error for request: {}", request);
+				log.error("Error after sending request to Elasticsearch", err);
+			}))
 			.andThen(Flowable.just(request))
 			.onErrorResumeNext(this::syncIndices)
 			.onErrorResumeNext(ignoreElasticsearchErrors(request))
-			.retryWhen(retryWithDelay(Duration.ofMillis(options.getRetryInterval())))
-			.doFinally(() -> idleChecker.addAndGetRequests(-request.requestCount()));
+			.retryWhen(retryWithDelay(
+				Duration.ofMillis(options.getRetryInterval()),
+				options.getRetryLimit()
+			))
+			.doFinally(() -> {
+				log.trace("Request-{}", request);
+				idleChecker.addAndGetRequests(-request.requestCount());
+			});
 	}
 
 	/**
@@ -267,6 +285,11 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 				.anyMatch(err -> "index_not_found_exception".equals(err.getType()));
 			if (indexNotFound && !stopped.get()) {
 				return syncEventHandler.generateSyncRequests()
+					.doOnNext(request -> {
+						log.trace("SyncRequest+{}", request);
+						idleChecker.addAndGetRequests(request.requestCount());
+					})
+					.doOnSubscribe(ignore -> log.trace("Index not found. Resyncing."))
 					.concatMap(this::sendRequest, 1);
 			}
 		}
@@ -302,11 +325,14 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			return this.mainEventhandler.handle(messageEvent)
 				.doOnNext(request -> {
 					if (log.isTraceEnabled()) {
-						log.trace(String.format("Generated request of class {%s}", request.getClass().getSimpleName()));
+						log.trace("Request+{}", request);
 					}
 					idleChecker.addAndGetRequests(request.requestCount());
 				})
-				.retryWhen(retryWithDelay(Duration.ofMillis(options.getRetryInterval())))
+				.retryWhen(retryWithDelay(
+					Duration.ofMillis(options.getRetryInterval()),
+					options.getRetryLimit()
+				))
 				.doOnComplete(() -> log.trace("Done transforming event {}. Transformations pending: {}", messageEvent.event, idleChecker.getTransformations()))
 				.doOnTerminate(idleChecker::decrementAndGetTransformations);
 		} catch (Exception e) {

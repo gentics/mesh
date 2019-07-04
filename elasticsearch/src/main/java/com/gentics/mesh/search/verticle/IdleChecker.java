@@ -82,7 +82,12 @@ public class IdleChecker {
 	 * @return
 	 */
 	public int decrementAndGetTransformations() {
-		return checkIdle(transformations.decrementAndGet());
+		// When dropping all events it can happen that pending transformations are not dropped. This is to prevent
+		// the counter to go below 0.
+		return checkIdle(transformations.updateAndGet(x -> x <= 0
+			? 0
+			: x - 1
+		));
 	}
 
 	/**
@@ -91,6 +96,7 @@ public class IdleChecker {
 	 * @return
 	 */
 	public int addAndGetRequests(int i) {
+		log.trace("Adding {} requests", i);
 		return checkIdle(requests.addAndGet(i));
 	}
 

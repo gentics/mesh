@@ -33,6 +33,8 @@ public class CreateIndexRequest implements SearchRequest {
 
 	@Override
 	public String toString() {
-		return indexInfo.toString();
+		return "CreateIndexRequest{" +
+			"indexInfo=" + indexInfo +
+			'}';
 	}
 }

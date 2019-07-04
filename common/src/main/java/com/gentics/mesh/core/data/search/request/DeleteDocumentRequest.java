@@ -16,6 +16,7 @@ public class DeleteDocumentRequest implements Bulkable {
 	private final String transformedIndex;
 	private final String id;
 	private final Action onComplete;
+	private final String bulkString;
 
 	public DeleteDocumentRequest(String index, String transformedIndex, String id) {
 		this(index, transformedIndex, id, NOOP);
@@ -26,6 +27,12 @@ public class DeleteDocumentRequest implements Bulkable {
 		this.transformedIndex = transformedIndex;
 		this.id = id;
 		this.onComplete = onComplete;
+		this.bulkString = new JsonObject()
+			.put("delete", new JsonObject()
+				.put("_index", transformedIndex)
+				.put("_type", SearchProvider.DEFAULT_TYPE)
+				.put("_id", id)
+			).encode();
 	}
 
 
@@ -41,14 +48,7 @@ public class DeleteDocumentRequest implements Bulkable {
 
 	@Override
 	public Single<List<String>> toBulkActions() {
-		return Single.just(Collections.singletonList(
-			new JsonObject()
-				.put("delete", new JsonObject()
-					.put("_index", transformedIndex)
-					.put("_type", SearchProvider.DEFAULT_TYPE)
-					.put("_id", id)
-				).encode()
-		));
+		return Single.just(Collections.singletonList(bulkString));
 	}
 
 	@Override
@@ -66,5 +66,19 @@ public class DeleteDocumentRequest implements Bulkable {
 
 	public String getId() {
 		return id;
+	}
+
+	@Override
+	public long bulkLength() {
+		// + 1 for newline
+		return bulkString.length() + 1;
+	}
+
+	@Override
+	public String toString() {
+		return "DeleteDocumentRequest{" +
+			"transformedIndex='" + transformedIndex + '\'' +
+			", id='" + id + '\'' +
+			'}';
 	}
 }
