@@ -30,6 +30,10 @@ icon:plus[] Search: Two new options have been added to the mesh search configura
 
 icon:check[] Search: Backpressure for handling index requests has been improved. This reduces memory usage when indexing large amounts of data in a short period of time.
 
+icon:check[] Search: Some default configuration values have been changed. `timeout`: `8000` -> `60000`, `bulkLimit`: `2000` ->  `100`
+
+icon:check[] Logging: The default logging configuration now includes the Java class for each log message.
+
 [[v0.36.2]]
 == 0.36.2 (02.07.2019)
 

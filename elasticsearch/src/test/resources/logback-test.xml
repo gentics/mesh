@@ -41,11 +41,11 @@
 	<logger name="com.gentics.mesh.core.binary.impl" level="DEBUG" />
 	<logger name="com.gentics.mesh.search.index" level="DEBUG" />
 	<logger name="com.gentics.mesh.event.impl.EventQueueBatchImpl" level="TRACE" />
+	<logger name="com.gentics.mesh.search.verticle" level="TRACE" />
  -->
 
+	<logger name="com.gentics.mesh" level="INFO"/>
 	<root level="INFO">
 		<appender-ref ref="STDOUT"/>
 	</root>
-	<logger name="com.gentics.mesh" level="INFO"/>
-	<logger name="com.gentics.mesh.search.verticle" level="TRACE" />
 </configuration>
