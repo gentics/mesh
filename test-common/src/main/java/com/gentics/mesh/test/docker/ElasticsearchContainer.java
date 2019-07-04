@@ -21,10 +21,10 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
 	private static final Charset UTF8 = Charset.forName("UTF-8");
 
-	public static final String VERSION = "6.6.1";
+	public static final String VERSION = "6.8.1";
 
-	public ElasticsearchContainer(boolean withIngestPlugin) {
-		super(withIngestPlugin ? "jotschi/elasticsearch-ingest:" + VERSION : "docker.elastic.co/elasticsearch/elasticsearch-oss:" + VERSION);
+	public ElasticsearchContainer() {
+		super("docker.elastic.co/elasticsearch/elasticsearch-oss:" + VERSION);
 	}
 
 	@Override
