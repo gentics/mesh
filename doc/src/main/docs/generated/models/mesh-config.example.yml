@@ -32,7 +32,7 @@ storage:
 search:
   url: "http://localhost:9200"
   hostnameVerification: true
-  timeout: 8000
+  timeout: 60000
   startupTimeout: 45
   startEmbedded: true
   embeddedArguments: "-Xms1g -Xmx1g -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75\
@@ -41,11 +41,13 @@ search:
     \ -Dio.netty.noKeySetOptimization=true -Dio.netty.recycler.maxCapacityPerThread=0\
     \ -Dlog4j.shutdownHookEnabled=false -Dlog4j2.disable.jmx=true -XX:+HeapDumpOnOutOfMemoryError"
   prefix: "mesh-"
-  bulkLimit: 2000
+  bulkLimit: 100
+  bulkLengthLimit: 5000000
   eventBufferSize: 1000
   bulkDebounceTime: 2000
   idleDebounceTime: 100
   retryInterval: 5000
+  retryLimit: 3
   waitForIdle: true
 upload:
   byteLimit: 262144000

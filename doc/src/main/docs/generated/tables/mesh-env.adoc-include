@@ -110,6 +110,12 @@
 | *MESH_MONITORING_ENABLED*
 | Override the configured monitoring enabled flag.
 
+| *MESH_ELASTICSEARCH_RETRY_LIMIT*
+| Override the retry limit.
+
+| *MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT*
+| Override the batch bulk length limit. Default: 5000000
+
 | *MESH_ELASTICSEARCH_URL*
 | Override the configured elasticsearch server url. The value can be set to null in order to disable the Elasticsearch support.
 
@@ -126,7 +132,7 @@
 | Override the configured algorithm which is used to sign the JWT.
 
 | *MESH_ELASTICSEARCH_BULK_LIMIT*
-| Override the batch bulk limit. Default: 2000
+| Override the batch bulk limit. Default: 100
 
 | *MESH_AUTH_OAUTH2_SERVER_CONF_AUTH_SSL_REQUIRED*
 | Override the configured OAuth2 server SSL-required flag.

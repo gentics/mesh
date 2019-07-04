@@ -12,10 +12,15 @@
 | integer
 | The maximum amount of time in milliseconds between two bulkable requests before they are sent. Default: 2000
 
+| bulkLengthLimit
+| false
+| integer
+| Upper limit for the total encoded string length of the bulk requests. Default: 5000000
+
 | bulkLimit
 | false
 | integer
-| Upper limit for the size of bulk requests. Default: 2000
+| Upper limit for the size of bulk requests. Default: 100
 
 | caPath
 | false
@@ -62,6 +67,11 @@
 | integer
 | The time in milliseconds between retries of elastic search requests in case of a failure. Default: 5000
 
+| retryLimit
+| false
+| integer
+| The amount of retries on a single request before the request is discarded. Default: 3
+
 | startEmbedded
 | false
 | boolean
@@ -75,7 +85,7 @@
 | timeout
 | false
 | integer
-| Timeout for Elasticsearch operations. Default: 8000ms
+| Timeout for Elasticsearch operations. Default: 60000ms
 
 | url
 | false

@@ -165,7 +165,7 @@
 | searchOptions.timeout
 | false
 | long
-| Timeout for Elasticsearch operations. Default: 8000ms
+| Timeout for Elasticsearch operations. Default: 60000ms
 
 | searchOptions.startupTimeout
 | false
@@ -190,7 +190,12 @@
 | searchOptions.bulkLimit
 | false
 | int
-| Upper limit for the size of bulk requests. Default: 2000
+| Upper limit for the size of bulk requests. Default: 100
+
+| searchOptions.bulkLengthLimit
+| false
+| long
+| Upper limit for the total encoded string length of the bulk requests. Default: 5000000
 
 | searchOptions.eventBufferSize
 | false
@@ -211,6 +216,11 @@
 | false
 | int
 | The time in milliseconds between retries of elastic search requests in case of a failure. Default: 5000
+
+| searchOptions.retryLimit
+| false
+| int
+| The amount of retries on a single request before the request is discarded. Default: 3
 
 | searchOptions.waitForIdle
 | false
