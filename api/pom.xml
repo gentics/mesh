@@ -16,7 +16,6 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<dagger.version>2.7</dagger.version>
 	</properties>
 
 	<dependencies>
