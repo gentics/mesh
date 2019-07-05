@@ -228,6 +228,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 			final int e = i;
 			call(() -> client().createProject(new ProjectCreateRequest().setName("project_" + e).setSchemaRef("folder")));
 		}
+		waitForSearchIdleEvent();
 		getProvider().clear().blockingAwait();
 		syncIndex();
 		assertMetrics("project", 4, 0, 0);
