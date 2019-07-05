@@ -1,10 +1,13 @@
 package com.gentics.mesh.search.verticle.bulk;
 
+import static com.gentics.mesh.search.verticle.eventhandler.Util.skipIfMultipleThreads;
+
 import java.time.Duration;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -62,6 +65,7 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 			private Subscription subscription;
 			private final BulkQueue bulkableRequests = new BulkQueue();
 			private final Queue<SearchRequest> nonBulkableRequests = new ConcurrentLinkedQueue<>();
+			private final ReentrantLock lock = new ReentrantLock();
 
 			private final BulkTimer timer = new BulkTimer(vertx, bulkTime, () -> {
 				log.trace("Flushing {} requests because time limit of {}ms has been reached.",
@@ -76,31 +80,33 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 			}
 
 			public void drain() {
-				if (!canceled.get() && requested.get() > 0 && !bulkableRequests.isEmpty() && flushing.compareAndSet(true, false)) {
-					timer.stop();
-					log.trace("Emitting bulk of size {} to subscriber", bulkableRequests.size());
-					BulkRequest request = new BulkRequest(bulkableRequests.asList());
-					bulkableRequests.clear();
-					if (log.isInfoEnabled()) {
-						log.info("Sending bulk to elasticsearch:\n{}", request);
+				// Drain can be run by multiple threads, we should skip draining if one is already in progress.
+				skipIfMultipleThreads(lock, () -> {
+					if (!canceled.get() && requested.get() > 0 && !bulkableRequests.isEmpty() && flushing.compareAndSet(true, false)) {
+						timer.stop();
+						log.trace("Emitting bulk of size {} to subscriber", bulkableRequests.size());
+						BulkRequest request = new BulkRequest(bulkableRequests.asList());
+						bulkableRequests.clear();
+						if (log.isInfoEnabled()) {
+							log.info("Sending bulk to elasticsearch:\n{}", request);
+						}
+						subscriber.onNext(request);
+						BackpressureHelper.produced(requested, 1);
 					}
-					subscriber.onNext(request);
-					BackpressureHelper.produced(requested, 1);
-				}
 
-				if (!canceled.get() && requested.get() > 0 && !nonBulkableRequests.isEmpty()) {
-					SearchRequest request = nonBulkableRequests.remove();
-					log.trace("Emitting remaining non bulkable request to subscriber: {}", request);
-					subscriber.onNext(request);
-					BackpressureHelper.produced(requested, 1);
-				}
+					if (!canceled.get() && requested.get() > 0 && !nonBulkableRequests.isEmpty()) {
+						SearchRequest request = nonBulkableRequests.remove();
+						log.trace("Emitting remaining non bulkable request to subscriber: {}", request);
+						subscriber.onNext(request);
+						BackpressureHelper.produced(requested, 1);
+					}
 
-				if (upstreamCompleted && bulkableRequests.isEmpty() && !nonBulkableRequests.isEmpty()) {
-					log.trace("Sending onComplete event to subscriber");
-					subscriber.onComplete();
-				}
-
-				request();
+					if (upstreamCompleted && bulkableRequests.isEmpty() && nonBulkableRequests.isEmpty()) {
+						log.trace("Sending onComplete event to subscriber");
+						subscriber.onComplete();
+					}
+					request();
+				});
 			}
 
 			private void request() {

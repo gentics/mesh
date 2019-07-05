@@ -23,6 +23,11 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.36.4]]
+== 0.36.4 (TBD)
+
+icon:check[] GraphQL: Fixed a bug that caused an error when filtering a node from a schema context that has no content in the default language.
+
 [[v0.36.3]]
 == 0.36.3 (04.07.2019)
 

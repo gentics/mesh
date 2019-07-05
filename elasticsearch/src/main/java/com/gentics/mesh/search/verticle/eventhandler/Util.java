@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -141,6 +142,26 @@ public final class Util {
 			log.error("Could not connect to Elasticsearch. Maybe it is still starting?");
 		} else {
 			otherwise.run();
+		}
+	}
+
+	/**
+	 * Runs an action if the action is not currently running by another thread. Otherwise the action is skipped.
+	 * @param lock
+	 * @param action
+	 */
+	public static void skipIfMultipleThreads(ReentrantLock lock, Runnable action) {
+		boolean locked = lock.tryLock();
+		if (!locked) {
+			log.trace("Skipping action");
+			return;
+		} else {
+			log.trace("Acquired lock");
+			try {
+				action.run();
+			} finally {
+				lock.unlock();
+			}
 		}
 	}
 }
