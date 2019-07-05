@@ -19,11 +19,14 @@ public class GraphStorageOptions implements Option {
 	public static final String DEFAULT_DIRECTORY = "data" + File.separator + "graphdb";
 	public static final String DEFAULT_BACKUP_DIRECTORY = "data" + File.separator + "backup";
 	public static final String DEFAULT_EXPORT_DIRECTORY = "data" + File.separator + "export";
+	public static final boolean DEFAULT_START_SERVER = false;
+	public static final boolean DEFAULT_SYNC_WRITES = false;
 
 	public static final String MESH_GRAPH_DB_DIRECTORY_ENV = "MESH_GRAPH_DB_DIRECTORY";
 	public static final String MESH_GRAPH_BACKUP_DIRECTORY_ENV = "MESH_GRAPH_BACKUP_DIRECTORY";
 	public static final String MESH_GRAPH_EXPORT_DIRECTORY_ENV = "MESH_GRAPH_EXPORT_DIRECTORY";
 	public static final String MESH_GRAPH_STARTSERVER_ENV = "MESH_GRAPH_STARTSERVER";
+	public static final String MESH_GRAPH_SYNC_WRITES_ENV = "MESH_GRAPH_SYNC_WRITES";
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Path to the graph database data directory.")
@@ -41,9 +44,14 @@ public class GraphStorageOptions implements Option {
 	private String exportDirectory = DEFAULT_EXPORT_DIRECTORY;
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Flag which indicates whether the graph database admin web server should be started.")
+	@JsonPropertyDescription("Flag which indicates whether the graph database admin web server should be started. Default: " + DEFAULT_START_SERVER)
 	@EnvironmentVariable(name = MESH_GRAPH_STARTSERVER_ENV, description = "Override the graph database server flag.")
-	private Boolean startServer = false;
+	private Boolean startServer = DEFAULT_START_SERVER;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Flag which controls whether writes to the graph database should be synchronized. Default: " + DEFAULT_SYNC_WRITES)
+	@EnvironmentVariable(name = MESH_GRAPH_SYNC_WRITES_ENV, description = "Override the graph database sync writes flag.")
+	private boolean synchronizeWrites = DEFAULT_SYNC_WRITES;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Additional set of graph database parameters.")
@@ -150,6 +158,15 @@ public class GraphStorageOptions implements Option {
 	 */
 	public GraphStorageOptions setStartServer(Boolean startServer) {
 		this.startServer = startServer;
+		return this;
+	}
+
+	public boolean isSynchronizeWrites() {
+		return synchronizeWrites;
+	}
+
+	public GraphStorageOptions setSynchronizeWrites(boolean synchronizeWrites) {
+		this.synchronizeWrites = synchronizeWrites;
 		return this;
 	}
 
