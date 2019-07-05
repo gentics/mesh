@@ -41,12 +41,17 @@ public class PluginManagerTest extends AbstractMeshTest {
 
 	private static final String NAME = "basic";
 
-	private static final String PLUGIN_PATH = "target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar";
+	private static final String BASIC_PLUGIN_PATH = "target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar";
 
 	public static final String PLUGIN_DIR = "target/plugins" + System.currentTimeMillis();
 
 	@Before
-	public void clearDeployments() {
+	public void clearDeployments() throws IOException {
+		File pluginsFolder = new File("plugins");
+		if (pluginsFolder.exists()) {
+			FileUtils.forceDelete(pluginsFolder);
+		}
+
 		MeshPluginManager manager = pluginManager();
 
 		// Copy the uuids to avoid concurrency issues
@@ -79,8 +84,8 @@ public class PluginManagerTest extends AbstractMeshTest {
 
 	@Test
 	public void testFilesystemDeployment() throws Exception {
-		setPluginBaseDir(".");
-		pluginManager().deploy(PLUGIN_PATH).blockingGet();
+		setPluginBaseDir("abc");
+		pluginManager().deploy(new File(BASIC_PLUGIN_PATH).getAbsolutePath()).blockingGet();
 
 		for (int i = 0; i < 2; i++) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
@@ -98,9 +103,9 @@ public class PluginManagerTest extends AbstractMeshTest {
 	public void testStartupDeployment() throws IOException {
 		MeshPluginManager manager = pluginManager();
 		setPluginBaseDir(PLUGIN_DIR);
-		FileUtil.copy(new File("target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar"), new File(PLUGIN_DIR, "plugin.jar"));
-		FileUtil.copy(new File("target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar"), new File(PLUGIN_DIR, "duplicate-plugin.jar"));
-		FileUtil.copy(new File("target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar"), new File(PLUGIN_DIR, "plugin.blub"));
+		FileUtil.copy(new File(BASIC_PLUGIN_PATH), new File(PLUGIN_DIR, "plugin.jar"));
+		FileUtil.copy(new File(BASIC_PLUGIN_PATH), new File(PLUGIN_DIR, "duplicate-plugin.jar"));
+		FileUtil.copy(new File(BASIC_PLUGIN_PATH), new File(PLUGIN_DIR, "plugin.blub"));
 
 		assertEquals(0, manager.getPlugins().size());
 		manager.deployExistingPluginFiles().blockingAwait();

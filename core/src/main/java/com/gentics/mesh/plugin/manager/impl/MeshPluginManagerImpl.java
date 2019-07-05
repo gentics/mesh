@@ -154,6 +154,7 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 		if (base == null) {
 			base = "plugins";
 		}
+		log.trace("Using base dir {" + base + "}");
 		System.setProperty("pf4j.pluginsDir", base);
 	}
 
