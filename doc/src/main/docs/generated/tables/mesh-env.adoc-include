@@ -62,6 +62,9 @@
 | *MESH_CLUSTER_VERTX_PORT*
 | Override the vert.x eventbus server port.
 
+| *MESH_GRAPH_SYNC_WRITES*
+| Override the graph database sync writes flag.
+
 | *MESH_HTTP_CORS_ALLOW_CREDENTIALS*
 | Override the configured CORS allowed credentials flag.
 

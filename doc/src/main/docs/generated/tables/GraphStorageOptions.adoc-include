@@ -30,6 +30,11 @@
 | startServer
 | true
 | boolean
-| Flag which indicates whether the graph database admin web server should be started.
+| Flag which indicates whether the graph database admin web server should be started. Default: false
+
+| synchronizeWrites
+| true
+| boolean
+| Flag which controls whether writes to the graph database should be synchronized. Default: false
 
 |======
