@@ -16,9 +16,17 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
 
@@ -32,6 +40,8 @@ import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.job.JobStatus;
+import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -48,6 +58,8 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class NodeDeleteEndpointTest extends AbstractMeshTest {
+
+	private Random rnd = new Random();
 
 	/**
 	 * Test deleting the last remaining language from a node. The node is also a container which has additional child elements. Assert that the node and all
@@ -310,6 +322,222 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 			Node foundNode = meshRoot().getNodeRoot().findByUuid(uuid);
 			assertNotNull("The node should still exist.", foundNode);
 		}
+	}
+
+	@Test
+	public void testDeleteRecursiveFromBranch2() throws InterruptedException {
+		grantAdminRole();
+		String newsFolderUuid = tx(() -> folder("news").getUuid());
+
+		List<String> uuids = new ArrayList<>();
+		createTree(uuids, newsFolderUuid, 290, 0, initialBranchUuid(), false);
+		String branchUuid = createBranch();
+
+		CountDownLatch allDone = new CountDownLatch(2);
+		// 1. Invoke delete
+		vertx().executeBlocking(bc -> {
+			System.out.println("Deleting node");
+			try {
+				deleteParent(newsFolderUuid, initialBranchUuid());
+				bc.complete();
+			} catch (Throwable t) {
+				bc.fail(t);
+			}
+		}, false, rh -> {
+			if (rh.failed()) {
+				System.out.println("Delete failed");
+				rh.cause().printStackTrace();
+			} else {
+				System.out.println("Delete Done");
+			}
+			allDone.countDown();
+		});
+
+		// 2. Create node
+		vertx().executeBlocking(bc -> {
+			try {
+				String parentNodeUuid = random(uuids);
+				// String parentNodeUuid = uuids.get(uuids.size() - 1);
+				System.out.println("Creating node in {" + parentNodeUuid + "}");
+				createNode(null, parentNodeUuid, "i:" + System.currentTimeMillis(), initialBranchUuid(), true);
+				bc.complete();
+			} catch (Throwable t) {
+				bc.fail(t);
+			}
+		}, false, rh -> {
+			if (rh.failed()) {
+				System.out.println("Create failed");
+				rh.cause().printStackTrace();
+			} else {
+				System.out.println("Create Done");
+			}
+			allDone.countDown();
+		});
+
+		allDone.await(30, TimeUnit.SECONDS);
+		System.out.println("All done. Testing delete again..");
+		deleteParent(newsFolderUuid, initialBranchUuid());
+		System.out.println("Done!");
+
+	}
+
+	private void deleteParent(String uuid, String branchUuid) {
+		call(() -> client().deleteNode(PROJECT_NAME, uuid, new VersioningParametersImpl().setBranch(branchUuid),
+			new DeleteParametersImpl().setRecursive(true)));
+
+	}
+
+	private String random(List<String> uuids) {
+		int idx = rnd.nextInt(uuids.size());
+		System.out.println("Idx: " + idx);
+		return uuids.get(idx);
+	}
+
+	@Test
+	public void testDeleteRecursiveFromBranch() {
+		grantAdminRole();
+		String newsFolderUuid = tx(() -> folder("news").getUuid());
+		String branchedNodeUuid = tx(() -> content("concorde").getUuid());
+		String nodeInBoth = createNode(null, newsFolderUuid, "root", initialBranchUuid(), false).getUuid();
+		// call(() -> client().publishNode(projectName(), baseNodeUuid, new PublishParametersImpl().setRecursive(true)));
+		String branchUuid = createBranch();
+
+		final int nNodes = 10;
+		// NodeResponse folder1 = createFolder(nodeUuid, 1, initialBranchUuid());
+		Map<Integer, String> uuids = new HashMap<>();
+		for (int i = 0; i <= nNodes; i++) {
+			// Create node in new branch
+			NodeResponse response = createNode(null, newsFolderUuid, "" + i, initialBranchUuid(), false);
+			uuids.put(i, response.getUuid());
+			if (i % 10 == 0) {
+				System.out.println("Creating node {" + i + "} of {" + nNodes + "}");
+			}
+		}
+		// Create nodes in branch using initial branch node uuids
+		// NodeResponse folder2 = createFolder(nodeUuid, 1, branchUuid.get());
+		for (int i = 0; i <= nNodes; i++) {
+			// Create node in new branch
+			String uuid = uuids.get(i);
+			createNode(uuid, newsFolderUuid, "" + i, branchUuid, true);
+			if (i % 10 == 0) {
+				System.out.println("Creating node {" + i + "} of {" + nNodes + "}");
+			}
+		}
+
+		// Create nodes in new branch
+		for (int i = 0; i <= nNodes; i++) {
+			// Create node in new branch
+			createNode(null, newsFolderUuid, "b" + i, branchUuid, true);
+			if (i % 10 == 0) {
+				System.out.println("Creating node {" + i + "} of {" + nNodes + "}");
+			}
+		}
+
+		// Create nodes only in initial branch
+		for (int i = 0; i <= nNodes; i++) {
+			// Create node in new branch
+			createNode(null, newsFolderUuid, "c" + i, initialBranchUuid(), false);
+			if (i % 10 == 0) {
+				System.out.println("Creating node {" + i + "} of {" + nNodes + "}");
+			}
+		}
+
+		call(() -> client().publishNode(projectName(), nodeInBoth, new VersioningParametersImpl().setBranch(branchUuid)));
+		call(() -> client().takeNodeOffline(projectName(), nodeInBoth, new VersioningParametersImpl().setBranch(initialBranchUuid())));
+
+		// NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		// nodeUpdateRequest.setLanguage("de");
+		// FieldMap updateFields = new FieldMapImpl();
+		// updateFields.put("teaser", FieldUtil.createStringField("ein teaser"));
+		// updateFields.put("slug", FieldUtil.createStringField("neue-seite.html"));
+		// updateFields.put("content", FieldUtil.createStringField("Mahlzeit!"));
+		// nodeUpdateRequest.setFields(updateFields);
+		// call(() -> client().updateNode(projectName(), nodeResponse.getUuid(), nodeUpdateRequest, branchParam));
+
+		// Delete a node in the initial branch.
+		call(() -> client().deleteNode(projectName(), branchedNodeUuid, new VersioningParametersImpl().setBranch(branchUuid)));
+
+		// Verify node can be loaded
+		call(() -> client().findNodeByUuid(PROJECT_NAME, newsFolderUuid, new VersioningParametersImpl().draft().setBranch(initialBranchUuid())));
+		call(() -> client().findNodeByUuid(PROJECT_NAME, newsFolderUuid, new VersioningParametersImpl().draft().setBranch(branchUuid)));
+		call(() -> client().findNodeByUuid(PROJECT_NAME, branchedNodeUuid, new VersioningParametersImpl().draft().setBranch(branchUuid)));
+
+		// Delete node in new branch
+		call(() -> client().deleteNode(PROJECT_NAME, newsFolderUuid, new VersioningParametersImpl().setBranch(initialBranchUuid()),
+			new DeleteParametersImpl().setRecursive(true)));
+
+		call(() -> client().deleteNode(PROJECT_NAME, newsFolderUuid, new VersioningParametersImpl().setBranch(branchUuid),
+			new DeleteParametersImpl().setRecursive(true)));
+
+	}
+
+	private void createTree(List<String> uuids, String parentUuid, int depth, int pages, String branchUuid, boolean publish) {
+		if (depth <= 0) {
+			System.out.println("Done");
+			return;
+		} else {
+			NodeResponse node = createFolder(parentUuid, depth, branchUuid, publish);
+			System.out.println(depth + ": " + parentUuid + " -> " + node.getUuid());
+			uuids.add(node.getUuid());
+			for (int i = 0; i < pages; i++) {
+				NodeResponse content = createNode(null, node.getUuid(), "p" + i, branchUuid, publish);
+				System.out.println("    --> " + content.getUuid());
+			}
+			createTree(uuids, node.getUuid(), --depth, pages, branchUuid, publish);
+		}
+	}
+
+	private NodeResponse createFolder(String parentNodeUuid, int i, String branchUuid, boolean publish) {
+		VersioningParameters branchParam = new VersioningParametersImpl().setBranch(branchUuid);
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		FieldMap fields = new FieldMapImpl();
+		fields.put("teaser", FieldUtil.createStringField("some teaser" + i));
+		fields.put("slug", FieldUtil.createStringField("new-page" + i + ".html"));
+		fields.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setSchemaName("content");
+		nodeCreateRequest.setFields(fields);
+		nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
+		NodeResponse nodeResponse = call(
+			() -> client().createNode(projectName(), nodeCreateRequest, branchParam));
+		if (publish) {
+			call(() -> client().publishNode(projectName(), nodeResponse.getUuid(), branchParam));
+		}
+		return nodeResponse;
+	}
+
+	private String createBranch() {
+		AtomicReference<String> branchUuid = new AtomicReference<>();
+		waitForJob(() -> {
+			BranchCreateRequest request = new BranchCreateRequest().setName("newBranch").setLatest(false);
+			String uuid = call(() -> client().createBranch(projectName(), request)).getUuid();
+			branchUuid.set(uuid);
+		});
+		return branchUuid.get();
+	}
+
+	private NodeResponse createNode(String uuid, String parentNodeUuid, String postfix, String branchUuid, boolean publish) {
+		VersioningParameters branchParam = new VersioningParametersImpl().setBranch(branchUuid);
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		FieldMap fields = new FieldMapImpl();
+		fields.put("name", FieldUtil.createStringField("Folder " + postfix));
+		fields.put("slug", FieldUtil.createStringField("folder" + postfix));
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setSchemaName("folder");
+		nodeCreateRequest.setFields(fields);
+		nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
+		NodeResponse nodeResponse;
+		if (uuid == null) {
+			nodeResponse = call(
+				() -> client().createNode(projectName(), nodeCreateRequest, branchParam));
+		} else {
+			nodeResponse = call(
+				() -> client().createNode(uuid, projectName(), nodeCreateRequest, branchParam));
+		}
+		if (publish) {
+			call(() -> client().publishNode(projectName(), nodeResponse.getUuid(), branchParam));
+		}
+		return nodeResponse;
 	}
 
 	private void updateNode(int i, String uuid, String branch) {
