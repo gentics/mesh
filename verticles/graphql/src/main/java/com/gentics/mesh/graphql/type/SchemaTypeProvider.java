@@ -106,10 +106,13 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 			.map(node -> {
 				NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
 				return new NodeContent(node, container, languageTags);
-			});
+			}).filter(content -> content.getContainer() != null);
 
 			return applyNodeFilter(env, nodes);
-		}, NODE_PAGE_TYPE_NAME).argument(NodeFilter.filter(context).createFilterArgument()));
+		}, NODE_PAGE_TYPE_NAME)
+			.argument(NodeFilter.filter(context).createFilterArgument())
+			.argument(createLanguageTagArg(true))
+		);
 
 		Builder fieldListBuilder = newObject().name(SCHEMA_FIELD_TYPE).description("List of schema fields");
 

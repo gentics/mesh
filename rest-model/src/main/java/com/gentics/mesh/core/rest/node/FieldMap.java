@@ -278,4 +278,16 @@ public interface FieldMap extends RestModel {
 	 * Delete all fields in this map.
 	 */
 	void clear();
+
+	/**
+	 * Convenience method for creating a field map with a single entry.
+	 * @param key
+	 * @param field
+	 * @return
+	 */
+	static FieldMap of(String key, Field field) {
+		FieldMap map = new FieldMapImpl();
+		map.put(key, field);
+		return map;
+	}
 }

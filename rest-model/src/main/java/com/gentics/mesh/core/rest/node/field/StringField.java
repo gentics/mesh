@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.rest.node.field;
 
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+
 public interface StringField extends ListableField, MicroschemaListableField {
 
 	/**
@@ -21,5 +23,14 @@ public interface StringField extends ListableField, MicroschemaListableField {
 	@Override
 	default Object getValue() {
 		return getString();
+	}
+
+	/**
+	 * Convenience method of creating a simple string field.
+	 * @param value
+	 * @return
+	 */
+	static StringField of(String value) {
+		return new StringFieldImpl().setString(value);
 	}
 }

@@ -1,0 +1,23 @@
+{
+    schema(name: "folder") {
+        nodes(lang: "de", filter: {
+            fields: {
+                folder: {
+                    name: {equals: "deFieldTest"}
+                }
+            }
+        }) {
+            # [$.data.schema.nodes.elements.length()=1]
+            elements {
+                ... on folder {
+                    uuid
+                    fields {
+                        # [$.data.schema.nodes.elements[0].fields.name=deFieldTest]
+                        name
+                    }
+                }
+            }
+        }
+    }
+}
+# [$.errors=<is-undefined>]
