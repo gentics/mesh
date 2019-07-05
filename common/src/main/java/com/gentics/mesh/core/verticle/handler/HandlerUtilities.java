@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -48,15 +49,17 @@ public class HandlerUtilities {
 
 	private static final Logger log = LoggerFactory.getLogger(HandlerUtilities.class);
 
+	private static Semaphore writeLock = new Semaphore(1);
+
 	private final Database database;
 	private final MetricsService metrics;
-	private final boolean clustered;
+	private final boolean syncWrites;
 
 	@Inject
 	public HandlerUtilities(Database database, MeshOptions meshOptions, MetricsService metrics) {
 		this.database = database;
 		this.metrics = metrics;
-		this.clustered = meshOptions.getClusterOptions() != null && meshOptions.getClusterOptions().isEnabled();
+		this.syncWrites = meshOptions.getStorageOptions() != null && meshOptions.getStorageOptions().isSynchronizeWrites();
 	}
 
 	/**
@@ -80,18 +83,24 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxAction1<RootVertex<T>> handler,
 		String uuid) {
+		lock();
 		syncTx(ac, () -> {
-			RootVertex<T> root = handler.handle();
-			T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
+			try {
+				RootVertex<T> root = handler.handle();
+				T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
 
-			// Load the name and uuid of the element. We need this info after deletion.
-			String elementUuid = element.getUuid();
-			bulkableAction(bac -> {
-				bac.setRootCause(element.getTypeInfo().getType(), elementUuid, DELETE);
-				element.delete(bac);
-			});
-			log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
+				// Load the name and uuid of the element. We need this info after deletion.
+				String elementUuid = element.getUuid();
+				bulkableAction(bac -> {
+					bac.setRootCause(element.getTypeInfo().getType(), elementUuid, DELETE);
+					element.delete(bac);
+				});
+				log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
+			} finally {
+				unlock();
+			}
 		}, () -> ac.send(NO_CONTENT));
+
 	}
 
 	/**
@@ -120,41 +129,44 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
 		TxAction1<RootVertex<T>> handler) {
-
+		lock();
 		AtomicBoolean created = new AtomicBoolean(false);
 		syncTx(ac, tx -> {
-			RootVertex<T> root = handler.handle();
+			try {
+				RootVertex<T> root = handler.handle();
 
-			// 1. Load the element from the root element using the given uuid (if not null)
-			T element = null;
-			if (uuid != null) {
-				if (!UUIDUtil.isUUID(uuid)) {
-					throw error(BAD_REQUEST, "error_illegal_uuid", uuid);
+				// 1. Load the element from the root element using the given uuid (if not null)
+				T element = null;
+				if (uuid != null) {
+					if (!UUIDUtil.isUUID(uuid)) {
+						throw error(BAD_REQUEST, "error_illegal_uuid", uuid);
+					}
+					element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM, false);
 				}
-				element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM, false);
-			}
 
-			// Check whether we need to update a found element or whether we need to create a new one.
-			if (element != null) {
-				final T updateElement = element;
-				eventAction(batch -> {
-					return updateElement.update(ac, batch);
-				});
-				return updateElement.transformToRestSync(ac, 0);
-			} else {
-				T createdElement = eventAction(batch -> {
-					created.set(true);
-					return root.create(ac, batch, uuid);
-				});
-				RM model = createdElement.transformToRestSync(ac, 0);
-				String path = createdElement.getAPIPath(ac);
-				ResultInfo info = new ResultInfo(model);
-				info.setProperty("path", path);
-				createdElement.onCreated();
-				ac.setLocation(path);
-				return model;
+				// Check whether we need to update a found element or whether we need to create a new one.
+				if (element != null) {
+					final T updateElement = element;
+					eventAction(batch -> {
+						return updateElement.update(ac, batch);
+					});
+					return updateElement.transformToRestSync(ac, 0);
+				} else {
+					T createdElement = eventAction(batch -> {
+						created.set(true);
+						return root.create(ac, batch, uuid);
+					});
+					RM model = createdElement.transformToRestSync(ac, 0);
+					String path = createdElement.getAPIPath(ac);
+					ResultInfo info = new ResultInfo(model);
+					info.setProperty("path", path);
+					createdElement.onCreated();
+					ac.setLocation(path);
+					return model;
+				}
+			} finally {
+				unlock();
 			}
-
 		}, model -> ac.send(model, created.get() ? CREATED : OK));
 	}
 
@@ -308,6 +320,28 @@ public class HandlerUtilities {
 		});
 		tuple.v2().dispatch();
 		return tuple.v1();
+	}
+
+	/**
+	 * Locks writes. Use this to prevent concurrent write transactions.
+	 */
+	public void lock() {
+		if (syncWrites) {
+			try {
+				writeLock.acquire();
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
+
+	/**
+	 * Releases the lock that was acquired in {@link #lock()}.
+	 */
+	public void unlock() {
+		if (syncWrites) {
+			writeLock.release();
+		}
 	}
 
 }

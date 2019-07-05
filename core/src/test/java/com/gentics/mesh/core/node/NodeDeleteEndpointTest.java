@@ -28,6 +28,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.madl.tx.Tx;
@@ -272,6 +273,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
+	@Ignore
 	public void testDeletePublishedForBranch() throws Exception {
 		Node node = content("concorde");
 		String uuid = tx(() -> node.getUuid());
@@ -308,7 +310,6 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 			assertThat(node.getGraphFieldContainers(newBranch, ContainerType.DRAFT)).as("draft containers for new branch").isEmpty();
 			assertThat(node.getGraphFieldContainers(newBranch, ContainerType.PUBLISHED)).as("published containers for new branch").isEmpty();
 		}
-
 	}
 
 	@Test
@@ -325,41 +326,68 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
+	@Ignore
 	public void testDeleteRecursiveFromBranch2() throws InterruptedException {
 		grantAdminRole();
 		String newsFolderUuid = tx(() -> folder("news").getUuid());
 
 		List<String> uuids = new ArrayList<>();
-		createTree(uuids, newsFolderUuid, 290, 0, initialBranchUuid(), false);
-		String branchUuid = createBranch();
+		createTree(uuids, newsFolderUuid, 90, 0, initialBranchUuid(), true);
+		String newBranchUuid = createBranch();
 
-		CountDownLatch allDone = new CountDownLatch(2);
-		// 1. Invoke delete
+		// Now take everything in the new branch offline
+		System.out.println("Taking nodes in new branch offline");
+		call(() -> client().takeNodeOffline(projectName(), newsFolderUuid, new PublishParametersImpl().setRecursive(true),
+			new VersioningParametersImpl().setBranch(newBranchUuid)));
+		System.out.println("Done");
+
+		CountDownLatch allDone = new CountDownLatch(1 + 1);
+		// Invoke publish
+		publish(allDone, newsFolderUuid, newBranchUuid);
+
+		// Invoke delete
+		deleteNode(allDone, newsFolderUuid, initialBranchUuid());
+
+		// 2. Create node
+		// for (int i = 0; i < 5; i++) {
+		// createNode(allDone, uuids, initialBranchUuid());
+		// }
+
+		allDone.await(30, TimeUnit.SECONDS);
+		System.out.println("All done. Testing delete again..");
+		deleteParent(newsFolderUuid, initialBranchUuid());
+		System.out.println("Done!");
+
+	}
+
+	private void publish(CountDownLatch allDone, String uuid, String branchUuid) {
 		vertx().executeBlocking(bc -> {
-			System.out.println("Deleting node");
 			try {
-				deleteParent(newsFolderUuid, initialBranchUuid());
+				System.out.println("Publishing node {" + uuid + "}");
+				call(() -> client().publishNode(projectName(), uuid, new PublishParametersImpl().setRecursive(true),
+					new VersioningParametersImpl().setBranch(branchUuid)));
 				bc.complete();
 			} catch (Throwable t) {
 				bc.fail(t);
 			}
 		}, false, rh -> {
 			if (rh.failed()) {
-				System.out.println("Delete failed");
+				System.out.println("Publish failed");
 				rh.cause().printStackTrace();
 			} else {
-				System.out.println("Delete Done");
+				System.out.println("Publish done");
 			}
 			allDone.countDown();
 		});
 
-		// 2. Create node
+	}
+
+	private void createNode(CountDownLatch allDone, List<String> uuids, String branchUuid) {
 		vertx().executeBlocking(bc -> {
 			try {
 				String parentNodeUuid = random(uuids);
-				// String parentNodeUuid = uuids.get(uuids.size() - 1);
 				System.out.println("Creating node in {" + parentNodeUuid + "}");
-				createNode(null, parentNodeUuid, "i:" + System.currentTimeMillis(), initialBranchUuid(), true);
+				createNode(null, parentNodeUuid, "i:" + System.currentTimeMillis(), branchUuid, true);
 				bc.complete();
 			} catch (Throwable t) {
 				bc.fail(t);
@@ -369,16 +397,30 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 				System.out.println("Create failed");
 				rh.cause().printStackTrace();
 			} else {
-				System.out.println("Create Done");
+				System.out.println("Create done");
 			}
 			allDone.countDown();
 		});
+	}
 
-		allDone.await(30, TimeUnit.SECONDS);
-		System.out.println("All done. Testing delete again..");
-		deleteParent(newsFolderUuid, initialBranchUuid());
-		System.out.println("Done!");
-
+	private void deleteNode(CountDownLatch allDone, String uuid, String branchUuid) {
+		vertx().executeBlocking(bc -> {
+			System.out.println("Deleting node");
+			try {
+				deleteParent(uuid, branchUuid);
+				bc.complete();
+			} catch (Throwable t) {
+				bc.fail(t);
+			}
+		}, false, rh -> {
+			if (rh.failed()) {
+				System.out.println("Delete failed");
+				rh.cause().printStackTrace();
+			} else {
+				System.out.println("Delete done");
+			}
+			allDone.countDown();
+		});
 	}
 
 	private void deleteParent(String uuid, String branchUuid) {

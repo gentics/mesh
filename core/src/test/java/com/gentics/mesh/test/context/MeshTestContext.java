@@ -45,6 +45,7 @@ import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.DaggerMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
@@ -454,13 +455,15 @@ public class MeshTestContext extends TestWatcher {
 			directory.deleteOnExit();
 			directory.mkdirs();
 		}
+		GraphStorageOptions storageOptions = meshOptions.getStorageOptions();
 		if (!settings.inMemoryDB() && settings.startStorageServer()) {
-			meshOptions.getStorageOptions().setStartServer(true);
+			storageOptions.setStartServer(true);
 		}
 		// Increase timeout to high load during testing
 		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
 		searchOptions.setTimeout(10_000L);
-		meshOptions.getStorageOptions().setDirectory(graphPath);
+		storageOptions.setDirectory(graphPath);
+		storageOptions.setSynchronizeWrites(true);
 
 		switch (settings.elasticsearch()) {
 		case CONTAINER:
