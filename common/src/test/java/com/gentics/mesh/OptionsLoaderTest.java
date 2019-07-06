@@ -9,12 +9,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
 import com.gentics.mesh.etc.config.ContentConfig;
 import com.gentics.mesh.etc.config.HttpServerConfig;
@@ -25,7 +23,10 @@ import com.gentics.mesh.etc.config.VertxOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 
 public class OptionsLoaderTest {
-
+	
+	@Rule
+	public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
+	
 	@Test
 	public void testOptionsLoader() {
 		File confFile = new File(CONFIG_FOLDERNAME + "/" + MESH_CONF_FILENAME);
@@ -41,21 +42,20 @@ public class OptionsLoaderTest {
 
 	@Test
 	public void testApplyEnvs() throws Exception {
-		Map<String, String> envMap = new HashMap<>();
-		envMap.put(MeshOptions.MESH_DEFAULT_LANG_ENV, "ru");
-		envMap.put(MeshOptions.MESH_UPDATECHECK_ENV, "false");
-		envMap.put(HttpServerConfig.MESH_HTTP_PORT_ENV, "8100");
-		envMap.put(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "https://somewhere.com");
-		envMap.put(MeshOptions.MESH_CLUSTER_INIT_ENV, "true");
-		envMap.put(HttpServerConfig.MESH_HTTP_CORS_ORIGIN_PATTERN_ENV, "*");
-		envMap.put(HttpServerConfig.MESH_HTTP_CORS_ENABLE_ENV, "true");
-		envMap.put(VertxOptions.MESH_VERTX_EVENT_POOL_SIZE_ENV, "41");
-		envMap.put(VertxOptions.MESH_VERTX_WORKER_POOL_SIZE_ENV, "42");
-		envMap.put(MeshOptions.MESH_LOCK_PATH_ENV, "dummy/1234");
-		envMap.put(MeshUploadOptions.MESH_BINARY_DIR_ENV, "/uploads");
-		envMap.put(MonitoringConfig.MESH_MONITORING_HTTP_HOST_ENV, "0.0.0.0");
-		envMap.put(ContentConfig.MESH_CONTENT_AUTO_PURGE_ENV, "true");
-		set(envMap);
+		environmentVariables.set(MeshOptions.MESH_DEFAULT_LANG_ENV, "ru");
+		environmentVariables.set(MeshOptions.MESH_UPDATECHECK_ENV, "false");
+		environmentVariables.set(HttpServerConfig.MESH_HTTP_PORT_ENV, "8100");
+		environmentVariables.set(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "https://somewhere.com");
+		environmentVariables.set(MeshOptions.MESH_CLUSTER_INIT_ENV, "true");
+		environmentVariables.set(HttpServerConfig.MESH_HTTP_CORS_ORIGIN_PATTERN_ENV, "*");
+		environmentVariables.set(HttpServerConfig.MESH_HTTP_CORS_ENABLE_ENV, "true");
+		environmentVariables.set(VertxOptions.MESH_VERTX_EVENT_POOL_SIZE_ENV, "41");
+		environmentVariables.set(VertxOptions.MESH_VERTX_WORKER_POOL_SIZE_ENV, "42");
+		environmentVariables.set(MeshOptions.MESH_LOCK_PATH_ENV, "dummy/1234");
+		environmentVariables.set(MeshUploadOptions.MESH_BINARY_DIR_ENV, "/uploads");
+		environmentVariables.set(MonitoringConfig.MESH_MONITORING_HTTP_HOST_ENV, "0.0.0.0");
+		environmentVariables.set(ContentConfig.MESH_CONTENT_AUTO_PURGE_ENV, "true");
+		
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		assertEquals(8100, options.getHttpServerOptions().getPort());
 		assertEquals("ru", options.getDefaultLanguage());
@@ -74,32 +74,9 @@ public class OptionsLoaderTest {
 
 	@Test
 	public void testApplyEnvsNull() throws Exception {
-		Map<String, String> envMap = new HashMap<>();
-		envMap.put(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "null");
-		set(envMap);
+		environmentVariables.set(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "null");
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		assertNull(options.getSearchOptions().getUrl());
-	}
-
-	/**
-	 * Override the environment variables.
-	 * 
-	 * @param newenv
-	 * @throws Exception
-	 */
-	public static void set(Map<String, String> newenv) throws Exception {
-		Class[] classes = Collections.class.getDeclaredClasses();
-		Map<String, String> env = System.getenv();
-		for (Class cl : classes) {
-			if ("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
-				Field field = cl.getDeclaredField("m");
-				field.setAccessible(true);
-				Object obj = field.get(env);
-				Map<String, String> map = (Map<String, String>) obj;
-				map.clear();
-				map.putAll(newenv);
-			}
-		}
 	}
 
 	@Test
