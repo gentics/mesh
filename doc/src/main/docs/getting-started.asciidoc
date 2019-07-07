@@ -18,10 +18,13 @@ If you don't have much time:
 
 * Try the link:https://demo.getmesh.io/mesh-ui/[UI] with login (admin/admin) for playing around with Gentics Mesh and it's user interface.
 * Changes can be viewed in the link:https://demo.getmesh.io/demo/[demo front-end]
-* You can also 
-+++
-<a href="https://demo.getmesh.io{apiLatest}/demo/graphql/browser/#query=%7B%0A%20%20node(path%3A%20%22%2Fyachts%2Fpelorus%22)%20%7B%0A%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20...%20on%20vehicle%20%7B%0A%20%20%20%20%20%20%20%20name%0A%20%20%20%20%20%20%20%20description%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D" target="_blank">explore the GraphQL API</a>
-+++
+
+[subs=attributes]
+++++
+<ul><li>
+<a href="https://demo.getmesh.io/api/v1/demo/graphql/browser/#query=%7B%0A%20%20node(path%3A%20%22%2Fyachts%2Fpelorus%22)%20%7B%0A%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20...%20on%20vehicle%20%7B%0A%20%20%20%20%20%20%20%20name%0A%20%20%20%20%20%20%20%20description%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D" target="_blank">You can also use GraphQL</a></li></ul>
+++++
+
 * Head over to the <<tldr,TL;DR>> section to find out everything you need to know and what makes Gentics Mesh special.
 
 
