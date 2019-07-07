@@ -250,6 +250,12 @@
 				<artifactId>javassist</artifactId>
 				<version>3.25.0-GA</version>
 			</dependency>
+			<dependency>
+				<groupId>com.github.stefanbirkner</groupId>
+				<artifactId>system-rules</artifactId>
+				<version>1.19.0</version>
+				<scope>test</scope>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
