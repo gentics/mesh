@@ -23,6 +23,12 @@ public class ElasticsearchProcessManagerTest {
 	@Rule
 	public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
 
+	private static String OS = System.getProperty("os.name").toLowerCase();
+
+	public static boolean isWindows() {
+		return (OS.indexOf("win") >= 0);
+	}
+
 	@Test
 	public void testExecFailure() throws Exception {
 		environmentVariables.set("JAVA_HOME", "/bogus");
@@ -31,8 +37,13 @@ public class ElasticsearchProcessManagerTest {
 			manager.start();
 			fail("An error should be thrown");
 		} catch (Exception e) {
+			String expectedPath = "/bogus/bin/java";
+			if(isWindows()) {
+				expectedPath = "C:\\bogus\\bin\\java.exe";
+			}
+			String expectedMessage = String.format("Could not find java executable using JAVA_HOME {/bogus} - Was looking in {%s}", expectedPath);
 			String msg = e.getMessage();
-			assertEquals("Could not find java executable using JAVA_HOME {/bogus} - Was looking in {/bogus/bin/java}", msg);
+			assertEquals(expectedMessage, msg);
 		}
 	}
 
