@@ -7,8 +7,6 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 
-import com.gentics.mesh.core.rest.branch.BranchResponse;
-import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -20,7 +18,6 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class NodeDeleteBranchEndpointTest extends AbstractMeshTest {
-	private BranchResponse branch;
 	private final String newBranch = "newBranch";
 
 	@Test
@@ -31,9 +28,7 @@ public class NodeDeleteBranchEndpointTest extends AbstractMeshTest {
 		publishNode(parent);
 		publishNode(otherParent);
 
-		waitForJobs(() -> {
-			branch = createBranchRest(newBranch);
-		}, JobStatus.COMPLETED, 1);
+		waitForJob(() -> createBranchRest(newBranch));
 
 		NodeResponse child = createNode(parent);
 		publishNode(child);
