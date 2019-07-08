@@ -6,6 +6,7 @@ import java.util.function.Function;
 import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.madl.tx.BaseTransaction;
 import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
@@ -115,7 +116,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	}
 
 	@Override
-	public <T extends ElementFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz) {
+	public <T extends EdgeFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz) {
 		TraversalResult<? extends T> result = new TraversalResult<>(outE(label).frameExplicit(clazz));
 		return result;
 	}
@@ -127,7 +128,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	}
 
 	@Override
-	public <T extends ElementFrame> TraversalResult<? extends T> inE(String label, Class<T> clazz) {
+	public <T extends EdgeFrame> TraversalResult<? extends T> inE(String label, Class<T> clazz) {
 		TraversalResult<? extends T> result = new TraversalResult<>(inE(label).frameExplicit(clazz));
 		return result;
 	}

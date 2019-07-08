@@ -412,7 +412,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				obs.add(storeContainer(container, branchUuid, type));
 			}
 		} else {
-			for (NodeGraphFieldContainer container : node.getGraphFieldContainersIt(branchUuid, type)) {
+			for (NodeGraphFieldContainer container : node.getGraphFieldContainers(branchUuid, type)) {
 				obs.add(storeContainer(container, branchUuid, type));
 			}
 		}
@@ -486,7 +486,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			}
 		} else {
 			Set<Observable<IndexBulkEntry>> obs = new HashSet<>();
-			for (NodeGraphFieldContainer container : node.getGraphFieldContainersIt(branchUuid, type)) {
+			for (NodeGraphFieldContainer container : node.getGraphFieldContainers(branchUuid, type)) {
 				obs.add(storeContainerForBulk(container, branchUuid, type).toObservable());
 			}
 			return Observable.merge(obs);

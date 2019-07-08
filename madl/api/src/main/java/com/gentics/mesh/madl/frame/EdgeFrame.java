@@ -1,5 +1,7 @@
 package com.gentics.mesh.madl.frame;
 
+import com.gentics.mesh.madl.traversal.TraversalResult;
+
 public interface EdgeFrame extends ElementFrame, com.syncleus.ferma.EdgeFrame {
 
 	/**
@@ -11,5 +13,10 @@ public interface EdgeFrame extends ElementFrame, com.syncleus.ferma.EdgeFrame {
 		//TODO Move this to edge frame instead
 		return getLabel();
 	}
+
+	<T extends VertexFrame> TraversalResult<? extends T> outV(Class<T> clazz);
+
+	<T extends VertexFrame> TraversalResult<? extends T> inV(Class<T> clazz);
+
 
 }

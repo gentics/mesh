@@ -235,21 +235,12 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	/**
 	 * Return containers of the given type and branch.
 	 * 
-	 * @param branchUuid
-	 * @param type
-	 * @return
-	 */
-	TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(String branchUuid, ContainerType type);
-
-	/**
-	 * Return containers of the given type and branch.
-	 * 
 	 * @param branch
 	 * @param type
 	 * @return
 	 */
 	default TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(Branch branch, ContainerType type) {
-		return getGraphFieldContainersIt(branch.getUuid(), type);
+		return getGraphFieldContainers(branch.getUuid(), type);
 	}
 
 	/**
@@ -425,9 +416,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @param branchUuid
 	 */
-	default boolean hasPublishedContent(String branchUuid) {
-		return getGraphFieldContainersIt(branchUuid, ContainerType.PUBLISHED).iterator().hasNext();
-	}
+	boolean hasPublishedContent(String branchUuid);
 
 	/**
 	 * Find a node field container that matches the nearest possible value for the language parameter.

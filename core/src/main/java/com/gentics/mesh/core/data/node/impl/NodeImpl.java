@@ -184,11 +184,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			.withField("in", LINK)
 			.withField(BRANCH_UUID_KEY, STRING));
 
-		index.createIndex(edgeIndex(HAS_FIELD_CONTAINER)
-			.withPostfix("field")
-			.withField("out", LINK)
-			.withField(GraphFieldContainerEdge.BRANCH_UUID_KEY, STRING)
-			.withField(GraphFieldContainerEdge.EDGE_TYPE_KEY, STRING));
 	}
 
 	@Override
@@ -345,9 +340,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
+	public boolean hasPublishedContent(String branchUuid) {
+		return GraphFieldContainerEdgeImpl.matchesBranchAndType(getId(), branchUuid, ContainerType.PUBLISHED.getCode());
+	}
+
+	@Override
 	public TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type) {
-		return new TraversalResult<>(outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid)
-			.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV().frameExplicit(NodeGraphFieldContainerImpl.class));
+		Stream<? extends NodeGraphFieldContainer> containers = GraphFieldContainerEdgeImpl.findAllContainers(this.getId(), branchUuid,
+			type.getCode());
+		return new TraversalResult<>(containers);
 	}
 
 	@Override
@@ -355,13 +356,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return new TraversalResult<>(
 			outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV()
 				.frameExplicit(NodeGraphFieldContainerImpl.class));
-	}
-
-	@Override
-	public TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(String branchUuid, ContainerType type) {
-		return new TraversalResult<>(
-			outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid)
-				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV().frameExplicit(NodeGraphFieldContainerImpl.class));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1471,6 +1465,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	/**
 	 * Adds reference update events to the context for all draft and published contents that reference this node.
+	 * 
 	 * @param bac
 	 */
 	private void addReferenceUpdates(BulkActionContext bac) {
@@ -1479,7 +1474,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		getInboundReferences()
 			.flatMap(NodeGraphField::getReferencingContents)
 			.forEach(nodeContainer -> {
-				for (GraphFieldContainerEdgeImpl edge : nodeContainer.inE(HAS_FIELD_CONTAINER).frameExplicit(GraphFieldContainerEdgeImpl.class)) {
+				for (GraphFieldContainerEdgeImpl edge : nodeContainer.inE(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class)) {
 					ContainerType type = edge.getType();
 					// Only handle published or draft contents
 					if (type.equals(DRAFT) || type.equals(PUBLISHED)) {
@@ -1950,7 +1945,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public PathSegment getSegment(String branchUuid, ContainerType type, String segment) {
 
 		// Check the different language versions
-		for (NodeGraphFieldContainer container : getGraphFieldContainersIt(branchUuid, type)) {
+		for (NodeGraphFieldContainer container : getGraphFieldContainers(branchUuid, type)) {
 			Schema schema = container.getSchemaContainerVersion().getSchema();
 			String segmentFieldName = schema.getSegmentField();
 			// First check whether a string field exists for the given name
@@ -2273,7 +2268,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public boolean isVisibleInBranch(String branchUuid) {
-		return getGraphFieldContainersIt(branchUuid, DRAFT).iterator().hasNext();
+		return GraphFieldContainerEdgeImpl.matchesBranchAndType(getId(), branchUuid, ContainerType.DRAFT.getCode());
 	}
 
 	@Override
