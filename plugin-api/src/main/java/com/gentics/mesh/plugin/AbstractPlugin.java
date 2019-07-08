@@ -26,8 +26,6 @@ import io.vertx.ext.web.RoutingContext;
  */
 public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 
-	private static String MANIFEST_FILENAME = "mesh-plugin.json";
-
 	private static final Logger log = LoggerFactory.getLogger(AbstractPlugin.class);
 
 	private static final String WILDCARD_IP = "0.0.0.0";
@@ -39,6 +37,11 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 	private MeshRestClient adminClient;
 
 	private final PluginEnvironment env;
+
+	public AbstractPlugin() {
+		super(null);
+		this.env = null;
+	}
 
 	public AbstractPlugin(PluginWrapper wrapper, PluginEnvironment env) {
 		super(wrapper);
@@ -59,16 +62,10 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 	@Override
 	public PluginManifest getManifest() {
 		PluginDescriptor descriptor = getWrapper().getDescriptor();
-		PluginManifest manifest = new PluginManifest();
-		manifest.setApiName(descriptor.getPluginId());
-		manifest.setDescription(descriptor.getPluginDescription());
-		manifest.setLicense(descriptor.getLicense());
-		manifest.setVersion(descriptor.getVersion());
-		//TODO how can we handle more metadata?
-		//manifest.setInception(descriptor)
-		//manifest.setAuthor(descriptor.get)
-		manifest.validate();
-		return manifest;
+		if (descriptor instanceof MeshPluginDescriptor) {
+			return ((MeshPluginDescriptor) descriptor).toPluginManifest();
+		}
+		throw new RuntimeException("The found plugin descriptor does not contain Gentics Mesh information.");
 	}
 
 	@Override

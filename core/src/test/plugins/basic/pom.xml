@@ -10,7 +10,10 @@
 		<plugin.id>basic-plugin</plugin.id>
 		<plugin.class>com.gentics.mesh.plugin.BasicPlugin</plugin.class>
 		<plugin.version>0.0.1</plugin.version>
-		<plugin.provider>Johannes Schüth</plugin.provider>
+		<plugin.author>Johannes Schüth</plugin.author>
+		<plugin.inception>2019-07-08</plugin.inception>
+		<plugin.api-name>basic</plugin.api-name>
+		<plugin.description>My basic plugin</plugin.description>
 	</properties>
 
 	<dependencies>
@@ -18,12 +21,33 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-plugin-api</artifactId>
 			<version>${mesh.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.pf4j</groupId>
 			<artifactId>pf4j</artifactId>
 			<version>3.0.1</version>
 			<scope>provided</scope>
+		</dependency>
+
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-test-common</artifactId>
+			<version>${mesh.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-core</artifactId>
+			<version>${mesh.version}</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -54,10 +78,12 @@
 									<manifestEntries>
 										<Plugin-Id>${plugin.id}</Plugin-Id>
 										<Plugin-Version>${plugin.version}</Plugin-Version>
-										<Plugin-Provider>${plugin.provider}</Plugin-Provider>
+										<Plugin-Author>${plugin.author}</Plugin-Author>
 										<Plugin-Class>${plugin.class}</Plugin-Class>
-										<Plugin-Description>My basic plugin</Plugin-Description>
+										<Plugin-Description>${plugin.description}</Plugin-Description>
 										<Plugin-License>Apache License 2.0</Plugin-License>
+										<Plugin-Inception>${plugin.inception}</Plugin-Inception>
+										<Plugin-API-Name>${plugin.api-name}</Plugin-API-Name>
 									</manifestEntries>
 								</transformer>
 							</transformers>

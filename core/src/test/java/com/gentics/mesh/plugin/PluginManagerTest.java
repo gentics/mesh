@@ -63,23 +63,25 @@ public class PluginManagerTest extends AbstractMeshTest {
 
 	@AfterClass
 	public static void cleanup() throws IOException {
-		FileUtils.forceDelete(new File(PLUGIN_DIR));
+		File dir = new File(PLUGIN_DIR);
+		if (dir.exists()) {
+			FileUtils.forceDelete(dir);
+		}
 	}
 
 	@Test
 	public void testStop() {
 		MeshPluginManager manager = pluginManager();
-		int before = vertx().deploymentIDs().size();
-		final String CLONE_PLUGIN_DEPLOYMENT_NAME = ClonePlugin.class.getCanonicalName();
+		int before = manager.getPlugins().size();
 		for (int i = 0; i < 100; i++) {
-			manager.deploy(CLONE_PLUGIN_DEPLOYMENT_NAME).blockingGet();
+			manager.deploy(new ClonePlugin(null, null)).blockingGet();
 		}
-		assertEquals(before + 100, vertx().deploymentIDs().size());
+		assertEquals(before + 100, manager.getPlugins().size());
 
 		assertEquals(100, manager.getPlugins().size());
 		manager.stop().blockingAwait();
 		assertEquals(0, manager.getPlugins().size());
-		assertEquals("Not all deployed verticles have been undeployed.", before, vertx().deploymentIDs().size());
+		assertEquals("Not all deployed verticles have been undeployed.", before, manager.getPlugins().size());
 	}
 
 	@Test
@@ -178,13 +180,14 @@ public class PluginManagerTest extends AbstractMeshTest {
 	private <T extends RestModel> T getViaClient(Class<T> clazz, String path) throws IOException {
 		String json = getJSONViaClient(path);
 		return JsonUtil.readValue(json, clazz);
-
 	}
 
 	@Test
 	public void testJavaDeployment() throws IOException {
 		MeshPluginManager manager = pluginManager();
-		DummyPlugin plugin = new DummyPlugin(null, null);
+		PluginWrapper wrapper = mock(PluginWrapper.class);
+
+		DummyPlugin plugin = new DummyPlugin(wrapper, pluginEnv());
 		manager.deploy(plugin).blockingGet();
 		assertEquals(1, manager.getPlugins().size());
 

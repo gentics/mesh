@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -19,6 +20,7 @@ import javax.inject.Singleton;
 
 import org.pf4j.DefaultPluginManager;
 import org.pf4j.Plugin;
+import org.pf4j.PluginDescriptorFinder;
 import org.pf4j.PluginFactory;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
@@ -28,6 +30,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.RestPlugin;
+import com.gentics.mesh.plugin.impl.MeshPluginDescriptorFinderImpl;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.plugin.pf4j.LocalPluginWrapper;
 import com.gentics.mesh.plugin.pf4j.MeshPluginFactory;
@@ -64,13 +67,13 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 			if (event.getPluginState().equals(PluginState.STARTED)) {
 				Plugin plugin = event.getPlugin().getPlugin();
 				if (plugin instanceof RestPlugin) {
-					registerPlugin((MeshPlugin) plugin);
+					registerPlugin((MeshPlugin) plugin).blockingAwait(15, TimeUnit.SECONDS);
 				}
 			}
 			if (event.getPluginState().equals(PluginState.STOPPED)) {
 				Plugin plugin = event.getPlugin().getPlugin();
 				if (plugin instanceof RestPlugin) {
-					deregisterPlugin((MeshPlugin) plugin);
+					deregisterPlugin((MeshPlugin) plugin).blockingAwait(15, TimeUnit.SECONDS);
 				}
 			}
 		});
@@ -242,7 +245,10 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 
 	@Override
 	public Completable undeploy(String uuid) {
-		return Completable.error(new RuntimeException("Not implemented"));
+		return Completable.fromRunnable(() -> {
+			resolvePlugins();
+			unloadPlugin(uuid);
+		});
 	}
 
 	@Override
@@ -287,6 +293,16 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 	@Override
 	protected PluginFactory createPluginFactory() {
 		return pluginFactory;
+	}
+
+	@Override
+	public PluginFactory getPluginFactory() {
+		return pluginFactory;
+	}
+
+	@Override
+	protected PluginDescriptorFinder createPluginDescriptorFinder() {
+		return new MeshPluginDescriptorFinderImpl();
 	}
 
 }

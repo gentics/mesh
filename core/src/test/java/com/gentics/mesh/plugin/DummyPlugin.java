@@ -12,6 +12,9 @@ import io.vertx.ext.web.Router;
  */
 public class DummyPlugin extends AbstractPlugin implements RestPlugin {
 
+	public DummyPlugin() {
+	}
+		
 	public DummyPlugin(PluginWrapper wrapper, PluginEnvironment env) {
 		super(wrapper, env);
 	}
