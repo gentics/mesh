@@ -205,12 +205,24 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 		return edges.iterator().hasNext();
 	}
 
-	public static Stream<? extends NodeGraphFieldContainer> findAllContainers(Object nodeId, String branchUuid, String code) {
+	public static GraphFieldContainerEdge findEdge(Object nodeId, String branchUuid, String code, String lang) {
+		FramedGraph graph = Tx.get().getGraph();
+		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_branch_type_lang",
+			MeshInternal.get().database().index().createComposedIndexKey(nodeId, branchUuid, code, lang));
+		Iterator<? extends GraphFieldContainerEdge> frames = graph.frameExplicit(edges.iterator(), GraphFieldContainerEdgeImpl.class);
+		if (frames.hasNext()) {
+			return frames.next();
+		} else {
+			return null;
+		}
+	}
+
+	public static TraversalResult<? extends GraphFieldContainerEdgeImpl> findEdges(Object nodeId, String branchUuid, String code) {
 		FramedGraph graph = Tx.get().getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
 			MeshInternal.get().database().index().createComposedIndexKey(nodeId, branchUuid, code));
 		Iterator<? extends GraphFieldContainerEdgeImpl> frames = graph.frameExplicit(edges.iterator(), GraphFieldContainerEdgeImpl.class);
-		return new TraversalResult<>(() -> frames).stream().map(edge -> edge.getNodeContainer());
+		return new TraversalResult<>(() -> frames);
 	}
 
 }

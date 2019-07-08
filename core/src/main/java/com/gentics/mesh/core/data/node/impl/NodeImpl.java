@@ -346,20 +346,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type) {
-		Stream<? extends NodeGraphFieldContainer> containers = GraphFieldContainerEdgeImpl.findAllContainers(this.getId(), branchUuid,
-			type.getCode());
-		return new TraversalResult<>(containers);
+		TraversalResult<? extends GraphFieldContainerEdgeImpl> it = GraphFieldContainerEdgeImpl.findEdges(this.getId(), branchUuid, type.getCode());
+		Iterator<NodeGraphFieldContainer> it2 = it.stream().map(e -> e.getNodeContainer()).iterator();
+		return new TraversalResult<>(it2);
 	}
 
 	@Override
-	public TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainersIt(ContainerType type) {
+	public TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainers(ContainerType type) {
 		return new TraversalResult<>(
 			outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV()
 				.frameExplicit(NodeGraphFieldContainerImpl.class));
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
+	@SuppressWarnings("unchecked")
 	public long getGraphFieldContainerCount() {
 		return outE(HAS_FIELD_CONTAINER).or(e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, DRAFT.getCode()), e -> e.traversal()
 			.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, PUBLISHED.getCode())).inV().count();
@@ -465,27 +465,18 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public EdgeFrame getGraphFieldContainerEdgeFrame(String languageTag, String branchUuid, ContainerType type) {
-		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag).has(
-			GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
-		if (edgeTraversal.hasNext()) {
-			return edgeTraversal.next();
-		} else {
-			return null;
-		}
+		return GraphFieldContainerEdgeImpl.findEdge(getId(), branchUuid, type.getCode(), languageTag);
 	}
 
 	/**
-	 * Get all graph field.
+	 * Get all graph field edges.
 	 * 
 	 * @param branchUuid
 	 * @param type
 	 * @return
 	 */
-	protected Iterable<? extends GraphFieldContainerEdgeImpl> getGraphFieldContainerEdges(String branchUuid, ContainerType type) {
-		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER)
-			.has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid)
-			.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
-		return edgeTraversal.frameExplicit(GraphFieldContainerEdgeImpl.class);
+	protected TraversalResult<? extends GraphFieldContainerEdgeImpl> getGraphFieldContainerEdges(String branchUuid, ContainerType type) {
+		return GraphFieldContainerEdgeImpl.findEdges(getId(), branchUuid, type.getCode());
 	}
 
 	@Override
@@ -994,7 +985,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public NodeVersionsResponse transformToVersionList(InternalActionContext ac) {
 		NodeVersionsResponse response = new NodeVersionsResponse();
 		Map<String, List<VersionInfo>> versions = new HashMap<>();
-		getGraphFieldContainersIt(ac.getBranch(), DRAFT).forEach(c -> {
+		getGraphFieldContainers(ac.getBranch(), DRAFT).forEach(c -> {
 			versions.put(c.getLanguageTag(), c.versions().stream()
 				.map(v -> v.transformToVersionInfo(ac))
 				.collect(Collectors.toList()));
@@ -1237,8 +1228,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		String branchUuid = branch.getUuid();
 
-		TraversalResult<? extends GraphFieldContainerEdgeImpl> publishEdges = new TraversalResult<>(
-			getGraphFieldContainerEdges(branchUuid, PUBLISHED));
+		TraversalResult<? extends GraphFieldContainerEdgeImpl> publishEdges = getGraphFieldContainerEdges(branchUuid, PUBLISHED);
 
 		// Remove the published edge for each found container
 		publishEdges.forEach(edge -> {
@@ -1442,7 +1432,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		// Delete all initial containers (which will delete all containers)
-		for (NodeGraphFieldContainer container : getGraphFieldContainersIt(INITIAL)) {
+		for (NodeGraphFieldContainer container : getGraphFieldContainers(INITIAL)) {
 			container.delete(bac);
 		}
 		if (log.isDebugEnabled()) {

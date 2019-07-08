@@ -617,7 +617,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			for (Branch branch : project.getBranchRoot().findAll()) {
 				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 					JsonObject json = getTransformer().toPermissionPartial(node, type);
-					for (NodeGraphFieldContainer container : node.getGraphFieldContainersIt(branch, type)) {
+					for (NodeGraphFieldContainer container : node.getGraphFieldContainers(branch, type)) {
 						String indexName = container.getIndexName(project.getUuid(), branch.getUuid(), type);
 						String documentId = container.getDocumentId();
 						entries.add(new UpdateBulkEntry(indexName, documentId, json, true));
