@@ -176,7 +176,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		ContainerType type = ContainerType.forVersion(gc.getVersioningParameters().getVersion());
 
 		Stream<? extends NodeGraphFieldContainer> stream = StreamSupport
-			.stream(content.getNode().getGraphFieldContainersIt(branch, type).spliterator(), false);
+			.stream(content.getNode().getGraphFieldContainers(branch, type).spliterator(), false);
 		return stream.map(item -> {
 			return new NodeContent(content.getNode(), item, content.getLanguageFallback());
 		}).collect(Collectors.toList());
@@ -461,7 +461,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					if (node == null) {
 						return null;
 					}
-					return node.getGraphFieldContainersIt(gc.getBranch(), DRAFT).stream().filter(c -> {
+					return node.getGraphFieldContainers(gc.getBranch(), DRAFT).stream().filter(c -> {
 						String lang = c.getLanguageTag();
 						return lang.equals(languageTag);
 					}).findFirst().map(NodeGraphFieldContainer::versions).orElse(null);

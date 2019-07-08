@@ -210,8 +210,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				request.setParentNodeUuid(uuid);
 
 				call(() -> client().createNode(PROJECT_NAME, request));
-				long duration = currentTimeMillis() - start;
-				out.println("Duration:" + i + " " + (duration / i));
+				//long duration = currentTimeMillis() - start;
+				//out.println("Duration:" + i + " " + (duration / i));
 			}
 		}
 	}
