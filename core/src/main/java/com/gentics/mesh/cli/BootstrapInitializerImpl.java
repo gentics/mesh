@@ -332,6 +332,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		vertxOptions.setEventLoopPoolSize(options.getVertxOptions().getEventPoolSize());
 		// vertxOptions.setWorkerPoolSize(1);
 		// vertxOptions.setEventLoopPoolSize(1);
+		vertxOptions.setMaxEventLoopExecuteTime(Long.MAX_VALUE);
+		vertxOptions.setMaxWorkerExecuteTime(Long.MAX_VALUE);
 
 		MonitoringConfig monitorinOptions = options.getMonitoringOptions();
 		if (monitorinOptions != null && monitorinOptions.isEnabled()) {
