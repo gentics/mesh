@@ -235,10 +235,6 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 		return client().createNode(PROJECT_NAME, request).toSingle().blockingGet();
 	}
 
-	private void publishNode(NodeResponse node) {
-		client().publishNode(PROJECT_NAME, node.getUuid()).toCompletable().blockingAwait();
-	}
-
 	private void moveFolder(NodeResponse from, NodeResponse to) {
 		client().moveNode(PROJECT_NAME, from.getUuid(), to.getUuid()).toCompletable().blockingAwait();
 	}

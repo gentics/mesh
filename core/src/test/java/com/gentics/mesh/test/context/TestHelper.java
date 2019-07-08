@@ -39,6 +39,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
+import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -184,6 +186,17 @@ public interface TestHelper {
 	 */
 	default String initialBranchUuid() {
 		return data().branchUuid();
+	}
+
+	default BranchResponse createBranchRest(String name) {
+		return createBranchRest(name, true);
+	}
+
+	default BranchResponse createBranchRest(String name, boolean latest) {
+		BranchCreateRequest request = new BranchCreateRequest();
+		request.setName(name);
+		request.setLatest(latest);
+		return client().createBranch(PROJECT_NAME, request).blockingGet();
 	}
 
 	default String roleUuid() {
@@ -418,6 +431,10 @@ public interface TestHelper {
 		return createNode("slug", new StringFieldImpl().setString(RandomStringUtils.randomAlphabetic(5)));
 	}
 
+	default public NodeResponse createNode(NodeResponse parent) {
+		return createNode(parent.getUuid(), "slug", new StringFieldImpl().setString(RandomStringUtils.randomAlphabetic(5)));
+	}
+
 	default public NodeResponse createNode(String fieldKey, Field field) {
 		String parentNodeUuid = tx(() -> folder("2015").getUuid());
 		NodeResponse response = call(() -> createNodeAsync(parentNodeUuid, fieldKey, field));
@@ -435,6 +452,14 @@ public interface TestHelper {
 			assertNotNull("The field was not included in the response.", response.getFields().hasField(fieldKey));
 		}
 		return response;
+	}
+
+	default void publishNode(NodeResponse node) {
+		client().publishNode(PROJECT_NAME, node.getUuid()).blockingAwait();
+	}
+
+	default void publishNodeInBranch(NodeResponse node, String branch) {
+		client().publishNode(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setBranch(branch)).blockingAwait();
 	}
 
 	default public NodeResponse readNode(String projectName, String uuid) {
