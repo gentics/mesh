@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.graphql;
 
-import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -29,7 +28,7 @@ public class GraphQLEndpointBranchTest extends AbstractMeshTest {
 	@Before
 	public void setupData() {
 		grantAdminRole();
-		createBranchRest(BRANCH_NAME, false);
+		createBranchRestAndWait(BRANCH_NAME, false);
 
 		NodeResponse content1 = createContent("test1", "test");
 		createContent("test2", String.format("{{mesh.link('%s')}}", content1.getUuid()));
@@ -60,12 +59,9 @@ public class GraphQLEndpointBranchTest extends AbstractMeshTest {
 		return call(() -> client().findProjectByName(PROJECT_NAME));
 	}
 
-	private void createBranchRest(String name, boolean latest) {
-		BranchCreateRequest request = new BranchCreateRequest();
-		request.setName(name);
-		request.setLatest(latest);
+	private void createBranchRestAndWait(String name, boolean latest) {
 		waitForJobs(() -> {
-			call(() -> client().createBranch(PROJECT_NAME, request));
+			createBranchRest(name, latest);
 		}, JobStatus.COMPLETED, 1);
 	}
 }
