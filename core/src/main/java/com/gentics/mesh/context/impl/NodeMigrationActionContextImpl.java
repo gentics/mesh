@@ -15,8 +15,8 @@ import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.context.NodeMigrationActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -39,6 +39,7 @@ import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -52,6 +53,7 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Single;
 import io.vertx.core.AsyncResult;
@@ -462,7 +464,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public <T extends ElementFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz) {
+			public <T extends EdgeFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz) {
 				return null;
 			}
 
@@ -472,7 +474,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public <T extends ElementFrame> TraversalResult<? extends T> inE(String label, Class<T> clazz) {
+			public <T extends EdgeFrame> TraversalResult<? extends T> inE(String label, Class<T> clazz) {
 				return null;
 			}
 

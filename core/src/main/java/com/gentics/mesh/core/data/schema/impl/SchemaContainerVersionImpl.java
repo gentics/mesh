@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
+import com.gentics.mesh.core.data.impl.GraphFieldTypes;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
@@ -52,6 +53,7 @@ import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.VertexFrame;
+import com.syncleus.ferma.traversals.Traversal;
 
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
@@ -90,13 +92,12 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public Iterable<? extends Node> getNodes(String branchUuid, User user, ContainerType type) {
-		return in(HAS_PARENT_CONTAINER).in(HAS_SCHEMA_CONTAINER).transform(v -> v.reframeExplicit(NodeImpl.class)).filter(node -> {
-			return node.outE(HAS_FIELD_CONTAINER).filter(e -> {
-				GraphFieldContainerEdge edge = e.reframeExplicit(GraphFieldContainerEdgeImpl.class);
-				return branchUuid.equals(edge.getBranchUuid()) && type == edge.getType();
-			}).hasNext() && user.hasPermissionForId(node.id(), READ_PUBLISHED_PERM);
-		});
+	public TraversalResult<? extends Node> getNodes(String branchUuid, User user, ContainerType type) {
+		// Load (schema version)->(schema container)->(node)->(field container edge)
+		Iterable<? extends NodeImpl> it = in(HAS_PARENT_CONTAINER).in(HAS_SCHEMA_CONTAINER).filter(node -> {
+			return GraphFieldContainerEdgeImpl.matchesBranchAndType(node.getId(), branchUuid, type.getCode()) && user.hasPermissionForId(node.getId(), READ_PUBLISHED_PERM);
+		}).frameExplicit(NodeImpl.class);
+		return new TraversalResult<>(it);
 	}
 
 	@Override
@@ -163,7 +164,7 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public TraversalResult<? extends Branch> getBranches() {
-		return new TraversalResult<>(in(HAS_SCHEMA_VERSION).frameExplicit(BranchImpl.class));
+		return in(HAS_SCHEMA_VERSION, BranchImpl.class);
 	}
 
 	@Override

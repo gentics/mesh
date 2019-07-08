@@ -1,6 +1,8 @@
 package com.gentics.madl.frame;
 
 import com.gentics.mesh.madl.frame.EdgeFrame;
+import com.gentics.mesh.madl.frame.VertexFrame;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
@@ -21,8 +23,20 @@ public abstract class AbstractEdgeFrame extends com.syncleus.ferma.AbstractEdgeF
 	}
 
 	@Override
+	public <T extends VertexFrame> TraversalResult<? extends T> inV(Class<T> clazz) {
+		TraversalResult<? extends T> result = new TraversalResult<>(inV().frameExplicit(clazz));
+		return result;
+	}
+
+	@Override
 	public VertexTraversal<?, ?, ?> outV() {
 		return super.outV();
+	}
+
+	@Override
+	public <T extends VertexFrame> TraversalResult<? extends T> outV(Class<T> clazz) {
+		TraversalResult<? extends T> result = new TraversalResult<>(outV().frameExplicit(clazz));
+		return result;
 	}
 
 	@Override

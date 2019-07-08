@@ -36,11 +36,11 @@ public interface VertexFrame extends ElementFrame, com.syncleus.ferma.VertexFram
 
 	<T extends ElementFrame> TraversalResult<? extends T> out(String label, Class<T> clazz);
 
-	<T extends ElementFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz);
+	<T extends EdgeFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz);
 
 	<T extends ElementFrame> TraversalResult<? extends T> in(String label, Class<T> clazz);
 
-	<T extends ElementFrame> TraversalResult<? extends T> inE(String label, Class<T> clazz);
+	<T extends EdgeFrame> TraversalResult<? extends T> inE(String label, Class<T> clazz);
 
 	<T extends RawTraversalResult<?>> T traverse(final Function<GraphTraversal<Vertex, Vertex>, GraphTraversal<?, ?>> traverser);
 

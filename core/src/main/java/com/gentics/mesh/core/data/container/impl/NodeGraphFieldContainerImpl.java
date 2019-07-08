@@ -410,7 +410,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	 * @return parent node
 	 */
 	public Node getParentNode() {
-		Node parentNode = in(HAS_FIELD_CONTAINER).nextOrDefaultExplicit(NodeImpl.class, null);
+		Node parentNode = in(HAS_FIELD_CONTAINER, NodeImpl.class).nextOrNull();
 		if (parentNode == null) {
 			// the field container is not directly linked to its Node, get the
 			// initial field container
