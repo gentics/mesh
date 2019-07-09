@@ -392,19 +392,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, User editor, NodeGraphFieldContainer original,
-															 boolean handleDraftEdge) {
-		SchemaContainerVersion schemaContainerVersion;
-		if (original != null) {
-			schemaContainerVersion = original.getSchemaContainerVersion();
-		} else {
-			schemaContainerVersion = branch.findLatestSchemaVersion(getSchemaContainer());
-		}
-		return createGraphFieldContainer(languageTag, branch, editor, original, schemaContainerVersion, handleDraftEdge);
-	}
-
-	@Override
-	public NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, User editor, NodeGraphFieldContainer original,
-		SchemaContainerVersion schemaContainerVersion, boolean handleDraftEdge) {
+		boolean handleDraftEdge) {
 		NodeGraphFieldContainerImpl previous = null;
 		EdgeFrame draftEdge = null;
 		String branchUuid = branch.getUuid();
@@ -419,13 +407,18 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Create the new container
 		NodeGraphFieldContainerImpl newContainer = getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		if (original != null) {
 			newContainer.setEditor(editor);
 			newContainer.setLastEditedTimestamp();
 			newContainer.setLanguageTag(languageTag);
-			newContainer.setSchemaContainerVersion(schemaContainerVersion);
-//			newContainer.setSchemaContainerVersion(original.getSchemaContainerVersion());
+			newContainer.setSchemaContainerVersion(original.getSchemaContainerVersion());
+		} else {
+			newContainer.setEditor(editor);
+			newContainer.setLastEditedTimestamp();
+			newContainer.setLanguageTag(languageTag);
 			// We need create a new container with no reference. So use the latest version available to use.
-//			newContainer.setSchemaContainerVersion(branch.findLatestSchemaVersion(getSchemaContainer()));
+			newContainer.setSchemaContainerVersion(branch.findLatestSchemaVersion(getSchemaContainer()));
+		}
 		if (previous != null) {
 			// set the next version number
 			newContainer.setVersion(previous.getVersion().nextDraft());

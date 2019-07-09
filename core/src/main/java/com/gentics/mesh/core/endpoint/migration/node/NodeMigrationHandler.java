@@ -228,7 +228,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag);
 
 		// Actual migration - Create the new version
-		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguageTag(), branch, container.getEditor(), container, toVersion, true);
+		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguageTag(), branch, container.getEditor(), container, true);
 
 		// Ensure that the migrated version is also published since the old version was
 		if (publish) {
