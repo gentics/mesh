@@ -26,6 +26,10 @@ include::content/docs/variables.adoc-include[]
 [[v0.36.5]]
 == 0.36.5 (TBD)
 
+icon:plus[] Upload: The `upload.parser` config setting and `MESH_BINARY_DOCUMENT_PARSER` environment variable can be used to control whether uploads should be parsed to extract metadata and contents. Uploads will be parsed by default.
+
+icon:plus[] Search: The `search.includeBinaryFields` config setting and `MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS` environment variable can be used to control whether binary field metadata and plain text content should be added to the search index. By default metadata and content will be added to the search index.
+
 icon:plus[] REST: A core library for JSON support (jackson) has been updated.
 
 [[v0.36.4]]

@@ -617,6 +617,14 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		// return new branch
 		return tx(() -> project().getBranchRoot().findByUuid(uuid.toString()));
 	}
+	
+	protected NodeResponse createBinaryNode(String parentNodeUuid) {
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
+		nodeCreateRequest.setSchemaName("binary_content");
+		return call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+	}
 
 	protected Single<NodeResponse> createBinaryContent() {
 		String parentUuid = client().findProjects().blockingGet().getData().get(0).getRootNode().getUuid();

@@ -30,6 +30,7 @@ public class ElasticSearchOptions implements Option {
 	public static final int DEFAULT_RETRY_INTERVAL = 5000;
 	public static final int DEFAULT_RETRY_LIMIT = 3;
 	public static final boolean DEFAULT_WAIT_FOR_IDLE = true;
+	public static final boolean DEFAULT_INCLUDE_BINARY_FIELDS = true;
 
 	public static final String DEFAULT_PREFIX = "mesh-";
 
@@ -56,6 +57,7 @@ public class ElasticSearchOptions implements Option {
 	public static final String MESH_ELASTICSEARCH_RETRY_LIMIT_ENV = "MESH_ELASTICSEARCH_RETRY_LIMIT";
 	public static final String MESH_ELASTICSEARCH_WAIT_FOR_IDLE_ENV = "MESH_ELASTICSEARCH_WAIT_FOR_IDLE";
 	public static final String MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION_ENV = "MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION";
+	public static final String MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS_ENV = "MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Elasticsearch connection url to be used. Set this setting to null will disable the Elasticsearch support.")
@@ -119,7 +121,8 @@ public class ElasticSearchOptions implements Option {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Upper limit for the total encoded string length of the bulk requests. Default: " + DEFAULT_BULK_LENGTH_LIMIT)
-	@EnvironmentVariable(name = MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT_ENV, description = "Override the batch bulk length limit. Default: " + DEFAULT_BULK_LENGTH_LIMIT)
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT_ENV, description = "Override the batch bulk length limit. Default: "
+		+ DEFAULT_BULK_LENGTH_LIMIT)
 	private long bulkLengthLimit = DEFAULT_BULK_LENGTH_LIMIT;
 
 	@JsonProperty(required = false)
@@ -157,6 +160,12 @@ public class ElasticSearchOptions implements Option {
 		+ DEFAULT_WAIT_FOR_IDLE)
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_WAIT_FOR_IDLE_ENV, description = "Override the search idle wait flag.")
 	private boolean waitForIdle = DEFAULT_WAIT_FOR_IDLE;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("If true, the content and metadata of binary fields will be included in the search index. Default: "
+		+ DEFAULT_INCLUDE_BINARY_FIELDS)
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS_ENV, description = "Override the search include binary fields flag.")
+	private boolean includeBinaryFields = DEFAULT_INCLUDE_BINARY_FIELDS;
 
 	public ElasticSearchOptions() {
 
@@ -354,6 +363,15 @@ public class ElasticSearchOptions implements Option {
 
 	public ElasticSearchOptions setWaitForIdle(boolean waitForIdle) {
 		this.waitForIdle = waitForIdle;
+		return this;
+	}
+
+	public boolean isIncludeBinaryFields() {
+		return includeBinaryFields;
+	}
+
+	public ElasticSearchOptions setIncludeBinaryFields(boolean includeBinaryFields) {
+		this.includeBinaryFields = includeBinaryFields;
 		return this;
 	}
 

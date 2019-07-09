@@ -19,5 +19,6 @@
 | ```search.retryInterval```        | Number     | `5000`                  | The time in milliseconds between retries of elastic search requests in case of a failure.
 | ```search.retryLimit```           | Number     | `3`                     | The amount of retries on a single request before the request is discarded.
 | ```search.waitForIdle```          | Number     | `true`                  | If true, search endpoints wait for elasticsearch to be idle before sending a response.
+| ```search.includeBinaryFields```  | Boolean    | `true`                  | If true, the content and metadata of binary fields will be included in the search index.
 |======
 

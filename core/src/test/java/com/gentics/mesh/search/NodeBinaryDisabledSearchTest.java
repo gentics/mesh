@@ -4,20 +4,18 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+import static com.gentics.mesh.test.context.MeshOptionChanger.EXCLUDE_BINARY_SEARCH;
 import static com.gentics.mesh.test.context.MeshTestHelper.getRangeQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -26,10 +24,7 @@ import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.job.JobStatus;
-import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
@@ -37,11 +32,13 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
 
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true )
-public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
+/**
+ * Test search index handling with disabled include binary fields option.
+ */
+@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true, optionChanger = EXCLUDE_BINARY_SEARCH)
+public class NodeBinaryDisabledSearchTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testBinarySearchMapping() throws Exception {
@@ -86,18 +83,18 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 				schemaVersionUuid, ContainerType.DRAFT);
 			String id = NodeGraphFieldContainer.composeDocumentId(nodeA.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
-			assertEquals("Lorem ipsum dolor sit amet",
-				doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").getJsonObject("file").getString("content"));
+			assertFalse("The information should not have been added to the search document.",
+				doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").containsKey("file"));
 			tx.success();
 		}
 
 		// file.content
 		NodeListResponse response = call(
 			() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.binary.file.content", "Lorem ipsum dolor sit amet")));
-		assertEquals("Exactly one node should be found for the given content.", 1, response.getData().size());
+		assertEquals("No node should be found.", 0, response.getData().size());
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.binary.file.content.raw", "Lorem ipsum dolor sit amet")));
-		assertEquals("Exactly one node should be found for the given content.", 1, response.getData().size());
+		assertEquals("No node should be found.", 0, response.getData().size());
 
 		// mimeType
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.binary.mimeType", "application/rtf")));
@@ -106,35 +103,6 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.binary.mimeType.raw", "application/rtf")));
 		assertEquals("Exactly one node should be found for the given image mime type.", 1, response.getData().size());
 
-	}
-
-	@Test
-	public void testGeolocationSearch() throws Exception {
-		String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
-
-		List<String> images = Arrays.asList("android-gps.jpg", "iphone-gps.jpg", "android-africa-gps.jpg");
-		for (String image : images) {
-			InputStream ins = getClass().getResourceAsStream("/pictures/" + image);
-			byte[] bytes = IOUtils.toByteArray(ins);
-			Buffer buffer = Buffer.buffer(bytes);
-
-			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-			nodeCreateRequest.setLanguage("en");
-			nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
-			nodeCreateRequest.setSchemaName("binary_content");
-			NodeResponse node = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
-			call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary",
-				new ByteArrayInputStream(buffer.getBytes()), buffer.length(), image, "image/jpeg"));
-		}
-		waitForSearchIdleEvent();
-		String query = getESText("geosearch.es");
-		NodeListResponse result = call(() -> client().searchNodes(PROJECT_NAME, query));
-		assertThat(result.getData()).hasSize(2);
-		// Only the two images should be found
-		List<String> foundImages = result.getData().stream().map(n -> n.getFields().getBinaryField("binary").getFileName())
-			.collect(Collectors.toList());
-		assertTrue(foundImages.contains("android-gps.jpg"));
-		assertTrue(foundImages.contains("android-africa-gps.jpg"));
 	}
 
 	@Test
@@ -147,9 +115,9 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 		// Add binary field
 		SchemaUpdateRequest schemaUpdateRequest = call(() -> client().findSchemaByUuid(contentSchemaUuid)).toUpdateRequest();
 		schemaUpdateRequest.addField(new BinaryFieldSchemaImpl().setName("binary"));
-		waitForJobs(() -> {
+		waitForJob(() -> {
 			call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
-		}, JobStatus.COMPLETED, 1);
+		});
 
 		byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
 		call(
@@ -163,8 +131,8 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 				nodeA.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
 			String id = NodeGraphFieldContainer.composeDocumentId(nodeUuid, "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
-			assertEquals("Lorem ipsum dolor sit amet",
-				doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").getJsonObject("file").getString("content"));
+			assertFalse("The binary content should not be part of the document",
+				doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").containsKey("file"));
 			tx.success();
 		}
 
@@ -190,9 +158,9 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 		// Add binary field
 		SchemaUpdateRequest schemaUpdateRequest = call(() -> client().findSchemaByUuid(contentSchemaUuid)).toUpdateRequest();
 		schemaUpdateRequest.addField(new BinaryFieldSchemaImpl().setName("binary"));
-		waitForJobs(() -> {
+		waitForJob(() -> {
 			call(() -> client().updateSchema(contentSchemaUuid, schemaUpdateRequest));
-		}, JobStatus.COMPLETED, 1);
+		});
 
 		// Upload image
 		byte[] bytes = IOUtils.toByteArray(getClass().getResourceAsStream("/pictures/blume.jpg"));

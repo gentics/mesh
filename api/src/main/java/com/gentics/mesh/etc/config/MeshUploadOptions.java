@@ -16,11 +16,13 @@ public class MeshUploadOptions implements Option {
 	public static final String DEFAULT_BINARY_DIRECTORY = "data" + File.separator + "binaryFiles";
 	public static final String DEFAULT_TEMP_DIR = "data" + File.separator + "tmp" + File.separator + "file-uploads";;
 	public static final int DEFAULT_DOCUMENT_PARSER_LIMIT = 40_000;
+	public static final boolean DEFAULT_UPLOAD_PARSER_FLAG = true;
 
 	public static final String MESH_BINARY_DIR_ENV = "MESH_BINARY_DIR";
 	public static final String MESH_BINARY_UPLOAD_TEMP_DIR_ENV = "MESH_BINARY_UPLOAD_TEMP_DIR";
 	public static final String MESH_BINARY_UPLOAD_LIMIT_ENV = "MESH_BINARY_UPLOAD_LIMIT";
 	public static final String MESH_BINARY_DOCUMENT_PARSER_LIMIT_ENV = "MESH_BINARY_DOCUMENT_PARSER_LIMIT";
+	public static final String MESH_BINARY_DOCUMENT_PARSER_ENV = "MESH_BINARY_DOCUMENT_PARSER";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The upload size limit in bytes. Default: " + DEFAULT_FILEUPLOAD_MB_LIMIT)
@@ -41,6 +43,12 @@ public class MeshUploadOptions implements Option {
 	@JsonPropertyDescription("The parser limit for uploaded documents (pdf, doc, docx). Default: " + DEFAULT_DOCUMENT_PARSER_LIMIT)
 	@EnvironmentVariable(name = MESH_BINARY_DOCUMENT_PARSER_LIMIT_ENV, description = "Override the configured parser limit.")
 	private int parserLimit = DEFAULT_DOCUMENT_PARSER_LIMIT;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("If true, the document parser will process uploads and extract metadata and contents. Default: "
+		+ DEFAULT_UPLOAD_PARSER_FLAG)
+	@EnvironmentVariable(name = MESH_BINARY_DOCUMENT_PARSER_ENV, description = "Override the document parser enabled flag.")
+	private boolean parser = DEFAULT_UPLOAD_PARSER_FLAG;
 
 	/**
 	 * Return the upload limit in bytes.
@@ -107,6 +115,7 @@ public class MeshUploadOptions implements Option {
 
 	/**
 	 * Return the configured parser limit.
+	 * 
 	 * @return
 	 */
 	public int getParserLimit() {
@@ -115,11 +124,32 @@ public class MeshUploadOptions implements Option {
 
 	/**
 	 * Set the parser limit for uploaded documents.
+	 * 
 	 * @param parserLimit
-	 * @return
+	 * @return Fluent API
 	 */
 	public MeshUploadOptions setParserLimit(int parserLimit) {
 		this.parserLimit = parserLimit;
+		return this;
+	}
+
+	/**
+	 * Check whether the upload document parser is enabled.
+	 * 
+	 * @return
+	 */
+	public boolean isParser() {
+		return parser;
+	}
+
+	/**
+	 * Set the document parser flag.
+	 * 
+	 * @param parser
+	 * @return Fluent API
+	 */
+	public MeshUploadOptions setParser(boolean parser) {
+		this.parser = parser;
 		return this;
 	}
 

@@ -34,6 +34,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.index.AbstractMappingProvider;
 import com.google.common.collect.Sets;
 
@@ -47,11 +48,14 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeContainerMappingProvider.class);
 
-	@Inject
-	public BootstrapInitializer boot;
+	public final BootstrapInitializer boot;
+
+	private final MeshOptions options;
 
 	@Inject
-	public NodeContainerMappingProvider() {
+	public NodeContainerMappingProvider(BootstrapInitializer boot, MeshOptions options) {
+		this.boot = boot;
+		this.options = options;
 	}
 
 	@Override
@@ -340,11 +344,13 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		// .dominantColor
 		binaryProps.put("dominantColor", notAnalyzedType(KEYWORD));
 
-		// Add mapping for plain text fields
-		addBinaryFieldPlainTextMapping(binaryProps, customIndexOptions);
+		if (options.getSearchOptions().isIncludeBinaryFields()) {
+			// Add mapping for plain text fields
+			addBinaryFieldPlainTextMapping(binaryProps, customIndexOptions);
 
-		// .metadata - Add metadata properties which are mostly dynamic string values
-		addMetadataMapping(binaryProps);
+			// .metadata - Add metadata properties which are mostly dynamic string values
+			addMetadataMapping(binaryProps);
+		}
 	}
 
 	private void addBinaryFieldPlainTextMapping(JsonObject binaryProps, JsonObject customIndexOptions) {

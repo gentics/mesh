@@ -9,6 +9,8 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.binary.impl.BasicImageDataProcessor;
 import com.gentics.mesh.core.binary.impl.TikaBinaryProcessor;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.MeshUploadOptions;
 
 /**
  * Registry which holds all binary data processors.
@@ -19,11 +21,15 @@ public class BinaryProcessorRegistry {
 	private List<BinaryDataProcessor> processors = new ArrayList<>();
 
 	@Inject
-	public BinaryProcessorRegistry(BasicImageDataProcessor imageProcessor,
+	public BinaryProcessorRegistry(MeshOptions options, BasicImageDataProcessor imageProcessor,
 		TikaBinaryProcessor tikaProcessor) {
+		MeshUploadOptions uploadOptions = options.getUploadOptions();
+
 		// Add built-in processors
 		addProcessor(imageProcessor);
-		addProcessor(tikaProcessor);
+		if (uploadOptions.isParser()) {
+			addProcessor(tikaProcessor);
+		}
 	}
 
 	/**
