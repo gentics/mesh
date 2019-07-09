@@ -11,6 +11,8 @@ public enum MeshOptionChanger {
 	NO_CHANGE(ignore -> {
 	}), SMALL_EVENT_BUFFER(options -> {
 		options.getSearchOptions().setEventBufferSize(100);
+	}), EXCLUDE_BINARY_SEARCH(options -> {
+		options.getSearchOptions().setIncludeBinaryFields(false);
 	}), RANDOM_ES_PORT(options -> {
 		try {
 			try (ServerSocket s = new ServerSocket(0)) {

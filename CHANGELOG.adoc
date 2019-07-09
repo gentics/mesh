@@ -23,6 +23,11 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.36.5]]
+== 0.36.5 (TBD)
+
+icon:plus[] Search: The `search.includeBinaryFields` config setting and `MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS` environment variable can be used to control whether binary field metadata and plain text content should be added to the search index. By default metadata and content will be added to the search index.
+
 [[v0.36.4]]
 == 0.36.4 (05.07.2019)
 
