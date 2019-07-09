@@ -51,6 +51,7 @@ import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
 
@@ -71,8 +72,11 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 
 	private static final String VERSION_KEY = "version";
 
+	private final MeshOptions options;
+
 	@Inject
-	public NodeContainerTransformer() {
+	public NodeContainerTransformer(MeshOptions options) {
+		this.options = options;
 	}
 
 	/**
@@ -199,33 +203,35 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 						binaryFieldInfo.put("height", binary.getImageHeight());
 					}
 
-					// Add the metadata
-					BinaryMetadata metadata = binaryField.getMetadata();
-					if (metadata != null) {
-						JsonObject binaryFieldMetadataInfo = new JsonObject();
-						binaryFieldInfo.put("metadata", binaryFieldMetadataInfo);
+					if (options.getSearchOptions().isIncludeBinaryFields()) {
+						// Add the metadata
+						BinaryMetadata metadata = binaryField.getMetadata();
+						if (metadata != null) {
+							JsonObject binaryFieldMetadataInfo = new JsonObject();
+							binaryFieldInfo.put("metadata", binaryFieldMetadataInfo);
 
-						for (Entry<String, String> entry : metadata.getMap().entrySet()) {
-							binaryFieldMetadataInfo.put(entry.getKey(), entry.getValue());
+							for (Entry<String, String> entry : metadata.getMap().entrySet()) {
+								binaryFieldMetadataInfo.put(entry.getKey(), entry.getValue());
+							}
+
+							Location loc = metadata.getLocation();
+							if (loc != null) {
+								JsonObject locationInfo = new JsonObject();
+								binaryFieldMetadataInfo.put("location", locationInfo);
+								locationInfo.put("lon", loc.getLon());
+								locationInfo.put("lat", loc.getLat());
+								// Add height outside of object to prevent ES error
+								binaryFieldMetadataInfo.put("location-z", loc.getAlt());
+							}
 						}
 
-						Location loc = metadata.getLocation();
-						if (loc != null) {
-							JsonObject locationInfo = new JsonObject();
-							binaryFieldMetadataInfo.put("location", locationInfo);
-							locationInfo.put("lon", loc.getLon());
-							locationInfo.put("lat", loc.getLat());
-							// Add height outside of object to prevent ES error
-							binaryFieldMetadataInfo.put("location-z", loc.getAlt());
+						// Plain text
+						String plainText = binaryField.getPlainText();
+						if (plainText != null) {
+							JsonObject file = new JsonObject();
+							binaryFieldInfo.put("file", file);
+							file.put("content", plainText);
 						}
-					}
-
-					// Plain text
-					String plainText = binaryField.getPlainText();
-					if (plainText != null) {
-						JsonObject file = new JsonObject();
-						binaryFieldInfo.put("file", file);
-						file.put("content", plainText);
 					}
 
 				}
