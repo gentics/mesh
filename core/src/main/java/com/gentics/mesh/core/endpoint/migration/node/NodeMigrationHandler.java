@@ -227,9 +227,6 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		ac.getGenericParameters().setFields("fields");
 		NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag);
 
-		// Update the schema version. Otherwise deserialisation of the JSON will fail later on.
-//		restModel.getSchema().setVersion(newSchema.getVersion());
-
 		// Actual migration - Create the new version
 		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguageTag(), branch, container.getEditor(), container, true);
 
@@ -281,7 +278,6 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		ac.getVersioningParameters().setVersion("published");
 		ac.getGenericParameters().setFields("fields");
 		NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag);
-		restModel.getSchema().setVersion(newSchema.getVersion());
 
 		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguageTag(), branch, container.getEditor(), container, true);
 
