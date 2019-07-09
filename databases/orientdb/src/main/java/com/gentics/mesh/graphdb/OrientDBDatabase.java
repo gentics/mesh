@@ -67,6 +67,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final Logger log = LoggerFactory.getLogger(OrientDBDatabase.class);
 
+	private static final String RIDBAG_PARAM_KEY = "ridBag.embeddedToSbtreeBonsaiThreshold";
+
 	private TypeResolver resolver;
 
 	private int maxRetry = 10;
@@ -135,7 +137,11 @@ public class OrientDBDatabase extends AbstractDatabase {
 				"Using the graph database server is only possible for non-in-memory databases. You have not specified a graph database directory.");
 		}
 
-		OGlobalConfiguration.RID_BAG_EMBEDDED_TO_SBTREEBONSAI_THRESHOLD.setValue(Integer.MAX_VALUE);
+		int value = getRidBagValue(options);
+		if (log.isTraceEnabled()) {
+			log.trace("Using ridbag transition threshold {" + value + "}");
+		}
+		OGlobalConfiguration.RID_BAG_EMBEDDED_TO_SBTREEBONSAI_THRESHOLD.setValue(value);
 
 		clusterManager.initConfigurationFiles();
 
@@ -145,6 +151,34 @@ public class OrientDBDatabase extends AbstractDatabase {
 			this.maxRetry = Integer.valueOf(storageOptions.getParameters().get("maxTransactionRetry"));
 			log.info("Using {" + this.maxRetry + "} transaction retries before failing");
 		}
+	}
+
+	/**
+	 * Load the ridbag configuration setting.
+	 * 
+	 * @param options
+	 * @return
+	 */
+	private int getRidBagValue(MeshOptions options) {
+		boolean isClusterMode = options.getClusterOptions() != null && options.getClusterOptions().isEnabled();
+		if (isClusterMode) {
+			// This is the mandatory setting when using OrientDB in clustered mode.
+			return Integer.MAX_VALUE;
+		} else {
+			GraphStorageOptions storageOptions = options.getStorageOptions();
+			String val = storageOptions.getParameters().get(RIDBAG_PARAM_KEY);
+			if (val != null) {
+				try {
+					return Integer.parseInt(val);
+				} catch (Exception e) {
+					log.error("Could not parse value of storage parameter {" + RIDBAG_PARAM_KEY + "}");
+					throw new RuntimeException("Parameter {" + RIDBAG_PARAM_KEY + "} could not be parsed.");
+				}
+			}
+
+		}
+		// Default instead of 40 to avoid sudden changes in sort order
+		return -1;
 	}
 
 	@Override
