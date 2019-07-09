@@ -35,6 +35,10 @@ public abstract class AbstractPluginVerticle extends AbstractVerticle implements
 	private static PluginManager manager = ServiceHelper.loadFactory(PluginManager.class);
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractPluginVerticle.class);
+	
+	private static final String WILDCARD_IP = "0.0.0.0";
+
+	private static final String LOOPBACK_IP = "127.0.0.1";
 
 	private PluginManifest manifest;
 
@@ -164,10 +168,15 @@ public abstract class AbstractPluginVerticle extends AbstractVerticle implements
 		return rc -> handler.handle(wrap(rc));
 	}
 
+	private String determineHostString(MeshOptions options) {
+		String host = options.getHttpServerOptions().getHost();
+		return WILDCARD_IP.equals(host) ? LOOPBACK_IP : host;
+	}
+
 	private void createAdminClient() {
 		MeshOptions options = Mesh.mesh().getOptions();
 		int port = options.getHttpServerOptions().getPort();
-		String host = options.getHttpServerOptions().getHost();
+		String host = this.determineHostString(options);
 		adminClient = MeshRestClient.create(host, port, false);
 	}
 
