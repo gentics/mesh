@@ -194,6 +194,9 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, User editor, NodeGraphFieldContainer original,
 		boolean handleDraftEdge);
 
+	NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, User editor, NodeGraphFieldContainer original,
+													  SchemaContainerVersion schemaContainerVersion, boolean handleDraftEdge);
+
 	/**
 	 * Return the draft field containers of the node in the latest branch.
 	 *
@@ -226,7 +229,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Return containers of the given type
-	 * 
+	 *
 	 * @param type
 	 * @return
 	 */
@@ -241,14 +244,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Return a list of language names for draft versions in the latest branch
-	 * 
+	 *
 	 * @return
 	 */
 	List<String> getAvailableLanguageNames();
 
 	/**
 	 * Return a list of language names for versions of given type in the given branch.
-	 * 
+	 *
 	 * @param branch
 	 *            branch
 	 * @param type
@@ -259,21 +262,21 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Set the project of the node.
-	 * 
+	 *
 	 * @param project
 	 */
 	void setProject(Project project);
 
 	/**
 	 * Return the children for this node for all branches.
-	 * 
+	 *
 	 * @return
 	 */
 	TraversalResult<? extends Node> getChildren();
 
 	/**
 	 * Return the children for this node in the given branch.
-	 * 
+	 *
 	 * @param branchUuid
 	 * @return
 	 */
@@ -300,7 +303,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Returns the parent node of this node.
-	 * 
+	 *
 	 * @param branchUuid
 	 *            branch Uuid
 	 * @return
@@ -309,7 +312,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Set the parent node of this node.
-	 * 
+	 *
 	 * @param branchUuid
 	 * @param parentNode
 	 */
@@ -317,7 +320,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Create a child node in this node in the latest branch of the project.
-	 * 
+	 *
 	 * @param creator
 	 * @param schemaVersion
 	 * @param project
@@ -327,7 +330,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Create a child node in this node in the given branch
-	 * 
+	 *
 	 * @param creator
 	 * @param schemaVersion
 	 * @param project
@@ -340,7 +343,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Create a child node in this node in the given branch
-	 * 
+	 *
 	 * @param creator
 	 * @param schemaVersion
 	 * @param project
@@ -352,7 +355,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Return a page with child nodes that are visible to the given user.
-	 * 
+	 *
 	 * @param ac
 	 *            Context of the operation
 	 * @param languageTags
@@ -369,7 +372,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	/**
 	 * Returns the i18n display name for the node. The display name will be determined by loading the i18n field value for the display field parameter of the
 	 * node's schema. It may be possible that no display name can be returned since new nodes may not have any values.
-	 * 
+	 *
 	 * @param ac
 	 * @return
 	 */
@@ -378,7 +381,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	/**
 	 * Find a node field container that matches the nearest possible value for the language parameter. When a user requests a node using ?lang=de,en and there
 	 * is no de version the en version will be selected and returned.
-	 * 
+	 *
 	 * @param languageTags
 	 * @param branchUuid
 	 *            branch Uuid
@@ -390,7 +393,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Iterate the version chain from the back in order to find the given version.
-	 * 
+	 *
 	 * @param languageTag
 	 * @param branchUuid
 	 * @param version
@@ -402,14 +405,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Tests if the node has at least one content that is published.
-	 * 
+	 *
 	 * @param branchUuid
 	 */
 	boolean hasPublishedContent(String branchUuid);
 
 	/**
 	 * Find a node field container that matches the nearest possible value for the language parameter.
-	 * 
+	 *
 	 * @param ac
 	 * @param languageTags
 	 * @return Next matching field container or null when no language matches
@@ -420,7 +423,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Move this node into the target node.
-	 * 
+	 *
 	 * @param ac
 	 * @param targetNode
 	 * @param batch
@@ -429,14 +432,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Transform the node into a node reference rest model.
-	 * 
+	 *
 	 * @param ac
 	 */
 	NodeReference transformToReference(InternalActionContext ac);
 
 	/**
 	 * Transform the node into a navigation response rest model.
-	 * 
+	 *
 	 * @param ac
 	 * @return
 	 */
@@ -470,7 +473,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Take the node offline.
-	 * 
+	 *
 	 * @param ac
 	 * @param bac
 	 * @param branch
@@ -520,7 +523,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	/**
 	 * Delete the language container for the given language from the branch. This will remove all PUBLISHED, DRAFT and INITIAL edges to GFCs for the language
 	 * and branch, and will then delete all "dangling" GFC (GFCs, which are not used by another branch).
-	 * 
+	 *
 	 * @param ac
 	 * @param branch
 	 * @param languageTag
@@ -545,13 +548,13 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Check whether the node provides the given segment for any language or binary attribute filename return the segment information.
-	 * 
+	 *
 	 * @param branchUuid
 	 *            branch Uuid
 	 * @param type
 	 *            edge type
 	 * @param segment
-	 * 
+	 *
 	 * @return Segment information or null if this node is not providing the given segment
 	 */
 	PathSegment getSegment(String branchUuid, ContainerType type, String segment);
@@ -559,14 +562,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	/**
 	 * Return the webroot path to the node in the given language. If more than one language is given, the path will lead to the first available language of the
 	 * node.
-	 * 
+	 *
 	 * @param ac
 	 * @param branchUuid
 	 *            branch Uuid
 	 * @param type
 	 *            edge type
 	 * @param languageTag
-	 * 
+	 *
 	 * @return
 	 */
 	String getPath(ActionContext ac, String branchUuid, ContainerType type, String... languageTag);
@@ -574,7 +577,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	/**
 	 * Return the path segment value of this node in the given language. If more than one language is given, the path will lead to the first available language
 	 * of the node.
-	 * 
+	 *
 	 * @param branchUuid
 	 *            branch Uuid
 	 * @param type
@@ -587,7 +590,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Update the path segment and increment any found postfix number.
-	 * 
+	 *
 	 * @param releaseUuid
 	 * @param type
 	 * @param languageTag
@@ -596,7 +599,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Delete the node from the given branch. This will also delete children from the branch.
-	 * 
+	 *
 	 * If the node is deleted from its last branch, it is (permanently) deleted from the db.
 	 *
 	 * @param ac
@@ -608,27 +611,27 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Return the schema container for the node.
-	 * 
+	 *
 	 * @return
 	 */
 	SchemaContainer getSchemaContainer();
 
 	/**
 	 * Set the schema container of the node.
-	 * 
+	 *
 	 * @param container
 	 */
 	void setSchemaContainer(SchemaContainer container);
 
 	/**
 	 * Check the publish consistency by validating the following constraints:
-	 * 
+	 *
 	 * <ul>
 	 * <li>A node can only be published if all parent nodes are also published (within the scope of the branch)
 	 * <li>A published node can only be moved if the target node is also a published node.
 	 * <li>A node can only be taken offline if the node has no children which are still published.
 	 * </ul>
-	 * 
+	 *
 	 * @param ac
 	 *            Current action context
 	 * @param branch
@@ -638,7 +641,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Create a new published version of the given language in the branch.
-	 * 
+	 *
 	 * @param ac
 	 *            Action Context
 	 * @param languageTag
@@ -653,7 +656,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Publish the node for the specified branch.
-	 * 
+	 *
 	 * @param ac
 	 * @param branch
 	 * @param bac
@@ -663,7 +666,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Transform the node into a node list item.
-	 * 
+	 *
 	 * @param ac
 	 * @param languageTags
 	 * @return
@@ -672,7 +675,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Delete the node. Please use {@link #deleteFromBranch(Branch, EventQueueBatch)} if you want to delete the node just from a specific branch.
-	 * 
+	 *
 	 * @param bac
 	 * @param ignoreChecks
 	 * @param recusive
@@ -681,18 +684,18 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Handle the update tags request.
-	 * 
+	 *
 	 * @param ac
 	 * @param batch
 	 * @return Page which includes the new set of tags
-	 * 
+	 *
 	 */
 	// TODO Remove this method
 	TransformablePage<? extends Tag> updateTags(InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Update the tags of the node using the provides list of tag references.
-	 * 
+	 *
 	 * @param ac
 	 * @param batch
 	 * @param list
@@ -702,7 +705,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Return a map with language tags and resolved link types
-	 * 
+	 *
 	 * @param ac
 	 * @param linkType
 	 * @param branch
@@ -712,7 +715,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Return the breadcrumb nodes.
-	 * 
+	 *
 	 * @param ac
 	 * @return Deque with breadcrumb nodes
 	 */
@@ -720,7 +723,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Create the node specific delete event.
-	 * 
+	 *
 	 * @param uuid
 	 * @param schema
 	 * @param branchUuid
@@ -732,7 +735,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Create a node tagged / untagged event.
-	 * 
+	 *
 	 * @param tag
 	 * @param branch
 	 * @param assignment
@@ -743,7 +746,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Get an existing edge.
-	 * 
+	 *
 	 * @param languageTag
 	 *            language tag
 	 * @param branchUuid
@@ -756,14 +759,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Check whether the node is the base node of its project
-	 * 
+	 *
 	 * @return true for base node
 	 */
 	boolean isBaseNode();
 
 	/**
 	 * Check whether the node is visible in the given branch (that means has at least one DRAFT graphfieldcontainer in the branch)
-	 * 
+	 *
 	 * @param branchUuid
 	 *            branch uuid
 	 * @return true if the node is visible in the branch
@@ -772,7 +775,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Transform the node information to a minimal reference which does not include language or type information.
-	 * 
+	 *
 	 * @return
 	 */
 	NodeReference transformToMinimalReference();
@@ -784,7 +787,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Transform the node information to a version list response.
-	 * 
+	 *
 	 * @param ac
 	 * @return Versions response
 	 */
