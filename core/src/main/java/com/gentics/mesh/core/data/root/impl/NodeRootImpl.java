@@ -112,7 +112,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		String branchUuid = branch.getUuid();
 
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, perm, (item) -> {
-			return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.id(), branchUuid, type.getCode());
+			return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.id(), branchUuid, type);
 		}, true);
 	}
 
@@ -130,7 +130,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			.map(edge -> edge.getVertex(Direction.IN))
 			.filter(item -> {
 				// Check whether the node has at least a draft in the selected branch - Otherwise the node should be skipped
-				return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, DRAFT.getCode());
+				return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, DRAFT);
 			})
 			.filter(item -> {
 				boolean hasRead = user.hasPermissionForId(item.getId(), READ_PERM);
@@ -138,7 +138,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 					return true;
 				} else {
 					// Check whether the node is published. In this case we need to check the read publish perm.
-					boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED.getCode());
+					boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED);
 					if (isPublishedForBranch) {
 						return user.hasPermissionForId(item.getId(), READ_PUBLISHED_PERM);
 					}

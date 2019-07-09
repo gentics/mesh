@@ -92,7 +92,7 @@ public class SchemaContainerVersionImpl extends
 	public TraversalResult<? extends Node> getNodes(String branchUuid, User user, ContainerType type) {
 		// Load (schema version)->(schema container)->(node)->(field container edge)
 		Iterable<? extends NodeImpl> it = in(HAS_PARENT_CONTAINER).in(HAS_SCHEMA_CONTAINER).filter(node -> {
-			return GraphFieldContainerEdgeImpl.matchesBranchAndType(node.getId(), branchUuid, type.getCode()) && user.hasPermissionForId(node.getId(), READ_PUBLISHED_PERM);
+			return GraphFieldContainerEdgeImpl.matchesBranchAndType(node.getId(), branchUuid, type) && user.hasPermissionForId(node.getId(), READ_PUBLISHED_PERM);
 		}).frameExplicit(NodeImpl.class);
 		return new TraversalResult<>(it);
 	}
