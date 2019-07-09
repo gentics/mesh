@@ -312,7 +312,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	public void testUploadExif() throws IOException {
 		String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
 		Buffer buffer = getBuffer("/pictures/android-gps.jpg");
-		NodeResponse node = createNode(parentNodeUuid);
+		NodeResponse node = createBinaryNode(parentNodeUuid);
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", new ByteArrayInputStream(buffer.getBytes()),
 			buffer.length(), "test.jpg", "image/jpeg"));
 
@@ -352,7 +352,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		List<String> files = Arrays.asList("small.mp4", "small.ogv", "test.pdf", "test.docx");
 		for (String file : files) {
 			Buffer buffer = getBuffer("/testfiles/" + file);
-			NodeResponse node = createNode(parentNodeUuid);
+			NodeResponse node = createBinaryNode(parentNodeUuid);
 			NodeResponse node2 = call(
 				() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", new ByteArrayInputStream(buffer.getBytes()),
 					buffer.length(), file, "application/pdf"));
@@ -370,12 +370,11 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		expectPlainText("small.mp4", "application/pdf", "HandBrake 0.9.4 2009112300");
 	}
 
-
 	private void expectPlainText(String fileName, String mimeType, String plainText) throws IOException {
 		String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
 
 		Buffer buffer = getBuffer("/testfiles/" + fileName);
-		NodeResponse node = createNode(parentNodeUuid);
+		NodeResponse node = createBinaryNode(parentNodeUuid);
 		NodeResponse node2 = call(
 			() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary", new ByteArrayInputStream(buffer.getBytes()),
 				buffer.length(), fileName, mimeType));
@@ -779,14 +778,6 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			assertEquals(contentType, downloadResponse.getContentType());
 			assertEquals(fileName, downloadResponse.getFilename());
 		}
-	}
-
-	private NodeResponse createNode(String parentNodeUuid) {
-		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-		nodeCreateRequest.setLanguage("en");
-		nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
-		nodeCreateRequest.setSchemaName("binary_content");
-		return call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 	}
 
 }
