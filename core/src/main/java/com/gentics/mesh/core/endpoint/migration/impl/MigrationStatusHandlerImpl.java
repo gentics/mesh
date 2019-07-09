@@ -90,7 +90,6 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	public MigrationStatusHandler done() {
 		setStatus(COMPLETED);
 		log.info("Migration completed without errors.");
-		System.out.println(System.currentTimeMillis());
 		job.setStopTimestamp();
 		commit();
 		return this;

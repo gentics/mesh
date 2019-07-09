@@ -318,7 +318,6 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 			DB.get().tx(() -> {
 				log.info("Processing job {" + getUuid() + "}");
-				System.out.println(System.currentTimeMillis());
 				setStartTimestamp();
 				setStatus(STARTING);
 				setNodeName();
