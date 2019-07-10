@@ -262,6 +262,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 				log.error("Error after sending request to Elasticsearch", err);
 			}))
 			.andThen(Flowable.just(request))
+			.onErrorResumeNext(ignoreDeleteOnMissingIndexError(request))
 			.onErrorResumeNext(this::syncIndices)
 			.onErrorResumeNext(ignoreElasticsearchErrors(request))
 			.retryWhen(retryWithDelay(
@@ -272,6 +273,32 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 				log.trace("Request-{}", request);
 				idleChecker.addAndGetRequests(-request.requestCount());
 			});
+	}
+
+	/**
+	 * Ignores the error if there are only deletes on missing indices.
+	 * @param request
+	 * @return
+	 */
+	private io.reactivex.functions.Function<Throwable, Flowable<SearchRequest>> ignoreDeleteOnMissingIndexError(SearchRequest request) {
+		return error -> {
+			if (error instanceof ElasticsearchResponseErrorStreamable) {
+				return ((ElasticsearchResponseErrorStreamable) error).stream()
+					// Filter out failing deletes on non existing indices
+					.filter(err -> !(
+						"delete".equals(err.getActionType()) &&
+						"index_not_found_exception".equals(err.getType())
+					)).findAny()
+					// If there are other errors left, throw
+					.map(ignore -> Flowable.<SearchRequest>error(error))
+					.orElseGet(() -> {
+						log.info("Tried to delete document on missing index. This error will be ignored.");
+						return Flowable.just(request);
+					});
+			} else {
+				return Flowable.error(error);
+			}
+		};
 	}
 
 	/**

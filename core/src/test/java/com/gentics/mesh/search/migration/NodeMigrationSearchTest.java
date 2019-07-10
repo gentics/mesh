@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.junit.Test;
 
@@ -19,12 +20,15 @@ import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeListResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
+import com.gentics.mesh.parameter.impl.SearchParametersImpl;
 import com.gentics.mesh.search.AbstractNodeSearchEndpointTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
@@ -141,4 +145,29 @@ public class NodeMigrationSearchTest extends AbstractNodeSearchEndpointTest {
 		assertThat(newCount).isEqualTo(oldCount);
 	}
 
+	@Test
+	public void searchDuringMigration() throws Exception {
+		String query = getSimpleTermQuery("schema.name.raw", "folder");
+
+		recreateIndices();
+		NodeResponse parent = createNode();
+		// Create some nodes for load during migration
+		IntStream.range(0, 1000).forEach(i -> createNode(parent));
+
+		waitForSearchIdleEvent();
+
+		NodeListResponse beforeMigration = client().searchNodes(query).blockingGet();
+
+		migrateSchema("folder", false).blockingAwait();
+
+		Thread.sleep(1000);
+
+		NodeListResponse duringMigration = client().searchNodes(query, new SearchParametersImpl().setWait(false)).blockingGet();
+
+		assertThat(beforeMigration.getMetainfo().getTotalCount())
+			.isEqualTo(duringMigration.getMetainfo().getTotalCount())
+			.as("All nodes must be found during migration");
+
+		waitForSearchIdleEvent();
+	}
 }
