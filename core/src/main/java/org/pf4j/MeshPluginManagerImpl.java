@@ -84,7 +84,7 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 					RestPlugin restPlugin = ((RestPlugin) plugin);
 					String name = plugin.getName();
 					String apiName = restPlugin.apiName();
-					log.info("Registering plugin {" + name + "} with id {" + plugin.deploymentID() + "}");
+					log.info("Registering plugin {" + name + "} with id {" + plugin.id() + "}");
 					for (RouterStorage rs : RouterStorage.getInstances()) {
 						PluginRouter globalPluginRouter = rs.root().apiRouter().pluginRouter();
 						PluginRouter projectPluginRouter = rs.root().apiRouter().projectsRouter().projectRouter().pluginRouter();
@@ -95,7 +95,6 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 						restPlugin.registerEndpoints(globalRouter, projectRouter);
 					}
 				}
-				// deployments.put(plugin.deploymentID(), plugin);
 				sub.onComplete();
 			})).doOnError(error -> {
 				if (error instanceof GenericRestException) {
