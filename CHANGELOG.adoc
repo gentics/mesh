@@ -24,7 +24,7 @@ include::content/docs/variables.adoc-include[]
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 [[v0.36.5]]
-== 0.36.5 (TBD)
+== 0.36.5 (10.07.2019)
 
 icon:plus[] Upload: The `upload.parser` config setting and `MESH_BINARY_DOCUMENT_PARSER` environment variable can be used to control whether uploads should be parsed to extract metadata and contents. Uploads will be parsed by default.
 
