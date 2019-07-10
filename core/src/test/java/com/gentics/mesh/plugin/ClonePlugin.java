@@ -4,7 +4,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.pf4j.PluginWrapper;
 
-import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 
@@ -37,11 +36,11 @@ public class ClonePlugin extends AbstractPlugin implements RestPlugin {
 	}
 
 	@Override
-	public String deploymentID() {
+	public String id() {
 		if (uuid != null) {
 			return uuid;
 		}
-		return super.deploymentID();
+		return super.id();
 	}
 
 	public void setUuid(String uuid) {
@@ -61,5 +60,10 @@ public class ClonePlugin extends AbstractPlugin implements RestPlugin {
 		globalRouter.route("/manifest").handler(rc -> {
 			rc.response().end(JsonUtil.toJson(getManifest()));
 		});
+	}
+
+	@Override
+	public String apiName() {
+		return "clone";
 	}
 }

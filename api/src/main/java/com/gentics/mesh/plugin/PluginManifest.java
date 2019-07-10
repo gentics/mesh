@@ -1,9 +1,4 @@
-package com.gentics.mesh.core.rest.plugin;
-
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-
-import org.apache.commons.lang.StringUtils;
+package com.gentics.mesh.plugin;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -107,39 +102,7 @@ public class PluginManifest {
 		return this;
 	}
 
-	/**
-	 * Validate the manifest.
-	 * 
-	 * @return
-	 */
-	public PluginManifest validate() {
-		if (StringUtils.isEmpty(name)) {
-			throw error(BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "name");
-		}
-		if (StringUtils.isEmpty(apiName)) {
-			throw error(BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "apiName");
-		}
-		if (apiName.contains(" ") | apiName.contains("/")) {
-			throw error(BAD_REQUEST, "admin_plugin_error_validation_failed_apiname_invalid", name);
-		}
-		if (StringUtils.isEmpty(version)) {
-			throw error(BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "version");
-		}
-		if (StringUtils.isEmpty(author)) {
-			throw error(BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "author");
-		}
-		if (StringUtils.isEmpty(license)) {
-			throw error(BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "license");
-		}
-		if (StringUtils.isEmpty(inception)) {
-			throw error(BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "inception");
-		}
-		if (StringUtils.isEmpty(description)) {
-			throw error(BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "description");
-		}
-		if (StringUtils.isEmpty(version)) {
-			throw error(BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "version");
-		}
-		return this;
+	public static PluginManifest manifest() {
+		return new PluginManifest();
 	}
 }

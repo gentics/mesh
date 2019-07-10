@@ -17,7 +17,6 @@ public class BasicPluginTest {
 	@Test
 	public void testPlugin() {
 		Mesh mesh = server.getMesh();
-		mesh.deployPlugin(BasicPlugin.class);
-
+		mesh.deployPlugin(BasicPlugin.class, "basic");
 	}
 }

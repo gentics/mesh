@@ -71,7 +71,7 @@ public class PluginTypeProvider extends AbstractTypeProvider {
 		// .uuid
 		root.field(newFieldDefinition().name("uuid").description("The deployment uuid of the plugin").type(GraphQLString).dataFetcher((env) -> {
 			MeshPlugin plugin = env.getSource();
-			return plugin.deploymentID();
+			return plugin.id();
 		}));
 
 		// .name

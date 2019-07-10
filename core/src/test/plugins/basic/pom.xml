@@ -7,12 +7,11 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<plugin.id>basic-plugin</plugin.id>
+		<plugin.id>basic</plugin.id>
 		<plugin.class>com.gentics.mesh.plugin.BasicPlugin</plugin.class>
 		<plugin.version>0.0.1</plugin.version>
 		<plugin.author>Johannes Schüth</plugin.author>
 		<plugin.inception>2019-07-08</plugin.inception>
-		<plugin.api-name>basic</plugin.api-name>
 		<plugin.description>My basic plugin</plugin.description>
 	</properties>
 
@@ -83,7 +82,6 @@
 										<Plugin-Description>${plugin.description}</Plugin-Description>
 										<Plugin-License>Apache License 2.0</Plugin-License>
 										<Plugin-Inception>${plugin.inception}</Plugin-Inception>
-										<Plugin-API-Name>${plugin.api-name}</Plugin-API-Name>
 									</manifestEntries>
 								</transformer>
 							</transformers>

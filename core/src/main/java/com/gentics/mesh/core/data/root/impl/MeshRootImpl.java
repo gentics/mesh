@@ -24,6 +24,7 @@ import java.util.Stack;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.madl.annotations.GraphElement;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.MeshVertex;

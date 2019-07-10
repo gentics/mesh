@@ -10,7 +10,6 @@ import org.pf4j.PluginWrapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -109,7 +108,7 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 	}
 
 	@Override
-	public String deploymentID() {
+	public String id() {
 		return getWrapper().getPluginId();
 	}
 
@@ -168,7 +167,7 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 	protected File getPluginBaseDir() {
 		MeshOptions options = Mesh.mesh().getOptions();
 		String pluginDir = options.getPluginDirectory();
-		String apiName = getManifest().getApiName();
+		String apiName = getManifest().getName();
 		return new File(pluginDir, apiName);
 	}
 

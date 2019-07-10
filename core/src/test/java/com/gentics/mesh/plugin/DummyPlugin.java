@@ -14,7 +14,7 @@ public class DummyPlugin extends AbstractPlugin implements RestPlugin {
 
 	public DummyPlugin() {
 	}
-		
+
 	public DummyPlugin(PluginWrapper wrapper, PluginEnvironment env) {
 		super(wrapper, env);
 	}
@@ -32,6 +32,11 @@ public class DummyPlugin extends AbstractPlugin implements RestPlugin {
 		globalRouter.route("/manifest").handler(rc -> {
 			rc.response().end(JsonUtil.toJson(getManifest()));
 		});
+	}
+
+	@Override
+	public String apiName() {
+		return "dummy";
 	}
 
 }

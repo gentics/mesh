@@ -7,12 +7,14 @@ import java.util.List;
 import org.pf4j.Plugin;
 import org.pf4j.PluginDependency;
 
-import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.plugin.MeshPluginDescriptor;
+import com.gentics.mesh.plugin.PluginManifest;
+import com.gentics.mesh.plugin.util.PluginUtils;
 
 public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 
 	private String pluginId;
+	private String name;
 	private String pluginDescription;
 	private String pluginClass = Plugin.class.getName();
 	private String version;
@@ -20,23 +22,35 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 	private String author;
 	private List<PluginDependency> dependencies;
 	private String license;
-	private String apiName;
 	private String inception;
 
 	public MeshPluginDescriptorImpl() {
 		dependencies = new ArrayList<>();
 	}
 
-	public MeshPluginDescriptorImpl(String pluginId, String pluginDescription, String pluginClass, String version, String requires, String author,
-		String license) {
+	public MeshPluginDescriptorImpl(String pluginId, String name, String pluginDescription, String pluginClass, String version,
+		String requires, String author,
+		String license, String inception) {
 		this();
 		this.pluginId = pluginId;
+		this.name = name;
 		this.pluginDescription = pluginDescription;
 		this.pluginClass = pluginClass;
 		this.version = version;
 		this.requires = requires;
 		this.author = author;
 		this.license = license;
+		this.inception = inception;
+	}
+
+	public MeshPluginDescriptorImpl(String pluginId, Class<?> clazz, PluginManifest manifest) {
+		this(pluginId, manifest.getName(), manifest.getDescription(), clazz.getName(), manifest.getVersion(), "",
+			manifest.getAuthor(),
+			manifest.getLicense(), manifest.getInception());
+	}
+
+	public MeshPluginDescriptorImpl(String pluginId, Class<?> clazz) {
+		this(pluginId, clazz.getName(), "", clazz.getName(), "", "", "", "", "");
 	}
 
 	public void addDependency(PluginDependency dependency) {
@@ -98,6 +112,11 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 		return author;
 	}
 
+	@Override
+	public String getName() {
+		return name;
+	}
+
 	/**
 	 * Returns the legal license of this plugin, e.g. "Apache-2.0", "MIT" etc
 	 */
@@ -120,7 +139,7 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 			+ pluginClass + ", version=" + version + ", author="
 			+ author + ", dependencies=" + dependencies + ", description="
 			+ pluginDescription + ", requires=" + requires + ", license="
-			+ license + ", inception=" + inception + ", apiName=" + apiName + "]";
+			+ license + ", inception=" + inception + "]";
 	}
 
 	protected MeshPluginDescriptor setPluginId(String pluginId) {
@@ -184,16 +203,6 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 	}
 
 	@Override
-	public String getAPIName() {
-		return apiName;
-	}
-
-	protected MeshPluginDescriptor setApiName(String apiName) {
-		this.apiName = apiName;
-		return this;
-	}
-
-	@Override
 	public String getInception() {
 		return inception;
 	}
@@ -207,13 +216,11 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 	public PluginManifest toPluginManifest() {
 		PluginManifest manifest = new PluginManifest();
 		manifest.setName(getPluginId());
-		manifest.setApiName(getAPIName());
 		manifest.setDescription(getPluginDescription());
 		manifest.setLicense(getLicense());
 		manifest.setVersion(getVersion());
 		manifest.setInception(getInception());
 		manifest.setAuthor(getAuthor());
-		manifest.validate();
 		return manifest;
 	}
 

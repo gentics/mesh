@@ -2,7 +2,6 @@ package com.gentics.mesh.plugin;
 
 import org.pf4j.PluginWrapper;
 
-import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 
 /**

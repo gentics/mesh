@@ -3,6 +3,7 @@ package com.gentics.mesh.core.rest.plugin;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.plugin.PluginManifest;
 
 /**
  * Response which contains information about a deployed plugin.

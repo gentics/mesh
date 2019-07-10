@@ -35,4 +35,9 @@ public class Basic2Plugin extends AbstractPlugin implements RestPlugin {
 
 	}
 
+	@Override
+	public String apiName() {
+		return "basic2";
+	}
+
 }

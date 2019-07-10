@@ -13,5 +13,9 @@ public interface RestPlugin extends MeshPlugin {
 	 */
 	void registerEndpoints(Router globalRouter, Router projectRouter);
 
+	/**
+	 * Return the API name for the REST plugin.
+	 */
+	String apiName();
 
 }

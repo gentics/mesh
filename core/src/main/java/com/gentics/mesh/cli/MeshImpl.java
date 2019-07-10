@@ -24,6 +24,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
+import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.util.VersionUtil;
 
 import io.vertx.core.MultiMap;
@@ -338,7 +339,7 @@ public class MeshImpl implements Mesh {
 	@Override
 	public void shutdown() throws Exception {
 		MeshComponent meshInternal = MeshInternal.get();
-		
+
 		log.info("Mesh shutting down...");
 		setStatus(MeshStatus.SHUTTING_DOWN);
 		try {
@@ -403,6 +404,11 @@ public class MeshImpl implements Mesh {
 	public Mesh setStatus(MeshStatus status) {
 		this.status = status;
 		return this;
+	}
+
+	@Override
+	public void deployPlugin(Class<?> clazz, String pluginId) {
+		MeshInternal.get().pluginManager().deploy(clazz, pluginId).blockingGet();
 	}
 
 }

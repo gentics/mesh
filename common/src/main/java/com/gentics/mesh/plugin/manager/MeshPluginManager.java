@@ -9,6 +9,7 @@ import org.pf4j.PluginManager;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.MeshPlugin;
+import com.gentics.mesh.plugin.PluginManifest;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -61,9 +62,10 @@ public interface MeshPluginManager extends PluginManager {
 	 * Validate the plugin and ensure that the plugin can only be deployed once.
 	 * 
 	 * @param plugin
+	 * @param strict
 	 * @return
 	 */
-	Completable validate(MeshPlugin plugin);
+	Completable validate(MeshPlugin plugin, boolean strict);
 
 	/**
 	 * Stop the manager and undeploy all currently deployed plugins.
@@ -91,4 +93,13 @@ public interface MeshPluginManager extends PluginManager {
 	 * @return
 	 */
 	String addPlugin(Plugin plugin);
+
+	/**
+	 * Deploy the plugin via the given class.
+	 * 
+	 * @param clazz
+	 * @param pluginId
+	 * @return
+	 */
+	Single<String> deploy(Class<?> clazz, String pluginId);
 }

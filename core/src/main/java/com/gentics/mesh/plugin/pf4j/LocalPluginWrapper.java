@@ -1,10 +1,9 @@
 package com.gentics.mesh.plugin.pf4j;
 
 import org.pf4j.DefaultPluginDescriptor;
+import org.pf4j.MeshPluginManagerImpl;
 import org.pf4j.Plugin;
 import org.pf4j.PluginWrapper;
-
-import com.gentics.mesh.plugin.manager.impl.MeshPluginManagerImpl;
 
 public class LocalPluginWrapper extends PluginWrapper {
 

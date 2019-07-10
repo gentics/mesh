@@ -3,6 +3,7 @@ package com.gentics.mesh;
 
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.plugin.PluginManifest;
 
 import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
@@ -155,5 +156,13 @@ public interface Mesh {
 	 * @throws InterruptedException
 	 */
 	void dontExit() throws InterruptedException;
+
+	/**
+	 * Deploy the plugin with the given class and manifest.
+	 * 
+	 * @param clazz
+	 * @param pluginId
+	 */
+	void deployPlugin(Class<?> clazz, String pluginId);
 
 }

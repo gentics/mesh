@@ -15,8 +15,8 @@ import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
-import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
+import com.gentics.mesh.plugin.PluginManifest;
 
 public class AdminExamples {
 
@@ -41,7 +41,6 @@ public class AdminExamples {
 		manifest.setInception(DATE_OLD);
 		manifest.setLicense("Apache License 2.0");
 		manifest.setVersion("1.0");
-		manifest.validate();
 		return new PluginResponse().setUuid(uuid).setName(manifest.getName()).setManifest(manifest);
 	}
 

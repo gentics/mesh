@@ -1,4 +1,4 @@
-package com.gentics.mesh.plugin.manager.impl;
+package org.pf4j;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -18,22 +18,18 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.pf4j.DefaultPluginManager;
-import org.pf4j.Plugin;
-import org.pf4j.PluginDescriptorFinder;
-import org.pf4j.PluginFactory;
-import org.pf4j.PluginState;
-import org.pf4j.PluginWrapper;
-
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.MeshPlugin;
+import com.gentics.mesh.plugin.MeshPluginDescriptor;
 import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.plugin.impl.MeshPluginDescriptorFinderImpl;
+import com.gentics.mesh.plugin.impl.MeshPluginDescriptorImpl;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.plugin.pf4j.LocalPluginWrapper;
 import com.gentics.mesh.plugin.pf4j.MeshPluginFactory;
+import com.gentics.mesh.plugin.util.PluginUtils;
 import com.gentics.mesh.router.PluginRouter;
 import com.gentics.mesh.router.RouterStorage;
 
@@ -67,7 +63,7 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 			if (event.getPluginState().equals(PluginState.STARTED)) {
 				Plugin plugin = event.getPlugin().getPlugin();
 				if (plugin instanceof RestPlugin) {
-					registerPlugin((MeshPlugin) plugin).blockingAwait(15, TimeUnit.SECONDS);
+					registerPlugin((MeshPlugin) plugin, false).blockingAwait(15, TimeUnit.SECONDS);
 				}
 			}
 			if (event.getPluginState().equals(PluginState.STOPPED)) {
@@ -79,23 +75,24 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 		});
 	}
 
-	private Completable registerPlugin(MeshPlugin plugin) {
+	private Completable registerPlugin(MeshPlugin plugin, boolean strict) {
 		Objects.requireNonNull(plugin, "The plugin must not be null");
-		return validate(plugin)
+		return validate(plugin, strict)
 			.andThen(plugin.initialize())
 			.andThen(Completable.create(sub -> {
-				String name = plugin.getName();
-				String apiName = plugin.getManifest().getApiName();
-				log.info("Registering plugin {" + name + "} with id {" + plugin.deploymentID() + "}");
-				for (RouterStorage rs : RouterStorage.getInstances()) {
-					PluginRouter globalPluginRouter = rs.root().apiRouter().pluginRouter();
-					PluginRouter projectPluginRouter = rs.root().apiRouter().projectsRouter().projectRouter().pluginRouter();
+				if (plugin instanceof RestPlugin) {
+					RestPlugin restPlugin = ((RestPlugin) plugin);
+					String name = plugin.getName();
+					String apiName = restPlugin.apiName();
+					log.info("Registering plugin {" + name + "} with id {" + plugin.deploymentID() + "}");
+					for (RouterStorage rs : RouterStorage.getInstances()) {
+						PluginRouter globalPluginRouter = rs.root().apiRouter().pluginRouter();
+						PluginRouter projectPluginRouter = rs.root().apiRouter().projectsRouter().projectRouter().pluginRouter();
 
-					Router globalRouter = globalPluginRouter.getRouter(apiName);
-					Router projectRouter = projectPluginRouter.getRouter(apiName);
-					if (plugin instanceof RestPlugin) {
+						Router globalRouter = globalPluginRouter.getRouter(apiName);
+						Router projectRouter = projectPluginRouter.getRouter(apiName);
 						log.info("Registering REST API Plugin {" + name + "}");
-						((RestPlugin) plugin).registerEndpoints(globalRouter, projectRouter);
+						restPlugin.registerEndpoints(globalRouter, projectRouter);
 					}
 				}
 				// deployments.put(plugin.deploymentID(), plugin);
@@ -139,7 +136,7 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 		localPlugins.add(wrapper);
 		plugin.start();
 		if (plugin instanceof MeshPlugin) {
-			registerPlugin((MeshPlugin) plugin).blockingAwait();
+			registerPlugin((MeshPlugin) plugin, false).blockingAwait();
 		}
 		return wrapper.getPluginId();
 	}
@@ -214,34 +211,10 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 		return Single.just(id);
 	}
 
-	// /**
-	// * Apply checks which will undeploy the verticle if it did not register itself.
-	// *
-	// * @param deploy
-	// * @param name
-	// * @return Modified single which contains the rollback handlers.
-	// */
-	// private Single<String> applyRollbackChecks(Single<String> deploy, String name) {
-	// return deploy.onErrorResumeNext(error -> {
-	// if (error instanceof GenericRestException) {
-	// // Catch and throw errors which might occurred during plugin startup/validation.
-	// return Single.error(error);
-	// } else {
 	// log.error("Plugin deployment of {" + name + "} failed.", error);
 	// return Single.error(error(BAD_REQUEST, "admin_plugin_error_plugin_deployment_failed", name));
-	// }
-	// })
-	// .map(UUIDUtil::toShortUuid)
-	// .flatMap(uuid -> {
-	// if (!deployments.containsKey(uuid)) {
 	// log.warn("The plugin was not registered after deployment. Maybe the initialisation failed. Going to undeploy the plugin.");
 	// GenericRestException exception = error(BAD_REQUEST, "admin_plugin_error_plugin_did_not_register");
-	// return undeploy(uuid).andThen(Single.error(exception));
-	// } else {
-	// return Single.just(uuid);
-	// }
-	// });
-	// }
 
 	@Override
 	public Completable undeploy(String uuid) {
@@ -252,11 +225,12 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 	}
 
 	@Override
-	public Completable validate(MeshPlugin plugin) {
+	public Completable validate(MeshPlugin plugin, boolean strict) {
 		return Completable.create(sub -> {
 			Objects.requireNonNull(plugin, "The plugin must not be null");
 			checkForConflict(plugin);
-			plugin.getManifest().validate();
+			PluginUtils.validate(plugin.getManifest(), strict);
+			PluginUtils.validate(plugin);
 			sub.onComplete();
 		});
 	}
@@ -303,6 +277,66 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 	@Override
 	protected PluginDescriptorFinder createPluginDescriptorFinder() {
 		return new MeshPluginDescriptorFinderImpl();
+	}
+
+	private PluginWrapper loadPlugin(Class<?> clazz, String pluginId) {
+		MeshPluginDescriptor pluginDescriptor = new MeshPluginDescriptorImpl(pluginId, clazz);
+
+		log.debug("Found descriptor {}", pluginDescriptor);
+		String pluginClassName = clazz.getName();
+		log.debug("Class '{}' for plugin", pluginClassName);
+
+		// create the plugin wrapper
+		log.debug("Creating wrapper for plugin '{}'", pluginClassName);
+		PluginWrapper pluginWrapper = new PluginWrapper(this, pluginDescriptor, null, clazz.getClassLoader());
+		pluginWrapper.setPluginFactory(getPluginFactory());
+
+		// test for disabled plugin
+		if (isPluginDisabled(pluginDescriptor.getPluginId())) {
+			log.info("Plugin '{}' is disabled", pluginClassName);
+			pluginWrapper.setPluginState(PluginState.DISABLED);
+		}
+
+		// validate the plugin
+		if (!isPluginValid(pluginWrapper)) {
+			log.warn("Plugin '{}' is invalid and it will be disabled", pluginClassName);
+			pluginWrapper.setPluginState(PluginState.DISABLED);
+		}
+
+		log.debug("Created wrapper '{}' for plugin '{}'", pluginWrapper, pluginClassName);
+
+		// add plugin to the list with plugins
+		plugins.put(pluginId, pluginWrapper);
+		getUnresolvedPlugins().add(pluginWrapper);
+
+		// add plugin class loader to the list with class loaders
+		getPluginClassLoaders().put(pluginId, clazz.getClassLoader());
+
+		resolvePlugins();
+
+		return pluginWrapper;
+	}
+
+	@Override
+	public Single<String> deploy(Class<?> clazz, String pluginId) {
+		// if (!(clazz.isAssignableFrom(MeshPlugin.class))) {
+		// throw new RuntimeException("The plugin is not a Mesh Plugin. Only mesh plugins are deployable.");
+		// }
+		return Single.defer(() -> {
+			log.debug("Deploying plugin class {" + clazz.getName() + "}");
+			try {
+				loadPlugin(clazz, pluginId);
+			} catch (Throwable e) {
+				return Single.error(new RuntimeException("Error while deploying plugin file {" + clazz + "}", e));
+			}
+			try {
+				startPlugin(pluginId);
+			} catch (Throwable e) {
+				return Single.error(new RuntimeException("Error while starting plugin file {" + clazz + "/" + pluginId + "}", e));
+			}
+			return Single.just(pluginId);
+		});
+
 	}
 
 }

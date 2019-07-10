@@ -2,16 +2,7 @@ package com.gentics.mesh.plugin;
 
 import org.pf4j.PluginDescriptor;
 
-import com.gentics.mesh.core.rest.plugin.PluginManifest;
-
 public interface MeshPluginDescriptor extends PluginDescriptor {
-
-	/**
-	 * Return the API name for the plugin.
-	 * 
-	 * @return
-	 */
-	String getAPIName();
 
 	/**
 	 * Transform the descriptor to a mesh plugin manifest.
@@ -33,5 +24,11 @@ public interface MeshPluginDescriptor extends PluginDescriptor {
 	 * @return
 	 */
 	String getInception();
+
+	/**
+	 * Return name of the plugin.
+	 * @return
+	 */
+	String getName();
 
 }

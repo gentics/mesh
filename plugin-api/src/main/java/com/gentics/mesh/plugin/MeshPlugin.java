@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
@@ -23,15 +22,6 @@ public interface MeshPlugin {
 	 */
 	default String getName() {
 		return getManifest().getName();
-	}
-
-	/**
-	 * Shortcut for loading the api name from the {@link #getManifest()}
-	 * 
-	 * @return API name of the plugin
-	 */
-	default String getAPIName() {
-		return getManifest().getApiName();
 	}
 
 	/**
@@ -56,11 +46,11 @@ public interface MeshPlugin {
 	Completable prepareStop();
 
 	/**
-	 * Return the deployment Id of the plugin.
+	 * Return the Id of the plugin.
 	 * 
-	 * @return Deployment ID of the plugin verticle
+	 * @return ID of the plugin
 	 */
-	String deploymentID();
+	String id();
 
 	/**
 	 * Return the response which describes the plugin.
@@ -71,7 +61,7 @@ public interface MeshPlugin {
 		PluginResponse response = new PluginResponse();
 		response.setManifest(getManifest());
 		response.setName(getName());
-		response.setUuid(deploymentID());
+		response.setUuid(id());
 		return response;
 	}
 

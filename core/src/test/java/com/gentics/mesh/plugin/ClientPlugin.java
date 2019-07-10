@@ -2,7 +2,6 @@ package com.gentics.mesh.plugin;
 
 import org.pf4j.PluginWrapper;
 
-import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 
@@ -56,6 +55,11 @@ public class ClientPlugin extends AbstractPlugin implements RestPlugin {
 				rc.response().end(project.toJson());
 			}, rc::fail);
 		});
+	}
+
+	@Override
+	public String apiName() {
+		return "client";
 	}
 
 }

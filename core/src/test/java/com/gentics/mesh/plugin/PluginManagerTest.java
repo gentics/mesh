@@ -20,7 +20,6 @@ import org.junit.Test;
 import org.pf4j.PluginWrapper;
 
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;

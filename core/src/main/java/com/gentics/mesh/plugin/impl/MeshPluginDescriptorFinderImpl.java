@@ -30,8 +30,7 @@ public class MeshPluginDescriptorFinderImpl implements PluginDescriptorFinder {
 	public static final String PLUGIN_DEPENDENCIES = "Plugin-Dependencies";
 	public static final String PLUGIN_REQUIRES = "Plugin-Requires";
 	public static final String PLUGIN_LICENSE = "Plugin-License";
-	public static final String PLUGIN_API_NAME = "Plugin-API-Name";
-	public static final String PLUGIN_INCEPTION = "Plugin-INCEPTION";
+	public static final String PLUGIN_INCEPTION = "Plugin-Inception";
 
 	@Override
 	public boolean isApplicable(Path pluginPath) {
@@ -120,13 +119,8 @@ public class MeshPluginDescriptorFinderImpl implements PluginDescriptorFinder {
 
 		pluginDescriptor.setLicense(attributes.getValue(PLUGIN_LICENSE));
 
-		String apiName = attributes.getValue(PLUGIN_API_NAME);
-		if (StringUtils.isNotNullOrEmpty(apiName)) {
-			pluginDescriptor.setApiName(apiName);
-		}
-		
 		String inception = attributes.getValue(PLUGIN_INCEPTION);
-		if(StringUtils.isNotNullOrEmpty(inception)) {
+		if (StringUtils.isNotNullOrEmpty(inception)) {
 			pluginDescriptor.setInception(inception);
 		}
 
