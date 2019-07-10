@@ -6,10 +6,13 @@ import java.util.function.Function;
 import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.madl.tx.BaseTransaction;
 import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 
 public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVertexFrame implements VertexFrame {
@@ -97,9 +100,13 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	@Override
 	public void setSingleLinkOutTo(VertexFrame vertex, String... labels) {
 		// Unlink all edges with the given label
-		unlinkOut(null, labels);
+//		unlinkOut(null, labels);
+		getElement().getEdges(Direction.OUT, labels).forEach(Element::remove);
 		// Create a new edge with the given label
-		linkOut(vertex, labels);
+//		linkOut(vertex, labels);
+		for (String label : labels) {
+			getElement().addEdge(label, vertex.getElement());
+		}
 	}
 
 	@Override
@@ -109,7 +116,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	}
 
 	@Override
-	public <T extends ElementFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz) {
+	public <T extends EdgeFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz) {
 		TraversalResult<? extends T> result = new TraversalResult<>(outE(label).frameExplicit(clazz));
 		return result;
 	}
@@ -121,7 +128,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	}
 
 	@Override
-	public <T extends ElementFrame> TraversalResult<? extends T> inE(String label, Class<T> clazz) {
+	public <T extends EdgeFrame> TraversalResult<? extends T> inE(String label, Class<T> clazz) {
 		TraversalResult<? extends T> result = new TraversalResult<>(inE(label).frameExplicit(clazz));
 		return result;
 	}

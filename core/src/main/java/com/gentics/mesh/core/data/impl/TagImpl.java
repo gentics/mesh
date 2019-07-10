@@ -49,7 +49,6 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
@@ -188,7 +187,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		Stream<? extends Node> s = nodes.stream()
 			.filter(item -> {
 				// Check whether the node has at least a draft in the selected branch - Otherwise the node should be skipped
-				return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, DRAFT.getCode());
+				return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, DRAFT);
 			})
 			.filter(item -> {
 				boolean hasRead = user.hasPermissionForId(item.getId(), READ_PERM);
@@ -196,7 +195,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 					return true;
 				} else {
 					// Check whether the node is published. In this case we need to check the read publish perm.
-					boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED.getCode());
+					boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED);
 					if (isPublishedForBranch) {
 						return user.hasPermissionForId(item.getId(), READ_PUBLISHED_PERM);
 					}

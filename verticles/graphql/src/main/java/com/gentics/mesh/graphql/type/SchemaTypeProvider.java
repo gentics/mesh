@@ -1,5 +1,17 @@
 package com.gentics.mesh.graphql.type;
 
+import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_PAGE_TYPE_NAME;
+import static graphql.Scalars.GraphQLBoolean;
+import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLObjectType.newObject;
+
+import java.util.List;
+import java.util.stream.Stream;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -11,6 +23,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.json.JsonUtil;
+
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
@@ -18,18 +31,6 @@ import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLOutputType;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.List;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_PAGE_TYPE_NAME;
-import static graphql.Scalars.GraphQLBoolean;
-import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static graphql.schema.GraphQLObjectType.newObject;
 
 @Singleton
 public class SchemaTypeProvider extends AbstractTypeProvider {
@@ -98,11 +99,11 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 			GraphQLContext gc = env.getContext();
 			List<String> languageTags = getLanguageArgument(env);
 
-			Stream<? extends NodeContent> nodes = StreamSupport.stream(getSchemaContainerVersion(env).getNodes(
+			Stream<? extends NodeContent> nodes = getSchemaContainerVersion(env).getNodes(
 					gc.getBranch().getUuid(),
 					gc.getUser(),
 					ContainerType.forVersion(gc.getVersioningParameters().getVersion())
-			).spliterator(), false)
+			).stream()
 			.map(node -> {
 				NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
 				return new NodeContent(node, container, languageTags);

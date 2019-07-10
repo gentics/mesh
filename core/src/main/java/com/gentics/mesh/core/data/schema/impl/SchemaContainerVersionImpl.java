@@ -22,7 +22,6 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
@@ -90,13 +89,12 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public Iterable<? extends Node> getNodes(String branchUuid, User user, ContainerType type) {
-		return in(HAS_PARENT_CONTAINER).in(HAS_SCHEMA_CONTAINER).transform(v -> v.reframeExplicit(NodeImpl.class)).filter(node -> {
-			return node.outE(HAS_FIELD_CONTAINER).filter(e -> {
-				GraphFieldContainerEdge edge = e.reframeExplicit(GraphFieldContainerEdgeImpl.class);
-				return branchUuid.equals(edge.getBranchUuid()) && type == edge.getType();
-			}).hasNext() && user.hasPermissionForId(node.id(), READ_PUBLISHED_PERM);
-		});
+	public TraversalResult<? extends Node> getNodes(String branchUuid, User user, ContainerType type) {
+		// Load (schema version)->(schema container)->(node)->(field container edge)
+		Iterable<? extends NodeImpl> it = in(HAS_PARENT_CONTAINER).in(HAS_SCHEMA_CONTAINER).filter(node -> {
+			return GraphFieldContainerEdgeImpl.matchesBranchAndType(node.getId(), branchUuid, type) && user.hasPermissionForId(node.getId(), READ_PUBLISHED_PERM);
+		}).frameExplicit(NodeImpl.class);
+		return new TraversalResult<>(it);
 	}
 
 	@Override
@@ -163,7 +161,7 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public TraversalResult<? extends Branch> getBranches() {
-		return new TraversalResult<>(in(HAS_SCHEMA_VERSION).frameExplicit(BranchImpl.class));
+		return in(HAS_SCHEMA_VERSION, BranchImpl.class);
 	}
 
 	@Override

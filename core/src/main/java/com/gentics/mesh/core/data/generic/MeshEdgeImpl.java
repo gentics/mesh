@@ -5,8 +5,11 @@ import com.gentics.madl.frame.AbstractEdgeFrame;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.madl.frame.VertexFrame;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedEdge;
@@ -46,14 +49,14 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 
 	@Override
 	public FramedGraph getGraph() {
-		return Tx.getActive().getGraph();
+		return Tx.get().getGraph();
 	}
 
 	@Override
 	public Edge getElement() {
 		// TODO FIXME We should store the element reference in a thread local map that is bound to the transaction. The references should be removed once the
 		// transaction finishes
-		Element edge = ((WrappedEdge) Tx.getActive().getGraph().getEdge(id)).getBaseElement();
+		Element edge = ((WrappedEdge) Tx.get().getGraph().getEdge(id)).getBaseElement();
 
 		// Element edge = threadLocalElement.get();
 

@@ -26,6 +26,10 @@ public class TraversalResult<T> implements Iterable<T> {
 		this.it = it;
 	}
 
+	public TraversalResult(Iterator<T> it) {
+		this.it = () -> it;
+	}
+
 	public TraversalResult(Stream<T> stream) {
 		this.it = stream::iterator;
 	}

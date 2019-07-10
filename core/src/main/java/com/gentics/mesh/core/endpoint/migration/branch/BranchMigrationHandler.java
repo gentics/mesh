@@ -108,7 +108,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 			db.tx((tx) -> {
 
 				// Check whether the node already has an initial container and thus was already migrated
-				if (node.getGraphFieldContainersIt(newBranch, INITIAL).hasNext()) {
+				if (node.getGraphFieldContainers(newBranch, INITIAL).hasNext()) {
 					return;
 				}
 
@@ -117,8 +117,8 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 					node.setParentNode(newBranch.getUuid(), parent);
 				}
 
-				TraversalResult<? extends NodeGraphFieldContainer> drafts = node.getGraphFieldContainersIt(oldBranch, DRAFT);
-				TraversalResult<? extends NodeGraphFieldContainer> published = node.getGraphFieldContainersIt(oldBranch, PUBLISHED);
+				TraversalResult<? extends NodeGraphFieldContainer> drafts = node.getGraphFieldContainers(oldBranch, DRAFT);
+				TraversalResult<? extends NodeGraphFieldContainer> published = node.getGraphFieldContainers(oldBranch, PUBLISHED);
 
 				// 1. Migrate draft containers first
 				drafts.forEach(container -> {

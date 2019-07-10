@@ -62,6 +62,6 @@ public interface TestGraphHelper extends TestHelper {
 	default Stream<NodeGraphFieldContainer> getAllContents() {
 		return project().getNodeRoot().findAll().stream()
 			.flatMap(node -> Stream.of(DRAFT, PUBLISHED)
-			.flatMap(type -> node.getGraphFieldContainersIt(type).stream()));
+			.flatMap(type -> node.getGraphFieldContainers(type).stream()));
 	}
 }

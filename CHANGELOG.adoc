@@ -39,6 +39,8 @@ icon:check[] GraphQL: Fixed a bug that caused an error when filtering a node fro
 
 icon:plus[] Graph: The `storage.synchronizeWrites` config setting and `MESH_GRAPH_SYNC_WRITES` environment variable can be used to control whether write operations should be executed synchronously. By default write operations are handled asynchronously.
 
+icon:check[] Core: Performance of schema migration has been improved.
+
 [[v0.36.3]]
 == 0.36.3 (04.07.2019)
 
