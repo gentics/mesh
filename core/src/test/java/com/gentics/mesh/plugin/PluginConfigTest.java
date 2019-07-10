@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -17,6 +18,7 @@ import org.pf4j.PluginWrapper;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
+import com.gentics.mesh.plugin.impl.MeshPluginDescriptorImpl;
 
 public class PluginConfigTest {
 
@@ -64,6 +66,7 @@ public class PluginConfigTest {
 	@Test
 	public void testReadConfigOverride() throws FileNotFoundException, IOException {
 		PluginWrapper wrapper = mock(PluginWrapper.class);
+		when(wrapper.getDescriptor()).thenReturn(new MeshPluginDescriptorImpl());
 		PluginEnvironment env = mock(PluginEnvironment.class);
 		DummyPlugin plugin = new DummyPlugin(wrapper, env);
 

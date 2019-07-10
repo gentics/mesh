@@ -73,7 +73,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 		MeshPluginManager manager = pluginManager();
 		int before = manager.getPlugins().size();
 		for (int i = 0; i < 100; i++) {
-			manager.deploy(new ClonePlugin(null, null)).blockingGet();
+			manager.deploy(ClonePlugin.class, "clone" + i).blockingGet();
 		}
 		assertEquals(before + 100, manager.getPlugins().size());
 
@@ -129,8 +129,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 	@Test
 	public void testPluginAuth() throws IOException {
 		MeshPluginManager manager = pluginManager();
-		ClientPlugin plugin = new ClientPlugin(null, null);
-		manager.deploy(plugin).blockingGet();
+		manager.deploy(ClientPlugin.class, "client").blockingGet();
 		JsonObject json = new JsonObject(getJSONViaClient(CURRENT_API_BASE_PATH + "/plugins/client/user"));
 		assertNotNull(json.getString("uuid"));
 	}
@@ -184,10 +183,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 	@Test
 	public void testJavaDeployment() throws IOException {
 		MeshPluginManager manager = pluginManager();
-		PluginWrapper wrapper = mock(PluginWrapper.class);
-
-		DummyPlugin plugin = new DummyPlugin(wrapper, pluginEnv());
-		manager.deploy(plugin).blockingGet();
+		manager.deploy(DummyPlugin.class, "dummy").blockingGet();
 		assertEquals(1, manager.getPlugins().size());
 
 		ProjectCreateRequest request = new ProjectCreateRequest();
@@ -195,7 +191,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 		request.setSchemaRef("folder");
 		call(() -> client().createProject(request));
 
-		String apiName = plugin.getManifest().getApiName();
+		String apiName = DummyPlugin.API_NAME;
 		PluginManifest manifest = JsonUtil.readValue(httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + apiName + "/manifest"), PluginManifest.class);
 		assertEquals("Johannes Schüth", manifest.getAuthor());
 
@@ -207,9 +203,10 @@ public class PluginManagerTest extends AbstractMeshTest {
 	public void testRedeployAfterInitFailure() {
 		MeshPluginManager manager = pluginManager();
 		try {
-			manager.deploy(new FailingPlugin(null, null)).blockingGet();
+			manager.deploy(FailingPlugin.class, "failing").blockingGet();
 			fail("Deployment should have failed");
 		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		assertEquals(0, manager.getPlugins().size());
 

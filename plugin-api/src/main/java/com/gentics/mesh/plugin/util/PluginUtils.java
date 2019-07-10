@@ -18,8 +18,6 @@ public final class PluginUtils {
 
 	/**
 	 * Validate the manifest.
-	 * 
-	 * @return
 	 */
 	public static void validate(PluginManifest manifest, boolean strict) {
 		// if (StringUtils.isEmpty(manifest.getPluginId())) {
@@ -64,7 +62,6 @@ public final class PluginUtils {
 		if (plugin instanceof RestPlugin) {
 			validate((RestPlugin) plugin);
 		}
-
 	}
 
 }

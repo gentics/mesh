@@ -244,6 +244,7 @@
 							<!-- <skipInvocation>${skip.unit.tests}</skipInvocation> -->
 							<properties>
 								<mesh.version>${project.version}</mesh.version>
+								<skipTests>true</skipTests>
 							</properties>
 							<!-- Somehow invalid build hook are configured -->
 							<postBuildHookScript>/bin/true</postBuildHookScript>

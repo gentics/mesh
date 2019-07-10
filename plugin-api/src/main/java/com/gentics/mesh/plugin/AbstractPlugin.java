@@ -1,5 +1,7 @@
 package com.gentics.mesh.plugin;
 
+import static com.gentics.mesh.parameter.image.CropMode.description;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -64,7 +66,8 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 		if (descriptor instanceof MeshPluginDescriptor) {
 			return ((MeshPluginDescriptor) descriptor).toPluginManifest();
 		}
-		throw new RuntimeException("The found plugin descriptor does not contain Gentics Mesh information.");
+		throw new RuntimeException(
+			"The found plugin descriptor does not contain Gentics Mesh information. Found {" + descriptor + "}");
 	}
 
 	@Override

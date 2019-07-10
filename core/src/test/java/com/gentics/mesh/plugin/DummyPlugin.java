@@ -12,6 +12,8 @@ import io.vertx.ext.web.Router;
  */
 public class DummyPlugin extends AbstractPlugin implements RestPlugin {
 
+	public static final String API_NAME = "dummy";
+
 	public DummyPlugin() {
 	}
 
@@ -36,7 +38,7 @@ public class DummyPlugin extends AbstractPlugin implements RestPlugin {
 
 	@Override
 	public String apiName() {
-		return "dummy";
+		return API_NAME;
 	}
 
 }
