@@ -147,26 +147,34 @@ public class NodeMigrationSearchTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void searchDuringMigration() throws Exception {
+		grantAdminRole();
 		String query = getSimpleTermQuery("schema.name.raw", "folder");
 
 		recreateIndices();
-		NodeResponse parent = createNode();
-		// Create some nodes for load during migration
-		IntStream.range(0, 1000).forEach(i -> createNode(parent));
 
-		waitForSearchIdleEvent();
+		waitForSearchIdleEvent(() -> {
+			NodeResponse parent = createNode();
+			// Create some nodes for load during migration
+			IntStream.range(0, 1000).forEach(i -> createNode(parent));
+		});
 
 		NodeListResponse beforeMigration = client().searchNodes(query).blockingGet();
 
-		migrateSchema("folder", false).blockingAwait();
+		waitForLatestJob(() -> {
+			migrateSchema("folder", false).blockingAwait();
 
-		Thread.sleep(1000);
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 
-		NodeListResponse duringMigration = client().searchNodes(query, new SearchParametersImpl().setWait(false)).blockingGet();
+			NodeListResponse duringMigration = client().searchNodes(query, new SearchParametersImpl().setWait(false)).blockingGet();
 
-		assertThat(beforeMigration.getMetainfo().getTotalCount())
-			.isEqualTo(duringMigration.getMetainfo().getTotalCount())
-			.as("All nodes must be found during migration");
+			assertThat(beforeMigration.getMetainfo().getTotalCount())
+				.isEqualTo(duringMigration.getMetainfo().getTotalCount())
+				.as("All nodes must be found during migration");
+		});
 
 		waitForSearchIdleEvent();
 	}
