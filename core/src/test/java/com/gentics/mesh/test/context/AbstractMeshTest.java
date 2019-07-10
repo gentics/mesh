@@ -700,9 +700,15 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	}
 
 	protected Completable migrateSchema(String schemaName) {
+		return migrateSchema(schemaName, true);
+	}
+
+	protected Completable migrateSchema(String schemaName, boolean wait) {
 		return findSchemaByName(schemaName)
 			.flatMapCompletable(schema -> client().updateSchema(schema.getUuid(), addRandomField(schema)).toCompletable())
-			.andThen(MeshEvent.waitForEvent(MeshEvent.SCHEMA_MIGRATION_FINISHED));
+			.andThen(wait
+				? MeshEvent.waitForEvent(MeshEvent.SCHEMA_MIGRATION_FINISHED)
+				: Completable.complete());
 	}
 
 	private SchemaUpdateRequest addRandomField(SchemaResponse schemaResponse) {

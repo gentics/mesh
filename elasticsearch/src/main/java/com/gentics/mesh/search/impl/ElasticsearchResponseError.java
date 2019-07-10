@@ -6,10 +6,12 @@ import java.util.stream.Stream;
 
 public class ElasticsearchResponseError extends Throwable implements ElasticsearchResponseErrorStreamable {
 	private final JsonObject json;
+	private final String actionType	;
 
-	public ElasticsearchResponseError(JsonObject json) {
+	public ElasticsearchResponseError(JsonObject json, String actionType) {
 		super(json.getString("reason"));
 		this.json = json;
+		this.actionType = actionType;
 	}
 
 	public String getType() {
@@ -27,5 +29,14 @@ public class ElasticsearchResponseError extends Throwable implements Elasticsear
 	@Override
 	public Stream<ElasticsearchResponseError> stream() {
 		return Stream.of(this);
+	}
+
+	/**
+	 * Can be index, create, delete or update.
+	 * See <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html"></a>
+	 * @return
+	 */
+	public String getActionType() {
+		return actionType;
 	}
 }

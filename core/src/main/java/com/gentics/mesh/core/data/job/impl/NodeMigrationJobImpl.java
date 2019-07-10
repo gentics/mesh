@@ -168,6 +168,10 @@ public class NodeMigrationJobImpl extends JobImpl {
 			if (edge != null) {
 				edge.setActive(false);
 			}
+			if (log.isDebugEnabled()) {
+				log.debug("Deactivated schema version {}-{} for branch {}",
+					fromContainerVersion.getSchema().getName(), fromContainerVersion.getVersion(), branch.getName());
+			}
 		});
 		DB.get().tx(() -> {
 			EventQueueBatch.create().add(createEvent(SCHEMA_MIGRATION_FINISHED, COMPLETED)).dispatch();

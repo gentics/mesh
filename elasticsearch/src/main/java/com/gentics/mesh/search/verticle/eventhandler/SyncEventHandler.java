@@ -15,6 +15,7 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.IndexHandler;
+import com.gentics.mesh.core.data.search.request.DropIndexRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.search.IndexHandlerRegistry;
@@ -47,6 +48,7 @@ public class SyncEventHandler implements EventHandler {
 	 * Send the index sync event which will trigger the index sync job.
 	 */
 	public static void invokeSync() {
+		log.info("Sending sync event");
 		Mesh.mesh().getVertx().eventBus().publish(INDEX_SYNC_REQUEST.address, null);
 	}
 
@@ -122,8 +124,7 @@ public class SyncEventHandler implements EventHandler {
 		return allIndices.flatMapPublisher(indices -> obs.flatMap(handler -> {
 			Set<String> unknownIndices = handler.filterUnknownIndices(indices);
 			return Flowable.fromIterable(unknownIndices)
-				.map(index -> SearchRequest.create(client -> provider.deleteIndex(index)
-				.doOnSubscribe(ignore -> log.info("Deleting unknown index {" + index + "}"))));
+				.map(DropIndexRequest::new);
 		}));
 	}
 }

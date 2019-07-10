@@ -26,10 +26,8 @@ public class ElasticsearchBulkResponseError extends Throwable implements Elastic
 	private static Stream<ElasticsearchResponseError> stream(JsonObject json) {
 		return json.getJsonArray("items").stream()
 			.flatMap(obj -> ((JsonObject)obj).stream())
-			.map(Map.Entry::getValue)
-			.map(obj -> ((JsonObject) obj).getJsonObject("error"))
-			.filter(Objects::nonNull)
-			.map(ElasticsearchResponseError::new);
+			.filter(entry -> ((JsonObject) entry.getValue()).containsKey("error"))
+			.map(entry -> new ElasticsearchResponseError(((JsonObject) entry.getValue()).getJsonObject("error"), entry.getKey()));
 	}
 
 	@Override

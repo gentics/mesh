@@ -183,6 +183,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			for (Project currentProject : boot.meshRoot().getProjectRoot().findAll()) {
 				for (Branch branch : currentProject.getBranchRoot().findAll()) {
 					for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
+						if (log.isDebugEnabled()) {
+							log.debug("Found active schema version {}-{} in branch {}", version.getSchema().getName(), version.getVersion(), branch.getName());
+						}
 						Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
 							activeIndices
 								.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(), branch.getUuid(), version.getUuid(),
@@ -194,9 +197,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		});
 
 		if (log.isDebugEnabled()) {
-			for (String name : activeIndices) {
-				log.debug("Active index: {" + name + "}");
-			}
+			log.debug(
+				"All indices:\n" +
+				String.join("\n", indices) + "\n" +
+				"Active indices: \n" +
+				String.join("\n", activeIndices)
+			);
 		}
 		return indices.stream()
 			// Only handle indices of the handler's type
