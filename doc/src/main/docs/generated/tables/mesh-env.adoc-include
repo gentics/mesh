@@ -86,6 +86,9 @@
 | *MESH_AUTH_KEYSTORE_PASS*
 | Override the configured keystore password.
 
+| *MESH_BINARY_DOCUMENT_PARSER*
+| Override the document parser enabled flag.
+
 | *MESH_GRAPH_EXPORT_DIRECTORY*
 | Override the graph database export directory.
 
@@ -121,6 +124,9 @@
 
 | *MESH_ELASTICSEARCH_URL*
 | Override the configured elasticsearch server url. The value can be set to null in order to disable the Elasticsearch support.
+
+| *MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS*
+| Override the search include binary fields flag.
 
 | *MESH_BINARY_DIR*
 | Override the configured binary data directory.

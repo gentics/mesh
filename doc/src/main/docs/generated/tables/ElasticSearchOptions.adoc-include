@@ -52,6 +52,11 @@
 | integer
 | The maximum amount of time in milliseconds between two successful requests before the idle event is emitted. Default: 100
 
+| includeBinaryFields
+| false
+| boolean
+| If true, the content and metadata of binary fields will be included in the search index. Default: true
+
 | password
 | false
 | string

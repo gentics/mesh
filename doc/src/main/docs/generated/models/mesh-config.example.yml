@@ -50,11 +50,13 @@ search:
   retryInterval: 5000
   retryLimit: 3
   waitForIdle: true
+  includeBinaryFields: true
 upload:
   byteLimit: 262144000
   directory: "data/binaryFiles"
   tempDirectory: "/opt/mesh/data/tmp/temp-uploads"
   parserLimit: 40000
+  parser: true
 security:
   tokenExpirationTime: 3600
   keystorePassword: "<Your Password>"

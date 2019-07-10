@@ -17,6 +17,11 @@
 | string
 | Path binary data storage directory. Fileuploads will be placed here.
 
+| parser
+| false
+| boolean
+| If true, the document parser will process uploads and extract metadata and contents. Default: true
+
 | parserLimit
 | false
 | integer

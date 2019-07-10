@@ -232,6 +232,11 @@
 | boolean
 | If true, search endpoints wait for elasticsearch to be idle before sending a response. Default: true
 
+| searchOptions.includeBinaryFields
+| false
+| boolean
+| If true, the content and metadata of binary fields will be included in the search index. Default: true
+
 | uploadOptions.byteLimit
 | false
 | long
@@ -251,6 +256,11 @@
 | false
 | int
 | The parser limit for uploaded documents (pdf, doc, docx). Default: 40000
+
+| uploadOptions.parser
+| false
+| boolean
+| If true, the document parser will process uploads and extract metadata and contents. Default: true
 
 | authenticationOptions.tokenExpirationTime
 | true
