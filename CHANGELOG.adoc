@@ -32,6 +32,8 @@ icon:plus[] Search: The `search.includeBinaryFields` config setting and `MESH_EL
 
 icon:plus[] REST: A core library for JSON support (jackson) has been updated.
 
+icon:check[] Search: Fixed a bug that caused a full sync when trying to delete a document in a missing index.
+
 [[v0.36.4]]
 == 0.36.4 (05.07.2019)
 
