@@ -32,6 +32,10 @@ icon:plus[] Search: The `search.includeBinaryFields` config setting and `MESH_EL
 
 icon:plus[] REST: A core library for JSON support (jackson) has been updated.
 
+icon:plus[] GraphQL: The performance when loading nodes via the schema field has been improved.
+
+icon:plus[] Core: Various internal calls have been improved to increase read performance.
+
 icon:check[] Search: Fixed root cause of unnecessary full sync which could occur during schema migrations.
 
 [[v0.36.4]]
