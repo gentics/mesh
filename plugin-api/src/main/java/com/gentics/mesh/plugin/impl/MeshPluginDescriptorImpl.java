@@ -9,13 +9,12 @@ import org.pf4j.PluginDependency;
 
 import com.gentics.mesh.plugin.MeshPluginDescriptor;
 import com.gentics.mesh.plugin.PluginManifest;
-import com.gentics.mesh.plugin.util.PluginUtils;
 
 public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 
 	private String pluginId;
 	private String name;
-	private String pluginDescription;
+	private String description;
 	private String pluginClass = Plugin.class.getName();
 	private String version;
 	private String requires = "*"; // SemVer format
@@ -34,7 +33,7 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 		this();
 		this.pluginId = pluginId;
 		this.name = name;
-		this.pluginDescription = pluginDescription;
+		this.description = pluginDescription;
 		this.pluginClass = pluginClass;
 		this.version = version;
 		this.requires = requires;
@@ -70,7 +69,7 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 	 */
 	@Override
 	public String getPluginDescription() {
-		return pluginDescription;
+		return description;
 	}
 
 	/**
@@ -138,7 +137,7 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 		return "PluginDescriptor [pluginId=" + pluginId + ", pluginClass="
 			+ pluginClass + ", version=" + version + ", author="
 			+ author + ", dependencies=" + dependencies + ", description="
-			+ pluginDescription + ", requires=" + requires + ", license="
+			+ description + ", requires=" + requires + ", license="
 			+ license + ", inception=" + inception + "]";
 	}
 
@@ -147,8 +146,13 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 		return this;
 	}
 
+	protected MeshPluginDescriptor setPluginName(String pluginName) {
+		this.name = pluginName;
+		return this;
+	}
+
 	protected MeshPluginDescriptor setPluginDescription(String pluginDescription) {
-		this.pluginDescription = pluginDescription;
+		this.description = pluginDescription;
 		return this;
 	}
 
