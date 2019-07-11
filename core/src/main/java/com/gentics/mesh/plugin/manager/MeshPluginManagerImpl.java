@@ -1,4 +1,4 @@
-package org.pf4j;
+package com.gentics.mesh.plugin.manager;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -17,6 +17,13 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.pf4j.DefaultPluginManager;
+import org.pf4j.Plugin;
+import org.pf4j.PluginDescriptorFinder;
+import org.pf4j.PluginFactory;
+import org.pf4j.PluginState;
+import org.pf4j.PluginWrapper;
 
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -130,17 +137,6 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 	}
 
 	@Override
-	public String addPlugin(Plugin plugin) {
-		LocalPluginWrapper wrapper = new LocalPluginWrapper(plugin, this, plugin.getClass().getClassLoader());
-		localPlugins.add(wrapper);
-		plugin.start();
-		if (plugin instanceof MeshPlugin) {
-			registerPlugin((MeshPlugin) plugin, false).blockingAwait();
-		}
-		return wrapper.getPluginId();
-	}
-
-	@Override
 	public List<PluginWrapper> getPlugins() {
 		List<PluginWrapper> list = super.getPlugins();
 		list.addAll(localPlugins);
@@ -183,13 +179,6 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 			}
 			startPlugin(pluginId);
 			return pluginId;
-		});
-	}
-
-	@Override
-	public Single<String> deploy(AbstractPlugin plugin) {
-		return Single.fromCallable(() -> {
-			return addPlugin(plugin);
 		});
 	}
 
@@ -261,6 +250,13 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 		return Completable.fromRunnable(() -> {
 			stopPlugins();
 		});
+	}
+
+	@Override
+	public void unload() {
+		for (PluginWrapper plugin : getPlugins()) {
+			undeploy(plugin.getPluginId());
+		}
 	}
 
 	@Override

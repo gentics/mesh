@@ -27,14 +27,6 @@ public interface MeshPluginManager extends PluginManager {
 	void init(MeshOptions options);
 
 	/**
-	 * Deploy the given plugin.
-	 * 
-	 * @param plugin
-	 * @return
-	 */
-	Single<String> deploy(AbstractPlugin plugin);
-
-	/**
 	 * Deploy the plugin file.
 	 * 
 	 * @param file
@@ -87,14 +79,6 @@ public interface MeshPluginManager extends PluginManager {
 	Map<String, MeshPlugin> getPluginsMap();
 
 	/**
-	 * Add the given plugin and register it.
-	 * 
-	 * @param plugin
-	 * @return
-	 */
-	String addPlugin(Plugin plugin);
-
-	/**
 	 * Deploy the plugin via the given class.
 	 * 
 	 * @param clazz
@@ -102,4 +86,6 @@ public interface MeshPluginManager extends PluginManager {
 	 * @return
 	 */
 	Single<String> deploy(Class<?> clazz, String pluginId);
+
+	void unload();
 }

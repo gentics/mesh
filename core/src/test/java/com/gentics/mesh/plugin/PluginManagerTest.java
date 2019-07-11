@@ -6,7 +6,6 @@ import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +16,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
-import org.pf4j.PluginWrapper;
 
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -79,6 +77,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 
 		assertEquals(100, manager.getPlugins().size());
 		manager.stop().blockingAwait();
+		manager.unload();
 		assertEquals(0, manager.getPlugins().size());
 		assertEquals("Not all deployed verticles have been undeployed.", before, manager.getPlugins().size());
 	}
@@ -141,9 +140,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testClientAPI() throws IOException {
-		PluginWrapper wrapper = mock(PluginWrapper.class);
-		ClientPlugin plugin = new ClientPlugin(wrapper, pluginEnv());
-		pluginManager().deploy(plugin).blockingGet();
+		pluginManager().deploy(ClientPlugin.class, "client").blockingGet();
 
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName("testabc");
@@ -210,7 +207,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 		}
 		assertEquals(0, manager.getPlugins().size());
 
-		manager.deploy(new SucceedingPlugin(null, null)).blockingGet();
+		manager.deploy(SucceedingPlugin.class, "test-plugin").blockingGet();
 		assertEquals(1, manager.getPlugins().size());
 	}
 
