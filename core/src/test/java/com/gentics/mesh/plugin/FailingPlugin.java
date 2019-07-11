@@ -16,6 +16,11 @@ public class FailingPlugin extends AbstractPlugin {
 	}
 
 	@Override
+	public void start() {
+		throw new RuntimeException("Startup failure");
+	}
+
+	@Override
 	public Completable initialize() {
 		return Completable.error(new Exception("This must fail"));
 	}

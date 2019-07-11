@@ -3,13 +3,10 @@ package com.gentics.mesh.plugin.manager;
 import java.io.File;
 import java.util.Map;
 
-import org.pf4j.Plugin;
 import org.pf4j.PluginManager;
 
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.MeshPlugin;
-import com.gentics.mesh.plugin.PluginManifest;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;

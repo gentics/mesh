@@ -4,11 +4,10 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -27,14 +26,11 @@ import org.pf4j.PluginWrapper;
 
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.MeshPluginDescriptor;
 import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.plugin.impl.MeshPluginDescriptorFinderImpl;
 import com.gentics.mesh.plugin.impl.MeshPluginDescriptorImpl;
-import com.gentics.mesh.plugin.manager.MeshPluginManager;
-import com.gentics.mesh.plugin.pf4j.LocalPluginWrapper;
 import com.gentics.mesh.plugin.pf4j.MeshPluginFactory;
 import com.gentics.mesh.plugin.util.PluginUtils;
 import com.gentics.mesh.router.PluginRouter;
@@ -51,19 +47,20 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 
 	private static final Logger log = LoggerFactory.getLogger(MeshPluginManagerImpl.class);
 
-	private final PluginFactory pluginFactory;
-
-	private final List<PluginWrapper> localPlugins = new ArrayList<>();
-
 	private static Set<String> syncSet = Collections.synchronizedSet(new HashSet<>());
 
+	private final PluginFactory pluginFactory;
+
+	private final MeshOptions options;
+
 	@Inject
-	public MeshPluginManagerImpl(MeshPluginFactory pluginFactory) {
+	public MeshPluginManagerImpl(MeshOptions options, MeshPluginFactory pluginFactory) {
 		this.pluginFactory = pluginFactory;
+		this.options = options;
+		delayedInitialize();
 	}
 
-	@Override
-	protected void initialize() {
+	protected void delayedInitialize() {
 		super.initialize();
 
 		addPluginStateListener(event -> {
@@ -80,6 +77,12 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 				}
 			}
 		});
+
+	}
+
+	@Override
+	protected void initialize() {
+		// Don't invoke init here since we need to do this after dagger has injected the dependencies.
 	}
 
 	private Completable registerPlugin(MeshPlugin plugin, boolean strict) {
@@ -134,13 +137,6 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 			syncSet.remove(apiName);
 			sub.onComplete();
 		}).andThen(plugin.prepareStop());
-	}
-
-	@Override
-	public List<PluginWrapper> getPlugins() {
-		List<PluginWrapper> list = super.getPlugins();
-		list.addAll(localPlugins);
-		return list;
 	}
 
 	@Override
@@ -256,6 +252,7 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 	public void unload() {
 		for (PluginWrapper plugin : getPlugins()) {
 			undeploy(plugin.getPluginId());
+			unloadPlugin(plugin.getPluginId());
 		}
 	}
 
@@ -327,11 +324,22 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 			try {
 				startPlugin(pluginId);
 			} catch (Throwable e) {
+				log.error("Error while starting plugin", e);
+				try {
+					unloadPlugin(pluginId);
+				} catch (Exception e2) {
+					log.error("Error while unloading the plugin {" + pluginId + "}");
+				}
 				return Single.error(new RuntimeException("Error while starting plugin file {" + clazz + "/" + pluginId + "}", e));
 			}
 			return Single.just(pluginId);
 		});
 
+	}
+
+	@Override
+	public Path getPluginsRoot() {
+		return Paths.get(options.getPluginDirectory());
 	}
 
 }
