@@ -2,7 +2,7 @@ package com.gentics.mesh.core.endpoint.node;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.http.HttpConstants.ETAG;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static com.gentics.mesh.util.MimeTypeUtils.DEFAULT_BINARY_MIME_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_MODIFIED;
 
 import javax.inject.Inject;
@@ -21,14 +21,13 @@ import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.EncodeUtil;
-import com.gentics.mesh.util.RxUtil;
+import com.gentics.mesh.util.MimeTypeUtils;
 
-import io.reactivex.Flowable;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.reactivex.core.Vertx;
 
 /**
  * Handler which will accept {@link BinaryGraphField} elements and return the binary data using the given context.
@@ -40,10 +39,13 @@ public class BinaryFieldResponseHandler {
 
 	private BinaryStorage storage;
 
+	private Vertx vertx;
+
 	@Inject
-	public BinaryFieldResponseHandler(ImageManipulator imageManipulator, BinaryStorage storage) {
+	public BinaryFieldResponseHandler(ImageManipulator imageManipulator, BinaryStorage storage, Vertx vertx) {
 		this.imageManipulator = imageManipulator;
 		this.storage = storage;
+		this.vertx = vertx;
 	}
 
 	/**
@@ -54,20 +56,15 @@ public class BinaryFieldResponseHandler {
 	 */
 	public void handle(RoutingContext rc, BinaryGraphField binaryField) {
 		rc.response().putHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
-		if (!storage.exists(binaryField)) {
-			rc.fail(error(NOT_FOUND, "node_error_binary_data_not_found"));
+		if (checkETag(rc, binaryField)) {
 			return;
+		}
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+		ImageManipulationParameters imageParams = ac.getImageParameters();
+		if (binaryField.hasProcessableImage() && imageParams.hasResizeParams()) {
+			resizeAndRespond(rc, binaryField, imageParams);
 		} else {
-			if (checkETag(rc, binaryField)) {
-				return;
-			}
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			ImageManipulationParameters imageParams = ac.getImageParameters();
-			if (binaryField.hasProcessableImage() && imageParams.hasResizeParams()) {
-				resizeAndRespond(rc, binaryField, imageParams);
-			} else {
-				respond(rc, binaryField);
-			}
+			respond(rc, binaryField);
 		}
 	}
 
@@ -125,6 +122,7 @@ public class BinaryFieldResponseHandler {
 	}
 
 	private void resizeAndRespond(RoutingContext rc, BinaryGraphField binaryField, ImageManipulationParameters imageParams) {
+		HttpServerResponse response = rc.response();
 		// We can maybe enhance the parameters using stored parameters.
 		if (!imageParams.hasFocalPoint()) {
 			FocalPoint fp = binaryField.getImageFocalPoint();
@@ -132,7 +130,21 @@ public class BinaryFieldResponseHandler {
 				imageParams.setFocalPoint(fp);
 			}
 		}
-		imageManipulator.handleResize(rc, binaryField, imageParams);
+		String fileName = binaryField.getFileName();
+		imageManipulator.handleResize(binaryField.getBinary(), imageParams)
+			.subscribe(cachedFilePath -> vertx.fileSystem().rxProps(cachedFilePath)
+			.subscribe(props -> {
+				response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(props.size()));
+				response.putHeader(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.getMimeTypeForFilename(fileName).orElse(DEFAULT_BINARY_MIME_TYPE));
+				response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
+				response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
+				// Set to IDENTITY to avoid gzip compression
+				response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
+
+				addContentDispositionHeader(response, fileName, "inline");
+
+				response.sendFile(cachedFilePath);
+			}));
 	}
 
 	private void addContentDispositionHeader(HttpServerResponse response, String fileName, String type) {

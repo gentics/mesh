@@ -252,89 +252,63 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	}
 
 	@Override
-	public void handleResize(RoutingContext rc, BinaryGraphField binaryField, ImageManipulationParameters parameters) {
-		Binary binary = binaryField.getBinary();
+	public Single<String> handleResize(Binary binary, ImageManipulationParameters parameters) {
 		// Validate the resize parameters
 		parameters.validate();
 		parameters.validateLimits(options);
-		File cacheFile = getCacheFile(binary.getSHA512Sum(), parameters);
-		HttpServerResponse response = rc.response();
-		Maybe<File> filemb;
 
-		// Check the cache file directory
-		if (cacheFile.exists()) {
-			filemb = Maybe.just(cacheFile);
-		} else {
-			// TODO handle execution timeout
-			// Make sure to run that code in the dedicated thread pool it may be CPU intensive for larger images and we don't want to exhaust the regular worker
-			// pool
-			Flowable<Buffer> stream = binary.getStream();
-			filemb = workerPool.rxExecuteBlocking(bh -> {
-				try (ImageInputStream ins = ImageIO.createImageInputStream(RxUtil.toInputStream(stream, vertx))) {
-					BufferedImage image;
-					ImageReader reader = getImageReader(ins);
+		return getCacheFilePath(binary.getSHA512Sum(), parameters)
+			.flatMap(cacheFileInfo -> {
+				if (cacheFileInfo.exists) {
+					return Single.just(cacheFileInfo.path);
+				} else {
+					// TODO handle execution timeout
+					// Make sure to run that code in the dedicated thread pool it may be CPU intensive for larger images and we don't want to exhaust the regular worker
+					// pool
+					Flowable<Buffer> stream = binary.getStream();
+					return workerPool.<String>rxExecuteBlocking(bh -> {
+						try (ImageInputStream ins = ImageIO.createImageInputStream(RxUtil.toInputStream(stream, vertx))) {
+							BufferedImage image;
+							ImageReader reader = getImageReader(ins);
 
-					try {
-						image = reader.read(0);
-					} catch (IOException e) {
-						log.error("Could not read input image", e);
+							try {
+								image = reader.read(0);
+							} catch (IOException e) {
+								log.error("Could not read input image", e);
 
-						throw error(BAD_REQUEST, "image_error_reading_failed");
-					}
+								throw error(BAD_REQUEST, "image_error_reading_failed");
+							}
 
-					if (log.isDebugEnabled()) {
-						log.debug("Read image from stream " + stream.hashCode() + " with reader " + reader.getClass().getName());
-					}
+							if (log.isDebugEnabled()) {
+								log.debug("Read image from stream " + stream.hashCode() + " with reader " + reader.getClass().getName());
+							}
 
-					image = cropAndResize(image, parameters);
+							image = cropAndResize(image, parameters);
 
-					String[] extensions = reader.getOriginatingProvider().getFileSuffixes();
-					String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
-					File outCacheFile = new File(cacheFile.getAbsolutePath() + "." + extension);
+							String[] extensions = reader.getOriginatingProvider().getFileSuffixes();
+							String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
+							String cacheFilePath = cacheFileInfo.path + "." + extension;
+							File outCacheFile = new File(cacheFilePath);
 
-					// Write image
-					try (ImageOutputStream out = new FileImageOutputStream(outCacheFile)) {
-						ImageWriteParam params = getImageWriteparams(extension);
+							// Write image
+							try (ImageOutputStream out = new FileImageOutputStream(outCacheFile)) {
+								ImageWriteParam params = getImageWriteparams(extension);
 
-						// same as write(image), but with image parameters
-						getImageWriter(reader, out).write(null, new IIOImage(image, null, null), params);
-					} catch (Exception e) {
-						throw error(BAD_REQUEST, "image_error_writing_failed");
-					}
+								// same as write(image), but with image parameters
+								getImageWriter(reader, out).write(null, new IIOImage(image, null, null), params);
+							} catch (Exception e) {
+								throw error(BAD_REQUEST, "image_error_writing_failed");
+							}
 
-					// Return buffer to written cache file
-					bh.complete(outCacheFile);
-				} catch (Exception e) {
-					bh.fail(e);
+							// Return buffer to written cache file
+							bh.complete(cacheFilePath);
+						} catch (Exception e) {
+							bh.fail(e);
+						}
+					}).toSingle();
 				}
 			});
-		}
-
-		String fileName = binaryField.getFileName();
-		filemb.subscribe(file -> {
-			response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(file.length()));
-			response.putHeader(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.getMimeTypeForFilename(fileName).orElse(DEFAULT_BINARY_MIME_TYPE));
-			response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
-			response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
-			// Set to IDENTITY to avoid gzip compression
-			response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
-			addContentDispositionHeader(response, fileName, "inline");
-
-			response.sendFile(file.getAbsolutePath());
-		});
 	}
-
-	private void addContentDispositionHeader(HttpServerResponse response, String fileName, String type) {
-		String encodedFileNameUTF8 = EncodeUtil.encodeForRFC5597(fileName);
-		String encodedFileNameISO = EncodeUtil.toISO88591(fileName);
-
-		StringBuilder value = new StringBuilder();
-		value.append(type + ";");
-		value.append(" filename=\"" + encodedFileNameISO + "\";");
-		value.append(" filename*=" + encodedFileNameUTF8);
-		response.putHeader("content-disposition", value.toString());
-	}
-
 
 	@Override
 	public Single<PropReadFileStream> handleResize(Flowable<Buffer> stream, String cacheKey, ImageManipulationParameters parameters) {

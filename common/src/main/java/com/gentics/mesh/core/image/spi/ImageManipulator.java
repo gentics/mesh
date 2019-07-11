@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
 
+import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.util.PropReadFileStream;
@@ -31,7 +32,7 @@ public interface ImageManipulator {
 	 */
 	Single<PropReadFileStream> handleResize(Flowable<Buffer> stream, String cacheKey, ImageManipulationParameters imageRequestParameter);
 
-	void handleResize(RoutingContext rc, BinaryGraphField binary, ImageManipulationParameters imageParams);
+	Single<String> handleResize(Binary binary, ImageManipulationParameters parameters);
 
 	/**
 	 * Return the cache file for the given sha512 checksum and image manipulation parameters.
@@ -43,13 +44,18 @@ public interface ImageManipulator {
 	 *
 	 * This method either returns an existing file, or a file object which filename is the name of the cache file without the extension.
 	 *
+	 * @deprecated Use {@link #getCacheFilePath(String, ImageManipulationParameters)} instead.
+	 *
 	 * @param sha512sum
 	 * @param parameters
 	 * @return
 	 *            A <code>File</code> object referencing an existing file, when the file already exists in the cache, or a <code>File</code> object
 	 *            which filename is to be used as base filename without the file extension
 	 */
+	@Deprecated
 	File getCacheFile(String sha512sum, ImageManipulationParameters parameters);
+
+	Single<CacheFileInfo> getCacheFilePath(String sha512sum, ImageManipulationParameters parameters);
 
 	/**
 	 * Read the image information from image file.
