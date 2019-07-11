@@ -23,6 +23,11 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.36.6]]
+== 0.36.6 (TBD)
+
+icon:check[] Core: Improved performance when loading images with image manipulation.
+
 [[v0.36.5]]
 == 0.36.5 (10.07.2019)
 

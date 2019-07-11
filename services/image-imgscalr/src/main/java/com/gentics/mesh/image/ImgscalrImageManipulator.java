@@ -1,12 +1,17 @@
 package com.gentics.mesh.image;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
+import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.image.focalpoint.FocalPointModifier;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageRect;
+import com.gentics.mesh.util.EncodeUtil;
+import com.gentics.mesh.util.MimeTypeUtils;
 import com.gentics.mesh.util.PropReadFileStream;
 import com.gentics.mesh.util.RxUtil;
 import com.twelvemonkeys.image.ResampleOp;
@@ -14,8 +19,11 @@ import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.WorkerExecutor;
 import org.apache.commons.lang3.ArrayUtils;
@@ -46,6 +54,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.MimeTypeUtils.DEFAULT_BINARY_MIME_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 /**
@@ -241,6 +250,91 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 		return image;
 	}
+
+	@Override
+	public void handleResize(RoutingContext rc, BinaryGraphField binaryField, ImageManipulationParameters parameters) {
+		Binary binary = binaryField.getBinary();
+		// Validate the resize parameters
+		parameters.validate();
+		parameters.validateLimits(options);
+		File cacheFile = getCacheFile(binary.getSHA512Sum(), parameters);
+		HttpServerResponse response = rc.response();
+		Maybe<File> filemb;
+
+		// Check the cache file directory
+		if (cacheFile.exists()) {
+			filemb = Maybe.just(cacheFile);
+		} else {
+			// TODO handle execution timeout
+			// Make sure to run that code in the dedicated thread pool it may be CPU intensive for larger images and we don't want to exhaust the regular worker
+			// pool
+			Flowable<Buffer> stream = binary.getStream();
+			filemb = workerPool.rxExecuteBlocking(bh -> {
+				try (ImageInputStream ins = ImageIO.createImageInputStream(RxUtil.toInputStream(stream, vertx))) {
+					BufferedImage image;
+					ImageReader reader = getImageReader(ins);
+
+					try {
+						image = reader.read(0);
+					} catch (IOException e) {
+						log.error("Could not read input image", e);
+
+						throw error(BAD_REQUEST, "image_error_reading_failed");
+					}
+
+					if (log.isDebugEnabled()) {
+						log.debug("Read image from stream " + stream.hashCode() + " with reader " + reader.getClass().getName());
+					}
+
+					image = cropAndResize(image, parameters);
+
+					String[] extensions = reader.getOriginatingProvider().getFileSuffixes();
+					String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
+					File outCacheFile = new File(cacheFile.getAbsolutePath() + "." + extension);
+
+					// Write image
+					try (ImageOutputStream out = new FileImageOutputStream(outCacheFile)) {
+						ImageWriteParam params = getImageWriteparams(extension);
+
+						// same as write(image), but with image parameters
+						getImageWriter(reader, out).write(null, new IIOImage(image, null, null), params);
+					} catch (Exception e) {
+						throw error(BAD_REQUEST, "image_error_writing_failed");
+					}
+
+					// Return buffer to written cache file
+					bh.complete(outCacheFile);
+				} catch (Exception e) {
+					bh.fail(e);
+				}
+			});
+		}
+
+		String fileName = binaryField.getFileName();
+		filemb.subscribe(file -> {
+			response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(file.length()));
+			response.putHeader(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.getMimeTypeForFilename(fileName).orElse(DEFAULT_BINARY_MIME_TYPE));
+			response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
+			response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
+			// Set to IDENTITY to avoid gzip compression
+			response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
+			addContentDispositionHeader(response, fileName, "inline");
+
+			response.sendFile(file.getAbsolutePath());
+		});
+	}
+
+	private void addContentDispositionHeader(HttpServerResponse response, String fileName, String type) {
+		String encodedFileNameUTF8 = EncodeUtil.encodeForRFC5597(fileName);
+		String encodedFileNameISO = EncodeUtil.toISO88591(fileName);
+
+		StringBuilder value = new StringBuilder();
+		value.append(type + ";");
+		value.append(" filename=\"" + encodedFileNameISO + "\";");
+		value.append(" filename*=" + encodedFileNameUTF8);
+		response.putHeader("content-disposition", value.toString());
+	}
+
 
 	@Override
 	public Single<PropReadFileStream> handleResize(Flowable<Buffer> stream, String cacheKey, ImageManipulationParameters parameters) {

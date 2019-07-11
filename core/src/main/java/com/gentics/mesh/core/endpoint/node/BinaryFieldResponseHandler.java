@@ -125,10 +125,6 @@ public class BinaryFieldResponseHandler {
 	}
 
 	private void resizeAndRespond(RoutingContext rc, BinaryGraphField binaryField, ImageManipulationParameters imageParams) {
-		HttpServerResponse response = rc.response();
-		Binary binary = binaryField.getBinary();
-		String sha512sum = binary.getSHA512Sum();
-		String fileName = binaryField.getFileName();
 		// We can maybe enhance the parameters using stored parameters.
 		if (!imageParams.hasFocalPoint()) {
 			FocalPoint fp = binaryField.getImageFocalPoint();
@@ -136,24 +132,7 @@ public class BinaryFieldResponseHandler {
 				imageParams.setFocalPoint(fp);
 			}
 		}
-		// Resize the image if needed
-		Flowable<Buffer> data = binary.getStream();
-		Flowable<Buffer> resizedData = imageManipulator.handleResize(data, sha512sum, imageParams)
-			.toFlowable()
-			.map(fileWithProps -> {
-				response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileWithProps.getProps().size()));
-				response.putHeader(HttpHeaders.CONTENT_TYPE, fileWithProps.getMimeType());
-				response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
-				response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
-				// Set to IDENTITY to avoid gzip compression
-				response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
-
-				addContentDispositionHeader(response, fileName, "inline");
-
-				return fileWithProps.getFile();
-			}).flatMap(RxUtil::toBufferFlow);
-		resizedData.subscribe(response::write, rc::fail, response::end);
-
+		imageManipulator.handleResize(rc, binaryField, imageParams);
 	}
 
 	private void addContentDispositionHeader(HttpServerResponse response, String fileName, String type) {
