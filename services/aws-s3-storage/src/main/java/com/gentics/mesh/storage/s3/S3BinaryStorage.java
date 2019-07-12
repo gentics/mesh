@@ -1,5 +1,7 @@
 package com.gentics.mesh.storage.s3;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
@@ -243,5 +245,10 @@ public class S3BinaryStorage extends AbstractBinaryStorage {
 	@Override
 	public Completable purgeTemporaryUpload(String temporaryId) {
 		return Completable.complete();
+	}
+
+	@Override
+	public InputStream openBlockingStream(String uuid) throws IOException {
+		return null;
 	}
 }
