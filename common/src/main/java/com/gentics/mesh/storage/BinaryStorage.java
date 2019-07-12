@@ -74,6 +74,13 @@ public interface BinaryStorage {
 	 */
 	Flowable<Buffer> read(String uuid);
 
+	/**
+	 * Opens a blocking {@link InputStream} to the binary file. This should only be used for some other blocking APIs (i.e. ImageIO)
+	 *
+	 * @param uuid
+	 * @return
+	 * @throws IOException
+	 */
 	InputStream openBlockingStream(String uuid) throws IOException;
 
 	/**

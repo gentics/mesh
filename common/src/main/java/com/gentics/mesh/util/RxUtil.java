@@ -65,6 +65,17 @@ public final class RxUtil {
 	// .subscribe(wstream::write);
 	// return wstream.createInputStream();
 	// }
+
+	/**
+	 * @deprecated IO errors are not propagated to the returned input stream. When a blocking input stream is needed,
+	 * use the blocking Java IO API in a worker thread instead.
+	 *
+	 * @param stream
+	 * @param vertx
+	 * @return
+	 * @throws IOException
+	 */
+	@Deprecated
 	public static InputStream toInputStream(Flowable<Buffer> stream, Vertx vertx) throws IOException {
 		PipedInputStream pis = new PipedInputStream();
 		PipedOutputStream pos = new PipedOutputStream(pis);
