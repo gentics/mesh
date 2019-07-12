@@ -28,6 +28,7 @@ import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.image.spi.CacheFileInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
@@ -365,8 +366,8 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		assertEquals(expectedHeight, img.getHeight());
 
 		if (binaryField != null) {
-			File cacheFile = meshDagger().imageManipulator().getCacheFile(binaryField.getBinary().getSHA512Sum(), params);
-			assertTrue("The cache file could not be found in the cache directory. {" + cacheFile.getAbsolutePath() + "}", cacheFile.exists());
+			CacheFileInfo cacheFile = meshDagger().imageManipulator().getCacheFilePath(binaryField.getBinary().getSHA512Sum(), params).blockingGet();
+			assertTrue("The cache file could not be found in the cache directory. {" + cacheFile.path + "}", cacheFile.exists);
 		}
 	}
 

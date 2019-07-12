@@ -88,55 +88,6 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	}
 
 	@Override
-	public File getCacheFile(String sha512sum, ImageManipulationParameters parameters) {
-		String[] parts = sha512sum.split("(?<=\\G.{8})");
-		StringBuffer buffer = new StringBuffer();
-		buffer.append(File.separator);
-		for (String part : parts) {
-			buffer.append(part + File.separator);
-		}
-
-		File baseFolder = new File(options.getImageCacheDirectory(), buffer.toString());
-		if (!baseFolder.exists()) {
-			baseFolder.mkdirs();
-		}
-
-		String baseName = "image-" + parameters.getCacheKey();
-		File[] foundFiles = baseFolder.listFiles((dir, name) -> removeExtension(name).equals(baseName));
-		int numFiles = foundFiles.length;
-
-		if (numFiles == 0) {
-			File ret = new File(baseFolder, baseName);
-
-			if (log.isDebugEnabled()) {
-				log.debug("No cache file found for base path {" + ret.getAbsolutePath() + "}");
-			}
-
-			return ret;
-		}
-
-		if (numFiles > 1) {
-			String indent = System.lineSeparator() + "    - ";
-
-			log.warn(
-				"More than one cache file found:"
-					+ System.lineSeparator() + "  hash: " + sha512sum
-					+ System.lineSeparator() + "  key: " + parameters.getCacheKey()
-					+ System.lineSeparator() + "  files:"
-					+ indent
-					+ Arrays.stream(foundFiles).map(File::getName).collect(Collectors.joining(indent))
-					+ System.lineSeparator()
-					+ "The cache directory {" + options.getImageCacheDirectory() + "} should be cleared");
-		}
-
-		if (log.isDebugEnabled()) {
-			log.debug("Using cache file {" + foundFiles[0] + "}");
-		}
-
-		return foundFiles[0];
-	}
-
-	@Override
 	public Single<ImageInfo> readImageInfo(String path) {
 		Maybe<ImageInfo> result = vertx.rxExecuteBlocking(bh -> {
 			if (log.isDebugEnabled()) {
