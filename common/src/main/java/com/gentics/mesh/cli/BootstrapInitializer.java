@@ -1,8 +1,12 @@
 package com.gentics.mesh.cli;
 
+import java.io.IOException;
+import java.util.Collection;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.job.JobRoot;
@@ -20,10 +24,8 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
-import io.vertx.core.Vertx;
 
-import java.io.IOException;
-import java.util.Collection;
+import io.vertx.core.Vertx;
 
 /**
  * The bootstrap initialiser takes care of creating all mandatory graph elements for mesh. This includes the creation of MeshRoot, ProjectRoot, NodeRoot,
@@ -130,6 +132,13 @@ public interface BootstrapInitializer {
 	MeshRoot meshRoot();
 
 	/**
+	 * Return the anonymous role (if-present).
+	 * 
+	 * @return
+	 */
+	Role anonymousRole();
+
+	/**
 	 * Initialise the search index mappings.
 	 */
 	void createSearchIndicesAndMappings();
@@ -194,7 +203,8 @@ public interface BootstrapInitializer {
 	/**
 	 * Initialize optional languages, if an additional language file was configured
 	 * 
-	 * @param configuration configuration
+	 * @param configuration
+	 *            configuration
 	 */
 	void initOptionalLanguages(MeshOptions configuration);
 

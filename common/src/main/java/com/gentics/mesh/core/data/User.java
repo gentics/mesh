@@ -144,8 +144,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	String getPasswordHash();
 
 	/**
-	 * Set the password hash.
-	 * This will also set {@link #setForcedPasswordChange(boolean)} to false.
+	 * Set the password hash. This will also set {@link #setForcedPasswordChange(boolean)} to false.
 	 *
 	 * @param hash
 	 *            Password hash
@@ -156,8 +155,8 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	User setPasswordHash(String hash);
 
 	/**
-	 * Set the plaintext password. Internally the password string will be hashed and the password hash will be set.
-	 * This will also set {@link #setForcedPasswordChange(boolean)} to false.
+	 * Set the plaintext password. Internally the password string will be hashed and the password hash will be set. This will also set
+	 * {@link #setForcedPasswordChange(boolean)} to false.
 	 *
 	 * @param password
 	 * @return Fluent API
@@ -344,10 +343,12 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * Check the read permission on the given container and fail if the needed permission to read the container is not set. This method will not fail if the
 	 * user has READ permission or READ_PUBLISH permission on a published node.
 	 *
+	 * @param node Parent node of the container which will be checked
 	 * @param container
 	 * @param branchUuid
+	 * @param requestedVersion
 	 */
-	void failOnNoReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion);
+	void failOnNoReadPermission(Node node, NodeGraphFieldContainer container, String branchUuid, String requestedVersion);
 
 	/**
 	 * Check whether the admin role was assigned to the user.
@@ -383,12 +384,14 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Return true if the user needs to change their password on next login.
+	 * 
 	 * @return
 	 */
 	boolean isForcedPasswordChange();
 
 	/**
 	 * Set whether the user needs to change their password on next login.
+	 * 
 	 * @param force
 	 * @return
 	 */
