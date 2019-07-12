@@ -2,7 +2,9 @@ package com.gentics.mesh.rest;
 
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
@@ -32,10 +34,13 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
+import com.google.common.base.Objects;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class RestModelTest extends AbstractMeshTest {
@@ -47,7 +52,7 @@ public class RestModelTest extends AbstractMeshTest {
 		NodeResponse response = new NodeResponse();
 		StringField stringField = new StringFieldImpl();
 		stringField.setString("some text");
-		
+
 		FieldMap fields = new FieldMapImpl();
 		fields.put("name", stringField);
 		response.setFields(fields);
@@ -63,7 +68,7 @@ public class RestModelTest extends AbstractMeshTest {
 		SchemaModelImpl schema = new SchemaModelImpl();
 		schema.setName("content");
 		schema.setDisplayField("title");
-		//		schema.setMeshVersion(Mesh.getVersion());
+		// schema.setMeshVersion(Mesh.getVersion());
 
 		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
 		titleFieldSchema.setName("title");
@@ -137,7 +142,7 @@ public class RestModelTest extends AbstractMeshTest {
 			NodeResponse content = new NodeResponse();
 			content.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()));
 			FieldMap contentFields = new FieldMapImpl();
-			
+
 			contentFields.put("name", FieldUtil.createStringField("content name"));
 			contentFields.put("content", FieldUtil.createStringField("some content"));
 			content.setFields(contentFields);
@@ -179,8 +184,8 @@ public class RestModelTest extends AbstractMeshTest {
 		listFieldSchema.setName("list");
 		listFieldSchema.setLabel("list field label");
 		listFieldSchema.setListType("node");
-		//		listFieldSchema.setMin(5);
-		//		listFieldSchema.setMax(10);
+		// listFieldSchema.setMin(5);
+		// listFieldSchema.setMax(10);
 		listFieldSchema.setAllowedSchemas(new String[] { "image", "gallery" });
 		// NodeField defaultNode = new NodeFieldImpl();
 		// defaultNode.setUuid(UUIDUtil.randomUUID());
@@ -242,8 +247,8 @@ public class RestModelTest extends AbstractMeshTest {
 		listFieldSchema.setName("list field name");
 		listFieldSchema.setLabel("list field label");
 		listFieldSchema.setListType("node");
-		//		listFieldSchema.setMin(5);
-		//		listFieldSchema.setMax(10);
+		// listFieldSchema.setMin(5);
+		// listFieldSchema.setMax(10);
 		listFieldSchema.setAllowedSchemas(new String[] { "image", "gallery" });
 
 		for (FieldSchema fieldEntry : schema.getFields()) {
@@ -251,5 +256,51 @@ public class RestModelTest extends AbstractMeshTest {
 			System.out.println();
 		}
 
+	}
+
+	@Test
+	public void testEquals() {
+		String uuid = UUIDUtil.randomUUID();
+		NodeResponse r1 = new NodeResponse();
+		NodeResponse r2 = new NodeResponse();
+		assertTrue(r1.equals(r2));
+
+		r1.setUuid(uuid);
+		r2.setUuid(uuid);
+		assertTrue(r1.equals(r2));
+
+		r2.setUuid(UUIDUtil.randomUUID());
+		assertFalse(r1.equals(r2));
+
+		UserResponse r3 = new UserResponse();
+		assertFalse(r3.equals(r1));
+
+		r3.setUuid(uuid);
+		assertTrue(r3.equals(r1));
+
+		TagResponse t1 = new TagResponse();
+		TagResponse t2 = new TagResponse();
+		assertTrue(t1.equals(t2));
+
+		t1.setUuid(uuid);
+		t2.setUuid(uuid);
+		assertTrue(t1.equals(t2));
+
+		t2.setUuid(UUIDUtil.randomUUID());
+		assertFalse(t1.equals(t2));
+
+		r3.setUuid(UUIDUtil.randomUUID());
+		assertFalse(r3.equals(t1));
+		r3.setUuid(uuid);
+		assertTrue(r3.equals(t1));
+
+	}
+
+	@Test
+	public void testHashCode() {
+		String uuid = UUIDUtil.randomUUID();
+		NodeResponse response = new NodeResponse();
+		response.setUuid(uuid);
+		assertEquals(Objects.hashCode(uuid), response.hashCode());
 	}
 }

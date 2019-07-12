@@ -75,10 +75,14 @@ public abstract class AbstractNameUuidReference<T> implements NameUuidReference<
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		AbstractNameUuidReference<?> that = (AbstractNameUuidReference<?>) o;
-		return Objects.equals(getUuid(), that.getUuid());
+		if (this == o) {
+			return true;
+		}
+		if (o instanceof AbstractNameUuidReference) {
+			AbstractNameUuidReference<?> that = (AbstractNameUuidReference<?>) o;
+			return Objects.equals(getUuid(), that.getUuid());
+		}
+		return super.equals(o);
 	}
 
 	@Override
