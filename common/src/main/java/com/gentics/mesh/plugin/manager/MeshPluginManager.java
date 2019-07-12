@@ -1,9 +1,10 @@
 package com.gentics.mesh.plugin.manager;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Map;
+import java.util.Set;
 
-import org.pf4j.PluginManager;
+import org.pf4j.PluginWrapper;
 
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.plugin.MeshPlugin;
@@ -14,7 +15,7 @@ import io.reactivex.Single;
 /**
  * The plugin manager can be used to deploy plugins and register them in Gentics Mesh.
  */
-public interface MeshPluginManager extends PluginManager {
+public interface MeshPluginManager {
 
 	/**
 	 * Initialize the plugin manager.
@@ -24,20 +25,21 @@ public interface MeshPluginManager extends PluginManager {
 	void init(MeshOptions options);
 
 	/**
-	 * Deploy the plugin file.
+	 * Deploy the plugin with the given path.
 	 * 
-	 * @param file
-	 * @return Single which contains the deployment id
-	 */
-	Single<String> deploy(File file);
-
-	/**
-	 * Deploy the plugin with the given service name.
-	 * 
-	 * @param name
+	 * @param path
 	 * @return Single which contains the plugin deployment uuid.
 	 */
-	Single<String> deploy(String name);
+	Single<String> deploy(Path path);
+
+	/**
+	 * Deploy the plugin file with the given name. The extension will be added automatically.
+	 * @param pluginName
+	 * @return
+	 */
+	default Single<String> deploy(String pluginName) {
+		return deploy(getPluginsRoot().resolve(pluginName + ".jar"));
+	}
 
 	/**
 	 * Undeploy and de-register the plugin with the given uuid.
@@ -85,4 +87,11 @@ public interface MeshPluginManager extends PluginManager {
 	Single<String> deploy(Class<?> clazz, String pluginId);
 
 	void unload();
+
+	Set<String> getPluginIds();
+
+	PluginWrapper getPlugin(String uuid);
+
+	Path getPluginsRoot();
+
 }

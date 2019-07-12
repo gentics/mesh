@@ -16,6 +16,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<mesh.version>${project.version}</mesh.version>
+		<skip.test-plugins>true</skip.test-plugins>
 	</properties>
 
 	<dependencies>
@@ -241,7 +242,7 @@
 						<!-- Before the test phase -->
 						<phase>process-test-classes</phase>
 						<configuration>
-							<!-- <skipInvocation>${skip.unit.tests}</skipInvocation> -->
+							<skipInvocation>${skip.test-plugins}</skipInvocation>
 							<properties>
 								<mesh.version>${project.version}</mesh.version>
 								<skipTests>true</skipTests>

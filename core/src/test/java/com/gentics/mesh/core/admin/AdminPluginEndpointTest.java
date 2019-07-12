@@ -135,7 +135,7 @@ public class AdminPluginEndpointTest extends AbstractMeshTest {
 	public void testPluginList() {
 		grantAdminRole();
 		PluginResponse response = call(() -> client().deployPlugin(new PluginDeploymentRequest().setName(DEPLOYMENT_NAME)));
-		assertEquals(1, pluginManager().getPlugins().size());
+		assertEquals(1, pluginManager().getPluginIds().size());
 
 		String bogusName = "filesystem:bogus.jar";
 
@@ -249,13 +249,13 @@ public class AdminPluginEndpointTest extends AbstractMeshTest {
 	public void testDuplicateDeployment() {
 		grantAdminRole();
 		call(() -> client().deployPlugin(new PluginDeploymentRequest().setName(DEPLOYMENT_NAME)));
-		assertEquals(1, pluginManager().getPlugins().size());
+		assertEquals(1, pluginManager().getPluginIds().size());
 
 		int before = Vertx.vertx().deploymentIDs().size();
 		call(() -> client().deployPlugin(new PluginDeploymentRequest().setName(DEPLOYMENT_NAME)), BAD_REQUEST,
 			"admin_plugin_error_plugin_already_deployed", "Basic Plugin", "basic");
 		assertEquals("No additional plugins should have been deployed", before, Vertx.vertx().deploymentIDs().size());
-		assertEquals(1, pluginManager().getPlugins().size());
+		assertEquals(1, pluginManager().getPluginIds().size());
 	}
 
 	private void setPluginBaseDir(String baseDir) {

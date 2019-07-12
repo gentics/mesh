@@ -9,6 +9,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,6 +18,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -69,23 +71,23 @@ public class PluginManagerTest extends AbstractMeshTest {
 	@Test
 	public void testStop() {
 		MeshPluginManager manager = pluginManager();
-		int before = manager.getPlugins().size();
+		int before = manager.getPluginIds().size();
 		for (int i = 0; i < 100; i++) {
 			manager.deploy(ClonePlugin.class, "clone" + i).blockingGet();
 		}
-		assertEquals(before + 100, manager.getPlugins().size());
+		assertEquals(before + 100, manager.getPluginIds().size());
 
-		assertEquals(100, manager.getPlugins().size());
+		assertEquals(100, manager.getPluginIds().size());
 		manager.stop().blockingAwait();
 		manager.unload();
-		assertEquals(0, manager.getPlugins().size());
-		assertEquals("Not all deployed verticles have been undeployed.", before, manager.getPlugins().size());
+		assertEquals(0, manager.getPluginIds().size());
+		assertEquals("Not all deployed verticles have been undeployed.", before, manager.getPluginIds().size());
 	}
 
 	@Test
 	public void testFilesystemDeployment() throws Exception {
 		setPluginBaseDir("abc");
-		pluginManager().deploy(new File(BASIC_PLUGIN_PATH).getAbsolutePath()).blockingGet();
+		pluginManager().deploy(Paths.get(BASIC_PLUGIN_PATH)).blockingGet();
 
 		for (int i = 0; i < 2; i++) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
@@ -107,17 +109,18 @@ public class PluginManagerTest extends AbstractMeshTest {
 		FileUtil.copy(new File(BASIC_PLUGIN_PATH), new File(PLUGIN_DIR, "duplicate-plugin.jar"));
 		FileUtil.copy(new File(BASIC_PLUGIN_PATH), new File(PLUGIN_DIR, "plugin.blub"));
 
-		assertEquals(0, manager.getPlugins().size());
+		manager.deployExistingPluginFiles().blockingGet();
+		assertEquals(0, manager.getPluginIds().size());
 		manager.deployExistingPluginFiles().blockingAwait();
 		manager.deployExistingPluginFiles().blockingAwait();
 		manager.deployExistingPluginFiles().blockingAwait();
-		assertEquals("Only one instance should have been deployed because all others are copies.", 1, manager.getPlugins().size());
+		assertEquals("Only one instance should have been deployed because all others are copies.", 1, manager.getPluginIds().size());
 
 		manager.stop().blockingAwait();
-		assertEquals(0, manager.getPlugins().size());
+		assertEquals(0, manager.getPluginIds().size());
 
 		manager.deployExistingPluginFiles().blockingAwait();
-		assertEquals(1, manager.getPlugins().size());
+		assertEquals(1, manager.getPluginIds().size());
 	}
 
 	/**
@@ -181,7 +184,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 	public void testJavaDeployment() throws IOException {
 		MeshPluginManager manager = pluginManager();
 		manager.deploy(DummyPlugin.class, "dummy").blockingGet();
-		assertEquals(1, manager.getPlugins().size());
+		assertEquals(1, manager.getPluginIds().size());
 
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName("test");
@@ -205,16 +208,16 @@ public class PluginManagerTest extends AbstractMeshTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		assertEquals(0, manager.getPlugins().size());
+		assertEquals(0, manager.getPluginIds().size());
 
 		manager.deploy(SucceedingPlugin.class, "test-plugin").blockingGet();
-		assertEquals(1, manager.getPlugins().size());
+		assertEquals(1, manager.getPluginIds().size());
 	}
 
 	private void setPluginBaseDir(String baseDir) {
 		File pluginDir = new File(baseDir);
 		pluginDir.mkdirs();
-		MeshOptions options = new MeshOptions();
+		MeshOptions options = Mesh.mesh().getOptions();
 		options.setPluginDirectory(baseDir);
 		pluginManager().init(options);
 	}

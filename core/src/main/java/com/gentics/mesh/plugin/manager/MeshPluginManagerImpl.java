@@ -3,7 +3,6 @@ package com.gentics.mesh.plugin.manager;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -146,7 +145,9 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 			base = "plugins";
 		}
 		log.trace("Using base dir {" + base + "}");
-		System.setProperty("pf4j.pluginsDir", base);
+		pluginsRoot = Paths.get(base);
+		// Re-create the plugin repo since the root dir might have changed
+		pluginRepository = createPluginRepository();
 	}
 
 	@Override
@@ -167,30 +168,18 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 	}
 
 	@Override
-	public Single<String> deploy(String pluginPath) {
-		return Single.fromCallable(() -> {
-			String pluginId = loadPlugin(Paths.get(pluginPath));
-			if (pluginId == null) {
-				throw new RuntimeException("Could not load plugin {" + pluginPath + "}");
-			}
-			startPlugin(pluginId);
-			return pluginId;
-		});
-	}
-
-	@Override
-	public Single<String> deploy(File file) {
-		log.debug("Deploying file  {" + file + "}");
+	public Single<String> deploy(Path path) {
+		log.debug("Deploying file {" + path + "}");
 		String id;
 		try {
-			id = loadPlugin(file.toPath());
+			id = loadPlugin(path);
 		} catch (Throwable e) {
-			return Single.error(new RuntimeException("Error while deploying plugin file {" + file + "}", e));
+			return Single.error(new RuntimeException("Error while deploying plugin file {" + path + "}", e));
 		}
 		try {
 			startPlugin(id);
 		} catch (Throwable e) {
-			return Single.error(new RuntimeException("Error while starting plugin file {" + file + "/" + id + "}", e));
+			return Single.error(new RuntimeException("Error while starting plugin file {" + path + "/" + id + "}", e));
 		}
 		return Single.just(id);
 	}
@@ -340,6 +329,11 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 	@Override
 	public Path getPluginsRoot() {
 		return Paths.get(options.getPluginDirectory());
+	}
+
+	@Override
+	public Set<String> getPluginIds() {
+		return super.getPlugins().stream().map(e -> e.getPluginId()).collect(Collectors.toSet());
 	}
 
 }
