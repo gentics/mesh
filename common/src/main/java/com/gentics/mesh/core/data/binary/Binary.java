@@ -31,6 +31,11 @@ public interface Binary extends MeshVertex {
 	 */
 	Flowable<Buffer> getStream();
 
+	/**
+	 * Opens a blocking {@link InputStream} to the binary file. This should only be used for some other blocking APIs (i.e. ImageIO)
+	 *
+	 * @return
+	 */
 	Supplier<InputStream> openBlockingStream();
 
 	/**
