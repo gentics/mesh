@@ -364,7 +364,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public void failOnNoReadPermission(Node node, NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
+	public void failOnNoReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
+		Node node = container.getParentNode();
 		if (hasPermission(node, READ_PERM)) {
 			return;
 		}

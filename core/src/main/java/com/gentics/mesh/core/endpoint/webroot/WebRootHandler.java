@@ -107,8 +107,8 @@ public class WebRootHandler {
 
 			String version = ac.getVersioningParameters().getVersion();
 			Node node = container.getParentNode();
-			addCacheControl(rc, node, container, branchUuid, version);
-			requestUser.failOnNoReadPermission(node, container, branchUuid, version);
+			addCacheControl(rc, node, version);
+			requestUser.failOnNoReadPermission(container, branchUuid, version);
 
 			GraphField field = lastSegment.getPathField();
 			if (field instanceof BinaryGraphField) {
@@ -157,12 +157,10 @@ public class WebRootHandler {
 	 * 
 	 * @param rc
 	 * @param node
-	 * @param container
-	 * @param branchUuid
 	 * @param version
 	 */
-	private void addCacheControl(RoutingContext rc, Node node, NodeGraphFieldContainer container, String branchUuid, String version) {
-		if (isPublic(node, container, branchUuid, version)) {
+	private void addCacheControl(RoutingContext rc, Node node, String version) {
+		if (isPublic(node, version)) {
 			rc.response().putHeader(CACHE_CONTROL, "public");
 		} else {
 			rc.response().putHeader(CACHE_CONTROL, "private");
@@ -174,12 +172,10 @@ public class WebRootHandler {
 	 * Checks whether the content is readable via anonymous user.
 	 * 
 	 * @param node
-	 * @param container
-	 * @param branchUuid
 	 * @param version
 	 * @return
 	 */
-	private boolean isPublic(Node node, NodeGraphFieldContainer container, String branchUuid, String version) {
+	private boolean isPublic(Node node, String version) {
 		Role anonymousRole = MeshInternal.get().boot().anonymousRole();
 		AuthenticationOptions authOptions = Mesh.mesh().getOptions().getAuthenticationOptions();
 		if (anonymousRole != null && authOptions != null && authOptions.isEnableAnonymousAccess()) {

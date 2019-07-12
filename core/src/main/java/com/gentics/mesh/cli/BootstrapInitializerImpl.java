@@ -142,6 +142,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	private static MeshRoot meshRoot;
 
+	// TODO: Changing the role name or deleting the role would cause code that utilizes this field to break. 
+	// This is however a rare case. 
 	private static Role anonymousRole;
 
 	private MeshImpl mesh;

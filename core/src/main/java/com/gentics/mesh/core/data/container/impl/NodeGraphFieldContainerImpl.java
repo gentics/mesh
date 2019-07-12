@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -110,6 +111,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public static final String VERSION_PROPERTY_KEY = "version";
 
 	public static final String EDITOR_UUID_PROPERTY_KEY = "editor";
+
+	// Cached instance of the parent node.
+	private Node parentNodeRef;
 
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(NodeGraphFieldContainerImpl.class, MeshVertexImpl.class);
@@ -266,7 +270,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			// Individually check each url
 			for (String urlFieldValue : urlFieldValues) {
 				Object key = GraphFieldContainerEdgeImpl.composeWebrootUrlFieldIndexKey(urlFieldValue, branchUuid, type);
-				GraphFieldContainerEdge conflictingEdge = MeshInternal.get().database().index().checkIndexUniqueness(WEBROOT_URLFIELD_INDEX_NAME, edge, key);
+				GraphFieldContainerEdge conflictingEdge = MeshInternal.get().database().index().checkIndexUniqueness(WEBROOT_URLFIELD_INDEX_NAME,
+					edge, key);
 				if (conflictingEdge != null) {
 					NodeGraphFieldContainer conflictingContainer = conflictingEdge.getNodeContainer();
 					Node conflictingNode = conflictingEdge.getNode();
@@ -378,7 +383,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			String segmentInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(parentNode, segment);
 			Object webRootIndexKey = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(segmentInfo, branchUuid, type);
 			// check for uniqueness of webroot path
-			GraphFieldContainerEdge conflictingEdge = MeshInternal.get().database().index().checkIndexUniqueness(WEBROOT_INDEX_NAME, edge, webRootIndexKey);
+			GraphFieldContainerEdge conflictingEdge = MeshInternal.get().database().index().checkIndexUniqueness(WEBROOT_INDEX_NAME, edge,
+				webRootIndexKey);
 			if (conflictingEdge != null) {
 				Node conflictingNode = conflictingEdge.getNode();
 				NodeGraphFieldContainer conflictingContainer = conflictingEdge.getNodeContainer();
@@ -410,6 +416,11 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	 * @return parent node
 	 */
 	public Node getParentNode() {
+		// Return pre-loaded instance
+		if (parentNodeRef != null) {
+			return parentNodeRef;
+		}
+
 		Node parentNode = in(HAS_FIELD_CONTAINER, NodeImpl.class).nextOrNull();
 		if (parentNode == null) {
 			// the field container is not directly linked to its Node, get the
@@ -426,6 +437,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			}
 			throw error(INTERNAL_SERVER_ERROR, "error_field_container_without_node");
 		}
+		parentNodeRef = parentNode;
 		return parentNode;
 	}
 
@@ -630,8 +642,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public TraversalResult<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaContainerVersion version) {
-		return new TraversalResult<>(out(HAS_LIST).has(MicronodeGraphFieldListImpl.class).mark().out(HAS_ITEM).has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER).has(
-			MicroschemaContainerVersionImpl.class).has("uuid", version.getUuid()).back().frameExplicit(MicronodeGraphFieldListImpl.class));
+		return new TraversalResult<>(
+			out(HAS_LIST).has(MicronodeGraphFieldListImpl.class).mark().out(HAS_ITEM).has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER).has(
+				MicroschemaContainerVersionImpl.class).has("uuid", version.getUuid()).back().frameExplicit(MicronodeGraphFieldListImpl.class));
 	}
 
 	@Override

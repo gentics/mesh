@@ -343,12 +343,11 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * Check the read permission on the given container and fail if the needed permission to read the container is not set. This method will not fail if the
 	 * user has READ permission or READ_PUBLISH permission on a published node.
 	 *
-	 * @param node Parent node of the container which will be checked
 	 * @param container
 	 * @param branchUuid
 	 * @param requestedVersion
 	 */
-	void failOnNoReadPermission(Node node, NodeGraphFieldContainer container, String branchUuid, String requestedVersion);
+	void failOnNoReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion);
 
 	/**
 	 * Check whether the admin role was assigned to the user.
