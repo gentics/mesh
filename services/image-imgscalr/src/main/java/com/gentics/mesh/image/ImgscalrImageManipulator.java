@@ -264,7 +264,10 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 					// Make sure to run that code in the dedicated thread pool it may be CPU intensive for larger images and we don't want to exhaust the regular worker
 					// pool
 					return workerPool.<String>rxExecuteBlocking(bh -> {
-						try (ImageInputStream ins = ImageIO.createImageInputStream(stream.get())) {
+						try (
+							InputStream is = stream.get();
+							ImageInputStream ins = ImageIO.createImageInputStream(is)
+						) {
 							BufferedImage image;
 							ImageReader reader = getImageReader(ins);
 
@@ -305,67 +308,6 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 					}).toSingle();
 				}
 			});
-	}
-
-	@Override
-	public Single<PropReadFileStream> handleResize(Flowable<Buffer> stream, String cacheKey, ImageManipulationParameters parameters) {
-		// Validate the resize parameters
-		try {
-			parameters.validate();
-			parameters.validateLimits(options);
-		} catch (Exception e) {
-			return Single.error(e);
-		}
-		File cacheFile = getCacheFile(cacheKey, parameters);
-
-		// Check the cache file directory
-		if (cacheFile.exists()) {
-			return PropReadFileStream.openFile(this.vertx, cacheFile.getAbsolutePath());
-		}
-
-		// TODO handle execution timeout
-		// Make sure to run that code in the dedicated thread pool it may be CPU intensive for larger images and we don't want to exhaust the regular worker
-		// pool
-		Maybe<PropReadFileStream> result = workerPool.rxExecuteBlocking(bh -> {
-			try (ImageInputStream ins = ImageIO.createImageInputStream(RxUtil.toInputStream(stream, vertx))) {
-				BufferedImage image;
-				ImageReader reader = getImageReader(ins);
-
-				try {
-					image = reader.read(0);
-				} catch (IOException e) {
-					log.error("Could not read input image", e);
-
-					throw error(BAD_REQUEST, "image_error_reading_failed");
-				}
-
-				if (log.isDebugEnabled()) {
-					log.debug("Read image from stream " + stream.hashCode() + " with reader " + reader.getClass().getName());
-				}
-
-				image = cropAndResize(image, parameters);
-
-				String[] extensions = reader.getOriginatingProvider().getFileSuffixes();
-				String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
-				File outCacheFile = new File(cacheFile.getAbsolutePath() + "." + extension);
-
-				// Write image
-				try (ImageOutputStream out = new FileImageOutputStream(outCacheFile)) {
-					ImageWriteParam params = getImageWriteparams(extension);
-
-					// same as write(image), but with image parameters
-					getImageWriter(reader, out).write(null, new IIOImage(image, null, null), params);
-				} catch (Exception e) {
-					throw error(BAD_REQUEST, "image_error_writing_failed");
-				}
-
-				// Return buffer to written cache file
-				PropReadFileStream.openFile(this.vertx, outCacheFile.getAbsolutePath()).subscribe(bh::complete, bh::fail);
-			} catch (Exception e) {
-				bh.fail(e);
-			}
-		});
-		return result.toSingle();
 	}
 
 	private ImageWriteParam getImageWriteparams(String extension) {

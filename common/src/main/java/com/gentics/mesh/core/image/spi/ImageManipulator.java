@@ -21,18 +21,6 @@ import io.vertx.ext.web.RoutingContext;
 public interface ImageManipulator {
 
 	/**
-	 * Resize the given binary data and return a buffer to the resized image data.
-	 *
-	 * @param stream
-	 *            Binary data stream to be used for resizing
-	 * @param cacheKey
-	 *            Key used to name the local cache file
-	 * @param imageRequestParameter
-	 * @return
-	 */
-	Single<PropReadFileStream> handleResize(Flowable<Buffer> stream, String cacheKey, ImageManipulationParameters imageRequestParameter);
-
-	/**
 	 * Resize the given binary data and return the path to the resized file.
 	 * @param binary
 	 * @param parameters

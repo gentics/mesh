@@ -1,9 +1,9 @@
 package com.gentics.mesh.image;
 
+import static com.gentics.mesh.image.ImageTestUtil.createMockedBinary;
 import static com.gentics.mesh.image.ImgscalrImageManipulatorTest.getReferenceFilename;
 
 import java.io.File;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
@@ -12,11 +12,8 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
-import com.gentics.mesh.util.PropReadFileStream;
 
-import io.reactivex.Flowable;
 import io.reactivex.Observable;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileSystem;
 import io.vertx.reactivex.core.Vertx;
 
@@ -38,22 +35,14 @@ public class ReferenceImageCreator {
 			String imageName = image.getString("name");
 			System.out.println("Transforming image " + imageName);
 			String path = "/pictures/" + imageName;
-			InputStream ins = getClass().getResourceAsStream(path);
-			if (ins == null) {
-				throw new RuntimeException("Could not find image {" + path + "}");
-			}
-			byte[] bytes = IOUtils.toByteArray(ins);
-			ins.close();
-			Flowable<Buffer> bs = Flowable.just(Buffer.buffer(bytes));
 
-			PropReadFileStream resizedPath = manipulator.handleResize(bs, imageName, new ImageManipulationParametersImpl().setWidth(150).setHeight(180)).blockingGet();
+			String file = manipulator.handleResize(createMockedBinary(path), new ImageManipulationParametersImpl().setWidth(150).setHeight(180)).blockingGet();
 			String targetPath = BASE_PATH + getReferenceFilename(imageName);
-			resizedPath.getFile().close();
 
 			if (fs.existsBlocking(targetPath)) {
 				fs.deleteBlocking(targetPath);
 			}
-			fs.moveBlocking(resizedPath.getPath(), targetPath);
+			fs.moveBlocking(file, targetPath);
 		});
 
 		fs.deleteRecursiveBlocking(tmpDir, true);
