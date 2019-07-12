@@ -53,10 +53,10 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 		String baseName = "image-" + parameters.getCacheKey();
 
 		return fs.rxMkdirs(baseFolder)
-		// TODO Handle existing folder error
-		.andThen(Single.defer(() -> {
-			return fs.rxReadDir(baseFolder, baseName + "(\\..*)?"); // Filter ignores extension
-		})).map(foundFiles -> {
+		// Vert.x uses Files.createDirectories internally, which will not fail when the folder already exists.
+		// See https://github.com/eclipse-vertx/vert.x/issues/3029
+		.andThen(fs.rxReadDir(baseFolder, baseName + "(\\..*)?"))
+		.map(foundFiles -> {
 			int numFiles = foundFiles.size();
 			if (numFiles == 0) {
 				String retPath = Paths.get(baseFolder, baseName).toString();

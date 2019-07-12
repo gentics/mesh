@@ -4,7 +4,11 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Paths;
 import java.util.Objects;
 
 import javax.inject.Inject;
@@ -172,6 +176,11 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 			.toFlowable()
 			.flatMap(RxUtil::toBufferFlow);
 		return obs;
+	}
+
+	@Override
+	public InputStream openBlockingStream(String uuid) throws IOException {
+		return Files.newInputStream(Paths.get(getFilePath(uuid)));
 	}
 
 	@Override

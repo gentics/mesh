@@ -4,6 +4,7 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -375,4 +376,30 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			"application/binary"));
 	}
 
+	/**
+	 * Tries to download a binary that was already deleted in the filesystem.
+	 */
+	@Test
+	public void downloadDeletedBinary() throws IOException {
+		String fileName = "blume.jpg";
+		byte[] bytes = getBinary("/pictures/blume.jpg");
+
+		NodeResponse createResponse = createBinaryNode();
+
+		NodeResponse updatedResponse = client().updateNodeBinaryField(PROJECT_NAME, createResponse.getUuid(), "en", createResponse.getVersion(), "binary",
+			new ByteArrayInputStream(bytes), bytes.length, fileName, "image/jpg").blockingGet();
+
+		// Clear the local binary storage directory to simulate a storage inconsistency
+		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory()));
+
+		call(() -> client().downloadBinaryField(PROJECT_NAME, updatedResponse.getUuid(), updatedResponse.getLanguage(), "binary"),
+			NOT_FOUND, "node_error_binary_data_not_found");
+
+		call(() -> client().downloadBinaryField(PROJECT_NAME,
+			updatedResponse.getUuid(),
+			updatedResponse.getLanguage(),
+			"binary",
+			new ImageManipulationParametersImpl().setWidth(200)
+		), NOT_FOUND, "node_error_binary_data_not_found");
+	}
 }

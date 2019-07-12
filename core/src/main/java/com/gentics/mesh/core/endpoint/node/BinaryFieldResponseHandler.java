@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.endpoint.node;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.util.MimeTypeUtils.DEFAULT_BINARY_MIME_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_MODIFIED;
@@ -15,7 +14,6 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.handler.RangeRequestHandler;
-import com.gentics.mesh.handler.impl.RangeRequestHandlerImpl;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.storage.BinaryStorage;
@@ -35,17 +33,20 @@ import io.vertx.reactivex.core.Vertx;
 @Singleton
 public class BinaryFieldResponseHandler {
 
-	private ImageManipulator imageManipulator;
+	private final ImageManipulator imageManipulator;
 
-	private BinaryStorage storage;
+	private final BinaryStorage storage;
 
-	private Vertx vertx;
+	private final Vertx rxVertx;
+
+	private final RangeRequestHandler rangeRequestHandler;
 
 	@Inject
-	public BinaryFieldResponseHandler(ImageManipulator imageManipulator, BinaryStorage storage, Vertx vertx) {
+	public BinaryFieldResponseHandler(ImageManipulator imageManipulator, BinaryStorage storage, Vertx rxVertx, RangeRequestHandler rangeRequestHandler) {
 		this.imageManipulator = imageManipulator;
 		this.storage = storage;
-		this.vertx = vertx;
+		this.rxVertx = rxVertx;
+		this.rangeRequestHandler = rangeRequestHandler;
 	}
 
 	/**
@@ -107,8 +108,7 @@ public class BinaryFieldResponseHandler {
 
 		String localPath = storage.getLocalPath(binary.getUuid());
 		if (localPath != null) {
-			RangeRequestHandler handler = new RangeRequestHandlerImpl();
-			handler.handle(rc, localPath, contentType);
+			rangeRequestHandler.handle(rc, localPath, contentType);
 		} else {
 			String contentLength = String.valueOf(binary.getSize());
 			if (contentType != null) {
@@ -132,10 +132,10 @@ public class BinaryFieldResponseHandler {
 		}
 		String fileName = binaryField.getFileName();
 		imageManipulator.handleResize(binaryField.getBinary(), imageParams)
-			.subscribe(cachedFilePath -> vertx.fileSystem().rxProps(cachedFilePath)
-			.subscribe(props -> {
+			.flatMap(cachedFilePath -> rxVertx.fileSystem().rxProps(cachedFilePath)
+			.doOnSuccess(props -> {
 				response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(props.size()));
-				response.putHeader(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.getMimeTypeForFilename(fileName).orElse(DEFAULT_BINARY_MIME_TYPE));
+				response.putHeader(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.getMimeTypeForFilename(cachedFilePath).orElse(DEFAULT_BINARY_MIME_TYPE));
 				response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
 				response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
 				// Set to IDENTITY to avoid gzip compression
@@ -144,7 +144,8 @@ public class BinaryFieldResponseHandler {
 				addContentDispositionHeader(response, fileName, "inline");
 
 				response.sendFile(cachedFilePath);
-			}));
+			}))
+			.subscribe(ignore -> {}, rc::fail);
 	}
 
 	private void addContentDispositionHeader(HttpServerResponse response, String fileName, String type) {

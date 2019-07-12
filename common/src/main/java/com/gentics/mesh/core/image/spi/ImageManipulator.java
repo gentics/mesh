@@ -32,6 +32,12 @@ public interface ImageManipulator {
 	 */
 	Single<PropReadFileStream> handleResize(Flowable<Buffer> stream, String cacheKey, ImageManipulationParameters imageRequestParameter);
 
+	/**
+	 * Resize the given binary data and return the path to the resized file.
+	 * @param binary
+	 * @param parameters
+	 * @return The path to the resized file.
+	 */
 	Single<String> handleResize(Binary binary, ImageManipulationParameters parameters);
 
 	/**

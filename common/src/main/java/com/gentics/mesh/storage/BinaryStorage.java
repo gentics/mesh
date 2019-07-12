@@ -1,5 +1,8 @@
 package com.gentics.mesh.storage;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -70,6 +73,8 @@ public interface BinaryStorage {
 	 * @return
 	 */
 	Flowable<Buffer> read(String uuid);
+
+	InputStream openBlockingStream(String uuid) throws IOException;
 
 	/**
 	 * Read the entire binary data which is identified by the given binary uuid in the same thread blockingly.

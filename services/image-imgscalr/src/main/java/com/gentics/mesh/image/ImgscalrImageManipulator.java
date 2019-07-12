@@ -1,39 +1,16 @@
 package com.gentics.mesh.image;
 
-import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
-import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.http.MeshHeaders;
-import com.gentics.mesh.image.focalpoint.FocalPointModifier;
-import com.gentics.mesh.parameter.ImageManipulationParameters;
-import com.gentics.mesh.parameter.image.CropMode;
-import com.gentics.mesh.parameter.image.ImageRect;
-import com.gentics.mesh.util.EncodeUtil;
-import com.gentics.mesh.util.MimeTypeUtils;
-import com.gentics.mesh.util.PropReadFileStream;
-import com.gentics.mesh.util.RxUtil;
-import com.twelvemonkeys.image.ResampleOp;
-import io.reactivex.Flowable;
-import io.reactivex.Maybe;
-import io.reactivex.Single;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpHeaders;
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.core.WorkerExecutor;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.AutoDetectParser;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.Parser;
-import org.apache.tika.sax.BodyContentHandler;
-import org.imgscalr.Scalr;
-import org.imgscalr.Scalr.Mode;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -44,18 +21,37 @@ import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.util.MimeTypeUtils.DEFAULT_BINARY_MIME_TYPE;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
+import org.apache.tika.sax.BodyContentHandler;
+import org.imgscalr.Scalr;
+import org.imgscalr.Scalr.Mode;
+
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
+import com.gentics.mesh.etc.config.ImageManipulatorOptions;
+import com.gentics.mesh.graphdb.spi.Supplier;
+import com.gentics.mesh.image.focalpoint.FocalPointModifier;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.parameter.image.CropMode;
+import com.gentics.mesh.parameter.image.ImageRect;
+import com.gentics.mesh.util.PropReadFileStream;
+import com.gentics.mesh.util.RxUtil;
+import com.twelvemonkeys.image.ResampleOp;
+
+import io.reactivex.Flowable;
+import io.reactivex.Maybe;
+import io.reactivex.Single;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.WorkerExecutor;
 
 /**
  * The ImgScalr Manipulator uses a pure java imageio image resizer.
@@ -257,6 +253,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		parameters.validate();
 		parameters.validateLimits(options);
 
+		Supplier<InputStream> stream = binary.openBlockingStream();
+
 		return getCacheFilePath(binary.getSHA512Sum(), parameters)
 			.flatMap(cacheFileInfo -> {
 				if (cacheFileInfo.exists) {
@@ -265,9 +263,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 					// TODO handle execution timeout
 					// Make sure to run that code in the dedicated thread pool it may be CPU intensive for larger images and we don't want to exhaust the regular worker
 					// pool
-					Flowable<Buffer> stream = binary.getStream();
 					return workerPool.<String>rxExecuteBlocking(bh -> {
-						try (ImageInputStream ins = ImageIO.createImageInputStream(RxUtil.toInputStream(stream, vertx))) {
+						try (ImageInputStream ins = ImageIO.createImageInputStream(stream.get())) {
 							BufferedImage image;
 							ImageReader reader = getImageReader(ins);
 
@@ -280,7 +277,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 							}
 
 							if (log.isDebugEnabled()) {
-								log.debug("Read image from stream " + stream.hashCode() + " with reader " + reader.getClass().getName());
+								log.debug("Read image from stream " + ins.hashCode() + " with reader " + reader.getClass().getName());
 							}
 
 							image = cropAndResize(image, parameters);
