@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.PARTIAL_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.REQUESTED_RANGE_NOT_SATISFIABLE;
 
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -155,7 +156,7 @@ public class RangeRequestHandlerImpl implements RangeRequestHandler {
 
 	private Map<String, FileProps> propsCache() {
 		if (propsCache == null) {
-			propsCache = new LRUCache<>(maxCacheSize);
+			propsCache = Collections.synchronizedMap(new LRUCache<>(maxCacheSize));
 		}
 		return propsCache;
 	}
