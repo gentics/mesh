@@ -7,7 +7,7 @@
 			# [$.data.node.languages[1].uuid=<is-uuid>]
 			uuid
 
-            # This will be asserted by a special asserter
+			# This will be asserted by a special asserter
 			path
 			language
 		}
