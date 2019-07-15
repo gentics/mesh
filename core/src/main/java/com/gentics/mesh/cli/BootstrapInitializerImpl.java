@@ -142,6 +142,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	private static MeshRoot meshRoot;
 
+	// TODO: Changing the role name or deleting the role would cause code that utilizes this field to break. 
+	// This is however a rare case. 
+	private static Role anonymousRole;
+
 	private MeshImpl mesh;
 
 	private HazelcastClusterManager manager;
@@ -593,7 +597,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 					isInitialSetup = false;
 					meshRoot = it.next();
 				} else {
-					meshRoot = Tx.getActive().getGraph().addFramedVertex(MeshRootImpl.class);
+					meshRoot = Tx.get().getGraph().addFramedVertex(MeshRootImpl.class);
 					if (log.isDebugEnabled()) {
 						log.debug("Created mesh root {" + meshRoot.getUuid() + "}");
 					}
@@ -601,6 +605,22 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 		}
 		return meshRoot;
+	}
+
+	/**
+	 * Return the anonymous role.
+	 * 
+	 * @return
+	 */
+	@Override
+	public Role anonymousRole() {
+		if (anonymousRole == null) {
+			synchronized (BootstrapInitializer.class) {
+				// Load the role if it has not been yet loaded
+				anonymousRole = roleRoot().findByName("anonymous");
+			}
+		}
+		return anonymousRole;
 	}
 
 	@Override
@@ -673,6 +693,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 */
 	public static void clearReferences() {
 		BootstrapInitializerImpl.meshRoot = null;
+		BootstrapInitializerImpl.anonymousRole = null;
 		MeshRootImpl.clearReferences();
 	}
 
@@ -858,7 +879,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				}
 
 				RoleRoot roleRoot = meshRoot.getRoleRoot();
-				Role anonymousRole = roleRoot.findByName("anonymous");
+				anonymousRole = roleRoot.findByName("anonymous");
 				if (anonymousRole == null) {
 					anonymousRole = roleRoot.create("anonymous", anonymousUser);
 					anonymousGroup.addRole(anonymousRole);

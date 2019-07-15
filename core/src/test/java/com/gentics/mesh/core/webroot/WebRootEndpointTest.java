@@ -1,5 +1,27 @@
 package com.gentics.mesh.core.webroot;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.parameter.LinkType.MEDIUM;
+import static com.gentics.mesh.parameter.LinkType.SHORT;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.Arrays;
+
+import org.junit.Test;
+
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
@@ -22,32 +44,11 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.URIUtils;
-
-import org.junit.Test;
-
-import java.io.IOException;
-import java.util.Arrays;
-
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
-import static com.gentics.mesh.parameter.LinkType.MEDIUM;
-import static com.gentics.mesh.parameter.LinkType.SHORT;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.awaitConcurrentRequests;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class WebRootEndpointTest extends AbstractMeshTest {
@@ -306,7 +307,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		call(() -> client().webroot(PROJECT_NAME, englishPath, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
+		call(() -> client().webroot(PROJECT_NAME, englishPath, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid,
+			READ_PERM.getRestPerm().getName());
 	}
 
 	@Test
@@ -358,16 +360,60 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testReadPublished() {
+	public void testWebrootCacheControlPrivateNode() {
+		String path = "/News/2015";
+
+		MeshResponse<MeshWebrootResponse> response = client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().published()).getResponse()
+			.blockingGet();
+		String cacheControl = response.getHeader("Cache-Control").get();
+		assertEquals("private", cacheControl);
+	}
+
+	@Test
+	public void testWebrootCacheControlPublicNode() {
 		String path = "/News/2015";
 
 		try (Tx tx = tx()) {
-			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
+			anonymousRole().grantPermissions(folder("2015"), READ_PERM);
+			tx.success();
 		}
-		// 1. Assert that published path cannot be found
+
+		MeshResponse<MeshWebrootResponse> response = client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().published()).getResponse()
+			.blockingGet();
+		String cacheControl = response.getHeader("Cache-Control").get();
+		assertEquals("public", cacheControl);
+	}
+
+	@Test
+	public void testWebrootCacheControlPublicPublishedNode() {
+		String path = "/News/2015";
+
 		try (Tx tx = tx()) {
-			call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().published()), NOT_FOUND, "node_not_found_for_path", path);
+			anonymousRole().grantPermissions(folder("2015"), READ_PUBLISHED_PERM);
+			tx.success();
 		}
+
+		MeshResponse<MeshWebrootResponse> response = client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().published()).getResponse()
+			.blockingGet();
+		String cacheControl = response.getHeader("Cache-Control").get();
+		assertEquals("public", cacheControl);
+
+		// Read again - this time the draft. The anonymous role is not allowed to read this
+		response = client().webroot(PROJECT_NAME, path).getResponse()
+			.blockingGet();
+		cacheControl = response.getHeader("Cache-Control").get();
+		assertEquals("private", cacheControl);
+	}
+
+	@Test
+	public void testReadPublished() {
+		String path = "/News/2015";
+		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
+
+		call(() -> client().takeNodeOffline(PROJECT_NAME, baseNodeUuid, new PublishParametersImpl().setRecursive(true)));
+
+		// 1. Assert that published path cannot be found
+		call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().published()), NOT_FOUND, "node_not_found_for_path", path);
 
 		// 2. Publish nodes
 		try (Tx tx = tx()) {

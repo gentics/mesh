@@ -11,6 +11,7 @@ import com.gentics.mesh.util.ETag;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Cookie;
@@ -25,6 +26,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.vertx.core.http.HttpHeaders.CACHE_CONTROL;
+import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
 /**
  * Vert.x specific routing context based action context implementation.
@@ -74,9 +77,14 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 
 	@Override
 	public void send(String body, HttpResponseStatus status, String contentType) {
-		rc.response().putHeader(HttpHeaders.CONTENT_TYPE, contentType);
-		rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
-		rc.response().setStatusCode(status.code()).end(body);
+		HttpServerResponse response = rc.response();
+		response.putHeader(CONTENT_TYPE, contentType);
+
+		// Check if a custom header has been set
+		if (!response.headers().contains(CACHE_CONTROL)) {
+			response.putHeader(CACHE_CONTROL, "no-cache");
+		}
+		response.setStatusCode(status.code()).end(body);
 	}
 
 	@Override

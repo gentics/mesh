@@ -144,8 +144,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	String getPasswordHash();
 
 	/**
-	 * Set the password hash.
-	 * This will also set {@link #setForcedPasswordChange(boolean)} to false.
+	 * Set the password hash. This will also set {@link #setForcedPasswordChange(boolean)} to false.
 	 *
 	 * @param hash
 	 *            Password hash
@@ -156,8 +155,8 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	User setPasswordHash(String hash);
 
 	/**
-	 * Set the plaintext password. Internally the password string will be hashed and the password hash will be set.
-	 * This will also set {@link #setForcedPasswordChange(boolean)} to false.
+	 * Set the plaintext password. Internally the password string will be hashed and the password hash will be set. This will also set
+	 * {@link #setForcedPasswordChange(boolean)} to false.
 	 *
 	 * @param password
 	 * @return Fluent API
@@ -346,6 +345,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 *
 	 * @param container
 	 * @param branchUuid
+	 * @param requestedVersion
 	 */
 	void failOnNoReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion);
 
@@ -383,12 +383,14 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Return true if the user needs to change their password on next login.
+	 * 
 	 * @return
 	 */
 	boolean isForcedPasswordChange();
 
 	/**
 	 * Set whether the user needs to change their password on next login.
+	 * 
 	 * @param force
 	 * @return
 	 */

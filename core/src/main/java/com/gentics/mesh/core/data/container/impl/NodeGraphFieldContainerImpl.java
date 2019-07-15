@@ -111,6 +111,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	public static final String EDITOR_UUID_PROPERTY_KEY = "editor";
 
+	// Cached instance of the parent node.
+	private Node parentNodeRef;
+
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(NodeGraphFieldContainerImpl.class, MeshVertexImpl.class);
 	}
@@ -410,6 +413,11 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	 * @return parent node
 	 */
 	public Node getParentNode() {
+		// Return pre-loaded instance
+		if (parentNodeRef != null) {
+			return parentNodeRef;
+		}
+
 		Node parentNode = in(HAS_FIELD_CONTAINER, NodeImpl.class).nextOrNull();
 		if (parentNode == null) {
 			// the field container is not directly linked to its Node, get the
@@ -426,6 +434,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			}
 			throw error(INTERNAL_SERVER_ERROR, "error_field_container_without_node");
 		}
+		parentNodeRef = parentNode;
 		return parentNode;
 	}
 

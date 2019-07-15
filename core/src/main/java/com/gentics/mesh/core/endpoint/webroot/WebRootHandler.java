@@ -1,9 +1,12 @@
 package com.gentics.mesh.core.endpoint.webroot;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.URIUtils.decodeSegment;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.vertx.core.http.HttpHeaders.CACHE_CONTROL;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,10 +17,12 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -29,6 +34,8 @@ import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
@@ -77,8 +84,7 @@ public class WebRootHandler {
 	public void handleGetPath(RoutingContext rc) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		String path = rc.request().path().substring(
-			rc.mountPoint().length()
-		);
+			rc.mountPoint().length());
 		MeshAuthUser requestUser = ac.getUser();
 		db.asyncTx(() -> {
 
@@ -99,7 +105,10 @@ public class WebRootHandler {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
 			}
 
-			requestUser.failOnNoReadPermission(container, branchUuid, ac.getVersioningParameters().getVersion());
+			String version = ac.getVersioningParameters().getVersion();
+			Node node = container.getParentNode();
+			addCacheControl(rc, node, version);
+			requestUser.failOnNoReadPermission(container, branchUuid, version);
 
 			GraphField field = lastSegment.getPathField();
 			if (field instanceof BinaryGraphField) {
@@ -120,7 +129,6 @@ public class WebRootHandler {
 					return Single.just(Optional.empty());
 				}
 			} else {
-				Node node = container.getParentNode();
 				String etag = node.getETag(ac);
 				ac.setEtag(etag, true);
 				if (ac.matches(etag, true)) {
@@ -144,11 +152,48 @@ public class WebRootHandler {
 
 	}
 
+	/**
+	 * Add the cache control headers.
+	 * 
+	 * @param rc
+	 * @param node
+	 * @param version
+	 */
+	private void addCacheControl(RoutingContext rc, Node node, String version) {
+		if (isPublic(node, version)) {
+			rc.response().putHeader(CACHE_CONTROL, "public");
+		} else {
+			rc.response().putHeader(CACHE_CONTROL, "private");
+		}
+
+	}
+
+	/**
+	 * Checks whether the content is readable via anonymous user.
+	 * 
+	 * @param node
+	 * @param version
+	 * @return
+	 */
+	private boolean isPublic(Node node, String version) {
+		Role anonymousRole = MeshInternal.get().boot().anonymousRole();
+		AuthenticationOptions authOptions = Mesh.mesh().getOptions().getAuthenticationOptions();
+		if (anonymousRole != null && authOptions != null && authOptions.isEnableAnonymousAccess()) {
+			if (anonymousRole.hasPermission(READ_PERM, node)) {
+				return true;
+			}
+			boolean requestsPublished = "published".equals(version);
+			if (requestsPublished && anonymousRole.hasPermission(READ_PUBLISHED_PERM, node)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public void handleUpdateCreatePath(RoutingContext rc, HttpMethod method) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		String path = rc.request().path().substring(
-			rc.mountPoint().length()
-		);
+			rc.mountPoint().length());
 		String uuid = db.tx(() -> {
 
 			// Load all nodes for the given path
