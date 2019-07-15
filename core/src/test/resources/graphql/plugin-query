@@ -3,13 +3,13 @@
 		# [$.data.plugins.currentPage=2]
 		currentPage
 
-		# [$.data.plugins.pageCount=101]
+		# [$.data.plugins.pageCount=100]
 		pageCount
 
 		# [$.data.plugins.perPage=1]
 		perPage
 
-		# [$.data.plugins.totalCount=101]
+		# [$.data.plugins.totalCount=100]
 		totalCount
 
 		# [$.data.plugins.hasPreviousPage=true]

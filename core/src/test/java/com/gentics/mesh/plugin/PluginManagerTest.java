@@ -13,12 +13,10 @@ import java.nio.file.Paths;
 
 import org.junit.Test;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -33,8 +31,6 @@ import okhttp3.Request;
 public class PluginManagerTest extends AbstractPluginTest {
 
 	private static final String NAME = "basic";
-
-	private static final String BASIC_PLUGIN_PATH = "target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar";
 
 	@Test
 	public void testStop() {
@@ -55,7 +51,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 	@Test
 	public void testFilesystemDeployment() throws Exception {
 		setPluginBaseDir("abc");
-		pluginManager().deploy(Paths.get(BASIC_PLUGIN_PATH)).blockingGet();
+		pluginManager().deploy(Paths.get(BASIC_PATH)).blockingGet();
 
 		for (int i = 0; i < 2; i++) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
@@ -73,9 +69,9 @@ public class PluginManagerTest extends AbstractPluginTest {
 	public void testStartupDeployment() throws IOException {
 		MeshPluginManager manager = pluginManager();
 		setPluginBaseDir(PLUGIN_DIR);
-		FileUtil.copy(new File(BASIC_PLUGIN_PATH), new File(PLUGIN_DIR, "plugin.jar"));
-		FileUtil.copy(new File(BASIC_PLUGIN_PATH), new File(PLUGIN_DIR, "duplicate-plugin.jar"));
-		FileUtil.copy(new File(BASIC_PLUGIN_PATH), new File(PLUGIN_DIR, "plugin.blub"));
+		FileUtil.copy(new File(BASIC_PATH), new File(PLUGIN_DIR, "plugin.jar"));
+		FileUtil.copy(new File(BASIC_PATH), new File(PLUGIN_DIR, "duplicate-plugin.jar"));
+		FileUtil.copy(new File(BASIC_PATH), new File(PLUGIN_DIR, "plugin.blub"));
 
 		assertEquals(0, manager.getPluginIds().size());
 		manager.deployExistingPluginFiles().blockingGet();

@@ -77,9 +77,9 @@ public class PluginHandler extends AbstractHandler {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			PluginDeploymentRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), PluginDeploymentRequest.class);
-			String name = requestModel.getName();
-			return manager.deploy(name).map(deploymentId -> {
-				log.debug("Deployed plugin with deployment name {" + name + "} - Deployment Uuid {" + deploymentId + "}");
+			String path = requestModel.getPath();
+			return manager.deploy(path).map(deploymentId -> {
+				log.debug("Deployed plugin with deployment name {" + path + "} - Deployment Uuid {" + deploymentId + "}");
 				PluginWrapper pluginWrapper = manager.getPlugin(deploymentId);
 				if (pluginWrapper == null) {
 					log.error("The plugin was deployed but it could not be found by the manager. It seems that the plugin registration failed.");

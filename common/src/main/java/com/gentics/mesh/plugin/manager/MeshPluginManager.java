@@ -33,13 +33,13 @@ public interface MeshPluginManager {
 	Single<String> deploy(Path path);
 
 	/**
-	 * Deploy the plugin file with the given name. The extension will be added automatically.
+	 * Deploy the plugin file with the given path. The path must be relative to the plugin directory.
 	 * 
-	 * @param pluginName
+	 * @param path
 	 * @return
 	 */
-	default Single<String> deploy(String pluginName) {
-		return deploy(getPluginsRoot().resolve(pluginName + ".jar"));
+	default Single<String> deploy(String path) {
+		return deploy(getPluginsRoot().resolve(path));
 	}
 
 	/**

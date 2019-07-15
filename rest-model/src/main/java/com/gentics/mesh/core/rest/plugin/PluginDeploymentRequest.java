@@ -10,29 +10,29 @@ import com.gentics.mesh.core.rest.common.RestModel;
 public class PluginDeploymentRequest implements RestModel {
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Deployment name of the plugin. This can either be a filesystem or maven deployment.")
-	private String name;
+	@JsonPropertyDescription("Deployment path of the plugin which is relative to the plugin directory.")
+	private String path;
 
 	public PluginDeploymentRequest() {
 	}
 
 	/**
-	 * Return the deployment name.
+	 * Return the deployment path.
 	 * 
 	 * @return
 	 */
-	public String getName() {
-		return name;
+	public String getPath() {
+		return path;
 	}
 
 	/**
-	 * Set the deployment name.
+	 * Set the deployment path.
 	 * 
 	 * @param name
 	 * @return Fluent API
 	 */
-	public PluginDeploymentRequest setName(String name) {
-		this.name = name;
+	public PluginDeploymentRequest setPath(String path) {
+		this.path = path;
 		return this;
 	}
 }

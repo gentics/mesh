@@ -32,6 +32,11 @@ public class ClonePlugin extends AbstractPlugin implements RestPlugin {
 		PluginManifest manifest = super.getManifest();
 		manifest.setApiName("clone" + myCount);
 		manifest.setName("Clone Plugin " + myCount);
+		manifest.setAuthor("Johannes Schüth");
+		manifest.setLicense("Apache License 2.0");
+		manifest.setVersion("1.0");
+		manifest.setDescription("A very dummy plugin for tests");
+		manifest.setInception("26-04-2018");
 		return manifest;
 	}
 

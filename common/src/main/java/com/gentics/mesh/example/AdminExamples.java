@@ -58,7 +58,7 @@ public class AdminExamples {
 
 	public PluginDeploymentRequest createPluginDeploymentRequest() {
 		PluginDeploymentRequest request = new PluginDeploymentRequest();
-		request.setName("filesystem:my-plugin.jar");
+		request.setPath("my-plugin.jar");
 		return request;
 	}
 

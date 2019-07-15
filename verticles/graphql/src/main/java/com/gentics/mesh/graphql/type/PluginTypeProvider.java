@@ -10,6 +10,9 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.pf4j.Plugin;
+import org.pf4j.PluginWrapper;
+
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.rest.error.PermissionException;
@@ -21,9 +24,13 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
 public class PluginTypeProvider extends AbstractTypeProvider {
+
+	private static final Logger log = LoggerFactory.getLogger(PluginTypeProvider.class);
 
 	public static final String PLUGIN_TYPE_NAME = "Plugin";
 	public static final String PLUGIN_PAGE_TYPE_NAME = "PluginPage";
@@ -46,7 +53,17 @@ public class PluginTypeProvider extends AbstractTypeProvider {
 				if (uuid == null) {
 					return null;
 				}
-				return manager.getPlugin(uuid);
+				PluginWrapper pluginWrapper = manager.getPlugin(uuid);
+				if (pluginWrapper == null) {
+					return null;
+				}
+				Plugin p = pluginWrapper.getPlugin();
+				if (p instanceof MeshPlugin) {
+					return p;
+				} else {
+					log.warn("The found plugin is not a Gentics Mesh Plugin");
+				}
+				return null;
 			}).build();
 	}
 
