@@ -42,16 +42,16 @@ import java.util.stream.Stream;
  */
 public enum MeshEvent {
 
-	PROJECT_VERSION_PURGE_START("mesh.project.version_purge.start", 
-		ProjectVersionPurgeEventModel.class, 
-		"Emitted once a version purge job starts", 
+	PROJECT_VERSION_PURGE_START("mesh.project.version_purge.start",
+		ProjectVersionPurgeEventModel.class,
+		"Emitted once a version purge job starts",
 		Examples::versionPurgeEvent),
 
-	PROJECT_VERSION_PURGE_FINISHED("mesh.project.version_purge.finished", 
-		ProjectVersionPurgeEventModel.class, 
-		"Emitted once a version purge job finishes successully or failed", 
+	PROJECT_VERSION_PURGE_FINISHED("mesh.project.version_purge.finished",
+		ProjectVersionPurgeEventModel.class,
+		"Emitted once a version purge job finishes successully or failed",
 		Examples::versionPurgeEvent),
-	
+
 	/**
 	 * Schema migration start event.
 	 */
@@ -187,6 +187,13 @@ public enum MeshEvent {
 	CLEAR_PERMISSION_STORE("mesh.clear-permission-store",
 		null,
 		"Event which will clear the permission stores."),
+
+	/**
+	 * Event which is send to update the webroot path stores.
+	 */
+	CLEAR_PATH_STORE("mesh.clear-path-store",
+		null,
+		"Event which will clear the path stores."),
 
 	/* User */
 
@@ -582,7 +589,6 @@ public enum MeshEvent {
 	PLUGIN_UNDEPLOYED("mesh.plugin.undeployed",
 		null,
 		"Emitted once a plugin has been undeployed.");
-
 
 	public final String address;
 	public final Class<? extends MeshEventModel> bodyModel;

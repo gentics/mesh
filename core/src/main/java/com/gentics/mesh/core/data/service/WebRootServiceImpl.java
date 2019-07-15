@@ -23,8 +23,13 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 @Singleton
 public class WebRootServiceImpl implements WebRootService {
+
+	private static final Logger log = LoggerFactory.getLogger(WebRootServiceImpl.class);
 
 	@Inject
 	public Database database;
@@ -36,10 +41,15 @@ public class WebRootServiceImpl implements WebRootService {
 	@Override
 	public Path findByProjectPath(InternalActionContext ac, String path) {
 		Project project = ac.getProject();
-
-		// First try to locate the content via the url path index (niceurl)
 		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 		Branch branch = ac.getBranch();
+
+		Path cachedPath = WebrootPathStore.getPath(project, branch, type, path);
+		if (cachedPath != null) {
+			return cachedPath;
+		}
+
+		// First try to locate the content via the url path index (niceurl)
 
 		// Check whether the path contains the branch path prefix. Return an empty node path in those cases. (e.g. Node was not found)
 		if (!PathPrefixUtil.startsWithPrefix(branch, path)) {
@@ -47,13 +57,16 @@ public class WebRootServiceImpl implements WebRootService {
 			nodePath.setTargetPath(path);
 			nodePath.setInitialStack(new Stack<>());
 			nodePath.setPrefixMismatch(true);
+			WebrootPathStore.store(project, branch, type, path, nodePath);
 			return nodePath;
 		}
 
 		path = PathPrefixUtil.strip(branch, path);
 		NodeGraphFieldContainer containerByWebUrlPath = findByUrlFieldPath(branch.getUuid(), path, type);
 		if (containerByWebUrlPath != null) {
-			return containerByWebUrlPath.getPath(ac);
+			Path resolvedPath = containerByWebUrlPath.getPath(ac);
+			WebrootPathStore.store(project, branch, type, path, resolvedPath);
+			return resolvedPath;
 		}
 
 		// Locating did not yield a result. Lets try the regular segment path info.
@@ -70,6 +83,7 @@ public class WebRootServiceImpl implements WebRootService {
 			nodePath.addSegment(new PathSegment(container, null, null, "/"));
 			stack.push("/");
 			nodePath.setInitialStack(stack);
+			WebrootPathStore.store(project, branch, type, path, nodePath);
 			return nodePath;
 		}
 
@@ -88,7 +102,10 @@ public class WebRootServiceImpl implements WebRootService {
 		}
 
 		// Traverse the graph and buildup the result path while doing so
-		return baseNode.resolvePath(ac.getBranch().getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()), nodePath, stack);
+		Path resolvedPath = baseNode.resolvePath(ac.getBranch().getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()),
+			nodePath, stack);
+		WebrootPathStore.store(project, branch, type, path, nodePath);
+		return resolvedPath;
 	}
 
 	@Override

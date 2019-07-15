@@ -71,21 +71,24 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		try (Tx tx = tx()) {
-			// 2. Update the binary data
-			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
+		// 2. Update the binary data
+		call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 
-			// 3. Try to resolve the path
-			String path = "/News/2015/somefile.dat";
+		// 3. Try to resolve the path
+		String path = "/News/2015/somefile.dat";
 
-			String etag = callETag(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
-			assertNotNull(etag);
+		String etag = callETag(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+			new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
+		assertNotNull(etag);
 
-			// Check whether 304 is returned for correct etag
+		// Check whether 304 is returned for correct etag
+		long start = System.currentTimeMillis();
+		for (int i = 0; i < 10_000; i++) {
 			assertEquals(etag, callETag(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
 				new NodeParametersImpl().setResolveLinks(LinkType.FULL)), etag, false, 304));
-
 		}
+		long stop = System.currentTimeMillis() - start;
+		System.out.println("Took: " + stop);
 
 	}
 
@@ -102,7 +105,8 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		String responseTag = callETag(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")));
+		String responseTag = callETag(
+			() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")));
 
 		try (Tx tx = tx()) {
 			Node node = content("news_2015");
