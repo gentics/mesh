@@ -26,6 +26,8 @@ include::content/docs/variables.adoc-include[]
 [[v0.36.6]]
 == 0.36.6 (TBD)
 
+icon:plus[] REST: The performance of path resolving has been improved.
+
 icon:plus[] REST: The `webroot` endpoint will now set the `Cache-Control` header to `public` if the requested node can be read using the anonymous role. Otherwise the header will be set to `private`. This information is useful if you want to use a Caching Proxy in-between Gentics Mesh and your front-end application.
 
 icon:check[] Core: Performance of loading nodes has been improved.
