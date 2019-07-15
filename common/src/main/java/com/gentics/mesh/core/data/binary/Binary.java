@@ -1,8 +1,11 @@
 package com.gentics.mesh.core.data.binary;
 
+import java.io.InputStream;
+
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.node.field.image.Point;
+import com.gentics.mesh.graphdb.spi.Supplier;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 
 import io.reactivex.Flowable;
@@ -27,6 +30,13 @@ public interface Binary extends MeshVertex {
 	 * @return
 	 */
 	Flowable<Buffer> getStream();
+
+	/**
+	 * Opens a blocking {@link InputStream} to the binary file. This should only be used for some other blocking APIs (i.e. ImageIO)
+	 *
+	 * @return
+	 */
+	Supplier<InputStream> openBlockingStream();
 
 	/**
 	 * Return the data as base 64 encoded string in the same thread blockingly.

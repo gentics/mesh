@@ -19,12 +19,7 @@ public class MimeTypeUtils {
 	 * @return An empty Optional when the filename is <code>null</code> or no MIME type could be determined, or an Optional containing the MIME type otherwise.
 	 */
 	public static Optional<String> getMimeTypeForFilename(String filename) {
-		if (filename == null) {
-			return Optional.empty();
-		}
-
-		String mimeType = MimeMapping.getMimeTypeForFilename(filename);
-
-		return mimeType == null ? Optional.empty() : Optional.of(mimeType);
+		return Optional.ofNullable(filename)
+			.map(MimeMapping::getMimeTypeForFilename);
 	}
 }

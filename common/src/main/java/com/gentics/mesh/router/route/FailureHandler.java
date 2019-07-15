@@ -1,7 +1,10 @@
 package com.gentics.mesh.router.route;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import java.nio.file.NoSuchFileException;
 import java.util.MissingResourceException;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -102,6 +105,10 @@ public class FailureHandler implements Handler<RoutingContext> {
 				rc.response().setStatusCode(304);
 				rc.response().end();
 				return;
+			}
+
+			if (failure instanceof NoSuchFileException) {
+				failure = error(NOT_FOUND, "node_error_binary_data_not_found");
 			}
 
 			int code = getResponseStatusCode(failure, rc.statusCode());

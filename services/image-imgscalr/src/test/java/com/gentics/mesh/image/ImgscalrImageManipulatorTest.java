@@ -1,6 +1,7 @@
 package com.gentics.mesh.image;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.image.ImageTestUtil.createMockedBinary;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -12,6 +13,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -60,16 +63,16 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 	@Test
 	public void testResize() throws Exception {
-		checkImages((imageName, width, height, color, refImage, bs) -> {
+		checkImages((imageName, width, height, color, refImage, path, bs) -> {
 			log.debug("Handling " + imageName);
 
-			Single<Buffer> obs = manipulator.handleResize(bs, imageName, new ImageManipulationParametersImpl().setWidth(150).setHeight(180)).map(
-				PropReadFileStream::getFile).map(RxUtil::toBufferFlow).flatMap(RxUtil::readEntireData);
+
+			Single<byte[]> obs = manipulator.handleResize(createMockedBinary(path), new ImageManipulationParametersImpl().setWidth(150).setHeight(180))
+				.map(file -> Files.readAllBytes(Paths.get(file)));
 			CountDownLatch latch = new CountDownLatch(1);
-			obs.subscribe(buffer -> {
+			obs.subscribe(data -> {
 				try {
-					assertNotNull(buffer);
-					byte[] data = buffer.getBytes();
+					assertNotNull(data);
 					try (ByteArrayInputStream bis = new ByteArrayInputStream(data)) {
 						BufferedImage resizedImage = ImageIO.read(bis);
 						assertThat(resizedImage).as(imageName).hasSize(150, 180).matches(refImage);
@@ -93,7 +96,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 	@Test
 	public void testExtractImageInfo() throws IOException, JSONException {
-		checkImages((imageName, width, height, color, refImage, stream) -> {
+		checkImages((imageName, width, height, color, refImage, origPath, stream) -> {
 			String path = RxUtil.readEntireData(stream).map(data -> {
 				File file = new File("/tmp/" + imageName + "reference.jpg");
 				FileUtils.writeByteArrayToFile(file, data.getBytes());
@@ -133,7 +136,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		return "/references/" + name + ".reference" + ext;
 	}
 
-	private void checkImages(ImageAction<String, Integer, Integer, String, BufferedImage, Flowable<Buffer>> action) throws JSONException,
+	private void checkImages(ImageAction action) throws JSONException,
 		IOException {
 		JSONObject json = new JSONObject(IOUtils.toString(getClass().getResourceAsStream("/pictures/images.json"), StandardCharsets.UTF_8));
 		JSONArray array = json.getJSONArray("images");
@@ -158,7 +161,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 			}
 			BufferedImage refImage = ImageIO.read(insRef);
 			insRef.close();
-			action.call(imageName, width, height, color, refImage, bs);
+			action.call(imageName, width, height, color, refImage, path, bs);
 		}
 	}
 

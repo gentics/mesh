@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.binary.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
+import java.io.InputStream;
 import java.util.Base64;
 
 import com.gentics.madl.index.IndexHandler;
@@ -13,7 +14,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.Supplier;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.storage.BinaryStorage;
@@ -44,6 +45,13 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 	public Flowable<Buffer> getStream() {
 		BinaryStorage storage = MeshInternal.get().binaryStorage();
 		return storage.read(getUuid());
+	}
+
+	@Override
+	public Supplier<InputStream> openBlockingStream() {
+		BinaryStorage storage = MeshInternal.get().binaryStorage();
+		String uuid = getUuid();
+		return () -> storage.openBlockingStream(uuid);
 	}
 
 	@Override

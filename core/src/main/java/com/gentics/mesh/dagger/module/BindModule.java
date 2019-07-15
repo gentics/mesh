@@ -8,6 +8,8 @@ import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.RangeRequestHandler;
+import com.gentics.mesh.handler.impl.RangeRequestHandlerImpl;
 import com.gentics.mesh.metric.DropwizardMetricsService;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.search.index.common.DropIndexHandler;
@@ -41,4 +43,7 @@ public abstract class BindModule {
 	
 	@Binds
 	abstract Database bindDatabase(OrientDBDatabase e);
+
+	@Binds
+	abstract RangeRequestHandler bindRangeRequestHandler(RangeRequestHandlerImpl e);
 }

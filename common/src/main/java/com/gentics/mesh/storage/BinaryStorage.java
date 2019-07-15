@@ -1,5 +1,8 @@
 package com.gentics.mesh.storage;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -70,6 +73,15 @@ public interface BinaryStorage {
 	 * @return
 	 */
 	Flowable<Buffer> read(String uuid);
+
+	/**
+	 * Opens a blocking {@link InputStream} to the binary file. This should only be used for some other blocking APIs (i.e. ImageIO)
+	 *
+	 * @param uuid
+	 * @return
+	 * @throws IOException
+	 */
+	InputStream openBlockingStream(String uuid) throws IOException;
 
 	/**
 	 * Read the entire binary data which is identified by the given binary uuid in the same thread blockingly.

@@ -6,6 +6,7 @@ import static org.apache.commons.io.FilenameUtils.removeExtension;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -19,6 +20,7 @@ import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.file.FileSystem;
 
 /**
  * Abstract image manipulator implementation.
@@ -37,7 +39,8 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	}
 
 	@Override
-	public File getCacheFile(String sha512sum, ImageManipulationParameters parameters) {
+	public Single<CacheFileInfo> getCacheFilePath(String sha512sum, ImageManipulationParameters parameters) {
+		FileSystem fs = vertx.fileSystem();
 
 		String[] parts = sha512sum.split("(?<=\\G.{8})");
 		StringBuffer buffer = new StringBuffer();
@@ -46,44 +49,42 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 			buffer.append(part + File.separator);
 		}
 
-		File baseFolder = new File(options.getImageCacheDirectory(), buffer.toString());
-		if (!baseFolder.exists()) {
-			baseFolder.mkdirs();
-		}
-
+		String baseFolder = Paths.get(options.getImageCacheDirectory(), buffer.toString()).toString();
 		String baseName = "image-" + parameters.getCacheKey();
-		File[] foundFiles = baseFolder.listFiles((dir, name) -> removeExtension(name).equals(baseName));
-		int numFiles = foundFiles.length;
 
-		if (numFiles == 0) {
-			File ret = new File(baseFolder, baseName);
-
-			if (log.isDebugEnabled()) {
-				log.debug("No cache file found for base path {" + ret.getAbsolutePath() + "}");
+		return fs.rxMkdirs(baseFolder)
+		// Vert.x uses Files.createDirectories internally, which will not fail when the folder already exists.
+		// See https://github.com/eclipse-vertx/vert.x/issues/3029
+		.andThen(fs.rxReadDir(baseFolder, baseName + "(\\..*)?"))
+		.map(foundFiles -> {
+			int numFiles = foundFiles.size();
+			if (numFiles == 0) {
+				String retPath = Paths.get(baseFolder, baseName).toString();
+				if (log.isDebugEnabled()) {
+					log.debug("No cache file found for base path {" + retPath + "}");
+				}
+				return new CacheFileInfo(retPath, false);
 			}
 
-			return ret;
-		}
+			if (numFiles > 1) {
+				String indent = System.lineSeparator() + "    - ";
 
-		if (numFiles > 1) {
-			String indent = System.lineSeparator() + "    - ";
+				log.warn(
+					"More than one cache file found:"
+						+ System.lineSeparator() + "  hash: " + sha512sum
+						+ System.lineSeparator() + "  key: " + parameters.getCacheKey()
+						+ System.lineSeparator() + "  files:"
+						+ indent
+						+ String.join(indent, foundFiles)
+						+ System.lineSeparator()
+						+ "The cache directory {" + options.getImageCacheDirectory() + "} should be cleared");
+			}
 
-			log.warn(
-				"More than one cache file found:"
-					+ System.lineSeparator() + "  hash: " + sha512sum
-					+ System.lineSeparator() + "  key: " + parameters.getCacheKey()
-					+ System.lineSeparator() + "  files:"
-					+ indent
-					+ Arrays.stream(foundFiles).map(File::getName).collect(Collectors.joining(indent))
-					+ System.lineSeparator()
-					+ "The cache directory {" + options.getImageCacheDirectory() + "} should be cleared");
-		}
-
-		if (log.isDebugEnabled()) {
-			log.debug("Using cache file {" + foundFiles[0] + "}");
-		}
-
-		return foundFiles[0];
+			if (log.isDebugEnabled()) {
+				log.debug("Using cache file {" + foundFiles.size() + "}");
+			}
+			return new CacheFileInfo(foundFiles.get(0), true);
+		});
 	}
 
 	@Override

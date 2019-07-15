@@ -50,6 +50,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.file.FileProps;
 import io.vertx.reactivex.core.file.FileSystem;
 
 @Singleton
@@ -121,7 +122,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 		}
 		UploadContext context = new UploadContext();
 		// Lookup the binary and set the focal point parameters
-		String sourceBinaryUuid = db.tx(() -> {
+		Binary binaryField = db.tx(() -> {
 			NodeGraphFieldContainer container = loadTargetedContent(node, languageTag, fieldName);
 			BinaryGraphField field = loadBinaryField(container, fieldName);
 			// Use the focal point which is stored along with the binary field if no custom point was included in the query parameters.
@@ -130,25 +131,26 @@ public class BinaryTransformHandler extends AbstractHandler {
 			if (!parameters.hasFocalPoint() && focalPoint != null) {
 				parameters.setFocalPoint(focalPoint);
 			}
-			return field.getBinary().getUuid();
+			return field.getBinary();
 		});
 
 		parameters.validate();
 
 		// Read and resize the original image and store the result in the filesystem
-		Flowable<Buffer> stream = binaryStorage.read(sourceBinaryUuid);
-		Single<TransformationResult> obsTransformation = imageManipulator.handleResize(stream, sourceBinaryUuid, parameters).flatMap(file -> {
-			Flowable<Buffer> obs = RxUtil.toBufferFlow(file.getFile());
-
+		Single<TransformationResult> obsTransformation = db.tx(() -> imageManipulator.handleResize(binaryField, parameters))
+		.flatMap(file -> {
 			// Hash the resized image data and store it using the computed fieldUuid + hash
-			Single<String> hash = FileUtils.hash(obs);
+			Flowable<Buffer> stream = fs.rxOpen(file, new OpenOptions()).flatMapPublisher(RxUtil::toBufferFlow);
+			Single<String> hash = FileUtils.hash(stream);
 
 			// The image was stored and hashed. Now we need to load the stored file again and check the image properties
-			Single<ImageInfo> info = imageManipulator.readImageInfo(file.getPath());
+			Single<ImageInfo> info = imageManipulator.readImageInfo(file);
 
-			return Single.zip(hash, info, (hashV, infoV) -> {
+			Single<FileProps> fileProps = fs.rxProps(file);
+
+			return Single.zip(hash, info, fileProps, (hashV, infoV, props) -> {
 				// Return a POJO which hold all information that is needed to update the field
-				TransformationResult result = new TransformationResult(hashV, file.getProps().size(), infoV, file.getPath());
+				TransformationResult result = new TransformationResult(hashV, props.size(), infoV, file);
 				return Single.just(result);
 			}).flatMap(e -> e);
 		});

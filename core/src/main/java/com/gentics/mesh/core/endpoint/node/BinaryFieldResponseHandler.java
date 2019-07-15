@@ -1,8 +1,7 @@
 package com.gentics.mesh.core.endpoint.node;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.http.HttpConstants.ETAG;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static com.gentics.mesh.util.MimeTypeUtils.DEFAULT_BINARY_MIME_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_MODIFIED;
 
 import javax.inject.Inject;
@@ -15,20 +14,18 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.handler.RangeRequestHandler;
-import com.gentics.mesh.handler.impl.RangeRequestHandlerImpl;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.EncodeUtil;
-import com.gentics.mesh.util.RxUtil;
+import com.gentics.mesh.util.MimeTypeUtils;
 
-import io.reactivex.Flowable;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.reactivex.core.Vertx;
 
 /**
  * Handler which will accept {@link BinaryGraphField} elements and return the binary data using the given context.
@@ -36,14 +33,20 @@ import io.vertx.ext.web.RoutingContext;
 @Singleton
 public class BinaryFieldResponseHandler {
 
-	private ImageManipulator imageManipulator;
+	private final ImageManipulator imageManipulator;
 
-	private BinaryStorage storage;
+	private final BinaryStorage storage;
+
+	private final Vertx rxVertx;
+
+	private final RangeRequestHandler rangeRequestHandler;
 
 	@Inject
-	public BinaryFieldResponseHandler(ImageManipulator imageManipulator, BinaryStorage storage) {
+	public BinaryFieldResponseHandler(ImageManipulator imageManipulator, BinaryStorage storage, Vertx rxVertx, RangeRequestHandler rangeRequestHandler) {
 		this.imageManipulator = imageManipulator;
 		this.storage = storage;
+		this.rxVertx = rxVertx;
+		this.rangeRequestHandler = rangeRequestHandler;
 	}
 
 	/**
@@ -54,20 +57,15 @@ public class BinaryFieldResponseHandler {
 	 */
 	public void handle(RoutingContext rc, BinaryGraphField binaryField) {
 		rc.response().putHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
-		if (!storage.exists(binaryField)) {
-			rc.fail(error(NOT_FOUND, "node_error_binary_data_not_found"));
+		if (checkETag(rc, binaryField)) {
 			return;
+		}
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+		ImageManipulationParameters imageParams = ac.getImageParameters();
+		if (binaryField.hasProcessableImage() && imageParams.hasResizeParams()) {
+			resizeAndRespond(rc, binaryField, imageParams);
 		} else {
-			if (checkETag(rc, binaryField)) {
-				return;
-			}
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			ImageManipulationParameters imageParams = ac.getImageParameters();
-			if (binaryField.hasProcessableImage() && imageParams.hasResizeParams()) {
-				resizeAndRespond(rc, binaryField, imageParams);
-			} else {
-				respond(rc, binaryField);
-			}
+			respond(rc, binaryField);
 		}
 	}
 
@@ -110,8 +108,7 @@ public class BinaryFieldResponseHandler {
 
 		String localPath = storage.getLocalPath(binary.getUuid());
 		if (localPath != null) {
-			RangeRequestHandler handler = new RangeRequestHandlerImpl();
-			handler.handle(rc, localPath, contentType);
+			rangeRequestHandler.handle(rc, localPath, contentType);
 		} else {
 			String contentLength = String.valueOf(binary.getSize());
 			if (contentType != null) {
@@ -126,9 +123,6 @@ public class BinaryFieldResponseHandler {
 
 	private void resizeAndRespond(RoutingContext rc, BinaryGraphField binaryField, ImageManipulationParameters imageParams) {
 		HttpServerResponse response = rc.response();
-		Binary binary = binaryField.getBinary();
-		String sha512sum = binary.getSHA512Sum();
-		String fileName = binaryField.getFileName();
 		// We can maybe enhance the parameters using stored parameters.
 		if (!imageParams.hasFocalPoint()) {
 			FocalPoint fp = binaryField.getImageFocalPoint();
@@ -136,13 +130,12 @@ public class BinaryFieldResponseHandler {
 				imageParams.setFocalPoint(fp);
 			}
 		}
-		// Resize the image if needed
-		Flowable<Buffer> data = binary.getStream();
-		Flowable<Buffer> resizedData = imageManipulator.handleResize(data, sha512sum, imageParams)
-			.toFlowable()
-			.map(fileWithProps -> {
-				response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileWithProps.getProps().size()));
-				response.putHeader(HttpHeaders.CONTENT_TYPE, fileWithProps.getMimeType());
+		String fileName = binaryField.getFileName();
+		imageManipulator.handleResize(binaryField.getBinary(), imageParams)
+			.flatMap(cachedFilePath -> rxVertx.fileSystem().rxProps(cachedFilePath)
+			.doOnSuccess(props -> {
+				response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(props.size()));
+				response.putHeader(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.getMimeTypeForFilename(cachedFilePath).orElse(DEFAULT_BINARY_MIME_TYPE));
 				response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
 				response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
 				// Set to IDENTITY to avoid gzip compression
@@ -150,10 +143,9 @@ public class BinaryFieldResponseHandler {
 
 				addContentDispositionHeader(response, fileName, "inline");
 
-				return fileWithProps.getFile();
-			}).flatMap(RxUtil::toBufferFlow);
-		resizedData.subscribe(response::write, rc::fail, response::end);
-
+				response.sendFile(cachedFilePath);
+			}))
+			.subscribe(ignore -> {}, rc::fail);
 	}
 
 	private void addContentDispositionHeader(HttpServerResponse response, String fileName, String type) {
