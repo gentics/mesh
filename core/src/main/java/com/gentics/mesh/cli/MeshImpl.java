@@ -9,9 +9,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -24,7 +26,6 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
-import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.util.VersionUtil;
 
 import io.vertx.core.MultiMap;
@@ -409,6 +410,11 @@ public class MeshImpl implements Mesh {
 	@Override
 	public void deployPlugin(Class<?> clazz, String pluginId) {
 		MeshInternal.get().pluginManager().deploy(clazz, pluginId).blockingGet();
+	}
+
+	@Override
+	public Map<String, String> pluginIds() {
+		return MeshInternal.get().pluginManager().pluginIdsMap();
 	}
 
 }

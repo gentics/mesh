@@ -1,9 +1,10 @@
 
 package com.gentics.mesh;
 
+import java.util.Map;
+
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.plugin.PluginManifest;
 
 import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
@@ -164,5 +165,12 @@ public interface Mesh {
 	 * @param pluginId
 	 */
 	void deployPlugin(Class<?> clazz, String pluginId);
+
+	/**
+	 * Return a map of deployed plugins with name and id.
+	 * 
+	 * @return
+	 */
+	Map<String, String> pluginIds();
 
 }

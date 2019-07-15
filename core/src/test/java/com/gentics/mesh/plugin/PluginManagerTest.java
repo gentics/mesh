@@ -10,12 +10,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
@@ -26,7 +21,6 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
-import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.twelvemonkeys.io.FileUtil;
 
@@ -36,37 +30,11 @@ import okhttp3.HttpUrl;
 import okhttp3.Request;
 
 @MeshTestSetting(testSize = PROJECT, startServer = true, inMemoryDB = true)
-public class PluginManagerTest extends AbstractMeshTest {
+public class PluginManagerTest extends AbstractPluginTest {
 
 	private static final String NAME = "basic";
 
 	private static final String BASIC_PLUGIN_PATH = "target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar";
-
-	public static final String PLUGIN_DIR = "target/plugins" + System.currentTimeMillis();
-
-	@Before
-	public void clearDeployments() throws IOException {
-		File pluginsFolder = new File("plugins");
-		if (pluginsFolder.exists()) {
-			FileUtils.forceDelete(pluginsFolder);
-		}
-
-		MeshPluginManager manager = pluginManager();
-
-		// Copy the uuids to avoid concurrency issues
-		Set<String> uuids = new HashSet<>(manager.getPluginsMap().keySet());
-		for (String uuid : uuids) {
-			manager.undeploy(uuid).blockingAwait();
-		}
-	}
-
-	@AfterClass
-	public static void cleanup() throws IOException {
-		File dir = new File(PLUGIN_DIR);
-		if (dir.exists()) {
-			FileUtils.forceDelete(dir);
-		}
-	}
 
 	@Test
 	public void testStop() {
@@ -79,7 +47,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 
 		assertEquals(100, manager.getPluginIds().size());
 		manager.stop().blockingAwait();
-		manager.unload();
+		manager.unloadPlugins();
 		assertEquals(0, manager.getPluginIds().size());
 		assertEquals("Not all deployed verticles have been undeployed.", before, manager.getPluginIds().size());
 	}
@@ -109,8 +77,9 @@ public class PluginManagerTest extends AbstractMeshTest {
 		FileUtil.copy(new File(BASIC_PLUGIN_PATH), new File(PLUGIN_DIR, "duplicate-plugin.jar"));
 		FileUtil.copy(new File(BASIC_PLUGIN_PATH), new File(PLUGIN_DIR, "plugin.blub"));
 
-		manager.deployExistingPluginFiles().blockingGet();
 		assertEquals(0, manager.getPluginIds().size());
+		manager.deployExistingPluginFiles().blockingGet();
+		assertEquals(1, manager.getPluginIds().size());
 		manager.deployExistingPluginFiles().blockingAwait();
 		manager.deployExistingPluginFiles().blockingAwait();
 		manager.deployExistingPluginFiles().blockingAwait();
@@ -183,7 +152,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 	@Test
 	public void testJavaDeployment() throws IOException {
 		MeshPluginManager manager = pluginManager();
-		manager.deploy(DummyPlugin.class, "dummy").blockingGet();
+		String pluginId = manager.deploy(DummyPlugin.class, "dummy").blockingGet();
 		assertEquals(1, manager.getPluginIds().size());
 
 		ProjectCreateRequest request = new ProjectCreateRequest();
@@ -193,7 +162,12 @@ public class PluginManagerTest extends AbstractMeshTest {
 
 		String apiName = DummyPlugin.API_NAME;
 		PluginManifest manifest = JsonUtil.readValue(httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + apiName + "/manifest"), PluginManifest.class);
-		assertEquals("Johannes Schüth", manifest.getAuthor());
+		assertEquals("", manifest.getAuthor());
+		assertEquals(apiName, manifest.getApiName());
+
+		JsonObject idInfo = new JsonObject(httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + apiName + "/id"));
+		String id = idInfo.getString("id");
+		assertEquals("Invalid id", pluginId, id);
 
 		assertEquals("world", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + apiName + "/hello"));
 		assertEquals("project", httpGetNow(CURRENT_API_BASE_PATH + "/test/plugins/" + apiName + "/hello"));
@@ -214,11 +188,4 @@ public class PluginManagerTest extends AbstractMeshTest {
 		assertEquals(1, manager.getPluginIds().size());
 	}
 
-	private void setPluginBaseDir(String baseDir) {
-		File pluginDir = new File(baseDir);
-		pluginDir.mkdirs();
-		MeshOptions options = Mesh.mesh().getOptions();
-		options.setPluginDirectory(baseDir);
-		pluginManager().init(options);
-	}
 }

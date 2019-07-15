@@ -34,6 +34,7 @@ public interface MeshPluginManager {
 
 	/**
 	 * Deploy the plugin file with the given name. The extension will be added automatically.
+	 * 
 	 * @param pluginName
 	 * @return
 	 */
@@ -86,12 +87,28 @@ public interface MeshPluginManager {
 	 */
 	Single<String> deploy(Class<?> clazz, String pluginId);
 
-	void unload();
+	/**
+	 * Unloads all currently loaded plugins.
+	 */
+	void unloadPlugins();
 
+	/**
+	 * Return the pluginIds of all loaded plugins.
+	 * 
+	 * @return
+	 */
 	Set<String> getPluginIds();
 
-	PluginWrapper getPlugin(String uuid);
+	/**
+	 * Fetch the plugin using the given id.
+	 * 
+	 * @param pluginId
+	 * @return
+	 */
+	PluginWrapper getPlugin(String pluginId);
 
 	Path getPluginsRoot();
+
+	Map<String, String> pluginIdsMap();
 
 }

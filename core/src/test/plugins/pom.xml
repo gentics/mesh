@@ -13,9 +13,10 @@
 	</properties>
 
 	<modules>
-		<module>static</module>
 		<module>basic</module>
 		<module>basic2</module>
+		<module>non-mesh</module>
+		<module>failing</module>
 	</modules>
 
 	<repositories>

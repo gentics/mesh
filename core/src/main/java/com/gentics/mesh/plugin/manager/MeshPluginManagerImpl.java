@@ -234,11 +234,12 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 	public Completable stop() {
 		return Completable.fromRunnable(() -> {
 			stopPlugins();
+			unloadPlugins();
 		});
 	}
 
 	@Override
-	public void unload() {
+	public void unloadPlugins() {
 		for (PluginWrapper plugin : getPlugins()) {
 			undeploy(plugin.getPluginId());
 			unloadPlugin(plugin.getPluginId());
@@ -334,6 +335,13 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 	@Override
 	public Set<String> getPluginIds() {
 		return super.getPlugins().stream().map(e -> e.getPluginId()).collect(Collectors.toSet());
+	}
+
+	@Override
+	public Map<String, String> pluginIdsMap() {
+		return getPluginsMap().entrySet()
+			.stream()
+			.collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getName()));
 	}
 
 }

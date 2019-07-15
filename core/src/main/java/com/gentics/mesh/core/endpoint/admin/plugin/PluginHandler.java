@@ -67,8 +67,7 @@ public class PluginHandler extends AbstractHandler {
 				PluginResponse response = ((MeshPlugin) plugin).toResponse();
 				return Single.just(response);
 			}
-			// TODO i18n
-			throw error(INTERNAL_SERVER_ERROR, "Found plugin wrong type");
+			throw error(INTERNAL_SERVER_ERROR, "admin_plugin_error_wrong_type");
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 	}
 
@@ -91,8 +90,7 @@ public class PluginHandler extends AbstractHandler {
 					PluginResponse response = ((MeshPlugin) plugin).toResponse();
 					return response;
 				}
-				// TODO i18n
-				throw error(INTERNAL_SERVER_ERROR, "Found plugin wrong type");
+				throw error(INTERNAL_SERVER_ERROR, "admin_plugin_error_wrong_type");
 			});
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 	}

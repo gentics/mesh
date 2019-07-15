@@ -33,26 +33,20 @@ public class PluginConfigTest {
 
 	@Before
 	public void cleanConfigFiles() {
-		PluginWrapper wrapper = mock(PluginWrapper.class);
-		PluginEnvironment env = mock(PluginEnvironment.class);
-		DummyPlugin plugin = new DummyPlugin(wrapper, env);
+		DummyPlugin plugin = mockPlugin();
 		plugin.getConfigFile().delete();
 		plugin.getLocalConfigFile().delete();
 	}
 
 	@Test
 	public void testMissingConfig() throws Exception {
-		PluginWrapper wrapper = mock(PluginWrapper.class);
-		PluginEnvironment env = mock(PluginEnvironment.class);
-		DummyPlugin plugin = new DummyPlugin(wrapper, env);
+		DummyPlugin plugin = mockPlugin();
 		assertNull(plugin.readConfig(DummyPluginConfig.class));
 	}
 
 	@Test
 	public void testWriteConfig() throws Exception {
-		PluginWrapper wrapper = mock(PluginWrapper.class);
-		PluginEnvironment env = mock(PluginEnvironment.class);
-		DummyPlugin plugin = new DummyPlugin(wrapper, env);
+		DummyPlugin plugin = mockPlugin();
 		DummyPluginConfig config = new DummyPluginConfig();
 		config.setName("test");
 
@@ -65,11 +59,7 @@ public class PluginConfigTest {
 
 	@Test
 	public void testReadConfigOverride() throws FileNotFoundException, IOException {
-		PluginWrapper wrapper = mock(PluginWrapper.class);
-		when(wrapper.getDescriptor()).thenReturn(new MeshPluginDescriptorImpl());
-		PluginEnvironment env = mock(PluginEnvironment.class);
-		DummyPlugin plugin = new DummyPlugin(wrapper, env);
-
+		DummyPlugin plugin = mockPlugin();
 		DummyPluginConfig config = new DummyPluginConfig();
 		config.setName("local");
 
@@ -86,5 +76,18 @@ public class PluginConfigTest {
 		config = plugin.readConfig(DummyPluginConfig.class);
 		assertEquals("local", config.getName());
 
+	}
+
+	private DummyPlugin mockPlugin() {
+		PluginWrapper wrapper = mock(PluginWrapper.class);
+		MeshPluginDescriptorImpl descriptor = mock(MeshPluginDescriptorImpl.class);
+		when(descriptor.getName()).thenReturn("dummy");
+		PluginManifest manifest = new PluginManifest();
+		manifest.setName("dummy");
+		when(descriptor.toPluginManifest()).thenReturn(manifest);
+		when(wrapper.getDescriptor()).thenReturn(descriptor);
+		PluginEnvironment env = mock(PluginEnvironment.class);
+		DummyPlugin plugin = new DummyPlugin(wrapper, env);
+		return plugin;
 	}
 }

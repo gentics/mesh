@@ -5,6 +5,7 @@ import org.pf4j.PluginWrapper;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 
 /**
@@ -33,6 +34,10 @@ public class DummyPlugin extends AbstractPlugin implements RestPlugin {
 
 		globalRouter.route("/manifest").handler(rc -> {
 			rc.response().end(JsonUtil.toJson(getManifest()));
+		});
+
+		globalRouter.route("/id").handler(rc -> {
+			rc.response().end(new JsonObject().put("id", id()).encodePrettily());
 		});
 	}
 

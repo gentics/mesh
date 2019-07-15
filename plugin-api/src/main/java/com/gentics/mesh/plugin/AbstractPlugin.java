@@ -64,7 +64,11 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 	public PluginManifest getManifest() {
 		PluginDescriptor descriptor = getWrapper().getDescriptor();
 		if (descriptor instanceof MeshPluginDescriptor) {
-			return ((MeshPluginDescriptor) descriptor).toPluginManifest();
+			PluginManifest manifest = ((MeshPluginDescriptor) descriptor).toPluginManifest();
+			if (this instanceof RestPlugin) {
+				manifest.setApiName(((RestPlugin) this).apiName());
+			}
+			return manifest;
 		}
 		throw new RuntimeException(
 			"The found plugin descriptor does not contain Gentics Mesh information. Found {" + descriptor + "}");

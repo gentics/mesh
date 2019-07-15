@@ -14,50 +14,35 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.plugin.AbstractPluginTest;
 import com.gentics.mesh.plugin.ClonePlugin;
 import com.gentics.mesh.plugin.ManifestInjectorPlugin;
-import com.gentics.mesh.plugin.NonMeshPluginVerticle;
+import com.gentics.mesh.plugin.NonMeshPlugin;
 import com.gentics.mesh.plugin.PluginManifest;
-import com.gentics.mesh.plugin.manager.MeshPluginManager;
-import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.reactivex.core.Vertx;
 
 @MeshTestSetting(testSize = PROJECT, startServer = true, inMemoryDB = true)
-public class AdminPluginEndpointTest extends AbstractMeshTest {
+public class AdminPluginEndpointTest extends AbstractPluginTest {
 
 	private static final String API_NAME = "basic";
 
-	private static final String DEPLOYMENT_NAME = "filesystem:target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar";
+	private static final String DEPLOYMENT_NAME = "target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar";
 
-	private static final String DEPLOYMENT2_NAME = "filesystem:target/test-plugins/basic2/target/basic2-plugin-0.0.1-SNAPSHOT.jar";
-
-	@Before
-	public void clearDeployments() {
-		MeshPluginManager manager = pluginManager();
-		// Copy the uuids to avoid concurrency issues
-		Set<String> uuids = new HashSet<>(manager.getPluginsMap().keySet());
-		for (String uuid : uuids) {
-			manager.undeploy(uuid).blockingAwait();
-		}
-
-		setPluginBaseDir(".");
-	}
+	private static final String DEPLOYMENT2_NAME = "target/test-plugins/basic2/target/basic2-plugin-0.0.1-SNAPSHOT.jar";
 
 	@Test
 	public void testDeployPluginMissingPermission() {
@@ -80,11 +65,12 @@ public class AdminPluginEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testNonPluginDeployment() {
 		grantAdminRole();
-		String name = NonMeshPluginVerticle.class.getCanonicalName();
+		String name = NonMeshPlugin.class.getCanonicalName();
 		System.out.println(name);
-		int before = vertx().deploymentIDs().size();
+		int before = Mesh.mesh().pluginIds().size();
 		call(() -> client().deployPlugin(new PluginDeploymentRequest().setName(name)), BAD_REQUEST, "admin_plugin_error_plugin_did_not_register");
-		assertEquals("The verticle should not stay deployed.", before, vertx().deploymentIDs().size());
+		int after = Mesh.mesh().pluginIds().size();
+		assertEquals("The verticle should not stay deployed.", before, after);
 	}
 
 	@Test
@@ -256,14 +242,6 @@ public class AdminPluginEndpointTest extends AbstractMeshTest {
 			"admin_plugin_error_plugin_already_deployed", "Basic Plugin", "basic");
 		assertEquals("No additional plugins should have been deployed", before, Vertx.vertx().deploymentIDs().size());
 		assertEquals(1, pluginManager().getPluginIds().size());
-	}
-
-	private void setPluginBaseDir(String baseDir) {
-		File pluginDir = new File(baseDir);
-		pluginDir.mkdirs();
-		MeshOptions options = new MeshOptions();
-		options.setPluginDirectory(baseDir);
-		pluginManager().init(options);
 	}
 
 }
