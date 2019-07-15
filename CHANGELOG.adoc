@@ -30,7 +30,7 @@ icon:plus[] REST: The `webroot` endpoint will now set the `Cache-Control` header
 
 icon:check[] Core: Performance of loading nodes has been improved.
 
-icon:check[] Core: Request logging now uses the link:https://vertx.io/docs/apidocs/io/vertx/ext/web/handler/LoggerFormat.html#SHORT[short format], which also shows how long the response took to complete.
+icon:check[] Core: Request logging now uses the link:https://vertx.io/docs/apidocs/io/vertx/ext/web/handler/LoggerFormat.html#SHORT[short format], which also shows how much time the the response took to complete.
 
 [[v0.36.5]]
 == 0.36.5 (10.07.2019)
