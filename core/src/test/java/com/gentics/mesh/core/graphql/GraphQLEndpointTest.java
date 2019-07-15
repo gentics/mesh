@@ -88,6 +88,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static java.util.Objects.hash;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(testSize = TestSize.FULL, startServer = true)
@@ -148,7 +149,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Arrays.asList("nodes-query-by-uuids", true, "draft"),
 			Arrays.asList("node-breadcrumb-query", true, "draft"),
 			Arrays.asList("node-language-fallback-query", true, "draft"),
-			Arrays.asList("node-languages-query", true, "draft"),
+			Arrays.asList("node-languages-query", true, "draft", (Consumer<JsonObject>) GraphQLEndpointTest::checkNodeLanguageContent),
 			Arrays.asList("node-not-found-webroot-query", true, "draft"),
 			Arrays.asList("node-webroot-query", true, "draft"),
 			Arrays.asList("node-webroot-urlfield-query", true, "draft"),
@@ -524,7 +525,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	 * Special assertion for the <code>node/link/children</code> test query.
 	 *
 	 * <p>
-	 * This asserts that the children of certain elements eacht contain two german and to english nodes respectively,
+	 * This asserts that the children of certain elements each contain two german and to english nodes respectively,
 	 * and that the language of the loaded node is german.
 	 * </p>
 	 *
@@ -561,5 +562,22 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				assertThat(count.get("de").size()).as("{} german children of hip", c.getInteger("idx")).isEqualTo(2);
 				assertThat(count.get("en").size()).as("{} english children of hip", c.getInteger("idx")).isEqualTo(2);
 			});
+	}
+
+	/**
+	 * Special assertion for the <code>node-languages-query</code>.
+	 *
+	 * @param result
+	 */
+	private static void checkNodeLanguageContent(JsonObject result) {
+		JsonArray languages = result.getJsonObject("data").getJsonObject("node").getJsonArray("languages");
+		assertThat(languages).containsJsonObjectHashesInAnyOrder(
+			obj -> hash(
+				obj.getString("language"),
+				obj.getString("path")
+			),
+			hash("en", "/News/2015/News_2015.en.html"),
+			hash("de", "/Neuigkeiten/2015/News_2015.de.html")
+		);
 	}
 }

@@ -15,8 +15,7 @@
 		# [$.data.node.uuid=<is-uuid>]
 		uuid
 
-		# [$.data.node.availableLanguages[0]=en]
-		# [$.data.node.availableLanguages[1]=de]
+		# [$.data.node.availableLanguages.size()=2]
 		availableLanguages
 
 		node(lang: "de") {
