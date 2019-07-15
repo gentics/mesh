@@ -2,13 +2,16 @@ package com.gentics.mesh.core.data.service;
 
 import static com.gentics.mesh.core.rest.MeshEvent.CLEAR_PATH_STORE;
 import static com.gentics.mesh.core.rest.MeshEvent.CLEAR_PERMISSION_STORE;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNPUBLISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_FINISHED;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.Mesh;
@@ -32,7 +35,7 @@ public final class WebrootPathStore {
 
 	private static final Logger log = LoggerFactory.getLogger(WebrootPathStore.class);
 
-	public static final Cache<String, Path> PATH_CACHE = Caffeine.newBuilder().maximumSize(50_000).expireAfterWrite(30, TimeUnit.MINUTES).build();
+	public static final Cache<String, Path> PATH_CACHE = Caffeine.newBuilder().maximumSize(50_000).build();
 
 	/**
 	 * Check whether the cache has the path already stored.
@@ -55,33 +58,21 @@ public final class WebrootPathStore {
 	 */
 	public static void registerEventHandler() {
 		EventBus eb = Mesh.vertx().eventBus();
-		eb.consumer(CLEAR_PERMISSION_STORE.address, e -> {
-			invalidateByEvent(e);
-		});
 
-		eb.consumer(NODE_UPDATED.address, e -> {
-			invalidateByEvent(e);
-		});
-
-		eb.consumer(NODE_DELETED.address, e -> {
-			invalidateByEvent(e);
-		});
-
-		eb.consumer(NODE_PUBLISHED.address, e -> {
-			invalidateByEvent(e);
-		});
-
-		eb.consumer(NODE_MOVED.address, e -> {
-			invalidateByEvent(e);
-		});
-
-		eb.consumer(NODE_CONTENT_DELETED.address, e -> {
-			invalidateByEvent(e);
-		});
-
-		eb.consumer(SCHEMA_MIGRATION_FINISHED.address, e -> {
-			invalidateByEvent(e);
-		});
+		Arrays.asList(CLEAR_PERMISSION_STORE,
+			NODE_UPDATED,
+			NODE_DELETED,
+			NODE_PUBLISHED,
+			NODE_UNPUBLISHED,
+			NODE_MOVED,
+			NODE_CONTENT_CREATED,
+			NODE_CONTENT_DELETED,
+			SCHEMA_MIGRATION_FINISHED)
+			.forEach(event -> {
+				eb.consumer(event.address, e -> {
+					invalidateByEvent(e);
+				});
+			});
 
 	}
 
