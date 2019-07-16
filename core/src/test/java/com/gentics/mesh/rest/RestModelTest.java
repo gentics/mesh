@@ -297,6 +297,36 @@ public class RestModelTest extends AbstractMeshTest {
 	}
 
 	@Test
+	public void testNodeResponseEquals() {
+		String uuid = UUIDUtil.randomUUID();
+		String version = "1.0";
+		String lang = "de";
+		NodeResponse r1 = new NodeResponse();
+		r1.setUuid(uuid);
+		r1.setLanguage(lang);
+		r1.setVersion(version);
+		NodeResponse r2 = new NodeResponse();
+		r2.setUuid(uuid);
+		r2.setLanguage(lang);
+		r2.setVersion(version);
+		assertTrue("Should be equal since all fields are the same", r1.equals(r2));
+
+		r1.setUuid(UUIDUtil.randomUUID());
+		assertFalse("Should be not equal since uuid is different", r1.equals(r2));
+
+		r1.setUuid(uuid);
+		r1.setVersion("2.0");
+		assertFalse("Should be not equal since version is different", r1.equals(r2));
+
+		r1.setVersion(version);
+		r1.setLanguage("ru");
+		assertFalse("Should be not equal since lang is different", r1.equals(r2));
+
+		r1.setLanguage(lang);
+		assertTrue("Should be equal since all fields are the same", r1.equals(r2));
+	}
+
+	@Test
 	public void testHashCode() {
 		String uuid = UUIDUtil.randomUUID();
 		NodeResponse response = new NodeResponse();

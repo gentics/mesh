@@ -2,12 +2,14 @@ package com.gentics.mesh.core.rest.node;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
+import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.NodeField;
@@ -402,6 +404,23 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 		request.setVersion(getVersion());
 		request.setFields(getFields());
 		return request;
+	}
+
+	/**
+	 * Compares the given object with the node. The uuid, language and version will be utilized to compare two node responses.
+	 */
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o instanceof NodeResponse) {
+			NodeResponse that = (NodeResponse) o;
+			return Objects.equals(getUuid(), that.getUuid())
+				&& Objects.equals(getLanguage(), that.getLanguage())
+				&& Objects.equals(getVersion(), that.getVersion());
+		} else {
+			return super.equals(o);
+		}
 	}
 
 }
