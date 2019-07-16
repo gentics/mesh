@@ -28,6 +28,8 @@ include::content/docs/variables.adoc-include[]
 
 icon:plus[] REST: The performance of path resolving has been improved.
 
+icon:plus[] Core: A new configuration section has been added. The `cache` options in the `mesh.yml` can now be used to control cache settings. The `cache.pathCacheSize` config setting and `MESH_CACHE_PATH_SIZE` environment variable can be used to control the path cache which will improve webroot and GraphQL path resolving performance.
+
 icon:plus[] REST: The `webroot` endpoint will now set the `Cache-Control` header to `public` if the requested node can be read using the anonymous role. Otherwise the header will be set to `private`. This information is useful if you want to use a Caching Proxy in-between Gentics Mesh and your front-end application.
 
 icon:check[] Core: Performance of loading nodes has been improved.
