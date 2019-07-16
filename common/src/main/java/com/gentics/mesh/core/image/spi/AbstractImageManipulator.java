@@ -110,7 +110,7 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 				log.error("Reading image information failed", e);
 				bh.fail(e);
 			}
-		});
+		}, false);
 		return result.toSingle();
 	}
 

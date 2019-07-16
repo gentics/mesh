@@ -305,7 +305,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 						} catch (Exception e) {
 							bh.fail(e);
 						}
-					}).toSingle();
+					}, false).toSingle();
 				}
 			});
 	}
