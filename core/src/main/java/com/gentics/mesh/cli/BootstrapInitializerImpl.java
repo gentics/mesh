@@ -66,6 +66,7 @@ import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.data.service.WebrootPathStore;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -140,10 +141,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Inject
 	public HighLevelChangelogSystem highlevelChangelogSystem;
 
+	@Inject
+	public WebrootPathStore pathStore;
+
 	private static MeshRoot meshRoot;
 
-	// TODO: Changing the role name or deleting the role would cause code that utilizes this field to break. 
-	// This is however a rare case. 
+	// TODO: Changing the role name or deleting the role would cause code that utilizes this field to break.
+	// This is however a rare case.
 	private static Role anonymousRole;
 
 	private MeshImpl mesh;
@@ -463,6 +467,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public void registerEventHandlers() {
 		RouterStorage.registerEventbus();
 		PermissionStore.registerEventHandler();
+		pathStore.registerEventHandler();
 	}
 
 	@Override

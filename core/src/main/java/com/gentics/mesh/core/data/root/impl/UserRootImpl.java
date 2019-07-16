@@ -10,8 +10,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.Iterator;
-
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.madl.index.IndexHandler;
@@ -33,11 +31,7 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.syncleus.ferma.FramedGraph;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Vertex;
 
 /**
  * @see UserRoot
@@ -115,27 +109,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
 	@Override
 	public MeshAuthUser findMeshAuthUserByUuid(String userUuid) {
-		Database db = MeshInternal.get().database();
-		Iterator<Vertex> it = db.getVertices(UserImpl.class, new String[] { "uuid" }, new Object[] { userUuid });
-		if (!it.hasNext()) {
-			return null;
-		}
-		FramedGraph graph = getGraph();
-		MeshAuthUserImpl user = graph.frameElement(it.next(), MeshAuthUserImpl.class);
-		if (it.hasNext()) {
-			throw new RuntimeException("Found multiple nodes with the same UUID");
-		}
-		Iterator<Vertex> roots = user.getElement().getVertices(Direction.IN, HAS_USER).iterator();
-		Vertex root = roots.next();
-		if (roots.hasNext()) {
-			throw new RuntimeException("Found multiple nodes with the same UUID");
-		}
-
-		if (root.getId().equals(id())) {
-			return user;
-		} else {
-			throw new RuntimeException("User does not belong to the UserRoot");
-		}
+		return findByUuid(userUuid).reframeExplicit(MeshAuthUserImpl.class);
 	}
 
 	@Override

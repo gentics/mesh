@@ -11,6 +11,8 @@ public enum MeshOptionChanger {
 	NO_CHANGE(ignore -> {
 	}), SMALL_EVENT_BUFFER(options -> {
 		options.getSearchOptions().setEventBufferSize(100);
+	}), NO_PATH_CACHE(options -> {
+		options.getCacheConfig().setPathCacheSize(0);
 	}), NO_UPLOAD_PARSER(options -> {
 		options.getUploadOptions().setParser(false);
 	}), EXCLUDE_BINARY_SEARCH(options -> {

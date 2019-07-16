@@ -238,7 +238,9 @@ include::content/docs/snippets/config/image.inc[]
 
 === Cache Options
 
-Gentics Mesh does not manage any cache structure but it is possible to tweak the underlying OrientDB cache settings.
+include::content/docs/snippets/config/cache.inc[]
+
+Additionally it is possible to tweak the underlying OrientDB cache settings.
 
 === Memory Settings
 

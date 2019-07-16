@@ -87,6 +87,10 @@ public class MeshOptions implements Option {
 	@JsonPropertyDescription("Content related options.")
 	private ContentConfig contentOptions = new ContentConfig();
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Cache options.")
+	private CacheConfig cacheConfig = new CacheConfig();
+
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Path to the central tmp directory.")
 	@EnvironmentVariable(name = MESH_TEMP_DIR_ENV, description = "Override the configured temp directory.")
@@ -362,6 +366,27 @@ public class MeshOptions implements Option {
 	 */
 	public MeshOptions setContentOptions(ContentConfig contentOptions) {
 		this.contentOptions = contentOptions;
+		return this;
+	}
+
+	/**
+	 * Return the cache options.
+	 * 
+	 * @return
+	 */
+	@JsonProperty("cache")
+	public CacheConfig getCacheConfig() {
+		return cacheConfig;
+	}
+
+	/**
+	 * Set the cache options.
+	 * 
+	 * @param cacheConfig
+	 * @return
+	 */
+	public MeshOptions setCacheConfig(CacheConfig cacheConfig) {
+		this.cacheConfig = cacheConfig;
 		return this;
 	}
 
