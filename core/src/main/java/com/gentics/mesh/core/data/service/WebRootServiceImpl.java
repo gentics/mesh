@@ -31,11 +31,14 @@ public class WebRootServiceImpl implements WebRootService {
 
 	private static final Logger log = LoggerFactory.getLogger(WebRootServiceImpl.class);
 
-	@Inject
-	public Database database;
+	private final Database database;
+
+	private final WebrootPathStore pathStore;
 
 	@Inject
-	public WebRootServiceImpl() {
+	public WebRootServiceImpl(Database database, WebrootPathStore pathStore) {
+		this.database = database;
+		this.pathStore = pathStore;
 	}
 
 	@Override
@@ -44,7 +47,7 @@ public class WebRootServiceImpl implements WebRootService {
 		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 		Branch branch = ac.getBranch();
 
-		Path cachedPath = WebrootPathStore.getPath(project, branch, type, path);
+		Path cachedPath = pathStore.getPath(project, branch, type, path);
 		if (cachedPath != null) {
 			return cachedPath;
 		}
@@ -57,7 +60,7 @@ public class WebRootServiceImpl implements WebRootService {
 			nodePath.setTargetPath(path);
 			nodePath.setInitialStack(new Stack<>());
 			nodePath.setPrefixMismatch(true);
-			WebrootPathStore.store(project, branch, type, path, nodePath);
+			pathStore.store(project, branch, type, path, nodePath);
 			return nodePath;
 		}
 
@@ -65,7 +68,7 @@ public class WebRootServiceImpl implements WebRootService {
 		NodeGraphFieldContainer containerByWebUrlPath = findByUrlFieldPath(branch.getUuid(), path, type);
 		if (containerByWebUrlPath != null) {
 			Path resolvedPath = containerByWebUrlPath.getPath(ac);
-			WebrootPathStore.store(project, branch, type, path, resolvedPath);
+			pathStore.store(project, branch, type, path, resolvedPath);
 			return resolvedPath;
 		}
 
@@ -83,7 +86,7 @@ public class WebRootServiceImpl implements WebRootService {
 			nodePath.addSegment(new PathSegment(container, null, null, "/"));
 			stack.push("/");
 			nodePath.setInitialStack(stack);
-			WebrootPathStore.store(project, branch, type, path, nodePath);
+			pathStore.store(project, branch, type, path, nodePath);
 			return nodePath;
 		}
 
@@ -104,7 +107,7 @@ public class WebRootServiceImpl implements WebRootService {
 		// Traverse the graph and buildup the result path while doing so
 		Path resolvedPath = baseNode.resolvePath(ac.getBranch().getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()),
 			nodePath, stack);
-		WebrootPathStore.store(project, branch, type, path, nodePath);
+		pathStore.store(project, branch, type, path, nodePath);
 		return resolvedPath;
 	}
 

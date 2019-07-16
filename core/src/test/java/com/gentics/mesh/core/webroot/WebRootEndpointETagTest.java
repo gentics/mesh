@@ -82,13 +82,8 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 		assertNotNull(etag);
 
 		// Check whether 304 is returned for correct etag
-		long start = System.currentTimeMillis();
-		for (int i = 0; i < 10_000; i++) {
-			assertEquals(etag, callETag(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
-				new NodeParametersImpl().setResolveLinks(LinkType.FULL)), etag, false, 304));
-		}
-		long stop = System.currentTimeMillis() - start;
-		System.out.println("Took: " + stop);
+		assertEquals(etag, callETag(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+			new NodeParametersImpl().setResolveLinks(LinkType.FULL)), etag, false, 304));
 
 	}
 
