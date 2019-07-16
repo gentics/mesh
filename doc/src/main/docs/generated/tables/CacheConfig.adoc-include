@@ -1,0 +1,15 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| pathCacheSize
+| false
+| integer
+| Set the maximum size of the path cache. A value of 0 will disable the cache. Default: 20000
+
+|======

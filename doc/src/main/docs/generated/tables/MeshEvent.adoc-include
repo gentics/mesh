@@ -439,6 +439,15 @@ Event which will clear the permission stores.
 
 
 
+=== _mesh.clear-path-store_
+
+Event which will clear the path stores.
+
+
+
+
+
+
 === _mesh.user.created_
 
 Emitted when a user was created.

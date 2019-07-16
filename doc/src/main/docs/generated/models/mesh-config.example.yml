@@ -83,3 +83,5 @@ image:
   resampleFilter: "LANCZOS"
 content:
   autoPurge: true
+cache:
+  pathCacheSize: 20000

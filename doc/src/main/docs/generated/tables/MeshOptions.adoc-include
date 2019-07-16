@@ -317,6 +317,11 @@
 | boolean
 | Flag which controls the global setting for the auto purge mechanism. The setting can be overriden by the schema &#x27;autoPurge&#x27; flag. Default: true
 
+| cacheConfig.pathCacheSize
+| false
+| long
+| Set the maximum size of the path cache. A value of 0 will disable the cache. Default: 20000
+
 | tempDirectory
 | false
 | string

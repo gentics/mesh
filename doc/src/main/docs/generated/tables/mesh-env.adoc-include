@@ -92,6 +92,9 @@
 | *MESH_GRAPH_EXPORT_DIRECTORY*
 | Override the graph database export directory.
 
+| *MESH_CACHE_PATH_SIZE*
+| Override the path cache size.
+
 | *MESH_AUTH_OAUTH2_SERVER_CONF_RESOURCE*
 | Override the configured OAuth2 server resource name.
 
