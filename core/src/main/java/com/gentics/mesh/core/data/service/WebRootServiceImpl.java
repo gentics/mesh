@@ -75,11 +75,11 @@ public class WebRootServiceImpl implements WebRootService {
 		// Locating did not yield a result. Lets try the regular segment path info.
 		Path nodePath = new Path();
 		Node baseNode = project.getBaseNode();
-		nodePath.setTargetPath(path);
+		nodePath.setTargetPath(strippedPath);
 		Stack<String> stack = new Stack<>();
 
 		// Handle path to project root (baseNode)
-		if ("/".equals(path) || path.isEmpty()) {
+		if ("/".equals(strippedPath) || strippedPath.isEmpty()) {
 			// TODO Why this container? Any other container would also be fine?
 			Iterator<? extends NodeGraphFieldContainer> it = baseNode.getDraftGraphFieldContainers().iterator();
 			NodeGraphFieldContainer container = it.next();
@@ -91,7 +91,7 @@ public class WebRootServiceImpl implements WebRootService {
 		}
 
 		// Prepare the stack which we use for resolving
-		String sanitizedPath = path.replaceAll("^/+", "");
+		String sanitizedPath = strippedPath.replaceAll("^/+", "");
 		String[] elements = sanitizedPath.split("\\/");
 
 		IntStream.iterate(elements.length - 1, i -> i - 1)
