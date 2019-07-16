@@ -64,8 +64,8 @@ public class WebRootServiceImpl implements WebRootService {
 			return nodePath;
 		}
 
-		path = PathPrefixUtil.strip(branch, path);
-		NodeGraphFieldContainer containerByWebUrlPath = findByUrlFieldPath(branch.getUuid(), path, type);
+		String strippedPath = PathPrefixUtil.strip(branch, path);
+		NodeGraphFieldContainer containerByWebUrlPath = findByUrlFieldPath(branch.getUuid(), strippedPath, type);
 		if (containerByWebUrlPath != null) {
 			Path resolvedPath = containerByWebUrlPath.getPath(ac);
 			pathStore.store(project, branch, type, path, resolvedPath);
