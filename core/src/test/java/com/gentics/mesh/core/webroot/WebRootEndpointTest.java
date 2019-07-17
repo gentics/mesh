@@ -56,6 +56,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadBinaryNode() throws IOException {
 		Node node = content("news_2015");
+		String nodeUuid = tx(() -> node.getUuid());
+
 		try (Tx tx = tx()) {
 			// 1. Transform the node into a binary content
 			SchemaContainer container = schemaContainer("binary_content");
@@ -69,29 +71,29 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 
-		try (Tx tx = tx()) {
-			// 2. Update the binary data
-			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
+		// 2. Update the binary data
+		call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 
-			// 3. Try to resolve the path
-			String path = "/News/2015/somefile.dat";
-			MeshWebrootResponse response = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
-				new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
-			MeshBinaryResponse downloadResponse = response.getBinaryResponse();
-			assertTrue(response.isBinary());
-			assertNotNull(downloadResponse);
-		}
+		// 3. Try to resolve the path
+		String path = "/News/2015/somefile.dat";
+		MeshWebrootResponse response = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+			new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
+		MeshBinaryResponse downloadResponse = response.getBinaryResponse();
+		assertEquals("Webroot response node uuid header value did not match", nodeUuid, response.getNodeUuid());
+		assertTrue(response.isBinary());
+		assertNotNull(downloadResponse);
 	}
 
 	@Test
 	public void testReadFolderByPath() throws Exception {
-		try (Tx tx = tx()) {
-			Node folder = folder("2015");
-			String path = "/News/2015";
+		Node node = folder("2015");
+		String nodeUuid = tx(() -> node.getUuid());
+		String path = "/News/2015";
 
-			MeshWebrootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft()));
-			assertThat(restNode.getNodeResponse()).is(folder).hasLanguage("en");
-		}
+		MeshWebrootResponse response = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft()));
+		assertThat(response.getNodeResponse()).is(node).hasLanguage("en");
+		assertFalse(response.isBinary());
+		assertEquals("Webroot response node uuid header value did not match", nodeUuid, response.getNodeUuid());
 	}
 
 	@Test
