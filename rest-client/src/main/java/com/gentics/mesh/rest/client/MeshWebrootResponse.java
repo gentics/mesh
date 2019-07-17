@@ -6,19 +6,29 @@ public interface MeshWebrootResponse {
 
 	/**
 	 * Tests if the response is binary data.
+	 * 
 	 * @return
 	 */
 	boolean isBinary();
 
 	/**
 	 * Gets the binary response or null if the response is not binary data
+	 * 
 	 * @return
 	 */
 	MeshBinaryResponse getBinaryResponse();
 
 	/**
 	 * Gets the node response or null if the response is binary data
+	 * 
 	 * @return
 	 */
 	NodeResponse getNodeResponse();
+
+	/**
+	 * Returns the node uuid header value of the loaded content.
+	 * 
+	 * @return
+	 */
+	String getNodeUuid();
 }

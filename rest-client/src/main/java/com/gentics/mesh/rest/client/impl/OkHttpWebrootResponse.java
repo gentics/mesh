@@ -1,6 +1,7 @@
 package com.gentics.mesh.rest.client.impl;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
+
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
@@ -9,6 +10,7 @@ import okhttp3.Response;
 import java.util.function.Supplier;
 
 import static com.gentics.mesh.http.MeshHeaders.WEBROOT_RESPONSE_TYPE;
+import static com.gentics.mesh.http.MeshHeaders.WEBROOT_NODE_UUID;
 import static com.gentics.mesh.rest.client.impl.Util.lazily;
 
 public class OkHttpWebrootResponse implements MeshWebrootResponse {
@@ -27,6 +29,11 @@ public class OkHttpWebrootResponse implements MeshWebrootResponse {
 	@Override
 	public boolean isBinary() {
 		return "binary".equals(response.header(WEBROOT_RESPONSE_TYPE));
+	}
+
+	@Override
+	public String getNodeUuid() {
+		return response.header(WEBROOT_NODE_UUID);
 	}
 
 	@Override
