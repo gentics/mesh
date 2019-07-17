@@ -37,6 +37,7 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -109,6 +110,9 @@ public class WebRootHandler {
 			Node node = container.getParentNode();
 			addCacheControl(rc, node, version);
 			requestUser.failOnNoReadPermission(container, branchUuid, version);
+
+			rc.response().putHeader(MeshHeaders.WEBROOT_NODE_UUID, node.getUuid());
+			//TODO decide whether we want to add also lang, version
 
 			GraphField field = lastSegment.getPathField();
 			if (field instanceof BinaryGraphField) {
