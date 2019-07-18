@@ -28,6 +28,8 @@ include::content/docs/variables.adoc-include[]
 
 icon:plus[] REST: The webroot responses will now contain the header `Webroot-Node-Uuid` which identifies the node of the loaded content.
 
+icon:plus[] REST: The authentication and element loading performance has been increased.
+
 [[v0.36.6]]
 == 0.36.6 (16.07.2019)
 

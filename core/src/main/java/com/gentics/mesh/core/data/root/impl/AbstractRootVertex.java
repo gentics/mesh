@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import java.util.Set;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -11,6 +12,8 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.syncleus.ferma.FramedGraph;
+import com.tinkerpop.blueprints.Edge;
 
 /**
  * Abstract implementation for root vertices which are aggregation vertices for mesh core vertices. The abstract implementation contains various helper methods
@@ -33,12 +36,29 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	@Override
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+		Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (T t : findAll()) {
 				t.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 			}
 		}
 		applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke);
+	}
+
+	@Override
+	public T findByUuid(String uuid) {
+		// Try to load the element using the index. This way no record load will happen.
+		MeshVertexImpl t = database().index().checkIndexUniqueness(MeshVertexImpl.class.getSimpleName(), MeshVertexImpl.class, uuid);
+		if (t != null) {
+			FramedGraph graph = Tx.get().getGraph();
+			// Use the edge index to determine whether the element is part of this root vertex
+			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(t
+				.getId(), id()));
+			if (edges.iterator().hasNext()) {
+				return t.reframeExplicit(getPersistanceClass());
+			}
+		}
+		return null;
 	}
 }
