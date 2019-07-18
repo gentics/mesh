@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
@@ -49,6 +50,28 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 
 			call(() -> client.me(), UNAUTHORIZED, "error_not_authorized");
 		}
+	}
+
+	@Test
+	public void testLoginNewPassword() {
+		client().logout().blockingGet();
+		client().setLogin("admin", "admin", "admin123");
+		GenericMessageResponse msg = client().login().blockingGet();
+		System.out.println(msg.toJson());
+
+		// Now login again
+		client().logout().blockingGet();
+		client().setLogin("admin", "admin");
+		try {
+			System.out.println(client().login().blockingGet().toJson());
+			fail("Request should fail due to 401");
+		} catch (Exception e) {
+
+		}
+
+		client().setLogin("admin", "admin123");
+		System.out.println(client().login().blockingGet().toJson());
+
 	}
 
 	@Test
@@ -102,7 +125,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			String meshTokenCookie2 = client.me().getResponse().blockingGet().getHeader("Set-Cookie").orElse(null);
 
 			assertNotEquals("Both cookies should be different. Otherwise the token was not regenerated and the exp. date was not bumped.",
-					meshTokenCookie1, meshTokenCookie2);
+				meshTokenCookie1, meshTokenCookie2);
 		}
 	}
 

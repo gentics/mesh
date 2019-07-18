@@ -190,7 +190,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 						resultHandler.handle(Future.failedFuture(error(BAD_REQUEST, "auth_login_password_change_required")));
 						return;
 					} else {
-						if (forcedPasswordChange) {
+						if (forcedPasswordChange || newPassword != null) {
 							db.tx(() -> user.setPassword(newPassword));
 						}
 						resultHandler.handle(Future.succeededFuture(new AuthenticationResult(user)));
