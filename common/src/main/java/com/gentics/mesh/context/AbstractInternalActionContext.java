@@ -5,14 +5,12 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.concurrent.TimeUnit;
-
+import com.gentics.mesh.cache.EventAwareCache;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
@@ -22,6 +20,11 @@ import io.vertx.core.Handler;
  * Abstract class for internal action context.
  */
 public abstract class AbstractInternalActionContext extends AbstractActionContext implements InternalActionContext {
+
+	/**
+	 * Cache for project specific branches.
+	 */
+	private static EventAwareCache<Object, Branch> branchCache = EventAwareCache.builder().size(500).events(MeshEvent.BRANCH_UPDATED).build();
 
 	/**
 	 * Field which will store the body model.
@@ -42,11 +45,6 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 		};
 		return handler;
 	}
-
-	/**
-	 * Cache for project specific branches.
-	 */
-	private static Cache<Object, Branch> branchCache = Caffeine.newBuilder().maximumSize(500).expireAfterWrite(30, TimeUnit.MINUTES).build();;
 
 	@Override
 	public Branch getBranch(Project project) {

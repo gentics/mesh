@@ -271,7 +271,9 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 				// TODO use NoStackTraceThrowable?
 				throw new Exception("Invalid credentials!");
 			}
-			// TODO we should cache this to avoid unnecessary graph db access
+			// Set the uuid to cache it in the element. We know it is valid.
+			user.setCachedUuid(userUuid);
+
 			if (!user.isEnabled()) {
 				throw new Exception("User is disabled");
 			}
@@ -289,8 +291,6 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 				}
 			}
 
-			// Set the uuid to cache it in the element. We know it is valid.
-			user.setCachedUuid(userUuid);
 			return user;
 		}
 	}

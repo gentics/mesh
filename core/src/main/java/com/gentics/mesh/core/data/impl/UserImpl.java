@@ -13,6 +13,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GRO
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_REFERENCE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
@@ -34,9 +35,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
+import com.gentics.mesh.cache.EventAwareCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -51,6 +54,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.group.GroupReference;
@@ -88,6 +92,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	private static final Logger log = LoggerFactory.getLogger(UserImpl.class);
 
+	private static EventAwareCache<String, Boolean> userStateCache = EventAwareCache.builder().size(15_000).events(USER_UPDATED).action((event, cache) -> {
+		
+	}).build();
+	
+
 	public static final String FIRSTNAME_PROPERTY_KEY = "firstname";
 
 	public static final String LASTNAME_PROPERTY_KEY = "lastname";
@@ -113,6 +122,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public User disable() {
+		userStateCache.put(getUuid(), false);
 		property(ENABLED_FLAG_PROPERTY_KEY, false);
 		return this;
 	}
@@ -160,13 +170,20 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public User enable() {
+		userStateCache.put(getUuid(), true);
 		property(ENABLED_FLAG_PROPERTY_KEY, true);
 		return this;
 	}
 
 	@Override
 	public boolean isEnabled() {
-		return BooleanUtils.toBoolean(property(ENABLED_FLAG_PROPERTY_KEY).toString());
+		Boolean isEnabled = userStateCache.get(getUuid());
+		if (isEnabled == null) {
+			isEnabled = BooleanUtils.toBoolean(property(ENABLED_FLAG_PROPERTY_KEY).toString());
+			userStateCache.put(getUuid(), isEnabled);
+		}
+
+		return isEnabled;
 	}
 
 	@Override
@@ -693,6 +710,22 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		return DB.get().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
+	}
+
+	/**
+	 * Invalidate the user cache using the given user uuid.
+	 * 
+	 * @param uuid
+	 */
+	public static void invalidateUserCache(String uuid) {
+		userStateCache.invalidate(uuid);
+	}
+
+	/**
+	 * Invalidate the whole user cache.
+	 */
+	public static void invalidateUserCache() {
+		userStateCache.invalidate();
 	}
 
 }
