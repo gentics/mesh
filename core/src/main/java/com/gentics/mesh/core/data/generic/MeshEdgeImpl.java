@@ -21,8 +21,6 @@ import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
 @GraphElement
 public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 
-	private Object id;
-
 	@Override
 	protected void init() {
 		super.init();
@@ -30,9 +28,8 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	}
 
 	@Override
-	protected void init(FramedGraph graph, Element element) {
-		super.init(graph, null);
-		this.id = element.getId();
+	protected void init(FramedGraph graph, Object id) {
+		super.init(graph, id);
 	}
 
 	public String getFermaType() {
@@ -56,7 +53,7 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	public Edge getElement() {
 		// TODO FIXME We should store the element reference in a thread local map that is bound to the transaction. The references should be removed once the
 		// transaction finishes
-		Element edge = ((WrappedEdge) Tx.get().getGraph().getEdge(id)).getBaseElement();
+		Element edge = ((WrappedEdge) Tx.get().getGraph().getEdge(id())).getBaseElement();
 
 		// Element edge = threadLocalElement.get();
 

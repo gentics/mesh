@@ -5,13 +5,14 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
@@ -45,14 +46,15 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 	/**
 	 * Cache for project specific branches.
 	 */
-	private Map<Project, Branch> branchCache = new ConcurrentHashMap<>();
+	private static Cache<Object, Branch> branchCache = Caffeine.newBuilder().maximumSize(500).expireAfterWrite(30, TimeUnit.MINUTES).build();;
 
 	@Override
 	public Branch getBranch(Project project) {
 		if (project == null) {
 			project = getProject();
 		}
-		return branchCache.computeIfAbsent(project, p -> {
+		final Project selectedProject = project;
+		return branchCache.get(project.id(), p -> {
 			if (p == null) {
 				// TODO i18n
 				throw error(INTERNAL_SERVER_ERROR, "Cannot get branch without a project");
@@ -62,15 +64,15 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 
 			String branchNameOrUuid = getVersioningParameters().getBranch();
 			if (!isEmpty(branchNameOrUuid)) {
-				branch = p.getBranchRoot().findByUuid(branchNameOrUuid);
+				branch = selectedProject.getBranchRoot().findByUuid(branchNameOrUuid);
 				if (branch == null) {
-					branch = p.getBranchRoot().findByName(branchNameOrUuid);
+					branch = selectedProject.getBranchRoot().findByName(branchNameOrUuid);
 				}
 				if (branch == null) {
 					throw error(BAD_REQUEST, "branch_error_not_found", branchNameOrUuid);
 				}
 			} else {
-				branch = p.getLatestBranch();
+				branch = selectedProject.getLatestBranch();
 			}
 
 			return branch;

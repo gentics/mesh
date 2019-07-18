@@ -23,10 +23,7 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.FramedGraph;
-import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
-import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 /**
  * @see MeshVertex
@@ -34,7 +31,6 @@ import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 @GraphElement
 public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
-	private Object id;
 	private String uuid;
 
 	public static void init(TypeHandler type, IndexHandler index) {
@@ -48,12 +44,6 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	protected void init() {
 		super.init();
 		property("uuid", UUIDUtil.randomUUID());
-	}
-
-	@Override
-	protected void init(FramedGraph graph, Element element) {
-		super.init(graph, null);
-		this.id = element.getId();
 	}
 
 	/**
@@ -72,11 +62,6 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 			}
 		}
 		return properties;
-	}
-
-	@SuppressWarnings("unchecked")
-	public Object getId() {
-		return id;
 	}
 
 	public String getUuid() {
@@ -129,33 +114,14 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	}
 
 	@Override
-	public Vertex getElement() {
-		// TODO FIXME We should store the element reference in a thread local map that is bound to the transaction. The references should be removed once the
-		// transaction finishes
-		FramedGraph fg = Tx.getActive().getGraph();
-		if (fg == null) {
-			throw new RuntimeException(
-				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
-		}
-
-		Vertex vertexForId = fg.getVertex(id);
-		if (vertexForId == null) {
-			throw new RuntimeException("No vertex for Id {" + id + "} of type {" + getClass().getName() + "} could be found within the graph");
-		}
-		Element vertex = ((WrappedVertex) vertexForId).getBaseElement();
-
-		// Unwrap wrapped vertex
-		if (vertex instanceof WrappedElement) {
-			vertex = (Vertex) ((WrappedElement) vertex).getBaseElement();
-		}
-		return (Vertex) vertex;
-	}
-
-	@Override
 	public String getElementVersion() {
 		Vertex vertex = getElement();
 		return MeshInternal.get().database().getElementVersion(vertex);
 	}
 
+	@Override
+	public void setCachedUuid(String uuid) {
+		this.uuid = uuid;
+	}
 
 }

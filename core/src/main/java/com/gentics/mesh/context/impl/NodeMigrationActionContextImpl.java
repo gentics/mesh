@@ -201,6 +201,11 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
+			public void setCachedUuid(String uuid) {
+
+			}
+
+			@Override
 			public String getUuid() {
 				return null;
 			}
@@ -539,7 +544,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public <N> N getId() {
+			public Object getId() {
 				return null;
 			}
 
@@ -550,11 +555,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public void remove() {
-
-			}
-
-			@Override
-			public void setElement(Element element) {
 
 			}
 

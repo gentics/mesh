@@ -110,11 +110,11 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	@Override
 	public MeshAuthUser findMeshAuthUserByUuid(String userUuid) {
 		// Load the user vertex directly via the index - This way no record loading will occur.
-		MeshVertexImpl t = database().index().checkIndexUniqueness(MeshVertexImpl.class.getSimpleName(), MeshVertexImpl.class, userUuid);
+		MeshAuthUserImpl t = database().index().findByUuid(MeshAuthUserImpl.class, userUuid);
 		if (t != null) {
-			// Note: The found user will be directly re-framed and returned. No check will be performed to verify that the found element is a user or assigned to the user root.
+			// Note: The found user will be directly returned. No check will be performed to verify that the found element is a user or assigned to the user root.
 			// This method will only be used when loading the user via the uuid which was loaded from an immutable JWT. We thus can avoid this check to increase performance.
-			return t.reframeExplicit(MeshAuthUserImpl.class);
+			return t;
 		}
 		return null;
 	}

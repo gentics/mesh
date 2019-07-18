@@ -4,11 +4,9 @@ public interface ElementFrame extends com.syncleus.ferma.ElementFrame {
 	/**
 	 * Return the id of the element.
 	 *
-	 * @param <N>
-	 *            The ID's type.
 	 * @return The id of this element.
 	 */
-	default <N> N id() {
+	default Object id() {
 		return getId();
 	}
 }

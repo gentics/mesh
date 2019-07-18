@@ -23,30 +23,35 @@
  */
 package com.syncleus.ferma;
 
-import com.syncleus.ferma.traversals.VertexTraversal;
-import com.syncleus.ferma.traversals.EdgeTraversal;
 import java.util.Set;
+
+import com.syncleus.ferma.traversals.EdgeTraversal;
+import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
+import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 /**
  * The base of all framed elements.
  */
 public abstract class AbstractElementFrame implements ElementFrame {
 
-	private Element element;
-	private FramedGraph graph;
+	protected Object id;
+
+	protected FramedGraph graph;
 
 	/**
 	 * This method is called anytime an element is instantiated. If the element is a new element or an existing element this method will be called.
 	 *
 	 * @param graph
 	 *            The graph this element exists in.
-	 * @param element
-	 *            The raw blueprints element.
+	 * @param id
+	 *            The id of the element
 	 */
-	protected void init(final FramedGraph graph, final Element element) {
+	protected void init(final FramedGraph graph, final Object id) {
 		this.graph = graph;
-		this.element = element;
+		this.id = id;
 	}
 
 	/**
@@ -57,9 +62,9 @@ public abstract class AbstractElementFrame implements ElementFrame {
 
 	}
 
-	@Override
-	public <N> N getId() {
-		return (N) getElement().getId();
+	@SuppressWarnings("unchecked")
+	public Object getId() {
+		return id;
 	}
 
 	@Override
@@ -85,16 +90,6 @@ public abstract class AbstractElementFrame implements ElementFrame {
 	@Override
 	public void remove() {
 		getElement().remove();
-	}
-
-	@Override
-	public Element getElement() {
-		return element;
-	}
-
-	@Override
-	public void setElement(Element element) {
-		this.element = element;
 	}
 
 	@Override

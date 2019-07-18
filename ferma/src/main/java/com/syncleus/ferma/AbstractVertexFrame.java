@@ -30,8 +30,10 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.SimpleTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
+import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 /**
  * The base class that all vertex frames must extend.
@@ -40,11 +42,22 @@ public abstract class AbstractVertexFrame extends AbstractElementFrame implement
 
 	@Override
 	public Vertex getElement() {
-		if (super.getElement() instanceof WrappedElement) {
-			return (Vertex) ((WrappedElement) super.getElement()).getBaseElement();
-		} else {
-			return (Vertex) super.getElement();
+		FramedGraph fg = getGraph();
+		if (fg == null) {
+			throw new RuntimeException("Could not find framed graph");
 		}
+
+		Vertex vertexForId = fg.getVertex(id);
+		if (vertexForId == null) {
+			throw new RuntimeException("No vertex for Id {" + id + "} of type {" + getClass().getName() + "} could be found within the graph");
+		}
+		Element vertex = ((WrappedVertex) vertexForId).getBaseElement();
+
+		// Unwrap wrapped vertex
+		if (vertex instanceof WrappedElement) {
+			vertex = (Vertex) ((WrappedElement) vertex).getBaseElement();
+		}
+		return (Vertex) vertex;
 	}
 
 	@Override
@@ -169,6 +182,6 @@ public abstract class AbstractVertexFrame extends AbstractElementFrame implement
 
 	@Override
 	public <T> T reframeExplicit(final Class<T> kind) {
-		return getGraph().frameElementExplicit(getElement(), kind);
+		return getGraph().frameElementExplicitById(getId(), kind);
 	}
 }

@@ -1,5 +1,17 @@
 package com.gentics.mesh.auth.provider;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.AuthenticationResult;
@@ -24,17 +36,6 @@ import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.ext.jwt.JWTOptions;
 import io.vertx.ext.web.Cookie;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 
 /**
  * Central mesh authentication provider which will handle JWT.
@@ -167,47 +168,47 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	 *            Handler which will be invoked which will return the authenticated user or fail if the credentials do not match or the user could not be found
 	 */
 	private void authenticate(String username, String password, String newPassword, Handler<AsyncResult<AuthenticationResult>> resultHandler) {
-			MeshAuthUser user = db.tx(() -> boot.userRoot().findMeshAuthUserByUsername(username));
-			if (user != null) {
-				String accountPasswordHash = db.tx(user::getPasswordHash);
-				// TODO check if user is enabled
-				boolean hashMatches = false;
-				if (StringUtils.isEmpty(accountPasswordHash) && password != null) {
-					if (log.isDebugEnabled()) {
-						log.debug("The account password hash or token password string are invalid.");
-					}
-					resultHandler.handle(Future.failedFuture(error(UNAUTHORIZED, "auth_login_failed")));
+		MeshAuthUser user = db.tx(() -> boot.userRoot().findMeshAuthUserByUsername(username));
+		if (user != null) {
+			String accountPasswordHash = db.tx(user::getPasswordHash);
+			// TODO check if user is enabled
+			boolean hashMatches = false;
+			if (StringUtils.isEmpty(accountPasswordHash) && password != null) {
+				if (log.isDebugEnabled()) {
+					log.debug("The account password hash or token password string are invalid.");
+				}
+				resultHandler.handle(Future.failedFuture(error(UNAUTHORIZED, "auth_login_failed")));
+				return;
+			} else {
+				if (log.isDebugEnabled()) {
+					log.debug("Validating password using the bcrypt password encoder");
+				}
+				hashMatches = passwordEncoder.matches(password, accountPasswordHash);
+			}
+			if (hashMatches) {
+				boolean forcedPasswordChange = db.tx(user::isForcedPasswordChange);
+				if (newPassword == null && forcedPasswordChange) {
+					resultHandler.handle(Future.failedFuture(error(BAD_REQUEST, "auth_login_password_change_required")));
 					return;
 				} else {
-					if (log.isDebugEnabled()) {
-						log.debug("Validating password using the bcrypt password encoder");
+					if (forcedPasswordChange) {
+						db.tx(() -> user.setPassword(newPassword));
 					}
-					hashMatches = passwordEncoder.matches(password, accountPasswordHash);
-				}
-				if (hashMatches) {
-					boolean forcedPasswordChange = db.tx(user::isForcedPasswordChange);
-					if (newPassword == null && forcedPasswordChange) {
-						resultHandler.handle(Future.failedFuture(error(BAD_REQUEST, "auth_login_password_change_required")));
-						return;
-					} else {
-						if (forcedPasswordChange) {
-							db.tx(() -> user.setPassword(newPassword));
-						}
-						resultHandler.handle(Future.succeededFuture(new AuthenticationResult(user)));
-						return;
-					}
-				} else {
-					resultHandler.handle(Future.failedFuture(error(UNAUTHORIZED, "auth_login_failed")));
+					resultHandler.handle(Future.succeededFuture(new AuthenticationResult(user)));
 					return;
 				}
 			} else {
-				if (log.isDebugEnabled()) {
-					log.debug("Could not load user with username {" + username + "}.");
-				}
-				// TODO Don't let the user know that we know that he did not exist?
 				resultHandler.handle(Future.failedFuture(error(UNAUTHORIZED, "auth_login_failed")));
 				return;
 			}
+		} else {
+			if (log.isDebugEnabled()) {
+				log.debug("Could not load user with username {" + username + "}.");
+			}
+			// TODO Don't let the user know that we know that he did not exist?
+			resultHandler.handle(Future.failedFuture(error(UNAUTHORIZED, "auth_login_failed")));
+			return;
+		}
 	}
 
 	/**
@@ -270,6 +271,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 				// TODO use NoStackTraceThrowable?
 				throw new Exception("Invalid credentials!");
 			}
+			// TODO we should cache this to avoid unnecessary graph db access
 			if (!user.isEnabled()) {
 				throw new Exception("User is disabled");
 			}
@@ -287,8 +289,8 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 				}
 			}
 
-			// Load the uuid to cache it
-			user.getUuid();
+			// Set the uuid to cache it in the element. We know it is valid.
+			user.setCachedUuid(userUuid);
 			return user;
 		}
 	}

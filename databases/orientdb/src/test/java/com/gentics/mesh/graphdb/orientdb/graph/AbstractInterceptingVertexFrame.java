@@ -20,7 +20,6 @@ import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
  */
 public class AbstractInterceptingVertexFrame extends AbstractVertexFrame {
 
-	private Object id;
 	public ThreadLocal<Element> threadLocalElement = ThreadLocal.withInitial(() -> ((WrappedVertex) getGraph().getVertex(id)).getBaseElement());
 
 	@Override
@@ -29,9 +28,8 @@ public class AbstractInterceptingVertexFrame extends AbstractVertexFrame {
 	}
 
 	@Override
-	protected void init(FramedGraph graph, Element element) {
-		super.init(graph, element);
-		this.id = element.getId();
+	protected void init(FramedGraph graph, Object id) {
+		super.init(graph, id);
 	}
 
 	/**

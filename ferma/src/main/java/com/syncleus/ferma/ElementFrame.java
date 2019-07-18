@@ -15,22 +15,20 @@
  */
 package com.syncleus.ferma;
 
-import com.syncleus.ferma.traversals.VertexTraversal;
-import com.syncleus.ferma.traversals.EdgeTraversal;
-import com.tinkerpop.blueprints.Element;
-
 import java.util.Set;
+
+import com.syncleus.ferma.traversals.EdgeTraversal;
+import com.syncleus.ferma.traversals.VertexTraversal;
+import com.tinkerpop.blueprints.Element;
 
 public interface ElementFrame {
 
 	static String TYPE_RESOLUTION_KEY = "ferma_type";
 
 	/**
-	 * @param <N>
-	 *            The ID's type.
 	 * @return The id of this element.
 	 */
-	<N> N getId();
+	Object getId();
 
 	/**
 	 * @return The property keys of this element.
@@ -46,14 +44,6 @@ public interface ElementFrame {
 	 * @return The underlying element.
 	 */
 	Element getElement();
-
-	/**
-	 * Set the underlying element.
-	 *
-	 * @param element
-	 *            Raw graph element
-	 */
-	void setElement(Element element);
 
 	/**
 	 * @return The underlying graph.

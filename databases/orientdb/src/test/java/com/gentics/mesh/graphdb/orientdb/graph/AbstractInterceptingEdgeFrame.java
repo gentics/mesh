@@ -16,13 +16,11 @@ import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
  */
 public class AbstractInterceptingEdgeFrame extends AbstractEdgeFrame {
 
-	private Object id;
 	public ThreadLocal<Element> threadLocalElement = ThreadLocal.withInitial(() -> ((WrappedEdge) getGraph().getEdge(id)).getBaseElement());
 
 	@Override
-	protected void init(FramedGraph graph, Element element) {
+	protected void init(FramedGraph graph, Object element) {
 		super.init(graph, element);
-		this.id = element.getId();
 	}
 
 	public String getFermaType() {

@@ -200,4 +200,6 @@ public interface FramedGraph extends Graph {
 	<T> T frameElementExplicit(Element e, Class<T> kind);
 
 	<T> Iterator<? extends T> frameExplicit(Iterator<? extends Element> pipeline, final Class<T> kind);
+
+	<T> T frameElementExplicitById(final Object id, final Class<T> kind);
 }
