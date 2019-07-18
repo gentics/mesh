@@ -39,7 +39,6 @@ import com.gentics.mesh.cache.EventAwareCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -54,7 +53,6 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.group.GroupReference;
@@ -92,10 +90,17 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	private static final Logger log = LoggerFactory.getLogger(UserImpl.class);
 
-	private static EventAwareCache<String, Boolean> userStateCache = EventAwareCache.builder().size(15_000).events(USER_UPDATED).action((event, cache) -> {
-		
-	}).build();
-	
+	private static EventAwareCache<String, Boolean> userStateCache = EventAwareCache.<String, Boolean>builder()
+		.size(15_000)
+		.events(USER_UPDATED)
+		.action((event, cache) -> {
+			String uuid = event.body().getString("uuid");
+			if (uuid != null) {
+				cache.invalidate(uuid);
+			} else {
+				cache.invalidate();
+			}
+		}).build();
 
 	public static final String FIRSTNAME_PROPERTY_KEY = "firstname";
 

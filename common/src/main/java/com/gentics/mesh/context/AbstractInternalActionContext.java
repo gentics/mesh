@@ -24,7 +24,10 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 	/**
 	 * Cache for project specific branches.
 	 */
-	private static EventAwareCache<Object, Branch> branchCache = EventAwareCache.builder().size(500).events(MeshEvent.BRANCH_UPDATED).build();
+	private static EventAwareCache<Object, Branch> branchCache = EventAwareCache.<Object, Branch>builder()
+		.size(500)
+		.events(MeshEvent.BRANCH_UPDATED)
+		.build();
 
 	/**
 	 * Field which will store the body model.
