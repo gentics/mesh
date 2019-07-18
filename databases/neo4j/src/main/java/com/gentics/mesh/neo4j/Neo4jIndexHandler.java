@@ -65,4 +65,10 @@ public class Neo4jIndexHandler implements IndexHandler {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	@Override
+	public <T extends VertexFrame> T findByUuid(Class<? extends T> classOfT, String uuid) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

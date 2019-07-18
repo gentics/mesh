@@ -94,4 +94,13 @@ public interface IndexHandler {
 	 */
 	<T extends ElementFrame> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key);
 
+	/**
+	 * Find the framed vertex with the given uuid via the index.
+	 * 
+	 * @param classOfT Class of the element
+	 * @param uuid Uuid of the element
+	 * @return
+	 */
+	<T extends VertexFrame> T findByUuid(Class<? extends T> classOfT, String uuid);
+
 }

@@ -46,19 +46,4 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 		applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke);
 	}
 
-	@Override
-	public T findByUuid(String uuid) {
-		// Try to load the element using the index. This way no record load will happen.
-		MeshVertexImpl t = database().index().checkIndexUniqueness(MeshVertexImpl.class.getSimpleName(), MeshVertexImpl.class, uuid);
-		if (t != null) {
-			FramedGraph graph = Tx.get().getGraph();
-			// Use the edge index to determine whether the element is part of this root vertex
-			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(t
-				.getId(), id()));
-			if (edges.iterator().hasNext()) {
-				return t.reframeExplicit(getPersistanceClass());
-			}
-		}
-		return null;
-	}
 }
