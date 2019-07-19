@@ -137,4 +137,11 @@ public class WebrootPathStore {
 	public boolean isDisabled() {
 		return cacheOptions.getPathCacheSize() == 0;
 	}
+
+	/**
+	 * Invalidate the cache.
+	 */
+	public void invalidate() {
+		pathCache.invalidateAll();
+	}
 }

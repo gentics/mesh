@@ -57,7 +57,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *
 	 * @param ac
 	 *            The context of the request
-	 * @param permission Needed permission
+	 * @param permission
+	 *            Needed permission
 	 */
 	default Stream<? extends T> findAllStream(InternalActionContext ac, GraphPermission permission) {
 		MeshAuthUser user = ac.getUser();
@@ -175,13 +176,12 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(t
 				.getId(), id()));
 			if (edges.iterator().hasNext()) {
-				return t.reframeExplicit(getPersistanceClass());
+				return t;
 			}
 		}
 		return null;
 	}
-	
-	
+
 	/**
 	 * Load the object by uuid and check the given permission.
 	 * 

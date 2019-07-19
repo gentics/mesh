@@ -43,14 +43,11 @@ public abstract class AbstractVertexFrame extends AbstractElementFrame implement
 	@Override
 	public Vertex getElement() {
 		Element e = super.getElement();
-		if (e != null) {
-			if (e instanceof WrappedElement) {
-				return (Vertex) ((WrappedElement) e).getBaseElement();
-			} else {
-				return (Vertex) e;
-			}
+		if (e instanceof WrappedElement) {
+			return (Vertex) ((WrappedElement) e).getBaseElement();
+		} else {
+			return (Vertex) e;
 		}
-		return null;
 	}
 
 	@Override

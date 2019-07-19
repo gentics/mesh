@@ -34,7 +34,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 
 	public EventAwareCacheImpl(long size, Predicate<Message<JsonObject>> filter, BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext,
 		MeshEvent... events) {
-		this.cache = Caffeine.newBuilder().maximumSize(15000).build();
+		this.cache = Caffeine.newBuilder().maximumSize(size).build();
 		this.filter = filter;
 		this.onNext = onNext;
 		registerEventHandlers(events);

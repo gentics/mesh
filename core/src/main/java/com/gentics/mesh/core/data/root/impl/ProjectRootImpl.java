@@ -50,13 +50,12 @@ import com.gentics.mesh.router.RouterStorage;
  */
 public class ProjectRootImpl extends AbstractRootVertex<Project> implements ProjectRoot {
 
-	public static final EventAwareCache<String, Project> PROJECT_CACHE = EventAwareCache.<String, Project>builder()
+	public static final EventAwareCache<String, Project> PROJECT_NAME_CACHE = EventAwareCache.<String, Project>builder()
 		.events(PROJECT_DELETED, PROJECT_UPDATED)
 		.action((event, cache) -> {
-			System.out.println(event.body().encodePrettily());
-			String uuid = event.body().getString("uuid");
-			if (uuid != null) {
-				cache.invalidate(uuid);
+			String name = event.body().getString("name");
+			if (name != null) {
+				cache.invalidate(name);
 			} else {
 				cache.invalidate();
 			}
@@ -91,7 +90,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 	@Override
 	public Project findByName(String name) {
-		return PROJECT_CACHE.get(name, n-> {
+		return PROJECT_NAME_CACHE.get(name, n-> {
 			return super.findByName(n);
 		});
 	}

@@ -41,11 +41,7 @@ public abstract class AbstractEdgeFrame extends AbstractElementFrame implements 
 
 	@Override
 	public Edge getElement() {
-		Element e = super.getElement();
-		if (e != null) {
-			return (Edge) e;
-		}
-		return null;
+		return (Edge) super.getElement();
 	}
 
 	@Override

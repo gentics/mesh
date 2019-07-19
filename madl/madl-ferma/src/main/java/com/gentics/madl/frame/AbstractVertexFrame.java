@@ -31,6 +31,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 
 	@Override
 	public Vertex getElement() {
+		// TODO FIXME We should store the element reference in a thread local map that is bound to the transaction. The references should be removed once the
 		FramedGraph fg = Tx.get().getGraph();
 		if (fg == null) {
 			throw new RuntimeException(

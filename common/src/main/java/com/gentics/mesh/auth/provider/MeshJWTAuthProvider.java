@@ -274,7 +274,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 			// Set the uuid to cache it in the element. We know it is valid.
 			user.setCachedUuid(userUuid);
 
-			// TODO
+			// TODO Re-enable isEnabled cache and check if User#delete behaviour changes
 			//	if (!user.isEnabled()) {
 			//		throw new Exception("User is disabled");
 			//	}
