@@ -17,6 +17,7 @@ import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Set;
 
@@ -365,6 +366,28 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		model.setProject(transformToReference());
 		model.setMicroschema(microschema.transformToReference());
 		return model;
+	}
+
+	@Override
+	public Branch findBranch(String branchNameOrUuid) {
+		return MeshInternal.get().branchCache().cache().get(id() + "-" + branchNameOrUuid, key -> {
+			Branch branch = null;
+
+			if (!isEmpty(branchNameOrUuid)) {
+				branch = getBranchRoot().findByUuid(branchNameOrUuid);
+				if (branch == null) {
+					branch = getBranchRoot().findByName(branchNameOrUuid);
+				}
+				if (branch == null) {
+					throw error(BAD_REQUEST, "branch_error_not_found", branchNameOrUuid);
+				}
+			} else {
+				branch = getLatestBranch();
+			}
+
+			return branch;
+		});
+
 	}
 
 }

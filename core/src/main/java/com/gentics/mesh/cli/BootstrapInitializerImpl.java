@@ -36,10 +36,10 @@ import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.MeshVersion;
+import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ReindexAction;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
-import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
@@ -64,7 +64,6 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
-import com.gentics.mesh.core.data.root.impl.ProjectRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -145,6 +144,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Inject
 	public WebrootPathStore pathStore;
+
+	@Inject
+	public CacheRegistry cacheRegistry;
 
 	private static MeshRoot meshRoot;
 
@@ -315,10 +317,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public void globalCacheClear() {
-		ProjectRootImpl.PROJECT_NAME_CACHE.invalidate();
+		cacheRegistry.clear();
+		// TODO remove the two other caches also to registry
 		PermissionStore.invalidate();
 		pathStore.invalidate();
-		AbstractInternalActionContext.BRANCH_CACHE.invalidate();
 	}
 
 	/**

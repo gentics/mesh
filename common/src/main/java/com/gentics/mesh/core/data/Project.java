@@ -175,4 +175,12 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 */
 	ProjectMicroschemaEventModel onMicroschemaAssignEvent(MicroschemaContainer microschema, Assignment assigned);
 
+	/**
+	 * Find the branch via name or uuid that belongs to the project.
+	 * 
+	 * @param branchNameOrUuid
+	 * @return
+	 */
+	Branch findBranch(String branchNameOrUuid);
+
 }

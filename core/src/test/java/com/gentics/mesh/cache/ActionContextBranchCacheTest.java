@@ -9,8 +9,9 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.context.AbstractInternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -20,7 +21,11 @@ public class ActionContextBranchCacheTest extends AbstractMeshTest {
 
 	@Before
 	public void setupCache() {
-		AbstractInternalActionContext.BRANCH_CACHE.enable();
+		cache().enable();
+	}
+
+	private EventAwareCache<String, Branch> cache() {
+		return MeshInternal.get().branchCache().cache();
 	}
 
 	@Test
@@ -41,17 +46,17 @@ public class ActionContextBranchCacheTest extends AbstractMeshTest {
 		assertEquals(0, branchCacheSize());
 
 		// Disable the cache and check caching
-		AbstractInternalActionContext.BRANCH_CACHE.disable();
+		cache().disable();
 		call(() -> client().findNodes(projectName(), new VersioningParametersImpl().setBranch(initialBranchUuid())));
 		assertFalse("The cache should still not have the entry", hasBranchInCache());
 		assertEquals(0, branchCacheSize());
 	}
 
 	private long branchCacheSize() {
-		return AbstractInternalActionContext.BRANCH_CACHE.size();
+		return cache().size();
 	}
 
 	public boolean hasBranchInCache() {
-		return AbstractInternalActionContext.BRANCH_CACHE.get(project().id() + "-" + initialBranchUuid()) != null;
+		return cache().get(project().id() + "-" + initialBranchUuid()) != null;
 	}
 }

@@ -2,6 +2,8 @@ package com.gentics.mesh.dagger.module;
 
 import com.gentics.mesh.auth.MeshOAuth2ServiceImpl;
 import com.gentics.mesh.auth.MeshOAuthService;
+import com.gentics.mesh.cache.ProjectBranchNameCache;
+import com.gentics.mesh.cache.ProjectBranchNameCacheImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.data.service.WebRootService;
@@ -40,10 +42,13 @@ public abstract class BindModule {
 
 	@Binds
 	abstract MetricsService bindMetricsService(DropwizardMetricsService e);
-	
+
 	@Binds
 	abstract Database bindDatabase(OrientDBDatabase e);
 
 	@Binds
 	abstract RangeRequestHandler bindRangeRequestHandler(RangeRequestHandlerImpl e);
+
+	@Binds
+	abstract ProjectBranchNameCache bindBranchNameCache(ProjectBranchNameCacheImpl e);
 }

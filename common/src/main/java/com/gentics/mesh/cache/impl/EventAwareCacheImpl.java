@@ -4,7 +4,6 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cache.EventAwareCache;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -26,14 +25,18 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 
 	private final Cache<K, V> cache;
 
+	private final Vertx vertx;
+
 	private final Predicate<Message<JsonObject>> filter;
 
 	private BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext;
 
 	private boolean disabled = false;
 
-	public EventAwareCacheImpl(long size, Predicate<Message<JsonObject>> filter, BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext,
+	public EventAwareCacheImpl(long size, Vertx vertx, Predicate<Message<JsonObject>> filter,
+		BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext,
 		MeshEvent... events) {
+		this.vertx = vertx;
 		this.cache = Caffeine.newBuilder().maximumSize(size).build();
 		this.filter = filter;
 		this.onNext = onNext;
@@ -44,7 +47,6 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		if (log.isTraceEnabled()) {
 			log.trace("Registering to events");
 		}
-		Vertx vertx = Mesh.vertx();
 		EventBus eb = vertx.eventBus();
 		Observable<Message<JsonObject>> o = rxEventBus(eb, events);
 		if (filter != null) {
@@ -126,15 +128,17 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 
 	public static class Builder<K, V> {
 
-		boolean disabled = false;
-		long size = 1000;
-		Predicate<Message<JsonObject>> filter = null;
-		BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext = null;
-		MeshEvent[] events = null;
+		private boolean disabled = false;
+		private long size = 1000;
+		private Predicate<Message<JsonObject>> filter = null;
+		private BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext = null;
+		private MeshEvent[] events = null;
+		private Vertx vertx;
 
 		public EventAwareCache<K, V> build() {
 			Objects.requireNonNull(events, "No events for the cache have been set");
-			EventAwareCacheImpl<K, V> c = new EventAwareCacheImpl<>(size, filter, onNext, events);
+			Objects.requireNonNull(vertx, "No Vert.x instance has been set");
+			EventAwareCacheImpl<K, V> c = new EventAwareCacheImpl<>(size, vertx, filter, onNext, events);
 			if (disabled) {
 				c.disable();
 			}
@@ -145,7 +149,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		 * Set the events to react upon.
 		 * 
 		 * @param events
-		 * @return
+		 * @return Fluent API
 		 */
 		public Builder<K, V> events(MeshEvent... events) {
 			this.events = events;
@@ -156,7 +160,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		 * Set the event filter.
 		 * 
 		 * @param filter
-		 * @return
+		 * @return Fluent API
 		 */
 		public Builder<K, V> filter(Predicate<Message<JsonObject>> filter) {
 			this.filter = filter;
@@ -167,7 +171,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		 * Action which will be invoked on every received event.
 		 * 
 		 * @param filter
-		 * @return
+		 * @return Fluent API
 		 */
 		public Builder<K, V> action(BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext) {
 			this.onNext = onNext;
@@ -178,7 +182,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		 * Set the cache size.
 		 * 
 		 * @param size
-		 * @return
+		 * @return Fluent API
 		 */
 		public Builder<K, V> size(long size) {
 			this.size = size;
@@ -188,10 +192,21 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		/**
 		 * Disable the created cache.
 		 * 
-		 * @return
+		 * @return Fluent API
 		 */
 		public Builder<K, V> disabled() {
 			this.disabled = true;
+			return this;
+		}
+
+		/**
+		 * Set the vertx instance to be used for eventbus communcation.
+		 * 
+		 * @param vertx
+		 * @return Fluent API
+		 */
+		public Builder<K, V> vertx(Vertx vertx) {
+			this.vertx = vertx;
 			return this;
 		}
 
