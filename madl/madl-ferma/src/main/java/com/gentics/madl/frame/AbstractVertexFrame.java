@@ -29,28 +29,26 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 		return super.getId();
 	}
 
-//	@Override
-//	public Vertex getElement() {
-//		// TODO FIXME We should store the element reference in a thread local map that is bound to the transaction. The references should be removed once the
-//		// transaction finishes
-//		FramedGraph fg = Tx.get().getGraph();
-//		if (fg == null) {
-//			throw new RuntimeException(
-//				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
-//		}
-//
-//		Vertex vertexForId = fg.getVertex(id);
-//		if (vertexForId == null) {
-//			throw new RuntimeException("No vertex for Id {" + id + "} of type {" + getClass().getName() + "} could be found within the graph");
-//		}
-//		Element vertex = ((WrappedVertex) vertexForId).getBaseElement();
-//
-//		// Unwrap wrapped vertex
-//		if (vertex instanceof WrappedElement) {
-//			vertex = (Vertex) ((WrappedElement) vertex).getBaseElement();
-//		}
-//		return (Vertex) vertex;
-//	}
+	@Override
+	public Vertex getElement() {
+		FramedGraph fg = Tx.get().getGraph();
+		if (fg == null) {
+			throw new RuntimeException(
+				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+		}
+
+		Vertex vertexForId = fg.getVertex(id);
+		if (vertexForId == null) {
+			throw new RuntimeException("No vertex for Id {" + id + "} of type {" + getClass().getName() + "} could be found within the graph");
+		}
+		Element vertex = ((WrappedVertex) vertexForId).getBaseElement();
+
+		// Unwrap wrapped vertex
+		if (vertex instanceof WrappedElement) {
+			vertex = (Vertex) ((WrappedElement) vertex).getBaseElement();
+		}
+		return (Vertex) vertex;
+	}
 
 	@Override
 	public Object id() {

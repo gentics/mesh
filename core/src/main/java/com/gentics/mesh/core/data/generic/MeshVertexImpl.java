@@ -87,7 +87,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	@Override
 	public FramedGraph getGraph() {
-		return Tx.getActive().getGraph();
+		return Tx.get().getGraph();
 	}
 
 	@Override

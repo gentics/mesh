@@ -1,10 +1,11 @@
 package com.gentics.mesh.graphdb.orientdb.graph;
 
 import com.gentics.madl.annotations.GraphElement;
+import com.gentics.madl.frame.AbstractVertexFrame;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 
 @GraphElement
-public class Person extends AbstractInterceptingVertexFrame {
+public class Person extends AbstractVertexFrame {
 
 	public TraversalResult<? extends Person> getFriends() {
 		return new TraversalResult<>(out("HAS_FRIEND").has(Person.class).frameExplicit(Person.class));

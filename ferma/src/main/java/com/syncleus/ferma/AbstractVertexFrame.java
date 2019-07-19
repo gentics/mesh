@@ -42,22 +42,15 @@ public abstract class AbstractVertexFrame extends AbstractElementFrame implement
 
 	@Override
 	public Vertex getElement() {
-		FramedGraph fg = getGraph();
-		if (fg == null) {
-			throw new RuntimeException("Could not find framed graph");
+		Element e = super.getElement();
+		if (e != null) {
+			if (e instanceof WrappedElement) {
+				return (Vertex) ((WrappedElement) e).getBaseElement();
+			} else {
+				return (Vertex) e;
+			}
 		}
-
-		Vertex vertexForId = fg.getVertex(id);
-		if (vertexForId == null) {
-			throw new RuntimeException("No vertex for Id {" + id + "} of type {" + getClass().getName() + "} could be found within the graph");
-		}
-		Element vertex = ((WrappedVertex) vertexForId).getBaseElement();
-
-		// Unwrap wrapped vertex
-		if (vertex instanceof WrappedElement) {
-			vertex = (Vertex) ((WrappedElement) vertex).getBaseElement();
-		}
-		return (Vertex) vertex;
+		return null;
 	}
 
 	@Override

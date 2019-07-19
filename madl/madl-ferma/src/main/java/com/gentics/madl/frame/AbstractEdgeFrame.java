@@ -1,12 +1,40 @@
 package com.gentics.madl.frame;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedEdge;
+import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
 
 public abstract class AbstractEdgeFrame extends com.syncleus.ferma.AbstractEdgeFrame implements EdgeFrame {
+
+	@Override
+	public Edge getElement() {
+		FramedGraph fg = Tx.get().getGraph();
+		if (fg == null) {
+			throw new RuntimeException(
+				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+		}
+
+		Edge edgeForId = fg.getEdge(id);
+		if (edgeForId == null) {
+			throw new RuntimeException("No edge for Id {" + id + "} of type {" + getClass().getName() + "} could be found within the graph");
+		}
+		Element edge = ((WrappedEdge) edgeForId).getBaseElement();
+
+		// Unwrap wrapped vertex
+		if (edge instanceof WrappedElement) {
+			edge = (Edge) ((WrappedElement) edge).getBaseElement();
+		}
+		return (Edge) edge;
+
+	}
 
 	/**
 	 * @deprecated Replaced by {@link #label()}

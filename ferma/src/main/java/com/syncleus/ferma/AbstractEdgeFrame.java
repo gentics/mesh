@@ -41,22 +41,11 @@ public abstract class AbstractEdgeFrame extends AbstractElementFrame implements 
 
 	@Override
 	public Edge getElement() {
-		FramedGraph fg = getGraph();
-		if (fg == null) {
-			throw new RuntimeException("Could not find framed graph");
+		Element e = super.getElement();
+		if (e != null) {
+			return (Edge) e;
 		}
-
-		Edge edgeForId = fg.getEdge(id);
-		if (edgeForId == null) {
-			throw new RuntimeException("No edge for Id {" + id + "} of type {" + getClass().getName() + "} could be found within the graph");
-		}
-		Element edge = ((WrappedEdge) edgeForId).getBaseElement();
-
-		// Unwrap wrapped vertex
-		if (edge instanceof WrappedElement) {
-			edge = (Edge) ((WrappedElement) edge).getBaseElement();
-		}
-		return (Edge) edge;
+		return null;
 	}
 
 	@Override

@@ -93,13 +93,14 @@ public class DelegatingFramedGraph<G extends Graph> extends WrappedGraph<G> impl
 
 	@Override
 	public <T> T frameElement(final Element e, final Class<T> kind) {
-		if (e == null)
+		if (e == null) {
 			return null;
+		}
 
 		final Class<? extends T> frameType = (kind == TVertex.class || kind == TEdge.class) ? kind : defaultResolver.resolve(e, kind);
 
 		final T frame = builder.create(e, frameType);
-		((AbstractElementFrame) frame).init(this, e.getId());
+		((AbstractElementFrame) frame).init(this, e, e.getId());
 		return frame;
 	}
 
@@ -138,7 +139,7 @@ public class DelegatingFramedGraph<G extends Graph> extends WrappedGraph<G> impl
 		final Class<? extends T> frameType = this.untypedResolver.resolve(e, kind);
 
 		final T frame = builder.create(e, frameType);
-		((AbstractElementFrame) frame).init(this, e.getId());
+		((AbstractElementFrame) frame).init(this, e, e.getId());
 		return frame;
 	}
 
@@ -151,7 +152,7 @@ public class DelegatingFramedGraph<G extends Graph> extends WrappedGraph<G> impl
 		final Class<? extends T> frameType = this.untypedResolver.resolve(null, kind);
 
 		final T frame = builder.create(null, frameType);
-		((AbstractElementFrame) frame).init(this, id);
+		((AbstractElementFrame) frame).init(this, null, id);
 		return frame;
 	}
 
