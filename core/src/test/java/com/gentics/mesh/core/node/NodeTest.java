@@ -21,6 +21,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.cli.MeshIntegerationTest;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
@@ -39,6 +40,7 @@ import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
@@ -525,6 +527,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 2. create new branch and migrate nodes
 			Branch newBranch = tx(() -> createBranch("newbranch"));
+			MeshInternal.get().branchCache().clear();
 
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 			context.setNewBranch(newBranch);

@@ -29,7 +29,10 @@ public class EventAwareCacheTest extends AbstractMeshTest {
 				} else {
 					cache.invalidate();
 				}
-			}).build();
+
+			})
+			.vertx(vertx())
+			.build();
 
 		// Set some values to the cache
 		String uuid2 = UUIDUtil.randomUUID();

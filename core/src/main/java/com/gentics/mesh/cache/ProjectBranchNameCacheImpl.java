@@ -1,10 +1,14 @@
 package com.gentics.mesh.cache;
 
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
+
+import java.util.function.Function;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.rest.MeshEvent;
 
 import io.vertx.core.Vertx;
 
@@ -21,7 +25,7 @@ public class ProjectBranchNameCacheImpl implements ProjectBranchNameCache {
 		 */
 		cache = EventAwareCache.<String, Branch>builder()
 			.size(500)
-			.events(MeshEvent.BRANCH_UPDATED)
+			.events(BRANCH_UPDATED, BRANCH_CREATED)
 			.vertx(vertx)
 			.build();
 
@@ -30,6 +34,15 @@ public class ProjectBranchNameCacheImpl implements ProjectBranchNameCache {
 	}
 
 	@Override
+	public void clear() {
+		cache.invalidate();
+	}
+
+	@Override
+	public Branch get(String key, Function<String, Branch> mappingFunction) {
+		return cache.get(key, mappingFunction);
+	}
+
 	public EventAwareCache<String, Branch> cache() {
 		return cache;
 	}

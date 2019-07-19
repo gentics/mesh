@@ -9,7 +9,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cache.ProjectBranchNameCacheImpl;
-import com.gentics.mesh.cache.ProjectNameCache;
+import com.gentics.mesh.cache.ProjectNameCacheImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -128,7 +128,7 @@ public interface MeshComponent {
 
 	ProjectBranchNameCacheImpl branchCache();
 
-	ProjectNameCache projectNameCache();
+	ProjectNameCacheImpl projectNameCache();
 
 	@Component.Builder
 	interface Builder {

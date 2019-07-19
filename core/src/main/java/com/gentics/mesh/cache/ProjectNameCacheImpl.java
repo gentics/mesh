@@ -11,11 +11,11 @@ import com.gentics.mesh.core.data.Project;
 import io.vertx.core.Vertx;
 
 @Singleton
-public class ProjectNameCache {
+public class ProjectNameCacheImpl implements ProjectNameCache {
 	public EventAwareCache<String, Project> cache;
 
 	@Inject
-	public ProjectNameCache(Vertx vertx, CacheRegistry registry) {
+	public ProjectNameCacheImpl(Vertx vertx, CacheRegistry registry) {
 		cache = EventAwareCache.<String, Project>builder()
 			.events(PROJECT_DELETED, PROJECT_UPDATED)
 			.action((event, cache) -> {
@@ -34,5 +34,10 @@ public class ProjectNameCache {
 
 	public EventAwareCache<String, Project> cache() {
 		return cache;
+	}
+
+	@Override
+	public void clear() {
+		cache.invalidate();
 	}
 }

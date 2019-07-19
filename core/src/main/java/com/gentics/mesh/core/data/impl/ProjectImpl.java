@@ -370,7 +370,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public Branch findBranch(String branchNameOrUuid) {
-		return MeshInternal.get().branchCache().cache().get(id() + "-" + branchNameOrUuid, key -> {
+		return MeshInternal.get().branchCache().get(id() + "-" + branchNameOrUuid, key -> {
 			Branch branch = null;
 
 			if (!isEmpty(branchNameOrUuid)) {

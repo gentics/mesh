@@ -1,9 +1,11 @@
 package com.gentics.mesh.cache;
 
+import java.util.function.Function;
+
 import com.gentics.mesh.core.data.Branch;
 
-public interface ProjectBranchNameCache {
+public interface ProjectBranchNameCache extends MeshCache {
 
-	EventAwareCache<String, Branch> cache();
+	Branch get(String key, Function<String, Branch> mappingFunction);
 
 }

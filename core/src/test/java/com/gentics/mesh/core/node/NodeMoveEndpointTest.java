@@ -30,11 +30,13 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class NodeMoveEndpointTest extends AbstractMeshTest {
 
@@ -161,9 +163,11 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			request.setLanguage("en");
 			NodeResponse nodeResponse = call(
 				() -> client().createNode(PROJECT_NAME, request, new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
-			assertEquals("The node has no segmentfield value and thus a 404 path should be returned.", CURRENT_API_BASE_PATH + "/dummy/webroot/error/404",
+			assertEquals("The node has no segmentfield value and thus a 404 path should be returned.",
+				CURRENT_API_BASE_PATH + "/dummy/webroot/error/404",
 				nodeResponse.getPath());
-			assertEquals("The node has no segmentfield value and thus a 404 path should be returned.", CURRENT_API_BASE_PATH + "/dummy/webroot/error/404",
+			assertEquals("The node has no segmentfield value and thus a 404 path should be returned.",
+				CURRENT_API_BASE_PATH + "/dummy/webroot/error/404",
 				nodeResponse.getLanguagePaths().get("en"));
 
 			// 4. Now move the node to folder 2014
@@ -186,6 +190,8 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			newBranch = createBranch("newbranch");
 			tx.success();
 		}
+
+		MeshInternal.get().branchCache().clear();
 
 		try (Tx tx = tx()) {
 			NodeResponse migrated = migrateNode(PROJECT_NAME, movedNode.getUuid(), initialBranch().getName(), newBranch.getName());
