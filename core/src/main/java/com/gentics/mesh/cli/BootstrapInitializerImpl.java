@@ -317,6 +317,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public void globalCacheClear() {
 		ProjectRootImpl.PROJECT_NAME_CACHE.invalidate();
 		PermissionStore.invalidate();
+		pathStore.invalidate();
 		AbstractInternalActionContext.BRANCH_CACHE.invalidate();
 	}
 
