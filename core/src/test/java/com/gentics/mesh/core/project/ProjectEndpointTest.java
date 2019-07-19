@@ -19,7 +19,6 @@ import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -784,10 +783,10 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName(branchName);
 
-		waitForJobs(() -> {
+		waitForJob(() -> {
 			BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
 			assertThat(response).as("Branch Response").isNotNull().hasName(branchName).isActive().isNotMigrated();
-		}, COMPLETED, 1);
+		});
 
 		// update a node in all branches
 		String nodeUuid = tx(() -> folder("2015").getUuid());

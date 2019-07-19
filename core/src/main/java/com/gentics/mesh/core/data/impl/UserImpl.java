@@ -13,6 +13,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GRO
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_REFERENCE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
@@ -34,6 +35,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
+import com.gentics.mesh.cache.EventAwareCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
@@ -88,6 +90,18 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	private static final Logger log = LoggerFactory.getLogger(UserImpl.class);
 
+//	public static EventAwareCache<String, Boolean> USER_STATE_CACHE = EventAwareCache.<String, Boolean>builder()
+//		.size(15_000)
+//		.events(USER_UPDATED)
+//		.action((event, cache) -> {
+//			String uuid = event.body().getString("uuid");
+//			if (uuid != null) {
+//				cache.invalidate(uuid);
+//			} else {
+//				cache.invalidate();
+//			}
+//		}).build();
+
 	public static final String FIRSTNAME_PROPERTY_KEY = "firstname";
 
 	public static final String LASTNAME_PROPERTY_KEY = "lastname";
@@ -113,6 +127,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public User disable() {
+		//TODO Fixme - The #delete method will currently remove the user instead of disabling it.
+		// Thus this method is not used.
 		property(ENABLED_FLAG_PROPERTY_KEY, false);
 		return this;
 	}
@@ -166,6 +182,14 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public boolean isEnabled() {
+		//TODO the #delete method will currently delete the user. It will not be deleted.
+//		Boolean isEnabled = USER_STATE_CACHE.get(getUuid());
+//		if (isEnabled == null) {
+//			isEnabled = BooleanUtils.toBoolean(property(ENABLED_FLAG_PROPERTY_KEY).toString());
+//			USER_STATE_CACHE.put(getUuid(), isEnabled);
+//		}
+//
+//		return isEnabled;
 		return BooleanUtils.toBoolean(property(ENABLED_FLAG_PROPERTY_KEY).toString());
 	}
 

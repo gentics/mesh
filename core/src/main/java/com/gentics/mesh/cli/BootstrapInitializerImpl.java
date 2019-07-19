@@ -36,6 +36,7 @@ import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.MeshVersion;
+import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ReindexAction;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
@@ -143,6 +144,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Inject
 	public WebrootPathStore pathStore;
+
+	@Inject
+	public CacheRegistry cacheRegistry;
 
 	private static MeshRoot meshRoot;
 
@@ -309,6 +313,14 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			Mesh.vertx().eventBus().publish(STARTUP.address, true);
 		}, log::error);
 
+	}
+
+	@Override
+	public void globalCacheClear() {
+		cacheRegistry.clear();
+		// TODO remove the two other caches also to registry
+		PermissionStore.invalidate(false);
+		pathStore.invalidate();
 	}
 
 	/**

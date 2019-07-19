@@ -11,9 +11,12 @@ import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
+import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVertexFrame implements VertexFrame {
 
@@ -22,12 +25,34 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	 */
 	@Deprecated
 	@Override
-	public <N> N getId() {
+	public Object getId() {
 		return super.getId();
 	}
 
 	@Override
-	public <N> N id() {
+	public Vertex getElement() {
+		// TODO FIXME We should store the element reference in a thread local map that is bound to the transaction. The references should be removed once the
+		FramedGraph fg = Tx.get().getGraph();
+		if (fg == null) {
+			throw new RuntimeException(
+				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+		}
+
+		Vertex vertexForId = fg.getVertex(id);
+		if (vertexForId == null) {
+			throw new RuntimeException("No vertex for Id {" + id + "} of type {" + getClass().getName() + "} could be found within the graph");
+		}
+		Element vertex = ((WrappedVertex) vertexForId).getBaseElement();
+
+		// Unwrap wrapped vertex
+		if (vertex instanceof WrappedElement) {
+			vertex = (Vertex) ((WrappedElement) vertex).getBaseElement();
+		}
+		return (Vertex) vertex;
+	}
+
+	@Override
+	public Object id() {
 		return getId();
 	}
 
@@ -100,10 +125,10 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	@Override
 	public void setSingleLinkOutTo(VertexFrame vertex, String... labels) {
 		// Unlink all edges with the given label
-//		unlinkOut(null, labels);
+		// unlinkOut(null, labels);
 		getElement().getEdges(Direction.OUT, labels).forEach(Element::remove);
 		// Create a new edge with the given label
-//		linkOut(vertex, labels);
+		// linkOut(vertex, labels);
 		for (String label : labels) {
 			getElement().addEdge(label, vertex.getElement());
 		}

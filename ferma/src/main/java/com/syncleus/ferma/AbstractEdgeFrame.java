@@ -23,13 +23,16 @@
  */
 package com.syncleus.ferma;
 
-import com.syncleus.ferma.traversals.SimpleTraversal;
-import com.syncleus.ferma.traversals.VertexTraversal;
-import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import com.syncleus.ferma.traversals.EdgeTraversal;
+import com.syncleus.ferma.traversals.SimpleTraversal;
+import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedEdge;
+import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
 
 /**
  * The base class that all edge frames must extend.
@@ -96,6 +99,6 @@ public abstract class AbstractEdgeFrame extends AbstractElementFrame implements 
 
 	@Override
 	public <T> T reframeExplicit(final Class<T> kind) {
-		return getGraph().frameElementExplicit(getElement(), kind);
+		return getGraph().frameElementExplicitById(getId(), kind);
 	}
 }

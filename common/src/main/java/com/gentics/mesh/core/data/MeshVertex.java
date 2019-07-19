@@ -60,4 +60,10 @@ public interface MeshVertex extends MeshElement, VertexFrame {
 		return false;
 	}
 
+	/**
+	 * Sets the cached uuid for the vertex.
+	 * @param uuid
+	 */
+	void setCachedUuid(String uuid);
+
 }

@@ -13,7 +13,6 @@ import javax.inject.Singleton;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
-import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.madl.field.FieldMap;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.index.EdgeIndexDefinition;
@@ -207,7 +206,7 @@ public class OrientDBIndexHandler implements IndexHandler {
 
 	@Override
 	public <T extends ElementFrame> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key) {
-		FramedGraph graph = Tx.getActive().getGraph();
+		FramedGraph graph = Tx.get().getGraph();
 		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
 		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
 
@@ -361,6 +360,26 @@ public class OrientDBIndexHandler implements IndexHandler {
 			noTx.shutdown();
 		}
 
+	}
+
+	@Override
+	public <T extends VertexFrame> T findByUuid(Class<? extends T> classOfT, String uuid) {
+		FramedGraph graph = Tx.get().getGraph();
+		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
+		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
+		String type = "MeshVertexImpl";
+
+		OrientVertexType vertexType = orientBaseGraph.getVertexType(type);
+		if (vertexType != null) {
+			OIndex<?> index = vertexType.getClassIndex(type);
+			if (index != null) {
+				Object recordId = index.get(uuid);
+				if (recordId != null) {
+					return (T) graph.getFramedVertexExplicit(classOfT, recordId);
+				}
+			}
+		}
+		return null;
 	}
 
 }

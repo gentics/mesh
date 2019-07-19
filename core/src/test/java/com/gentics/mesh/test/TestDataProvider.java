@@ -118,6 +118,7 @@ public class TestDataProvider {
 		}
 
 		try (Tx tx = db.tx()) {
+			boot.globalCacheClear();
 			boot.initMandatoryData();
 			boot.initOptionalData(true);
 			tx.getGraph().commit();

@@ -56,9 +56,11 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 		model.setFromVersion(fromVersion.transformToReference());
 
 		Branch branch = getBranch();
-		Project project = branch.getProject();
-		model.setProject(project.transformToReference());
-		model.setBranch(branch.transformToReference());
+		if (branch != null) {
+			Project project = branch.getProject();
+			model.setProject(project.transformToReference());
+			model.setBranch(branch.transformToReference());
+		}
 
 		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
 		model.setStatus(status);

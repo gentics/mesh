@@ -6,7 +6,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
-import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Stack;
 import java.util.function.Predicate;
@@ -30,7 +29,6 @@ import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -50,7 +48,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return
 	 */
 	default TraversalResult<? extends T> findAll() {
-		return new TraversalResult<>(out(getRootLabel()).frameExplicit(getPersistanceClass()));
+		return out(getRootLabel(), getPersistanceClass());
 	}
 
 	/**
@@ -59,11 +57,12 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *
 	 * @param ac
 	 *            The context of the request
-	 * @param permission Needed permission
+	 * @param permission
+	 *            Needed permission
 	 */
 	default Stream<? extends T> findAllStream(InternalActionContext ac, GraphPermission permission) {
 		MeshAuthUser user = ac.getUser();
-		FramedTransactionalGraph graph = Tx.getActive().getGraph();
+		FramedTransactionalGraph graph = Tx.get().getGraph();
 
 		String idx = "e." + getRootLabel().toLowerCase() + "_out";
 		Spliterator<Edge> itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();
@@ -169,17 +168,15 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return Found element or null if the element could not be located
 	 */
 	default T findByUuid(String uuid) {
-		FramedGraph graph = Tx.get().getGraph();
-		// 1. Find the element with given uuid within the whole graph
-		Iterator<Vertex> it = database().getVertices(getPersistanceClass(), new String[] { MeshVertex.UUID_KEY }, new String[] { uuid });
-		if (it.hasNext()) {
-			Vertex potentialElement = it.next();
-			// FIXME Add check again
-			// 2. Use the edge index to determine whether the element is part of this root vertex
-			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(potentialElement
+		// Try to load the element using the index. This way no record load will happen.
+		T t = database().index().findByUuid(getPersistanceClass(), uuid);
+		if (t != null) {
+			FramedGraph graph = Tx.get().getGraph();
+			// Use the edge index to determine whether the element is part of this root vertex
+			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", database().createComposedIndexKey(t
 				.getId(), id()));
 			if (edges.iterator().hasNext()) {
-				return graph.frameElementExplicit(potentialElement, getPersistanceClass());
+				return t;
 			}
 		}
 		return null;

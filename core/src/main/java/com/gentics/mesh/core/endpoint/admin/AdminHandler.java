@@ -152,9 +152,9 @@ public class AdminHandler extends AbstractHandler {
 			db.stop();
 			db.restoreGraph(latestFile.getAbsolutePath());
 			db.setupConnectionPool();
+			boot.globalCacheClear();
 			routerStorage.root().apiRouter().projectsRouter().getProjectRouters().clear();
 			MeshRootImpl.clearReferences();
-			PermissionStore.invalidate(false);
 		}).andThen(db.asyncTx(() -> {
 			// Update the routes by loading the projects
 			initProjects();
@@ -219,6 +219,7 @@ public class AdminHandler extends AbstractHandler {
 
 			vertx.eventBus().publish(GRAPH_IMPORT_START.address, null);
 			db.importGraph(latestFile.getAbsolutePath());
+			boot.globalCacheClear();
 			vertx.eventBus().publish(GRAPH_IMPORT_FINISHED.address, null);
 
 			Single.just(message(ac, "import_finished")).subscribe(model -> ac.send(model, OK), ac::fail);

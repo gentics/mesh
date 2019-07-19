@@ -74,6 +74,13 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	}
 
 	@Override
+	public Project findByName(String name) {
+		return MeshInternal.get().projectNameCache().cache().get(name, n-> {
+			return super.findByName(n);
+		});
+	}
+
+	@Override
 	public Project create(String name, String hostname, Boolean ssl, String pathPrefix, User creator, SchemaContainerVersion schemaContainerVersion,
 		String uuid, EventQueueBatch batch) {
 		Project project = getGraph().addFramedVertex(ProjectImpl.class);

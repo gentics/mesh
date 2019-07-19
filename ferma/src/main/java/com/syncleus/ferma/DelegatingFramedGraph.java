@@ -93,13 +93,14 @@ public class DelegatingFramedGraph<G extends Graph> extends WrappedGraph<G> impl
 
 	@Override
 	public <T> T frameElement(final Element e, final Class<T> kind) {
-		if (e == null)
+		if (e == null) {
 			return null;
+		}
 
 		final Class<? extends T> frameType = (kind == TVertex.class || kind == TEdge.class) ? kind : defaultResolver.resolve(e, kind);
 
 		final T frame = builder.create(e, frameType);
-		((AbstractElementFrame) frame).init(this, e);
+		((AbstractElementFrame) frame).init(this, e, e.getId());
 		return frame;
 	}
 
@@ -131,13 +132,27 @@ public class DelegatingFramedGraph<G extends Graph> extends WrappedGraph<G> impl
 
 	@Override
 	public <T> T frameElementExplicit(final Element e, final Class<T> kind) {
-		if (e == null)
+		if (e == null) {
 			return null;
+		}
 
 		final Class<? extends T> frameType = this.untypedResolver.resolve(e, kind);
 
 		final T frame = builder.create(e, frameType);
-		((AbstractElementFrame) frame).init(this, e);
+		((AbstractElementFrame) frame).init(this, e, e.getId());
+		return frame;
+	}
+
+	@Override
+	public <T> T frameElementExplicitById(final Object id, final Class<T> kind) {
+		if (id == null) {
+			return null;
+		}
+
+		final Class<? extends T> frameType = this.untypedResolver.resolve(null, kind);
+
+		final T frame = builder.create(null, frameType);
+		((AbstractElementFrame) frame).init(this, null, id);
 		return frame;
 	}
 
@@ -223,7 +238,7 @@ public class DelegatingFramedGraph<G extends Graph> extends WrappedGraph<G> impl
 
 	@Override
 	public <F> F getFramedVertexExplicit(Class<F> classOfF, Object id) {
-		return frameElementExplicit(this.getBaseGraph().getVertex(id), classOfF);
+		return frameElementExplicitById(id, classOfF);
 	}
 
 	@Override

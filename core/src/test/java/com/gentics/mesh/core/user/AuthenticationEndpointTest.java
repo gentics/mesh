@@ -7,6 +7,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.madl.tx.Tx;
@@ -61,6 +62,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
+	@Ignore("It is currently not possible to disable users via REST.")
 	public void testLoginAndDisableUser() {
 		String username = db().tx(() -> user().getUsername());
 

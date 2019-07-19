@@ -58,7 +58,7 @@ public final class Mocks {
 		});
 		paramMap.entrySet().stream().forEach(entry -> when(request.getParam(entry.getKey())).thenReturn(entry.getValue()));
 		if (user != null) {
-			MeshAuthUserImpl requestUser = Tx.getActive().getGraph().frameElement(user.getElement(), MeshAuthUserImpl.class);
+			MeshAuthUserImpl requestUser = Tx.get().getGraph().frameElement(user.getElement(), MeshAuthUserImpl.class);
 			when(rc.user()).thenReturn(requestUser);
 			// JsonObject principal = new JsonObject();
 			// principal.put("uuid", user.getUuid());

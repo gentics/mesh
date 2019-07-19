@@ -69,7 +69,7 @@ public class ChangelogSystemTest {
 		Collection<Object[]> data = new ArrayList<Object[]>();
 		for (String version : metadata.getVersions()) {
 			// Only test mesh release dumps since a specific version
-			if (VersionNumber.parse(version).compareTo(VersionNumber.parse("0.30.0")) >= 0) {
+			if (VersionNumber.parse(version).compareTo(VersionNumber.parse("0.36.0")) >= 0) {
 				data.add(new Object[] { version });
 			}
 		}
