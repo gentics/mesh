@@ -274,9 +274,10 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 			// Set the uuid to cache it in the element. We know it is valid.
 			user.setCachedUuid(userUuid);
 
-			if (!user.isEnabled()) {
-				throw new Exception("User is disabled");
-			}
+			// TODO
+			//	if (!user.isEnabled()) {
+			//		throw new Exception("User is disabled");
+			//	}
 
 			// Check whether the token might be an API key token
 			if (!jwt.containsKey("exp")) {

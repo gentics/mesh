@@ -24,7 +24,7 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 	/**
 	 * Cache for project specific branches.
 	 */
-	private static EventAwareCache<Object, Branch> branchCache = EventAwareCache.<Object, Branch>builder()
+	public static final EventAwareCache<String, Branch> BRANCH_CACHE = EventAwareCache.<String, Branch>builder()
 		.size(500)
 		.events(MeshEvent.BRANCH_UPDATED)
 		.build();
@@ -54,16 +54,15 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 		if (project == null) {
 			project = getProject();
 		}
+		if (project == null) {
+			// TODO i18n
+			throw error(INTERNAL_SERVER_ERROR, "Cannot get branch without a project");
+		}
+		String branchNameOrUuid = getVersioningParameters().getBranch();
 		final Project selectedProject = project;
-		return branchCache.get(project.id(), p -> {
-			if (p == null) {
-				// TODO i18n
-				throw error(INTERNAL_SERVER_ERROR, "Cannot get branch without a project");
-			}
-
+		return BRANCH_CACHE.get(project.id() + "-" + branchNameOrUuid, key -> {
 			Branch branch = null;
 
-			String branchNameOrUuid = getVersioningParameters().getBranch();
 			if (!isEmpty(branchNameOrUuid)) {
 				branch = selectedProject.getBranchRoot().findByUuid(branchNameOrUuid);
 				if (branch == null) {

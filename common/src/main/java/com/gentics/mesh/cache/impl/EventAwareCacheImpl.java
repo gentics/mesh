@@ -69,12 +69,15 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		disabled = true;
 	}
 
-	public static Observable<Message<JsonObject>> rxEventBus(EventBus eventBus, MeshEvent... addresses) {
-		return Observable.fromArray(addresses)
-			.flatMap(meshEvent -> Observable.using(
-				() -> eventBus.<JsonObject>consumer(meshEvent.address),
-				consumer -> Observable.create(sub -> consumer.handler(sub::onNext)),
-				MessageConsumer::unregister));
+	@Override
+	public void enable() {
+		disabled = false;
+	}
+
+	@Override
+	public long size() {
+		cache.cleanUp();
+		return cache.estimatedSize();
 	}
 
 	@Override
@@ -123,6 +126,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 
 	public static class Builder<K, V> {
 
+		boolean disabled = false;
 		long size = 1000;
 		Predicate<Message<JsonObject>> filter = null;
 		BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext = null;
@@ -130,7 +134,11 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 
 		public EventAwareCache<K, V> build() {
 			Objects.requireNonNull(events, "No events for the cache have been set");
-			return new EventAwareCacheImpl<>(size, filter, onNext, events);
+			EventAwareCacheImpl<K, V> c = new EventAwareCacheImpl<>(size, filter, onNext, events);
+			if (disabled) {
+				c.disable();
+			}
+			return c;
 		}
 
 		/**
@@ -177,5 +185,23 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 			return this;
 		}
 
+		/**
+		 * Disable the created cache.
+		 * 
+		 * @return
+		 */
+		public Builder<K, V> disabled() {
+			this.disabled = true;
+			return this;
+		}
+
+	}
+
+	public static Observable<Message<JsonObject>> rxEventBus(EventBus eventBus, MeshEvent... addresses) {
+		return Observable.fromArray(addresses)
+			.flatMap(meshEvent -> Observable.using(
+				() -> eventBus.<JsonObject>consumer(meshEvent.address),
+				consumer -> Observable.create(sub -> consumer.handler(sub::onNext)),
+				MessageConsumer::unregister));
 	}
 }

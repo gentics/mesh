@@ -90,17 +90,17 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	private static final Logger log = LoggerFactory.getLogger(UserImpl.class);
 
-	private static EventAwareCache<String, Boolean> userStateCache = EventAwareCache.<String, Boolean>builder()
-		.size(15_000)
-		.events(USER_UPDATED)
-		.action((event, cache) -> {
-			String uuid = event.body().getString("uuid");
-			if (uuid != null) {
-				cache.invalidate(uuid);
-			} else {
-				cache.invalidate();
-			}
-		}).build();
+//	public static EventAwareCache<String, Boolean> USER_STATE_CACHE = EventAwareCache.<String, Boolean>builder()
+//		.size(15_000)
+//		.events(USER_UPDATED)
+//		.action((event, cache) -> {
+//			String uuid = event.body().getString("uuid");
+//			if (uuid != null) {
+//				cache.invalidate(uuid);
+//			} else {
+//				cache.invalidate();
+//			}
+//		}).build();
 
 	public static final String FIRSTNAME_PROPERTY_KEY = "firstname";
 
@@ -127,7 +127,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public User disable() {
-		userStateCache.put(getUuid(), false);
+		//TODO Fixme - The #delete method will currently remove the user instead of disabling it.
+		// Thus this method is not used.
 		property(ENABLED_FLAG_PROPERTY_KEY, false);
 		return this;
 	}
@@ -175,20 +176,21 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public User enable() {
-		userStateCache.put(getUuid(), true);
 		property(ENABLED_FLAG_PROPERTY_KEY, true);
 		return this;
 	}
 
 	@Override
 	public boolean isEnabled() {
-		Boolean isEnabled = userStateCache.get(getUuid());
-		if (isEnabled == null) {
-			isEnabled = BooleanUtils.toBoolean(property(ENABLED_FLAG_PROPERTY_KEY).toString());
-			userStateCache.put(getUuid(), isEnabled);
-		}
-
-		return isEnabled;
+		//TODO the #delete method will currently delete the user. It will not be deleted.
+//		Boolean isEnabled = USER_STATE_CACHE.get(getUuid());
+//		if (isEnabled == null) {
+//			isEnabled = BooleanUtils.toBoolean(property(ENABLED_FLAG_PROPERTY_KEY).toString());
+//			USER_STATE_CACHE.put(getUuid(), isEnabled);
+//		}
+//
+//		return isEnabled;
+		return BooleanUtils.toBoolean(property(ENABLED_FLAG_PROPERTY_KEY).toString());
 	}
 
 	@Override
@@ -715,22 +717,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		return DB.get().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
-	}
-
-	/**
-	 * Invalidate the user cache using the given user uuid.
-	 * 
-	 * @param uuid
-	 */
-	public static void invalidateUserCache(String uuid) {
-		userStateCache.invalidate(uuid);
-	}
-
-	/**
-	 * Invalidate the whole user cache.
-	 */
-	public static void invalidateUserCache() {
-		userStateCache.invalidate();
 	}
 
 }

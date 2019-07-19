@@ -784,10 +784,10 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName(branchName);
 
-		waitForJobs(() -> {
+		waitForJob(() -> {
 			BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
 			assertThat(response).as("Branch Response").isNotNull().hasName(branchName).isActive().isNotMigrated();
-		}, COMPLETED, 1);
+		});
 
 		// update a node in all branches
 		String nodeUuid = tx(() -> folder("2015").getUuid());

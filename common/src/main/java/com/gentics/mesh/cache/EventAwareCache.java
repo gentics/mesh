@@ -21,7 +21,7 @@ public interface EventAwareCache<K, V> {
 	 * @param <V>
 	 * @return
 	 */
-	static <K, V> EventAwareCacheImpl.Builder<K,V> builder() {
+	static <K, V> EventAwareCacheImpl.Builder<K, V> builder() {
 		return EventAwareCacheImpl.builder();
 	}
 
@@ -66,5 +66,17 @@ public interface EventAwareCache<K, V> {
 	 * Disable the cache.
 	 */
 	void disable();
+
+	/**
+	 * Enable the cache.
+	 */
+	void enable();
+
+	/**
+	 * Return the size of the cache.
+	 * 
+	 * @return
+	 */
+	long size();
 
 }
