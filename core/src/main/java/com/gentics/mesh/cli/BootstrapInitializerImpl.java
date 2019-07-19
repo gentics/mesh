@@ -39,6 +39,7 @@ import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ReindexAction;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
+import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
@@ -63,6 +64,7 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
+import com.gentics.mesh.core.data.root.impl.ProjectRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -309,6 +311,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			Mesh.vertx().eventBus().publish(STARTUP.address, true);
 		}, log::error);
 
+	}
+
+	@Override
+	public void globalCacheClear() {
+		ProjectRootImpl.PROJECT_CACHE.invalidate();
+		PermissionStore.invalidate();
+		AbstractInternalActionContext.BRANCH_CACHE.invalidate();
 	}
 
 	/**

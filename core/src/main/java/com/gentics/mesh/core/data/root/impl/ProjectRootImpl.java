@@ -4,6 +4,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
@@ -19,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
+import com.gentics.mesh.cache.EventAwareCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -47,6 +50,19 @@ import com.gentics.mesh.router.RouterStorage;
  */
 public class ProjectRootImpl extends AbstractRootVertex<Project> implements ProjectRoot {
 
+	public static final EventAwareCache<String, Project> PROJECT_CACHE = EventAwareCache.<String, Project>builder()
+		.events(PROJECT_DELETED, PROJECT_UPDATED)
+		.action((event, cache) -> {
+			System.out.println(event.body().encodePrettily());
+			String uuid = event.body().getString("uuid");
+			if (uuid != null) {
+				cache.invalidate(uuid);
+			} else {
+				cache.invalidate();
+			}
+		})
+		.build();
+
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(ProjectRootImpl.class, MeshVertexImpl.class);
 		type.createType(edgeType(HAS_PROJECT));
@@ -71,6 +87,13 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	@Override
 	public void removeProject(Project project) {
 		removeItem(project);
+	}
+
+	@Override
+	public Project findByName(String name) {
+		return PROJECT_CACHE.get(name, n-> {
+			return super.findByName(n);
+		});
 	}
 
 	@Override

@@ -159,6 +159,11 @@ public interface BootstrapInitializer {
 	void initMandatoryData() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException;
 
 	/**
+	 * Clear all caches.
+	 */
+	void globalCacheClear();
+
+	/**
 	 * Setup the optional data. Optional data will only be setup during the first setup. Mesh will not try to recreate those elements on each setup. The
 	 * {@link #initMandatoryData()} method on the other hand will setup elements which must exist and thus will enforce creation of those elements.
 	 * 
