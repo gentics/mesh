@@ -319,7 +319,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public void globalCacheClear() {
 		cacheRegistry.clear();
 		// TODO remove the two other caches also to registry
-		PermissionStore.invalidate();
+		PermissionStore.invalidate(false);
 		pathStore.invalidate();
 	}
 

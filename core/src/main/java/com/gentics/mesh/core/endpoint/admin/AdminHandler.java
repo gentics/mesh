@@ -152,9 +152,9 @@ public class AdminHandler extends AbstractHandler {
 			db.stop();
 			db.restoreGraph(latestFile.getAbsolutePath());
 			db.setupConnectionPool();
+			boot.globalCacheClear();
 			routerStorage.root().apiRouter().projectsRouter().getProjectRouters().clear();
 			MeshRootImpl.clearReferences();
-			PermissionStore.invalidate(false);
 		}).andThen(db.asyncTx(() -> {
 			// Update the routes by loading the projects
 			initProjects();

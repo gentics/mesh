@@ -16,7 +16,7 @@ public class CacheRegistry {
 	}
 
 	public void register(EventAwareCache<?, ?> cache) {
-		this.caches.add(cache);
+		caches.add(cache);
 	}
 
 	public void clear() {

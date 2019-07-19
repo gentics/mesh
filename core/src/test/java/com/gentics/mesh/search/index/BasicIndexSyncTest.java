@@ -237,6 +237,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		tx(() -> {
 			project().setName("updated");
 		});
+		boot().globalCacheClear();
 		syncIndex();
 		assertMetrics("project", 0, 1, 0);
 
@@ -247,6 +248,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 			Mockito.when(context.batch()).thenReturn(Mockito.mock(EventQueueBatch.class));
 			project.delete(context);
 		});
+		boot().globalCacheClear();
 		// Assert that the deletion was detected
 		syncIndex();
 		assertMetrics("project", 0, 0, 1);
