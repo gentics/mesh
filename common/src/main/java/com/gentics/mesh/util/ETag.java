@@ -1,6 +1,5 @@
 package com.gentics.mesh.util;
 
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import com.google.common.hash.Hashing;

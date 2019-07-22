@@ -2,14 +2,9 @@ package com.gentics.mesh.core.image.spi;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.apache.commons.io.FilenameUtils.removeExtension;
-
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
 import javax.imageio.ImageIO;
 
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;

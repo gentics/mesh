@@ -1,28 +1,28 @@
 package com.gentics.mesh.rest;
 
-import com.gentics.mesh.rest.client.MeshResponse;
-import io.reactivex.Maybe;
-import org.apache.commons.lang.NotImplementedException;
-
-import com.gentics.mesh.rest.client.MeshRequest;
-
-import io.reactivex.Single;
-import io.vertx.core.Future;
-
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.NotImplementedException;
+
+import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.MeshResponse;
+
+import io.reactivex.Maybe;
+import io.reactivex.Single;
+import io.vertx.core.Promise;
+
 public class MeshLocalRequestImpl<T> implements MeshRequest<T> {
 
-	private Future<T> future;
+	private Promise<T> promise;
 
-	public MeshLocalRequestImpl(Future<T> future) {
-		this.future = future;
+	public MeshLocalRequestImpl(Promise<T> promise) {
+		this.promise = promise;
 	}
 
 	@Override
 	public Single<T> toSingle() {
-		return new io.vertx.reactivex.core.Future<T>(future).rxSetHandler();
+		return new io.vertx.reactivex.core.Future<T>(promise.future()).rxSetHandler();
 	}
 
 	@Override

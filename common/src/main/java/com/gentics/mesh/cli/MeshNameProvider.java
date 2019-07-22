@@ -3,6 +3,7 @@ package com.gentics.mesh.cli;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.Month;
 
@@ -60,7 +61,7 @@ public class MeshNameProvider {
 		} else {
 			StringWriter writer = new StringWriter();
 			try {
-				IOUtils.copy(ins, writer);
+				IOUtils.copy(ins, writer, StandardCharsets.UTF_8);
 				JSONObject object = new JSONObject(writer.toString());
 				return object;
 			} catch (Exception e) {

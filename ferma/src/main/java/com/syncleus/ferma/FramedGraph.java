@@ -20,7 +20,6 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.*;
 
-import java.util.Collection;
 import java.util.Iterator;
 
 /**

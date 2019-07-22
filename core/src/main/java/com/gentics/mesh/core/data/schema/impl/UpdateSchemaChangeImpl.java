@@ -25,8 +25,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
-import com.gentics.mesh.graphdb.spi.Database;
-
 import io.vertx.core.json.JsonObject;
 
 /**

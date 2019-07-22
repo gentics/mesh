@@ -1,19 +1,12 @@
 package com.gentics.mesh.core.image.spi;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
 
 import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
-import com.gentics.mesh.util.PropReadFileStream;
-
-import io.reactivex.Flowable;
 import io.reactivex.Single;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.ext.web.RoutingContext;
 
 /**
  * SPI provider interface for image manipulators.

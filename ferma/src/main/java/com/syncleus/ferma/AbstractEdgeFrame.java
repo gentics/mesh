@@ -30,9 +30,6 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.SimpleTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedEdge;
-import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
 
 /**
  * The base class that all edge frames must extend.

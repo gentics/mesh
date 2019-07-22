@@ -33,7 +33,6 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
-import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 /**
  * The base class that all vertex frames must extend.

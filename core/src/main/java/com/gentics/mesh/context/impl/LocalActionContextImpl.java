@@ -22,8 +22,8 @@ import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.util.HttpQueryUtils;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
+import io.vertx.core.Promise;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
 
@@ -43,7 +43,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	private Project project;
 	private String responseBody;
 	private HttpResponseStatus responseStatus;
-	private Future<T> future = Future.future();
+	private Promise<T> promise = Promise.promise();
 	private Class<? extends T> classOfResponse;
 	private Set<FileUpload> fileUploads = new HashSet<>();
 
@@ -135,12 +135,12 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 		this.responseBody = body;
 		this.responseStatus = status;
 		T model = JsonUtil.readValue(responseBody, classOfResponse);
-		future.complete(model);
+		promise.complete(model);
 	}
 
 	@Override
 	public void send(HttpResponseStatus status) {
-		future.complete();
+		promise.complete();
 	}
 
 	/**
@@ -163,7 +163,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 
 	@Override
 	public void fail(Throwable cause) {
-		future.fail(cause);
+		promise.fail(cause);
 	}
 
 	@Override
@@ -228,12 +228,12 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	}
 
 	/**
-	 * Return the future which will be completed on sending or failure.
+	 * Return the promise which will be completed on sending or failure.
 	 * 
 	 * @return
 	 */
-	public Future<T> getFuture() {
-		return future;
+	public Promise<T> getPromise() {
+		return promise;
 	}
 
 	@Override

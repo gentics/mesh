@@ -11,7 +11,7 @@ import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.demo.DemoDataProvider;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -31,7 +31,7 @@ public class DemoVerticle extends AbstractVerticle {
 	}
 
 	@Override
-	public void start(Future<Void> startFuture) throws Exception {
+	public void start(Promise<Void> startFuture) throws Exception {
 		File outputDir = new File("demo");
 		if (!outputDir.exists()) {
 			unzip("/mesh-demo.zip", outputDir.getAbsolutePath());

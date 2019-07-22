@@ -6,7 +6,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.madl.index.IndexHandler;
-import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.madl.field.FieldMap;
 import com.gentics.mesh.madl.index.ElementIndexDefinition;
 import com.syncleus.ferma.ElementFrame;
