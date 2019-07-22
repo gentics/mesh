@@ -73,12 +73,11 @@ public class ForcePasswordChangeTest extends AbstractMeshTest {
 
 	/**
 	 * It should only be possible to change the password on login with the forcePasswordChange flag.
-	 * The new password should be ignored if it is sent anyway.
  	 */
 	@Test
 	public void testPasswordChangeWithoutFlag() {
 		assertThat(getUser()).doesNotHaveToChangePassword();
-		login(PASSWORD, NEW_PASSWORD);
+		call(loginSingle(PASSWORD, NEW_PASSWORD), BAD_REQUEST, "auth_login_newpassword_failed");
 		call(loginSingle(NEW_PASSWORD), UNAUTHORIZED, "auth_login_failed");
 		login(PASSWORD);
 	}
@@ -113,6 +112,11 @@ public class ForcePasswordChangeTest extends AbstractMeshTest {
 
 	private Single<GenericMessageResponse> loginSingle(String password) {
 		client().setLogin(USERNAME, password);
+		return client().login();
+	}
+
+	private Single<GenericMessageResponse> loginSingle(String password, String newPassword) {
+		client().setLogin(USERNAME, password, newPassword);
 		return client().login();
 	}
 
