@@ -187,8 +187,11 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 			}
 			if (hashMatches) {
 				boolean forcedPasswordChange = db.tx(user::isForcedPasswordChange);
-				if (newPassword == null && forcedPasswordChange) {
+				if (forcedPasswordChange && newPassword == null) {
 					resultHandler.handle(Future.failedFuture(error(BAD_REQUEST, "auth_login_password_change_required")));
+					return;
+				} else if (!forcedPasswordChange && newPassword != null) {
+					resultHandler.handle(Future.failedFuture(error(BAD_REQUEST, "auth_login_newpassword_failed")));
 					return;
 				} else {
 					if (forcedPasswordChange) {
