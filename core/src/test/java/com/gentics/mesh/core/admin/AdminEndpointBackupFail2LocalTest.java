@@ -16,22 +16,24 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(elasticsearch = NONE, testSize = FULL, startServer = true, inMemoryDB = false)
-public class AdminEndpointBackupFailLocalTest extends AbstractMeshTest {
+public class AdminEndpointBackupFail2LocalTest extends AbstractMeshTest {
 
-
-
+	/**
+	 * Test what happens when invoking restore without backup
+	 */
 	@Test
-	public void testRestoreWithoutBackup() throws IOException {
-		final String backupDir = testContext.getOptions().getStorageOptions().getBackupDirectory();
-		org.apache.commons.io.FileUtils.deleteDirectory(new File(backupDir));
-		new File(backupDir).delete();
+	public void testBackupWithoutDir() throws IOException {
+		// Use an file as backup dir to provoke an error
+		File testFile = new File("target/test" + System.currentTimeMillis());
+		testContext.getOptions().getStorageOptions().setBackupDirectory(testFile.getAbsolutePath());
+		testFile.createNewFile();
+		testFile.deleteOnExit();
 		grantAdminRole();
 
 		// Override the current status
 		status(READY);
 		assertEquals(READY, status());
-		call(() -> client().invokeRestore(), INTERNAL_SERVER_ERROR, "error_backup", new File(backupDir).getAbsolutePath());
+		call(() -> client().invokeBackup(), INTERNAL_SERVER_ERROR, "backup_failed");
 		assertEquals(READY, status());
 	}
-
 }
