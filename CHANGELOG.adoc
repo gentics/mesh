@@ -26,6 +26,8 @@ include::content/docs/variables.adoc-include[]
 [[v0.36.7]]
 == 0.36.7 (TBD)
 
+icon:check[] Backup: Fixed a bug in the backup handler which prevented the backup process to switch back to the correct status after a backup failed due to missing filesystem permissions.
+
 icon:plus[] REST: The webroot responses will now contain the header `Webroot-Node-Uuid` which identifies the node of the loaded content.
 
 icon:plus[] REST: The authentication and element loading performance has been increased.

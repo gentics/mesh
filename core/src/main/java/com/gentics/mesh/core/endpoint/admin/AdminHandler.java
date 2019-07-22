@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.endpoint.admin;
 
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_START;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_START;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_FINISHED;
@@ -28,12 +30,10 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
@@ -96,12 +96,18 @@ public class AdminHandler extends AbstractHandler {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			vertx.eventBus().publish(MeshEvent.GRAPH_BACKUP_START.address, null);
 			MeshStatus oldStatus = mesh.getStatus();
-			mesh.setStatus(MeshStatus.BACKUP);
-			vertx.eventBus().publish(MeshEvent.GRAPH_BACKUP_FINISHED.address, null);
-			db.backupGraph(options.getStorageOptions().getBackupDirectory());
-			mesh.setStatus(oldStatus);
+			try {
+				vertx.eventBus().publish(GRAPH_BACKUP_START.address, null);
+				mesh.setStatus(MeshStatus.BACKUP);
+				db.backupGraph(options.getStorageOptions().getBackupDirectory());
+			} catch (Throwable e) {
+				log.error("Backup process failed", e);
+				throw error(INTERNAL_SERVER_ERROR, "backup_failed", e);
+			} finally {
+				mesh.setStatus(oldStatus);
+				vertx.eventBus().publish(GRAPH_BACKUP_FINISHED.address, null);
+			}
 			return message(ac, "backup_finished");
 		}, model -> ac.send(model, OK));
 	}
@@ -158,9 +164,9 @@ public class AdminHandler extends AbstractHandler {
 		}).andThen(db.asyncTx(() -> {
 			// Update the routes by loading the projects
 			initProjects();
-			Mesh.mesh().setStatus(oldStatus);
 			return Single.just(message(ac, "restore_finished"));
 		})).doFinally(() -> {
+			Mesh.mesh().setStatus(oldStatus);
 			vertx.eventBus().publish(GRAPH_RESTORE_FINISHED.address, null);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
@@ -178,7 +184,6 @@ public class AdminHandler extends AbstractHandler {
 			}
 		}
 	}
-
 
 	/**
 	 * Handle graph export action.
