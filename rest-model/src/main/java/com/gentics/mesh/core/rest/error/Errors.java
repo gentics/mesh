@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.error;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.reactivex.Single;
 
 public enum Errors {
 
@@ -62,7 +63,7 @@ public enum Errors {
 	 * @return
 	 */
 	public static NameConflictException nodeConflict(String conflictingUuid, String conflictingName, String conflictingLanguage,
-			String i18nMessageKey, String... parameters) {
+		String i18nMessageKey, String... parameters) {
 		NameConflictException error = new NameConflictException(i18nMessageKey, parameters);
 		error.setProperty("conflictingUuid", conflictingUuid);
 		error.setProperty("conflictingName", conflictingName);
@@ -71,7 +72,7 @@ public enum Errors {
 	}
 
 	/**
-	 * Create a i18n translated error exception.
+	 * Create an i18n translated error exception.
 	 * 
 	 * @param status
 	 *            Http status
@@ -86,7 +87,19 @@ public enum Errors {
 	}
 
 	/**
-	 * Create a i18n translated permission error exception.
+	 * Create an i18n translated error single.
+	 * 
+	 * @param status
+	 * @param i18nMessageKey
+	 * @param parameters
+	 * @return
+	 */
+	public static <T> Single<T> rxError(HttpResponseStatus status, String i18nMessageKey, String... parameters) {
+		return Single.error(error(status, i18nMessageKey, parameters));
+	}
+
+	/**
+	 * Create an i18n translated permission error exception.
 	 * 
 	 * @param elementType
 	 * @param elementDescription
@@ -97,7 +110,7 @@ public enum Errors {
 	}
 
 	/**
-	 * Create a i18n translated error exception.
+	 * Create an i18n translated error exception.
 	 * 
 	 * @param status
 	 *            Http status
@@ -120,7 +133,7 @@ public enum Errors {
 	public static Errors valueByName(String typeName) {
 		for (Errors type : values()) {
 			if (type.getType()
-					.equals(typeName)) {
+				.equals(typeName)) {
 				return type;
 			}
 		}

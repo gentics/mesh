@@ -19,6 +19,7 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-plugin-api</artifactId>
 			<version>${mesh.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.pf4j</groupId>

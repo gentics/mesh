@@ -78,12 +78,12 @@ public class PluginHandler extends AbstractHandler {
 			}
 			PluginDeploymentRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), PluginDeploymentRequest.class);
 			String path = requestModel.getPath();
-			return manager.deploy(path).map(deploymentId -> {
-				log.debug("Deployed plugin with deployment name {" + path + "} - Deployment Uuid {" + deploymentId + "}");
-				PluginWrapper pluginWrapper = manager.getPlugin(deploymentId);
+			return manager.deploy(path).map(pluginUuid -> {
+				log.debug("Deployed plugin with deployment name {" + path + "} - Deployment Uuid {" + pluginUuid + "}");
+				PluginWrapper pluginWrapper = manager.getPlugin(pluginUuid);
 				if (pluginWrapper == null) {
 					log.error("The plugin was deployed but it could not be found by the manager. It seems that the plugin registration failed.");
-					throw error(NOT_FOUND, "admin_plugin_error_plugin_not_found", deploymentId);
+					throw error(NOT_FOUND, "admin_plugin_error_plugin_not_found", pluginUuid);
 				}
 				Plugin plugin = pluginWrapper.getPlugin();
 				if (plugin instanceof MeshPlugin) {

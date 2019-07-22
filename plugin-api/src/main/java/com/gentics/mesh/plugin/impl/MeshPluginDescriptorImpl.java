@@ -9,10 +9,11 @@ import org.pf4j.PluginDependency;
 
 import com.gentics.mesh.plugin.MeshPluginDescriptor;
 import com.gentics.mesh.plugin.PluginManifest;
+import com.gentics.mesh.util.UUIDUtil;
 
 public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 
-	private String pluginId;
+	private String uuid;
 	private String name;
 	private String description;
 	private String pluginClass = Plugin.class.getName();
@@ -24,14 +25,14 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 	private String inception;
 
 	public MeshPluginDescriptorImpl() {
-		dependencies = new ArrayList<>();
+		this.uuid = UUIDUtil.randomUUID();
+		this.dependencies = new ArrayList<>();
 	}
 
-	public MeshPluginDescriptorImpl(String pluginId, String name, String pluginDescription, String pluginClass, String version,
+	public MeshPluginDescriptorImpl(String name, String pluginDescription, String pluginClass, String version,
 		String requires, String author,
 		String license, String inception) {
 		this();
-		this.pluginId = pluginId;
 		this.name = name;
 		this.description = pluginDescription;
 		this.pluginClass = pluginClass;
@@ -42,14 +43,14 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 		this.inception = inception;
 	}
 
-	public MeshPluginDescriptorImpl(String pluginId, Class<?> clazz, PluginManifest manifest) {
-		this(pluginId, manifest.getName(), manifest.getDescription(), clazz.getName(), manifest.getVersion(), "",
+	public MeshPluginDescriptorImpl(Class<?> clazz, PluginManifest manifest) {
+		this(manifest.getName(), manifest.getDescription(), clazz.getName(), manifest.getVersion(), "",
 			manifest.getAuthor(),
 			manifest.getLicense(), manifest.getInception());
 	}
 
-	public MeshPluginDescriptorImpl(String pluginId, Class<?> clazz) {
-		this(pluginId, clazz.getName(), "", clazz.getName(), "", "", "", "", "");
+	public MeshPluginDescriptorImpl(Class<?> clazz) {
+		this(clazz.getName(), "", clazz.getName(), "", "", "", "", "");
 	}
 
 	public void addDependency(PluginDependency dependency) {
@@ -58,10 +59,18 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 
 	/**
 	 * Returns the unique identifier of this plugin.
+	 * 
+	 * @deprecated Use {@link #getUuid()} instead.
 	 */
+	@Deprecated
 	@Override
 	public String getPluginId() {
-		return pluginId;
+		return getUuid();
+	}
+
+	@Override
+	public String getUuid() {
+		return uuid;
 	}
 
 	/**
@@ -134,16 +143,11 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 
 	@Override
 	public String toString() {
-		return "PluginDescriptor [pluginId=" + pluginId + ", pluginClass="
+		return "PluginDescriptor [uuid=" + uuid + ", pluginClass="
 			+ pluginClass + ", version=" + version + ", author="
 			+ author + ", dependencies=" + dependencies + ", description="
 			+ description + ", requires=" + requires + ", license="
 			+ license + ", inception=" + inception + "]";
-	}
-
-	protected MeshPluginDescriptor setPluginId(String pluginId) {
-		this.pluginId = pluginId;
-		return this;
 	}
 
 	protected MeshPluginDescriptor setPluginName(String pluginName) {

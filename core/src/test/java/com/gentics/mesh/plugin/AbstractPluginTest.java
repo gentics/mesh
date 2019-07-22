@@ -53,9 +53,9 @@ public class AbstractPluginTest extends AbstractMeshTest {
 	public void setPluginBaseDir(String baseDir) {
 		File pluginDir = new File(baseDir);
 		pluginDir.mkdirs();
-		MeshOptions options = new MeshOptions();
+		MeshOptions options = testContext.getOptions();
 		options.setPluginDirectory(baseDir);
-		pluginManager().init(options);
+		pluginManager().init();
 	}
 
 	public PluginResponse copyAndDeploy(String sourcePath, String name) throws IOException {

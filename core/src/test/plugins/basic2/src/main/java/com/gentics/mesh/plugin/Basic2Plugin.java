@@ -17,8 +17,6 @@ public class Basic2Plugin extends AbstractPlugin implements RestPlugin {
 		super(wrapper, env);
 	}
 
-	public StaticHandler staticHandler = StaticHandler.create("webroot", getClass().getClassLoader());
-
 	@Override
 	public void registerEndpoints(Router globalRouter, Router projectRouter) {
 		log.info("Registering routes for {" + getName() + "}");
@@ -31,7 +29,8 @@ public class Basic2Plugin extends AbstractPlugin implements RestPlugin {
 			rc.response().end("world2-project");
 		});
 
-		globalRouter.route("/static/*").handler(staticHandler);
+		StaticHandler staticHandler = StaticHandler.create("webroot-basic2", getClass().getClassLoader());
+		globalRouter.route("/static2/*").handler(staticHandler);
 
 	}
 

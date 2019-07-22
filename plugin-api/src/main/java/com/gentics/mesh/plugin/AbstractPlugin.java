@@ -1,7 +1,5 @@
 package com.gentics.mesh.plugin;
 
-import static com.gentics.mesh.parameter.image.CropMode.description;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;

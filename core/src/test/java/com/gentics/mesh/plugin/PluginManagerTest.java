@@ -37,7 +37,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 		MeshPluginManager manager = pluginManager();
 		int before = manager.getPluginIds().size();
 		for (int i = 0; i < 100; i++) {
-			manager.deploy(ClonePlugin.class, "clone" + i).blockingGet();
+			manager.deploy(ClonePlugin.class).blockingGet();
 		}
 		assertEquals(before + 100, manager.getPluginIds().size());
 
@@ -96,7 +96,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 	@Test
 	public void testPluginAuth() throws IOException {
 		MeshPluginManager manager = pluginManager();
-		manager.deploy(ClientPlugin.class, "client").blockingGet();
+		manager.deploy(ClientPlugin.class).blockingGet();
 		JsonObject json = new JsonObject(getJSONViaClient(CURRENT_API_BASE_PATH + "/plugins/client/user"));
 		assertNotNull(json.getString("uuid"));
 	}
@@ -108,7 +108,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 	 */
 	@Test
 	public void testClientAPI() throws IOException {
-		pluginManager().deploy(ClientPlugin.class, "client").blockingGet();
+		pluginManager().deploy(ClientPlugin.class).blockingGet();
 
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName("testabc");
@@ -148,7 +148,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 	@Test
 	public void testJavaDeployment() throws IOException {
 		MeshPluginManager manager = pluginManager();
-		String pluginId = manager.deploy(DummyPlugin.class, "dummy").blockingGet();
+		String pluginId = manager.deploy(DummyPlugin.class).blockingGet();
 		assertEquals(1, manager.getPluginIds().size());
 
 		ProjectCreateRequest request = new ProjectCreateRequest();
@@ -173,14 +173,14 @@ public class PluginManagerTest extends AbstractPluginTest {
 	public void testRedeployAfterInitFailure() {
 		MeshPluginManager manager = pluginManager();
 		try {
-			manager.deploy(FailingPlugin.class, "failing").blockingGet();
+			manager.deploy(FailingPlugin.class).blockingGet();
 			fail("Deployment should have failed");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		assertEquals(0, manager.getPluginIds().size());
 
-		manager.deploy(SucceedingPlugin.class, "test-plugin").blockingGet();
+		manager.deploy(SucceedingPlugin.class).blockingGet();
 		assertEquals(1, manager.getPluginIds().size());
 	}
 

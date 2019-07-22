@@ -159,12 +159,11 @@ public interface Mesh {
 	void dontExit() throws InterruptedException;
 
 	/**
-	 * Deploy the plugin with the given class and manifest.
+	 * Deploy the plugin with the given class.
 	 * 
 	 * @param clazz
-	 * @param pluginId
 	 */
-	void deployPlugin(Class<?> clazz, String pluginId);
+	void deployPlugin(Class<?> clazz);
 
 	/**
 	 * Return a map of deployed plugins with name and id.

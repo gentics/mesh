@@ -408,8 +408,8 @@ public class MeshImpl implements Mesh {
 	}
 
 	@Override
-	public void deployPlugin(Class<?> clazz, String pluginId) {
-		MeshInternal.get().pluginManager().deploy(clazz, pluginId).blockingGet();
+	public void deployPlugin(Class<?> clazz) {
+		MeshInternal.get().pluginManager().deploy(clazz).blockingGet();
 	}
 
 	@Override

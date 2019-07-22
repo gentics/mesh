@@ -555,6 +555,8 @@ public class MeshTestContext extends TestWatcher {
 		meshOptions.getStorageOptions().setBackupDirectory(backupPath);
 		String exportPath = newFolder("exports");
 		meshOptions.getStorageOptions().setExportDirectory(exportPath);
+		String plugindirPath = newFolder("plugins");
+		meshOptions.setPluginDirectory(plugindirPath);
 	}
 
 	/**

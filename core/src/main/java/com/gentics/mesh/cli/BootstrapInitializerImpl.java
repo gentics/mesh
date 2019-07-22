@@ -306,7 +306,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		handleLocalData(forceIndexSync, options, verticleLoader);
 
 		// Load existing plugins
-		pluginManager.init(options);
+		pluginManager.init();
 		pluginManager.deployExistingPluginFiles().subscribe(() -> {
 			// Finally fire the startup event and log that bootstrap has completed
 			log.info("Sending startup completed event to {" + STARTUP + "}");
@@ -364,9 +364,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 		vertxOptions.setPreferNativeTransport(true);
 		System.setProperty("vertx.cacheDirBase", options.getTempDirectory());
-		// TODO We need to find a different way to deal with the FileResolver classpath caching issue since disabling the cache
-		// has negative performance implications.
-		// vertxOptions.setFileResolverCachingEnabled(false);
 		Vertx vertx = null;
 		if (vertxOptions.getEventBusOptions().isClustered()) {
 			log.info("Creating clustered Vert.x instance");

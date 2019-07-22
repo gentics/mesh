@@ -7,6 +7,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -58,7 +59,7 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		String name = "non-mesh.jar";
 
 		int before = Mesh.mesh().pluginIds().size();
-		copyAndDeploy(NON_MESH_PATH, name, BAD_REQUEST, "admin_plugin_error_plugin_did_not_register");
+		copyAndDeploy(NON_MESH_PATH, name, INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name);
 
 		int after = Mesh.mesh().pluginIds().size();
 		assertEquals("The verticle should not stay deployed.", before, after);
@@ -127,6 +128,8 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		assertEquals(1, pluginList.getMetainfo().getCurrentPage());
 		assertEquals(1, pluginList.getMetainfo().getPageCount());
 		assertEquals(1, pluginList.getMetainfo().getTotalCount());
+		PluginResponse first = pluginList.getData().get(0);
+		assertTrue("The uuid of the plugin was not a valid mesh uuid. Got: " + first.getUuid(), UUIDUtil.isUUID(first.getUuid()));
 
 		pluginList = call(() -> client().findPlugins(new PagingParametersImpl().setPerPage(1L)));
 		assertEquals(1, pluginList.getMetainfo().getPerPage().longValue());
@@ -154,11 +157,11 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		assertEquals("world", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/basic/hello"));
 		assertEquals("world2", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/basic2/hello"));
 		assertEquals("content", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/basic/static/file.txt"));
-		assertEquals("content2", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/basic2/static/file.txt"));
+		assertEquals("content2", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/basic2/static2/file.txt"));
 	}
 
 	@Test
-	public void testInvalidManifest() {
+	public void testInvalidManifest() throws IOException {
 		ManifestInjectorPlugin.manifest = new PluginManifest()
 			.setApiName("api")
 			.setAuthor("Joe Doe")
@@ -170,8 +173,7 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 
 		grantAdminRole();
 		final String DEPLOYMENT_NAME = ManifestInjectorPlugin.class.getCanonicalName();
-		call(() -> client().deployPlugin(new PluginDeploymentRequest().setPath(DEPLOYMENT_NAME)), BAD_REQUEST,
-			"admin_plugin_error_validation_failed_field_missing", "version");
+		copyAndDeploy(DEPLOYMENT_NAME, "injector.jar", BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "version");
 	}
 
 	@Test
@@ -187,8 +189,9 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 
 		grantAdminRole();
 		final String DEPLOYMENT_NAME = ManifestInjectorPlugin.class.getCanonicalName();
-		call(() -> client().deployPlugin(new PluginDeploymentRequest().setPath(DEPLOYMENT_NAME)), BAD_REQUEST,
-			"admin_plugin_error_validation_failed_apiname_invalid", "test");
+		Mesh.mesh().deployPlugin(ManifestInjectorPlugin.class);
+		// call(() -> client().deployPlugin(new PluginDeploymentRequest().setPath(DEPLOYMENT_NAME)), BAD_REQUEST,
+		// "admin_plugin_error_validation_failed_apiname_invalid", "test");
 
 		ManifestInjectorPlugin.manifest.setApiName("some/slash");
 		call(() -> client().deployPlugin(new PluginDeploymentRequest().setPath(DEPLOYMENT_NAME)), BAD_REQUEST,

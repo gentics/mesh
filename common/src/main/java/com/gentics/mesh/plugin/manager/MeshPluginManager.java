@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.pf4j.PluginWrapper;
 
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.plugin.MeshPlugin;
 
 import io.reactivex.Completable;
@@ -19,10 +18,8 @@ public interface MeshPluginManager {
 
 	/**
 	 * Initialize the plugin manager.
-	 * 
-	 * @param options
 	 */
-	void init(MeshOptions options);
+	void init();
 
 	/**
 	 * Deploy the plugin with the given path.
@@ -82,10 +79,9 @@ public interface MeshPluginManager {
 	 * Deploy the plugin via the given class.
 	 * 
 	 * @param clazz
-	 * @param pluginId
 	 * @return
 	 */
-	Single<String> deploy(Class<?> clazz, String pluginId);
+	Single<String> deploy(Class<?> clazz);
 
 	/**
 	 * Unloads all currently loaded plugins.
