@@ -28,7 +28,7 @@ public class PluginDeploymentRequest implements RestModel {
 	/**
 	 * Set the deployment path.
 	 * 
-	 * @param name
+	 * @param path
 	 * @return Fluent API
 	 */
 	public PluginDeploymentRequest setPath(String path) {

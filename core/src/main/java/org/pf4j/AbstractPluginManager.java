@@ -889,7 +889,7 @@ public abstract class AbstractPluginManager implements PluginManager {
     /**
      * Set to true to allow requires expression to be exactly x.y.z.
      * The default is false, meaning that using an exact version x.y.z will
-     * implicitly mean the same as >=x.y.z
+     * implicitly mean the same as smaller x.y.z
      *
      * @param exactVersionAllowed set to true or false
      */
