@@ -84,6 +84,8 @@ icon:plus[] Graph: It is now possible to configure the OrientDB `RID_BAG_EMBEDDE
 
 icon:plus[] REST: An error will now be returned when sending the `newPassword` field in the login request when the `forcedPasswordChange` flag has not been set.
 
+icon:plus[] Core: The core Vert.x library was updated to version `3.8.0`.
+
 icon:plus[] REST: The webroot responses will now contain the header `Webroot-Node-Uuid` which identifies the node of the loaded content.
 
 icon:plus[] REST: The authentication and element loading performance has been greatly increased.
