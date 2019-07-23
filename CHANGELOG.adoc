@@ -26,6 +26,8 @@ include::content/docs/variables.adoc-include[]
 [[v0.36.7]]
 == 0.36.7 (TBD)
 
+icon:plus[] Java Rest Client: Added `#equals` and `#hashCode` implementations to REST models.
+
 icon:check[] Backup: Fixed a bug in the backup handler which prevented the backup process to switch back to the correct status after a backup failed due to filesystem errors.
 
 icon:plus[] Graph: It is now possible to configure the OrientDB `RID_BAG_EMBEDDED_TO_SBTREEBONSAI_THRESHOLD` setting by adding the `ridBag.embeddedToSbtreeBonsaiThreshold` parameter to the the `storage.parameters` field.
@@ -53,8 +55,6 @@ icon:check[] Core: Improved performance when loading images with image manipulat
 
 [[v0.36.5]]
 == 0.36.5 (10.07.2019)
-
-icon:plus[] Java Rest Client: Added `#equals` and `#hashCode` implementations to REST models.
 
 icon:plus[] Upload: The `upload.parser` config setting and `MESH_BINARY_DOCUMENT_PARSER` environment variable can be used to control whether uploads should be parsed to extract metadata and contents. Uploads will be parsed by default.
 
