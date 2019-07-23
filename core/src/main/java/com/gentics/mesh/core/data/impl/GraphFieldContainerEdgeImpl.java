@@ -195,7 +195,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 * @param nodeId
 	 *            Object id of the node
 	 * @param branchUuid
-	 * @param code
+	 * @param type
 	 * @return
 	 */
 	public static boolean matchesBranchAndType(Object nodeId, String branchUuid, ContainerType type) {
