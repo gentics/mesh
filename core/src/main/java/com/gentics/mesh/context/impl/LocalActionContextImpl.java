@@ -22,6 +22,7 @@ import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.util.HttpQueryUtils;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.ext.web.Cookie;
@@ -228,12 +229,12 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	}
 
 	/**
-	 * Return the promise which will be completed on sending or failure.
+	 * Return the future which will be completed on sending or failure.
 	 * 
 	 * @return
 	 */
-	public Promise<T> getPromise() {
-		return promise;
+	public Future<T> getFuture() {
+		return promise.future();
 	}
 
 	@Override

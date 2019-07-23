@@ -30,7 +30,7 @@ public class MonitoringServerVerticle extends AbstractVerticle {
 	}
 
 	@Override
-	public void start(Promise<Void> fut) throws Exception {
+	public void start(Promise<Void> promise) throws Exception {
 		MonitoringConfig config = options.getMonitoringOptions();
 		int port = config.getPort();
 		String host = config.getHost();
@@ -46,23 +46,23 @@ public class MonitoringServerVerticle extends AbstractVerticle {
 		server.requestHandler(router);
 		server.listen(rh -> {
 			if (rh.failed()) {
-				fut.fail(rh.cause());
+				promise.fail(rh.cause());
 			} else {
 				if (log.isInfoEnabled()) {
 					log.info("Started monitoring http server.. Port: " + options.getPort());
 				}
-				fut.complete();
+				promise.complete();
 			}
 		});
 	}
 
 	@Override
-	public void stop(Promise<Void> fut) throws Exception {
+	public void stop(Promise<Void> promise) throws Exception {
 		server.close(rh -> {
 			if (rh.failed()) {
-				fut.fail(rh.cause());
+				promise.fail(rh.cause());
 			} else {
-				fut.complete();
+				promise.complete();
 			}
 		});
 	}

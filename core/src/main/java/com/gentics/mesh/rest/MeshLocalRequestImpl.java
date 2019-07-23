@@ -10,19 +10,19 @@ import com.gentics.mesh.rest.client.MeshResponse;
 
 import io.reactivex.Maybe;
 import io.reactivex.Single;
-import io.vertx.core.Promise;
+import io.vertx.core.Future;
 
 public class MeshLocalRequestImpl<T> implements MeshRequest<T> {
 
-	private Promise<T> promise;
+	private Future<T> future;
 
-	public MeshLocalRequestImpl(Promise<T> promise) {
-		this.promise = promise;
+	public MeshLocalRequestImpl(Future<T> future) {
+		this.future = future;
 	}
 
 	@Override
 	public Single<T> toSingle() {
-		return new io.vertx.reactivex.core.Future<T>(promise.future()).rxSetHandler();
+		return new io.vertx.reactivex.core.Future<T>(future).rxSetHandler();
 	}
 
 	@Override

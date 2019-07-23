@@ -137,7 +137,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	}
 
 	@Override
-	public void stop(Promise<Void> fut) {
+	public void stop(Promise<Void> promise) {
 		log.trace("Stopping Elasticsearch process verticle");
 		stopped.set(true);
 		Observable.fromIterable(vertxHandlers)
@@ -147,7 +147,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 				requests.onComplete();
 				idleChecker.close();
 				log.trace("Done stopping Elasticsearch process verticle");
-				fut.complete();
+				promise.complete();
 			});
 	}
 

@@ -140,7 +140,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 	}
 
 	@Override
-	public void start(Promise<Void> startFuture) throws Exception {
+	public void start(Promise<Void> promise) throws Exception {
 		int port = config().getInteger("port");
 		String host = config().getString("host");
 		JsonArray initialProjects = config().getJsonArray("initialProjects");
@@ -160,15 +160,15 @@ public class RestAPIVerticle extends AbstractVerticle {
 			options.setSsl(true);
 			PemKeyCertOptions keyOptions = new PemKeyCertOptions();
 			if (isEmpty(httpServerOptions.getCertPath()) || isEmpty(httpServerOptions.getKeyPath())) {
-				startFuture.fail("SSL is enabled but either the server key or the cert path was not specified.");
+				promise.fail("SSL is enabled but either the server key or the cert path was not specified.");
 				return;
 			}
 			if (!Paths.get(httpServerOptions.getKeyPath()).toFile().exists()) {
-				startFuture.fail("Could not find SSL key within path {" + httpServerOptions.getKeyPath() + "}");
+				promise.fail("Could not find SSL key within path {" + httpServerOptions.getKeyPath() + "}");
 				return;
 			}
 			if (!Paths.get(httpServerOptions.getCertPath()).toFile().exists()) {
-				startFuture.fail("Could not find SSL cert within path {" + httpServerOptions.getCertPath() + "}");
+				promise.fail("Could not find SSL cert within path {" + httpServerOptions.getCertPath() + "}");
 				return;
 			}
 
@@ -192,17 +192,17 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 		server.listen(rh -> {
 			if (rh.failed()) {
-				startFuture.fail(rh.cause());
+				promise.fail(rh.cause());
 			} else {
 				if (log.isInfoEnabled()) {
 					log.info("Started http server.. Port: " + config().getInteger("port"));
 				}
 				try {
 					registerEndPoints(storage);
-					startFuture.complete();
+					promise.complete();
 				} catch (Exception e) {
 					e.printStackTrace();
-					startFuture.fail(e);
+					promise.fail(e);
 				}
 			}
 		});
@@ -210,12 +210,12 @@ public class RestAPIVerticle extends AbstractVerticle {
 	}
 
 	@Override
-	public void stop(Promise<Void> stopFuture) throws Exception {
+	public void stop(Promise<Void> promise) throws Exception {
 		server.close(rh -> {
 			if (rh.failed()) {
-				stopFuture.fail(rh.cause());
+				promise.fail(rh.cause());
 			} else {
-				stopFuture.complete();
+				promise.complete();
 			}
 		});
 	}
