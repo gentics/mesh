@@ -178,7 +178,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 		}
 		// Default instead of 40 to avoid sudden changes in sort order
-		return -1;
+		return Integer.MAX_VALUE;
 	}
 
 	@Override

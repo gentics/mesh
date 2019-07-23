@@ -28,6 +28,8 @@ include::content/docs/variables.adoc-include[]
 
 icon:plus[] REST: A core library for JSON support (jackson) has been updated.
 
+icon:plus[] Graph: It is now possible to configure the OrientDB `RID_BAG_EMBEDDED_TO_SBTREEBONSAI_THRESHOLD` setting by adding the `ridBag.embeddedToSbtreeBonsaiThreshold` parameter to the the `storage.parameters` field.
+
 [[v0.36.4]]
 == 0.36.4 (05.07.2019)
 
