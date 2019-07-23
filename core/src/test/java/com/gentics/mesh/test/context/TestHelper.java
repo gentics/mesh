@@ -24,6 +24,7 @@ import com.gentics.madl.tx.TxAction1;
 import com.gentics.madl.tx.TxAction2;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -659,6 +660,7 @@ public interface TestHelper {
 
 	/**
 	 * Creates a new role, group and user and connects these elements.
+	 * 
 	 * @param name
 	 */
 	default Rug createUserGroupRole(String name) {
@@ -745,6 +747,14 @@ public interface TestHelper {
 
 	default void disableAutoPurge() {
 		Mesh.mesh().getOptions().getContentOptions().setAutoPurge(false);
+	}
+
+	default MeshStatus status() {
+		return Mesh.mesh().getStatus();
+	}
+
+	default void status(MeshStatus status) {
+		Mesh.mesh().setStatus(status);
 	}
 
 }
