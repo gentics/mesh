@@ -24,11 +24,11 @@ include::content/docs/variables.adoc-include[]
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 [[v0.36.7]]
-== 0.36.7 (TBD)
-
-icon:plus[] Java Rest Client: Added `#equals` and `#hashCode` implementations to REST models.
+== 0.36.7 (23.07.2019)
 
 icon:check[] Backup: Fixed a bug in the backup handler which prevented the backup process to switch back to the correct status after a backup failed due to filesystem errors.
+
+icon:plus[] Java Rest Client: Added `#equals` and `#hashCode` implementations to REST models.
 
 icon:plus[] Graph: It is now possible to configure the OrientDB `RID_BAG_EMBEDDED_TO_SBTREEBONSAI_THRESHOLD` setting by adding the `ridBag.embeddedToSbtreeBonsaiThreshold` parameter to the the `storage.parameters` field.
 
@@ -36,7 +36,7 @@ icon:plus[] REST: An error will now be returned when sending the `newPassword` f
 
 icon:plus[] REST: The webroot responses will now contain the header `Webroot-Node-Uuid` which identifies the node of the loaded content.
 
-icon:plus[] REST: The authentication and element loading performance has been increased.
+icon:plus[] REST: The authentication and element loading performance has been greatly increased.
 
 [[v0.36.6]]
 == 0.36.6 (16.07.2019)
