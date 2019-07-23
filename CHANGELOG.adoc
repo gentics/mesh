@@ -28,6 +28,8 @@ include::content/docs/variables.adoc-include[]
 
 icon:check[] Backup: Fixed a bug in the backup handler which prevented the backup process to switch back to the correct status after a backup failed due to filesystem errors.
 
+icon:plus[] Graph: It is now possible to configure the OrientDB `RID_BAG_EMBEDDED_TO_SBTREEBONSAI_THRESHOLD` setting by adding the `ridBag.embeddedToSbtreeBonsaiThreshold` parameter to the the `storage.parameters` field.
+
 icon:plus[] REST: An error will now be returned when sending the `newPassword` field in the login request when the `forcedPasswordChange` flag has not been set.
 
 icon:plus[] REST: The webroot responses will now contain the header `Webroot-Node-Uuid` which identifies the node of the loaded content.
