@@ -5,11 +5,25 @@ import org.pf4j.PluginDescriptor;
 public interface MeshPluginDescriptor extends PluginDescriptor {
 
 	/**
-	 * Transform the descriptor to a mesh plugin manifest.
+	 * Return the id of the plugin.
 	 * 
 	 * @return
 	 */
-	PluginManifest toPluginManifest();
+	String getId();
+
+	/**
+	 * Return name of the plugin.
+	 * 
+	 * @return
+	 */
+	String getName();
+
+	/**
+	 * Return the plugin uuid.
+	 * 
+	 * @return
+	 */
+	String getUuid();
 
 	/**
 	 * Return the author of the plugin.
@@ -26,17 +40,10 @@ public interface MeshPluginDescriptor extends PluginDescriptor {
 	String getInception();
 
 	/**
-	 * Return name of the plugin.
+	 * Transform the descriptor to a mesh plugin manifest.
 	 * 
 	 * @return
 	 */
-	String getName();
-
-	/**
-	 * Return the plugin uuid.
-	 * 
-	 * @return
-	 */
-	String getUuid();
+	PluginManifest toPluginManifest();
 
 }

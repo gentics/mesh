@@ -2,7 +2,6 @@ package com.gentics.mesh.plugin;
 
 import org.pf4j.PluginWrapper;
 
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 
 import io.vertx.ext.web.Router;

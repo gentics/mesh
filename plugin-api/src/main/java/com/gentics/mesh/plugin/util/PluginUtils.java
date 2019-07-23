@@ -6,10 +6,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.plugin.MeshPlugin;
-import com.gentics.mesh.plugin.MeshPluginDescriptor;
 import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.plugin.RestPlugin;
-import com.gentics.mesh.plugin.impl.MeshPluginDescriptorImpl;
 
 public final class PluginUtils {
 
@@ -20,10 +18,10 @@ public final class PluginUtils {
 	 * Validate the manifest.
 	 */
 	public static void validate(PluginManifest manifest, boolean strict) {
-		// if (StringUtils.isEmpty(manifest.getPluginId())) {
-		// throw error(BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "pluginId");
-		// }
 		if (strict) {
+			if (StringUtils.isEmpty(manifest.getId())) {
+				throw error(BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "id");
+			}
 			if (StringUtils.isEmpty(manifest.getName())) {
 				throw error(BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "name");
 			}
@@ -54,7 +52,7 @@ public final class PluginUtils {
 			throw error(BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "apiName");
 		}
 		if (apiName.contains(" ") | apiName.contains("/")) {
-			throw error(BAD_REQUEST, "admin_plugin_error_validation_failed_apiname_invalid", apiName);
+			throw error(BAD_REQUEST, "admin_plugin_error_validation_failed_apiname_invalid", plugin.getManifest().getId());
 		}
 	}
 

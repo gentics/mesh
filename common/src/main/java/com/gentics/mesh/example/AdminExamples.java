@@ -29,11 +29,12 @@ public class AdminExamples {
 	}
 
 	public PluginResponse createHelloWorldPluginResponse() {
-		return createPluginResponse("Hello World 1", "hello-world1", PLUGIN_1_UUID);
+		return createPluginResponse("hello-world", "Hello World 1", "hello", PLUGIN_1_UUID);
 	}
-	
-	public PluginResponse createPluginResponse(String name, String key, String uuid) {
+
+	public PluginResponse createPluginResponse(String id, String name, String key, String uuid) {
 		PluginManifest manifest = new PluginManifest();
+		manifest.setId(id);
 		manifest.setName(name);
 		manifest.setApiName(key);
 		manifest.setAuthor("Joe Doe");
@@ -46,9 +47,9 @@ public class AdminExamples {
 
 	public PluginListResponse createPluginListResponse() {
 		PluginListResponse list = new PluginListResponse();
-		list.add(createPluginResponse("Hello World 1", "hello-world1", PLUGIN_1_UUID));
-		list.add(createPluginResponse("Hello World 2", "hello-world2", PLUGIN_2_UUID));
-		list.add(createPluginResponse("Hello World 3", "hello-world3", PLUGIN_3_UUID));
+		list.add(createPluginResponse("hello-world-1", "Hello World 1", "hello-world1", PLUGIN_1_UUID));
+		list.add(createPluginResponse("hello-world-2", "Hello World 2", "hello-world2", PLUGIN_2_UUID));
+		list.add(createPluginResponse("hello-world-3", "Hello World 3", "hello-world3", PLUGIN_3_UUID));
 		list.getMetainfo().setTotalCount(3);
 		list.getMetainfo().setPageCount(1);
 		list.getMetainfo().setCurrentPage(1);

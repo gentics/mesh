@@ -24,8 +24,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
  */
 public class AbstractPluginTest extends AbstractMeshTest {
 
-	public static final String PLUGIN_DIR = "target/plugins" + System.currentTimeMillis();
-
 	public static final String BASIC_PATH = "target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar";
 
 	public static final String BASIC2_PATH = "target/test-plugins/basic2/target/basic2-plugin-0.0.1-SNAPSHOT.jar";
@@ -36,18 +34,23 @@ public class AbstractPluginTest extends AbstractMeshTest {
 
 	@Before
 	public void preparePluginDir() throws IOException {
-		MeshPluginManager manager = pluginManager();
-		manager.stop().blockingAwait(15, TimeUnit.SECONDS);
+		try {
+			MeshPluginManager manager = pluginManager();
+			pluginManager().init();
+			manager.stop().blockingAwait(15, TimeUnit.SECONDS);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		cleanup();
-		setPluginBaseDir(PLUGIN_DIR);
 	}
 
 	@After
 	public void cleanup() throws IOException {
-		File dir = new File(PLUGIN_DIR);
+		File dir = new File(pluginDir());
 		if (dir.exists()) {
 			FileUtils.forceDelete(dir);
 		}
+		dir.mkdirs();
 	}
 
 	public void setPluginBaseDir(String baseDir) {
@@ -59,13 +62,14 @@ public class AbstractPluginTest extends AbstractMeshTest {
 	}
 
 	public PluginResponse copyAndDeploy(String sourcePath, String name) throws IOException {
-		FileUtil.copy(new File(sourcePath), new File(PLUGIN_DIR, name));
+		FileUtil.copy(new File(sourcePath), new File(pluginDir(), name));
 		PluginDeploymentRequest request = new PluginDeploymentRequest().setPath(name);
 		return call(() -> client().deployPlugin(request));
 	}
 
 	public void copyAndDeploy(String sourcePath, String name, HttpResponseStatus status, String key, String... params) throws IOException {
-		FileUtil.copy(new File(sourcePath), new File(PLUGIN_DIR, name));
+		new File(pluginDir()).mkdirs();
+		FileUtil.copy(new File(sourcePath), new File(pluginDir(), name));
 		PluginDeploymentRequest request = new PluginDeploymentRequest().setPath(name);
 		call(() -> client().deployPlugin(request), status, key, params);
 

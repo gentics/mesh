@@ -30,7 +30,6 @@ public class ClonePlugin extends AbstractPlugin implements RestPlugin {
 			myCount = counter.incrementAndGet();
 		}
 		PluginManifest manifest = super.getManifest();
-		manifest.setApiName("clone" + myCount);
 		manifest.setName("Clone Plugin " + myCount);
 		manifest.setAuthor("Johannes Schüth");
 		manifest.setLicense("Apache License 2.0");
@@ -69,6 +68,6 @@ public class ClonePlugin extends AbstractPlugin implements RestPlugin {
 
 	@Override
 	public String apiName() {
-		return "clone";
+		return "clone" + counter.get();
 	}
 }

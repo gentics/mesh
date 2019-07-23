@@ -22,6 +22,7 @@ public class MeshPluginDescriptorFinderImpl implements PluginDescriptorFinder {
 
 	private static final Logger log = LoggerFactory.getLogger(ManifestPluginDescriptorFinder.class);
 
+	public static final String PLUGIN_ID = "Plugin-Id";
 	public static final String PLUGIN_NAME = "Plugin-Name";
 	public static final String PLUGIN_DESCRIPTION = "Plugin-Description";
 	public static final String PLUGIN_CLASS = "Plugin-Class";
@@ -85,6 +86,9 @@ public class MeshPluginDescriptorFinderImpl implements PluginDescriptorFinder {
 		MeshPluginDescriptorImpl pluginDescriptor = createPluginDescriptorInstance();
 
 		Attributes attributes = manifest.getMainAttributes();
+
+		String id = attributes.getValue(PLUGIN_ID);
+		pluginDescriptor.setPluginId(id);
 
 		String name = attributes.getValue(PLUGIN_NAME);
 		pluginDescriptor.setPluginName(name);

@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -28,6 +27,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.util.VersionUtil;
 
+import io.reactivex.Single;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClientOptions;
@@ -408,12 +408,12 @@ public class MeshImpl implements Mesh {
 	}
 
 	@Override
-	public void deployPlugin(Class<?> clazz) {
-		MeshInternal.get().pluginManager().deploy(clazz).blockingGet();
+	public Single<String> deployPlugin(Class<?> clazz, String id) {
+		return MeshInternal.get().pluginManager().deploy(clazz, id);
 	}
 
 	@Override
-	public Map<String, String> pluginIds() {
+	public Map<String, String> pluginUuids() {
 		return MeshInternal.get().pluginManager().pluginIdsMap();
 	}
 

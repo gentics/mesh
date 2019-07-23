@@ -32,6 +32,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+//Patched class which will no longer be needed once we update pf4j.
+//https://github.com/pf4j/pf4j/pull/330
+
 /**
  * This class implements the boilerplate plugin code that any {@link PluginManager}
  * implementation would have to support.

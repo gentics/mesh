@@ -13,6 +13,7 @@ import com.gentics.mesh.util.UUIDUtil;
 
 public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 
+	private String id;
 	private String uuid;
 	private String name;
 	private String description;
@@ -29,10 +30,11 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 		this.dependencies = new ArrayList<>();
 	}
 
-	public MeshPluginDescriptorImpl(String name, String pluginDescription, String pluginClass, String version,
+	public MeshPluginDescriptorImpl(String id, String name, String pluginDescription, String pluginClass, String version,
 		String requires, String author,
 		String license, String inception) {
 		this();
+		this.id = id;
 		this.name = name;
 		this.description = pluginDescription;
 		this.pluginClass = pluginClass;
@@ -44,21 +46,29 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 	}
 
 	public MeshPluginDescriptorImpl(Class<?> clazz, PluginManifest manifest) {
-		this(manifest.getName(), manifest.getDescription(), clazz.getName(), manifest.getVersion(), "",
+		this(manifest.getId(), manifest.getName(), manifest.getDescription(), clazz.getName(), manifest.getVersion(), "",
 			manifest.getAuthor(),
 			manifest.getLicense(), manifest.getInception());
 	}
 
-	public MeshPluginDescriptorImpl(Class<?> clazz) {
-		this(clazz.getName(), "", clazz.getName(), "", "", "", "", "");
+	public MeshPluginDescriptorImpl(Class<?> clazz, String id) {
+		this(id, clazz.getSimpleName(), "", clazz.getName(), "", "", "", "", "");
 	}
 
 	public void addDependency(PluginDependency dependency) {
 		this.dependencies.add(dependency);
 	}
 
+	@Override
+	public String getId() {
+		return id;
+	}
+
 	/**
 	 * Returns the unique identifier of this plugin.
+	 * 
+	 * In Gentics Mesh we'll use the deployment uuid as PF4J id. The {@link #getId()} method is independent and only be used for giving the plugin a id that can
+	 * for example be used to create configuration folders.
 	 * 
 	 * @deprecated Use {@link #getUuid()} instead.
 	 */
@@ -149,6 +159,12 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 			+ description + ", requires=" + requires + ", license="
 			+ license + ", inception=" + inception + "]";
 	}
+	
+	
+	protected MeshPluginDescriptor setPluginId(String pluginId) {
+		this.id = pluginId;
+		return this;
+	}
 
 	protected MeshPluginDescriptor setPluginName(String pluginName) {
 		this.name = pluginName;
@@ -223,7 +239,8 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 	@Override
 	public PluginManifest toPluginManifest() {
 		PluginManifest manifest = new PluginManifest();
-		manifest.setName(getPluginId());
+		manifest.setId(getId());
+		manifest.setName(getName());
 		manifest.setDescription(getPluginDescription());
 		manifest.setLicense(getLicense());
 		manifest.setVersion(getVersion());

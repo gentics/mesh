@@ -9,6 +9,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 public class PluginManifest {
 
 	@JsonProperty(required = true)
+	@JsonPropertyDescription("Unique id of the plugin")
+	private String id;
+
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Human readable name of the plugin.")
 	private String name;
 
@@ -37,6 +41,15 @@ public class PluginManifest {
 	private String license;
 
 	public PluginManifest() {
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public PluginManifest setId(String id) {
+		this.id = id;
+		return this;
 	}
 
 	public String getName() {

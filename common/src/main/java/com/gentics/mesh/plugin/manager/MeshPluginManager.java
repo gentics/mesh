@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
 
+import org.pf4j.Plugin;
 import org.pf4j.PluginWrapper;
 
 import com.gentics.mesh.plugin.MeshPlugin;
@@ -54,7 +55,7 @@ public interface MeshPluginManager {
 	 * @param strict
 	 * @return
 	 */
-	Completable validate(MeshPlugin plugin, boolean strict);
+	void validate(Plugin plugin, boolean strict);
 
 	/**
 	 * Stop the manager and undeploy all currently deployed plugins.
@@ -79,9 +80,11 @@ public interface MeshPluginManager {
 	 * Deploy the plugin via the given class.
 	 * 
 	 * @param clazz
+	 * @param id
+	 *            The id of the plugin (e.g. hello-world)
 	 * @return
 	 */
-	Single<String> deploy(Class<?> clazz);
+	Single<String> deploy(Class<?> clazz, String id);
 
 	/**
 	 * Unloads all currently loaded plugins.
@@ -89,11 +92,11 @@ public interface MeshPluginManager {
 	void unloadPlugins();
 
 	/**
-	 * Return the pluginIds of all loaded plugins.
+	 * Return the UUIDs of all loaded plugins.
 	 * 
 	 * @return
 	 */
-	Set<String> getPluginIds();
+	Set<String> getPluginUuids();
 
 	/**
 	 * Fetch the plugin using the given id.
@@ -103,8 +106,18 @@ public interface MeshPluginManager {
 	 */
 	PluginWrapper getPlugin(String pluginId);
 
+	/**
+	 * Return the path to the plugins root directory.
+	 * 
+	 * @return
+	 */
 	Path getPluginsRoot();
 
+	/**
+	 * Return a map of plugin ids.
+	 * 
+	 * @return
+	 */
 	Map<String, String> pluginIdsMap();
 
 }

@@ -50,7 +50,9 @@ public interface MeshPlugin {
 	 * 
 	 * @return ID of the plugin
 	 */
-	String id();
+	default String id() {
+		return getManifest().getId();
+	}
 
 	/**
 	 * Return the response which describes the plugin.

@@ -30,8 +30,6 @@ import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.vertx.reactivex.core.Vertx;
-
 @MeshTestSetting(testSize = PROJECT, startServer = true, inMemoryDB = true)
 public class AdminPluginEndpointTest extends AbstractPluginTest {
 
@@ -58,10 +56,10 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		grantAdminRole();
 		String name = "non-mesh.jar";
 
-		int before = Mesh.mesh().pluginIds().size();
+		int before = Mesh.mesh().pluginUuids().size();
 		copyAndDeploy(NON_MESH_PATH, name, INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name);
 
-		int after = Mesh.mesh().pluginIds().size();
+		int after = Mesh.mesh().pluginUuids().size();
 		assertEquals("The verticle should not stay deployed.", before, after);
 	}
 
@@ -112,7 +110,7 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 	public void testPluginList() throws IOException {
 		grantAdminRole();
 		PluginResponse response = copyAndDeploy(BASIC_PATH, "plugin.jar");
-		assertEquals(1, pluginManager().getPluginIds().size());
+		assertEquals(1, pluginManager().getPluginUuids().size());
 
 		String bogusName = "bogus.jar";
 
@@ -165,49 +163,46 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		ManifestInjectorPlugin.manifest = new PluginManifest()
 			.setApiName("api")
 			.setAuthor("Joe Doe")
-			.setName("test")
+			.setId("injector")
+			.setName("The injector test plugin")
 			.setInception("2018")
 			.setDescription("some Text")
 			.setLicense("Apache 2.0")
 			.setVersion(null);
 
 		grantAdminRole();
-		final String DEPLOYMENT_NAME = ManifestInjectorPlugin.class.getCanonicalName();
-		copyAndDeploy(DEPLOYMENT_NAME, "injector.jar", BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "version");
+		deployPlugin(ManifestInjectorPlugin.class, "inject", BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "version");
 	}
 
 	@Test
 	public void testManifestWithInvalidAPIName() {
 		ManifestInjectorPlugin.manifest = new PluginManifest()
-			.setApiName("api with spaces")
 			.setAuthor("Joe Doe")
+			.setId("injector")
 			.setDescription("some Text")
-			.setName("test")
+			.setName("Injector test plugin")
 			.setInception("2018")
 			.setLicense("Apache 2.0")
 			.setVersion("1.0");
+		ManifestInjectorPlugin.apiName = "api with spaces";
 
 		grantAdminRole();
-		final String DEPLOYMENT_NAME = ManifestInjectorPlugin.class.getCanonicalName();
-		Mesh.mesh().deployPlugin(ManifestInjectorPlugin.class);
-		// call(() -> client().deployPlugin(new PluginDeploymentRequest().setPath(DEPLOYMENT_NAME)), BAD_REQUEST,
-		// "admin_plugin_error_validation_failed_apiname_invalid", "test");
 
-		ManifestInjectorPlugin.manifest.setApiName("some/slash");
-		call(() -> client().deployPlugin(new PluginDeploymentRequest().setPath(DEPLOYMENT_NAME)), BAD_REQUEST,
-			"admin_plugin_error_validation_failed_apiname_invalid", "test");
+		deployPlugin(ManifestInjectorPlugin.class, "injector", BAD_REQUEST, "admin_plugin_error_validation_failed_apiname_invalid", "injector");
 
-		ManifestInjectorPlugin.manifest.setApiName("ok");
-		call(() -> client().deployPlugin(new PluginDeploymentRequest().setPath(DEPLOYMENT_NAME)));
+		ManifestInjectorPlugin.apiName = "api/with/slashes";
+		deployPlugin(ManifestInjectorPlugin.class, "injector", BAD_REQUEST, "admin_plugin_error_validation_failed_apiname_invalid", "injector");
+
+		ManifestInjectorPlugin.apiName = "ok";
+		deployPlugin(ManifestInjectorPlugin.class, "injector");
 	}
 
 	@Test
 	public void testMultipleDeployments() throws IOException {
 		grantAdminRole();
 
-		final String CLONE_PLUGIN_DEPLOYMENT_NAME = ClonePlugin.class.getCanonicalName();
 		for (int i = 0; i < 100; i++) {
-			call(() -> client().deployPlugin(new PluginDeploymentRequest().setPath(CLONE_PLUGIN_DEPLOYMENT_NAME)));
+			deployPlugin(ClonePlugin.class, "clone" + i);
 		}
 
 		PluginListResponse result = call(() -> client().findPlugins(new PagingParametersImpl().setPerPage(10L).setPage(10)));
@@ -223,16 +218,16 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 	}
 
 	@Test
-	public void testDuplicateDeployment() {
+	public void testDuplicateDeployment() throws IOException {
 		grantAdminRole();
-		call(() -> client().deployPlugin(new PluginDeploymentRequest().setPath(BASIC_PATH)));
-		assertEquals(1, pluginManager().getPluginIds().size());
 
-		int before = Vertx.vertx().deploymentIDs().size();
-		call(() -> client().deployPlugin(new PluginDeploymentRequest().setPath(BASIC_PATH)), BAD_REQUEST,
-			"admin_plugin_error_plugin_already_deployed", "Basic Plugin", "basic");
-		assertEquals("No additional plugins should have been deployed", before, Vertx.vertx().deploymentIDs().size());
-		assertEquals(1, pluginManager().getPluginIds().size());
+		copyAndDeploy(BASIC_PATH, "plugin.jar");
+		assertEquals(1, pluginManager().getPluginUuids().size());
+
+		long before = pluginCount();
+		copyAndDeploy(BASIC_PATH, "plugin2.jar", BAD_REQUEST, "admin_plugin_error_plugin_already_deployed", "The basic plugin", "basic");
+		assertEquals("No additional plugins should have been deployed", before, pluginCount());
+		assertEquals(1, pluginManager().getPluginUuids().size());
 	}
 
 }

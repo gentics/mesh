@@ -1,8 +1,5 @@
 package com.gentics.mesh.plugin.pf4j;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 

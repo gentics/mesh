@@ -113,11 +113,6 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 	}
 
 	@Override
-	public String id() {
-		return getWrapper().getPluginId();
-	}
-
-	@Override
 	public void stop() {
 		log.info("Stopping plugin {" + getName() + "}");
 		if (adminClient != null) {
@@ -172,8 +167,8 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 	protected File getPluginBaseDir() {
 		MeshOptions options = Mesh.mesh().getOptions();
 		String pluginDir = options.getPluginDirectory();
-		String apiName = getManifest().getName();
-		return new File(pluginDir, apiName);
+		String id = getManifest().getId();
+		return new File(pluginDir, id);
 	}
 
 	/**

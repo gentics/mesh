@@ -29,7 +29,7 @@ public class GraphQLPluginTest extends AbstractPluginTest {
 			if (i == 0) {
 				uuid = "261f779ff7954d0ca60c1f10c6434f28";
 			}
-			pluginManager().deploy(ClonePlugin.class).blockingGet();
+			pluginManager().deploy(ClonePlugin.class, "clone" + i).blockingGet();
 		}
 
 		String queryName = "plugin-query";
