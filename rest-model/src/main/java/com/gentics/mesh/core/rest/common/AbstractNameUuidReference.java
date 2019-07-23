@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
+import java.util.Objects;
+
 /**
  * Base class for named references. A named reference is a reference to a element within mesh that can be identified by uuid and name.
  *
@@ -69,5 +71,22 @@ public abstract class AbstractNameUuidReference<T> implements NameUuidReference<
 	@Override
 	public String toString() {
 		return "Reference: " + uuid + "/" + name + "/" + getClass().getSimpleName();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o instanceof AbstractNameUuidReference) {
+			AbstractNameUuidReference<?> that = (AbstractNameUuidReference<?>) o;
+			return Objects.equals(getUuid(), that.getUuid());
+		}
+		return super.equals(o);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(getUuid());
 	}
 }
