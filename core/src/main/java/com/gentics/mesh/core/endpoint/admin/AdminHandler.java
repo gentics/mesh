@@ -36,6 +36,7 @@ import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -101,6 +102,8 @@ public class AdminHandler extends AbstractHandler {
 				vertx.eventBus().publish(GRAPH_BACKUP_START.address, null);
 				mesh.setStatus(MeshStatus.BACKUP);
 				db.backupGraph(options.getStorageOptions().getBackupDirectory());
+			} catch (GenericRestException e) {
+				throw e;
 			} catch (Throwable e) {
 				log.error("Backup process failed", e);
 				throw error(INTERNAL_SERVER_ERROR, "backup_failed", e);
