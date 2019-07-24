@@ -128,4 +128,12 @@ public interface MeshPluginManager {
 	 */
 	List<MeshPlugin> getStartedMeshPlugins();
 
+	/**
+	 * Return the plugin by uuid.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
+	PluginWrapper getPluginByUuid(String uuid);
+
 }

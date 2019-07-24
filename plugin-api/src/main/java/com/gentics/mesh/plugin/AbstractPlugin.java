@@ -220,7 +220,11 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 
 	@Override
 	public String uuid() {
-		return getWrapper().getPluginId();
+		PluginDescriptor desc = getWrapper().getDescriptor();
+		if (desc instanceof MeshPluginDescriptor) {
+			return ((MeshPluginDescriptor) desc).getUuid();
+		}
+		return null;
 	}
 
 	protected void createAdminClient() {

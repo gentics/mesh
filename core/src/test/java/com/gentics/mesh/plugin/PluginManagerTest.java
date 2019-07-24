@@ -37,7 +37,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 		MeshPluginManager manager = pluginManager();
 		int before = manager.getPluginUuids().size();
 		for (int i = 0; i < 100; i++) {
-			manager.deploy(ClonePlugin.class, "clone").blockingGet();
+			manager.deploy(ClonePlugin.class, "clone" + i).blockingGet();
 		}
 		assertEquals(before + 100, manager.getPluginUuids().size());
 
@@ -147,7 +147,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 	@Test
 	public void testJavaDeployment() throws IOException {
 		MeshPluginManager manager = pluginManager();
-		String pluginId = manager.deploy(DummyPlugin.class, "dummy").blockingGet();
+		String pluginUuid = manager.deploy(DummyPlugin.class, "dummy").blockingGet();
 		assertEquals(1, manager.getPluginUuids().size());
 
 		ProjectCreateRequest request = new ProjectCreateRequest();
@@ -157,12 +157,12 @@ public class PluginManagerTest extends AbstractPluginTest {
 
 		String apiName = DummyPlugin.API_NAME;
 		PluginManifest manifest = JsonUtil.readValue(httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + apiName + "/manifest"), PluginManifest.class);
-		assertEquals("", manifest.getAuthor());
+		assertEquals("Unknown Author", manifest.getAuthor());
 		assertEquals(apiName, manifest.getApiName());
 
 		JsonObject idInfo = new JsonObject(httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + apiName + "/id"));
 		String id = idInfo.getString("id");
-		assertEquals("Invalid id", pluginId, id);
+		assertEquals("Invalid id", "dummy", id);
 
 		assertEquals("world", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + apiName + "/hello"));
 		assertEquals("project", httpGetNow(CURRENT_API_BASE_PATH + "/test/plugins/" + apiName + "/hello"));

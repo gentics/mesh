@@ -9,7 +9,9 @@ public interface MeshPluginDescriptor extends PluginDescriptor {
 	 * 
 	 * @return
 	 */
-	String getId();
+	default String getId() {
+		return getPluginId();
+	}
 
 	/**
 	 * Return name of the plugin.

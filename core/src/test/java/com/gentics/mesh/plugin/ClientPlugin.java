@@ -20,6 +20,7 @@ public class ClientPlugin extends AbstractPlugin implements RestPlugin {
 		PluginManifest manifest = new PluginManifest();
 		manifest.setApiName("client");
 		manifest.setAuthor("Joe Doe");
+		manifest.setId("client");
 		manifest.setInception("2018");
 		manifest.setVersion("1.0");
 		manifest.setLicense("Apache License 2.0");

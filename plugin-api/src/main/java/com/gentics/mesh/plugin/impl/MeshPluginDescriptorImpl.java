@@ -1,7 +1,9 @@
 package com.gentics.mesh.plugin.impl;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.pf4j.Plugin;
@@ -52,7 +54,14 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 	}
 
 	public MeshPluginDescriptorImpl(Class<?> clazz, String id) {
-		this(id, clazz.getSimpleName(), "", clazz.getName(), "", "", "", "", "");
+		this(id, clazz.getSimpleName(), "NA", clazz.getName(), "0.0.1-SNAPSHOT", "", "Unknown Author", "Unknown License", today());
+	}
+
+	private static String today() {
+		String pattern = "yyyy-MM-dd";
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+		String date = simpleDateFormat.format(new Date());
+		return date;
 	}
 
 	public void addDependency(PluginDependency dependency) {
@@ -60,22 +69,8 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 	}
 
 	@Override
-	public String getId() {
-		return id;
-	}
-
-	/**
-	 * Returns the unique identifier of this plugin.
-	 * 
-	 * In Gentics Mesh we'll use the deployment uuid as PF4J id. The {@link #getId()} method is independent and only be used for giving the plugin a id that can
-	 * for example be used to create configuration folders.
-	 * 
-	 * @deprecated Use {@link #getUuid()} instead.
-	 */
-	@Deprecated
-	@Override
 	public String getPluginId() {
-		return getUuid();
+		return id;
 	}
 
 	@Override
@@ -159,8 +154,7 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 			+ description + ", requires=" + requires + ", license="
 			+ license + ", inception=" + inception + "]";
 	}
-	
-	
+
 	protected MeshPluginDescriptor setPluginId(String pluginId) {
 		this.id = pluginId;
 		return this;

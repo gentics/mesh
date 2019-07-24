@@ -58,7 +58,7 @@ public class PluginHandler extends AbstractHandler {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			PluginWrapper pluginWrapper = manager.getPlugin(uuid);
+			PluginWrapper pluginWrapper = manager.getPluginByUuid(uuid);
 			if (pluginWrapper == null) {
 				throw error(NOT_FOUND, "admin_plugin_error_plugin_not_found", uuid);
 			}
@@ -114,9 +114,9 @@ public class PluginHandler extends AbstractHandler {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			List<MeshPlugin> deployments = manager.getStartedMeshPlugins();
+			List<MeshPlugin> startedPlugins = manager.getStartedMeshPlugins();
 			PluginListResponse response = new PluginListResponse();
-			Page<PluginResponse> page = new DynamicStreamPageImpl<>(deployments.stream().map(MeshPlugin::toResponse),
+			Page<PluginResponse> page = new DynamicStreamPageImpl<>(startedPlugins.stream().map(MeshPlugin::toResponse),
 				ac.getPagingParameters());
 			page.setPaging(response);
 			response.getData().addAll(page.getWrappedList());

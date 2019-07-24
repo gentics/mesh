@@ -34,13 +34,10 @@ public class AbstractPluginTest extends AbstractMeshTest {
 
 	@Before
 	public void preparePluginDir() throws IOException {
-		try {
-			MeshPluginManager manager = pluginManager();
-			//pluginManager().init();
-			manager.stop().blockingAwait(15, TimeUnit.SECONDS);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		MeshPluginManager manager = pluginManager();
+		manager.stop().blockingAwait(15, TimeUnit.SECONDS);
+		// We need to init again since each test will setup a new plugin directory
+		manager.init();
 		cleanup();
 	}
 

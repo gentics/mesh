@@ -8,7 +8,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -25,8 +27,10 @@ import javax.inject.Singleton;
 import org.pf4j.DefaultPluginManager;
 import org.pf4j.Plugin;
 import org.pf4j.PluginClassLoader;
+import org.pf4j.PluginDescriptor;
 import org.pf4j.PluginDescriptorFinder;
 import org.pf4j.PluginFactory;
+import org.pf4j.PluginRuntimeException;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
 
@@ -63,7 +67,14 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 
 	private final PluginFactory pluginFactory;
 
-	private MeshOptions options;
+	private final MeshOptions options;
+
+	private List<String> pluginUuids = new ArrayList<>();
+
+	/**
+	 * Maps plugin uuid to plugin id.
+	 */
+	private Map<String, String> pluginMap = new HashMap<>();
 
 	@Inject
 	public MeshPluginManagerImpl(MeshOptions options, MeshPluginFactory pluginFactory) {
@@ -192,65 +203,92 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 		}
 
 		// Load plugin into p4fj
-		String uuid;
+		String id;
 		try {
-			uuid = loadPlugin(path);
+			id = loadPlugin(path);
+		} catch (PluginRuntimeException e) {
+			if (e.getMessage().startsWith("There is an already loaded plugin")) {
+				log.error("Plugin deployment of {" + name + "} failed.", e);
+				return rxError(BAD_REQUEST, "admin_plugin_error_plugin_with_id_already_deployed", name);
+			} else {
+				log.error("Plugin deployment of {" + name + "} failed.", e);
+				return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name);
+			}
 		} catch (Throwable e) {
 			log.error("Plugin deployment of {" + name + "} failed.", e);
 			return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name);
 		}
-		if (uuid == null) {
+		if (id == null) {
 			log.warn("The plugin was not registered after deployment. Maybe the initialisation failed. Going to unload the plugin.");
 			return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_did_not_register", name);
 		}
 
 		// Invoke the loading of the plugin class
 		try {
-			PluginWrapper plugin = getPlugin(uuid);
+			PluginWrapper plugin = getPlugin(id);
 			if (plugin == null || plugin.getPlugin() == null) {
-				log.error("The plugin {" + path + "/" + uuid + "} could not be loaded.");
-				plugins.remove(uuid);
+				log.error("The plugin {" + path + "/" + id + "} could not be loaded.");
+				plugins.remove(id);
 				return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name);
 			}
 			validate(plugin.getPlugin(), true);
+			String uuid = getUuidFromWrapper(plugin);
+			pluginMap.put(uuid, id);
+			pluginUuids.add(uuid);
 		} catch (GenericRestException e) {
-			log.error("Post start validation of plugin {" + path + "/" + uuid + "} failed.", e);
-			plugins.remove(uuid);
+			log.error("Post start validation of plugin {" + path + "/" + id + "} failed.", e);
+			plugins.remove(id);
 			throw e;
 		} catch (Throwable e) {
 			log.error("Error while loading plugin class", e);
-			plugins.remove(uuid);
+			plugins.remove(id);
 			return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name);
 		}
 
 		// Start the plugin
 		try {
-			startPlugin(uuid);
+			startPlugin(id);
 		} catch (GenericRestException e) {
-			log.error("Starting of plugin {" + path + "/" + uuid + "} failed.", e);
-			tryUnloadPlugin(uuid);
+			log.error("Starting of plugin {" + path + "/" + id + "} failed.", e);
+			rollback(id);
 			throw e;
 		} catch (Throwable e) {
-			log.error("Starting of plugin {" + path + "/" + uuid + "} failed.", e);
-			tryUnloadPlugin(uuid);
+			log.error("Starting of plugin {" + path + "/" + id + "} failed.", e);
+			rollback(id);
 			return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_starting_failed", name);
 		}
-		return Single.just(uuid);
+		return Single.just(id);
+	}
+
+	private String getUuidFromWrapper(PluginWrapper plugin) {
+		if (plugin == null) {
+			return null;
+		}
+		PluginDescriptor desc = plugin.getDescriptor();
+		if (desc instanceof MeshPluginDescriptor) {
+			return ((MeshPluginDescriptor) desc).getUuid();
+		}
+		return null;
 	}
 
 	/**
 	 * Try to unload the plugin with the id.
 	 * 
-	 * @param uuid
+	 * @param id
 	 * @param true
 	 *            if the plugin was unloaded - Otherwise false
 	 */
-	private boolean tryUnloadPlugin(String uuid) {
+	private boolean rollback(String id) {
+		String uuid = pluginMap.get(id);
 		try {
-			unloadPlugin(uuid);
+			unloadPlugin(id);
+			pluginMap.remove(id);
+			if (uuid != null) {
+				pluginUuids.remove(uuid);
+			}
 			return true;
 		} catch (Throwable e2) {
-			log.error("Error while unloading plugin {" + uuid + "}", e2);
+			log.error("Error while unloading plugin {" + id + "}", e2);
 			return false;
 		}
 	}
@@ -259,7 +297,8 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 	public Completable undeploy(String uuid) {
 		return Completable.fromRunnable(() -> {
 			resolvePlugins();
-			unloadPlugin(uuid);
+			String id = pluginMap.get(uuid);
+			unloadPlugin(id);
 		});
 	}
 
@@ -361,11 +400,14 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 		log.debug("Created wrapper '{}' for plugin '{}'", pluginWrapper, pluginClassName);
 
 		// add plugin to the list with plugins
-		plugins.put(pluginUuid, pluginWrapper);
+		plugins.put(id, pluginWrapper);
+		pluginUuids.add(pluginUuid);
+		pluginMap.put(pluginUuid, id);
+
 		getUnresolvedPlugins().add(pluginWrapper);
 
 		// add plugin class loader to the list with class loaders
-		getPluginClassLoaders().put(pluginUuid, pluginClassLoader);
+		getPluginClassLoaders().put(id, pluginClassLoader);
 
 		resolvePlugins();
 
@@ -385,36 +427,41 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 
 			// 1. Load plugin
 			try {
-				uuid = loadPlugin(clazz, id).getPluginId();
+				PluginDescriptor desc = loadPlugin(clazz, id).getDescriptor();
+				if (desc instanceof MeshPluginDescriptor) {
+					uuid = ((MeshPluginDescriptor) desc).getUuid();
+				} else {
+					return rxError(INTERNAL_SERVER_ERROR, "plugin_desc_wrong");
+				}
 			} catch (Throwable e) {
 				return Single.error(new RuntimeException("Error while deploying plugin {" + clazz + "}", e));
 			}
 
 			// 2. Validate plugin
 			try {
-				PluginWrapper plugin = getPlugin(uuid);
+				PluginWrapper plugin = getPlugin(id);
 				if (plugin == null || plugin.getPlugin() == null) {
 					log.error("The plugin {" + name + "/" + uuid + "} could not be loaded.");
-					plugins.remove(uuid);
+					plugins.remove(id);
 					return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name);
 				}
 				validate(plugin.getPlugin(), true);
 			} catch (GenericRestException e) {
 				log.error("Post start validation of plugin {" + name + "/" + uuid + "} failed.", e);
-				plugins.remove(uuid);
+				plugins.remove(id);
 				return Single.error(e);
 			} catch (Throwable e) {
 				log.error("Error while loading plugin class", e);
-				plugins.remove(uuid);
+				plugins.remove(id);
 				return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name);
 			}
 
 			// 3. Start plugin
 			try {
-				startPlugin(uuid);
+				startPlugin(id);
 			} catch (Throwable e) {
 				log.error("Error while starting plugin", e);
-				tryUnloadPlugin(uuid);
+				rollback(id);
 				return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_starting_failed", name);
 			}
 			return Single.just(uuid);
@@ -434,6 +481,15 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 	@Override
 	public Set<String> getPluginUuids() {
 		return super.getStartedPlugins().stream().map(pw -> pw.getPluginId()).collect(Collectors.toSet());
+	}
+
+	@Override
+	public PluginWrapper getPluginByUuid(String uuid) {
+		String id = pluginMap.get(uuid);
+		if (id == null) {
+			return null;
+		}
+		return getPlugin(id);
 	}
 
 	@Override

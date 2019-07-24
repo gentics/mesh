@@ -15,7 +15,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
@@ -162,7 +161,6 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 	@Test
 	public void testInvalidManifest() throws IOException {
 		ManifestInjectorPlugin.manifest = new PluginManifest()
-			.setApiName("api")
 			.setAuthor("Joe Doe")
 			.setId("injector")
 			.setName("The injector test plugin")
@@ -170,6 +168,7 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 			.setDescription("some Text")
 			.setLicense("Apache 2.0")
 			.setVersion(null);
+		ManifestInjectorPlugin.apiName = "api";
 
 		grantAdminRole();
 		deployPlugin(ManifestInjectorPlugin.class, "inject", BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "version");
@@ -178,10 +177,10 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 	@Test
 	public void testManifestWithInvalidAPIName() {
 		ManifestInjectorPlugin.manifest = new PluginManifest()
-			.setAuthor("Joe Doe")
 			.setId("injector")
-			.setDescription("some Text")
 			.setName("Injector test plugin")
+			.setDescription("some Text")
+			.setAuthor("Joe Doe")
 			.setInception("2018")
 			.setLicense("Apache 2.0")
 			.setVersion("1.0");
@@ -226,7 +225,7 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		assertEquals(1, pluginManager().getPluginUuids().size());
 
 		long before = pluginCount();
-		copyAndDeploy(BASIC_PATH, "plugin2.jar", BAD_REQUEST, "admin_plugin_error_plugin_already_deployed", "The basic plugin", "basic");
+		copyAndDeploy(BASIC_PATH, "plugin2.jar", BAD_REQUEST, "admin_plugin_error_plugin_with_id_already_deployed", "plugin2.jar");
 		assertEquals("No additional plugins should have been deployed", before, pluginCount());
 		assertEquals(1, pluginManager().getPluginUuids().size());
 	}

@@ -18,10 +18,10 @@ public final class PluginUtils {
 	 * Validate the manifest.
 	 */
 	public static void validate(PluginManifest manifest, boolean strict) {
+		if (StringUtils.isEmpty(manifest.getId())) {
+			throw error(BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "id");
+		}
 		if (strict) {
-			if (StringUtils.isEmpty(manifest.getId())) {
-				throw error(BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "id");
-			}
 			if (StringUtils.isEmpty(manifest.getName())) {
 				throw error(BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "name");
 			}
