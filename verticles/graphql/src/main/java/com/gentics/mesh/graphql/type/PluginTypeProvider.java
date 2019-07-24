@@ -94,7 +94,7 @@ public class PluginTypeProvider extends AbstractTypeProvider {
 		// .name
 		root.field(newFieldDefinition().name("name").description("The name of the plugin").type(GraphQLString).dataFetcher((env) -> {
 			MeshPlugin plugin = env.getSource();
-			return plugin.getName();
+			return plugin.name();
 		}));
 
 		// .description

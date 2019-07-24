@@ -9,7 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import java.util.Map;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -114,9 +114,9 @@ public class PluginHandler extends AbstractHandler {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			Map<String, MeshPlugin> deployments = manager.getPluginsMap();
+			List<MeshPlugin> deployments = manager.getStartedMeshPlugins();
 			PluginListResponse response = new PluginListResponse();
-			Page<PluginResponse> page = new DynamicStreamPageImpl<>(deployments.values().stream().map(MeshPlugin::toResponse),
+			Page<PluginResponse> page = new DynamicStreamPageImpl<>(deployments.stream().map(MeshPlugin::toResponse),
 				ac.getPagingParameters());
 			page.setPaging(response);
 			response.getData().addAll(page.getWrappedList());

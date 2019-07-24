@@ -15,10 +15,6 @@
  */
 package org.pf4j;
 
-import org.pf4j.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,6 +27,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+
+import org.pf4j.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 //Patched class which will no longer be needed once we update pf4j.
 //https://github.com/pf4j/pf4j/pull/330
@@ -665,7 +666,7 @@ public abstract class AbstractPluginManager implements PluginManager {
     }
 
     protected void initialize() {
-        plugins = new HashMap<>();
+        plugins = new TreeMap<>();
         pluginClassLoaders = new HashMap<>();
         unresolvedPlugins = new ArrayList<>();
         resolvedPlugins = new ArrayList<>();

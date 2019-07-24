@@ -36,7 +36,7 @@ public class AbstractPluginTest extends AbstractMeshTest {
 	public void preparePluginDir() throws IOException {
 		try {
 			MeshPluginManager manager = pluginManager();
-			pluginManager().init();
+			//pluginManager().init();
 			manager.stop().blockingAwait(15, TimeUnit.SECONDS);
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -19,7 +19,7 @@ public class Basic2Plugin extends AbstractPlugin implements RestPlugin {
 
 	@Override
 	public void registerEndpoints(Router globalRouter, Router projectRouter) {
-		log.info("Registering routes for {" + getName() + "}");
+		log.info("Registering routes for {" + name() + "}");
 
 		globalRouter.route("/hello").handler(rc -> {
 			rc.response().end("world2");

@@ -16,15 +16,6 @@ import io.reactivex.Completable;
 public interface MeshPlugin {
 
 	/**
-	 * Shortcut for loading the name from the {@link #getManifest()}
-	 * 
-	 * @return Name of the plugin
-	 */
-	default String getName() {
-		return getManifest().getName();
-	}
-
-	/**
 	 * Return the plugin manifest.
 	 * 
 	 * @return Manifest of the plugin
@@ -55,6 +46,22 @@ public interface MeshPlugin {
 	}
 
 	/**
+	 * Shortcut for loading the name from the {@link #getManifest()}
+	 * 
+	 * @return Name of the plugin
+	 */
+	default String name() {
+		return getManifest().getName();
+	}
+
+	/**
+	 * Return the uuid of the plugin.
+	 * 
+	 * @return
+	 */
+	String uuid();
+
+	/**
 	 * Return the response which describes the plugin.
 	 * 
 	 * @return Plugin Response REST model
@@ -62,8 +69,8 @@ public interface MeshPlugin {
 	default PluginResponse toResponse() {
 		PluginResponse response = new PluginResponse();
 		response.setManifest(getManifest());
-		response.setName(getName());
-		response.setUuid(id());
+		response.setName(name());
+		response.setUuid(uuid());
 		return response;
 	}
 

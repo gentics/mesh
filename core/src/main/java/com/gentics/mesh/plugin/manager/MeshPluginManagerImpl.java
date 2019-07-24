@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -23,6 +24,7 @@ import javax.inject.Singleton;
 
 import org.pf4j.DefaultPluginManager;
 import org.pf4j.Plugin;
+import org.pf4j.PluginClassLoader;
 import org.pf4j.PluginDescriptorFinder;
 import org.pf4j.PluginFactory;
 import org.pf4j.PluginState;
@@ -46,12 +48,18 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 
+/**
+ * The implementation of an {@link MeshPluginManager}.
+ */
 @Singleton
 public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshPluginManager {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshPluginManagerImpl.class);
 
-	private static Set<String> syncSet = Collections.synchronizedSet(new HashSet<>());
+	/**
+	 * Set which is used to detect conflicting deployments.
+	 */
+	private static Set<String> apiNameSyncSet = Collections.synchronizedSet(new HashSet<>());
 
 	private final PluginFactory pluginFactory;
 
@@ -95,8 +103,8 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 			.andThen(Completable.create(sub -> {
 				if (plugin instanceof RestPlugin) {
 					RestPlugin restPlugin = ((RestPlugin) plugin);
-					syncSet.add(restPlugin.apiName());
-					String name = plugin.getName();
+					apiNameSyncSet.add(restPlugin.apiName());
+					String name = plugin.name();
 					String apiName = restPlugin.apiName();
 					log.info("Registering plugin {" + name + "} with id {" + plugin.id() + "}");
 					for (RouterStorage rs : RouterStorage.getInstances()) {
@@ -119,14 +127,14 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 					}
 				}
 				if (plugin instanceof RestPlugin) {
-					syncSet.remove(((RestPlugin) plugin).apiName());
+					apiNameSyncSet.remove(((RestPlugin) plugin).apiName());
 				}
 			});
 	}
 
 	private Completable deregisterPlugin(MeshPlugin plugin) {
 		return Completable.create(sub -> {
-			String name = plugin.getName();
+			String name = plugin.name();
 			log.info("Deregistering {" + name + "} plugin.");
 
 			String apiName = plugin.getManifest().getApiName();
@@ -138,7 +146,7 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 				globalPluginRouter.getRouter(apiName).clear();
 				projectPluginRouter.getRouter(apiName).clear();
 			}
-			syncSet.remove(apiName);
+			apiNameSyncSet.remove(apiName);
 			sub.onComplete();
 		}).andThen(plugin.prepareStop());
 	}
@@ -275,8 +283,8 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 	 */
 	private synchronized void checkForConflict(MeshPlugin plugin) {
 		String apiName = plugin.getManifest().getApiName();
-		String name = plugin.getName();
-		if (syncSet.contains(apiName)) {
+		String name = plugin.name();
+		if (apiNameSyncSet.contains(apiName)) {
 			GenericRestException error = error(BAD_REQUEST, "admin_plugin_error_plugin_already_deployed", name, apiName);
 			log.error("The plugin {" + name + "} can't be deployed because another plugin already uses the same apiName {" + apiName + "}", error);
 			throw error;
@@ -286,8 +294,8 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 	@Override
 	public SortedMap<String, MeshPlugin> getPluginsMap() {
 		SortedMap<String, MeshPlugin> sortedMap = new TreeMap<>();
-		getPlugins().forEach(pw -> {
-			System.out.println(pw.getPluginId() + " " + ((MeshPlugin)pw.getPlugin()).id());
+		getStartedPlugins().forEach(pw -> {
+			System.out.println(pw.getPluginId() + " " + ((MeshPlugin) pw.getPlugin()).id());
 			sortedMap.put(pw.getPluginId(), (MeshPlugin) pw.getPlugin());
 		});
 		return sortedMap;
@@ -331,9 +339,11 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 		String pluginClassName = clazz.getName();
 		log.debug("Class '{}' for plugin", pluginClassName);
 
+		PluginClassLoader pluginClassLoader = new PluginClassLoader(this, pluginDescriptor, getClass().getClassLoader());
+
 		// create the plugin wrapper
 		log.debug("Creating wrapper for plugin '{}'", pluginClassName);
-		PluginWrapper pluginWrapper = new PluginWrapper(this, pluginDescriptor, null, clazz.getClassLoader());
+		PluginWrapper pluginWrapper = new PluginWrapper(this, pluginDescriptor, null, pluginClassLoader);
 		pluginWrapper.setPluginFactory(getPluginFactory());
 
 		// test for disabled plugin
@@ -355,7 +365,7 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 		getUnresolvedPlugins().add(pluginWrapper);
 
 		// add plugin class loader to the list with class loaders
-		getPluginClassLoaders().put(pluginUuid, clazz.getClassLoader());
+		getPluginClassLoaders().put(pluginUuid, pluginClassLoader);
 
 		resolvePlugins();
 
@@ -423,7 +433,7 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 
 	@Override
 	public Set<String> getPluginUuids() {
-		return super.getPlugins().stream().map(e -> e.getPluginId()).collect(Collectors.toSet());
+		return super.getStartedPlugins().stream().map(pw -> pw.getPluginId()).collect(Collectors.toSet());
 	}
 
 	@Override
@@ -431,7 +441,12 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 		return getPluginsMap().entrySet()
 			.stream()
 			.filter(e -> e.getValue() != null)
-			.collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getName()));
+			.collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().name()));
+	}
+
+	@Override
+	public List<MeshPlugin> getStartedMeshPlugins() {
+		return getStartedPlugins().stream().map(w -> (MeshPlugin) w.getPlugin()).collect(Collectors.toList());
 	}
 
 }

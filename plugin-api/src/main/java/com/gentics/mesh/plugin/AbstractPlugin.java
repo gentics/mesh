@@ -101,7 +101,7 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 
 	@Override
 	public void start() {
-		log.info("Starting plugin {" + getName() + "}");
+		log.info("Starting plugin {" + name() + "}");
 		createAdminClient();
 		getPluginBaseDir().mkdirs();
 		getStorageDir().mkdirs();
@@ -114,7 +114,7 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 
 	@Override
 	public void stop() {
-		log.info("Stopping plugin {" + getName() + "}");
+		log.info("Stopping plugin {" + name() + "}");
 		if (adminClient != null) {
 			adminClient.close();
 		}
@@ -216,6 +216,11 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 	 */
 	public Handler<RoutingContext> wrapHandler(Handler<PluginContext> handler) {
 		return rc -> handler.handle(wrap(rc));
+	}
+
+	@Override
+	public String uuid() {
+		return getWrapper().getPluginId();
 	}
 
 	protected void createAdminClient() {

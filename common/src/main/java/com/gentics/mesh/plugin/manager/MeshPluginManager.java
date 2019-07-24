@@ -1,6 +1,7 @@
 package com.gentics.mesh.plugin.manager;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -119,5 +120,12 @@ public interface MeshPluginManager {
 	 * @return
 	 */
 	Map<String, String> pluginIdsMap();
+
+	/**
+	 * Return a list of started mesh plugins.
+	 * 
+	 * @return
+	 */
+	List<MeshPlugin> getStartedMeshPlugins();
 
 }
