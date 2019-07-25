@@ -17,6 +17,7 @@
 		<module>basic2</module>
 		<module>non-mesh</module>
 		<module>failing</module>
+		<module>classloader</module>
 	</modules>
 
 	<repositories>

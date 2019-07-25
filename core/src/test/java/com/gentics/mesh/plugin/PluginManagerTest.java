@@ -5,6 +5,7 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -20,6 +21,7 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.UUIDUtil;
 import com.twelvemonkeys.io.FileUtil;
 
 import io.vertx.core.http.HttpHeaders;
@@ -148,6 +150,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 	public void testJavaDeployment() throws IOException {
 		MeshPluginManager manager = pluginManager();
 		String pluginUuid = manager.deploy(DummyPlugin.class, "dummy").blockingGet();
+		assertTrue(UUIDUtil.isUUID(pluginUuid));
 		assertEquals(1, manager.getPluginUuids().size());
 
 		ProjectCreateRequest request = new ProjectCreateRequest();

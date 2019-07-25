@@ -159,6 +159,16 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 	}
 
 	@Test
+	public void testClassLoaderHandling() throws IOException {
+		grantAdminRole();
+
+		copyAndDeploy(CLASSLOADER_PATH, "plugin.jar");
+
+		assertEquals("plugin", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/classloader/scope"));
+		assertEquals("plugin", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/classloader/check"));
+	}
+
+	@Test
 	public void testInvalidManifest() throws IOException {
 		ManifestInjectorPlugin.manifest = new PluginManifest()
 			.setAuthor("Joe Doe")

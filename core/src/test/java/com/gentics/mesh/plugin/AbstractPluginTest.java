@@ -32,6 +32,8 @@ public class AbstractPluginTest extends AbstractMeshTest {
 
 	public static final String NON_MESH_PATH = "target/test-plugins/non-mesh/target/non-mesh-plugin-0.0.1-SNAPSHOT.jar";
 
+	public static final String CLASSLOADER_PATH = "target/test-plugins/classloader/target/classloader-plugin-0.0.1-SNAPSHOT.jar";
+
 	@Before
 	public void preparePluginDir() throws IOException {
 		MeshPluginManager manager = pluginManager();
