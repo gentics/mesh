@@ -47,6 +47,11 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 		this.env = env;
 	}
 
+	@Override
+	public String id() {
+		return getWrapper().getPluginId();
+	}
+
 	/**
 	 * Use {@link PluginConfigUtil#getYAMLMapper()} instead.
 	 * 

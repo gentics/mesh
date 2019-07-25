@@ -41,9 +41,7 @@ public interface MeshPlugin {
 	 * 
 	 * @return ID of the plugin
 	 */
-	default String id() {
-		return getManifest().getId();
-	}
+	String id();
 
 	/**
 	 * Shortcut for loading the name from the {@link #getManifest()}

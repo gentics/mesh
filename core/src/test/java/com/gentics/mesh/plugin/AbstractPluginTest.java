@@ -34,6 +34,10 @@ public class AbstractPluginTest extends AbstractMeshTest {
 
 	public static final String CLASSLOADER_PATH = "target/test-plugins/classloader/target/classloader-plugin-0.0.1-SNAPSHOT.jar";
 
+	public static final String EXTENSION_PROVIDER_PATH = "target/test-plugins/extension-provider/target/extension-provider-plugin-0.0.1-SNAPSHOT.jar";
+
+	public static final String EXTENSION_CONSUMER_PATH = "target/test-plugins/extension-consumer/target/extension-consumer-plugin-0.0.1-SNAPSHOT.jar";
+
 	@Before
 	public void preparePluginDir() throws IOException {
 		MeshPluginManager manager = pluginManager();
