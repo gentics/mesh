@@ -15,12 +15,12 @@ public interface PluginHelper {
 	MeshTestContext getTestContext();
 
 	default void deployPlugin(Class<?> clazz, String id) {
-		Mesh.mesh().deployPlugin(clazz, id).blockingGet();
+		Mesh.mesh().deployPlugin(clazz, id).blockingAwait();
 	}
 
 	default void deployPlugin(Class<?> clazz, String id, HttpResponseStatus status, String i18nKey, String... i18nProps) {
 		try {
-			Mesh.mesh().deployPlugin(clazz, id).blockingGet();
+			Mesh.mesh().deployPlugin(clazz, id).blockingAwait();
 			fail("Deployment of plugin {" + clazz.getSimpleName() + "/" + id + "} should have failed.");
 		} catch (GenericRestException e) {
 			expectException(e, status, i18nKey, i18nProps);

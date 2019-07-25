@@ -147,8 +147,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 	@Test
 	public void testJavaDeployment() throws IOException {
 		MeshPluginManager manager = pluginManager();
-		String pluginId = manager.deploy(DummyPlugin.class, "dummy").blockingGet();
-		assertEquals("dummy", pluginId);
+		manager.deploy(DummyPlugin.class, "dummy").blockingGet();
 		assertEquals(1, manager.getPluginIds().size());
 
 		ProjectCreateRequest request = new ProjectCreateRequest();

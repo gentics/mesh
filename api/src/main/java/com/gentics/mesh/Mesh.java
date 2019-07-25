@@ -6,7 +6,7 @@ import java.util.Map;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 
-import io.reactivex.Single;
+import io.reactivex.Completable;
 import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
 
@@ -165,9 +165,9 @@ public interface Mesh {
 	 * @param clazz
 	 * @param id
 	 *            The id of the plugin (e.g. hello-world)
-	 * @return Single which will return the deployment uuid
+	 * @return
 	 */
-	Single<String> deployPlugin(Class<?> clazz, String id);
+	Completable deployPlugin(Class<?> clazz, String id);
 
 	/**
 	 * Return a map of deployed plugins with name and id.

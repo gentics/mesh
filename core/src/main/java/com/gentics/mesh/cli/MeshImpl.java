@@ -27,7 +27,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.util.VersionUtil;
 
-import io.reactivex.Single;
+import io.reactivex.Completable;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClientOptions;
@@ -408,7 +408,7 @@ public class MeshImpl implements Mesh {
 	}
 
 	@Override
-	public Single<String> deployPlugin(Class<?> clazz, String id) {
+	public Completable deployPlugin(Class<?> clazz, String id) {
 		return MeshInternal.get().pluginManager().deploy(clazz, id);
 	}
 

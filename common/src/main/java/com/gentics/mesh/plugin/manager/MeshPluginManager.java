@@ -53,10 +53,9 @@ public interface MeshPluginManager {
 	 * Validate the plugin and ensure that the plugin can only be deployed once.
 	 * 
 	 * @param plugin
-	 * @param strict
 	 * @return
 	 */
-	void validate(Plugin plugin, boolean strict);
+	void validate(Plugin plugin);
 
 	/**
 	 * Stop the manager and undeploy all currently deployed plugins.
@@ -85,7 +84,7 @@ public interface MeshPluginManager {
 	 *            The id of the plugin (e.g. hello-world)
 	 * @return
 	 */
-	Single<String> deploy(Class<?> clazz, String id);
+	Completable deploy(Class<?> clazz, String id);
 
 	/**
 	 * Unloads all currently loaded plugins.

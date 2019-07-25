@@ -55,8 +55,6 @@ public class MeshPluginFactory implements PluginFactory {
 			return null;
 		}
 
-		// T t = constructor.newInstance(new Object[] { plugin });
-
 		// create the plugin instance
 		try {
 			Constructor<?> constructor = pluginClass.getConstructor(new Class[] { PluginWrapper.class, PluginEnvironment.class });
