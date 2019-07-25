@@ -2,6 +2,9 @@ package com.gentics.mesh.plugin;
 
 import io.vertx.ext.web.Router;
 
+/**
+ * A REST Plugin is an plugin which will extend the REST API of Gentics Mesh.
+ */
 public interface RestPlugin extends MeshPlugin {
 
 	/**
@@ -14,8 +17,10 @@ public interface RestPlugin extends MeshPlugin {
 	void registerEndpoints(Router globalRouter, Router projectRouter);
 
 	/**
-	 * Return the API name for the REST plugin.
+	 * Return the API name for the REST plugin. By default the plugin id will be used for the API name.
 	 */
-	String apiName();
+	default String apiName() {
+		return id();
+	}
 
 }

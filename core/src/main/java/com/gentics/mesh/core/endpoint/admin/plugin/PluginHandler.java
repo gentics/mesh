@@ -53,14 +53,14 @@ public class PluginHandler extends AbstractHandler {
 		this.manager = manager;
 	}
 
-	public void handleRead(InternalActionContext ac, String uuid) {
+	public void handleRead(InternalActionContext ac, String id) {
 		db.asyncTx((tx) -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			PluginWrapper pluginWrapper = manager.getPluginByUuid(uuid);
+			PluginWrapper pluginWrapper = manager.getPlugin(id);
 			if (pluginWrapper == null) {
-				throw error(NOT_FOUND, "admin_plugin_error_plugin_not_found", uuid);
+				throw error(NOT_FOUND, "admin_plugin_error_plugin_not_found", id);
 			}
 			Plugin plugin = pluginWrapper.getPlugin();
 			if (plugin instanceof MeshPlugin) {

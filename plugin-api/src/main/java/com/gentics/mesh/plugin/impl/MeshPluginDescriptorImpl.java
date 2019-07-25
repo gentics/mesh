@@ -11,12 +11,10 @@ import org.pf4j.PluginDependency;
 
 import com.gentics.mesh.plugin.MeshPluginDescriptor;
 import com.gentics.mesh.plugin.PluginManifest;
-import com.gentics.mesh.util.UUIDUtil;
 
 public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 
 	private String id;
-	private String uuid;
 	private String name;
 	private String description;
 	private String pluginClass = Plugin.class.getName();
@@ -28,7 +26,6 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 	private String inception;
 
 	public MeshPluginDescriptorImpl() {
-		this.uuid = UUIDUtil.randomUUID();
 		this.dependencies = new ArrayList<>();
 	}
 
@@ -71,11 +68,6 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 	@Override
 	public String getPluginId() {
 		return id;
-	}
-
-	@Override
-	public String getUuid() {
-		return uuid;
 	}
 
 	/**
@@ -148,7 +140,7 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 
 	@Override
 	public String toString() {
-		return "PluginDescriptor [uuid=" + uuid + ", pluginClass="
+		return "PluginDescriptor [id=" + id + ", pluginClass="
 			+ pluginClass + ", version=" + version + ", author="
 			+ author + ", dependencies=" + dependencies + ", description="
 			+ description + ", requires=" + requires + ", license="

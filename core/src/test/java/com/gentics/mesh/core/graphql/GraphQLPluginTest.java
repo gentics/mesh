@@ -13,7 +13,6 @@ import com.gentics.mesh.plugin.AbstractPluginTest;
 import com.gentics.mesh.plugin.ClonePlugin;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.json.JsonObject;
 
@@ -25,17 +24,13 @@ public class GraphQLPluginTest extends AbstractPluginTest {
 		grantAdminRole();
 
 		for (int i = 0; i < 100; i++) {
-			String uuid = UUIDUtil.randomUUID();
-			if (i == 0) {
-				uuid = "261f779ff7954d0ca60c1f10c6434f28";
-			}
-			pluginManager().deploy(ClonePlugin.class, "clone" + i).blockingGet();
+			deployPlugin(ClonePlugin.class, "clone" + i);
 		}
 
 		String queryName = "plugin-query";
 		GraphQLResponse response = call(
 			() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));
-		System.out.println(response.toJson());
+		//System.out.println(response.toJson());
 		assertThat(new JsonObject(response.toJson())).compliesToAssertions(queryName);
 	}
 }

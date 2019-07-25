@@ -22,13 +22,8 @@ public class ClonePlugin extends AbstractPlugin implements RestPlugin {
 
 	private Integer myCount = null;
 
-	private String uuid;
-
 	@Override
 	public PluginManifest getManifest() {
-		if (myCount == null) {
-			myCount = counter.incrementAndGet();
-		}
 		PluginManifest manifest = super.getManifest();
 		manifest.setName("Clone Plugin " + myCount);
 		manifest.setAuthor("Johannes Schüth");
@@ -40,15 +35,10 @@ public class ClonePlugin extends AbstractPlugin implements RestPlugin {
 	}
 
 	@Override
-	public String id() {
-		if (uuid != null) {
-			return uuid;
+	public void start() {
+		if (myCount == null) {
+			myCount = counter.getAndIncrement();
 		}
-		return super.id();
-	}
-
-	public void setUuid(String uuid) {
-		this.uuid = uuid;
 	}
 
 	@Override
@@ -68,6 +58,6 @@ public class ClonePlugin extends AbstractPlugin implements RestPlugin {
 
 	@Override
 	public String apiName() {
-		return "clone" + counter.get();
+		return "clone" + myCount;
 	}
 }

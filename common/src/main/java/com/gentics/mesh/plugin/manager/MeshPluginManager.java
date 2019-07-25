@@ -27,7 +27,7 @@ public interface MeshPluginManager {
 	 * Deploy the plugin with the given path.
 	 * 
 	 * @param path
-	 * @return Single which contains the plugin deployment uuid.
+	 * @return Single which contains the plugin deployment id.
 	 */
 	Single<String> deploy(Path path);
 
@@ -42,12 +42,12 @@ public interface MeshPluginManager {
 	}
 
 	/**
-	 * Undeploy and de-register the plugin with the given uuid.
+	 * Undeploy and de-register the plugin with the given id.
 	 * 
-	 * @param uuid
+	 * @param id
 	 * @return
 	 */
-	Completable undeploy(String uuid);
+	Completable undeploy(String id);
 
 	/**
 	 * Validate the plugin and ensure that the plugin can only be deployed once.
@@ -93,11 +93,11 @@ public interface MeshPluginManager {
 	void unloadPlugins();
 
 	/**
-	 * Return the UUIDs of all loaded plugins.
+	 * Return the IDs of all started plugins.
 	 * 
 	 * @return
 	 */
-	Set<String> getPluginUuids();
+	Set<String> getPluginIds();
 
 	/**
 	 * Fetch the plugin using the given id.
@@ -127,13 +127,5 @@ public interface MeshPluginManager {
 	 * @return
 	 */
 	List<MeshPlugin> getStartedMeshPlugins();
-
-	/**
-	 * Return the plugin by uuid.
-	 * 
-	 * @param uuid
-	 * @return
-	 */
-	PluginWrapper getPluginByUuid(String uuid);
 
 }

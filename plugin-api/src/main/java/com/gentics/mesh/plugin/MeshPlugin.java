@@ -55,13 +55,6 @@ public interface MeshPlugin {
 	}
 
 	/**
-	 * Return the uuid of the plugin.
-	 * 
-	 * @return
-	 */
-	String uuid();
-
-	/**
 	 * Return the response which describes the plugin.
 	 * 
 	 * @return Plugin Response REST model
@@ -70,7 +63,7 @@ public interface MeshPlugin {
 		PluginResponse response = new PluginResponse();
 		response.setManifest(getManifest());
 		response.setName(name());
-		response.setUuid(uuid());
+		response.setId(id());
 		return response;
 	}
 

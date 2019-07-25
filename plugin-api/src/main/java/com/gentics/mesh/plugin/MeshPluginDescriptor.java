@@ -21,13 +21,6 @@ public interface MeshPluginDescriptor extends PluginDescriptor {
 	String getName();
 
 	/**
-	 * Return the plugin uuid.
-	 * 
-	 * @return
-	 */
-	String getUuid();
-
-	/**
 	 * Return the author of the plugin.
 	 * 
 	 * @return

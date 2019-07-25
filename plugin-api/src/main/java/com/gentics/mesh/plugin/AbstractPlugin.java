@@ -218,15 +218,6 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 		return rc -> handler.handle(wrap(rc));
 	}
 
-	@Override
-	public String uuid() {
-		PluginDescriptor desc = getWrapper().getDescriptor();
-		if (desc instanceof MeshPluginDescriptor) {
-			return ((MeshPluginDescriptor) desc).getUuid();
-		}
-		return null;
-	}
-
 	protected void createAdminClient() {
 		MeshOptions options = Mesh.mesh().getOptions();
 		int port = options.getHttpServerOptions().getPort();

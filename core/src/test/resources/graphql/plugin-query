@@ -23,8 +23,8 @@
 
 		# [$.data.plugins.elements.length()=1]
 		elements {
-			# [$.data.plugins.elements[0].uuid=<is-uuid>]
-			uuid 
+			# [$.data.plugins.elements[0].id=<not-null>]
+			id 
 
 			# [$.data.plugins.elements[0].name=<not-null>] 
 			name
@@ -35,18 +35,18 @@
 	}
 
 	# [$.data.bogus=<is-null>]
-	bogus: plugin(uuid:"bogus") {
-		uuid 
+	bogus: plugin(id:"bogus") {
+		id 
 	}
 
-	plugin(uuid:"261f779ff7954d0ca60c1f10c6434f28") {
-		# [$.data.plugin.uuid=261f779ff7954d0ca60c1f10c6434f28]
-		uuid
+	plugin(id:"clone22") {
+		# [$.data.plugin.id=clone22]
+		id
 
-		# [$.data.plugin.name=Clone Plugin 1]
+		# [$.data.plugin.name=Clone Plugin 22]
 		name
 
-		# [$.data.plugin.apiName=clone1]
+		# [$.data.plugin.apiName=clone22]
 		apiName
 
 		# [$.data.plugin.author=Johannes Schüth]

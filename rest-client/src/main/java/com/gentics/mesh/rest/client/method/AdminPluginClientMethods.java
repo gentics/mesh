@@ -29,18 +29,20 @@ public interface AdminPluginClientMethods {
 	MeshRequest<PluginListResponse> findPlugins(ParameterProvider... parameters);
 
 	/**
-	 * Load the information for the plugin with the given uuid.
+	 * Load the information for the plugin with the given id.
 	 * 
-	 * @param uuid
+	 * @param id
+	 *            Plugin Id
 	 * @return
 	 */
-	MeshRequest<PluginResponse> findPlugin(String uuid);
+	MeshRequest<PluginResponse> findPlugin(String id);
 
 	/**
-	 * Undeploy the plugin with the given deployment uuid.
+	 * Undeploy the plugin with the given plugin id.
 	 * 
-	 * @param uuid
+	 * @param id
+	 *            Plugin Id
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> undeployPlugin(String uuid);
+	MeshRequest<GenericMessageResponse> undeployPlugin(String id);
 }

@@ -8,9 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -68,13 +66,6 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 	private final PluginFactory pluginFactory;
 
 	private final MeshOptions options;
-
-	private List<String> pluginUuids = new ArrayList<>();
-
-	/**
-	 * Maps plugin uuid to plugin id.
-	 */
-	private Map<String, String> pluginMap = new HashMap<>();
 
 	@Inject
 	public MeshPluginManagerImpl(MeshOptions options, MeshPluginFactory pluginFactory) {
@@ -232,9 +223,6 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 				return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name);
 			}
 			validate(plugin.getPlugin(), true);
-			String uuid = getUuidFromWrapper(plugin);
-			pluginMap.put(uuid, id);
-			pluginUuids.add(uuid);
 		} catch (GenericRestException e) {
 			log.error("Post start validation of plugin {" + path + "/" + id + "} failed.", e);
 			plugins.remove(id);
@@ -260,17 +248,6 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 		return Single.just(id);
 	}
 
-	private String getUuidFromWrapper(PluginWrapper plugin) {
-		if (plugin == null) {
-			return null;
-		}
-		PluginDescriptor desc = plugin.getDescriptor();
-		if (desc instanceof MeshPluginDescriptor) {
-			return ((MeshPluginDescriptor) desc).getUuid();
-		}
-		return null;
-	}
-
 	/**
 	 * Try to unload the plugin with the id.
 	 * 
@@ -279,13 +256,8 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 	 *            if the plugin was unloaded - Otherwise false
 	 */
 	private boolean rollback(String id) {
-		String uuid = pluginMap.get(id);
 		try {
 			unloadPlugin(id);
-			pluginMap.remove(id);
-			if (uuid != null) {
-				pluginUuids.remove(uuid);
-			}
 			return true;
 		} catch (Throwable e2) {
 			log.error("Error while unloading plugin {" + id + "}", e2);
@@ -294,10 +266,9 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 	}
 
 	@Override
-	public Completable undeploy(String uuid) {
+	public Completable undeploy(String id) {
 		return Completable.fromRunnable(() -> {
 			resolvePlugins();
-			String id = pluginMap.get(uuid);
 			unloadPlugin(id);
 		});
 	}
@@ -334,7 +305,6 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 	public SortedMap<String, MeshPlugin> getPluginsMap() {
 		SortedMap<String, MeshPlugin> sortedMap = new TreeMap<>();
 		getStartedPlugins().forEach(pw -> {
-			System.out.println(pw.getPluginId() + " " + ((MeshPlugin) pw.getPlugin()).id());
 			sortedMap.put(pw.getPluginId(), (MeshPlugin) pw.getPlugin());
 		});
 		return sortedMap;
@@ -373,7 +343,6 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 
 	private PluginWrapper loadPlugin(Class<?> clazz, String id) {
 		MeshPluginDescriptor pluginDescriptor = new MeshPluginDescriptorImpl(clazz, id);
-		String pluginUuid = pluginDescriptor.getUuid();
 		log.debug("Found descriptor {}", pluginDescriptor);
 		String pluginClassName = clazz.getName();
 		log.debug("Class '{}' for plugin", pluginClassName);
@@ -401,8 +370,6 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 
 		// add plugin to the list with plugins
 		plugins.put(id, pluginWrapper);
-		pluginUuids.add(pluginUuid);
-		pluginMap.put(pluginUuid, id);
 
 		getUnresolvedPlugins().add(pluginWrapper);
 
@@ -423,14 +390,11 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 		String name = clazz.getSimpleName();
 		return Single.defer(() -> {
 			log.debug("Deploying plugin class {" + name + "}");
-			String uuid;
 
 			// 1. Load plugin
 			try {
 				PluginDescriptor desc = loadPlugin(clazz, id).getDescriptor();
-				if (desc instanceof MeshPluginDescriptor) {
-					uuid = ((MeshPluginDescriptor) desc).getUuid();
-				} else {
+				if (!(desc instanceof MeshPluginDescriptor)) {
 					return rxError(INTERNAL_SERVER_ERROR, "plugin_desc_wrong");
 				}
 			} catch (Throwable e) {
@@ -441,13 +405,13 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 			try {
 				PluginWrapper plugin = getPlugin(id);
 				if (plugin == null || plugin.getPlugin() == null) {
-					log.error("The plugin {" + name + "/" + uuid + "} could not be loaded.");
+					log.error("The plugin {" + name + "/" + id + "} could not be loaded.");
 					plugins.remove(id);
 					return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name);
 				}
 				validate(plugin.getPlugin(), true);
 			} catch (GenericRestException e) {
-				log.error("Post start validation of plugin {" + name + "/" + uuid + "} failed.", e);
+				log.error("Post start validation of plugin {" + name + "/" + id + "} failed.", e);
 				plugins.remove(id);
 				return Single.error(e);
 			} catch (Throwable e) {
@@ -464,7 +428,7 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 				rollback(id);
 				return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_starting_failed", name);
 			}
-			return Single.just(uuid);
+			return Single.just(id);
 		});
 
 	}
@@ -479,17 +443,8 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 	}
 
 	@Override
-	public Set<String> getPluginUuids() {
+	public Set<String> getPluginIds() {
 		return super.getStartedPlugins().stream().map(pw -> pw.getPluginId()).collect(Collectors.toSet());
-	}
-
-	@Override
-	public PluginWrapper getPluginByUuid(String uuid) {
-		String id = pluginMap.get(uuid);
-		if (id == null) {
-			return null;
-		}
-		return getPlugin(id);
 	}
 
 	@Override

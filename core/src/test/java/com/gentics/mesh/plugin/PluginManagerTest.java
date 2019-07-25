@@ -5,7 +5,6 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -21,7 +20,6 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.UUIDUtil;
 import com.twelvemonkeys.io.FileUtil;
 
 import io.vertx.core.http.HttpHeaders;
@@ -37,17 +35,17 @@ public class PluginManagerTest extends AbstractPluginTest {
 	@Test
 	public void testStop() {
 		MeshPluginManager manager = pluginManager();
-		int before = manager.getPluginUuids().size();
+		int before = manager.getPluginIds().size();
 		for (int i = 0; i < 100; i++) {
 			manager.deploy(ClonePlugin.class, "clone" + i).blockingGet();
 		}
-		assertEquals(before + 100, manager.getPluginUuids().size());
+		assertEquals(before + 100, manager.getPluginIds().size());
 
-		assertEquals(100, manager.getPluginUuids().size());
+		assertEquals(100, manager.getPluginIds().size());
 		manager.stop().blockingAwait();
 		manager.unloadPlugins();
-		assertEquals(0, manager.getPluginUuids().size());
-		assertEquals("Not all deployed verticles have been undeployed.", before, manager.getPluginUuids().size());
+		assertEquals(0, manager.getPluginIds().size());
+		assertEquals("Not all deployed verticles have been undeployed.", before, manager.getPluginIds().size());
 	}
 
 	@Test
@@ -74,19 +72,19 @@ public class PluginManagerTest extends AbstractPluginTest {
 		FileUtil.copy(new File(BASIC_PATH), new File(pluginDir(), "duplicate-plugin.jar"));
 		FileUtil.copy(new File(BASIC_PATH), new File(pluginDir(), "plugin.blub"));
 
-		assertEquals(0, manager.getPluginUuids().size());
+		assertEquals(0, manager.getPluginIds().size());
 		manager.deployExistingPluginFiles().blockingGet();
-		assertEquals(1, manager.getPluginUuids().size());
+		assertEquals(1, manager.getPluginIds().size());
 		manager.deployExistingPluginFiles().blockingAwait();
 		manager.deployExistingPluginFiles().blockingAwait();
 		manager.deployExistingPluginFiles().blockingAwait();
-		assertEquals("Only one instance should have been deployed because all others are copies.", 1, manager.getPluginUuids().size());
+		assertEquals("Only one instance should have been deployed because all others are copies.", 1, manager.getPluginIds().size());
 
 		manager.stop().blockingAwait();
-		assertEquals(0, manager.getPluginUuids().size());
+		assertEquals(0, manager.getPluginIds().size());
 
 		manager.deployExistingPluginFiles().blockingAwait();
-		assertEquals(1, manager.getPluginUuids().size());
+		assertEquals(1, manager.getPluginIds().size());
 	}
 
 	/**
@@ -149,9 +147,9 @@ public class PluginManagerTest extends AbstractPluginTest {
 	@Test
 	public void testJavaDeployment() throws IOException {
 		MeshPluginManager manager = pluginManager();
-		String pluginUuid = manager.deploy(DummyPlugin.class, "dummy").blockingGet();
-		assertTrue(UUIDUtil.isUUID(pluginUuid));
-		assertEquals(1, manager.getPluginUuids().size());
+		String pluginId = manager.deploy(DummyPlugin.class, "dummy").blockingGet();
+		assertEquals("dummy", pluginId);
+		assertEquals(1, manager.getPluginIds().size());
 
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName("test");
@@ -180,10 +178,10 @@ public class PluginManagerTest extends AbstractPluginTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		assertEquals(0, manager.getPluginUuids().size());
+		assertEquals(0, manager.getPluginIds().size());
 
 		manager.deploy(SucceedingPlugin.class, "succeeding").blockingGet();
-		assertEquals(1, manager.getPluginUuids().size());
+		assertEquals(1, manager.getPluginIds().size());
 	}
 
 }

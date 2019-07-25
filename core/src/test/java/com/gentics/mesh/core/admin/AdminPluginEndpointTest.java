@@ -11,7 +11,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
@@ -28,7 +27,6 @@ import com.gentics.mesh.plugin.ClonePlugin;
 import com.gentics.mesh.plugin.ManifestInjectorPlugin;
 import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.UUIDUtil;
 
 @MeshTestSetting(testSize = PROJECT, startServer = true, inMemoryDB = true)
 public class AdminPluginEndpointTest extends AbstractPluginTest {
@@ -47,8 +45,8 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		PluginResponse deployment = copyAndDeploy(BASIC_PATH, "plugin.jar");
 
 		revokeAdminRole();
-		String uuid = deployment.getUuid();
-		call(() -> client().findPlugin(uuid), FORBIDDEN, "error_admin_permission_required");
+		String id = deployment.getId();
+		call(() -> client().findPlugin(id), FORBIDDEN, "error_admin_permission_required");
 	}
 
 	@Test
@@ -69,8 +67,8 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		PluginResponse deployment = copyAndDeploy(BASIC_PATH, "plugin.jar");
 
 		revokeAdminRole();
-		String uuid = deployment.getUuid();
-		call(() -> client().undeployPlugin(uuid), FORBIDDEN, "error_admin_permission_required");
+		String id = deployment.getId();
+		call(() -> client().undeployPlugin(id), FORBIDDEN, "error_admin_permission_required");
 	}
 
 	@Test
@@ -89,7 +87,7 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		grantAdminRole();
 
 		PluginResponse deployment = copyAndDeploy(BASIC_PATH, "basic-plugin.jar");
-		assertTrue(UUIDUtil.isUUID(deployment.getUuid()));
+		assertEquals("basic", deployment.getId());
 
 		assertEquals("world", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + API_NAME + "/hello"));
 		assertEquals("world-project", httpGetNow(CURRENT_API_BASE_PATH + "/" + PROJECT_NAME + "/plugins/" + API_NAME + "/hello"));
@@ -97,10 +95,10 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		PluginListResponse list = call(() -> client().findPlugins());
 		assertEquals(1, list.getMetainfo().getTotalCount());
 
-		PluginResponse response = call(() -> client().findPlugin(deployment.getUuid()));
+		PluginResponse response = call(() -> client().findPlugin(deployment.getId()));
 		assertEquals(deployment.getName(), response.getName());
 
-		call(() -> client().undeployPlugin(deployment.getUuid()));
+		call(() -> client().undeployPlugin(deployment.getId()));
 
 		assertEquals(404, httpGet(CURRENT_API_BASE_PATH + "/plugins/" + API_NAME + "/hello").execute().code());
 
@@ -110,15 +108,15 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 	public void testPluginList() throws IOException {
 		grantAdminRole();
 		PluginResponse response = copyAndDeploy(BASIC_PATH, "plugin.jar");
-		assertEquals(1, pluginManager().getPluginUuids().size());
+		assertEquals(1, pluginManager().getPluginIds().size());
 
 		String bogusName = "bogus.jar";
 
 		call(() -> client().deployPlugin(new PluginDeploymentRequest().setPath(bogusName)), BAD_REQUEST,
 			"admin_plugin_error_plugin_deployment_failed", bogusName);
 
-		PluginResponse response2 = call(() -> client().findPlugin(response.getUuid()));
-		assertEquals(response.getUuid(), response2.getUuid());
+		PluginResponse response2 = call(() -> client().findPlugin(response.getId()));
+		assertEquals(response.getId(), response2.getId());
 
 		call(() -> client().findPlugin("bogus"), NOT_FOUND, "admin_plugin_error_plugin_not_found", "bogus");
 		PluginListResponse pluginList = call(() -> client().findPlugins());
@@ -127,7 +125,7 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		assertEquals(1, pluginList.getMetainfo().getPageCount());
 		assertEquals(1, pluginList.getMetainfo().getTotalCount());
 		PluginResponse first = pluginList.getData().get(0);
-		assertTrue("The uuid of the plugin was not a valid mesh uuid. Got: " + first.getUuid(), UUIDUtil.isUUID(first.getUuid()));
+		assertEquals("The id of the plugin did not match", "basic", first.getId());
 
 		pluginList = call(() -> client().findPlugins(new PagingParametersImpl().setPerPage(1L)));
 		assertEquals(1, pluginList.getMetainfo().getPerPage().longValue());
@@ -135,8 +133,8 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		assertEquals(1, pluginList.getMetainfo().getPageCount());
 		assertEquals(1, pluginList.getMetainfo().getTotalCount());
 
-		GenericMessageResponse msg = call(() -> client().undeployPlugin(response.getUuid()));
-		assertThat(msg).matches("admin_plugin_undeployed", response.getUuid());
+		GenericMessageResponse msg = call(() -> client().undeployPlugin(response.getId()));
+		assertThat(msg).matches("admin_plugin_undeployed", response.getId());
 		pluginList = call(() -> client().findPlugins(new PagingParametersImpl().setPerPage(1L)));
 		assertEquals(1, pluginList.getMetainfo().getPerPage().longValue());
 		assertEquals(1, pluginList.getMetainfo().getCurrentPage());
@@ -232,12 +230,12 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		grantAdminRole();
 
 		copyAndDeploy(BASIC_PATH, "plugin.jar");
-		assertEquals(1, pluginManager().getPluginUuids().size());
+		assertEquals(1, pluginManager().getPluginIds().size());
 
 		long before = pluginCount();
 		copyAndDeploy(BASIC_PATH, "plugin2.jar", BAD_REQUEST, "admin_plugin_error_plugin_with_id_already_deployed", "plugin2.jar");
 		assertEquals("No additional plugins should have been deployed", before, pluginCount());
-		assertEquals(1, pluginManager().getPluginUuids().size());
+		assertEquals(1, pluginManager().getPluginIds().size());
 	}
 
 }

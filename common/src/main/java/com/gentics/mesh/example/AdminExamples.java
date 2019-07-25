@@ -1,9 +1,6 @@
 package com.gentics.mesh.example;
 
 import static com.gentics.mesh.example.AbstractExamples.DATE_OLD;
-import static com.gentics.mesh.example.ExampleUuids.PLUGIN_1_UUID;
-import static com.gentics.mesh.example.ExampleUuids.PLUGIN_2_UUID;
-import static com.gentics.mesh.example.ExampleUuids.PLUGIN_3_UUID;
 import static com.gentics.mesh.example.ExampleUuids.UUID_1;
 
 import com.gentics.mesh.MeshStatus;
@@ -29,10 +26,10 @@ public class AdminExamples {
 	}
 
 	public PluginResponse createHelloWorldPluginResponse() {
-		return createPluginResponse("hello-world", "Hello World 1", "hello", PLUGIN_1_UUID);
+		return createPluginResponse("hello-world", "Hello World 1", "hello");
 	}
 
-	public PluginResponse createPluginResponse(String id, String name, String key, String uuid) {
+	public PluginResponse createPluginResponse(String id, String name, String key) {
 		PluginManifest manifest = new PluginManifest();
 		manifest.setId(id);
 		manifest.setName(name);
@@ -42,14 +39,14 @@ public class AdminExamples {
 		manifest.setInception(DATE_OLD);
 		manifest.setLicense("Apache License 2.0");
 		manifest.setVersion("1.0");
-		return new PluginResponse().setUuid(uuid).setName(manifest.getName()).setManifest(manifest);
+		return new PluginResponse().setId(id).setName(manifest.getName()).setManifest(manifest);
 	}
 
 	public PluginListResponse createPluginListResponse() {
 		PluginListResponse list = new PluginListResponse();
-		list.add(createPluginResponse("hello-world-1", "Hello World 1", "hello-world1", PLUGIN_1_UUID));
-		list.add(createPluginResponse("hello-world-2", "Hello World 2", "hello-world2", PLUGIN_2_UUID));
-		list.add(createPluginResponse("hello-world-3", "Hello World 3", "hello-world3", PLUGIN_3_UUID));
+		list.add(createPluginResponse("hello-world-1", "Hello World 1", "hello-world1"));
+		list.add(createPluginResponse("hello-world-2", "Hello World 2", "hello-world2"));
+		list.add(createPluginResponse("hello-world-3", "Hello World 3", "hello-world3"));
 		list.getMetainfo().setTotalCount(3);
 		list.getMetainfo().setPageCount(1);
 		list.getMetainfo().setCurrentPage(1);
