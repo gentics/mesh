@@ -38,6 +38,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
+import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
@@ -118,6 +119,9 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 			case "string":
 				field = new StringFieldSchemaImpl();
 				break;
+			case "binary":
+				field = new BinaryFieldSchemaImpl();
+				break;
 			case "list":
 				ListFieldSchema listField = new ListFieldSchemaImpl();
 				listField.setListType(getListType());
@@ -130,6 +134,7 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 				field = new NodeFieldSchemaImpl();
 				break;
 			default:
+				//TODO i18n
 				throw error(BAD_REQUEST, "Unknown type {" + newType + "} for change " + getUuid());
 			}
 			field.setRequired(fieldSchema.isRequired());
