@@ -12,6 +12,7 @@
 		<plugin.name>The extension plugin</plugin.name>
 		<plugin.class>com.gentics.mesh.plugin.ExtensionProviderPlugin</plugin.class>
 		<plugin.version>0.0.1</plugin.version>
+		<plugin.requries>extension-consumer</plugin.requries>
 		<plugin.author>Johannes Schüth</plugin.author>
 		<plugin.inception>2019-07-08</plugin.inception>
 		<plugin.description>My extension plugin</plugin.description>
@@ -19,16 +20,13 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-common</artifactId>
-			<version>${mesh.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>com.gentics.mesh.plugin</groupId>
 			<artifactId>common</artifactId>
 			<version>${project.version}</version>
+			<scope>provided</scope>
 		</dependency>
+
+		<!-- Provided -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-plugin-api</artifactId>
@@ -104,6 +102,7 @@
 										<Plugin-Version>${plugin.version}</Plugin-Version>
 										<Plugin-Author>${plugin.author}</Plugin-Author>
 										<Plugin-Class>${plugin.class}</Plugin-Class>
+										<Plugin-Requires>${plugin.requries}</Plugin-Requires>
 										<Plugin-Description>${plugin.description}</Plugin-Description>
 										<Plugin-License>Apache License 2.0</Plugin-License>
 										<Plugin-Inception>${plugin.inception}</Plugin-Inception>

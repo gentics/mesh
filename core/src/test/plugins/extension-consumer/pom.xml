@@ -19,14 +19,15 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-plugin-api</artifactId>
-			<version>${mesh.version}</version>
-			<scope>provided</scope>
+			<groupId>com.gentics.mesh.plugin</groupId>
+			<artifactId>common</artifactId>
+			<version>${project.version}</version>
 		</dependency>
+
+		<!-- Provided -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-common</artifactId>
+			<artifactId>mesh-plugin-api</artifactId>
 			<version>${mesh.version}</version>
 			<scope>provided</scope>
 		</dependency>
@@ -35,11 +36,6 @@
 			<artifactId>pf4j</artifactId>
 			<version>3.0.1</version>
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh.plugin</groupId>
-			<artifactId>common</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<!-- Test dependencies -->
