@@ -476,19 +476,10 @@ ul.doc-toc h2 {
                         <h2><a href="plugin-system">Plugin System</a></h2>
                         <ul>
                             <li>
-                                <a href="plugin-system#_plugin_development">Plugin Development</a>
+                                <a href="plugins#_list">Plugins</a>
                             </li>
                             <li>
-                                <a href="plugin-system#_integration_testing">Testing</a>
-                            </li>
-                        </ul>
-                    </li>
-
-                    <li class="section">
-                        <h2><a href="plugins">Plugins</a></h2>
-                        <ul>
-                            <li>
-                                <a href="plugins#_list">List</a>
+                                <a href="plugin-development">Plugin Development</a>
                             </li>
                         </ul>
                     </li>

@@ -1,0 +1,304 @@
+---
+title: Plugin Development
+---
+
+include::content/docs/variables.adoc-include[]
+
+Plugins which add custom endpoints are written in Java and are packaged as regular `jar` files.
+
+
+== Plugin Types
+
+=== REST API Plugin
+
+You can extend the REST API by adding the `RestPlugin` interface to your plugin class.
+
+=== GraphQL Plugin
+
+Add the interface `GraphQLPlugin` to your plugin class.
+
+== Plugin Lifecycle
+
+=== Deploy
+
+* **Loading** - Plugin gets loaded and prepared for starting 
+* **Starting** - Plugin gets started. (`MeshPlugin#start()` will be invoked)
+* **Initialisation** - Plugin gets initialized. (`MeshPlugin#initialize()`)
+* **Registration** - Plugin gets finally registered so that it can be used.
+
+=== Undeploy
+
+* **De-registration** - Plugin registeration gets removed. At this point the plugin integration with the server gets removed. REST and GraphQL extensions get removed.
+* **De-initialisation** - Plugin gets de-initialized.
+* **Stopping** - Plugin gets stopped.  (`MeshPlugin#stop()`)
+* **Unloading** - Finally the plugin gets unloaded.
+
+== Plugin Manifest
+
+The manifest of a plugin contains metadata information which will is used to load and categorize the plugin.
+
+* *Plugin-Id* - Unique id of the plugin. Used to access the plugin once deployed.
+* *Plugin-Name* - Full name of the plugin
+* *Plugin-Version* - Current version of the plugin
+* *Plugin-Author* - Author of the plugin
+* *Plugin-Class* - Fully qualified path to the plugin class
+* *Plugin-Description* - Short description of the plugin
+* *Plugin-License* - License used by the plugin
+* *Plugin-Inception* - Date when the plugin was initially created (DD-MM-YYYY)
+
+
+=== Maven
+
+The plugin manifest can directly be added when generating the shaded jar file.
+
+[source,xml]
+----
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-shade-plugin</artifactId>
+    <executions>
+        <execution>
+            <phase>package</phase>
+            <goals>
+                <goal>shade</goal>
+            </goals>
+            <configuration>
+                <transformers>
+                    <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                        <manifestEntries>
+                            <Plugin-Id>${plugin.id}</Plugin-Id>
+                            <Plugin-Name>${plugin.name}</Plugin-Name>
+                            <Plugin-Version>${plugin.version}</Plugin-Version>
+                            <Plugin-Author>${plugin.author}</Plugin-Author>
+                            <Plugin-Class>${plugin.class}</Plugin-Class>
+                            <Plugin-Description>${plugin.description}</Plugin-Description>
+                            <Plugin-License>${plugin.license}</Plugin-License>
+                            <Plugin-Inception>${plugin.inception}</Plugin-Inception>
+                        </manifestEntries>
+                    </transformer>
+                </transformers>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+----
+
+== Plugin Extensions
+
+Plugins can also use and provide extensions. Extension can be used to modularize plugins. A plugin can for example provide a default implementation of a feature and another plugin can provide an extension which overrides or extends this feature. 
+
+The plugin (*consumer*) which uses the extension must provide an `ExtensionPoint` interface. This interface forms the contract which other plugins (*provider*) may use to implement the extension.
+
+[source,java]
+----
+public interface DummyExtensionPoint extends ExtensionPoint {
+
+	String name();
+
+}
+----
+
+The plugin which provides the extension now implements the extension.
+
+[source,java]
+----
+@Extension
+public class DummyExtension implements DummyExtensionPoint {
+
+	@Override
+	public String name() {
+		return "My dummy extension";
+	}
+
+}
+----
+
+Finally the consuming plugin may access the available extension via the plugin manager.
+
+[source,java]
+----
+getWrapper().getPluginManager().getExtensions(DummyExtensionPoint.class)
+----
+
+
+=== Building extension plugins
+
+The use of extensions requires additional build steps. Make sure to use the `ExtensionAnnotationProcessor` in the compile plugin.
+
+
+[source,xml]
+----
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>3.8.1</version>
+    <configuration>
+        <verbose>true</verbose>
+        <compilerVersion>1.8</compilerVersion>
+        <source>1.8</source>
+        <target>1.8</target>
+        <annotationProcessors>
+            <annotationProcessor>org.pf4j.processor.ExtensionAnnotationProcessor</annotationProcessor>
+        </annotationProcessors>
+    </configuration>
+    <dependencies>
+        <dependency>
+            <groupId>org.pf4j</groupId>
+            <artifactId>pf4j</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+    </dependencies>
+</plugin>
+----
+
+Additionally the plugin which provides the extension muse have an `<Plugin-Dependencies>` manifest entry that contains the consuming plugin id.
+
+NOTE: Make sure to share the extension point interfaces via a common maven module.
+
+== Integration Testing
+
+Plugins can be directly tested in your IDE by starting an embedded Gentics Mesh instance. 
+We provide a JUnit class rule which can be used to quickly startup Gentics Mesh.
+
+```
+@ClassRule
+public static final MeshLocalServer server = new MeshLocalServer()
+    .withInMemoryMode()
+    .waitForStartup();
+```
+
+You need to following test dependencies in order to use the class rule.
+
+```xml
+<dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <version>4.12</version>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>com.gentics.mesh</groupId>
+    <artifactId>mesh-test-common</artifactId>
+    <version>${mesh.version}</version>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>com.gentics.mesh</groupId>
+    <artifactId>mesh-core</artifactId>
+    <version>${mesh.version}</version>
+    <scope>test</scope>
+</dependency>
+```
+
+== Hello World Plugin 
+
+The link:https://github.com/gentics/mesh-hello-world-plugin[Hello World Plugin] demonstrates a basic plugin and how to setup tests.
+
+The `HelloWorldPlugin` class contains the plugin code.
+
+* The `initialize()` method can be used to setup the initial data of the plugin. The counterpart is the `prepareStop()` method.
+* Once a plugin has been deployed by Vert.x it will register itself at the Gentics Mesh plugin manager.
+* The manager will invoke the `registerEndpoints()` method in order to add the endpoints to the REST API.
+
+link:https://vertx.io/docs/vertx-web/java/#_basic_vert_x_web_concepts[Vert.x routers] will be used to process the requests and direct them to registered endpoints/routes.
+
+There are two routers to which new endpoints can be added.
+
+* The globalRouter can be used to add endpoints to URLs like ```{apiLatest}/plugins/helloworld/```.
+
+* The projectRouter on the other hand can be used to add project specific endpoints like ```{apiLatest}/your-project/plugins/helloworld/```.
+
+NOTE: The registerEndpoints method will be invoked multiple times in order to register the routes on all Gentics Mesh REST HTTP handlers which will internally process the requests.
+
+Full sources:
+
+
+.HelloWorldPlugin.java
+[source,java,subs=attributes]
+----
+package com.gentics.mesh.plugin;
+
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+
+import java.io.File;
+
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.rest.client.MeshRestClient;
+
+import io.reactivex.Completable;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.reactivex.core.buffer.Buffer;
+
+public class HelloWorldPlugin extends AbstractPlugin {
+
+	private static final Logger log = LoggerFactory.getLogger(HelloWorldPlugin.class);
+
+	public static final String PROJECT_NAME = "HelloWorld";
+	
+	public StaticHandler staticHandler = StaticHandler.create("webroot", getClass().getClassLoader());
+
+	@Override
+	public Completable initialize() {
+		// The initialize method can be used to setup initial data which is needed by the plugin.
+		// You can use the admin client to setup initial data or access the filesystem to read/write data.
+		String path = new File(getStorageDir(), "dummyFile.txt").getAbsolutePath();
+		return getRxVertx().fileSystem()
+			.rxWriteFile(path, Buffer.buffer("test"))
+			.andThen(createProject());
+	}
+
+	@Override
+	public void registerEndpoints(Router globalRouter, Router projectRouter) {
+		log.info("Registering routes for {" + getName() + "}");
+
+		// Route which demonstrates that the API can be directly extended
+		// Path: {apiLatest}/plugins/helloworld/hello
+		globalRouter.route("/hello").handler(rc -> {
+			rc.response().end("world");
+		});
+
+		// Route which demonstrates that plugins can also have project specific routes.
+		// Path: {apiLatest}/:projectName/plugins/helloworld/hello
+		// It is possible to access the project information via the context project() method.
+		projectRouter.route("/hello").handler(rc -> {
+			PluginContext context = wrap(rc);
+			rc.response().end("world-project-" + context.project().getString("name"));
+		});
+
+		// Route which will use the admin client to load the previously created project and return it.
+		// Path: {apiLatest}/plugins/helloworld/project
+		globalRouter.route("/project").handler(rc -> {
+			PluginContext context = wrap(rc);
+			adminClient().findProjectByName(PROJECT_NAME).toSingle().subscribe(project -> {
+				context.send(project, OK);
+			}, rc::fail);
+		});
+		
+		// Route to serve static contents from the webroot resources folder of the plugin.
+		// Path: {apiLatest}/plugins/helloworld/static
+		globalRouter.route("/static/*").handler(staticHandler);
+
+	}
+
+	/**
+	 * Utilize the admin client and create a project.
+	 * 
+	 * @return
+	 */
+	private Completable createProject() {
+		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setName(PROJECT_NAME);
+		request.setSchemaRef("folder");
+		MeshRestClient client = adminClient();
+		return client.createProject(request).toCompletable();
+	}
+
+}
+----
+
+== Contributing
+
+You wrote a plugin? Great! Share it with the community via the link:https://github.com/gentics/mesh-awesome[Gentics Mesh Awesome List]
