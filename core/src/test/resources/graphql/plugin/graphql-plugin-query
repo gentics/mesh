@@ -1,0 +1,7 @@
+{
+	plugin(id:"graphql") {
+		# [$.data.plugin.id=graphql]
+		id
+	}
+}
+# [$.errors=<is-undefined>]

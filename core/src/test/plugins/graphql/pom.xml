@@ -9,7 +9,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<plugin.id>graphql</plugin.id>
 		<plugin.name>The graphql plugin</plugin.name>
-		<plugin.class>com.gentics.mesh.plugin.GraphQLPlugin</plugin.class>
+		<plugin.class>com.gentics.mesh.plugin.GraphQLTestPlugin</plugin.class>
 		<plugin.version>0.0.1</plugin.version>
 		<plugin.author>Johannes Schüth</plugin.author>
 		<plugin.inception>2019-07-08</plugin.inception>

@@ -27,10 +27,23 @@ public class GraphQLPluginTest extends AbstractPluginTest {
 			deployPlugin(ClonePlugin.class, "clone" + i);
 		}
 
-		String queryName = "plugin-query";
+		String queryName = "plugin/plugin-query";
 		GraphQLResponse response = call(
 			() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));
-		//System.out.println(response.toJson());
+		// System.out.println(response.toJson());
+		assertThat(new JsonObject(response.toJson())).compliesToAssertions(queryName);
+	}
+
+	@Test
+	public void testGraphQLPlugin() throws IOException {
+		grantAdminRole();
+
+		copyAndDeploy(GRAPHQL_PATH, "graphql.jar");
+
+		String queryName = "plugin/graphql-plugin-query";
+		GraphQLResponse response = call(
+			() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));
+		System.out.println(response.toJson());
 		assertThat(new JsonObject(response.toJson())).compliesToAssertions(queryName);
 	}
 }
