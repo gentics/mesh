@@ -9,15 +9,10 @@ import io.reactivex.Completable;
 /**
  * Plugin that will fail the initialisation
  */
-public class FailingPlugin extends AbstractPlugin {
+public class FailingInitializePlugin extends AbstractPlugin {
 
-	public FailingPlugin(PluginWrapper wrapper, PluginEnvironment env) {
+	public FailingInitializePlugin(PluginWrapper wrapper, PluginEnvironment env) {
 		super(wrapper, env);
-	}
-
-	@Override
-	public void start() {
-		throw new RuntimeException("Startup failure");
 	}
 
 	@Override

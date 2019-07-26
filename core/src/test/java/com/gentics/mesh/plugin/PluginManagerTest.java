@@ -37,7 +37,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 		MeshPluginManager manager = pluginManager();
 		int before = manager.getPluginIds().size();
 		for (int i = 0; i < 100; i++) {
-			manager.deploy(ClonePlugin.class, "clone" + i).blockingGet();
+			manager.deploy(ClonePlugin.class, "clone" + i).blockingAwait();
 		}
 		assertEquals(before + 100, manager.getPluginIds().size());
 
@@ -51,7 +51,8 @@ public class PluginManagerTest extends AbstractPluginTest {
 	@Test
 	public void testFilesystemDeployment() throws Exception {
 		setPluginBaseDir("abc");
-		pluginManager().deploy(Paths.get(BASIC_PATH)).blockingGet();
+		String id = pluginManager().deploy(Paths.get(BASIC_PATH)).blockingGet();
+		assertEquals("basic", id);
 
 		for (int i = 0; i < 2; i++) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
@@ -73,7 +74,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 		FileUtil.copy(new File(BASIC_PATH), new File(pluginDir(), "plugin.blub"));
 
 		assertEquals(0, manager.getPluginIds().size());
-		manager.deployExistingPluginFiles().blockingGet();
+		manager.deployExistingPluginFiles().blockingAwait();
 		assertEquals(1, manager.getPluginIds().size());
 		manager.deployExistingPluginFiles().blockingAwait();
 		manager.deployExistingPluginFiles().blockingAwait();
@@ -95,7 +96,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 	@Test
 	public void testPluginAuth() throws IOException {
 		MeshPluginManager manager = pluginManager();
-		manager.deploy(ClientPlugin.class, "client").blockingGet();
+		manager.deploy(ClientPlugin.class, "client").blockingAwait();
 		JsonObject json = new JsonObject(getJSONViaClient(CURRENT_API_BASE_PATH + "/plugins/client/user"));
 		assertNotNull(json.getString("uuid"));
 	}
@@ -107,7 +108,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 	 */
 	@Test
 	public void testClientAPI() throws IOException {
-		pluginManager().deploy(ClientPlugin.class, "client").blockingGet();
+		pluginManager().deploy(ClientPlugin.class, "client").blockingAwait();
 
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName("testabc");
@@ -147,7 +148,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 	@Test
 	public void testJavaDeployment() throws IOException {
 		MeshPluginManager manager = pluginManager();
-		manager.deploy(DummyPlugin.class, "dummy").blockingGet();
+		manager.deploy(DummyPlugin.class, "dummy").blockingAwait();
 		assertEquals(1, manager.getPluginIds().size());
 
 		ProjectCreateRequest request = new ProjectCreateRequest();
@@ -169,18 +170,35 @@ public class PluginManagerTest extends AbstractPluginTest {
 	}
 
 	@Test
-	public void testRedeployAfterInitFailure() {
+	public void testRedeployAfterStartFailure() {
 		MeshPluginManager manager = pluginManager();
 		try {
-			manager.deploy(FailingPlugin.class, "failing").blockingGet();
+			manager.deploy(FailingStartPlugin.class, "failing").blockingAwait();
 			fail("Deployment should have failed");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		assertEquals(0, manager.getPluginIds().size());
 
-		manager.deploy(SucceedingPlugin.class, "succeeding").blockingGet();
+		manager.deploy(SucceedingPlugin.class, "succeeding").blockingAwait();
 		assertEquals(1, manager.getPluginIds().size());
+	}
+
+	@Test
+	public void testRedeployAfterInitFailure() {
+		MeshPluginManager manager = pluginManager();
+		try {
+			manager.deploy(FailingInitializePlugin.class, "failing").blockingAwait();
+			fail("Deployment should have failed");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		assertEquals(0, manager.getPluginIds().size());
+		assertEquals(0, manager.getPluginsMap().size());
+
+		manager.deploy(SucceedingPlugin.class, "succeeding").blockingAwait();
+		assertEquals(1, manager.getPluginIds().size());
+		assertEquals(1, manager.getPluginsMap().size());
 	}
 
 }

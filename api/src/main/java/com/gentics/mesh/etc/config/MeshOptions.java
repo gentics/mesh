@@ -19,12 +19,14 @@ public class MeshOptions implements Option {
 	public static final String DEFAULT_LANGUAGE = "en";
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
 	public static final int DEFAULT_MAX_DEPTH = 10;
+	public static final int DEFAULT_PLUGIN_TIMEOUT = 15;
 
 	public static final String MESH_DEFAULT_LANG_ENV = "MESH_DEFAULT_LANG";
 	public static final String MESH_LANGUAGES_FILE_PATH_ENV = "MESH_LANGUAGES_FILE_PATH";
 	public static final String MESH_UPDATECHECK_ENV = "MESH_UPDATECHECK";
 	public static final String MESH_TEMP_DIR_ENV = "MESH_TEMP_DIR";
 	public static final String MESH_PLUGIN_DIR_ENV = "MESH_PLUGIN_DIR";
+	public static final String MESH_PLUGIN_TIMEOUT_ENV = "MESH_PLUGIN_TIMEOUT";
 	public static final String MESH_NODE_NAME_ENV = "MESH_NODE_NAME";
 	public static final String MESH_CLUSTER_INIT_ENV = "MESH_CLUSTER_INIT";
 	public static final String MESH_LOCK_PATH_ENV = "MESH_LOCK_PATH";
@@ -100,6 +102,11 @@ public class MeshOptions implements Option {
 	@JsonPropertyDescription("Path to the plugin directory.")
 	@EnvironmentVariable(name = MESH_PLUGIN_DIR_ENV, description = "Override the configured plugin directory.")
 	private String pluginDirectory = "plugins";
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Plugin startup and initialization timeout in seconds.")
+	@EnvironmentVariable(name = MESH_PLUGIN_TIMEOUT_ENV, description = "Override the configured plugin timeout.")
+	private int pluginTimeout = DEFAULT_PLUGIN_TIMEOUT;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Name of the cluster node instance. If not specified a name will be generated.")
@@ -461,6 +468,15 @@ public class MeshOptions implements Option {
 	@JsonIgnore
 	public MeshOptions setAdminPassword(String adminPassword) {
 		this.adminPassword = adminPassword;
+		return this;
+	}
+
+	public int getPluginTimeout() {
+		return pluginTimeout;
+	}
+
+	public MeshOptions setPluginTimeout(int pluginTimeout) {
+		this.pluginTimeout = pluginTimeout;
 		return this;
 	}
 
