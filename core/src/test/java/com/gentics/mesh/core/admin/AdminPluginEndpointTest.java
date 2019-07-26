@@ -242,10 +242,13 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 	public void testExtensionHandling() throws IOException {
 		grantAdminRole();
 
-		copyAndDeploy(EXTENSION_PROVIDER_PATH, "extension-provider.jar");
 		copyAndDeploy(EXTENSION_CONSUMER_PATH, "extension-consumer.jar");
+		copyAndDeploy(EXTENSION_PROVIDER_PATH, "extension-provider.jar");
 
-		assertEquals("world", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/extension-consumer/extensions"));
+		assertEquals("My dummy extension\n", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/extension-consumer/extensions"));
+
+		call(() -> client().undeployPlugin("extension-provider"));
+		assertEquals("", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/extension-consumer/extensions"));
 
 	}
 

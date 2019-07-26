@@ -381,16 +381,6 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 	}
 
 	@Override
-	protected PluginFactory createPluginFactory() {
-		return pluginFactory;
-	}
-
-	@Override
-	public PluginFactory getPluginFactory() {
-		return pluginFactory;
-	}
-
-	@Override
 	protected PluginDescriptorFinder createPluginDescriptorFinder() {
 		return new MeshPluginDescriptorFinderImpl();
 	}
@@ -538,12 +528,41 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		return Duration.ofSeconds(timeoutInSeconds);
 	}
 
+	/**
+	 * Load a plugin from disk. If the path is a zip file, first unpack.
+	 *
+	 * @param pluginPath
+	 *            plugin location on disk
+	 * @return PluginWrapper for the loaded plugin or null if not loaded
+	 * @throws PluginRuntimeException
+	 *             if problems during load
+	 */
 	@Override
-	protected ExtensionFinder createExtensionFinder() {
-		DefaultExtensionFinder extensionFinder = new DefaultExtensionFinder(this);
-		addPluginStateListener(extensionFinder);
+	protected PluginWrapper loadPluginFromPath(Path pluginPath) {
+		// First unzip any ZIP files
+		try {
+			pluginPath = FileUtils.expandIfZip(pluginPath);
+		} catch (Exception e) {
+			log.warn("Failed to unzip " + pluginPath, e);
+			return null;
+		}
 
-		return extensionFinder;
+		return super.loadPluginFromPath(pluginPath);
+	}
+
+	@Override
+	protected PluginFactory createPluginFactory() {
+		return pluginFactory;
+	}
+
+	@Override
+	public PluginFactory getPluginFactory() {
+		return pluginFactory;
+	}
+
+	@Override
+	protected VersionManager createVersionManager() {
+		return new DefaultVersionManager();
 	}
 
 	@Override
@@ -551,12 +570,14 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		return new DefaultExtensionFactory();
 	}
 
-	// @Override
-	// protected PluginDescriptorFinder createPluginDescriptorFinder() {
-	// return new CompoundPluginDescriptorFinder()
-	// .add(new PropertiesPluginDescriptorFinder())
-	// .add(new ManifestPluginDescriptorFinder());
-	// }
+	@Override
+	protected ExtensionFinder createExtensionFinder() {
+		// CustomDefaultExtensionFinder extensionFinder = new CustomDefaultExtensionFinder(this);
+		DefaultExtensionFinder extensionFinder = new DefaultExtensionFinder(this);
+		addPluginStateListener(extensionFinder);
+
+		return extensionFinder;
+	}
 
 	@Override
 	protected PluginStatusProvider createPluginStatusProvider() {
@@ -582,31 +603,11 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			.add(new DefaultPluginLoader(this), this::isNotDevelopment);
 	}
 
-	@Override
-	protected VersionManager createVersionManager() {
-		return new DefaultVersionManager();
-	}
-
-	/**
-	 * Load a plugin from disk. If the path is a zip file, first unpack.
-	 *
-	 * @param pluginPath
-	 *            plugin location on disk
-	 * @return PluginWrapper for the loaded plugin or null if not loaded
-	 * @throws PluginRuntimeException
-	 *             if problems during load
-	 */
-	@Override
-	protected PluginWrapper loadPluginFromPath(Path pluginPath) {
-		// First unzip any ZIP files
-		try {
-			pluginPath = FileUtils.expandIfZip(pluginPath);
-		} catch (Exception e) {
-			log.warn("Failed to unzip " + pluginPath, e);
-			return null;
-		}
-
-		return super.loadPluginFromPath(pluginPath);
-	}
+	// @Override
+	// protected PluginDescriptorFinder createPluginDescriptorFinder() {
+	// return new CompoundPluginDescriptorFinder()
+	// .add(new PropertiesPluginDescriptorFinder())
+	// .add(new ManifestPluginDescriptorFinder());
+	// }
 
 }

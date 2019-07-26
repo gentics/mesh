@@ -13,6 +13,7 @@
 		<plugin.class>com.gentics.mesh.plugin.ExtensionProviderPlugin</plugin.class>
 		<plugin.version>0.0.1</plugin.version>
 		<plugin.requries>extension-consumer</plugin.requries>
+		<plugin.dependencies>extension-consumer</plugin.dependencies>
 		<plugin.author>Johannes Schüth</plugin.author>
 		<plugin.inception>2019-07-08</plugin.inception>
 		<plugin.description>My extension plugin</plugin.description>
@@ -103,6 +104,7 @@
 										<Plugin-Author>${plugin.author}</Plugin-Author>
 										<Plugin-Class>${plugin.class}</Plugin-Class>
 										<Plugin-Requires>${plugin.requries}</Plugin-Requires>
+										<Plugin-Dependencies>${plugin.dependencies}</Plugin-Dependencies>
 										<Plugin-Description>${plugin.description}</Plugin-Description>
 										<Plugin-License>Apache License 2.0</Plugin-License>
 										<Plugin-Inception>${plugin.inception}</Plugin-Inception>
