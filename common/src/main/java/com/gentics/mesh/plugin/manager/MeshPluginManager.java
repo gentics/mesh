@@ -11,6 +11,7 @@ import org.pf4j.PluginWrapper;
 
 import com.gentics.mesh.plugin.MeshPlugin;
 
+import graphql.schema.GraphQLObjectType;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 

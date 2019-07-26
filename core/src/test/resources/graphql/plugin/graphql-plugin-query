@@ -2,6 +2,12 @@
 	plugin(id:"graphql") {
 		# [$.data.plugin.id=graphql]
 		id
+		# [$.data.plugin.custom.text=hello-world]
+		custom {
+			... on PluginDataType {
+				text
+			}
+		}
 	}
 }
 # [$.errors=<is-undefined>]

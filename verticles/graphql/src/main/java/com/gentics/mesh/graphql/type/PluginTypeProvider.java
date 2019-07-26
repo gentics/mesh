@@ -5,8 +5,11 @@ import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
+import static graphql.schema.GraphQLUnionType.newUnionType;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -18,14 +21,18 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.plugin.PluginTypeRegistry;
+import com.gentics.mesh.plugin.GraphQLPlugin;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
+import graphql.schema.GraphQLUnionType;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -39,9 +46,12 @@ public class PluginTypeProvider extends AbstractTypeProvider {
 
 	private final MeshPluginManager manager;
 
+	private final PluginTypeRegistry pluginTypeRegistry;
+
 	@Inject
-	public PluginTypeProvider(MeshPluginManager manager) {
+	public PluginTypeProvider(MeshPluginManager manager, PluginTypeRegistry pluginTypeRegistry) {
 		this.manager = manager;
+		this.pluginTypeRegistry = pluginTypeRegistry;
 	}
 
 	public GraphQLFieldDefinition createPluginField() {
@@ -130,12 +140,35 @@ public class PluginTypeProvider extends AbstractTypeProvider {
 		}));
 
 		// .version
-		root.field(newFieldDefinition().name("version").description("The version of the plugin").type(GraphQLString).dataFetcher((env) -> {
+		root.field(newFieldDefinition().name("version").description("The version of the plugin").type(GraphQLString).dataFetcher(env -> {
 			MeshPlugin plugin = env.getSource();
 			return plugin.getManifest().getVersion();
 		}));
 
+		root.field(newFieldDefinition().name("custom").type(createPluginUnionType()).dataFetcher(env -> {
+			MeshPlugin plugin = env.getSource();
+			if (plugin instanceof GraphQLPlugin) {
+				return plugin;
+			} else {
+				log.warn("The requested plugin does not provide a custom graphql type.");
+			}
+			return null;
+		}));
+
 		return root.build();
+	}
+
+	private GraphQLUnionType createPluginUnionType() {
+		List<GraphQLObjectType> pluginTypes = pluginTypeRegistry.getPlugins().stream().map(p -> p.createType()).collect(Collectors.toList());
+		GraphQLObjectType[] typeArray = pluginTypes.toArray(new GraphQLObjectType[pluginTypes.size()]);
+
+		String PLUGIN_FIELDS_TYPE_NAME = "PluginTypes";
+		GraphQLUnionType fieldType = newUnionType().name(PLUGIN_FIELDS_TYPE_NAME).possibleTypes(typeArray).description("Fields of the node.")
+			.typeResolver(env -> {
+
+				return typeArray[0];
+			}).build();
+		return fieldType;
 	}
 
 	/**

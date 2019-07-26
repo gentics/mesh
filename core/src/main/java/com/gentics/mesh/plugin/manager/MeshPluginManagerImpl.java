@@ -55,6 +55,8 @@ import org.pf4j.util.FileUtils;
 
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphql.plugin.PluginTypeRegistry;
+import com.gentics.mesh.plugin.GraphQLPlugin;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.MeshPluginDescriptor;
 import com.gentics.mesh.plugin.RestPlugin;
@@ -90,10 +92,13 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 
 	private final MeshOptions options;
 
+	private final PluginTypeRegistry graphqlRegistry;
+
 	@Inject
-	public MeshPluginManagerImpl(MeshOptions options, MeshPluginFactory pluginFactory) {
+	public MeshPluginManagerImpl(MeshOptions options, MeshPluginFactory pluginFactory, PluginTypeRegistry graphqlRegistry) {
 		this.pluginFactory = pluginFactory;
 		this.options = options;
+		this.graphqlRegistry = graphqlRegistry;
 		delayedInitialize();
 	}
 
@@ -127,6 +132,9 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 						restPlugin.registerEndpoints(globalRouter, projectRouter);
 					}
 				}
+				if (plugin instanceof GraphQLPlugin) {
+					graphqlRegistry.register((GraphQLPlugin) plugin);
+				}
 				sub.onComplete();
 			})).doOnError(error -> {
 				if (error instanceof GenericRestException) {
@@ -138,6 +146,9 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 				}
 				if (plugin instanceof RestPlugin) {
 					apiNameSyncSet.remove(((RestPlugin) plugin).apiName());
+				}
+				if (plugin instanceof GraphQLPlugin) {
+					graphqlRegistry.unregister((GraphQLPlugin) plugin);
 				}
 			});
 	}
