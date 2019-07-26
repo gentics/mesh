@@ -23,16 +23,35 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.pf4j.DefaultPluginManager;
+import org.pf4j.AbstractPluginManager;
+import org.pf4j.CompoundPluginLoader;
+import org.pf4j.CompoundPluginRepository;
+import org.pf4j.DefaultExtensionFactory;
+import org.pf4j.DefaultExtensionFinder;
+import org.pf4j.DefaultPluginLoader;
+import org.pf4j.DefaultPluginRepository;
+import org.pf4j.DefaultPluginStatusProvider;
+import org.pf4j.DefaultVersionManager;
+import org.pf4j.DevelopmentPluginLoader;
+import org.pf4j.DevelopmentPluginRepository;
+import org.pf4j.ExtensionFactory;
+import org.pf4j.ExtensionFinder;
+import org.pf4j.JarPluginLoader;
+import org.pf4j.JarPluginRepository;
 import org.pf4j.Plugin;
 import org.pf4j.PluginClassLoader;
 import org.pf4j.PluginDescriptor;
 import org.pf4j.PluginDescriptorFinder;
 import org.pf4j.PluginFactory;
+import org.pf4j.PluginLoader;
+import org.pf4j.PluginRepository;
 import org.pf4j.PluginRuntimeException;
 import org.pf4j.PluginState;
 import org.pf4j.PluginStateEvent;
+import org.pf4j.PluginStatusProvider;
 import org.pf4j.PluginWrapper;
+import org.pf4j.VersionManager;
+import org.pf4j.util.FileUtils;
 
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -56,9 +75,11 @@ import io.vertx.ext.web.Router;
  * The implementation of an {@link MeshPluginManager}.
  */
 @Singleton
-public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshPluginManager {
+public class MeshPluginManagerImpl extends AbstractPluginManager implements MeshPluginManager {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshPluginManagerImpl.class);
+
+	public static final String PLUGINS_DIR_CONFIG_PROPERTY_NAME = "pf4j.pluginsConfigDir";
 
 	/**
 	 * Set which is used to detect conflicting deployments.
@@ -82,7 +103,8 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 
 	@Override
 	protected void initialize() {
-		// Don't invoke init here since we need to do this after dagger has injected the dependencies.
+		// Don't invoke super init here since we need to do this after dagger has injected the dependencies.
+		log.info("PF4J version {} in '{}' mode", getVersion(), getRuntimeMode());
 	}
 
 	private Completable registerPlugin(MeshPlugin plugin) {
@@ -510,9 +532,81 @@ public class MeshPluginManagerImpl extends DefaultPluginManager implements MeshP
 		return getStartedPlugins().stream().map(w -> (MeshPlugin) w.getPlugin()).collect(Collectors.toList());
 	}
 
+	@Override
 	public Duration getPluginTimeout() {
 		int timeoutInSeconds = options.getPluginTimeout();
 		return Duration.ofSeconds(timeoutInSeconds);
+	}
+
+	@Override
+	protected ExtensionFinder createExtensionFinder() {
+		DefaultExtensionFinder extensionFinder = new DefaultExtensionFinder(this);
+		addPluginStateListener(extensionFinder);
+
+		return extensionFinder;
+	}
+
+	@Override
+	protected ExtensionFactory createExtensionFactory() {
+		return new DefaultExtensionFactory();
+	}
+
+	// @Override
+	// protected PluginDescriptorFinder createPluginDescriptorFinder() {
+	// return new CompoundPluginDescriptorFinder()
+	// .add(new PropertiesPluginDescriptorFinder())
+	// .add(new ManifestPluginDescriptorFinder());
+	// }
+
+	@Override
+	protected PluginStatusProvider createPluginStatusProvider() {
+		String configDir = System.getProperty(PLUGINS_DIR_CONFIG_PROPERTY_NAME);
+		Path configPath = configDir != null ? Paths.get(configDir) : getPluginsRoot();
+
+		return new DefaultPluginStatusProvider(configPath);
+	}
+
+	@Override
+	protected PluginRepository createPluginRepository() {
+		return new CompoundPluginRepository()
+			.add(new DevelopmentPluginRepository(getPluginsRoot()), this::isDevelopment)
+			.add(new JarPluginRepository(getPluginsRoot()), this::isNotDevelopment)
+			.add(new DefaultPluginRepository(getPluginsRoot()), this::isNotDevelopment);
+	}
+
+	@Override
+	protected PluginLoader createPluginLoader() {
+		return new CompoundPluginLoader()
+			.add(new DevelopmentPluginLoader(this), this::isDevelopment)
+			.add(new JarPluginLoader(this), this::isNotDevelopment)
+			.add(new DefaultPluginLoader(this), this::isNotDevelopment);
+	}
+
+	@Override
+	protected VersionManager createVersionManager() {
+		return new DefaultVersionManager();
+	}
+
+	/**
+	 * Load a plugin from disk. If the path is a zip file, first unpack.
+	 *
+	 * @param pluginPath
+	 *            plugin location on disk
+	 * @return PluginWrapper for the loaded plugin or null if not loaded
+	 * @throws PluginRuntimeException
+	 *             if problems during load
+	 */
+	@Override
+	protected PluginWrapper loadPluginFromPath(Path pluginPath) {
+		// First unzip any ZIP files
+		try {
+			pluginPath = FileUtils.expandIfZip(pluginPath);
+		} catch (Exception e) {
+			log.warn("Failed to unzip " + pluginPath, e);
+			return null;
+		}
+
+		return super.loadPluginFromPath(pluginPath);
 	}
 
 }

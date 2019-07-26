@@ -1,6 +1,7 @@
 package com.gentics.mesh.plugin.manager;
 
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -126,5 +127,12 @@ public interface MeshPluginManager {
 	 * @return
 	 */
 	List<MeshPlugin> getStartedMeshPlugins();
+
+	/**
+	 * Return the configured plugin startup and init timeout.
+	 * 
+	 * @return
+	 */
+	Duration getPluginTimeout();
 
 }
