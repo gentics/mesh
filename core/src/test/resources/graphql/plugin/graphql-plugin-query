@@ -1,6 +1,8 @@
 {
 	pluginApi {
 		graphql {
+			# [$.data.pluginApi.graphql.type=graphql_PluginDataType]
+			type: __typename
 			# [$.data.pluginApi.graphql.text=hello-world]
 			text
 		}
