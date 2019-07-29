@@ -2,6 +2,9 @@ package com.gentics.mesh.plugin;
 
 import graphql.schema.GraphQLObjectType;
 
+/**
+ * A GraphQL Plugin is an plugin which will extend the GraphQL API of Gentics Mesh.
+ */
 public interface GraphQLPlugin extends MeshPlugin {
 
 	/**
