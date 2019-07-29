@@ -13,13 +13,9 @@ import com.gentics.mesh.plugin.env.PluginEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLOutputType;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
 public class PluginApiTypeProvider extends AbstractTypeProvider {
-
-	private static final Logger log = LoggerFactory.getLogger(PluginApiTypeProvider.class);
 
 	public static final String PLUGIN_API_TYPE_NAME = "PluginAPIType";
 
