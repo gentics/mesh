@@ -16,6 +16,7 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.reactivex.Completable;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
@@ -228,6 +229,11 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 		int port = options.getHttpServerOptions().getPort();
 		String host = options.getHttpServerOptions().getHost();
 		adminClient = MeshRestClient.create(host, port, false);
+	}
+
+	@Override
+	public Vertx vertx() {
+		return env.vertx();
 	}
 
 }

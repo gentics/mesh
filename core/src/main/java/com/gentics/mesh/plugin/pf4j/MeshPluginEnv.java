@@ -9,10 +9,16 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 
+import dagger.Lazy;
+import io.vertx.core.Vertx;
+
 public class MeshPluginEnv implements PluginEnvironment {
 
+	private final Lazy<Vertx> vertx;
+
 	@Inject
-	public MeshPluginEnv() {
+	public MeshPluginEnv(Lazy<Vertx> vertx) {
+		this.vertx = vertx;
 	}
 
 	@Override
@@ -26,6 +32,11 @@ public class MeshPluginEnv implements PluginEnvironment {
 			// TODO: Use dedicated tokenCode - See https://github.com/gentics/mesh/issues/412
 			return authProvider.generateAPIToken(admin, null, null);
 		});
+	}
+
+	@Override
+	public Vertx vertx() {
+		return vertx.get();
 	}
 
 }

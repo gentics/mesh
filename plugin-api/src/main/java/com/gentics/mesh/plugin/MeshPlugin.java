@@ -4,11 +4,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.reactivex.Completable;
+import io.vertx.core.Vertx;
 
 /**
  * Interface for a Gentics Mesh plugin. After deployment a plugin needs to register itself at the plugin manager.
@@ -97,7 +97,7 @@ public interface MeshPlugin {
 	 * @return RX Java variant Vert.x Instance
 	 */
 	default io.vertx.reactivex.core.Vertx getRxVertx() {
-		return new io.vertx.reactivex.core.Vertx(Mesh.vertx());
+		return new io.vertx.reactivex.core.Vertx(vertx());
 	}
 
 	/**
@@ -106,4 +106,9 @@ public interface MeshPlugin {
 	 * @return
 	 */
 	MeshRestClient adminClient();
+
+	/**
+	 * return the Vert.x instance that can be used for the plugin.
+	 */
+	Vertx vertx();
 }

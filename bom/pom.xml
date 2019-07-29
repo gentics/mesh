@@ -24,6 +24,28 @@
 				<artifactId>ferma</artifactId>
 				<version>${ferma.version}</version>
 			</dependency>
+
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-plugin-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.pf4j</groupId>
+				<artifactId>pf4j</artifactId>
+				<version>3.0.1</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-test-common</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>

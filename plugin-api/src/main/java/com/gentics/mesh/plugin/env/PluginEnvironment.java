@@ -1,5 +1,7 @@
 package com.gentics.mesh.plugin.env;
 
+import io.vertx.core.Vertx;
+
 /**
  * Environment for a plugin is used to access data provided by mesh (e.g. adminToken).
  */
@@ -12,4 +14,10 @@ public interface PluginEnvironment {
 	 */
 	String adminToken();
 
+	/**
+	 * Return the Vert.x instance to be used for the plugin.
+	 * 
+	 * @return
+	 */
+	Vertx vertx();
 }
