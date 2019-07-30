@@ -4,7 +4,7 @@ title: Plugin Migration
 
 include::content/docs/variables.adoc-include[]
 
-Starting with Gentics Mesh 0.37.0 a new plugin API was introduced. Older plugins need to migrate to this API in order to be deployable. This document contains a collection of the most important changes to help migrate older plugins to the new system.
+Starting with Gentics Mesh *0.37.0* a new plugin API was introduced. Older plugins need to migrate to this API in order to be deployable. This document contains a collection of the most important changes to help migrate older plugins to the new system.
 
 === New plugin setup
 
@@ -33,7 +33,6 @@ You can now use a `BOM` file to manage the versions of Gentics Mesh Artifacts.
 
 [source,xml]
 ----
-
 <dependencyManagement>
     <dependencies>
         <dependency>
@@ -48,6 +47,20 @@ You can now use a `BOM` file to manage the versions of Gentics Mesh Artifacts.
 ----
 
 Using the BOM will allow you to add Gentics Mesh dependencies without the need to specify the versions.
+
+[source,xml]
+----
+<dependency>
+    <groupId>com.gentics.mesh</groupId>
+    <artifactId>mesh-plugin-api</artifactId>
+    <scope>provided</scope>
+</dependency>
+<dependency>
+    <groupId>org.pf4j</groupId>
+    <artifactId>pf4j</artifactId>
+    <scope>provided</scope>
+</dependency>
+----
 
 More about the needed dependencies can be found in the link:{{< relref "plugin-development.asciidoc" >}}#_dependencies[Plugin development guide].
 

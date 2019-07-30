@@ -33,7 +33,7 @@ ____
 
 The Plugin System has been overhauled.
 
-*REST API*
+*REST API changes*
 
 Previously plugins were assigned a UUID and could thus be managed using this uuid:
 
@@ -41,9 +41,25 @@ Previously plugins were assigned a UUID and could thus be managed using this uui
 
 The new plugin system will now utilize the plugin id for these REST and GraphQL API instead. The pluginId is unique to each plugin and a better and easier to grasp identifier for a plugin.
 
-*New API*
+*New Java API / Structure*
 
-The plugin API has been overhauled and existing plugins need to be migrated link:{{< relref "plugin-migration.asciidoc" >}}[(Migration Guide)] to the new API in order to be deployable.
+The plugin API and structure has been overhauled and existing plugins need to be migrated link:{{< relref "plugin-migration.asciidoc" >}}[(Migration Guide)] to the new API in order to be deployable.
+
+*GraphQL Plugin support*
+
+It is now possible to create plugins which extend the GraphQL API. Plugins which provide link:{{< relref "plugin-development.asciidoc" >}}#_graphql_plugin[GraphQL extensions] will be made accessible under the `pluginApi` GraphQL field.
+
+*Dropped maven repository support*
+
+It is no longer possible to load plugins directly via Maven Coordinates. The REST API will only accept a filesystem paths to plugins.
+
+*Classloader fix*
+
+The classloader mechanism has been altered.  Plugins can now provide their own library versions. Previously a class which was also present in Gentics Mesh Server was loaded from the server class loader instead of the plugin. This has been fixed now.
+
+*Examples / Guide*
+
+Various link:https://github.com/gentics/mesh-plugin-examples[plugin examples] and a link:{{< relref "guides/mesh-plugin" >}}[plugin development guide] has been created.
 
 ____
 
