@@ -115,7 +115,7 @@ public class ChangeAddVersioning extends AbstractChange {
 			Iterator<Vertex> tagFieldIterator = tag.getVertices(Direction.OUT, "HAS_FIELD_CONTAINER").iterator();
 			Vertex tagFieldContainer = tagFieldIterator.next();
 			if (tagFieldIterator.hasNext()) {
-				fail("The tag with uuid {" + tag.getProperty("uuid") + "} got more then one field container.");
+				fail("The tag with uuid {" + tag.getProperty("uuid") + "} got more than one field container.");
 			}
 			// Load the tag value from the field container and store it directly into the tag. Remove the now no longer needed field container from the graph.
 			String tagValue = tagFieldContainer.getProperty("name");

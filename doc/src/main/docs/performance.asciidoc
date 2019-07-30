@@ -8,7 +8,7 @@ This document contains useful information about performance related topics.
 It will help you make the right modelling choices when using Gentics Mesh.
 
 It is possible to store 200.000 and more nodes within a single node container. 
-We have made tests with more then 2.000.000 nodes in Gentics Mesh. 
+We have made tests with more than 2.000.000 nodes in Gentics Mesh.
 When storing that amount of nodes you should keep the following design suggestions in mind:
 
 == Configuration

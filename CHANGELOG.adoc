@@ -1490,7 +1490,7 @@ icon:plus[] Webroot: The schema property `urlFields` can now used to specify fie
 
 icon:check[] Performance: Optimized binary download memory usage.
 
-icon:check[] REST: Fixed a bug which prevented pages with more then 2000 items from being loaded.
+icon:check[] REST: Fixed a bug which prevented pages with more than 2000 items from being loaded.
 
 == 0.10.4 (10.10.2017)
 
@@ -1584,7 +1584,7 @@ icon:check[] Migration: Migrations will no longer fail if a required field was a
 
 icon:check[] Java REST Client: Various missing request parameter implementations have been added to the mesh-rest-client module.
 
-icon:check[] Node Migration: A bug has been fixed which prevented node migrations with more then 5000 elements from completing.
+icon:check[] Node Migration: A bug has been fixed which prevented node migrations with more than 5000 elements from completing.
 
 icon:check[] GraphQL: Updated GraphiQL browser to latest version to fix various issues when using aliases.
 

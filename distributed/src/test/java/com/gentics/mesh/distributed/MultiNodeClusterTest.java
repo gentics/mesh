@@ -16,7 +16,7 @@ import com.gentics.mesh.distributed.containers.MeshDockerServer;
 import io.vertx.core.Vertx;
 
 /**
- * Test how a cluster behaves with more then two nodes.
+ * Test how a cluster behaves with more than two nodes.
  */
 public class MultiNodeClusterTest extends AbstractClusterTest {
 
