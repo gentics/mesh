@@ -17,6 +17,6 @@ public class BasicPluginTest {
 	@Test
 	public void testPlugin() {
 		Mesh mesh = server.getMesh();
-		mesh.deployPlugin(BasicPlugin.class, "basic").blockingGet();
+		mesh.deployPlugin(BasicPlugin.class, "basic").blockingAwait();
 	}
 }

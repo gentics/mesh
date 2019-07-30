@@ -6,7 +6,7 @@ include::content/docs/variables.adoc-include[]
 
 Starting with Gentics Mesh *0.37.0* a new plugin API was introduced. Older plugins need to migrate to this API in order to be deployable. This document contains a collection of the most important changes to help migrate older plugins to the new system.
 
-=== New plugin setup
+== New plugin setup
 
 The `AbstractPluginVerticle` class has been replaced by `AbstractPlugin`.
 In order to create a REST API plugin you now also need to implement the `RestPlugin` interface for your plugin.
@@ -21,13 +21,13 @@ public YourPlugin(PluginWrapper wrapper, PluginEnvironment env) {
 }
 ----
 
-=== New manifest handling
+== New manifest handling
 
 The manifest of the plugin will now be added in the `MANIFEST.MF` file of the plugin jar. You can read more about this new manifest in the link:{{< relref "plugin-development.asciidoc" >}}[Plugin development guide].
 
 The files `com.gentics.mesh.plugin.plugin-service.json` and `mesh-plugin.json` are no longer needed and can be deleted.
 
-=== New dependencies
+== New dependencies
 
 You can now use a `BOM` file to manage the versions of Gentics Mesh Artifacts.
 
@@ -64,7 +64,7 @@ Using the BOM will allow you to add Gentics Mesh dependencies without the need t
 
 More about the needed dependencies can be found in the link:{{< relref "plugin-development.asciidoc" >}}#_dependencies[Plugin development guide].
 
-=== New changes
+== New changes
 
 Some methods have been updated:
 
