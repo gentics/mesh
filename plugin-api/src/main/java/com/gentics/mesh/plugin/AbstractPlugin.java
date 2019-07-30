@@ -142,27 +142,9 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 		return new PluginContext(rc);
 	}
 
-	/**
-	 * Return a wrapped routing context handler
-	 * 
-	 * @param handler
-	 *            Handler to be wrapped
-	 * @return Wrapped handler
-	 */
-	public Handler<RoutingContext> wrapHandler(Handler<PluginContext> handler) {
-		return rc -> handler.handle(wrap(rc));
-	}
-
 	private String determineHostString(MeshOptions options) {
 		String host = options.getHttpServerOptions().getHost();
 		return WILDCARD_IP.equals(host) ? LOOPBACK_IP : host;
-	}
-
-	private void createAdminClient() {
-		MeshOptions options = Mesh.mesh().getOptions();
-		int port = options.getHttpServerOptions().getPort();
-		String host = this.determineHostString(options);
-		adminClient = MeshRestClient.create(host, port, false);
 	}
 
 	/**
@@ -195,17 +177,6 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 		return new File(getPluginBaseDir(), "config.local.yml");
 	}
 
-	/**
-	 * Return a wrapped routing context.
-	 * 
-	 * @param rc
-	 *            Vert.x routing context
-	 * @return Wrapped context
-	 */
-	public PluginContext wrap(RoutingContext rc) {
-		return new PluginContext(rc);
-	}
-
 	@Override
 	public MeshRestClient adminClient() {
 		String token = env.adminToken();
@@ -227,7 +198,7 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 	protected void createAdminClient() {
 		MeshOptions options = Mesh.mesh().getOptions();
 		int port = options.getHttpServerOptions().getPort();
-		String host = options.getHttpServerOptions().getHost();
+		String host = determineHostString(options);
 		adminClient = MeshRestClient.create(host, port, false);
 	}
 

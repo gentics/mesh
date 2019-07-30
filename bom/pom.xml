@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.36.4-SNAPSHOT</version>
+		<version>0.36.8-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -25,7 +25,7 @@
 		<elasticsearch.client.version>1.0.1</elasticsearch.client.version>
 		<orientdb.version>3.0.21</orientdb.version>
 		<hazelcast.version>3.10.4</hazelcast.version>
-		<jackson.version>2.9.8</jackson.version>
+		<jackson.version>2.9.9</jackson.version>
 		<netty.version>4.1.34.Final</netty.version>
 		<tika.version>1.21</tika.version>
 		<aws.sdk.version>2.1.0</aws.sdk.version>
