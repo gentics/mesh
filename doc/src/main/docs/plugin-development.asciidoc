@@ -115,7 +115,8 @@ The plugin manifest can directly be added when generating the shaded jar file.
 
 The dependency version management can be managed more efficiently by just including the `mesh-plugin-bom` dependency. This will import the dependencyManagement for all plugin related dependencies.
 
-```
+[source,xml]
+----
 <dependencyManagement>
     <dependencies>
         <dependency>
@@ -127,7 +128,23 @@ The dependency version management can be managed more efficiently by just includ
         </dependency>
     </dependencies>
 </dependencyManagement>
-```
+----
+
+The plugin needs at least these two dependencies. It is important to set the scope to `provided`. Otherwise the plugin can't be loaded by Gentics Mesh.
+
+[source,xml]
+----
+<dependency>
+    <groupId>com.gentics.mesh</groupId>
+    <artifactId>mesh-plugin-api</artifactId>
+    <scope>provided</scope>
+</dependency>
+<dependency>
+    <groupId>org.pf4j</groupId>
+    <artifactId>pf4j</artifactId>
+    <scope>provided</scope>
+</dependency>
+----
 
 == Plugin Extensions
 

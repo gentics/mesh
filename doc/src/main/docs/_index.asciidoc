@@ -310,6 +310,9 @@ ul.doc-toc h2 {
                             <li>
                                 <a href="guides/mesh-hugo">Hugo Guide</a>
                             </li>
+                            <li>
+                                <a href="guides/mesh-plugin">Plugin Development Guide</a>
+                            </li>
                         </ul>
                     </li>
 
@@ -480,6 +483,9 @@ ul.doc-toc h2 {
                             </li>
                             <li>
                                 <a href="plugin-development">Plugin Development</a>
+                            </li>
+                            <li>
+                                <a href="plugin-migration">Plugin Migration</a>
                             </li>
                         </ul>
                     </li>

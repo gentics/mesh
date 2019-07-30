@@ -1,0 +1,210 @@
+---
+title: Gentics Mesh - Plugin Development
+---
+
+include::content/docs/variables.adoc-include[]
+
+== Intro
+
+In this guide you will learn how to create a plugin for Gentics Mesh.
+
+
+== Requirements
+
+Before we can start you need to install link:https://maven.apache.org/[Apache Maven] and link:https://adoptopenjdk.net/[JDK 11].
+
+== Source files
+
+The plugin consists of just two files.
+
+=== pom.xml
+
+The `pom.xml` file is used by link:https://maven.apache.org/[Apache Maven] to build the plugin Java project. It contains the needed build steps and also information that will be later on added to the plugin manifest.
+
+[source,xml]
+----
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.gentics.mesh.plugin</groupId>
+  <artifactId>mesh-graphql-plugin</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!-- This property defines against which version of Gentics Mesh you want to build your plugin -->
+    <mesh.version>0.36.4-SNAPSHOT</mesh.version>
+
+    <!-- For quick access the plugin manifest values are listed here -->
+    <plugin.id>graphql</plugin.id>
+    <plugin.name>The GraphQL example plugin</plugin.name>
+    <plugin.description>A very simple plugin which shows how to extend the
+        GraphQL API.</plugin.description>
+    <plugin.class>com.gentics.mesh.plugin.GraphQLExamplePlugin</plugin.class>
+    <plugin.version>${project.version}</plugin.version>
+    <plugin.license>Apache License 2.0</plugin.license>
+    <plugin.author>Joe Doe</plugin.author>
+    <plugin.inception>2019-07-08</plugin.inception>
+  </properties>
+
+  <!-- The BOM (Bill Of Materials) import will make it easier to find the correct versions for the needed dependencies -->
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.gentics.mesh</groupId>
+        <artifactId>mesh-plugin-bom</artifactId>
+        <version>${mesh.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- The following two dependencies are the core of the plugin API. Both of them must be set to provided otherwise the plugin will not work. -->
+    <dependency>
+      <groupId>com.gentics.mesh</groupId>
+      <artifactId>mesh-plugin-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.pf4j</groupId>
+      <artifactId>pf4j</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Test dependencies -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.gentics.mesh</groupId>
+      <artifactId>mesh-test-common</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.gentics.mesh</groupId>
+      <artifactId>mesh-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.7.0</version>
+        <configuration>
+          <verbose>true</verbose>
+          <source>8</source>
+          <target>8</target>
+        </configuration>
+      </plugin>
+      <!-- The shade plugin will bundle all needed dependencies into one jar which we can use -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.2.1</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <transformers>
+                <transformer
+                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <manifestEntries>
+                    <Plugin-Id>${plugin.id}</Plugin-Id>
+                    <Plugin-Version>${plugin.version}</Plugin-Version>
+                    <Plugin-Author>${plugin.author}</Plugin-Author>
+                    <Plugin-Class>${plugin.class}</Plugin-Class>
+                    <Plugin-Description>${plugin.description}</Plugin-Description>
+                    <Plugin-License>${plugin.license}</Plugin-License>
+                    <Plugin-Inception>${plugin.inception}</Plugin-Inception>
+                  </manifestEntries>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <repositories>
+    <repository>
+      <id>maven.gentics.com</id>
+      <name>Gentics Maven Repository</name>
+      <url>https://maven.gentics.com/maven2</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+</project>
+----
+
+=== GraphQLExamplePlugin.java
+
+[source,java]
+----
+package com.gentics.mesh.plugin;
+
+import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLObjectType.newObject;
+
+import org.pf4j.PluginWrapper;
+
+import com.gentics.mesh.plugin.env.PluginEnvironment;
+
+import graphql.schema.GraphQLObjectType;
+import io.reactivex.Completable;
+
+public class GraphQLExamplePlugin extends AbstractPlugin implements GraphQLPlugin {
+
+  private GraphQLObjectType type;
+
+  public GraphQLExamplePlugin(PluginWrapper wrapper, PluginEnvironment env) {
+    super(wrapper, env);
+  }
+
+  @Override
+  public Completable initialize() {
+    type = newObject()
+      .name(prefixType("PluginDataType"))
+      .description("Dummy GraphQL Test")
+      .field(newFieldDefinition().name("text")
+        .type(GraphQLString)
+        .description("Say hello to the world of plugins")
+        .dataFetcher(env -> {
+          return "hello-world";
+        }))
+      .build();
+    return Completable.complete();
+  }
+
+  @Override
+  public GraphQLObjectType createType() {
+    return type;
+  }
+
+}
+----
+
+== Packaging
+
+Now we can package the plugin by running `mvn clean package`. The final plugin will be placed in the `target` directory.
+
+We can now place the `mesh-graphql-plugin-0.0.1-SNAPSHOT.jar` file in the Gentics Mesh plugin directory.

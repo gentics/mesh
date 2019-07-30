@@ -23,6 +23,31 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.38.0]]
+== 0.38.0 (TBD)
+
+icon:bullhorn[] New Plugin System
+
+[quote]
+____
+
+The Plugin System has been overhauled.
+
+*REST API*
+
+Previously plugins were assigned a UUID and could thus be managed using this uuid:
+
+* `DELETE /admin/plugins/{uuid}`
+
+The new plugin system will now utilize the plugin id for these REST and GraphQL API instead. The pluginId is unique to each plugin and a better and easier to grasp identifier for a plugin.
+
+*New API*
+
+The plugin API has been overhauled and existing plugins need to be migrated link:{{< relref "plugin-migration.asciidoc" >}}[(Migration Guide)] to the new API in order to be deployable.
+
+____
+
+
 [[v0.36.8]]
 == 0.36.8 (02.08.2019)
 
