@@ -23,7 +23,7 @@ public class GraphQLPluginTest extends AbstractPluginTest {
 	public void testGraphQL() throws IOException {
 		grantAdminRole();
 
-		for (int i = 0; i < 100; i++) {
+		for (int i = 1; i <= 100; i++) {
 			deployPlugin(ClonePlugin.class, "clone" + i);
 		}
 
