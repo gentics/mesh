@@ -173,7 +173,7 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 	protected File getPluginBaseDir() {
 		MeshOptions options = Mesh.mesh().getOptions();
 		String pluginDir = options.getPluginDirectory();
-		String id = getManifest().getId();
+		String id = id();
 		return new File(pluginDir, id);
 	}
 

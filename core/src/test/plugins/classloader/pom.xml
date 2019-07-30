@@ -15,18 +15,28 @@
 		<plugin.inception>2019-07-08</plugin.inception>
 		<plugin.description>My classloader test plugin</plugin.description>
 	</properties>
+	
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-plugin-bom</artifactId>
+				<version>${mesh.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-plugin-api</artifactId>
-			<version>${mesh.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.pf4j</groupId>
 			<artifactId>pf4j</artifactId>
-			<version>3.0.1</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -34,19 +44,16 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-test-common</artifactId>
-			<version>${mesh.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-core</artifactId>
-			<version>${mesh.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

@@ -56,7 +56,7 @@ stage("Setup Build Environment") {
 						extraFlags = "-Djacoco.skip=false"
 					}
 					// Install is needed to provide deps for the test plugin build
-					sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -DskipTests ${extraFlags} clean install"
+					sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.test-plugins=false -Dskip.cluster.tests=true -DskipTests ${extraFlags} clean install"
 				} else {
 				    echo "Omitted since we don't execute tests"
 				}

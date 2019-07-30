@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.gentics.mesh.plugin</groupId>
@@ -17,6 +16,18 @@
 		<plugin.description>My extension-consumer plugin</plugin.description>
 	</properties>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-plugin-bom</artifactId>
+				<version>${mesh.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh.plugin</groupId>
@@ -28,13 +39,11 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-plugin-api</artifactId>
-			<version>${mesh.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.pf4j</groupId>
 			<artifactId>pf4j</artifactId>
-			<version>3.0.1</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -42,19 +51,16 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-test-common</artifactId>
-			<version>${mesh.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-core</artifactId>
-			<version>${mesh.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -82,8 +88,7 @@
 						</goals>
 						<configuration>
 							<transformers>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<manifestEntries>
 										<Plugin-Id>${plugin.id}</Plugin-Id>
 										<Plugin-Name>${plugin.name}</Plugin-Name>

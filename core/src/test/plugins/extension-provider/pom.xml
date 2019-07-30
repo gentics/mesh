@@ -22,10 +22,10 @@
 		<dependencies>
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
-				<artifactId>mesh-bom</artifactId>
+				<artifactId>mesh-plugin-bom</artifactId>
+				<version>${mesh.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
-				<version>${mesh.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

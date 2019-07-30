@@ -80,8 +80,11 @@ public class PluginConfigTest {
 
 	private DummyPlugin mockPlugin() {
 		PluginWrapper wrapper = mock(PluginWrapper.class);
+		when(wrapper.getPluginId()).thenReturn("dummy");
+
 		MeshPluginDescriptorImpl descriptor = mock(MeshPluginDescriptorImpl.class);
 		when(descriptor.getName()).thenReturn("dummy");
+
 		PluginManifest manifest = new PluginManifest();
 		manifest.setName("dummy");
 		when(descriptor.toPluginManifest()).thenReturn(manifest);

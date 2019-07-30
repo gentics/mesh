@@ -209,12 +209,13 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 	public void testMultipleDeployments() throws IOException {
 		grantAdminRole();
 
-		for (int i = 0; i < 100; i++) {
+		for (int i = 1; i <= 100; i++) {
 			deployPlugin(ClonePlugin.class, "clone" + i);
 		}
 
 		PluginListResponse result = call(() -> client().findPlugins(new PagingParametersImpl().setPerPage(10L).setPage(10)));
 		PluginResponse lastElement = result.getData().get(9);
+		System.out.println(lastElement.toJson());
 		assertEquals("Clone Plugin 100", lastElement.getName());
 		assertEquals(10, result.getMetainfo().getPerPage().longValue());
 		assertEquals(10, result.getMetainfo().getCurrentPage());

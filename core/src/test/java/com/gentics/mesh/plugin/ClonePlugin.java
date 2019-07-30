@@ -18,7 +18,7 @@ public class ClonePlugin extends AbstractPlugin implements RestPlugin {
 		super(wrapper, env);
 	}
 
-	public static AtomicInteger counter = new AtomicInteger(0);
+	public static AtomicInteger counter = new AtomicInteger(1);
 
 	private Integer myCount = null;
 
