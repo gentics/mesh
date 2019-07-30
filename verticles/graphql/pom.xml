@@ -14,7 +14,6 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<graphql.version>10.0</graphql.version>
 	</properties>
 
 	<dependencyManagement>
@@ -33,17 +32,14 @@
 		<dependency>
 			<groupId>com.graphql-java</groupId>
 			<artifactId>graphql-java</artifactId>
-			<version>${graphql.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-elasticsearch</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.graphqlfilter</groupId>
 			<artifactId>graphql-java-filter</artifactId>
-			<version>1.0.1</version>
 		</dependency>
 	</dependencies>
 

@@ -34,13 +34,11 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-core</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-test-common</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<!-- Generator dependencies -->
@@ -51,13 +49,11 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-core</artifactId>
-			<version>${project.version}</version>
 			<type>test-jar</type>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-web-templ-handlebars</artifactId>
-			<version>${vertx.version}</version>
 		</dependency>
 	</dependencies>
 

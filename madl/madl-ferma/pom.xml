@@ -18,7 +18,6 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>madl-core</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
