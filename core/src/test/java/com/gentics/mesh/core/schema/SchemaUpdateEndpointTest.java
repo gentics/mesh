@@ -46,7 +46,14 @@ public class SchemaUpdateEndpointTest extends AbstractMeshTest {
 			{(Supplier<AbstractFieldSchema>) DateFieldSchemaImpl::new, "DateFieldSchema"},
 			{(Supplier<AbstractFieldSchema>) BinaryFieldSchemaImpl::new, "BinaryFieldSchema"},
 			{(Supplier<AbstractFieldSchema>) NodeFieldSchemaImpl::new, "NodeFieldSchema"},
-			{(Supplier<AbstractFieldSchema>) () -> (MicronodeFieldSchemaImpl) new MicronodeFieldSchemaImpl().setAllowedMicroSchemas(), "MicronodeFieldSchema"}
+			{(Supplier<AbstractFieldSchema>) () -> (MicronodeFieldSchemaImpl) new MicronodeFieldSchemaImpl().setAllowedMicroSchemas(), "MicronodeFieldSchema"},
+			{(Supplier<AbstractFieldSchema>) () -> (ListFieldSchemaImpl) new ListFieldSchemaImpl().setListType("string"), "StringListFieldSchemaImpl"},
+			{(Supplier<AbstractFieldSchema>) () -> (ListFieldSchemaImpl) new ListFieldSchemaImpl().setListType("number"), "NumberListFieldSchemaImpl"},
+			{(Supplier<AbstractFieldSchema>) () -> (ListFieldSchemaImpl) new ListFieldSchemaImpl().setListType("date"), "DateListFieldSchemaImpl"},
+			{(Supplier<AbstractFieldSchema>) () -> (ListFieldSchemaImpl) new ListFieldSchemaImpl().setListType("boolean"), "BooleanListFieldSchemaImpl"},
+			{(Supplier<AbstractFieldSchema>) () -> (ListFieldSchemaImpl) new ListFieldSchemaImpl().setListType("html"), "HtmlListFieldSchemaImpl"},
+			{(Supplier<AbstractFieldSchema>) () -> (ListFieldSchemaImpl) new ListFieldSchemaImpl().setListType("node"), "NodeListFieldSchemaImpl"},
+			{(Supplier<AbstractFieldSchema>) () -> (ListFieldSchemaImpl) new ListFieldSchemaImpl().setListType("micronode"), "MicrondoeListFieldSchemaImpl"},
 		});
 	}
 
