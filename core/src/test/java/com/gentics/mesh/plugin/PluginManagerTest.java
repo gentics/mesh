@@ -159,7 +159,8 @@ public class PluginManagerTest extends AbstractPluginTest {
 		String apiName = DummyPlugin.API_NAME;
 		PluginManifest manifest = JsonUtil.readValue(httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + apiName + "/manifest"), PluginManifest.class);
 		assertEquals("Unknown Author", manifest.getAuthor());
-		assertEquals(apiName, manifest.getApiName());
+		String pluginApiName = ((RestPlugin) manager.getPlugin("dummy").getPlugin()).apiName();
+		assertEquals(apiName, pluginApiName);
 
 		JsonObject idInfo = new JsonObject(httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + apiName + "/id"));
 		String id = idInfo.getString("id");

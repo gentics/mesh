@@ -18,7 +18,9 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.plugin.GraphQLPlugin;
 import com.gentics.mesh.plugin.MeshPlugin;
+import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 
 import graphql.schema.GraphQLArgument;
@@ -108,7 +110,13 @@ public class PluginTypeProvider extends AbstractTypeProvider {
 		// .apiName
 		root.field(newFieldDefinition().name("apiName").description("The apiName of the plugin").type(GraphQLString).dataFetcher((env) -> {
 			MeshPlugin plugin = env.getSource();
-			return plugin.getManifest().getApiName();
+			if (plugin instanceof RestPlugin) {
+				return ((RestPlugin) plugin).apiName();
+			}
+			if (plugin instanceof GraphQLPlugin) {
+				return ((GraphQLPlugin) plugin).apiName();
+			}
+			return null;
 		}));
 
 		// .license

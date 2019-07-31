@@ -33,7 +33,6 @@ public class AdminExamples {
 		PluginManifest manifest = new PluginManifest();
 		manifest.setId(id);
 		manifest.setName(name);
-		manifest.setApiName(key);
 		manifest.setAuthor("Joe Doe");
 		manifest.setDescription("A dummy plugin");
 		manifest.setInception(DATE_OLD);

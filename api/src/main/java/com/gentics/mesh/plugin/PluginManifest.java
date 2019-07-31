@@ -61,15 +61,6 @@ public class PluginManifest {
 		return this;
 	}
 
-	public String getApiName() {
-		return apiName;
-	}
-
-	public PluginManifest setApiName(String apiName) {
-		this.apiName = apiName;
-		return this;
-	}
-
 	public String getDescription() {
 		return description;
 	}

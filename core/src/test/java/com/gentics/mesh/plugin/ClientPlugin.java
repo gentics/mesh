@@ -18,7 +18,6 @@ public class ClientPlugin extends AbstractPlugin implements RestPlugin {
 	@Override
 	public PluginManifest getManifest() {
 		PluginManifest manifest = new PluginManifest();
-		manifest.setApiName("client");
 		manifest.setAuthor("Joe Doe");
 		manifest.setId("client");
 		manifest.setInception("2018");
