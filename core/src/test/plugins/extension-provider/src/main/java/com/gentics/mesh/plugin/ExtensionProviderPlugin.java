@@ -4,6 +4,7 @@ import org.pf4j.PluginWrapper;
 
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 
+import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -16,13 +17,17 @@ public class ExtensionProviderPlugin extends AbstractPlugin {
 	}
 
 	@Override
-	public void start() {
-		log.info("Extension provider plugin started");
+	public Completable initialize() {
+		return Completable.fromAction(() -> {
+			log.info("Extension provider plugin started");
+		});
 	}
 
 	@Override
-	public void stop() {
-		log.info("Extension provider plugin stopped");
+	public Completable shutdown() {
+		return Completable.fromAction(() -> {
+			log.info("Extension provider plugin stopped");
+		});
 	}
 
 }

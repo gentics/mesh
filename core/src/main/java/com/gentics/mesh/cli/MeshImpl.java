@@ -344,7 +344,7 @@ public class MeshImpl implements Mesh {
 		log.info("Mesh shutting down...");
 		setStatus(MeshStatus.SHUTTING_DOWN);
 		try {
-			meshInternal.pluginManager().stop().blockingAwait(10, TimeUnit.SECONDS);
+			meshInternal.pluginManager().stop().blockingAwait(getOptions().getPluginTimeout(), TimeUnit.SECONDS);
 		} catch (Exception e) {
 			log.error("One of the plugins could not be undeployed in the allotted time.", e);
 		}

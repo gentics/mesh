@@ -255,7 +255,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			Plugin plugin = wrapper.getPlugin();
 			if (plugin instanceof MeshPlugin) {
 				MeshPlugin meshPlugin = (MeshPlugin) plugin;
-				pluginRegistry.deregister(meshPlugin).andThen(meshPlugin.prepareStop()).blockingAwait(getPluginTimeout().getSeconds(),
+				pluginRegistry.deregister(meshPlugin).andThen(meshPlugin.shutdown()).blockingAwait(getPluginTimeout().getSeconds(),
 					TimeUnit.SECONDS);
 			}
 			unloadPlugin(id);
@@ -298,7 +298,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			Plugin plugin = wrapper.getPlugin();
 			if (plugin instanceof MeshPlugin) {
 				MeshPlugin meshPlugin = (MeshPlugin) plugin;
-				pluginRegistry.deregister((MeshPlugin) plugin).andThen(meshPlugin.prepareStop()).blockingAwait(getPluginTimeout().getSeconds(),
+				pluginRegistry.deregister((MeshPlugin) plugin).andThen(meshPlugin.shutdown()).blockingAwait(getPluginTimeout().getSeconds(),
 					TimeUnit.SECONDS);
 			}
 			undeploy(wrapper.getPluginId());

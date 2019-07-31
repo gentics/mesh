@@ -59,7 +59,11 @@ The classloader mechanism has been altered.  Plugins can now provide their own l
 
 *Examples / Guide*
 
-Various link:https://github.com/gentics/mesh-plugin-examples[plugin examples] and a link:{{< relref "guides/mesh-plugin" >}}[plugin development guide] has been created.
+The plugin development process documentation has been enhanced.
+
+* link:{{< relref "plugin-development" >}}[Plugin Development]
+* link:https://github.com/gentics/mesh-plugin-examples[Plugin Examples]
+* link:{{< relref "guides/mesh-plugin" >}}[Example Plugin Guide]
 
 ____
 

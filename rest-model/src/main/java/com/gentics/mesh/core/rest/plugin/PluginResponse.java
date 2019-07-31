@@ -11,7 +11,7 @@ import com.gentics.mesh.plugin.PluginManifest;
 public class PluginResponse implements RestModel {
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Deployment ID of the plugin.")
+	@JsonPropertyDescription("Id of the plugin.")
 	private String id;
 
 	@JsonProperty(required = true)

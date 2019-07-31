@@ -70,13 +70,24 @@ public interface Mesh {
 	MeshOptions getOptions();
 
 	/**
-	 * Start mesh. This will effectively block until {@link #shutdown()} is called from another thread. This method will initialise the dagger context and
+	 * Start Gentics Mesh. This will effectively block until {@link #shutdown()} is called from another thread. This method will initialise the dagger context and
 	 * deploy mandatory verticles and extensions.
 	 * 
 	 * @throws Exception
 	 * @return Fluent API
 	 */
 	Mesh run() throws Exception;
+
+	/**
+	 * Start Gentics Mesh and complete the completable once the server is ready.
+	 * 
+	 * @return
+	 */
+	default Completable rxRun() {
+		return Completable.fromAction(() -> {
+			run(false);
+		});
+	}
 
 	/**
 	 * Start mesh

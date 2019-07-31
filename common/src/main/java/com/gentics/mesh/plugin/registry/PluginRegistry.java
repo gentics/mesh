@@ -26,6 +26,11 @@ public interface PluginRegistry {
 	 */
 	Completable deregister(MeshPlugin plugin);
 
+	/**
+	 * Check whether the given plugin conflicts with any already deployed plugin.
+	 * 
+	 * @param plugin
+	 */
 	void checkForConflict(MeshPlugin plugin);
 
 }

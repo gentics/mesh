@@ -22,7 +22,7 @@ public class GraphQLTestPlugin extends AbstractPlugin implements GraphQLPlugin {
 	@Override
 	public Completable initialize() {
 		type = newObject()
-			.name("PluginDataType")
+			.name(prefixType("PluginDataType"))
 			.description("Dummy GraphQL Test")
 			.field(newFieldDefinition().name("text")
 				.type(GraphQLString)
@@ -31,14 +31,7 @@ public class GraphQLTestPlugin extends AbstractPlugin implements GraphQLPlugin {
 					return "hello-world";
 				}))
 			.build();
-		type = prefixType(type);
 		return Completable.complete();
-	}
-
-	private GraphQLObjectType prefixType(GraphQLObjectType type) {
-		return type.transform(b -> {
-			b.name(id() + "_" + type.getName());
-		});
 	}
 
 	@Override

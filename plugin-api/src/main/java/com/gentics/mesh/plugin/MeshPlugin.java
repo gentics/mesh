@@ -24,17 +24,19 @@ public interface MeshPlugin {
 
 	/**
 	 * Method which can be used to initialize the plugin.
+	 * The configured plugin timeout will be applied to the operation.
 	 * 
 	 * @return Completable which completes once the plugin has been initialized
 	 */
 	Completable initialize();
 
 	/**
-	 * Method which will be invoked once the endpoints of the plugins have been de-registered and the plugin will be stopped.
+	 * Method which will be invoked once the the plugins has been de-registered. The plugin will be stopped afterwards.
+	 * The configured plugin timeout will be applied to the operation. 
 	 * 
-	 * @return
+	 * @return Completable which completes the shutdown process.
 	 */
-	Completable prepareStop();
+	Completable shutdown();
 
 	/**
 	 * Return the Id of the plugin.

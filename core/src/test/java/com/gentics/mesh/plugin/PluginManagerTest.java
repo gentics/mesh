@@ -174,7 +174,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 	public void testRedeployAfterStartFailure() {
 		MeshPluginManager manager = pluginManager();
 		try {
-			manager.deploy(FailingStartPlugin.class, "failing").blockingAwait();
+			manager.deploy(FailingShutdownPlugin.class, "failing").blockingAwait();
 			fail("Deployment should have failed");
 		} catch (Exception e) {
 			e.printStackTrace();

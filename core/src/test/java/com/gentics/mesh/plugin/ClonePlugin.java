@@ -7,6 +7,7 @@ import org.pf4j.PluginWrapper;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 
+import io.reactivex.Completable;
 import io.vertx.ext.web.Router;
 
 /**
@@ -35,10 +36,11 @@ public class ClonePlugin extends AbstractPlugin implements RestPlugin {
 	}
 
 	@Override
-	public void start() {
+	public Completable initialize() {
 		if (myCount == null) {
 			myCount = counter.getAndIncrement();
 		}
+		return Completable.complete();
 	}
 
 	@Override

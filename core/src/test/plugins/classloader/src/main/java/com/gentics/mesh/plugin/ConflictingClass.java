@@ -5,8 +5,8 @@ package com.gentics.mesh.plugin;
  */
 public class ConflictingClass {
 
-	public static String scope ="plugin";
-	
+	public static String scope = "plugin";
+
 	public static String check() {
 		return "plugin";
 	}

@@ -32,8 +32,6 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 
 	private static final String LOOPBACK_IP = "127.0.0.1";
 
-	private PluginManifest manifest;
-
 	private MeshRestClient adminClient;
 
 	private final PluginEnvironment env;
@@ -102,7 +100,7 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 	}
 
 	@Override
-	public void start() {
+	public final void start() {
 		log.info("Starting plugin {" + name() + "}");
 		createAdminClient();
 		getPluginBaseDir().mkdirs();
@@ -115,7 +113,7 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 	}
 
 	@Override
-	public void stop() {
+	public final void stop() {
 		log.info("Stopping plugin {" + name() + "}");
 		if (adminClient != null) {
 			adminClient.close();
@@ -123,7 +121,7 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 	}
 
 	@Override
-	public Completable prepareStop() {
+	public Completable shutdown() {
 		return Completable.complete();
 	}
 

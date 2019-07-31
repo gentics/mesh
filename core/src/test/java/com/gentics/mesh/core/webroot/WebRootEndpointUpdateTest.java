@@ -27,6 +27,7 @@ public class WebRootEndpointUpdateTest extends AbstractMeshTest {
 		nodeCreateRequest.setLanguage("en");
 		nodeCreateRequest.setSchemaName("content");
 		nodeCreateRequest.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
 		nodeCreateRequest.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 
 		NodeResponse response = call(() -> client().webrootCreate(PROJECT_NAME, "/new-page.html", nodeCreateRequest));

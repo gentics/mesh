@@ -31,8 +31,7 @@ public class ManifestInjectorPlugin extends AbstractPlugin implements RestPlugin
 
 	@Override
 	public void registerEndpoints(Router globalRouter, Router projectRouter) {
-		// TODO Auto-generated method stub
-
+		// NOOP
 	}
 
 }
