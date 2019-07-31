@@ -82,6 +82,8 @@ public class SearchModelGenerator extends AbstractGenerator {
 	public static void initPaths() {
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
+		options.setNodeName("Example Generator");
+		options.getAuthenticationOptions().setKeystorePassword("ABCD");
 
 		// Prefix all default directories in order to place them into the dump directory
 		String uploads = "target/dump/" + options.getUploadOptions().getDirectory();

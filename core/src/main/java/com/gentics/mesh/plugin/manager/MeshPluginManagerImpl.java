@@ -220,10 +220,12 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			PluginWrapper wrapper = getPlugin(id);
 			Plugin plugin = wrapper.getPlugin();
 			if (plugin instanceof MeshPlugin) {
-				pluginRegistry.register((MeshPlugin) plugin).blockingAwait(getPluginTimeout().getSeconds(), TimeUnit.SECONDS);
+				MeshPlugin meshPlugin = (MeshPlugin) plugin;
+				meshPlugin.initialize().andThen(pluginRegistry.register(meshPlugin)).blockingAwait(getPluginTimeout().getSeconds(), TimeUnit.SECONDS);
 			}
 		} catch (Throwable e) {
 			log.error("Plugin registration failed with error", e);
+			rollback(id);
 			return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_did_not_register");
 		}
 
