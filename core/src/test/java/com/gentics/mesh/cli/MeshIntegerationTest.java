@@ -1,53 +1,45 @@
 package com.gentics.mesh.cli;
 
-import static com.gentics.mesh.core.rest.MeshEvent.STARTUP;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.test.AbstractIntegrationTest;
 
-@Ignore
 public class MeshIntegerationTest extends AbstractIntegrationTest {
+
+	public final static long TIMEOUT = DEFAULT_TIMEOUT_SECONDS * 20;
 
 	@Before
 	public void cleanup() throws IOException {
-		new File("mesh.json").delete();
+		new File("mesh.yml").delete();
 		FileUtils.deleteDirectory(new File("data"));
+		FileUtils.deleteDirectory(new File("config"));
 	}
 
 	@Test
 	public void testStartup() throws Exception {
+		Mesh mesh = Mesh.mesh();
+		mesh.rxRun().blockingAwait(TIMEOUT, TimeUnit.SECONDS);
+		mesh.shutdown();
+	}
 
-		long timeout = DEFAULT_TIMEOUT_SECONDS * 20;
-		final CountDownLatch latch = new CountDownLatch(2);
-		final Mesh mesh = Mesh.mesh();
-		mesh.getVertx().eventBus().consumer(STARTUP.address, mh -> {
-			latch.countDown();
-		});
-		mesh.setCustomLoader((vertx) -> {
-			latch.countDown();
-		});
+	@Test
+	public void testStartupWithOptions() throws Exception {
+		MeshOptions options = new MeshOptions();
+		options.getAuthenticationOptions().setKeystorePassword("ABC");
+		options.getSearchOptions().setStartEmbedded(false);
+		options.getSearchOptions().setUrl(null);
+		options.setNodeName("TestNode");
 
-		new Thread(() -> {
-			try {
-				mesh.run();
-			} catch (Exception e) {
-				e.printStackTrace();
-				fail("Error while starting instance: " + e.getMessage());
-			}
-		}).start();
-		if (!latch.await(timeout, TimeUnit.SECONDS)) {
-			fail("Mesh did not startup on time. Timeout {" + timeout + "} seconds reached.");
-		}
+		Mesh mesh = Mesh.mesh(options);
+		mesh.rxRun().blockingAwait(TIMEOUT, TimeUnit.SECONDS);
+		mesh.shutdown();
 	}
 }

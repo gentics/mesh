@@ -1,6 +1,7 @@
 package com.gentics.mesh.etc.config;
 
 import java.io.File;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -505,7 +506,7 @@ public class MeshOptions implements Option {
 		if (getContentOptions() != null) {
 			getContentOptions().validate(this);
 		}
-
+		Objects.requireNonNull(getNodeName(), "The node name must be specified.");
 		// TODO check for other invalid characters in node name
 	}
 

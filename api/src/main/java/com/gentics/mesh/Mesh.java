@@ -25,6 +25,7 @@ public interface Mesh {
 	 * @return Fluent API
 	 */
 	static Mesh mesh(MeshOptions options) {
+		options.validate();
 		return factory.mesh(options);
 	}
 

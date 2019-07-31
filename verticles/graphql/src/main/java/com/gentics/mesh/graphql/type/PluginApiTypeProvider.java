@@ -47,7 +47,7 @@ public class PluginApiTypeProvider extends AbstractTypeProvider {
 			GraphQLFieldDefinition pluginField = newFieldDefinition()
 				.name(currentPlugin.apiName())
 				.description("API of plugin: " + currentPlugin.getManifest().getDescription())
-				.type(currentPlugin.createRootType())
+				.type(currentPlugin.createRootSchema().getQueryType())
 				.dataFetcher(env -> {
 					return pluginEnv;
 				}).build();

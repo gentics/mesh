@@ -1,6 +1,6 @@
 package com.gentics.mesh.plugin;
 
-import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLSchema;
 
 /**
  * A GraphQL Plugin is an plugin which will extend the GraphQL API of Gentics Mesh.
@@ -8,12 +8,12 @@ import graphql.schema.GraphQLObjectType;
 public interface GraphQLPlugin extends MeshPlugin {
 
 	/**
-	 * Create the GraphQL API root type for the plugin. Please note that this method will be invoked for each query. It is thus recommended to generate the
+	 * Create the GraphQL API root schema for the plugin. Please note that this method will be invoked for each query. It is thus recommended to generate the
 	 * type up-front and only return the type field. Doing otherwise could potentially slow down the GraphQL query.
 	 * 
 	 * @return
 	 */
-	GraphQLObjectType createRootType();
+	GraphQLSchema createRootSchema();
 
 	/**
 	 * Prefix the type of the plugin with the plugin id to avoid conflicts with Gentics Mesh or other plugin types.
