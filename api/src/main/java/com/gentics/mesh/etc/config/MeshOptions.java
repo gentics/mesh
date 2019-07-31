@@ -104,7 +104,7 @@ public class MeshOptions implements Option {
 	private String pluginDirectory = "plugins";
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Plugin startup and initialization timeout in seconds.")
+	@JsonPropertyDescription("Timeout in seconds which is used for the plugin startup,initialization,de-initialization and stop processes.")
 	@EnvironmentVariable(name = MESH_PLUGIN_TIMEOUT_ENV, description = "Override the configured plugin timeout.")
 	private int pluginTimeout = DEFAULT_PLUGIN_TIMEOUT;
 

@@ -42,7 +42,7 @@ public class GraphQLTestPlugin extends AbstractPlugin implements GraphQLPlugin {
 	}
 
 	@Override
-	public GraphQLObjectType createType() {
+	public GraphQLObjectType createRootType() {
 		return type;
 	}
 

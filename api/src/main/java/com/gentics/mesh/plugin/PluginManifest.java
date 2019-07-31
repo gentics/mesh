@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 public class PluginManifest {
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Unique id of the plugin")
+	@JsonPropertyDescription("Unique id of the plugin was defined by the plugin developer.")
 	private String id;
 
 	@JsonProperty(required = true)

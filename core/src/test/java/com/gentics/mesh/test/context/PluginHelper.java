@@ -3,7 +3,7 @@ package com.gentics.mesh.test.context;
 import static com.gentics.mesh.test.ClientHelper.expectException;
 import static org.junit.Assert.fail;
 
-import java.util.Map;
+import java.util.Set;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -31,8 +31,8 @@ public interface PluginHelper {
 		return getTestContext().getOptions().getPluginDirectory();
 	}
 
-	default Map<String, String> plugins() {
-		return Mesh.mesh().pluginUuids();
+	default Set<String> plugins() {
+		return Mesh.mesh().pluginIds();
 	}
 
 	/**

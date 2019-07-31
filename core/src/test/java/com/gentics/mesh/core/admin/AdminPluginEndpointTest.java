@@ -28,6 +28,9 @@ import com.gentics.mesh.plugin.ManifestInjectorPlugin;
 import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
+/**
+ * These tests require the test plugins to be build. You can build these plugins using the /core/build-test-plugins.sh script.
+ */
 @MeshTestSetting(testSize = PROJECT, startServer = true, inMemoryDB = true)
 public class AdminPluginEndpointTest extends AbstractPluginTest {
 
@@ -54,10 +57,10 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		grantAdminRole();
 		String name = "non-mesh.jar";
 
-		int before = Mesh.mesh().pluginUuids().size();
+		int before = Mesh.mesh().pluginIds().size();
 		copyAndDeploy(NON_MESH_PATH, name, INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name);
 
-		int after = Mesh.mesh().pluginUuids().size();
+		int after = Mesh.mesh().pluginIds().size();
 		assertEquals("The verticle should not stay deployed.", before, after);
 	}
 

@@ -6,7 +6,7 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.graphql.plugin.PluginTypeRegistry;
+import com.gentics.mesh.graphql.plugin.GraphQLPluginRegistry;
 import com.gentics.mesh.plugin.GraphQLPlugin;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 
@@ -19,12 +19,12 @@ public class PluginApiTypeProvider extends AbstractTypeProvider {
 
 	public static final String PLUGIN_API_TYPE_NAME = "PluginAPIType";
 
-	private final PluginTypeRegistry pluginTypeRegistry;
+	private final GraphQLPluginRegistry pluginTypeRegistry;
 
 	private final PluginEnvironment pluginEnv;
 
 	@Inject
-	public PluginApiTypeProvider(PluginTypeRegistry pluginTypeRegistry, PluginEnvironment env) {
+	public PluginApiTypeProvider(GraphQLPluginRegistry pluginTypeRegistry, PluginEnvironment env) {
 		this.pluginTypeRegistry = pluginTypeRegistry;
 		this.pluginEnv = env;
 	}
@@ -47,7 +47,7 @@ public class PluginApiTypeProvider extends AbstractTypeProvider {
 			GraphQLFieldDefinition pluginField = newFieldDefinition()
 				.name(currentPlugin.apiName())
 				.description("API of plugin: " + currentPlugin.getManifest().getDescription())
-				.type(currentPlugin.createType())
+				.type(currentPlugin.createRootType())
 				.dataFetcher(env -> {
 					return pluginEnv;
 				}).build();

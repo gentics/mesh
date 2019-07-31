@@ -9,8 +9,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -413,8 +413,8 @@ public class MeshImpl implements Mesh {
 	}
 
 	@Override
-	public Map<String, String> pluginUuids() {
-		return MeshInternal.get().pluginManager().pluginIdsMap();
+	public Set<String> pluginIds() {
+		return MeshInternal.get().pluginManager().getPluginIds();
 	}
 
 }

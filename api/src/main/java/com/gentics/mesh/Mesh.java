@@ -1,7 +1,7 @@
 
 package com.gentics.mesh;
 
-import java.util.Map;
+import java.util.Set;
 
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -170,10 +170,10 @@ public interface Mesh {
 	Completable deployPlugin(Class<?> clazz, String id);
 
 	/**
-	 * Return a map of deployed plugins with name and id.
+	 * Return a set of deployed plugin ids.
 	 * 
 	 * @return
 	 */
-	Map<String, String> pluginUuids();
+	Set<String> pluginIds();
 
 }

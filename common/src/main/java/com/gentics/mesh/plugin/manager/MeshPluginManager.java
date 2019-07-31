@@ -11,7 +11,6 @@ import org.pf4j.PluginWrapper;
 
 import com.gentics.mesh.plugin.MeshPlugin;
 
-import graphql.schema.GraphQLObjectType;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 
@@ -114,13 +113,6 @@ public interface MeshPluginManager {
 	 * @return
 	 */
 	Path getPluginsRoot();
-
-	/**
-	 * Return a map of plugin ids.
-	 * 
-	 * @return
-	 */
-	Map<String, String> pluginIdsMap();
 
 	/**
 	 * Return a list of started mesh plugins.
