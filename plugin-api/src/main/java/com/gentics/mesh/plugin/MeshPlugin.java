@@ -23,16 +23,15 @@ public interface MeshPlugin {
 	PluginManifest getManifest();
 
 	/**
-	 * Method which can be used to initialize the plugin.
-	 * The configured plugin timeout will be applied to the operation.
+	 * Method which can be used to initialize the plugin. The configured plugin timeout will be applied to the operation.
 	 * 
 	 * @return Completable which completes once the plugin has been initialized
 	 */
 	Completable initialize();
 
 	/**
-	 * Method which will be invoked once the the plugins has been de-registered. The plugin will be stopped afterwards.
-	 * The configured plugin timeout will be applied to the operation. 
+	 * Method which will be invoked once the the plugins has been de-registered. The plugin will be stopped afterwards. Use this method to free resources and
+	 * stop processes that have been started or created during {@link #initialize()}. The configured plugin timeout will be applied to the operation.
 	 * 
 	 * @return Completable which completes the shutdown process.
 	 */

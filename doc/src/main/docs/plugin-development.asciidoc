@@ -50,15 +50,15 @@ NOTE: The `createType()` method will be invoked for every query. It is thus advi
 === Deploy
 
 * **Loading** - Plugin gets loaded and prepared for starting 
-* **Starting** - Plugin gets started. (`MeshPlugin#start()` will be invoked)
-* **Initialisation** - Plugin gets initialized. (`MeshPlugin#initialize()`)
+* **Starting** - Plugin gets started.
+* **Initialisation** - Plugin gets initialized. You can implement the `MeshPlugin#initialize()` method to initialize your plugin resources.
 * **Registration** - Plugin gets finally registered so that it can be used.
 
 === Undeploy
 
-* **De-registration** - Plugin registeration gets removed. At this point the plugin integration with the server gets removed. REST and GraphQL extensions get removed.
-* **De-initialisation** - Plugin gets de-initialized.
-* **Stopping** - Plugin gets stopped.  (`MeshPlugin#stop()`)
+* **De-registration** - Plugin registration gets removed. At this point the plugin integration with the server gets removed. REST and GraphQL extensions get removed.
+* **Shutdown** - Plugin gets shutdown. You can implement the `MeshPlugin#shutdown()` method to stop and free your plugin resources.
+* **Stopping** - Plugin gets stopped.
 * **Unloading** - Finally the plugin gets unloaded.
 
 == Plugin Manifest
@@ -113,6 +113,22 @@ The plugin manifest can directly be added when generating the shaded jar file.
 
 == Dependencies
 
+All the needed maven artifact are located at our Maven Repository. Please add the following section to your `pom.xml` in order to be able to download the dependencies.
+
+[source,xml]
+----
+<repositories>
+    <repository>
+        <id>maven.gentics.com</id>
+        <name>Gentics Maven Repository</name>
+        <url>https://maven.gentics.com/maven2</url>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+    </repository>
+</repositories>
+----
+
 The dependency version management can be managed more efficiently by just including the `mesh-plugin-bom` dependency. This will import the dependencyManagement for all plugin related dependencies.
 
 [source,xml]
@@ -145,6 +161,7 @@ The plugin needs at least these two dependencies. It is important to set the sco
     <scope>provided</scope>
 </dependency>
 ----
+
 
 == Plugin Extensions
 
