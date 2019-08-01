@@ -150,7 +150,7 @@ The dependency version management can be managed more efficiently by just includ
 </dependencyManagement>
 ----
 
-The plugin needs at least these two dependencies. It is important to set the scope to `provided`. Otherwise the plugin can't be loaded by Gentics Mesh.
+The plugin needs at least this dependency. It is important to set the scope to `provided`. Otherwise the plugin can't be loaded by Gentics Mesh.
 
 [source,xml]
 ----
