@@ -165,6 +165,19 @@ public class OrientDBIndexHandler implements IndexHandler {
 	}
 
 	@Override
+	public void removeIndex(String indexName) {
+		if (log.isDebugEnabled()) {
+			log.debug("Removing index {" + indexName + "}");
+		}
+		OrientGraphNoTx noTx = db.get().getTxProvider().rawNoTx();
+		try {
+			noTx.dropIndex(indexName);
+		} finally {
+			noTx.shutdown();
+		}
+	}
+
+	@Override
 	public <T extends ElementFrame> T checkIndexUniqueness(String indexName, T element, Object key) {
 		FramedGraph graph = Tx.getActive().getGraph();
 		OrientBaseGraph orientBaseGraph = db.get().unwrapCurrentGraph();
