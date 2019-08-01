@@ -1,4 +1,6 @@
-package com.gentics.mesh.plugin;
+package com.gentics.mesh.plugin.graphql;
+
+import com.gentics.mesh.plugin.MeshPlugin;
 
 import graphql.schema.GraphQLSchema;
 

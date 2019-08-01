@@ -7,8 +7,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.graphql.plugin.GraphQLPluginRegistry;
-import com.gentics.mesh.plugin.GraphQLPlugin;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
+import com.gentics.mesh.plugin.graphql.GraphQLPlugin;
 
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType.Builder;

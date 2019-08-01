@@ -31,14 +31,7 @@
 
 
 	<dependencies>
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-rest-model</artifactId>
-		</dependency>
+		<!-- All dependencies are marked as provided to avoid plugin devs to accidentally include those in the jar -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-rest-client</artifactId>
@@ -56,7 +49,6 @@
 		<dependency>
 			<groupId>org.pf4j</groupId>
 			<artifactId>pf4j</artifactId>
-			<scope>provided</scope>
 		</dependency>
 
 		<!-- YAML -->

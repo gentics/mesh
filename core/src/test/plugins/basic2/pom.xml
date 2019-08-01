@@ -15,7 +15,7 @@
 		<plugin.inception>2019-07-08</plugin.inception>
 		<plugin.dependencies></plugin.dependencies>
 	</properties>
-	
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>

@@ -7,6 +7,7 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import org.pf4j.PluginWrapper;
 
 import com.gentics.mesh.plugin.env.PluginEnvironment;
+import com.gentics.mesh.plugin.graphql.GraphQLPlugin;
 
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLSchema.Builder;

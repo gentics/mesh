@@ -14,8 +14,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.plugin.GraphQLPlugin;
 import com.gentics.mesh.plugin.MeshPlugin;
+import com.gentics.mesh.plugin.graphql.GraphQLPlugin;
 import com.gentics.mesh.plugin.registry.PluginRegistry;
 
 import io.reactivex.Completable;

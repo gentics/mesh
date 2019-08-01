@@ -40,6 +40,10 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>com.graphql-java</groupId>
+				<artifactId>graphql-java</artifactId>
+			</dependency>
+			<dependency>
 				<groupId>com.gentics.mesh</groupId>
 				<artifactId>mesh-test-common</artifactId>
 				<version>${project.version}</version>

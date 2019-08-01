@@ -23,10 +23,11 @@ import com.gentics.mesh.util.Tuple;
 public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 
 	private static boolean inUse = false;
+
 	/**
 	 * Name of the node.
 	 */
-	private String nodeName;
+	private String nodeName = "localServer_" + System.currentTimeMillis();
 
 	private MeshRestClient client;
 

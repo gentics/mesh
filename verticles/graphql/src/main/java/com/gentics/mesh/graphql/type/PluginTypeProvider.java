@@ -18,9 +18,9 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
-import com.gentics.mesh.plugin.GraphQLPlugin;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.RestPlugin;
+import com.gentics.mesh.plugin.graphql.GraphQLPlugin;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 
 import graphql.schema.GraphQLArgument;
