@@ -2,6 +2,8 @@ package com.gentics.mesh.test.local;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -13,8 +15,10 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.MeshTestServer;
+import com.gentics.mesh.util.Tuple;
 
 public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 
@@ -41,6 +45,8 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 	private boolean startEmbeddedES = false;
 
 	private boolean isInMemory = false;
+
+	private List<Tuple<Class<? extends MeshPlugin>, String>> plugins = new ArrayList<>();
 
 	private Mesh mesh;
 
@@ -109,6 +115,9 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 				}
 			}).start();
 		}
+		plugins.forEach(t -> {
+			mesh.deployPlugin(t.v1(), t.v2()).blockingAwait(10, TimeUnit.SECONDS);
+		});
 	}
 
 	@Override
@@ -241,6 +250,18 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 	 */
 	public Mesh getMesh() {
 		return mesh;
+	}
+
+	/**
+	 * Automatically deploy the given plugin once the server is ready.
+	 * 
+	 * @param clazz
+	 * @param id
+	 * @return Fluent API
+	 */
+	public MeshLocalServer withPlugin(Class<? extends MeshPlugin> clazz, String id) {
+		plugins.add(Tuple.tuple(clazz, id));
+		return this;
 	}
 
 }
