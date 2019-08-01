@@ -409,7 +409,9 @@ public class MeshImpl implements Mesh {
 
 	@Override
 	public Completable deployPlugin(Class<?> clazz, String id) {
-		return MeshInternal.get().pluginManager().deploy(clazz, id);
+		return Completable.defer(() -> {
+			return MeshInternal.get().pluginManager().deploy(clazz, id);
+		});
 	}
 
 	@Override

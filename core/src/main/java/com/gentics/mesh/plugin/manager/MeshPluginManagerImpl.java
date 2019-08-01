@@ -494,10 +494,8 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 
 	@Override
 	protected ExtensionFinder createExtensionFinder() {
-		// CustomDefaultExtensionFinder extensionFinder = new CustomDefaultExtensionFinder(this);
 		DefaultExtensionFinder extensionFinder = new DefaultExtensionFinder(this);
 		addPluginStateListener(extensionFinder);
-
 		return extensionFinder;
 	}
 
@@ -512,24 +510,13 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 	@Override
 	protected PluginRepository createPluginRepository() {
 		return new CompoundPluginRepository()
-			.add(new DevelopmentPluginRepository(getPluginsRoot()), this::isDevelopment)
-			.add(new JarPluginRepository(getPluginsRoot()), this::isNotDevelopment)
-			.add(new DefaultPluginRepository(getPluginsRoot()), this::isNotDevelopment);
+			.add(new JarPluginRepository(getPluginsRoot()), this::isNotDevelopment);
 	}
 
 	@Override
 	protected PluginLoader createPluginLoader() {
 		return new CompoundPluginLoader()
-			.add(new DevelopmentPluginLoader(this), this::isDevelopment)
-			.add(new JarPluginLoader(this), this::isNotDevelopment)
-			.add(new DefaultPluginLoader(this), this::isNotDevelopment);
+			.add(new JarPluginLoader(this), this::isNotDevelopment);
 	}
-
-	// @Override
-	// protected PluginDescriptorFinder createPluginDescriptorFinder() {
-	// return new CompoundPluginDescriptorFinder()
-	// .add(new PropertiesPluginDescriptorFinder())
-	// .add(new ManifestPluginDescriptorFinder());
-	// }
 
 }
