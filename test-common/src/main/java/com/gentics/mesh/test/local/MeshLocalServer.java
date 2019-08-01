@@ -1,6 +1,5 @@
 package com.gentics.mesh.test.local;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
@@ -16,8 +15,6 @@ import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.MeshTestServer;
-
-import static com.gentics.mesh.core.rest.MeshEvent.STARTUP;
 
 public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 
@@ -87,6 +84,7 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 		options.getHttpServerOptions().setEnableCors(true);
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
 		options.getAuthenticationOptions().setKeystorePath(basePath + "/keystore.jkms");
+		options.getMonitoringOptions().setEnabled(false);
 		options.getSearchOptions().setStartEmbedded(startEmbeddedES);
 		if (!startEmbeddedES) {
 			options.getSearchOptions().setUrl(null);
@@ -99,35 +97,18 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 
 		mesh = Mesh.mesh(options);
 
-		new Thread(() -> {
-			try {
-				mesh.run();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}).start();
-
-		while (mesh.getVertx() == null) {
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-
-		mesh.getVertx().eventBus().consumer(STARTUP.address, mh -> {
-			waitingLatch.countDown();
-		});
-
 		if (waitForStartup) {
-			try {
-				awaitStartup(200);
-			} catch (InterruptedException e) {
-				throw new RuntimeException("Local mesh instance did not not startup on-time", e);
-			}
+			mesh.rxRun().blockingAwait(200, TimeUnit.SECONDS);
+		} else {
+			new Thread(() -> {
+				try {
+					mesh.run(false);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}).start();
 		}
-
 	}
 
 	@Override
