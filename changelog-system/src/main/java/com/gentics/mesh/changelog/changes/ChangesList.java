@@ -36,7 +36,8 @@ public final class ChangesList {
 			new ChangeNumberStringsToNumber(),
 			new RenameReleasesToBranches(),
 			new NodeContentLanguageMigration(),
-			new NodeContentEditorMigration()
+			new NodeContentEditorMigration(),
+			new RemoveReleaseIndices()
 			// ADD NEW CHANGES HERE!
 		);
 	}

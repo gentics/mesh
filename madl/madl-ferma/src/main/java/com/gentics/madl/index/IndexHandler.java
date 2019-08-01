@@ -6,6 +6,7 @@ import com.gentics.mesh.madl.field.FieldMap;
 import com.gentics.mesh.madl.index.ElementIndexDefinition;
 import com.gentics.mesh.madl.index.impl.EdgeIndexDefinitionImpl.EdgeIndexDefinitonBuilder;
 import com.gentics.mesh.madl.index.impl.VertexIndexDefinitionImpl.VertexIndexDefinitionBuilder;
+import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.ElementFrame;
 import com.syncleus.ferma.VertexFrame;
 
@@ -33,6 +34,12 @@ public interface IndexHandler {
 	 * @param clazz
 	 */
 	void removeVertexIndex(String indexName, Class<? extends VertexFrame> clazz);
+
+	/**
+	 * Remove the index.
+	 * @param indexName
+	 */
+	void removeIndex(String indexName);
 
 	/**
 	 * Perform an edge SB-Tree index lookup. This method will load the index for the given edge label and postfix and return a list of all inbound vertex ids
