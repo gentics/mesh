@@ -25,7 +25,7 @@ NOTE: The method `registerEndpoints` will be invoked multiple times in order to 
 
 === GraphQL Plugin
 
-Add the interface `GraphQLPlugin` to your plugin class. You will need to implement the `createType()` method to return the object type of your plugin. This type is added to the Gentics Mesh GraphQL api and can be accessed via the `pluginApi` field.
+Add the interface `GraphQLPlugin` to your plugin class. You will need to implement the `createRootSchema()` method to return the object type of your plugin. This type is added to the Gentics Mesh GraphQL api and can be accessed via the `pluginApi` field.
 
 Each plugin will be added to the `pluginApi` field using the `apiName` as the key for the new field:
 
@@ -43,7 +43,11 @@ pluginApi {
 }
 ```
 
-NOTE: The `createType()` method will be invoked for every query. It is thus advised to only return graphql type field which has been generated up-front. 
+NOTE: The `createRootSchema()` method will be invoked for every query. It is thus advised to only return graphql schema which has been generated up-front. 
+
+==== Context
+
+In the datafetcher which will load the data it is possible to access the context via `env.getContext()`. This will return a `GraphQLPluginContext` object that contains methods to access user and other request  information.
 
 == Plugin Lifecycle
 
@@ -155,11 +159,6 @@ The plugin needs at least these two dependencies. It is important to set the sco
     <artifactId>mesh-plugin-api</artifactId>
     <scope>provided</scope>
 </dependency>
-<dependency>
-    <groupId>org.pf4j</groupId>
-    <artifactId>pf4j</artifactId>
-    <scope>provided</scope>
-</dependency>
 ----
 
 
@@ -244,6 +243,7 @@ We provide a JUnit class rule which can be used to quickly startup Gentics Mesh.
 @ClassRule
 public static final MeshLocalServer server = new MeshLocalServer()
     .withInMemoryMode()
+    .withPlugin(MyPlugin.class, "myPlugin")
     .waitForStartup();
 ```
 

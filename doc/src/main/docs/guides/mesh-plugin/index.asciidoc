@@ -36,6 +36,8 @@ In the `initialize()` method we setup the `GraphQLSchema` for our plugin. The sc
 include::/site/content/examples/graphql/src/main/java/com/gentics/mesh/plugin/GraphQLExamplePlugin.java[]
 ----
 
+In the datafetcher which will load the data it is possible to access the context via `env.getContext()`. This will return a `GraphQLPluginContext` object that contains methods to access user and other request  information.
+
 
 === Testing
 
