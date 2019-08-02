@@ -19,6 +19,7 @@ public class HelloWorldPlugin extends AbstractPlugin {
 		super(wrapper, env);
 	}
 
+}
 ----
 
 == Plugin Types
@@ -77,13 +78,23 @@ NOTE: The method `createProjectRouter` will be invoked multiple times in order t
 
 The Vert.x `RoutingContext` contains information which can be accessed by the plugin.
 
-You can access project information via `mesh.project` data key.
+The project context can be wrapped via `wrap(rc)` to get the `PluginContext` which makes it possible to access various information.
 
+.PluginContext methods
+[options="header"]
+|======
+| Method                        | Description
+| `PluginContext#project()`     | Return `JsonObject` which contains project name, uuid.
+| `PluginContext#projectName()` | Return the project name.
+| `PluginContext#client()`      | Return a new client which can be used to access the API . This client will in contrast to `MeshPlugin#adminClient()` use the 
+|======
+
+.Example
 [source,java]
 ----
 router.route("/projectInfo").handler(rc -> {
-    JsonObject info = (JsonObject) rc.data().get("mesh.project");
-    rc.response().end(info.encodePrettily());
+    PluginContext context = wrap(rc);
+    rc.response().end(context.project().encodePrettily());
 });
 ----
 
@@ -118,35 +129,76 @@ NOTE: The `createRootSchema()` method will be invoked for every query. It is thu
 
 In the datafetcher which will load the data it is possible to access the context via `env.getContext()`. This will return a `GraphQLPluginContext` object that contains methods to access user and other request  information.
 
+.GraphQLPluginContext methods excerpt
+[options="header"]
+|======
+| Method                                | Description
+| `GraphQLPluginContext#projectName()`  | Name of current project.
+| `GraphQLPluginContextprojectUuid()`   | Uuid of current project.
+| `GraphQLPluginContext#branchName()`   | Name of current active branch.
+| `GraphQLPluginContext#branchUuid()`   | Uuid of current active branch.
+| `GraphQLPluginContext#principal()`    | User information.
+|======
+
+== Plugin Methods
+
+Additionally the plugin class provides some utility functions which make it easier to handle plugin configuration and plugin data.
+
+The configration of the plugin will be stored in the plugin directory in a `plugins/{pluginId}/config.yml` file which can be overriden by a `/plugins/{pluginId}/config.local.yml` file.
+
+[options="header"]
+|======
+| Method                                | Description
+| `AbstractPlugin#writeConfig(config)`  | Write the configuration POJO to the `config.yml` file.
+| `AbstractPlugin#readConfig(clazz)`    | Read the configuration using the class. This method will also use the `config.local.yml` values if present.
+| `AbstractPlugin#getConfigFile()`      | Return the config file. 
+| `AbstractPlugin#getLocalConfigFile()` | Return the local config file.
+| `AbstractPlugin#getStorageDir()`      | Return the path to the storage directory `plugins/{pluginId}/storage` in which a plugin can place files in the filesystem.
+|======
+
 == Plugin Lifecycle
 
 === Deploy
 
-* **Loading** - Plugin gets loaded and prepared for starting 
-* **Starting** - Plugin gets started.
-* **Initialisation** - Plugin gets initialized. You can implement the `MeshPlugin#initialize()` method to initialize your plugin resources.
-* **Registration** - Plugin gets finally registered so that it can be used.
+[options="header", cols="1,3"]
+|======
+| Name               | Description
+| **Loading**        | Plugin gets loaded and prepared for starting 
+| **Starting**       | Plugin gets started.
+| **Initialisation** | Plugin gets initialized. You can implement the `MeshPlugin#initialize()` method to initialize your plugin resources.
+| **Registration**   | Plugin gets finally registered so that it can be used.
+|======
 
 === Undeploy
 
-* **De-registration** - Plugin registration gets removed. At this point the plugin integration with the server gets removed. REST and GraphQL extensions get removed.
-* **Shutdown** - Plugin gets shutdown. You can implement the `MeshPlugin#shutdown()` method to stop and free your plugin resources.
-* **Stopping** - Plugin gets stopped.
-* **Unloading** - Finally the plugin gets unloaded.
+[options="header", cols="1,3"]
+|======
+| Name                | Description
+| **De-registration** | Plugin registration gets removed. At this point the plugin integration with the server gets removed. REST and GraphQL extensions get removed.
+| **Shutdown**        | Plugin gets shutdown. You can implement the `MeshPlugin#shutdown()` method to stop and free your plugin resources.
+| **Stopping**        | Plugin gets stopped.
+| **Unloading**       | Finally the plugin gets unloaded.
+|======
 
 == Plugin Manifest
 
 The manifest of a plugin contains metadata information which will is used to load and categorize the plugin.
 
-* *Plugin-Id* - Unique id of the plugin. Used to access the plugin once deployed.
-* *Plugin-Name* - Full name of the plugin
-* *Plugin-Version* - Current version of the plugin
-* *Plugin-Author* - Author of the plugin
-* *Plugin-Class* - Fully qualified path to the plugin class
-* *Plugin-Description* - Short description of the plugin
-* *Plugin-License* - License used by the plugin
-* *Plugin-Inception* - Date when the plugin was initially created (DD-MM-YYYY)
-* *Plugin-Dependencies* - List of plugin ids of other plugins on which the plugin depends.
+
+.Plugin Manifest
+[options="header", cols="1,3"]
+|======
+| Name                  | Description
+| *Plugin-Id*           | Unique id of the plugin. Used to access the plugin once deployed.
+| *Plugin-Name*         | Full name of the plugin
+| *Plugin-Version*      | Current version of the plugin
+| *Plugin-Author*       | Author of the plugin
+| *Plugin-Class*        | Fully qualified path to the plugin class
+| *Plugin-Description*  | Short description of the plugin
+| *Plugin-License*      | License used by the plugin
+| *Plugin-Inception*    | Date when the plugin was initially created (DD-MM-YYYY)
+| *Plugin-Dependencies* | List of plugin ids of other plugins on which the plugin depends.
+|======
 
 === Maven 
 
