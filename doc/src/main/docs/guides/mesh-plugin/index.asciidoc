@@ -29,7 +29,10 @@ include::/site/content/examples/graphql/pom.xml[]
 
 The plugin itself is very simple. We need to extend the `AbstractPlugin` class and implement the `GraphQLPlugin` interface since our plugin will extend the GraphQL API.
 
-In the `initialize()` method we setup the `GraphQLSchema` for our plugin. The schema defines the query type which is later on added to the GraphQL API of Gentics Mesh. In our case we only need a single type which contains the `text` field that just returns `hello-world` when queried.
+In the `initialize()` method we setup the `GraphQLSchema` for our plugin. The counterpart is the `shutdown()` method.
+
+The schema defines the query type which is later on added to the GraphQL API of Gentics Mesh. 
+In our case we only need a single type which contains the `text` field that just returns `hello-world` when queried.
 
 [source,java]
 ----
@@ -38,29 +41,7 @@ include::/site/content/examples/graphql/src/main/java/com/gentics/mesh/plugin/Gr
 
 In the datafetcher which will load the data it is possible to access the context via `env.getContext()`. This will return a `GraphQLPluginContext` object that contains methods to access user and other request  information.
 
-
-
-The link:https://github.com/gentics/mesh-hello-world-plugin[Hello World Plugin] demonstrates a basic plugin and how to setup tests.
-
-The `HelloWorldPlugin` class contains the plugin code.
-
-* The `initialize()` method can be used to setup the initial data of the plugin. The counterpart is the `shutdown()` method.
-* Once a plugin has been deployed by Vert.x it will register itself at the Gentics Mesh plugin manager.
-* The manager will invoke the `createProjectRouter()` and `createGlobalRouter()` methods in order to add the endpoints to the REST API.
-
-link:https://vertx.io/docs/vertx-web/java/#_basic_vert_x_web_concepts[Vert.x routers] will be used to process the requests and direct them to registered endpoints/routes.
-
-There are two routers to which new endpoints can be added.
-
-* The globalRouter can be used to add endpoints to URLs like ```{apiLatest}/plugins/helloworld/```.
-
-* The projectRouter on the other hand can be used to add project specific endpoints like ```{apiLatest}/your-project/plugins/helloworld/```.
-
-NOTE: The registerEndpoints method will be invoked multiple times in order to register the routes on all Gentics Mesh REST HTTP handlers which will internally process the requests.
-
-
-
-=== Testing
+== Testing
 
 For testing it is possible to use the `MeshLocalServer` class rule which will make it possible to start-up an in-memory Gentics Mesh server that can be used to run your plugin.
 
