@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
+import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.reactivex.Completable;
@@ -102,7 +103,14 @@ public interface MeshPlugin {
 	}
 
 	/**
-	 * Return a mesh client which will utilize the admin user.
+	 * Return the plugin environment.
+	 * 
+	 * @return
+	 */
+	PluginEnvironment environment();
+
+	/**
+	 * Return the plugin admin client.
 	 * 
 	 * @return
 	 */

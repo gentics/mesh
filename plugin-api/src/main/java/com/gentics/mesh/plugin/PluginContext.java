@@ -13,7 +13,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.annotations.Nullable;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
@@ -142,7 +141,7 @@ public class PluginContext implements RoutingContext {
 	 * @param status
 	 *            Status of the response
 	 */
-	public void send(RestModel restModel, HttpResponseStatus status) {
+	public void send(RestModel restModel, int status) {
 		send(restModel.toJson(), status, HttpConstants.APPLICATION_JSON);
 	}
 
@@ -156,10 +155,10 @@ public class PluginContext implements RoutingContext {
 	 * @param contentType
 	 *            Content type of the response
 	 */
-	public void send(String body, HttpResponseStatus status, String contentType) {
+	public void send(String body, int status, String contentType) {
 		rc.response().putHeader(HttpHeaders.CONTENT_TYPE, contentType);
 		rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
-		rc.response().setStatusCode(status.code()).end(body);
+		rc.response().setStatusCode(status).end(body);
 	}
 
 	/**
@@ -168,8 +167,8 @@ public class PluginContext implements RoutingContext {
 	 * @param status
 	 *            Status of the response
 	 */
-	public void send(HttpResponseStatus status) {
-		rc.response().setStatusCode(status.code()).end();
+	public void send(int status) {
+		rc.response().setStatusCode(status).end();
 	}
 
 	@Override

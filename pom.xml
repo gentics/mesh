@@ -87,6 +87,7 @@
 		<module>api</module>
 		<module>plugin-api</module>
 		<module>plugin-bom</module>
+		<module>plugin-dep</module>
 		<module>common</module>
 		<module>test-common</module>
 		<module>elasticsearch</module>

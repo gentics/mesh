@@ -41,12 +41,7 @@
 		<!-- Provided -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-plugin-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.pf4j</groupId>
-			<artifactId>pf4j</artifactId>
+			<artifactId>mesh-plugin-dep</artifactId>
 			<scope>provided</scope>
 		</dependency>
 

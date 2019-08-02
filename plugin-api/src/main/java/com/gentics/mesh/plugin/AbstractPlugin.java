@@ -28,10 +28,6 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractPlugin.class);
 
-	private static final String WILDCARD_IP = "0.0.0.0";
-
-	private static final String LOOPBACK_IP = "127.0.0.1";
-
 	private MeshRestClient adminClient;
 
 	private final PluginEnvironment env;
@@ -136,11 +132,6 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 		return new PluginContext(rc);
 	}
 
-	private String determineHostString(MeshOptions options) {
-		String host = options.getHttpServerOptions().getHost();
-		return WILDCARD_IP.equals(host) ? LOOPBACK_IP : host;
-	}
-
 	/**
 	 * Return the plugin base directory in which the config and the storage folder resides.
 	 * 
@@ -173,8 +164,6 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 
 	@Override
 	public MeshRestClient adminClient() {
-		String token = env.adminToken();
-		adminClient.setAPIKey(token);
 		return adminClient;
 	}
 
@@ -190,15 +179,21 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 	}
 
 	protected void createAdminClient() {
-		MeshOptions options = Mesh.mesh().getOptions();
-		int port = options.getHttpServerOptions().getPort();
-		String host = determineHostString(options);
-		adminClient = MeshRestClient.create(host, port, false);
+		adminClient = env.createAdminClient();
 	}
 
 	@Override
 	public Vertx vertx() {
 		return env.vertx();
+	}
+
+	/**
+	 * Return the plugin environment
+	 * 
+	 * @return
+	 */
+	public PluginEnvironment environment() {
+		return env;
 	}
 
 }

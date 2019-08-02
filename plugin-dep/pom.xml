@@ -3,14 +3,14 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>mesh-plugin-api</artifactId>
+	<artifactId>mesh-plugin-dep</artifactId>
 	<packaging>jar</packaging>
-	<name>Mesh - Plugin API</name>
+	<name>Mesh - Plugin Dependency</name>
 
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.36.9-SNAPSHOT</version>
+		<version>0.36.8-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -31,29 +31,44 @@
 
 
 	<dependencies>
+		<!-- All dependencies are marked as provided to avoid plugin devs to accidentally include those in the jar -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-rest-client</artifactId>
+			<artifactId>mesh-plugin-api</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>io.netty</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>io.vertx</groupId>
+					<artifactId>vertx-rx-gen</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.raml</groupId>
+					<artifactId>raml-parser</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>commons-codec</groupId>
+					<artifactId>commons-codec</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.module</groupId>
+					<artifactId>jackson-module-jsonSchema</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-web</artifactId>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-buffer</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.graphql-java</groupId>
-			<artifactId>graphql-java</artifactId>
-		</dependency>
-
-		<!-- Plugin core library -->
-		<dependency>
-			<groupId>org.pf4j</groupId>
-			<artifactId>pf4j</artifactId>
-		</dependency>
-
-		<!-- YAML -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-yaml</artifactId>
+			<groupId>io.reactivex.rxjava2</groupId>
+			<artifactId>rxjava</artifactId>
 		</dependency>
 	</dependencies>
 
