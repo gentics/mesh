@@ -23,26 +23,33 @@ public class DummyPlugin extends AbstractPlugin implements RestPlugin {
 	}
 
 	@Override
-	public void registerEndpoints(Router globalRouter, Router projectRouter) {
-		globalRouter.route("/hello").handler(rc -> {
+	public Router createGlobalRouter() {
+		Router router = Router.router(vertx());
+		router.route("/hello").handler(rc -> {
 			rc.response().end("world");
 		});
 
-		projectRouter.route("/hello").handler(rc -> {
-			rc.response().end("project");
-		});
-
-		globalRouter.route("/manifest").handler(rc -> {
+		router.route("/manifest").handler(rc -> {
 			rc.response().end(JsonUtil.toJson(getManifest()));
 		});
 
-		globalRouter.route("/id").handler(rc -> {
+		router.route("/id").handler(rc -> {
 			rc.response().end(new JsonObject().put("id", id()).encodePrettily());
 		});
+		return router;
 	}
 
 	@Override
-	public String apiName() {
+	public Router createProjectRouter() {
+		Router router = Router.router(vertx());
+		router.route("/hello").handler(rc -> {
+			rc.response().end("project");
+		});
+		return router;
+	}
+
+	@Override
+	public String restApiName() {
 		return API_NAME;
 	}
 

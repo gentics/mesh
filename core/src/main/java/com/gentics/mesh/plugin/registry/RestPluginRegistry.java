@@ -40,18 +40,24 @@ public class RestPluginRegistry implements PluginRegistry {
 		return Completable.create(sub -> {
 			if (plugin instanceof RestPlugin) {
 				RestPlugin restPlugin = ((RestPlugin) plugin);
-				apiNameSyncSet.add(restPlugin.apiName());
+				apiNameSyncSet.add(restPlugin.restApiName());
 				String name = plugin.name();
-				String apiName = restPlugin.apiName();
+				String apiName = restPlugin.restApiName();
 				log.info("Registering rest plugin {" + name + "} with id {" + plugin.id() + "}");
 				for (RouterStorage rs : RouterStorage.getInstances()) {
 					PluginRouter globalPluginRouter = rs.root().apiRouter().pluginRouter();
 					PluginRouter projectPluginRouter = rs.root().apiRouter().projectsRouter().projectRouter().pluginRouter();
 
-					Router globalRouter = globalPluginRouter.getRouter(apiName);
-					Router projectRouter = projectPluginRouter.getRouter(apiName);
-					log.info("Registering REST API Plugin {" + name + "}");
-					restPlugin.registerEndpoints(globalRouter, projectRouter);
+					Router globalRouter = restPlugin.createGlobalRouter();
+					if (globalRouter != null) {
+						globalPluginRouter.addRouter(apiName, globalRouter);
+						log.info("Registering REST API Plugin {" + name + "} for globally");
+					}
+					Router projectRouter = restPlugin.createProjectRouter();
+					if (projectRouter != null) {
+						projectPluginRouter.addRouter(apiName, projectRouter);
+						log.info("Registering REST API Plugin {" + name + "} for projects");
+					}
 				}
 			}
 
@@ -65,7 +71,7 @@ public class RestPluginRegistry implements PluginRegistry {
 				}
 			}
 			if (plugin instanceof RestPlugin) {
-				apiNameSyncSet.remove(((RestPlugin) plugin).apiName());
+				apiNameSyncSet.remove(((RestPlugin) plugin).restApiName());
 			}
 
 		});
@@ -79,14 +85,14 @@ public class RestPluginRegistry implements PluginRegistry {
 				RestPlugin restPlugin = (RestPlugin) plugin;
 				String name = plugin.name();
 				log.info("Deregistering {" + name + "} rest plugin.");
-				String apiName = restPlugin.apiName();
+				String apiName = restPlugin.restApiName();
 				for (RouterStorage rs : RouterStorage.getInstances()) {
 					PluginRouter globalPluginRouter = rs.root().apiRouter().pluginRouter();
 					PluginRouter projectPluginRouter = rs.root().apiRouter().projectsRouter().projectRouter().pluginRouter();
 
 					// Routers can't be deleted so we need to just clear them of any routes.
-					globalPluginRouter.getRouter(apiName).clear();
-					projectPluginRouter.getRouter(apiName).clear();
+					globalPluginRouter.removeRouter(apiName);
+					projectPluginRouter.removeRouter(apiName);
 				}
 				apiNameSyncSet.remove(apiName);
 			}
@@ -98,7 +104,7 @@ public class RestPluginRegistry implements PluginRegistry {
 	public void checkForConflict(MeshPlugin plugin) {
 		if (plugin instanceof RestPlugin) {
 			RestPlugin restPlugin = (RestPlugin) plugin;
-			String apiName = restPlugin.apiName();
+			String apiName = restPlugin.restApiName();
 			String name = plugin.name();
 			if (apiNameSyncSet.contains(apiName)) {
 				GenericRestException error = error(BAD_REQUEST, "admin_plugin_error_plugin_already_deployed", name, apiName);

@@ -4,28 +4,97 @@ title: Plugin Development
 
 include::content/docs/variables.adoc-include[]
 
-Plugins which add custom endpoints are written in Java and are packaged as regular `jar` files.
+Plugins which add custom endpoints are written in Java and are packaged as regular `jar` files. A plugin developer needs to extend the `AbstractPlugin` class. The plugin can hook into different parts of Gentics Mesh by implementing one of multiple interfaces for the different _plugin types_.
 
+== Plugin Setup
+
+New Plugin classes need to extend the `AbstractPlugin` and add the mandatory constructor.
+
+[source,java]
+----
+
+public class HelloWorldPlugin extends AbstractPlugin {
+
+	public BasicPlugin(PluginWrapper wrapper, PluginEnvironment env) {
+		super(wrapper, env);
+	}
+
+----
 
 == Plugin Types
 
 === REST API Plugin
 
-You can extend the REST API by adding the `RestPlugin` interface to your plugin class. The method `registerEndpoints(Router globalRouter, Router projectRouter)` needs to be implemented in the plugin.
+You can extend the REST API by adding the `RestPlugin` interface to your plugin class.
 
-The provided routers can in turn be used to add new request handlers. The `globalRouter` is for global REST API endpoints such as:
+You can now implement two different methods to extend the REST API at different places in the API.
 
-→ `/api/v1/plugins/helloworld/hello` 
+==== Global Routes
 
-The `projectRouter` on the other hand will allow you to add the project specific routes:
+You can hook your plugin routes to the `/api/v1/plugins` endpoint.
 
-→ `/api/v1/:projectName/plugins/helloworld/hello`
+Implementing the `createGlobalRouter` method as shown below would add the `/api/v1/plugins/hello-world/hello` endpoint for the plugin with the `hello-world` restApiName.
 
-NOTE: The method `registerEndpoints` will be invoked multiple times in order to register the endpoints to all request handlers.
+[source,java]
+----
+@Override
+public Router createGlobalRouter() {
+    Router router = Router.router(vertx());
+
+    router.route("/hello").handler(rc -> {
+        rc.response().end("world");
+    });
+
+    return router;
+}
+----
+
+NOTE: The method `createGlobalRouter` will be invoked multiple times in order to register the endpoints to all request handlers.
+
+==== Project Routes
+
+Additionally you can also hook your plugin routes to the `/api/v1/:projectName/plugins` endpoint.
+
+Implementing the `createProjectRouter` method as shown below would add the `/api/v1/:projectName/plugins/hello-world/hello-project` endpoint for the plugin to all projects.
+
+[source,java]
+----
+@Override
+public Router createProjectRouter() {
+    Router router = Router.router(vertx());
+
+    router.route("/hello-project").handler(rc -> {
+        rc.response().end("world");
+    });
+
+    return router;
+}
+----
+
+NOTE: The method `createProjectRouter` will be invoked multiple times in order to register the endpoints to all request handlers.
+
+==== Context
+
+The Vert.x `RoutingContext` contains information which can be accessed by the plugin.
+
+You can access project information via `mesh.project` data key.
+
+[source,java]
+----
+router.route("/projectInfo").handler(rc -> {
+    JsonObject info = (JsonObject) rc.data().get("mesh.project");
+    rc.response().end(info.encodePrettily());
+});
+----
+
+
+==== Router API
+
+You can read more about the Vert.x router API in the link:https://vertx.io/docs/vertx-web/java/#_basic_vert_x_web_concepts[Vert.x Web documentation].
 
 === GraphQL Plugin
 
-Add the interface `GraphQLPlugin` to your plugin class. You will need to implement the `createRootSchema()` method to return the object type of your plugin. This type is added to the Gentics Mesh GraphQL api and can be accessed via the `pluginApi` field.
+Add the interface `GraphQLPlugin` to your plugin class. You will need to implement the `createRootSchema()` method to return the object type of your plugin. This type is added to the Gentics Mesh GraphQL API and can be accessed via the `pluginApi` field.
 
 Each plugin will be added to the `pluginApi` field using the `apiName` as the key for the new field:
 
@@ -239,17 +308,19 @@ NOTE: Make sure to share the extension point interfaces via a common maven modul
 Plugins can be directly tested in your IDE by starting an embedded Gentics Mesh instance. 
 We provide a JUnit class rule which can be used to quickly startup Gentics Mesh.
 
-```
+[source,java]
+----
 @ClassRule
 public static final MeshLocalServer server = new MeshLocalServer()
     .withInMemoryMode()
-    .withPlugin(MyPlugin.class, "myPlugin")
+    .withPlugin(GraphQLExamplePlugin.class, "myPlugin")
     .waitForStartup();
-```
+----
 
 You need to following test dependencies in order to use the class rule.
 
-```xml
+[source,xml]
+----
 <dependency>
     <groupId>junit</groupId>
     <artifactId>junit</artifactId>
@@ -266,116 +337,25 @@ You need to following test dependencies in order to use the class rule.
     <artifactId>mesh-core</artifactId>
     <scope>test</scope>
 </dependency>
-```
-
-== Hello World Plugin 
-
-The link:https://github.com/gentics/mesh-hello-world-plugin[Hello World Plugin] demonstrates a basic plugin and how to setup tests.
-
-The `HelloWorldPlugin` class contains the plugin code.
-
-* The `initialize()` method can be used to setup the initial data of the plugin. The counterpart is the `prepareStop()` method.
-* Once a plugin has been deployed by Vert.x it will register itself at the Gentics Mesh plugin manager.
-* The manager will invoke the `registerEndpoints()` method in order to add the endpoints to the REST API.
-
-link:https://vertx.io/docs/vertx-web/java/#_basic_vert_x_web_concepts[Vert.x routers] will be used to process the requests and direct them to registered endpoints/routes.
-
-There are two routers to which new endpoints can be added.
-
-* The globalRouter can be used to add endpoints to URLs like ```{apiLatest}/plugins/helloworld/```.
-
-* The projectRouter on the other hand can be used to add project specific endpoints like ```{apiLatest}/your-project/plugins/helloworld/```.
-
-NOTE: The registerEndpoints method will be invoked multiple times in order to register the routes on all Gentics Mesh REST HTTP handlers which will internally process the requests.
-
-Full sources:
-
-
-.HelloWorldPlugin.java
-[source,java,subs=attributes]
 ----
-package com.gentics.mesh.plugin;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+=== Full Example
 
-import java.io.File;
+This example shows how to use the `MeshLocalServer` and test the GraphQL plugin.
 
-import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
-import com.gentics.mesh.rest.client.MeshRestClient;
-
-import io.reactivex.Completable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.StaticHandler;
-import io.vertx.reactivex.core.buffer.Buffer;
-
-public class HelloWorldPlugin extends AbstractPlugin {
-
-	private static final Logger log = LoggerFactory.getLogger(HelloWorldPlugin.class);
-
-	public static final String PROJECT_NAME = "HelloWorld";
-	
-	public StaticHandler staticHandler = StaticHandler.create("webroot", getClass().getClassLoader());
-
-	@Override
-	public Completable initialize() {
-		// The initialize method can be used to setup initial data which is needed by the plugin.
-		// You can use the admin client to setup initial data or access the filesystem to read/write data.
-		String path = new File(getStorageDir(), "dummyFile.txt").getAbsolutePath();
-		return getRxVertx().fileSystem()
-			.rxWriteFile(path, Buffer.buffer("test"))
-			.andThen(createProject());
-	}
-
-	@Override
-	public void registerEndpoints(Router globalRouter, Router projectRouter) {
-		log.info("Registering routes for {" + getName() + "}");
-
-		// Route which demonstrates that the API can be directly extended
-		// Path: {apiLatest}/plugins/helloworld/hello
-		globalRouter.route("/hello").handler(rc -> {
-			rc.response().end("world");
-		});
-
-		// Route which demonstrates that plugins can also have project specific routes.
-		// Path: {apiLatest}/:projectName/plugins/helloworld/hello
-		// It is possible to access the project information via the context project() method.
-		projectRouter.route("/hello").handler(rc -> {
-			PluginContext context = wrap(rc);
-			rc.response().end("world-project-" + context.project().getString("name"));
-		});
-
-		// Route which will use the admin client to load the previously created project and return it.
-		// Path: {apiLatest}/plugins/helloworld/project
-		globalRouter.route("/project").handler(rc -> {
-			PluginContext context = wrap(rc);
-			adminClient().findProjectByName(PROJECT_NAME).toSingle().subscribe(project -> {
-				context.send(project, OK);
-			}, rc::fail);
-		});
-		
-		// Route to serve static contents from the webroot resources folder of the plugin.
-		// Path: {apiLatest}/plugins/helloworld/static
-		globalRouter.route("/static/*").handler(staticHandler);
-
-	}
-
-	/**
-	 * Utilize the admin client and create a project.
-	 * 
-	 * @return
-	 */
-	private Completable createProject() {
-		ProjectCreateRequest request = new ProjectCreateRequest();
-		request.setName(PROJECT_NAME);
-		request.setSchemaRef("folder");
-		MeshRestClient client = adminClient();
-		return client.createProject(request).toCompletable();
-	}
-
-}
+.GraphQlExamplePluginTest.java
+[source,java]
 ----
+include::/site/content/examples/graphql/src/test/java/com/gentics/mesh/plugin/GraphQlExamplePluginTest.java[lines=19..-1]
+----
+
+== Development Guide
+
+You can follow the link:{{< relref "guides/mesh-plugin" >}}[Plugin Development Guide] for a step by step introduction.
+
+== Examples
+
+The link:https://github.com/gentics/mesh-plugin-examples[Plugin Examples] demonstrates basic plugin usage and test setup.
 
 == Classloading
 
@@ -384,6 +364,17 @@ The plugin system relies on link:https://github.com/pf4j/pf4j[PF4J] which uses a
 To avoid `NoClassDefFoundError` / `NoSuchMethodError` it is thus recommended to add all the classes (libraries) that are used by the plugin jar.
 
 NOTE: The `mesh-plugin-api`, `vertx-core`, `vertx-web`, `netty` libraries should not be included in the plugin jar. Adding those libraries could cause stability issues and errors.
+
+== Troubleshoot
+
+
+[qanda]
+I'm getting `java.lang.NoSuchMethodException: com.gentics.mesh.plugin.MyPlugin.<init>(org.pf4j.PluginWrapper, com.gentics.mesh.plugin.env.PluginEnvironment)`::
+        You get this error if you have not added the mandatory constructor to your plugin.
+I'm getting `NoClassDefFoundError` / `NoSuchMethodError`::
+        You deployed your plugin on a Gentics Mesh instance which is not compatible with the classes you are using. You can rebuild the plugin with the new version or try to include your dependencies in the plugin jar to avoid classloader issues. Please note that `vertx-core`, `vertx-web`, `netty` should not be included in the jar.
+
+
 
 == Contributing
 

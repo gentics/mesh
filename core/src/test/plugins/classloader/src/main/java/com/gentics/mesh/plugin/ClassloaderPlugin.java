@@ -17,20 +17,21 @@ public class ClassloaderPlugin extends AbstractPlugin implements RestPlugin {
 	}
 
 	@Override
-	public void registerEndpoints(Router globalRouter, Router projectRouter) {
+	public Router createGlobalRouter() {
+		Router router = Router.router(vertx());
 		log.info("Registering routes for {" + name() + "}");
-
-		globalRouter.route("/scope").handler(rc -> {
+		router.route("/scope").handler(rc -> {
 			rc.response().end(ConflictingClass.scope);
 		});
 
-		globalRouter.route("/check").handler(rc -> {
+		router.route("/check").handler(rc -> {
 			rc.response().end(ConflictingClass.check());
 		});
+		return router;
 	}
 
 	@Override
-	public String apiName() {
+	public String restApiName() {
 		return "classloader";
 	}
 

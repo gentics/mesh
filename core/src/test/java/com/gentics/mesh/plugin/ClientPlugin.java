@@ -29,35 +29,41 @@ public class ClientPlugin extends AbstractPlugin implements RestPlugin {
 	}
 
 	@Override
-	public void registerEndpoints(Router globalRouter, Router projectRouter) {
-
-		globalRouter.route("/me").handler(rc -> {
+	public Router createGlobalRouter() {
+		Router router = Router.router(vertx());
+		router.route("/me").handler(rc -> {
 			PluginContext context = wrap(rc);
 			context.client().me().toSingle().subscribe(me -> {
 				rc.response().end(me.toJson());
 			}, rc::fail);
 		});
 
-		globalRouter.route("/user").handler(rc -> {
+		router.route("/user").handler(rc -> {
 			rc.response().end(rc.user().principal().encodePrettily());
 		});
 
-		globalRouter.route("/admin").handler(rc -> {
+		router.route("/admin").handler(rc -> {
 			adminClient().me().toSingle().subscribe(me -> {
 				rc.response().end(me.toJson());
 			}, rc::fail);
 		});
+		return router;
+	}
 
-		projectRouter.route("/project").handler(rc -> {
+	@Override
+	public Router createProjectRouter() {
+		Router router = Router.router(vertx());
+		router.route("/project").handler(rc -> {
 			PluginContext context = wrap(rc);
 			context.client().findProjectByName(context.project().getString("name")).toSingle().subscribe(project -> {
 				rc.response().end(project.toJson());
 			}, rc::fail);
 		});
+		return router;
 	}
 
 	@Override
-	public String apiName() {
+	public String restApiName() {
 		return "client";
 	}
 

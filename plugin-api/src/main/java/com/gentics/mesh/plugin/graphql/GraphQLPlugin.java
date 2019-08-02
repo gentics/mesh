@@ -31,7 +31,7 @@ public interface GraphQLPlugin extends MeshPlugin {
 	/**
 	 * Return the name for the graphql API field. By default the plugin id will be used for the name.
 	 */
-	default String apiName() {
+	default String gqlApiName() {
 		return id();
 	}
 }

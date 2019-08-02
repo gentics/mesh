@@ -18,24 +18,33 @@ public class Basic2Plugin extends AbstractPlugin implements RestPlugin {
 	}
 
 	@Override
-	public void registerEndpoints(Router globalRouter, Router projectRouter) {
-		log.info("Registering routes for {" + name() + "}");
+	public Router createGlobalRouter() {
+		log.info("Creating routes for {" + name() + "}");
 
-		globalRouter.route("/hello").handler(rc -> {
+		Router router = Router.router(vertx());
+		router.route("/hello").handler(rc -> {
 			rc.response().end("world2");
 		});
 
-		projectRouter.route("/hello").handler(rc -> {
-			rc.response().end("world2-project");
-		});
-
 		StaticHandler staticHandler = StaticHandler.create("webroot-basic2", getClass().getClassLoader());
-		globalRouter.route("/static2/*").handler(staticHandler);
+		router.route("/static2/*").handler(staticHandler);
 
+		return router;
 	}
 
 	@Override
-	public String apiName() {
+	public Router createProjectRouter() {
+		log.info("Creating routes for {" + name() + "}");
+
+		Router router = Router.router(vertx());
+		router.route("/hello").handler(rc -> {
+			rc.response().end("world2-project");
+		});
+		return router;
+	}
+
+	@Override
+	public String restApiName() {
 		return "basic2";
 	}
 

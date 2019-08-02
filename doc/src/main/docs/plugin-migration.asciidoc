@@ -11,7 +11,6 @@ Starting with Gentics Mesh *0.37.0* a new plugin API was introduced. Older plugi
 The `AbstractPluginVerticle` class has been replaced by `AbstractPlugin`.
 In order to create a REST API plugin you now also need to implement the `RestPlugin` interface for your plugin.
 
-
 Additionally it is required to specify the following constructor in your plugin:
 
 [source,java]
@@ -59,11 +58,16 @@ Using the BOM will allow you to add Gentics Mesh dependencies without the need t
 
 More about the needed dependencies can be found in the link:{{< relref "plugin-development.asciidoc" >}}#_dependencies[Plugin development guide].
 
+== Life cycle changes
+
+It is no longer possible to override the `start` and `stop` methods. Please move your initialisation and shutdown logic to `initialize()` and `shutdown()`.
+
 == New changes
 
 Some methods have been updated:
 
-* `getApiName()` -> `apiName()`
+* `registerEndpoints(Router globalRouter, Router projectRouter)` -> `createGlobalRouter()` & `createProjectRouter()`
+* `getApiName()` -> `restApiName()`
 * `getName()` -> `id()`
 * `getVertx()` -> `vertx()`
-
+* `deploymentId()` -> `id()`

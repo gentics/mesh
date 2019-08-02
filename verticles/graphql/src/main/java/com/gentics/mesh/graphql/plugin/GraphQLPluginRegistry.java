@@ -66,7 +66,7 @@ public class GraphQLPluginRegistry implements PluginRegistry {
 	public void checkForConflict(MeshPlugin plugin) {
 		if (plugin instanceof GraphQLPlugin) {
 			GraphQLPlugin restPlugin = (GraphQLPlugin) plugin;
-			String apiName = restPlugin.apiName();
+			String apiName = restPlugin.gqlApiName();
 			String name = plugin.name();
 			if (apiNameSyncSet.contains(apiName)) {
 				GenericRestException error = error(BAD_REQUEST, "admin_plugin_error_plugin_already_deployed", name, apiName);

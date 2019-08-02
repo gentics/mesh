@@ -44,22 +44,28 @@ public class ClonePlugin extends AbstractPlugin implements RestPlugin {
 	}
 
 	@Override
-	public void registerEndpoints(Router globalRouter, Router projectRouter) {
-		globalRouter.route("/hello").handler(rc -> {
-			rc.response().end("world");
-		});
-
-		projectRouter.route("/hello").handler(rc -> {
-			rc.response().end("project");
-		});
-
+	public Router createGlobalRouter() {
+		Router globalRouter = Router.router(vertx());
 		globalRouter.route("/manifest").handler(rc -> {
 			rc.response().end(JsonUtil.toJson(getManifest()));
 		});
+		globalRouter.route("/hello").handler(rc -> {
+			rc.response().end("world");
+		});
+		return globalRouter;
 	}
 
 	@Override
-	public String apiName() {
+	public Router createProjectRouter() {
+		Router projectRouter = Router.router(vertx());
+		projectRouter.route("/hello").handler(rc -> {
+			rc.response().end("project");
+		});
+		return projectRouter;
+	}
+
+	@Override
+	public String restApiName() {
 		return "clone" + myCount;
 	}
 }

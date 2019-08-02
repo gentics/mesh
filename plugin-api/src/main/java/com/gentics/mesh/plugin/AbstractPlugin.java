@@ -15,11 +15,9 @@ import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.reactivex.Completable;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 
 /**
  * Abstract implementation for a Gentics Mesh plugin verticle.
@@ -122,17 +120,6 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 	}
 
 	/**
-	 * Return a wrapped routing context.
-	 * 
-	 * @param rc
-	 *            Vert.x routing context
-	 * @return Wrapped context
-	 */
-	public PluginContext wrap(RoutingContext rc) {
-		return new PluginContext(rc);
-	}
-
-	/**
 	 * Return the plugin base directory in which the config and the storage folder resides.
 	 * 
 	 * @return Plugin base dir
@@ -165,17 +152,6 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 	@Override
 	public MeshRestClient adminClient() {
 		return adminClient;
-	}
-
-	/**
-	 * Return a wrapped routing context handler
-	 * 
-	 * @param handler
-	 *            Handler to be wrapped
-	 * @return Wrapped handler
-	 */
-	public Handler<RoutingContext> wrapHandler(Handler<PluginContext> handler) {
-		return rc -> handler.handle(wrap(rc));
 	}
 
 	protected void createAdminClient() {

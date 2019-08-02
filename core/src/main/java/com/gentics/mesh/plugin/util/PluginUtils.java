@@ -45,7 +45,7 @@ public final class PluginUtils {
 	}
 
 	public static void validate(RestPlugin plugin) {
-		String apiName = plugin.apiName();
+		String apiName = plugin.restApiName();
 		if (StringUtils.isEmpty(apiName)) {
 			throw error(BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "apiName");
 		}
