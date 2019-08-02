@@ -37,6 +37,11 @@ public class Neo4jIndexHandler implements IndexHandler {
 	}
 
 	@Override
+	public void removeIndex(String indexName) {
+
+	}
+
+	@Override
 	public List<Object> edgeLookup(String edgeLabel, String indexPostfix, Object key) {
 		// TODO Auto-generated method stub
 		return null;
