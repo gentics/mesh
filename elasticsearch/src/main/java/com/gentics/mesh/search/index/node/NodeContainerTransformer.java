@@ -137,17 +137,16 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 
 	/**
 	 * Add node fields to the given source map.
-	 * 
-	 * @param document
+	 *  @param document
 	 *            Search index document
 	 * @param fieldKey
 	 *            Key to be used to store the fields (e.g.: fields)
 	 * @param container
-	 *            Node field container
+ *            Node field container
 	 * @param fields
-	 *            List of schema fields that should be handled
+	 * @param branchUuid
 	 */
-	public void addFields(JsonObject document, String fieldKey, GraphFieldContainer container, List<? extends FieldSchema> fields) {
+	public void addFields(JsonObject document, String fieldKey, GraphFieldContainer container, List<? extends FieldSchema> fields, String branchUuid) {
 		Map<String, Object> fieldsMap = new HashMap<>();
 		for (FieldSchema fieldSchema : fields) {
 			String name = fieldSchema.getName();
@@ -316,10 +315,10 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 							fieldsMap.put(fieldSchema.getName(), Observable.fromIterable(micronodeGraphFieldList.getList()).map(item -> {
 								JsonObject itemMap = new JsonObject();
 								Micronode micronode = item.getMicronode();
-								MicroschemaContainerVersion microschameContainerVersion = micronode.getSchemaContainerVersion();
-								addMicroschema(itemMap, microschameContainerVersion);
-								addFields(itemMap, "fields-" + microschameContainerVersion.getName(), micronode,
-									microschameContainerVersion.getSchema().getFields());
+								MicroschemaContainerVersion microschemaContainerVersion = micronode.getLatestSchemaContainerVersion(branchUuid);
+								addMicroschema(itemMap, microschemaContainerVersion);
+								addFields(itemMap, "fields-" + microschemaContainerVersion.getName(), micronode,
+									microschemaContainerVersion.getSchema().getFields(), branchUuid);
 								return itemMap;
 							}).toList().blockingGet());
 						}
@@ -372,10 +371,11 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 					Micronode micronode = micronodeGraphField.getMicronode();
 					if (micronode != null) {
 						JsonObject micronodeMap = new JsonObject();
-						addMicroschema(micronodeMap, micronode.getSchemaContainerVersion());
+						MicroschemaContainerVersion schemaContainerVersion = micronode.getLatestSchemaContainerVersion(branchUuid);
+						addMicroschema(micronodeMap, schemaContainerVersion);
 						// Micronode field can't be stored. The datastructure is dynamic
-						addFields(micronodeMap, "fields-" + micronode.getSchemaContainerVersion().getName(), micronode,
-							micronode.getSchemaContainerVersion().getSchema().getFields());
+						addFields(micronodeMap, "fields-" + schemaContainerVersion.getName(), micronode,
+							schemaContainerVersion.getSchema().getFields(), branchUuid);
 						fieldsMap.put(fieldSchema.getName(), micronodeMap);
 					}
 				}
@@ -393,7 +393,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	/**
 	 * Transform the given microschema container and add it to the source map.
 	 * 
-	 * @param map
+	 * @param document
 	 * @param microschemaContainerVersion
 	 */
 	private void addMicroschema(JsonObject document, MicroschemaContainerVersion microschemaContainerVersion) {
@@ -508,9 +508,9 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 
 		String language = container.getLanguageTag();
 		document.put("language", language);
-		addSchema(document, container.getSchemaContainerVersion());
+		addSchema(document, container.getLatestSchemaContainerVersion(branchUuid));
 
-		addFields(document, "fields", container, container.getSchemaContainerVersion().getSchema().getFields());
+		addFields(document, "fields", container, container.getLatestSchemaContainerVersion(branchUuid).getSchema().getFields(), branchUuid);
 		if (log.isTraceEnabled()) {
 			String json = document.toString();
 			log.trace("Search index json:");
@@ -519,7 +519,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 
 		// Add display field value
 		JsonObject displayField = new JsonObject();
-		displayField.put("key", container.getSchemaContainerVersion().getSchema().getDisplayField());
+		displayField.put("key", container.getLatestSchemaContainerVersion(branchUuid).getSchema().getDisplayField());
 		displayField.put("value", container.getDisplayFieldValue());
 		document.put("displayField", displayField);
 		document.put(VERSION_KEY, generateVersion(container, branchUuid, type));

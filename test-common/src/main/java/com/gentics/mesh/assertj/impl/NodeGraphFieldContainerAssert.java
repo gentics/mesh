@@ -22,8 +22,9 @@ public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGrap
 	 * @return fluent API
 	 */
 	public NodeGraphFieldContainerAssert isOf(SchemaContainerVersion schemaVersion) {
-		assertThat(actual.getSchemaContainerVersion().getVersion()).as("Schema version").isEqualTo(schemaVersion.getVersion());
-		assertThat(actual.getSchemaContainerVersion().getUuid()).as("Schema version Uuid").isEqualTo(schemaVersion.getUuid());
+		// TODO Review
+		assertThat(actual.getAnySchemaContainerVersion().getVersion()).as("Schema version").isEqualTo(schemaVersion.getVersion());
+		assertThat(actual.getAnySchemaContainerVersion().getUuid()).as("Schema version Uuid").isEqualTo(schemaVersion.getUuid());
 		return this;
 	}
 

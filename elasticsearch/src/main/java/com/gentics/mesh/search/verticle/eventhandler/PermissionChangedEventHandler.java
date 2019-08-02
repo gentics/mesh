@@ -82,7 +82,7 @@ public class PermissionChangedEventHandler implements EventHandler {
 								NodeGraphFieldContainer.composeIndexName(
 									model.getProject().getUuid(),
 									branchUuid,
-									container.getSchemaContainerVersion().getUuid(),
+									container.getLatestSchemaContainerVersion(branchUuid).getUuid(),
 									type),
 								NodeGraphFieldContainer.composeDocumentId(model.getUuid(), container.getLanguageTag()),
 								tf.toPermissionPartial(node, type)))))))

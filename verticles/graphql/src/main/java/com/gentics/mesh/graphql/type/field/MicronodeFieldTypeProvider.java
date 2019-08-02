@@ -70,7 +70,7 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 					Object object = env.getObject();
 					if (object instanceof Micronode) {
 						Micronode fieldContainer = (Micronode) object;
-						MicroschemaContainerVersion micronodeFieldSchema = fieldContainer.getSchemaContainerVersion();
+						MicroschemaContainerVersion micronodeFieldSchema = fieldContainer.getLatestSchemaContainerVersion(context.getBranch().getUuid());
 						String schemaName = micronodeFieldSchema.getName();
 						GraphQLObjectType foundType = env.getSchema().getObjectType(schemaName);
 						return foundType;
@@ -84,7 +84,7 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 				.name(MICRONODE_TYPE_NAME)
 				.typeResolver(env -> {
 					Micronode fieldContainer = env.getObject();
-					MicroschemaContainerVersion micronodeFieldSchema = fieldContainer.getSchemaContainerVersion();
+					MicroschemaContainerVersion micronodeFieldSchema = fieldContainer.getLatestSchemaContainerVersion(context.getBranch().getUuid());
 					String schemaName = micronodeFieldSchema.getName();
 					return env.getSchema().getObjectType(schemaName);
 				})
@@ -107,7 +107,11 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 				.name("microschema")
 				.description("The microschema of this micronode")
 				.type(GraphQLTypeReference.typeRef(MicroschemaTypeProvider.MICROSCHEMA_TYPE_NAME))
-				.dataFetcher(micronodeFetcher(micronode -> micronode.getSchemaContainerVersion().getSchemaContainer()))
+				.dataFetcher(env -> {
+					GraphQLContext gc = env.getContext();
+					Micronode micronode = env.getSource();
+					return micronode.getLatestSchemaContainerVersion(gc.getBranch().getUuid()).getSchemaContainer();
+				})
 				.build()
 		);
 	}

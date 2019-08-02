@@ -24,7 +24,7 @@ public class FieldMappedFilter<T, Q> extends MappedFilter<GraphFieldContainer, T
 	@Override
 	public Predicate<GraphFieldContainer> createPredicate(Q query) {
 		// Return always true if the node is not of the provided schema.
-		Predicate<GraphFieldContainer> schemaCheck = node -> !node.getSchemaContainerVersion().getName().equals(schemaName);
+		Predicate<GraphFieldContainer> schemaCheck = node -> !node.getAnySchemaContainerVersion().getName().equals(schemaName);
 		Predicate<GraphFieldContainer> predicate = super.createPredicate(query);
 		return schemaCheck.or(predicate);
 	}

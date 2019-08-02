@@ -66,10 +66,10 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.data.schema.SchemaStructure;
+import com.gentics.mesh.core.data.schema.impl.SchemaStructureImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NameConflictException;
@@ -119,13 +119,14 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> version) {
-		setSingleLinkOutTo(version, HAS_SCHEMA_CONTAINER_VERSION);
+	public SchemaContainerVersion getAnySchemaContainerVersion() {
+		return getSchemaStructure().getSchemaContainerVersions().next();
 	}
 
 	@Override
-	public SchemaContainerVersion getSchemaContainerVersion() {
-		return out(HAS_SCHEMA_CONTAINER_VERSION, SchemaContainerVersionImpl.class).nextOrNull();
+	public SchemaContainerVersion getLatestSchemaContainerVersion(String branchUuid) {
+		// TODO Review: Can this be empty?
+		return getSchemaStructure().getLatestSchemaContainerVersion(branchUuid).get();
 	}
 
 	@Override
@@ -142,7 +143,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public void updateDisplayFieldValue() {
 		// TODO use schema storage instead
-		Schema schema = getSchemaContainerVersion().getSchema();
+		Schema schema = getAnySchemaContainerVersion().getSchema();
 		String displayFieldName = schema.getDisplayField();
 		FieldSchema fieldSchema = schema.getField(displayFieldName);
 		// Only update the display field value if the field can be located
@@ -225,8 +226,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public Set<String> getUrlFieldValues() {
-		SchemaModel schema = getSchemaContainerVersion().getSchema();
+	public Set<String> getUrlFieldValues(String branchUuid) {
+		SchemaModel schema = getLatestSchemaContainerVersion(branchUuid).getSchema();
 
 		Set<String> urlFieldValues = new HashSet<>();
 		if (schema.getUrlFields() != null) {
@@ -280,7 +281,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					// We know that the found container already occupies the index with one of the given paths. Lets compare both sets of paths in order to
 					// determine
 					// which path caused the conflict.
-					Set<String> fromConflictingContainer = conflictingContainer.getUrlFieldValues();
+					Set<String> fromConflictingContainer = conflictingContainer.getUrlFieldValues(branchUuid);
 					@SuppressWarnings("unchecked")
 					Collection<String> conflictingValues = CollectionUtils.intersection(fromConflictingContainer, urlFieldValues);
 					String paths = conflictingValues.stream().map(n -> n.toString()).collect(Collectors.joining(","));
@@ -299,7 +300,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public void updateWebrootPathInfo(InternalActionContext ac, String branchUuid, String conflictI18n) {
-		Set<String> urlFieldValues = getUrlFieldValues();
+		Set<String> urlFieldValues = getUrlFieldValues(branchUuid);
 		Iterator<? extends GraphFieldContainerEdge> it = getContainerEdge(DRAFT, branchUuid);
 		if (it.hasNext()) {
 			GraphFieldContainerEdge draftEdge = it.next();
@@ -330,7 +331,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		ContainerType type) {
 		final int MAX_NUMBER = 255;
 		Node node = getParentNode();
-		String segmentFieldName = getSchemaContainerVersion().getSchema().getSegmentField();
+		String segmentFieldName = getLatestSchemaContainerVersion(branchUuid).getSchema().getSegmentField();
 		String languageTag = getLanguageTag();
 
 		// Handle node migration conflicts automagically
@@ -519,8 +520,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void validate() {
-		Schema schema = getSchemaContainerVersion().getSchema();
+	public void validate(String branchUuid) {
+		Schema schema = getLatestSchemaContainerVersion(branchUuid).getSchema();
 		Map<String, GraphField> fieldsMap = getFields().stream().collect(Collectors.toMap(GraphField::getFieldKey, Function.identity()));
 
 		schema.getFields().stream().forEach(fieldSchema -> {
@@ -538,7 +539,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public List<FieldContainerChange> compareTo(FieldMap fieldMap) {
 		List<FieldContainerChange> changes = new ArrayList<>();
 
-		Schema schemaA = getSchemaContainerVersion().getSchema();
+		Schema schemaA = getAnySchemaContainerVersion().getSchema();
 		Map<String, FieldSchema> fieldSchemaMap = schemaA.getFieldsAsMap();
 
 		// Handle all fields
@@ -570,9 +571,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public List<FieldContainerChange> compareTo(NodeGraphFieldContainer container) {
 		List<FieldContainerChange> changes = new ArrayList<>();
 
-		Schema schemaA = getSchemaContainerVersion().getSchema();
+		Schema schemaA = getAnySchemaContainerVersion().getSchema();
 		Map<String, FieldSchema> fieldMapA = schemaA.getFieldsAsMap();
-		Schema schemaB = container.getSchemaContainerVersion().getSchema();
+		Schema schemaB = container.getAnySchemaContainerVersion().getSchema();
 		Map<String, FieldSchema> fieldMapB = schemaB.getFieldsAsMap();
 		// Generate a structural diff first. This way it is easy to determine
 		// which fields have been added or removed.
@@ -675,8 +676,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public String getSegmentFieldValue() {
-		String segmentFieldKey = getSchemaContainerVersion().getSchema().getSegmentField();
+	public String getSegmentFieldValue(String branchUuid) {
+		String segmentFieldKey = getLatestSchemaContainerVersion(branchUuid).getSchema().getSegmentField();
 		// 1. The container may reference a schema which has no segment field set thus no path segment can be determined
 		if (segmentFieldKey == null) {
 			return null;
@@ -699,8 +700,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void postfixSegmentFieldValue() {
-		String segmentFieldKey = getSchemaContainerVersion().getSchema().getSegmentField();
+	public void postfixSegmentFieldValue(String branchUuid) {
+		String segmentFieldKey = getLatestSchemaContainerVersion(branchUuid).getSchema().getSegmentField();
 		// 1. The container may reference a schema which has no segment field set thus no path segment can be determined
 		if (segmentFieldKey == null) {
 			return;
@@ -775,7 +776,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		model.setBranchUuid(branchUuid);
 		model.setLanguageTag(getLanguageTag());
 		model.setType(type);
-		SchemaContainerVersion version = getSchemaContainerVersion();
+		SchemaContainerVersion version = getLatestSchemaContainerVersion(branchUuid);
 		if (version != null) {
 			model.setSchema(version.transformToReference());
 		}
@@ -805,7 +806,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public boolean isAutoPurgeEnabled() {
-		SchemaContainerVersion schema = getSchemaContainerVersion();
+		// TODO Check if this is correct
+		SchemaContainerVersion schema = getAnySchemaContainerVersion();
 		return schema.isAutoPurgeEnabled();
 	}
 

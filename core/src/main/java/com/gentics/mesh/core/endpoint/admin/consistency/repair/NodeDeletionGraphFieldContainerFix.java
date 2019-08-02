@@ -38,7 +38,8 @@ public class NodeDeletionGraphFieldContainerFix {
 		Project project = boot.meshRoot().getProjectRoot().findAll().iterator().next();
 		String branchUuid = project.getInitialBranch().getUuid();
 
-		SchemaContainerVersion version = container.getSchemaContainerVersion();
+		// TODO Check if correct
+		SchemaContainerVersion version = container.getAnySchemaContainerVersion();
 		if (version == null) {
 			log.error("Container {" + container.getUuid() + "} has no schema version linked to it.");
 			return false;

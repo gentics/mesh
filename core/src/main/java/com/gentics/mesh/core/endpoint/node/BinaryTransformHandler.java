@@ -246,7 +246,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 				field.setImageFocalPoint(parameters.getFocalPoint());
 			}
 			// If the binary field is the segment field, we need to update the webroot info in the node
-			if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
+			if (field.getFieldKey().equals(newDraftVersion.getLatestSchemaContainerVersion(branch.getUuid()).getSchema().getSegmentField())) {
 				newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
 			}
 			String branchUuid = node.getProject().getBranchRoot().getLatestBranch().getUuid();
@@ -267,7 +267,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			throw error(NOT_FOUND, "error_language_not_found", languageTag);
 		}
 
-		FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
+		FieldSchema fieldSchema = latestDraftVersion.getAnySchemaContainerVersion().getSchema().getField(fieldName);
 		if (fieldSchema == null) {
 			throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 		}

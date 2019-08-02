@@ -132,13 +132,13 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 					draftEdge.setLanguageTag(container.getLanguageTag());
 					draftEdge.setType(DRAFT);
 					draftEdge.setBranchUuid(newBranch.getUuid());
-					String value = container.getSegmentFieldValue();
+					String value = container.getSegmentFieldValue(branchUuid);
 					if (value != null) {
 						draftEdge.setSegmentInfo(parent, value);
 					} else {
 						draftEdge.setSegmentInfo(null);
 					}
-					draftEdge.setUrlFieldInfo(container.getUrlFieldValues());
+					draftEdge.setUrlFieldInfo(container.getUrlFieldValues(branchUuid));
 					batch.add(container.onUpdated(newBranch.getUuid(), DRAFT));
 				});
 
@@ -152,13 +152,13 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 					publishEdge.setLanguageTag(container.getLanguageTag());
 					publishEdge.setType(PUBLISHED);
 					publishEdge.setBranchUuid(newBranch.getUuid());
-					String value = container.getSegmentFieldValue();
+					String value = container.getSegmentFieldValue(branchUuid);
 					if (value != null) {
 						publishEdge.setSegmentInfo(parent, value);
 					} else {
 						publishEdge.setSegmentInfo(null);
 					}
-					publishEdge.setUrlFieldInfo(container.getUrlFieldValues());
+					publishEdge.setUrlFieldInfo(container.getUrlFieldValues(branchUuid));
 					batch.add(container.onUpdated(newBranch.getUuid(), PUBLISHED));
 				});
 

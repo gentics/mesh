@@ -40,7 +40,7 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 
 	private void checkGraphFieldContainer(Database db, NodeGraphFieldContainer container, ConsistencyCheckResult result, boolean attemptRepair) {
 		String uuid = container.getUuid();
-		if (container.getSchemaContainerVersion() == null) {
+		if (container.getAnySchemaContainerVersion() == null) {
 			result.addInconsistency("The GraphFieldContainer has no assigned SchemaContainerVersion", uuid, HIGH);
 		}
 		VersionNumber version = container.getVersion();

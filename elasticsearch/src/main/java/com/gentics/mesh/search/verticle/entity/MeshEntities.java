@@ -273,7 +273,7 @@ public class MeshEntities {
 			NodeGraphFieldContainer.composeIndexName(
 				project.getUuid(),
 				branch.getUuid(),
-				container.getSchemaContainerVersion().getUuid(),
+				container.getLatestSchemaContainerVersion(branch.getUuid()).getUuid(),
 				type
 			),
 			NodeGraphFieldContainer.composeDocumentId(nodeUuid, container.getLanguageTag()),

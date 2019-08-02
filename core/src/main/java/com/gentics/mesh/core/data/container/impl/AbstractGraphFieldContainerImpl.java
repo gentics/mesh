@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.container.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -58,6 +59,8 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaStructure;
+import com.gentics.mesh.core.data.schema.impl.SchemaStructureImpl;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -349,7 +352,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public void updateFieldsFromRest(InternalActionContext ac, FieldMap fieldMap) {
-		FieldSchemaContainer schema = getSchemaContainerVersion().getSchema();
+		FieldSchemaContainer schema = getLatestSchemaContainerVersion(ac.getBranch().getUuid()).getSchema();
 		schema.assertForUnhandledFields(fieldMap);
 
 		// TODO: This should return an observable
@@ -372,7 +375,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public List<GraphField> getFields() {
-		FieldSchemaContainer schema = getSchemaContainerVersion().getSchema();
+		FieldSchemaContainer schema = getAnySchemaContainerVersion().getSchema();
 		List<GraphField> fields = new ArrayList<>();
 		for (FieldSchema fieldSchema : schema.getFields()) {
 			GraphField field = getField(fieldSchema);
@@ -394,7 +397,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	@Override
 	public Iterable<? extends Node> getReferencedNodes() {
 		// Get all fields and group them by type
-		Map<String, List<FieldSchema>> affectedFields = getSchemaContainerVersion().getSchema().getFields().stream()
+		Map<String, List<FieldSchema>> affectedFields = getAnySchemaContainerVersion().getSchema().getFields().stream()
 			.filter(this::isNodeReferenceType)
 			.collect(Collectors.groupingBy(FieldSchema::getType));
 
@@ -465,6 +468,16 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		} else {
 			return Stream.empty();
 		}
+	}
+
+	@Override
+	public SchemaStructure getSchemaStructure() {
+		return out(HAS_SCHEMA_CONTAINER_VERSION, SchemaStructureImpl.class).next();
+	}
+
+	@Override
+	public void setSchemaStructure(SchemaStructure structure) {
+		setSingleLinkOutTo(structure, HAS_SCHEMA_CONTAINER_VERSION);
 	}
 
 	@Override

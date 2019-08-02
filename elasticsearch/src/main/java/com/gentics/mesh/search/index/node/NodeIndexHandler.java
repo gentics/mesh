@@ -229,7 +229,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		return db.tx(() -> {
 			String branchUuid = branch.getUuid();
 			return version.getFieldContainers(branchUuid)
-				.filter(c -> c.getSchemaContainerVersion().equals(version))
+				.filter(c -> c.getLatestSchemaContainerVersion(branchUuid).equals(version))
 				.filter(c -> c.isType(type, branchUuid))
 				.collect(Collectors.toMap(c -> c.getParentNode().getUuid() + "-" + c.getLanguageTag(), Function.identity()));
 		});
@@ -518,12 +518,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public Observable<? extends BulkEntry> moveForBulk(MoveDocumentEntry entry) {
 		MoveEntryContext context = entry.getContext();
 		ContainerType type = context.getContainerType();
-		String releaseUuid = context.getBranchUuid();
+		String branchUuid = context.getBranchUuid();
 
 		NodeGraphFieldContainer oldContainer = context.getOldContainer();
 		String oldProjectUuid = oldContainer.getParentNode().getProject().getUuid();
-		String oldIndexName = NodeGraphFieldContainer.composeIndexName(oldProjectUuid, releaseUuid,
-			oldContainer.getSchemaContainerVersion().getUuid(),
+		String oldIndexName = NodeGraphFieldContainer.composeIndexName(oldProjectUuid, branchUuid,
+			oldContainer.getLatestSchemaContainerVersion(branchUuid).getUuid(),
 			type);
 		String oldLanguageTag = oldContainer.getLanguageTag();
 		String oldDocumentId = NodeGraphFieldContainer.composeDocumentId(oldContainer.getParentNode().getUuid(), oldLanguageTag);
@@ -531,12 +531,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 		NodeGraphFieldContainer newContainer = context.getNewContainer();
 		String newProjectUuid = newContainer.getParentNode().getProject().getUuid();
-		String newIndexName = NodeGraphFieldContainer.composeIndexName(newProjectUuid, releaseUuid,
-			newContainer.getSchemaContainerVersion().getUuid(),
+		String newIndexName = NodeGraphFieldContainer.composeIndexName(newProjectUuid, branchUuid,
+			newContainer.getLatestSchemaContainerVersion(branchUuid).getUuid(),
 			type);
 		String newLanguageTag = newContainer.getLanguageTag();
 		String newDocumentId = NodeGraphFieldContainer.composeDocumentId(newContainer.getParentNode().getUuid(), newLanguageTag);
-		JsonObject doc = transformer.toDocument(newContainer, releaseUuid, type);
+		JsonObject doc = transformer.toDocument(newContainer, branchUuid, type);
 		return 	Observable.just(new IndexBulkEntry(newIndexName, newDocumentId, doc));
 
 	}
@@ -565,7 +565,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public Single<String> storeContainer(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
 		JsonObject doc = transformer.toDocument(container, branchUuid, type);
 		String projectUuid = container.getParentNode().getProject().getUuid();
-		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type);
+		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, container.getLatestSchemaContainerVersion(branchUuid).getUuid(), type);
 		if (log.isDebugEnabled()) {
 			log.debug("Storing node {" + container.getParentNode().getUuid() + "} into index {" + indexName + "}");
 		}
@@ -585,7 +585,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public Single<IndexBulkEntry> storeContainerForBulk(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
 		JsonObject doc = transformer.toDocument(container, branchUuid, type);
 		String projectUuid = container.getParentNode().getProject().getUuid();
-		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type);
+		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, container.getLatestSchemaContainerVersion(branchUuid).getUuid(), type);
 		if (log.isDebugEnabled()) {
 			log.debug("Storing node {" + container.getParentNode().getUuid() + "} into index {" + indexName + "}");
 		}

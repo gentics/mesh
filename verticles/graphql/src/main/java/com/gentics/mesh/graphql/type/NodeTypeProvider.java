@@ -402,6 +402,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			// .schema
 			newFieldDefinition().name("schema").description("Schema of the node").type(new GraphQLTypeReference(SCHEMA_TYPE_NAME))
 				.dataFetcher(env -> {
+					GraphQLContext gc = env.getContext();
 					NodeContent content = env.getSource();
 					if (content == null) {
 						return null;
@@ -410,7 +411,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					if (container == null) {
 						return null;
 					}
-					return container.getSchemaContainerVersion();
+					return container.getLatestSchemaContainerVersion(gc.getBranch().getUuid());
 				}).build(),
 
 			// .isPublished
@@ -614,10 +615,11 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		GraphQLUnionType fieldType = newUnionType().name(NODE_FIELDS_TYPE_NAME).possibleTypes(typeArray).description("Fields of the node.")
 			.typeResolver(env -> {
+				GraphQLContext gc = env.getContext();
 				Object object = env.getObject();
 				if (object instanceof NodeGraphFieldContainer) {
 					NodeGraphFieldContainer fieldContainer = (NodeGraphFieldContainer) object;
-					String schemaName = fieldContainer.getSchemaContainerVersion().getName();
+					String schemaName = fieldContainer.getLatestSchemaContainerVersion(gc.getBranch().getUuid()).getName();
 					GraphQLObjectType foundType = env.getSchema().getObjectType(schemaName);
 					if (foundType == null) {
 						throw new GraphQLException("The type for the schema with name {" + schemaName

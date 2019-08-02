@@ -157,6 +157,7 @@ public class GraphRelationships {
 
 	// Versioning
 	public static final String HAS_VERSION = "HAS_VERSION";
+	public static final String HAS_STRUCTURE = "HAS_STRUCTURE";
 	public static final String HAS_CHANGE = "HAS_CHANGE";
 	public static final String HAS_LATEST_VERSION = "HAS_LATEST_VERSION";
 

@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -82,7 +83,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @return
 	 */
 	default String getIndexName(String projectUuid, String branchUuid, ContainerType type) {
-		return composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion().getUuid(), type);
+		return composeIndexName(projectUuid, branchUuid, getLatestSchemaContainerVersion(branchUuid).getUuid(), type);
 	}
 
 	/**
@@ -143,6 +144,12 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @param bac
 	 */
 	void deleteFromBranch(Branch branch, BulkActionContext bac);
+
+	@Override
+	SchemaContainerVersion getAnySchemaContainerVersion();
+
+	@Override
+	SchemaContainerVersion getLatestSchemaContainerVersion(String branchUuid);
 
 	/**
 	 * Return the display field value for this container.
@@ -355,9 +362,6 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 */
 	List<FieldContainerChange> compareTo(FieldMap fieldMap);
 
-	@Override
-	SchemaContainerVersion getSchemaContainerVersion();
-
 	/**
 	 * Get all micronode fields that have a micronode using the given microschema container version.
 	 * 
@@ -393,20 +397,23 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * Returns the segment field value of this container.
 	 * 
 	 * @return Determined segment field value or null if no segment field was specified or yet set
+	 * @param branchUuid
 	 */
-	String getSegmentFieldValue();
+	String getSegmentFieldValue(String branchUuid);
 
 	/**
 	 * Update the current segment field and increment any found postfix number.
+	 * @param branchUuid
 	 */
-	void postfixSegmentFieldValue();
+	void postfixSegmentFieldValue(String branchUuid);
 
 	/**
 	 * Return the URL field values for the container.
 	 * 
 	 * @return
+	 * @param branchUuid
 	 */
-	Set<String> getUrlFieldValues();
+	Set<String> getUrlFieldValues(String branchUuid);
 
 	/**
 	 * Traverse to the base node and build up the path to this container.
@@ -484,7 +491,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	boolean isPurgeable();
 
 	/**
-	 * Check whether auto purge is enabled globally or for the schema of the container.
+	 * Check whether auto purge is enabled globally or for the schema of the container in any branch.
 	 * 
 	 * @return
 	 */

@@ -114,9 +114,10 @@ public final class TestMocks {
 		when(micronode.getUuid()).thenReturn(UUID_1);
 		MicroschemaContainer microschemaContainer = mockMicroschemaContainer(microschemaName, user);
 		MicroschemaContainerVersion latestVersion = microschemaContainer.getLatestVersion();
-		when(micronode.getSchemaContainerVersion()).thenReturn(latestVersion);
+		// TODO Review
+		when(micronode.getAnySchemaContainerVersion()).thenReturn(latestVersion);
 		MicroschemaModel microschema = microschemaContainer.getLatestVersion().getSchema();
-		when(micronode.getSchemaContainerVersion().getSchema()).thenReturn(microschema);
+		when(micronode.getAnySchemaContainerVersion().getSchema()).thenReturn(microschema);
 
 		// longitude field
 		NumberGraphField longitudeField = mock(NumberGraphField.class);
@@ -311,7 +312,8 @@ public final class TestMocks {
 		when(node.getRolesWithPerm(GraphPermission.READ_PUBLISHED_PERM)).thenReturn(createEmptyTraversal());
 
 		NodeGraphFieldContainer container = mockContainer(languageTag, user);
-		when(container.getSchemaContainerVersion()).thenReturn(latestVersion);
+		// TODO Review
+		when(container.getAnySchemaContainerVersion()).thenReturn(latestVersion);
 		when(container.getParentNode()).thenReturn(node);
 		when(container.getElementVersion()).thenReturn(UUID_5);
 		when(node.getLatestDraftFieldContainer(languageTag)).thenReturn(container);

@@ -198,7 +198,8 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 			Micronode micronodeA = getMicronode();
 			MicronodeField micronodeB = ((MicronodeField) field);
 			// Load each field using the field schema
-			Microschema schema = micronodeA.getSchemaContainerVersion().getSchema();
+			// TODO Check if correct
+			Microschema schema = micronodeA.getAnySchemaContainerVersion().getSchema();
 			for (FieldSchema fieldSchema : schema.getFields()) {
 				GraphField graphField = micronodeA.getField(fieldSchema);
 				try {
@@ -243,7 +244,8 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 			MicronodeField micronodeB = ((MicronodeField) obj);
 
 			// Load each field using the field schema
-			Microschema schema = micronodeA.getSchemaContainerVersion().getSchema();
+			// TODO Check if correct
+			Microschema schema = micronodeA.getAnySchemaContainerVersion().getSchema();
 			for (FieldSchema fieldSchema : schema.getFields()) {
 				GraphField graphField = micronodeA.getField(fieldSchema);
 				try {

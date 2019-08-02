@@ -322,7 +322,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public Set<GraphPermission> getPermissions(MeshVertex vertex) {
-		Predicate<? super GraphPermission> isValidPermission = perm -> perm != READ_PUBLISHED_PERM && perm != PUBLISH_PERM
+		Predicate<? super GraphPermission> isValidPermission = perm -> (perm != READ_PUBLISHED_PERM && perm != PUBLISH_PERM)
 			|| vertex.hasPublishPermissions();
 
 		return Stream.of(GraphPermission.values())

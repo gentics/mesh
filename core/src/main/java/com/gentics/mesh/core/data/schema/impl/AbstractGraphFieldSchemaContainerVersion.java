@@ -246,5 +246,4 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	public String toString() {
 		return "handler:" + getTypeInfo().getType() + "_name:" + getName() + "_uuid:" + getUuid() + "_version:" + getVersion();
 	}
-
 }

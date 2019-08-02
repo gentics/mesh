@@ -289,7 +289,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		// Check for webroot input data consistency (PUT on webroot)
 		String webrootSegment = ac.get("WEBROOT_SEGMENT_NAME");
 		if (webrootSegment != null) {
-			String current = container.getSegmentFieldValue();
+			String current = container.getSegmentFieldValue(branch.getUuid());
 			if (!webrootSegment.equals(current)) {
 				throw error(BAD_REQUEST, "webroot_error_segment_field_mismatch", webrootSegment, current);
 			}

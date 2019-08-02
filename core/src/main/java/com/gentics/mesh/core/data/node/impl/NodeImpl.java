@@ -202,7 +202,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 		}
 		if (container != null) {
-			return container.getSegmentFieldValue();
+			return container.getSegmentFieldValue(branchUuid);
 		}
 		return null;
 	}
@@ -218,7 +218,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// Find the first matching container and fallback to other listed languages
 		NodeGraphFieldContainer container = getGraphFieldContainer(languageTag, branchUuid, type);
 		if (container != null) {
-			container.postfixSegmentFieldValue();
+			container.postfixSegmentFieldValue(branchUuid);
 		}
 	}
 
@@ -728,15 +728,16 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		// First check whether the NGFC for the requested language,branch and version could be found.
-		NodeGraphFieldContainer fieldContainer = findVersion(requestedLanguageTags, branch.getUuid(), versioiningParameters.getVersion());
+		String branchUuid = branch.getUuid();
+		NodeGraphFieldContainer fieldContainer = findVersion(requestedLanguageTags, branchUuid, versioiningParameters.getVersion());
 		if (fieldContainer == null) {
 			// If a published version was requested, we check whether any
 			// published language variant exists for the node, if not, response
 			// with NOT_FOUND
 			if (forVersion(versioiningParameters.getVersion()) == PUBLISHED && !getGraphFieldContainers(branch, PUBLISHED).iterator().hasNext()) {
-				log.error("Could not find field container for languages {" + requestedLanguageTags + "} and branch {" + branch.getUuid()
-					+ "} and version params version {" + versioiningParameters.getVersion() + "}, branch {" + branch.getUuid() + "}");
-				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_branch_version", getUuid(), branch.getUuid());
+				log.error("Could not find field container for languages {" + requestedLanguageTags + "} and branch {" + branchUuid
+					+ "} and version params version {" + versioiningParameters.getVersion() + "}, branch {" + branchUuid + "}");
+				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_branch_version", getUuid(), branchUuid);
 			}
 
 			// If a specific version was requested, that does not exist, we also
@@ -761,7 +762,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// We should change this behaviour and update the client implementations.
 			// throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
 		} else {
-			Schema schema = fieldContainer.getSchemaContainerVersion().getSchema();
+
+			SchemaContainerVersion schemaContainerVersion = fieldContainer.getLatestSchemaContainerVersion(branchUuid);
+			Schema schema = schemaContainerVersion.getSchema();
 			if (fieldsSet.has("container")) {
 				restNode.setContainer(schema.getContainer());
 			}
@@ -784,7 +787,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Schema reference
 			if (fieldsSet.has("schema")) {
-				restNode.setSchema(fieldContainer.getSchemaContainerVersion().transformToReference());
+				restNode.setSchema(schemaContainerVersion.transformToReference());
 			}
 
 			// Version reference
@@ -1235,7 +1238,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			NodeGraphFieldContainer content = edge.getNodeContainer();
 			bac.add(content.onTakenOffline(branchUuid));
 			edge.remove();
-			if (content.isAutoPurgeEnabled() && content.isPurgeable()) {
+			if (content.isAutoPurgeEnabled(branchUuid) && content.isPurgeable()) {
 				content.purge(bac);
 			}
 		});
@@ -1322,7 +1325,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void setPublished(InternalActionContext ac, NodeGraphFieldContainer container, String branchUuid) {
 		String languageTag = container.getLanguageTag();
-		boolean isAutoPurgeEnabled = container.isAutoPurgeEnabled();
+		boolean isAutoPurgeEnabled = container.isAutoPurgeEnabled(branchUuid);
 
 		// Remove an existing published edge
 		EdgeFrame currentPublished = getGraphFieldContainerEdgeFrame(languageTag, branchUuid, PUBLISHED);
@@ -1778,7 +1781,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
 
 				// Purge the old draft
-				if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
+				if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled(branchUuid) && latestDraftVersion.isPurgeable()) {
 					latestDraftVersion.purge();
 				}
 

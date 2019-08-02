@@ -64,7 +64,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 		NodeParametersImpl parameters = new NodeParametersImpl(ac);
 		MicronodeResponse restMicronode = new MicronodeResponse();
-		MicroschemaContainerVersion microschemaContainer = getSchemaContainerVersion();
+		MicroschemaContainerVersion microschemaContainer = getLatestSchemaContainerVersion(ac.getBranch().getUuid());
 		if (microschemaContainer == null) {
 			throw error(BAD_REQUEST, "The microschema container for micronode {" + getUuid() + "} could not be found.");
 		}
@@ -100,13 +100,13 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public MicroschemaContainerVersion getSchemaContainerVersion() {
-		return out(HAS_MICROSCHEMA_CONTAINER, MicroschemaContainerVersionImpl.class).next();
+	public MicroschemaContainerVersion getLatestSchemaContainerVersion(String branchUuid) {
+		return null;
 	}
 
 	@Override
-	public void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> version) {
-		setLinkOut(version, HAS_MICROSCHEMA_CONTAINER);
+	public MicroschemaContainerVersion getAnySchemaContainerVersion() {
+		return null;
 	}
 
 	@Override
@@ -220,7 +220,8 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public void validate() {
-		Microschema microschema = getSchemaContainerVersion().getSchema();
+		// TODO Validate for all branches
+		Microschema microschema = getAnySchemaContainerVersion().getSchema();
 		Map<String, GraphField> fieldsMap = getFields().stream().collect(Collectors.toMap(GraphField::getFieldKey, Function.identity()));
 
 		microschema.getFields().stream().forEach(fieldSchema -> {
@@ -244,7 +245,8 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		}
 		if (obj instanceof MicronodeField) {
 			MicronodeField restMicronode = (MicronodeField) obj;
-			Microschema schema = getSchemaContainerVersion().getSchema();
+			// TODO Check if correct
+			Microschema schema = getAnySchemaContainerVersion().getSchema();
 			// Iterate over all field schemas and compare rest and graph with eachother
 			for (FieldSchema fieldSchema : schema.getFields()) {
 				GraphField graphField = getField(fieldSchema);
@@ -261,7 +263,8 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	@Override
 	public List<FieldContainerChange> compareTo(Micronode micronode) {
 		List<FieldContainerChange> changes = new ArrayList<>();
-		for (FieldSchema fieldSchema : getSchemaContainerVersion().getSchema().getFields()) {
+		// TODO Check if correct
+		for (FieldSchema fieldSchema : getAnySchemaContainerVersion().getSchema().getFields()) {
 			GraphField fieldA = getField(fieldSchema);
 			GraphField fieldB = micronode.getField(fieldSchema);
 			if (!CompareUtils.equals(fieldA, fieldB)) {

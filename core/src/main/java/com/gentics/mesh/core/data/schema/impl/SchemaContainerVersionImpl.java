@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PAR
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_STRUCTURE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
@@ -99,7 +100,7 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public Stream<NodeGraphFieldContainer> getFieldContainers(String branchUuid) {
-		Spliterator<VertexFrame> it = in(HAS_SCHEMA_CONTAINER_VERSION).spliterator();
+		Spliterator<VertexFrame> it = out(HAS_STRUCTURE).in(HAS_SCHEMA_CONTAINER_VERSION).spliterator();
 		Stream<NodeGraphFieldContainer> stream = StreamSupport.stream(it, false).map(frame -> frame.reframe(NodeGraphFieldContainerImpl.class))
 			.filter(e -> e.getParentNode(branchUuid) != null).map(e -> (NodeGraphFieldContainer) e);
 		return stream;

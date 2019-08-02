@@ -45,7 +45,10 @@ public interface Micronode extends GraphFieldContainer, MeshVertex, Transformabl
 	void clone(Micronode micronode);
 
 	@Override
-	MicroschemaContainerVersion getSchemaContainerVersion();
+	MicroschemaContainerVersion getLatestSchemaContainerVersion(String branchUuid);
+
+	@Override
+	MicroschemaContainerVersion getAnySchemaContainerVersion();
 
 	/**
 	 * Compare the micronode and return a list of changes which identify the changes.

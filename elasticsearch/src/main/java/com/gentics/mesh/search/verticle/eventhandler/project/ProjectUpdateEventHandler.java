@@ -75,7 +75,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 					NodeGraphFieldContainer.composeIndexName(
 						project.getUuid(),
 						branch.getUuid(),
-						container.getSchemaContainerVersion().getUuid(),
+						container.getLatestSchemaContainerVersion(branch.getUuid()).getUuid(),
 						type
 					),
 					NodeGraphFieldContainer.composeDocumentId(node.getUuid(), container.getLanguageTag()),

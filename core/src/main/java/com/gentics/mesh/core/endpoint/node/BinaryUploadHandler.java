@@ -307,7 +307,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 					}
 				}
 
-				FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
+				FieldSchema fieldSchema = latestDraftVersion.getLatestSchemaContainerVersion(branch.getUuid()).getSchema().getField(fieldName);
 				if (fieldSchema == null) {
 					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 				}
@@ -350,7 +350,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 					oldField.removeField(newDraftVersion);
 				}
 				// If the binary field is the segment field, we need to update the webroot info in the node
-				if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
+				if (field.getFieldKey().equals(newDraftVersion.getLatestSchemaContainerVersion(branch.getUuid()).getSchema().getSegmentField())) {
 					newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
 				}
 

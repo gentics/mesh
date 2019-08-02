@@ -9,7 +9,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
-import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
@@ -25,9 +24,11 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaStructure;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.data.node.field.GraphField;
 
 /**
  * A graph field container (eg. a container for fields of a node) is used to hold i18n specific graph fields.
@@ -339,19 +340,23 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	void deleteFieldEdge(String key);
 
 	/**
-	 * Get the schema container version used by this container
+	 * Get the schema structure used by this container
 	 * 
-	 * @return schema container version
+	 * @return schema structure
 	 */
-	GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> getSchemaContainerVersion();
+	SchemaStructure getSchemaStructure();
+
+	GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> getLatestSchemaContainerVersion(String branchUuid);
+
+	GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> getAnySchemaContainerVersion();
 
 	/**
 	 * Set the schema container version used by this container
 	 * 
-	 * @param version
-	 *            schema container version
+	 * @param structure
+	 *            schema structure
 	 */
-	void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> version);
+	void setSchemaStructure(SchemaStructure structure);
 
 	/**
 	 * Get all nodes that are in any way referenced by this node. This includes the following cases:
