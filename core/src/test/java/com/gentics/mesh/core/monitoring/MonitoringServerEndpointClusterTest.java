@@ -26,6 +26,6 @@ public class MonitoringServerEndpointClusterTest extends AbstractMeshTest {
 		assertNotNull(info.getAddress());
 		assertEquals("ONLINE", info.getStatus());
 		assertNotNull(info.getStartDate());
-		assertEquals(Mesh.mesh().getOptions().getNodeName(), info.getName());
+		assertEquals(meshApi().getOptions().getNodeName(), info.getName());
 	}
 }

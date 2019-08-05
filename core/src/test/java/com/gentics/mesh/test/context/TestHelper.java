@@ -79,7 +79,6 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.LinkType;
@@ -109,7 +108,7 @@ public interface TestHelper {
 	MeshTestContext getTestContext();
 
 	default Database db() {
-		return MeshInternal.get().database();
+		return mesh().database();
 	}
 
 	/**
@@ -139,7 +138,7 @@ public interface TestHelper {
 	}
 
 	default BootstrapInitializer boot() {
-		return MeshInternal.get().boot();
+		return mesh().boot();
 	}
 
 	default MeshPluginManager pluginManager() {
@@ -155,7 +154,7 @@ public interface TestHelper {
 	}
 
 	default LocalBinaryStorage localBinaryStorage() {
-		return MeshInternal.get().localBinaryStorage();
+		return mesh().localBinaryStorage();
 	}
 
 	default Role role() {
@@ -609,7 +608,7 @@ public interface TestHelper {
 		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"));
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
-		MeshInternal.get().serverSchemaStorage().clear();
+		mesh().serverSchemaStorage().clear();
 		// node.getSchemaContainer().setSchema(schema);
 	}
 
@@ -681,7 +680,7 @@ public interface TestHelper {
 	}
 
 	default MeshComponent meshDagger() {
-		return MeshInternal.get();
+		return mesh();
 	}
 
 	default SearchProvider searchProvider() {
@@ -696,7 +695,7 @@ public interface TestHelper {
 		HttpClientOptions options = new HttpClientOptions();
 		options.setDefaultHost("localhost");
 		options.setDefaultPort(port());
-		HttpClient client = Mesh.vertx().createHttpClient(options);
+		HttpClient client = vertx().createHttpClient(options);
 		return client;
 	}
 
@@ -709,12 +708,8 @@ public interface TestHelper {
 		return getTestContext().getVertx();
 	}
 
-	default public EventQueueBatch createBatch() {
-		return EventQueueBatch.create();
-	}
-
 	default public BulkActionContext createBulkContext() {
-		return BulkActionContext.create();
+		return mesh().bulkProvider().get();
 	}
 
 	default public Map<String, User> users() {
@@ -722,7 +717,7 @@ public interface TestHelper {
 	}
 
 	default void disableAnonymousAccess() {
-		Mesh.mesh().getOptions().getAuthenticationOptions().setEnableAnonymousAccess(false);
+		meshApi().getOptions().getAuthenticationOptions().setEnableAnonymousAccess(false);
 	}
 
 	default void grantAdminRole() {
@@ -756,15 +751,25 @@ public interface TestHelper {
 	}
 
 	default void disableAutoPurge() {
-		Mesh.mesh().getOptions().getContentOptions().setAutoPurge(false);
+		mesh().boot().mesh().getOptions().getContentOptions().setAutoPurge(false);
 	}
 
 	default MeshStatus status() {
-		return Mesh.mesh().getStatus();
+		return meshApi().getStatus();
 	}
 
 	default void status(MeshStatus status) {
-		Mesh.mesh().setStatus(status);
+		meshApi().setStatus(status);
+	}
+
+	MeshComponent mesh();
+
+	default Mesh meshApi() {
+		return boot().mesh();
+	}
+
+	default EventQueueBatch createBatch() {
+		return mesh().batchProvider().get();
 	}
 
 }

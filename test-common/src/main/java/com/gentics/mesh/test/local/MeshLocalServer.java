@@ -102,7 +102,7 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 			options.getClusterOptions().setClusterName(clusterName);
 		}
 
-		mesh = Mesh.mesh(options);
+		mesh = Mesh.create(options);
 
 		if (waitForStartup) {
 			mesh.rxRun().blockingAwait(200, TimeUnit.SECONDS);

@@ -39,8 +39,6 @@ import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
-import com.gentics.mesh.dagger.DB;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.VersionHandler;
@@ -102,7 +100,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 		// The user does no longer belong to the group so lets update the shortcut edges
 		user.updateShortcutEdges();
-		PermissionStore.invalidate();
+		PermissionStore.invalidate(vertx());
 	}
 
 	@Override
@@ -129,7 +127,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		for (User user : getUsers()) {
 			user.updateShortcutEdges();
 		}
-		PermissionStore.invalidate();
+		PermissionStore.invalidate(vertx());
 	}
 
 	@Override
@@ -200,12 +198,12 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 			bac.inc();
 		}
 		bac.process();
-		PermissionStore.invalidate();
+		PermissionStore.invalidate(vertx());
 	}
 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		BootstrapInitializer boot = MeshInternal.get().boot();
+		BootstrapInitializer boot = mesh().boot();
 		GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 
 		if (isEmpty(requestModel.getName())) {
@@ -262,7 +260,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public Single<GroupResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return DB.get().asyncTx(() -> {
+		return db().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

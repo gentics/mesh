@@ -448,7 +448,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	public void testFileUploadLimit() throws IOException {
 
 		int binaryLen = 10000;
-		Mesh.mesh().getOptions().getUploadOptions().setByteLimit(binaryLen - 1);
+		meshApi().getOptions().getUploadOptions().setByteLimit(binaryLen - 1);
 		String contentType = "application/octet-stream";
 		String fileName = "somefile.dat";
 		Node node = folder("news");

@@ -2,12 +2,13 @@ package com.gentics.mesh.core.endpoint.eventbus;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.User;
@@ -24,13 +25,17 @@ public class EventbusEndpoint extends AbstractInternalEndpoint {
 
 	private static final Logger log = LoggerFactory.getLogger(EventbusEndpoint.class);
 
+	private final Vertx vertx;
+
 	public EventbusEndpoint() {
 		super("eventbus", null);
+		this.vertx = null;
 	}
 
 	@Inject
-	public EventbusEndpoint(MeshAuthChain chain) {
+	public EventbusEndpoint(Vertx vertx, MeshAuthChain chain) {
 		super("eventbus", chain);
+		this.vertx = vertx;
 	}
 
 	public String getDescription() {
@@ -46,7 +51,7 @@ public class EventbusEndpoint extends AbstractInternalEndpoint {
 		SockJSHandler handler = null;
 		if (localRouter != null) {
 			SockJSHandlerOptions sockJSoptions = new SockJSHandlerOptions().setHeartbeatInterval(2000);
-			handler = SockJSHandler.create(Mesh.vertx(), sockJSoptions);
+			handler = SockJSHandler.create(vertx, sockJSoptions);
 			BridgeOptions bridgeOptions = new BridgeOptions();
 			for (MeshEvent event : MeshEvent.publicEvents()) {
 				bridgeOptions.addInboundPermitted(new PermittedOptions().setAddress(event.address));

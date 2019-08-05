@@ -21,7 +21,7 @@ public class RouterStorageTest {
 	@Test
 	public void testFailureHandler() throws Exception {
 		MeshAuthChain chain = Mockito.mock(MeshAuthChain.class);
-		RouterStorage storage = new RouterStorage(null, chain, null, null, null, () -> {
+		RouterStorage storage = new RouterStorage(null, null, chain, null, null, null, () -> {
 			return Mockito.mock(Database.class);
 		}, null);
 

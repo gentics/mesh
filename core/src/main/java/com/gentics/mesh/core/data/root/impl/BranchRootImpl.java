@@ -113,7 +113,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 
 	@Override
 	public Branch create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		Database db = MeshInternal.get().database();
+		Database db = mesh().database();
 
 		BranchCreateRequest request = ac.fromJson(BranchCreateRequest.class);
 		MeshAuthUser requestUser = ac.getUser();
@@ -158,7 +158,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 			branch.setSsl(request.getSsl());
 		}
 		User creator = branch.getCreator();
-		MeshInternal.get().boot().jobRoot().enqueueBranchMigration(creator, branch);
+		mesh().boot().jobRoot().enqueueBranchMigration(creator, branch);
 		assignSchemas(creator, baseBranch, branch, true, batch);
 
 		batch.add(branch.onCreated());

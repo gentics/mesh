@@ -268,8 +268,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		if (urlFieldValues != null && !urlFieldValues.isEmpty()) {
 			// Individually check each url
 			for (String urlFieldValue : urlFieldValues) {
-				Object key = GraphFieldContainerEdgeImpl.composeWebrootUrlFieldIndexKey(urlFieldValue, branchUuid, type);
-				GraphFieldContainerEdge conflictingEdge = MeshInternal.get().database().index().checkIndexUniqueness(WEBROOT_URLFIELD_INDEX_NAME, edge, key);
+				Object key = GraphFieldContainerEdgeImpl.composeWebrootUrlFieldIndexKey(db(), urlFieldValue, branchUuid, type);
+				GraphFieldContainerEdge conflictingEdge = mesh().database().index().checkIndexUniqueness(WEBROOT_URLFIELD_INDEX_NAME, edge, key);
 				if (conflictingEdge != null) {
 					NodeGraphFieldContainer conflictingContainer = conflictingEdge.getNodeContainer();
 					Node conflictingNode = conflictingEdge.getNode();
@@ -379,9 +379,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		if (segment != null) {
 			Node parentNode = node.getParentNode(branchUuid);
 			String segmentInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(parentNode, segment);
-			Object webRootIndexKey = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(segmentInfo, branchUuid, type);
+			Object webRootIndexKey = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(db(), segmentInfo, branchUuid, type);
 			// check for uniqueness of webroot path
-			GraphFieldContainerEdge conflictingEdge = MeshInternal.get().database().index().checkIndexUniqueness(WEBROOT_INDEX_NAME, edge, webRootIndexKey);
+			GraphFieldContainerEdge conflictingEdge = mesh().database().index().checkIndexUniqueness(WEBROOT_INDEX_NAME, edge, webRootIndexKey);
 			if (conflictingEdge != null) {
 				Node conflictingNode = conflictingEdge.getNode();
 				NodeGraphFieldContainer conflictingContainer = conflictingEdge.getNodeContainer();
@@ -661,7 +661,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		if (uuid == null) {
 			return null;
 		} else {
-			UserRoot userRoot = MeshInternal.get().boot().userRoot();
+			UserRoot userRoot = mesh().boot().userRoot();
 			return userRoot.findByUuid(uuid);
 		}
 	}

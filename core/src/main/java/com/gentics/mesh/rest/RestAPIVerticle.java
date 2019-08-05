@@ -1,5 +1,6 @@
 package com.gentics.mesh.rest;
 
+<<<<<<< HEAD
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.nio.file.Paths;
@@ -135,6 +136,12 @@ public class RestAPIVerticle extends AbstractVerticle {
 	@Inject
 	public Provider<AdminEndpoint> adminEndpoint;
 
+	@Inject 
+	public Vertx vertx;
+
+	@Inject
+	public MeshOptions meshOptions;
+
 	@Inject
 	public RestAPIVerticle() {
 	}
@@ -151,7 +158,6 @@ public class RestAPIVerticle extends AbstractVerticle {
 		options.setCompressionSupported(true);
 		options.setHandle100ContinueAutomatically(true);
 		// options.setLogActivity(true);
-		MeshOptions meshOptions = Mesh.mesh().getOptions();
 		HttpServerConfig httpServerOptions = meshOptions.getHttpServerOptions();
 		if (httpServerOptions.getSsl()) {
 			if (log.isDebugEnabled()) {
@@ -262,7 +268,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		endpoints.add(projectInfoEndpoint.get());
 
 		for (AbstractInternalEndpoint endpoint : endpoints) {
-			endpoint.init(storage);
+			endpoint.init(vertx, storage);
 			endpoint.registerEndPoints();
 		}
 	}

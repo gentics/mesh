@@ -25,7 +25,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import com.gentics.madl.tx.Tx;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.image.spi.CacheFileInfo;
@@ -71,7 +70,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 		// 1. Upload image
 		uploadImage(node, "en", "image");
-		ImageManipulatorOptions options = Mesh.mesh().getOptions().getImageOptions();
+		ImageManipulatorOptions options = meshApi().getOptions().getImageOptions();
 
 		// 2. Resize image
 		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(options.getMaxWidth() + 1).setHeight(102);
@@ -86,7 +85,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 		// 1. Upload image
 		uploadImage(node, "en", "image");
-		ImageManipulatorOptions options = Mesh.mesh().getOptions().getImageOptions();
+		ImageManipulatorOptions options = meshApi().getOptions().getImageOptions();
 
 		// 2. Resize image
 		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(options.getMaxWidth()).setHeight(102);
@@ -355,7 +354,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		CountDownLatch latch = new CountDownLatch(1);
 		byte[] bytes = IOUtils.toByteArray(download.getStream());
 		download.close();
-		Mesh.vertx().fileSystem().writeFile(targetFile.getAbsolutePath(), Buffer.buffer(bytes), rh -> {
+		vertx().fileSystem().writeFile(targetFile.getAbsolutePath(), Buffer.buffer(bytes), rh -> {
 			assertTrue(rh.succeeded());
 			latch.countDown();
 		});

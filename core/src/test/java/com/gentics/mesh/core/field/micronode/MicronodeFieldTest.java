@@ -144,7 +144,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			fullMicroschema.addField(new NumberFieldSchemaImpl().setName("numberfield").setLabel("Number Field"));
 			fullMicroschema.addField(new StringFieldSchemaImpl().setName("stringfield").setLabel("String Field"));
 
-			MicroschemaContainer microschemaContainer = boot().microschemaContainerRoot().create(fullMicroschema, getRequestUser(), EventQueueBatch.create());
+			MicroschemaContainer microschemaContainer = boot().microschemaContainerRoot().create(fullMicroschema, getRequestUser(), createBatch());
 
 			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new MicronodeFieldSchemaImpl().setName("micronodefield").setLabel("Micronode Field"));
@@ -266,7 +266,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			schema.addField(FieldUtil.createStringFieldSchema("stringfield"));
 			micronode.getSchemaContainerVersion().setSchema(schema);
 			InternalActionContext ac = mockActionContext();
-			MeshInternal.get().serverSchemaStorage().clear();
+			mesh().serverSchemaStorage().clear();
 
 			FieldMap restFields = new FieldMapImpl();
 			restFields.put("stringfield", new StringFieldImpl().setString("test"));

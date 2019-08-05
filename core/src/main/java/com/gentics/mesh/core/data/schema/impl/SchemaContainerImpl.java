@@ -67,7 +67,7 @@ public class SchemaContainerImpl extends
 
 	@Override
 	public RootVertex<SchemaContainer> getRoot() {
-		return MeshInternal.get().boot().meshRoot().getSchemaContainerRoot();
+		return mesh().boot().meshRoot().getSchemaContainerRoot();
 	}
 
 	@Override

@@ -191,7 +191,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		MeshInternal.get().branchCache().clear();
+		mesh().branchCache().clear();
 
 		try (Tx tx = tx()) {
 			NodeResponse migrated = migrateNode(PROJECT_NAME, movedNode.getUuid(), initialBranch().getName(), newBranch.getName());

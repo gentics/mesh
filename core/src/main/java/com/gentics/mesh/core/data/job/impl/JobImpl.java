@@ -31,7 +31,6 @@ import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.core.rest.job.JobStatus;
-import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.ETag;
@@ -316,7 +315,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	public Completable process() {
 		return Completable.defer(() -> {
 
-			DB.get().tx(() -> {
+			db().tx(() -> {
 				log.info("Processing job {" + getUuid() + "}");
 				setStartTimestamp();
 				setStatus(STARTING);

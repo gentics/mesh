@@ -24,7 +24,7 @@ public class RestIntegrationTest extends AbstractIntegrationTest {
 		long timeout = DEFAULT_TIMEOUT_SECONDS * 2;
 		final CountDownLatch latch = new CountDownLatch(1);
 
-		final Mesh mesh = Mesh.mesh();
+		final Mesh mesh = Mesh.create();
 		mesh.setCustomLoader((vertx) -> {
 			vertx.eventBus().consumer("mesh-startup-complete", mh -> {
 				log.info("Received startup event..");

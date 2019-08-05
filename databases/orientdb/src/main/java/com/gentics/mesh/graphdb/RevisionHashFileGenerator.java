@@ -12,7 +12,7 @@ public class RevisionHashFileGenerator {
 
 	public static void main(String[] args) throws IOException {
 		System.out.println("Generating revision hash...");
-		String hash = new OrientDBDatabase(null, null, null, null).getDatabaseRevision();
+		String hash = new OrientDBDatabase(null, null, null, null, null, null).getDatabaseRevision();
 		System.out.println("Hash: " + hash);
 		File file = new File("target", "database-revision.txt");
 		FileUtils.writeStringToFile(file, hash);

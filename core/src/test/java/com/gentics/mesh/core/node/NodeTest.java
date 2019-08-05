@@ -526,7 +526,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 2. create new branch and migrate nodes
 			Branch newBranch = tx(() -> createBranch("newbranch"));
-			MeshInternal.get().branchCache().clear();
+			mesh().branchCache().clear();
 
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 			context.setNewBranch(newBranch);

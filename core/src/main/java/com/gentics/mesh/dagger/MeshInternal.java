@@ -1,7 +1,5 @@
 package com.gentics.mesh.dagger;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.MeshOptions;
 
@@ -10,8 +8,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
  * structures. If you use mesh within an application you should use {@link Mesh} instead.
  */
 public interface MeshInternal {
-
-	static AtomicReference<MeshComponent> applicationComponent = new AtomicReference<>(null);
 
 	/**
 	 * Create a new mesh dagger context if non existed and return it. This method will only create the context once and otherwise return the previously created
@@ -23,38 +19,7 @@ public interface MeshInternal {
 	 * @return Created or found dagger context
 	 */
 	static MeshComponent create(MeshOptions options) {
-		if (applicationComponent.get() == null) {
-			applicationComponent.set(DaggerMeshComponent.builder().configuration(options).build());
-		}
-		return applicationComponent.get();
-
-	}
-
-	/**
-	 * Clear the reference to the dagger mesh component. This is useful if you want to start a new dagger context (e.g. for unit tests).
-	 */
-	static void clear() {
-		applicationComponent.set(null);
-	}
-
-	/**
-	 * Return the created context.
-	 * 
-	 * @return Created dagger context or null if none has been created previously
-	 */
-	@SuppressWarnings("unchecked")
-	static <T extends MeshComponent> T get() {
-		return (T) applicationComponent.get();
-	}
-
-	/**
-	 * Set the component (useful for testing)
-	 * 
-	 * @param component
-	 *            Component to be set
-	 */
-	static void set(MeshComponent component) {
-		applicationComponent.set(component);
+		return DaggerMeshComponent.builder().configuration(options).build();
 	}
 
 }

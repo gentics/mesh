@@ -57,7 +57,7 @@ public class PluginContext implements RoutingContext {
 	 * @return
 	 */
 	public MeshRestClient client() {
-		MeshOptions options = Mesh.mesh().getOptions();
+		MeshOptions options = null;//Mesh.mesh().getOptions();
 		int port = options.getHttpServerOptions().getPort();
 		String host = options.getHttpServerOptions().getHost();
 		MeshRestClient client = MeshRestClient.create(host, port, false);

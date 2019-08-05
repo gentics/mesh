@@ -12,6 +12,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.AuthenticationResult;
 import com.gentics.mesh.auth.MeshOAuthService;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
+import com.gentics.mesh.cli.BootstrapInitializer;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -45,10 +46,13 @@ public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandle
 
 	private MeshJWTAuthProvider authProvider;
 
+	private BootstrapInitializer boot;
+
 	@Inject
-	public MeshJWTAuthHandler(MeshJWTAuthProvider authProvider, MeshOAuthService oauthService) {
+	public MeshJWTAuthHandler(MeshJWTAuthProvider authProvider, MeshOAuthService oauthService, BootstrapInitializer boot) {
 		super(authProvider);
 		this.authProvider = authProvider;
+		this.boot = boot;
 
 		options = new JsonObject();
 	}
@@ -161,7 +165,7 @@ public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandle
 					// Remove the original cookie and set the new one
 					context.removeCookie(MeshJWTAuthProvider.TOKEN_COOKIE_KEY);
 					context.addCookie(Cookie.cookie(MeshJWTAuthProvider.TOKEN_COOKIE_KEY, jwtToken)
-						.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
+						.setMaxAge(boot.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
 				}
 				authorizeUser(authenticatedUser, context);
 				return;

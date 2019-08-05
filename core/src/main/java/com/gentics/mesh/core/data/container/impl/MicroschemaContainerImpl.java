@@ -51,7 +51,7 @@ public class MicroschemaContainerImpl extends
 
 	@Override
 	public RootVertex<MicroschemaContainer> getRoot() {
-		return MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot();
+		return mesh().boot().meshRoot().getMicroschemaContainerRoot();
 	}
 
 	@Override

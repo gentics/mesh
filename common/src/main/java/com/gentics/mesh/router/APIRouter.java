@@ -1,23 +1,23 @@
 package com.gentics.mesh.router;
 
-import com.gentics.mesh.Mesh;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.VersionHandler;
+
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.CookieHandler;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class APIRouter {
 
 	private static final Logger log = LoggerFactory.getLogger(APIRouter.class);
 
-
 	private final ProjectsRouter projectsRouter;
 	private final PluginRouter pluginRouter;
-
 
 	/**
 	 * The api router is a core router which is being used to identify the api and rest api version.
@@ -29,23 +29,29 @@ public class APIRouter {
 	 */
 	private Map<String, Router> apiRouters = new HashMap<>();
 
+	private final Vertx vertx;
+
 	private RootRouter root;
 
-	public APIRouter(RootRouter root) {
+	private final MeshOptions options;
+
+	public APIRouter(Vertx vertx, RootRouter root, MeshOptions options) {
+		this.vertx = vertx;
 		this.root = root;
-		this.router = Router.router(Mesh.vertx());
+		this.options = options;
+		this.router = Router.router(vertx);
 
 		VersionHandler.generateVersionMountpoints()
 			.forEach(mountPoint -> root.getRouter().mountSubRouter(mountPoint, router));
 
 		initHandlers(root.getStorage());
 
-		this.projectsRouter = new ProjectsRouter(this);
-		this.pluginRouter = new PluginRouter(root.getStorage().getAuthChain(), root.getStorage().getDb().get(), getRouter());
+		this.projectsRouter = new ProjectsRouter(vertx, this);
+		this.pluginRouter = new PluginRouter(vertx, root.getStorage().getAuthChain(), root.getStorage().getDb().get(), getRouter());
 	}
 
 	private void initHandlers(RouterStorage storage) {
-		if (Mesh.mesh().getOptions().getHttpServerOptions().isCorsEnabled()) {
+		if (options.getHttpServerOptions().isCorsEnabled()) {
 			router.route().handler(storage.corsHandler);
 		}
 
@@ -96,7 +102,7 @@ public class APIRouter {
 		// TODO check for conflicting project routers
 		Router apiSubRouter = apiRouters.get(mountPoint);
 		if (apiSubRouter == null) {
-			apiSubRouter = Router.router(Mesh.vertx());
+			apiSubRouter = Router.router(vertx);
 			if (log.isDebugEnabled()) {
 				log.debug("Creating API subrouter for {" + mountPoint + "}");
 			}

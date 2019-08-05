@@ -20,7 +20,6 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.madl.tx.Tx;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.madl.field.FieldType;
@@ -36,7 +35,7 @@ public class DatabaseTest extends AbstractMeshTest {
 	public void createOutputDirectory() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
 		outputDirectory = new File("target", "tmp_" + System.currentTimeMillis());
 		outputDirectory.mkdirs();
-		Mesh.mesh().getOptions().getStorageOptions().setDirectory(new File(outputDirectory, "graphdb").getAbsolutePath());
+		meshApi().getOptions().getStorageOptions().setDirectory(new File(outputDirectory, "graphdb").getAbsolutePath());
 		// db().reset();
 		// setupData();
 	}

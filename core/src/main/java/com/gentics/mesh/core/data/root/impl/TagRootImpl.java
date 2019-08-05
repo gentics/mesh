@@ -90,7 +90,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 		addTag(tag);
 
 		// Add to global list of tags
-		TagRoot globalTagRoot = MeshInternal.get().boot().tagRoot();
+		TagRoot globalTagRoot = mesh().boot().tagRoot();
 		if (this != globalTagRoot) {
 			globalTagRoot.addTag(tag);
 		}

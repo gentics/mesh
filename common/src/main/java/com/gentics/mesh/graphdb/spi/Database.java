@@ -14,7 +14,6 @@ import com.gentics.madl.tx.TxAction0;
 import com.gentics.madl.tx.TxAction1;
 import com.gentics.madl.tx.TxFactory;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -30,6 +29,7 @@ import io.reactivex.Single;
 import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Function;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -85,8 +85,7 @@ public interface Database extends TxFactory {
 		}
 
 		return Completable.create(sub -> {
-
-			Mesh.vertx().executeBlocking(bc -> {
+			vertx().executeBlocking(bc -> {
 				try {
 					tx(txHandler);
 					bc.complete();
@@ -122,7 +121,7 @@ public interface Database extends TxFactory {
 		}
 
 		return Single.create(sub -> {
-			Mesh.vertx().executeBlocking(bc -> {
+			vertx().executeBlocking(bc -> {
 				try (Tx tx = tx()) {
 					Single<T> result = trxHandler.handle();
 					if (result == null) {
@@ -173,7 +172,7 @@ public interface Database extends TxFactory {
 		}
 
 		return Single.create(sub -> {
-			Mesh.vertx().executeBlocking(bc -> {
+			vertx().executeBlocking(bc -> {
 				try (Tx tx = tx()) {
 					Single<T> result = trxHandler.handle(tx);
 					if (result == null) {
@@ -424,4 +423,6 @@ public interface Database extends TxFactory {
 	}
 
 	List<String> getChangeUuidList();
+
+	Vertx vertx();
 }

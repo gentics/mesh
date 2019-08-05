@@ -80,7 +80,6 @@ public class SearchModelGenerator extends AbstractGenerator {
 	}
 
 	public static void initPaths() {
-		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
 		options.setNodeName("Example Generator");
 		options.getAuthenticationOptions().setKeystorePassword("ABCD");
@@ -102,7 +101,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		options.getStorageOptions().setDirectory(null);
 		options.getSearchOptions().setUrl(null);
 		options.setNodeName("exampleGenerator");
-		Mesh.mesh(options);
+		Mesh.create(options);
 	}
 
 	public void run() throws Exception {

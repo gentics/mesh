@@ -291,7 +291,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 		assertThat(response).hasDepth(1).isValid(4);
 
 		tx(() -> createBranch(newBranchName));
-		MeshInternal.get().branchCache().clear();
+		mesh().branchCache().clear();
 
 		// latest branch (again)
 		response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),

@@ -15,7 +15,7 @@ public interface NavigationParameters extends ParameterProvider {
 	 * @return
 	 */
 	default Integer getMaxDepth() {
-		return NumberUtils.toInteger(getParameter(MAX_DEPTH_QUERY_PARAM_KEY), Mesh.mesh().getOptions().getDefaultMaxDepth());
+		return NumberUtils.toInteger(getParameter(MAX_DEPTH_QUERY_PARAM_KEY), options().getDefaultMaxDepth());
 	}
 
 	/**

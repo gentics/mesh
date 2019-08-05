@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.dagger.MeshComponent;
 import com.syncleus.ferma.FramedGraph;
 
 import io.vertx.core.logging.Logger;
@@ -32,8 +32,8 @@ public class NodeDeletionGraphFieldContainerFix {
 	private static final Logger log = LoggerFactory.getLogger(NodeDeletionGraphFieldContainerFix.class);
 
 	public boolean repair(NodeGraphFieldContainer container) {
-
-		BootstrapInitializer boot = MeshInternal.get().boot();
+		MeshComponent mesh = container.getGraph().getAttribute("meshComponent");
+		BootstrapInitializer boot = mesh.boot();
 		// Pick the first project we find to fetch the initial branchUuid
 		Project project = boot.meshRoot().getProjectRoot().findAll().iterator().next();
 		String branchUuid = project.getInitialBranch().getUuid();
@@ -104,7 +104,7 @@ public class NodeDeletionGraphFieldContainerFix {
 		initialEdge.setBranchUuid(branchUuid);
 		initialEdge.setType(INITIAL);
 
-		BulkActionContext bac = BulkActionContext.create();
+		BulkActionContext bac = mesh.bulkProvider().get();
 		node.delete(bac);
 		return true;
 	}

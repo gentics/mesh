@@ -8,7 +8,7 @@ public class MeshRunner {
 
 	public static void main(String[] args) throws Exception {
 		MeshOptions options = OptionsLoader.createOrloadOptions(args);
-		Mesh mesh = Mesh.mesh(options);
+		Mesh mesh = Mesh.create(options);
 		mesh.run();
 	}
 

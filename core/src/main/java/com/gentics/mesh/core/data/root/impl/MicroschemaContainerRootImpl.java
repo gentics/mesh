@@ -75,7 +75,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 			throw conflict(conflictingMicroSchema.getUuid(), name, "microschema_conflicting_name", name);
 		}
 
-		SchemaContainer conflictingSchema = MeshInternal.get().boot().schemaContainerRoot().findByName(name);
+		SchemaContainer conflictingSchema = mesh().boot().schemaContainerRoot().findByName(name);
 		if (conflictingSchema != null) {
 			throw conflict(conflictingSchema.getUuid(), name, "schema_conflicting_name", name);
 		}

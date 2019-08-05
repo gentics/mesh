@@ -75,7 +75,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 	@Override
 	public Project findByName(String name) {
-		return MeshInternal.get().projectNameCache().cache().get(name, n-> {
+		return mesh().projectNameCache().cache().get(name, n-> {
 			return super.findByName(n);
 		});
 	}
@@ -175,7 +175,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 	@Override
 	public Project create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		BootstrapInitializer boot = MeshInternal.get().boot();
+		BootstrapInitializer boot = mesh().boot();
 
 		// TODO also create a default object schema for the project. Move this
 		// into service class
@@ -201,7 +201,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		if (requestModel.getSchema() == null || !requestModel.getSchema().isSet()) {
 			throw error(BAD_REQUEST, "project_error_no_schema_reference");
 		}
-		SchemaContainerVersion schemaContainerVersion = MeshInternal.get().boot().schemaContainerRoot().fromReference(requestModel.getSchema());
+		SchemaContainerVersion schemaContainerVersion = mesh().boot().schemaContainerRoot().fromReference(requestModel.getSchema());
 
 		String hostname = requestModel.getHostname();
 		Boolean ssl = requestModel.getSsl();

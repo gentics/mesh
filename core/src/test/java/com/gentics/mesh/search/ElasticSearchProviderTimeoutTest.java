@@ -13,7 +13,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.gentics.madl.tx.Tx;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -38,7 +37,7 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 	 */
 	@BeforeClass
 	public static void setupTimeoutServer() throws IOException {
-		Vertx vertx = new Vertx(Mesh.mesh().getVertx());
+		Vertx vertx = new Vertx(testContext.getVertx());
 		ElasticSearchOptions options = testContext.getOptions().getSearchOptions();
 		String url = options.getUrl();
 		int port = new URL(url).getPort();

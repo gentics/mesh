@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.json.JsonUtil;
@@ -47,7 +48,8 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 	public InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public SchemaTypeProvider() {
+	public SchemaTypeProvider(MeshOptions options) {
+		super(options);
 	}
 
 	public GraphQLObjectType createType(GraphQLContext context) {

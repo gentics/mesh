@@ -252,4 +252,8 @@ public interface BootstrapInitializer {
 	 */
 	void registerEventHandlers();
 
+	Vertx vertx();
+
+	Mesh mesh();
+
 }

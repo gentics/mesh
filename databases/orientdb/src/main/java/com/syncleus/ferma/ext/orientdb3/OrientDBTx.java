@@ -6,6 +6,7 @@ import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.madl.traversal.RawTraversalResultImpl;
 import com.gentics.madl.tx.AbstractTx;
 import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.madl.tp3.mock.Element;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
@@ -21,9 +22,11 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 
 	boolean isWrapped = false;
 	private final TypeResolver typeResolver;
+	private BootstrapInitializer boot;
 
-	public OrientDBTx(OrientGraphFactory factory, TypeResolver typeResolver) {
+	public OrientDBTx(BootstrapInitializer boot, OrientGraphFactory factory, TypeResolver typeResolver) {
 		this.typeResolver = typeResolver;
+		this.boot = boot;
 		// Check if an active transaction already exists.
 		Tx activeTx = Tx.get();
 		if (activeTx != null) {
@@ -35,8 +38,9 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 		}
 	}
 
-	public OrientDBTx(OrientStorage provider, TypeResolver typeResolver) {
+	public OrientDBTx(BootstrapInitializer boot, OrientStorage provider, TypeResolver typeResolver) {
 		this.typeResolver = typeResolver;
+		this.boot = boot;
 		// Check if an active transaction already exists.
 		Tx activeTx = Tx.get();
 		if (activeTx != null) {
@@ -100,5 +104,11 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	public int txId() {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	@Override
+	protected void init(FramedTransactionalGraph transactionalGraph) {
+		transactionalGraph.setAttribute("meshComponent", boot.mesh().internal());
+		super.init(transactionalGraph);
 	}
 }

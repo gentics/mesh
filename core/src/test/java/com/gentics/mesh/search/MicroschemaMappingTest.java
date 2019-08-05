@@ -213,7 +213,7 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 
 	@Test
 	public void testMicroschemaCustomMappingJson() {
-		NodeIndexHandler handler = MeshInternal.get().indexHandlerRegistry().nodeIndexHandler;
+		NodeIndexHandler handler = mesh().indexHandlerRegistry().nodeIndexHandler;
 		NodeContainerMappingProvider provider = handler.getMappingProvider();
 
 		tx(() -> {

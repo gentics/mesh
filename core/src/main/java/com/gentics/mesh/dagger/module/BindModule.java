@@ -6,8 +6,12 @@ import com.gentics.mesh.cache.ProjectBranchNameCache;
 import com.gentics.mesh.cache.ProjectBranchNameCacheImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
+import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.RangeRequestHandler;
@@ -61,4 +65,10 @@ public abstract class BindModule {
 
 	@Binds
 	abstract MeshPluginManager bindPluginManager(MeshPluginManagerImpl pm);
+
+	@Binds
+	abstract EventQueueBatch bindEventQueueBatch(EventQueueBatchImpl e);
+
+	@Binds
+	abstract BulkActionContext bindActionContext(BulkActionContextImpl e);
 }

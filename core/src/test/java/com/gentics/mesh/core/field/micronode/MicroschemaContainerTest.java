@@ -175,10 +175,10 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 			MicroschemaModel schema = new MicroschemaModelImpl();
 			schema.setName("test");
 			MicroschemaContainer container = createMicroschema(schema);
-			assertNotNull(MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().findByName("test"));
+			assertNotNull(mesh().boot().meshRoot().getMicroschemaContainerRoot().findByName("test"));
 			BulkActionContext bac = createBulkContext();
 			container.delete(bac);
-			assertNull(MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().findByName("test"));
+			assertNull(mesh().boot().meshRoot().getMicroschemaContainerRoot().findByName("test"));
 		}
 	}
 

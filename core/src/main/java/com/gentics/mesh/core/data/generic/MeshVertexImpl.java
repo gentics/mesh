@@ -13,17 +13,22 @@ import com.gentics.madl.frame.AbstractVertexFrame;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.tx.Tx;
 import com.gentics.madl.type.TypeHandler;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.dagger.MeshComponent;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Vertex;
+
+import io.vertx.core.Vertx;
 
 /**
  * @see MeshVertex
@@ -116,12 +121,45 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	@Override
 	public String getElementVersion() {
 		Vertex vertex = getElement();
-		return MeshInternal.get().database().getElementVersion(vertex);
+		return mesh().database().getElementVersion(vertex);
 	}
 
 	@Override
 	public void setCachedUuid(String uuid) {
 		this.uuid = uuid;
+	}
+
+	public MeshComponent mesh() {
+		return getGraph().getAttribute("meshComponent");
+	}
+
+	public Mesh meshApi() {
+		return mesh().boot().mesh();
+	}
+
+	public MeshOptions options() {
+		return mesh().options();
+	}
+
+	public Database db() {
+		return mesh().database();
+	}
+
+	public Vertx vertx() {
+		return mesh().vertx();
+	}
+
+	public EventQueueBatch createBatch() {
+		return mesh().batchProvider().get();
+	}
+
+	/**
+	 * Return the used vertx (rx variant) instance for mesh.
+	 * 
+	 * @return Rx Vertx instance
+	 */
+	public io.vertx.reactivex.core.Vertx rxVertx() {
+		return new io.vertx.reactivex.core.Vertx(vertx());
 	}
 
 }

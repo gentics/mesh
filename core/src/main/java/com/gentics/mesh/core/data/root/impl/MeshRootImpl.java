@@ -58,22 +58,22 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
 	private static Logger log = LoggerFactory.getLogger(MeshRootImpl.class);
 
-	private static UserRoot userRoot;
-	private static GroupRoot groupRoot;
-	private static RoleRoot roleRoot;
+	private UserRoot userRoot;
+	private GroupRoot groupRoot;
+	private RoleRoot roleRoot;
 
-	private static NodeRoot nodeRoot;
-	private static TagRoot tagRoot;
-	private static TagFamilyRoot tagFamilyRoot;
+	private NodeRoot nodeRoot;
+	private TagRoot tagRoot;
+	private TagFamilyRoot tagFamilyRoot;
 
-	private static LanguageRoot languageRoot;
-	private static ProjectRoot projectRoot;
+	private LanguageRoot languageRoot;
+	private ProjectRoot projectRoot;
 
-	private static SchemaContainerRoot schemaContainerRoot;
-	private static MicroschemaContainerRoot microschemaContainerRoot;
-	private static JobRoot jobRoot;
-	private static BinaryRoot binaryRoot;
-	private static ChangelogRoot changelogRoot;
+	private SchemaContainerRoot schemaContainerRoot;
+	private MicroschemaContainerRoot microschemaContainerRoot;
+	private JobRoot jobRoot;
+	private BinaryRoot binaryRoot;
+	private ChangelogRoot changelogRoot;
 
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(MeshRootImpl.class, MeshVertexImpl.class);
@@ -353,27 +353,27 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	 * Clear static references to the aggregation vertices.
 	 */
 	public static void clearReferences() {
-		MeshRootImpl.projectRoot = null;
-		MeshRootImpl.nodeRoot = null;
-		MeshRootImpl.tagRoot = null;
-		MeshRootImpl.binaryRoot = null;
-
-		MeshRootImpl.userRoot = null;
-		MeshRootImpl.groupRoot = null;
-		MeshRootImpl.roleRoot = null;
-
-		MeshRootImpl.schemaContainerRoot = null;
-		MeshRootImpl.tagFamilyRoot = null;
-		MeshRootImpl.microschemaContainerRoot = null;
-		MeshRootImpl.languageRoot = null;
-		MeshRootImpl.jobRoot = null;
-		MeshRootImpl.changelogRoot = null;
+//		MeshRootImpl.projectRoot = null;
+//		MeshRootImpl.nodeRoot = null;
+//		MeshRootImpl.tagRoot = null;
+//		MeshRootImpl.binaryRoot = null;
+//
+//		MeshRootImpl.userRoot = null;
+//		MeshRootImpl.groupRoot = null;
+//		MeshRootImpl.roleRoot = null;
+//
+//		MeshRootImpl.schemaContainerRoot = null;
+//		MeshRootImpl.tagFamilyRoot = null;
+//		MeshRootImpl.microschemaContainerRoot = null;
+//		MeshRootImpl.languageRoot = null;
+//		MeshRootImpl.jobRoot = null;
+//		MeshRootImpl.changelogRoot = null;
 
 	}
 
 	@Override
 	public MeshVertex resolvePathToElement(String pathToElement) {
-		MeshRoot root = MeshInternal.get().boot().meshRoot();
+		MeshRoot root = mesh().boot().meshRoot();
 		if (StringUtils.isEmpty(pathToElement)) {
 			throw error(BAD_REQUEST, "Could not resolve path. The path must must not be empty or null.");
 		}

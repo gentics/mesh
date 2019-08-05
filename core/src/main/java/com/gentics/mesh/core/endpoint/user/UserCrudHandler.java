@@ -23,10 +23,9 @@ import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
-import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
+import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.TokenUtil;
@@ -78,7 +77,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
 			// 2. Resolve the path to element that is targeted
-			MeshVertex targetElement = MeshInternal.get().boot().meshRoot().resolvePathToElement(pathToElement);
+			MeshVertex targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
 			if (targetElement == null) {
 				throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 			}

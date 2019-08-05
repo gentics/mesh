@@ -15,6 +15,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import com.gentics.madl.tx.TxAction;
@@ -55,11 +56,17 @@ public class HandlerUtilities {
 	private final MetricsService metrics;
 	private final boolean syncWrites;
 
+	private final Provider<EventQueueBatch> queueProvider;
+
+	private final Provider<BulkActionContext> bulkProvider;
+
 	@Inject
-	public HandlerUtilities(Database database, MeshOptions meshOptions, MetricsService metrics) {
+	public HandlerUtilities(Database database, MeshOptions meshOptions, MetricsService metrics, Provider<EventQueueBatch> queueProvider, Provider<BulkActionContext> bulkProvider) {
 		this.database = database;
 		this.metrics = metrics;
 		this.syncWrites = meshOptions.getStorageOptions() != null && meshOptions.getStorageOptions().isSynchronizeWrites();
+		this.queueProvider = queueProvider;
+		this.bulkProvider = bulkProvider;
 	}
 
 	/**
@@ -269,7 +276,7 @@ public class HandlerUtilities {
 	 */
 	public void bulkableAction(Consumer<BulkActionContext> function) {
 		BulkActionContext b = database.tx(tx -> {
-			BulkActionContext bac = BulkActionContext.create();
+			BulkActionContext bac = bulkProvider.get();
 			function.accept(bac);
 			return bac;
 		});
@@ -284,7 +291,7 @@ public class HandlerUtilities {
 	 */
 	public <T> T bulkableAction(Function<BulkActionContext, T> function) {
 		Tuple<T, BulkActionContext> r = database.tx(tx -> {
-			BulkActionContext bac = BulkActionContext.create();
+			BulkActionContext bac = bulkProvider.get();
 			T result = function.apply(bac);
 			return Tuple.tuple(result, bac);
 		});
@@ -299,7 +306,7 @@ public class HandlerUtilities {
 	 */
 	public void eventAction(Consumer<EventQueueBatch> function) {
 		EventQueueBatch b = database.tx(tx -> {
-			EventQueueBatch batch = EventQueueBatch.create();
+			EventQueueBatch batch = queueProvider.get();
 			function.accept(batch);
 			return batch;
 		});
@@ -314,7 +321,7 @@ public class HandlerUtilities {
 	 */
 	public <T> T eventAction(Function<EventQueueBatch, T> function) {
 		Tuple<T, EventQueueBatch> tuple = database.tx(tx -> {
-			EventQueueBatch batch = EventQueueBatch.create();
+			EventQueueBatch batch = queueProvider.get();
 			T result = function.apply(batch);
 			return Tuple.tuple(result, batch);
 		});

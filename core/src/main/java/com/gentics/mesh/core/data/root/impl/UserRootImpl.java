@@ -126,7 +126,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
 	@Override
 	public User create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		BootstrapInitializer boot = MeshInternal.get().boot();
+		BootstrapInitializer boot = mesh().boot();
 		MeshAuthUser requestUser = ac.getUser();
 
 		UserCreateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserCreateRequest.class);
@@ -154,7 +154,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		user.setUsername(requestModel.getUsername());
 		user.setLastname(requestModel.getLastname());
 		user.setEmailAddress(requestModel.getEmailAddress());
-		user.setPasswordHash(MeshInternal.get().passwordEncoder().encode(requestModel.getPassword()));
+		user.setPasswordHash(mesh().passwordEncoder().encode(requestModel.getPassword()));
 		Boolean forcedPasswordChange = requestModel.getForcedPasswordChange();
 		if (forcedPasswordChange != null) {
 			user.setForcedPasswordChange(forcedPasswordChange);

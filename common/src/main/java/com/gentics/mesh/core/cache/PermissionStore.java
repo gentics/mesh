@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.rest.MeshEvent.CLEAR_PERMISSION_STORE;
 
 import java.util.concurrent.TimeUnit;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -41,9 +40,11 @@ public final class PermissionStore {
 
 	/**
 	 * Register the event handler which can be used to invalidate the LRU cache.
+	 * 
+	 * @param vertx
 	 */
-	public static void registerEventHandler() {
-		Mesh.vertx().eventBus().consumer(CLEAR_PERMISSION_STORE.address, e -> {
+	public static void registerEventHandler(Vertx vertx) {
+		vertx.eventBus().consumer(CLEAR_PERMISSION_STORE.address, e -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Clearing permission store due to received event from {" + e.address() + "}");
 			}
@@ -66,14 +67,14 @@ public final class PermissionStore {
 	/**
 	 * Invalidate the LRU cache and optionally notify other instances in the cluster.
 	 * 
+	 * @param vertx
 	 * @param notify
 	 */
-	public static void invalidate(boolean notify) {
+	public static void invalidate(Vertx vertx, boolean notify) {
 		// Invalidate locally
 		PERM_CACHE.invalidateAll();
 		if (notify) {
 			// Send the event to inform other to purge the stored permissions
-			Vertx vertx = Mesh.vertx();
 			if (vertx != null) {
 				vertx.eventBus().publish(CLEAR_PERMISSION_STORE.address, null);
 			} else {
@@ -85,8 +86,8 @@ public final class PermissionStore {
 	/**
 	 * Invalidate the LRU cache.
 	 */
-	public static void invalidate() {
-		invalidate(true);
+	public static void invalidate(Vertx vertx) {
+		invalidate(vertx, true);
 	}
 
 	/**

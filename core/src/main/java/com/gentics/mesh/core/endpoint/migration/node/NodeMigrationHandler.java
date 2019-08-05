@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
@@ -49,8 +50,8 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	private final ResettableCounter migrationCounter;
 
 	@Inject
-	public NodeMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics) {
-		super(db, nodeFieldAPIHandler, metrics);
+	public NodeMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider) {
+		super(db, nodeFieldAPIHandler, metrics, batchProvider);
 		migrationCounter = metrics.resetableCounter(NODE_MIGRATION_PENDING);
 	}
 

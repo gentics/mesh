@@ -5,7 +5,7 @@ import java.io.File;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.context.impl.LoggingConfigurator;
-import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.router.EndpointRegistry;
 import com.gentics.mesh.verticle.admin.AdminGUIEndpoint;
@@ -36,13 +36,14 @@ public class LocalRunner {
 		options.getSearchOptions().setUrl(null);
 		options.getSearchOptions().setStartEmbedded(false);
 
-		Mesh mesh = Mesh.mesh(options);
+		Mesh mesh = Mesh.create(options);
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());
 
 			// Add admin ui
-			EndpointRegistry registry = MeshInternal.get().endpointRegistry();
+			MeshComponent meshInternal = mesh.internal();
+			EndpointRegistry registry = meshInternal.endpointRegistry();
 			registry.register(AdminGUIEndpoint.class);
 
 		});

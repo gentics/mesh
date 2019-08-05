@@ -389,7 +389,7 @@ public class RAMLGenerator extends AbstractGenerator {
 		APIRouter apiRouter = Mockito.mock(APIRouter.class);
 		Mockito.when(rootRouter.apiRouter()).thenReturn(apiRouter);
 		RestInfoEndpoint infoEndpoint = Mockito.spy(new RestInfoEndpoint(""));
-		infoEndpoint.init(rs);
+		infoEndpoint.init(null, rs);
 		initEndpoint(infoEndpoint);
 		addEndpoints(coreBasePath, resources, infoEndpoint);
 

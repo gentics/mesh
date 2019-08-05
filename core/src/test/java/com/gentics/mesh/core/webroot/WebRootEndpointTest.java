@@ -142,7 +142,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			SchemaModel schema = folderSchema.getLatestVersion().getSchema();
 			schema.getFields().add(FieldUtil.createNodeFieldSchema("nodeRef"));
 			folderSchema.getLatestVersion().setSchema(schema);
-			MeshInternal.get().serverSchemaStorage().addSchema(schema);
+			mesh().serverSchemaStorage().addSchema(schema);
 
 			// Create content which is only german
 			SchemaContainer contentSchema = schemaContainer("content");

@@ -4,7 +4,8 @@ import com.gentics.madl.annotations.GraphElement;
 import com.gentics.madl.frame.AbstractEdgeFrame;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.MeshEdge;
-import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.dagger.MeshComponent;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Edge;
@@ -68,7 +69,15 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	@Override
 	public String getElementVersion() {
 		Edge edge = getElement();
-		return MeshInternal.get().database().getElementVersion(edge);
+		return mesh().database().getElementVersion(edge);
+	}
+
+	public MeshComponent mesh() {
+		return getGraph().getAttribute("meshComponent");
+	}
+
+	public Database db() {
+		return mesh().database();
 	}
 
 }

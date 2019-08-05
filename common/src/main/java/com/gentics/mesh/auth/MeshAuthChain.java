@@ -3,9 +3,9 @@ package com.gentics.mesh.auth;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.handler.MeshAnonymousAuthHandler;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OAuth2Options;
 
@@ -17,6 +17,8 @@ import io.vertx.ext.web.Route;
 @Singleton
 public class MeshAuthChain {
 
+	private final BootstrapInitializer boot;
+
 	private MeshOAuthService oauthService;
 
 	private MeshJWTAuthHandler jwtAuthHandler;
@@ -24,7 +26,8 @@ public class MeshAuthChain {
 	private MeshAnonymousAuthHandler anonHandler;
 
 	@Inject
-	public MeshAuthChain(MeshOAuthService oauthService, MeshJWTAuthHandler jwtAuthHandler, MeshAnonymousAuthHandler anonHandler) {
+	public MeshAuthChain(BootstrapInitializer boot, MeshOAuthService oauthService, MeshJWTAuthHandler jwtAuthHandler, MeshAnonymousAuthHandler anonHandler) {
+		this.boot = boot;
 		this.oauthService = oauthService;
 		this.jwtAuthHandler = jwtAuthHandler;
 		this.anonHandler = anonHandler;
@@ -36,7 +39,7 @@ public class MeshAuthChain {
 	 * @param route
 	 */
 	public void secure(Route route) {
-		MeshOptions meshOptions = Mesh.mesh().getOptions();
+		MeshOptions meshOptions = boot.mesh().getOptions();
 		OAuth2Options oauthOptions = meshOptions.getAuthenticationOptions().getOauth2();
 		if (oauthOptions != null && oauthOptions.isEnabled()) {
 			// First try to authenticate the key using JWT

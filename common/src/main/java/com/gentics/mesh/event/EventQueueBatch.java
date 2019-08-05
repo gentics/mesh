@@ -34,15 +34,6 @@ public interface EventQueueBatch {
 	void dispatch();
 
 	/**
-	 * Create a new event queue batch.
-	 * 
-	 * @return
-	 */
-	static EventQueueBatch create() {
-		return new EventQueueBatchImpl();
-	}
-
-	/**
 	 * Clear all entries.
 	 */
 	default void clear() {

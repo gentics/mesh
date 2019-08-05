@@ -17,7 +17,6 @@ import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.job.ProjectVersionPurgeEventModel;
 import com.gentics.mesh.core.rest.job.JobStatus;
-import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -61,8 +60,8 @@ public class VersionPurgeJobImpl extends JobImpl {
 
 	@Override
 	protected Completable processTask() {
-		Database db = DB.get();
-		ProjectVersionPurgeHandler handler = MeshInternal.get().projectVersionPurgeHandler();
+		Database db = db();
+		ProjectVersionPurgeHandler handler = mesh().projectVersionPurgeHandler();
 		Project project = db.tx(() -> getProject());
 		Optional<ZonedDateTime> maxAge = db.tx(() -> getMaxAge());
 		return handler.purgeVersions(project, maxAge.orElse(null))
@@ -73,7 +72,7 @@ public class VersionPurgeJobImpl extends JobImpl {
 				});
 				db.tx(() -> {
 					log.info("Version purge job {" + getUuid() + "} for project {" + project.getName() + "} completed.");
-					EventQueueBatch.create().add(createEvent(PROJECT_VERSION_PURGE_FINISHED, COMPLETED, project.getName(), project.getUuid()))
+					createBatch().add(createEvent(PROJECT_VERSION_PURGE_FINISHED, COMPLETED, project.getName(), project.getUuid()))
 						.dispatch();
 				});
 			}).doOnError(error -> {
@@ -84,7 +83,7 @@ public class VersionPurgeJobImpl extends JobImpl {
 				});
 				db.tx(() -> {
 					log.info("Version purge job {" + getUuid() + "} for project {" + project.getName() + "} failed.", error);
-					EventQueueBatch.create().add(createEvent(PROJECT_VERSION_PURGE_FINISHED, FAILED, project.getName(), project.getUuid()))
+					createBatch().add(createEvent(PROJECT_VERSION_PURGE_FINISHED, FAILED, project.getName(), project.getUuid()))
 						.dispatch();
 				});
 			});

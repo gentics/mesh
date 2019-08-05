@@ -13,7 +13,6 @@ import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
 import com.gentics.madl.tx.Tx;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Project;
@@ -22,6 +21,7 @@ import com.gentics.mesh.router.RouterStorage;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
 
 import dagger.Lazy;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
@@ -37,18 +37,21 @@ public class DistributedEventManager {
 
 	private static Logger log = LoggerFactory.getLogger(DistributedEventManager.class);
 
-	@Inject
-	public Lazy<BootstrapInitializer> boot;
+	private final Lazy<Vertx> vertx;
+
+	private final Lazy<Database> db;
+
+	private final Lazy<BootstrapInitializer> boot;
 
 	@Inject
-	public Lazy<Database> db;
-
-	@Inject
-	public DistributedEventManager() {
+	public DistributedEventManager(Lazy<Vertx> vertx, Lazy<Database> db, Lazy<BootstrapInitializer> boot) {
+		this.vertx = vertx;
+		this.db = db;
+		this.boot = boot;
 	}
 
 	public void registerHandlers() {
-		EventBus eb = Mesh.mesh().getVertx().eventBus();
+		EventBus eb = vertx.get().eventBus();
 
 		// Register for events which indicate that the cluster topology changes
 		eb.consumer(CLUSTER_NODE_JOINED.address, handler -> {
@@ -63,7 +66,7 @@ public class DistributedEventManager {
 		// Register for events which are send whenever the permission store must be invalidated.
 		eb.consumer(CLEAR_PERMISSION_STORE.address, handler -> {
 			log.debug("Received permissionstore clear event");
-			PermissionStore.invalidate(false);
+			PermissionStore.invalidate(vertx.get(), false);
 		});
 
 		// React on project creates
@@ -101,7 +104,7 @@ public class DistributedEventManager {
 			handler.fail(400, "Could not initialize projects.");
 		}
 		// Invalidate permission store since the permissions may have changed
-		PermissionStore.invalidate();
+		PermissionStore.invalidate(vertx.get());
 	}
 
 	private void synchronizeProjectRoutes() throws InvalidNameException {

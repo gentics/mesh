@@ -74,7 +74,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 		});
 
 		Thread.sleep(1000);
-		Mesh.vertx().eventBus().publish(allowedAddress.address, new JsonObject().put("test", "someValue"));
+		vertx().eventBus().publish(allowedAddress.address, new JsonObject().put("test", "someValue"));
 	}
 
 	@Test(timeout = 4_000)

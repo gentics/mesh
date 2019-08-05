@@ -41,6 +41,7 @@ import com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin;
 import com.orientechnologies.orient.server.plugin.OServerPluginManager;
 
 import dagger.Lazy;
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -69,12 +70,15 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	private TopologyEventBridge topologyEventBridge;
 
-	private MeshOptions options;
+	private final Lazy<Vertx> vertx;
 
-	private Lazy<OrientDBDatabase> db;
+	private final MeshOptions options;
+
+	private final Lazy<OrientDBDatabase> db;
 
 	@Inject
-	public OrientDBClusterManager(MeshOptions options, Lazy<OrientDBDatabase> db) {
+	public OrientDBClusterManager(Lazy<Vertx> vertx, MeshOptions options, Lazy<OrientDBDatabase> db) {
+		this.vertx = vertx;
 		this.options = options;
 		this.db = db;
 	}
@@ -366,7 +370,7 @@ public class OrientDBClusterManager implements ClusterManager {
 		server.activate();
 		if (isClusteringEnabled) {
 			ODistributedServerManager distributedManager = server.getDistributedManager();
-			topologyEventBridge = new TopologyEventBridge(this);
+			topologyEventBridge = new TopologyEventBridge(vertx, this);
 			distributedManager.registerLifecycleListener(topologyEventBridge);
 			if (server.getDistributedManager() instanceof OHazelcastPlugin) {
 				hazelcastPlugin = (OHazelcastPlugin) distributedManager;

@@ -87,7 +87,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", this.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
-		MeshRoot root = MeshInternal.get().boot().meshRoot();
+		MeshRoot root = mesh().boot().meshRoot();
 
 		// Check whether a group with the same name already exists
 		Group groupWithSameName = findByName(requestModel.getName());

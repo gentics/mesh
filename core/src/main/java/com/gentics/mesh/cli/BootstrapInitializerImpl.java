@@ -148,11 +148,14 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Inject
 	public MeshPluginManager pluginManager;
 
-	private static MeshRoot meshRoot;
+	@Inject
+	public MeshOptions options;
+
+	private MeshRoot meshRoot;
 
 	// TODO: Changing the role name or deleting the role would cause code that utilizes this field to break.
 	// This is however a rare case.
-	private static Role anonymousRole;
+	private Role anonymousRole;
 
 	private MeshImpl mesh;
 
@@ -161,6 +164,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public static boolean isInitialSetup = true;
 
 	private List<String> allLanguageTags = new ArrayList<>();
+
+	private Vertx vertx;
 
 	private final ReindexAction SYNC_INDEX_ACTION = (() -> {
 
@@ -178,7 +183,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 		// Ensure indices are setup and sync the documents
 		log.info("Invoking index sync. This may take some time..");
-		SyncEventHandler.invokeSyncCompletable().blockingAwait();
+		SyncEventHandler.invokeSyncCompletable(mesh()).blockingAwait();
 		log.info("Index sync completed.");
 	});
 
@@ -232,7 +237,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		boolean startOrientServer = storageOptions != null && storageOptions.getStartServer();
 
 		try {
-			db.init(Mesh.mesh().getOptions(), MeshVersion.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
+			db.init(mesh.getOptions(), MeshVersion.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -310,7 +315,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		pluginManager.deployExistingPluginFiles().subscribe(() -> {
 			// Finally fire the startup event and log that bootstrap has completed
 			log.info("Sending startup completed event to {" + STARTUP + "}");
-			Mesh.vertx().eventBus().publish(STARTUP.address, true);
+			vertx.eventBus().publish(STARTUP.address, true);
 		}, log::error);
 
 	}
@@ -319,7 +324,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public void globalCacheClear() {
 		cacheRegistry.clear();
 		// TODO remove the two other caches also to registry
-		PermissionStore.invalidate(false);
+		PermissionStore.invalidate(vertx, false);
 		pathStore.invalidate();
 	}
 
@@ -378,7 +383,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			log.warn("Current environment does not support native transports");
 		}
 
-		mesh.setVertx(vertx);
+		this.vertx = vertx;
 	}
 
 	/**
@@ -448,7 +453,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 		loader.get().loadVerticles(initialProjects);
 		if (verticleLoader != null) {
-			verticleLoader.apply(Mesh.vertx());
+			verticleLoader.apply(vertx);
 		}
 
 		// Invoke reindex as requested
@@ -475,8 +480,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public void registerEventHandlers() {
 		RouterStorage.registerEventbus();
-		PermissionStore.registerEventHandler();
-		pathStore.registerEventHandler();
+		PermissionStore.registerEventHandler(vertx);
+		pathStore.registerEventHandler(vertx);
 	}
 
 	@Override
@@ -564,7 +569,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public void invokeChangelog() {
 		log.info("Invoking database changelog check...");
-		ChangelogSystem cls = new ChangelogSystem(db);
+		ChangelogSystem cls = new ChangelogSystem(db, options);
 		if (!cls.applyChanges(SYNC_INDEX_ACTION)) {
 			throw new RuntimeException("The changelog could not be applied successfully. See log above.");
 		}
@@ -582,7 +587,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public void markChangelogApplied() {
 		log.info("This is the initial setup.. marking all found changelog entries as applied");
-		ChangelogSystem cls = new ChangelogSystem(db);
+		ChangelogSystem cls = new ChangelogSystem(db, options);
 		cls.markAllAsApplied();
 		highlevelChangelogSystem.markAllAsApplied(meshRoot);
 		log.info("All changes marked");
@@ -706,8 +711,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 * Clear all stored references to main graph vertices.
 	 */
 	public static void clearReferences() {
-		BootstrapInitializerImpl.meshRoot = null;
-		BootstrapInitializerImpl.anonymousRole = null;
+//		BootstrapInitializerImpl.meshRoot = null;
+//		BootstrapInitializerImpl.anonymousRole = null;
 		MeshRootImpl.clearReferences();
 	}
 
@@ -994,6 +999,16 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 		}
 		return allLanguageTags;
+	}
+
+	@Override
+	public Vertx vertx() {
+		return vertx;
+	}
+
+	@Override
+	public Mesh mesh() {
+		return mesh;
 	}
 
 }

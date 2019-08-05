@@ -12,10 +12,10 @@ import javax.inject.Inject;
 import javax.naming.InvalidNameException;
 
 import com.gentics.madl.tx.Tx;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.VersionHandler;
 
@@ -57,6 +57,10 @@ public class RouterStorage {
 	 */
 	private static Set<RouterStorage> instances = new HashSet<>();
 
+	private final Vertx vertx;
+
+	private final MeshOptions options;
+
 	private Lazy<BootstrapInitializer> boot;
 
 	private Lazy<Database> db;
@@ -70,8 +74,10 @@ public class RouterStorage {
 	private MeshAuthChain authChain;
 
 	@Inject
-	public RouterStorage(Vertx vertx, MeshAuthChain authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler, Lazy<BootstrapInitializer> boot,
+	public RouterStorage(Vertx vertx, MeshOptions options, MeshAuthChain authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler, Lazy<BootstrapInitializer> boot,
 						 Lazy<Database> db, VersionHandler versionHandler) {
+		this.vertx = vertx;
+		this.options = options;
 		this.boot = boot;
 		this.db = db;
 		this.corsHandler = corsHandler;
@@ -80,7 +86,7 @@ public class RouterStorage {
 		this.versionHandler = versionHandler;
 
 		// Initialize the router chain. The root router will create additional routers which will be mounted.
-		rootRouter = new RootRouter(vertx, this);
+		rootRouter = new RootRouter(vertx, this, options);
 		RouterStorage.instances.add(this);
 	}
 
@@ -118,14 +124,14 @@ public class RouterStorage {
 
 	private void registerEventbusHandlers() {
 		ProjectsRouter projectsRouter = rootRouter.apiRouter().projectsRouter();
-		EventBus eb = Mesh.vertx().eventBus();
+		EventBus eb = vertx.eventBus();
 		eb.consumer(PROJECT_CREATED.address, (Message<JsonObject> rh) -> {
 			JsonObject json = rh.body();
 
 			// Check whether this is a local message. We only need to react on foreign messages.
 			// Local updates for project creation / deletion is already handled locally
 			String origin = json.getString("origin");
-			String nodeName = Mesh.mesh().getOptions().getNodeName();
+			String nodeName = options.getNodeName();
 			if (nodeName.equals(origin)) {
 				rh.reply(true);
 				return;

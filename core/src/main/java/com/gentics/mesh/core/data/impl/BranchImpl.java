@@ -73,8 +73,6 @@ import com.gentics.mesh.core.rest.event.project.ProjectBranchEventModel;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.dagger.DB;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -119,7 +117,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		Database db = MeshInternal.get().database();
+		Database db = mesh().database();
 		BranchUpdateRequest requestModel = ac.fromJson(BranchUpdateRequest.class);
 		boolean modified = false;
 
@@ -401,7 +399,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 			// Enqueue the schema migration for each found schema version
 			edge.setActive(true);
 			if (currentVersion != null) {
-				job = MeshInternal.get().boot().jobRoot().enqueueSchemaMigration(user, this, currentVersion, schemaContainerVersion);
+				job = mesh().boot().jobRoot().enqueueSchemaMigration(user, this, currentVersion, schemaContainerVersion);
 				edge.setMigrationStatus(QUEUED);
 				edge.setJobUuid(job.getUuid());
 			} else {
@@ -424,7 +422,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 			// Enqueue the job so that the worker can process it later on
 			edge.setActive(true);
 			if (currentVersion != null) {
-				job = MeshInternal.get().boot().jobRoot().enqueueMicroschemaMigration(user, this, currentVersion, microschemaContainerVersion);
+				job = mesh().boot().jobRoot().enqueueMicroschemaMigration(user, this, currentVersion, microschemaContainerVersion);
 				edge.setMigrationStatus(QUEUED);
 				edge.setJobUuid(job.getUuid());
 			} else {
@@ -439,7 +437,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public BranchSchemaAssignEventModel onSchemaAssignEvent(SchemaContainerVersion schemaContainerVersion, Assignment assigned, JobStatus status) {
 		BranchSchemaAssignEventModel model = new BranchSchemaAssignEventModel();
-		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
+		model.setOrigin(options().getNodeName());
 		switch (assigned) {
 		case ASSIGNED:
 			model.setEvent(SCHEMA_BRANCH_ASSIGN);
@@ -459,7 +457,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	public BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion, Assignment assigned,
 		JobStatus status) {
 		BranchMicroschemaAssignModel model = new BranchMicroschemaAssignModel();
-		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
+		model.setOrigin(mesh().options().getNodeName());
 		switch (assigned) {
 		case ASSIGNED:
 			model.setEvent(MICROSCHEMA_BRANCH_ASSIGN);
@@ -559,7 +557,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public Single<BranchResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return DB.get().asyncTx(() -> {
+		return db().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}
@@ -583,7 +581,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public BranchMeshEventModel onCreated() {
-		MeshEvent.triggerJobWorker();
+		MeshEvent.triggerJobWorker(meshApi());
 		return createEvent(getTypeInfo().getOnCreated());
 	}
 

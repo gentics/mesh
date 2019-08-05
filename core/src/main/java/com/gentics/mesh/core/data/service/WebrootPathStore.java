@@ -15,7 +15,6 @@ import java.util.Arrays;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -25,6 +24,7 @@ import com.gentics.mesh.path.Path;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.logging.Logger;
@@ -71,12 +71,12 @@ public class WebrootPathStore {
 	/**
 	 * Register the event handler which can be used to invalidate the LRU cache.
 	 */
-	public void registerEventHandler() {
+	public void registerEventHandler(Vertx vertx) {
 		// No need to register when cache is disabled.
 		if (isDisabled()) {
 			return;
 		}
-		EventBus eb = Mesh.vertx().eventBus();
+		EventBus eb = vertx.eventBus();
 
 		Arrays.asList(CLEAR_PATH_STORE,
 			NODE_UPDATED,

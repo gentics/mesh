@@ -8,8 +8,6 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 
-import io.vertx.core.Vertx;
-
 public class MeshImplTest {
 
 	@Test
@@ -20,9 +18,7 @@ public class MeshImplTest {
 
 	@Test
 	public void testUpdateCheck() throws Exception {
-		Mesh mesh = new MeshFactoryImpl().mesh();
-		// This would normally be set during init of mesh
-		((MeshImpl) mesh).setVertx(Vertx.vertx());
+		Mesh mesh = new MeshFactoryImpl().create();
 		((MeshImpl) mesh).invokeUpdateCheck();
 	}
 

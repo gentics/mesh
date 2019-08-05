@@ -3,7 +3,7 @@ package com.gentics.mesh.parameter;
 import java.util.Arrays;
 import java.util.List;
 
-import com.gentics.mesh.Mesh;
+import com.gentics.mesh.etc.config.MeshOptions;
 
 public interface NodeParameters extends ParameterProvider {
 
@@ -50,7 +50,7 @@ public interface NodeParameters extends ParameterProvider {
 			languages = value.split(",");
 		}
 		if (languages == null) {
-			languages = new String[] { Mesh.mesh().getOptions().getDefaultLanguage() };
+			languages = new String[] { options().getDefaultLanguage() };
 		}
 		return languages;
 	}
@@ -151,4 +151,6 @@ public interface NodeParameters extends ParameterProvider {
 	default List<String> getExpandedFieldnameList() {
 		return Arrays.asList(getExpandedFieldNames());
 	}
+
+	MeshOptions options();
 }

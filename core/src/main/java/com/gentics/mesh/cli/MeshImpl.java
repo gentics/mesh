@@ -49,13 +49,13 @@ public class MeshImpl implements Mesh {
 
 	private MeshOptions options;
 
-	private Vertx vertx;
-
-	private io.vertx.reactivex.core.Vertx rxVertx;
-
 	private CountDownLatch latch = new CountDownLatch(1);
 
 	private MeshStatus status = MeshStatus.STARTING;
+
+	private MeshComponent meshInternal;
+
+	private static PluginManager pluginManager = ServiceHelper.loadFactory(PluginManager.class);
 
 	static {
 		// Use slf4j instead of jul
@@ -70,22 +70,16 @@ public class MeshImpl implements Mesh {
 
 	@Override
 	public Vertx getVertx() {
-		return vertx;
+		return meshInternal.vertx();
 	}
 
 	@Override
 	public io.vertx.reactivex.core.Vertx getRxVertx() {
-		if (vertx == null) {
+		if (getVertx() == null) {
 			return null;
 		}
-		if (rxVertx == null) {
-			rxVertx = new io.vertx.reactivex.core.Vertx(vertx);
-		}
-		return rxVertx;
-	}
 
-	public void setVertx(Vertx vertx) {
-		this.vertx = vertx;
+		return new io.vertx.reactivex.core.Vertx(getVertx());
 	}
 
 	@Override
@@ -126,7 +120,8 @@ public class MeshImpl implements Mesh {
 		}
 		// Create dagger context and invoke bootstrap init in order to startup mesh
 		try {
-			MeshInternal.create(options).boot().init(this, forceIndexSync, options, verticleLoader);
+			meshInternal = MeshInternal.create(options);
+			meshInternal.boot().init(this, forceIndexSync, options, verticleLoader);
 
 			if (options.isUpdateCheckEnabled()) {
 				try {
@@ -193,7 +188,7 @@ public class MeshImpl implements Mesh {
 	public void invokeUpdateCheck() {
 		String currentVersion = Mesh.getPlainVersion();
 		log.info("Checking for updates..");
-		HttpClientRequest request = Mesh.vertx().createHttpClient(new HttpClientOptions().setSsl(true).setTrustAll(false)).get(443, "getmesh.io",
+		HttpClientRequest request = getVertx().createHttpClient(new HttpClientOptions().setSsl(true).setTrustAll(false)).get(443, "getmesh.io",
 			"/api/updatecheck?v=" + Mesh.getPlainVersion(), rh -> {
 				int code = rh.statusCode();
 				if (code < 200 || code >= 299) {
@@ -362,6 +357,7 @@ public class MeshImpl implements Mesh {
 		MeshFactoryImpl.clear();
 		BootstrapInitializerImpl.clearReferences();
 		deleteLock();
+		meshInternal = null;
 		log.info("Shutdown completed...");
 		latch.countDown();
 	}
@@ -417,6 +413,16 @@ public class MeshImpl implements Mesh {
 	@Override
 	public Set<String> pluginIds() {
 		return MeshInternal.get().pluginManager().getPluginIds();
+	}
+
+	@Override
+	public <T> T internal() {
+		return (T) meshInternal;
+	}
+
+	@Override
+	public <T> void setMeshInternal(T meshInternal) {
+		this.meshInternal = (MeshComponent) meshInternal;
 	}
 
 }

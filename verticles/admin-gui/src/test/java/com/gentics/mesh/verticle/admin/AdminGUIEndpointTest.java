@@ -28,7 +28,7 @@ public class AdminGUIEndpointTest extends AbstractMeshTest {
 
 	@Before
 	public void setupVerticle() throws Exception {
-		EndpointRegistry registry = MeshInternal.get().endpointRegistry();
+		EndpointRegistry registry = mesh().endpointRegistry();
 		registry.register(AdminGUIEndpoint.class);
 	}
 

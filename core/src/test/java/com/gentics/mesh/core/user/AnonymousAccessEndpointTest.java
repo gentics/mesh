@@ -1,22 +1,21 @@
 package com.gentics.mesh.core.user;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.ClientHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
-import com.gentics.mesh.rest.client.MeshResponse;
 import org.junit.Test;
 
 import com.gentics.madl.tx.Tx;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -42,9 +41,9 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
 
 		// Test toggling the anonymous option
-		Mesh.mesh().getOptions().getAuthenticationOptions().setEnableAnonymousAccess(false);
+		meshApi().getOptions().getAuthenticationOptions().setEnableAnonymousAccess(false);
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), UNAUTHORIZED, "error_not_authorized");
-		Mesh.mesh().getOptions().getAuthenticationOptions().setEnableAnonymousAccess(true);
+		meshApi().getOptions().getAuthenticationOptions().setEnableAnonymousAccess(true);
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
 
 		// Verify that anonymous access does not work if the anonymous user is deleted

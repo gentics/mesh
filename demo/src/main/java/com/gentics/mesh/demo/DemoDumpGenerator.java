@@ -15,7 +15,6 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
@@ -32,8 +31,9 @@ public class DemoDumpGenerator {
 		generator.shutdown();
 	}
 
+	private MeshComponent meshInternal;
+
 	public void init() throws Exception {
-		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
 		options.getSearchOptions().setUrl(null);
 		options.getSearchOptions().setStartEmbedded(false);
@@ -63,11 +63,11 @@ public class DemoDumpGenerator {
 			KeyStoreHelper.gen(keyStoreFile.getAbsolutePath(), keyStorePass);
 		}
 		options.setNodeName("dumpGenerator");
-		Mesh mesh = Mesh.mesh(options);
+		Mesh mesh = Mesh.create(options);
 
 		// Setup dagger
-		MeshComponent meshDagger = MeshInternal.create(options);
-		BootstrapInitializer boot = meshDagger.boot();
+		meshInternal = MeshInternal.create(options);
+		BootstrapInitializer boot = meshInternal.boot();
 		boot.init(mesh, false, options, null);
 	}
 
@@ -79,9 +79,8 @@ public class DemoDumpGenerator {
 	public void dump() throws Exception {
 
 		// Initialise demo data
-		MeshComponent meshDagger = MeshInternal.get();
-		BootstrapInitializer boot = meshDagger.boot();
-		DemoDataProvider provider = new DemoDataProvider(meshDagger.database(), meshDagger.meshLocalClientImpl(), boot);
+		BootstrapInitializer boot = meshInternal.boot();
+		DemoDataProvider provider = new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(), boot);
 		invokeDump(boot, provider);
 
 	}

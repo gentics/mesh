@@ -56,7 +56,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	public void setRolePermissions(InternalActionContext ac, GenericRestResponse model) {
 		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
 		if (!isEmpty(roleUuid)) {
-			Role role = MeshInternal.get().boot().meshRoot().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+			Role role = mesh().boot().meshRoot().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
 
 				PermissionInfo permissionInfo = new PermissionInfo();
@@ -156,7 +156,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		if (this instanceof NamedElement) {
 			model.setName(((NamedElement) this).getName());
 		}
-		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
+		model.setOrigin(options().getNodeName());
 		model.setUuid(getUuid());
 	}
 

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BranchMigrationContext;
@@ -38,8 +39,8 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 	private static final Logger log = LoggerFactory.getLogger(BranchMigrationHandler.class);
 
 	@Inject
-	public BranchMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics) {
-		super(db, nodeFieldAPIHandler, metrics);
+	public BranchMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider) {
+		super(db, nodeFieldAPIHandler, metrics, batchProvider);
 	}
 
 	/**

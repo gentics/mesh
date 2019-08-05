@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.changes.ChangesList;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
@@ -26,8 +27,11 @@ public class ChangelogSystem {
 
 	private Database db;
 
-	public ChangelogSystem(Database db) {
+	private MeshOptions options;
+
+	public ChangelogSystem(Database db, MeshOptions options) {
 		this.db = db;
+		this.options = options;
 	}
 
 	/**
@@ -94,14 +98,14 @@ public class ChangelogSystem {
 	 * @return
 	 */
 	public boolean applyChanges(ReindexAction reindexAction) {
-		return applyChanges(reindexAction, ChangesList.getList());
+		return applyChanges(reindexAction, ChangesList.getList(options));
 	}
 
 	/**
 	 * Mark all changes from the {@link ChangesList} as applied.
 	 */
 	public void markAllAsApplied() {
-		markAllAsApplied(ChangesList.getList());
+		markAllAsApplied(ChangesList.getList(options));
 		setCurrentVersionAndRev();
 	}
 

@@ -77,7 +77,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 	 */
 	@Override
 	public Language findByLanguageTag(String languageTag) {
-		Database db = MeshInternal.get().database();
+		Database db = mesh().database();
 		Iterator<Vertex> it = db.getVertices(LanguageImpl.class, new String[] { LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY },
 				new Object[] { languageTag });
 		if (it.hasNext()) {

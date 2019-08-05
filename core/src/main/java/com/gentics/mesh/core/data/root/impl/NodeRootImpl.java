@@ -252,7 +252,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			String uuid) {
 		Project project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
-		BootstrapInitializer boot = MeshInternal.get().boot();
+		BootstrapInitializer boot = mesh().boot();
 
 		NodeCreateRequest requestModel = ac.fromJson(NodeCreateRequest.class);
 		if (requestModel.getParentNode() == null || isEmpty(requestModel.getParentNode().getUuid())) {

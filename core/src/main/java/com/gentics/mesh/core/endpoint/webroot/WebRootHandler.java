@@ -17,7 +17,7 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
-import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -34,8 +34,8 @@ import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.json.JsonUtil;
@@ -67,14 +67,20 @@ public class WebRootHandler {
 
 	private HandlerUtilities utils;
 
+	private final BootstrapInitializer boot;
+
+	private MeshOptions options;
+
 	@Inject
 	public WebRootHandler(Database database, WebRootServiceImpl webrootService, BinaryFieldResponseHandler binaryFieldResponseHandler,
-		NodeCrudHandler nodeCrudHandler, HandlerUtilities utils) {
+		NodeCrudHandler nodeCrudHandler, HandlerUtilities util, BootstrapInitializer boot, MeshOptions options) {
 		this.db = database;
 		this.webrootService = webrootService;
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
 		this.nodeCrudHandler = nodeCrudHandler;
 		this.utils = utils;
+		this.boot = boot;
+		this.options = options;
 	}
 
 	/**
@@ -180,8 +186,8 @@ public class WebRootHandler {
 	 * @return
 	 */
 	private boolean isPublic(Node node, String version) {
-		Role anonymousRole = MeshInternal.get().boot().anonymousRole();
-		AuthenticationOptions authOptions = Mesh.mesh().getOptions().getAuthenticationOptions();
+		Role anonymousRole = boot.anonymousRole();
+		AuthenticationOptions authOptions = options.getAuthenticationOptions();
 		if (anonymousRole != null && authOptions != null && authOptions.isEnableAnonymousAccess()) {
 			if (anonymousRole.hasPermission(READ_PERM, node)) {
 				return true;

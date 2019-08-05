@@ -305,7 +305,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			schema.addField(new BinaryFieldSchemaImpl().setName("binary").setLabel("Binary content"));
 			schema.setSegmentField("binary");
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
-			Binary binary = MeshInternal.get().boot().binaryRoot().create("bogus", 1L);
+			Binary binary = mesh().boot().binaryRoot().create("bogus", 1L);
 			node.getLatestDraftFieldContainer(english()).createBinary("binary", binary).setFileName(fileName);
 
 			// Render the link

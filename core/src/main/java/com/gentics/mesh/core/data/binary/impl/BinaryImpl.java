@@ -43,26 +43,26 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 
 	@Override
 	public Flowable<Buffer> getStream() {
-		BinaryStorage storage = MeshInternal.get().binaryStorage();
+		BinaryStorage storage = mesh().binaryStorage();
 		return storage.read(getUuid());
 	}
 
 	@Override
 	public Supplier<InputStream> openBlockingStream() {
-		BinaryStorage storage = MeshInternal.get().binaryStorage();
+		BinaryStorage storage = mesh().binaryStorage();
 		String uuid = getUuid();
 		return () -> storage.openBlockingStream(uuid);
 	}
 
 	@Override
 	public String getBase64ContentSync() {
-		Buffer buffer = MeshInternal.get().binaryStorage().readAllSync(getUuid());
+		Buffer buffer = mesh().binaryStorage().readAllSync(getUuid());
 		return BASE64.encodeToString(buffer.getBytes());
 	}
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		BinaryStorage storage = MeshInternal.get().binaryStorage();
+		BinaryStorage storage = mesh().binaryStorage();
 		bac.add(storage.delete(getUuid()));
 		getElement().remove();
 	}

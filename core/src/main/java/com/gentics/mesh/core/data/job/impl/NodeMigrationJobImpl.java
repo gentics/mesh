@@ -10,7 +10,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
@@ -28,9 +27,6 @@ import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
-import com.gentics.mesh.dagger.DB;
-import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.event.EventQueueBatch;
 
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
@@ -59,19 +55,19 @@ public class NodeMigrationJobImpl extends JobImpl {
 		model.setProject(project.transformToReference());
 		model.setBranch(branch.transformToReference());
 
-		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
+		model.setOrigin(mesh().boot().mesh().getOptions().getNodeName());
 		model.setStatus(status);
 		return model;
 	}
 
 	private NodeMigrationActionContextImpl prepareContext() {
-		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), JobType.schema);
+		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(this, vertx(), JobType.schema);
 		try {
-			return DB.get().tx(() -> {
+			return db().tx(() -> {
 				NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 				context.setStatus(status);
 
-				EventQueueBatch.create().add(createEvent(SCHEMA_MIGRATION_START, STARTING)).dispatch();
+				createBatch().add(createEvent(SCHEMA_MIGRATION_START, STARTING)).dispatch();
 
 				Branch branch = getBranch();
 				if (branch == null) {
@@ -114,7 +110,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 				cause.setToVersion(toContainerVersion.transformToReference());
 				cause.setProject(project.transformToReference());
 				cause.setBranch(branch.transformToReference());
-				cause.setOrigin(Mesh.mesh().getOptions().getNodeName());
+				cause.setOrigin(mesh().boot().mesh().getOptions().getNodeName());
 				cause.setUuid(getUuid());
 				context.setCause(cause);
 
@@ -122,7 +118,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 				return context;
 			});
 		} catch (Exception e) {
-			DB.get().tx(() -> {
+			db().tx(() -> {
 				status.error(e, "Error while preparing node migration.");
 			});
 			throw e;
@@ -130,14 +126,14 @@ public class NodeMigrationJobImpl extends JobImpl {
 	}
 
 	protected Completable processTask() {
-		NodeMigrationHandler handler = MeshInternal.get().nodeMigrationHandler();
+		NodeMigrationHandler handler = mesh().nodeMigrationHandler();
 
 		return Completable.defer(() -> {
 			NodeMigrationActionContextImpl context = prepareContext();
 
 			return handler.migrateNodes(context)
 				.doOnComplete(() -> {
-					DB.get().tx(() -> {
+					db().tx(() -> {
 						JobWarningList warnings = new JobWarningList();
 						if (!context.getConflicts().isEmpty()) {
 							for (ConflictWarning conflict : context.getConflicts()) {
@@ -150,9 +146,9 @@ public class NodeMigrationJobImpl extends JobImpl {
 						context.getStatus().done();
 					});
 				}).doOnError(err -> {
-					DB.get().tx(() -> {
+					db().tx(() -> {
 						context.getStatus().error(err, "Error in node migration.");
-						EventQueueBatch.create().add(createEvent(SCHEMA_MIGRATION_FINISHED, FAILED)).dispatch();
+						createBatch().add(createEvent(SCHEMA_MIGRATION_FINISHED, FAILED)).dispatch();
 					});
 				});
 
@@ -161,7 +157,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 
 	private void finalizeMigration(NodeMigrationActionContext context) {
 		// Deactivate edge
-		DB.get().tx(() -> {
+		db().tx(() -> {
 			Branch branch = context.getBranch();
 			SchemaContainerVersion fromContainerVersion = context.getFromVersion();
 			BranchSchemaEdge edge = branch.findBranchSchemaEdge(fromContainerVersion);
@@ -173,8 +169,8 @@ public class NodeMigrationJobImpl extends JobImpl {
 					fromContainerVersion.getSchema().getName(), fromContainerVersion.getVersion(), branch.getName());
 			}
 		});
-		DB.get().tx(() -> {
-			EventQueueBatch.create().add(createEvent(SCHEMA_MIGRATION_FINISHED, COMPLETED)).dispatch();
+		db().tx(() -> {
+			createBatch().add(createEvent(SCHEMA_MIGRATION_FINISHED, COMPLETED)).dispatch();
 		});
 	}
 

@@ -4,7 +4,7 @@ import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
-import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.UUIDUtil;
@@ -27,12 +27,13 @@ public interface BinaryFieldTestHelper {
 	};
 
 	final DataProvider FILL_BASIC = (container, name) -> {
+		MeshComponent mesh = container.getGraph().getAttribute("meshComponent");
 		Buffer buffer = Buffer.buffer(FILECONTENTS);
 		String sha512Sum = FileUtils.hash(buffer).blockingGet();
-		Binary binary = MeshInternal.get().boot().binaryRoot().create(sha512Sum, Long.valueOf(buffer.length()));
+		Binary binary = mesh.boot().binaryRoot().create(sha512Sum, Long.valueOf(buffer.length()));
 
 		String tmpId = UUIDUtil.randomUUID();
-		BinaryStorage storage = MeshInternal.get().binaryStorage();
+		BinaryStorage storage = mesh.binaryStorage();
 		storage.storeInTemp(Flowable.just(buffer), tmpId).blockingAwait();
 		storage.moveInPlace(binary.getUuid(), tmpId).blockingAwait();
 

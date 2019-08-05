@@ -7,6 +7,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 
 /**
@@ -15,8 +16,11 @@ import io.vertx.core.http.HttpServer;
 @Singleton
 public class EndpointRegistry {
 
+	private final Vertx vertx;
+
 	@Inject
-	public EndpointRegistry() {
+	public EndpointRegistry(Vertx vertx) {
+		this.vertx = vertx;
 	}
 
 	/**
@@ -29,7 +33,7 @@ public class EndpointRegistry {
 	public <T extends AbstractInternalEndpoint> void register(Class<T> clazz) throws InstantiationException, IllegalAccessException {
 		for (RouterStorage rs : RouterStorage.getInstances()) {
 			T endpoint = clazz.newInstance();
-			endpoint.init(rs);
+			endpoint.init(vertx, rs);
 			endpoint.registerEndPoints();
 		}
 	}
@@ -42,7 +46,7 @@ public class EndpointRegistry {
 	public <T extends AbstractInternalEndpoint> void register(Supplier<T> supplier) {
 		for (RouterStorage rs : RouterStorage.getInstances()) {
 			T endpoint = supplier.get();
-			endpoint.init(rs);
+			endpoint.init(vertx, rs);
 			endpoint.registerEndPoints();
 		}
 	}

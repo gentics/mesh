@@ -6,6 +6,8 @@ import java.util.Map.Entry;
 import org.apache.commons.lang.BooleanUtils;
 import org.raml.model.parameter.QueryParameter;
 
+import com.gentics.mesh.etc.config.MeshOptions;
+
 public interface ParameterProvider {
 
 	/**
@@ -90,5 +92,7 @@ public interface ParameterProvider {
 		}
 		return query.toString();
 	}
+
+	MeshOptions options();
 
 }

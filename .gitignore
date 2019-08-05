@@ -49,3 +49,4 @@ inclusions.txt
 .idea
 *.iml
 elasticsearch-6.1.2
+build.sh

@@ -45,6 +45,7 @@ import com.gentics.mesh.search.SearchProvider;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.vertx.core.Vertx;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -69,9 +70,12 @@ public class AdminHandler extends AbstractHandler {
 
 	private HandlerUtilities utils;
 
+	private final Vertx vertx;
+
 	@Inject
-	public AdminHandler(Database db, RouterStorage routerStorage, BootstrapInitializer boot, SearchProvider searchProvider, HandlerUtilities utils,
+	public AdminHandler(Vertx vertx, Database db, RouterStorage routerStorage, BootstrapInitializer boot, SearchProvider searchProvider, HandlerUtilities utils,
 		MeshOptions options) {
+		this.vertx = vertx;
 		this.db = db;
 		this.routerStorage = routerStorage;
 		this.boot = boot;
@@ -82,7 +86,7 @@ public class AdminHandler extends AbstractHandler {
 
 	public void handleMeshStatus(InternalActionContext ac) {
 		MeshStatusResponse response = new MeshStatusResponse();
-		response.setStatus(Mesh.mesh().getStatus());
+		response.setStatus(boot.mesh().getStatus());
 		ac.send(response, OK);
 	}
 
@@ -92,7 +96,7 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleBackup(InternalActionContext ac) {
-		Mesh mesh = Mesh.mesh();
+		Mesh mesh = boot.mesh();
 		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
@@ -122,6 +126,7 @@ public class AdminHandler extends AbstractHandler {
 	 */
 	public void handleRestore(InternalActionContext ac) {
 		MeshOptions config = options;
+		Mesh mesh = boot.mesh();
 		String dir = config.getStorageOptions().getDirectory();
 		File backupDir = new File(options.getStorageOptions().getBackupDirectory());
 		boolean inMemory = dir == null;
@@ -154,9 +159,9 @@ public class AdminHandler extends AbstractHandler {
 		if (latestFile == null) {
 			throw error(INTERNAL_SERVER_ERROR, "error_backup", backupDir.getAbsolutePath());
 		}
-		MeshStatus oldStatus = Mesh.mesh().getStatus();
+		MeshStatus oldStatus = mesh.getStatus();
 		Completable.fromAction(() -> {
-			Mesh.mesh().setStatus(MeshStatus.RESTORE);
+			mesh.setStatus(MeshStatus.RESTORE);
 			vertx.eventBus().publish(GRAPH_RESTORE_START.address, null);
 			db.stop();
 			db.restoreGraph(latestFile.getAbsolutePath());
@@ -169,7 +174,7 @@ public class AdminHandler extends AbstractHandler {
 			initProjects();
 			return Single.just(message(ac, "restore_finished"));
 		})).doFinally(() -> {
-			Mesh.mesh().setStatus(oldStatus);
+			mesh.setStatus(oldStatus);
 			vertx.eventBus().publish(GRAPH_RESTORE_FINISHED.address, null);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
@@ -257,7 +262,7 @@ public class AdminHandler extends AbstractHandler {
 		info.setSearchVendor(searchProvider.getVendorName());
 		info.setSearchVersion(searchProvider.getVersion());
 		info.setMeshVersion(Mesh.getPlainVersion());
-		info.setMeshNodeName(Mesh.mesh().getOptions().getNodeName());
+		info.setMeshNodeName(boot.mesh().getOptions().getNodeName());
 		info.setVertxVersion(VersionCommand.getVersion());
 		info.setDatabaseRevision(db.getDatabaseRevision());
 		ac.send(info, OK);

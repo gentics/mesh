@@ -3,11 +3,11 @@ package com.gentics.mesh.router;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -26,15 +26,19 @@ public class PluginRouter {
 
 	private Router router;
 
+	private final Vertx vertx;
+
 	/**
 	 * Create a new plugin router.
 	 * 
+	 * @param vertx
 	 * @param chain
 	 * @param db
 	 * @param parentRouter
 	 */
-	public PluginRouter(MeshAuthChain chain, Database db, Router parentRouter) {
-		this.router = Router.router(Mesh.vertx());
+	public PluginRouter(Vertx vertx, MeshAuthChain chain, Database db, Router parentRouter) {
+		this.vertx = vertx;
+		this.router = Router.router(vertx);
 
 		// Ensure that all plugin requests are authenticated
 		chain.secure(router.route());

@@ -8,6 +8,7 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
@@ -52,7 +53,8 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 	public Lazy<FieldDefinitionProvider> fields;
 
 	@Inject
-	public MicronodeFieldTypeProvider() {
+	public MicronodeFieldTypeProvider(MeshOptions options) {
+		super(options);
 	}
 
 	public Versioned<GraphQLType> createType(GraphQLContext context) {

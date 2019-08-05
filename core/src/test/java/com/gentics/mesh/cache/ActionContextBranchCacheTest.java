@@ -25,7 +25,7 @@ public class ActionContextBranchCacheTest extends AbstractMeshTest {
 	}
 
 	private EventAwareCache<String, Branch> cache() {
-		return MeshInternal.get().branchCache().cache();
+		return mesh().branchCache().cache();
 	}
 
 	@Test

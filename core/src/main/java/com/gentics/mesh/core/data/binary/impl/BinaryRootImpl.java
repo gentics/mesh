@@ -29,7 +29,7 @@ public class BinaryRootImpl extends MeshVertexImpl implements BinaryRoot {
 
 	@Override
 	public Database database() {
-		return MeshInternal.get().database();
+		return mesh().database();
 	}
 
 	@Override

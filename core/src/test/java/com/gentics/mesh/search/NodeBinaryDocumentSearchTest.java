@@ -60,16 +60,16 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// image
-			Binary binaryA = MeshInternal.get().boot().binaryRoot().create("someHashA", 200L);
+			Binary binaryA = mesh().boot().binaryRoot().create("someHashA", 200L);
 			binaryA.setImageHeight(200);
 			binaryA.setImageWidth(400);
 			nodeA.getLatestDraftFieldContainer(english()).createBinary("binary", binaryA).setFileName("somefile.jpg").setMimeType("image/jpeg")
 				.setImageDominantColor("#super");
 
 			// file
-			Binary binaryB = MeshInternal.get().boot().binaryRoot().create("someHashB", 200L);
+			Binary binaryB = mesh().boot().binaryRoot().create("someHashB", 200L);
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
-			MeshInternal.get().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binaryB.getUuid()).blockingAwait();
+			mesh().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binaryB.getUuid()).blockingAwait();
 
 			nodeB.getLatestDraftFieldContainer(english()).createBinary("binary", binaryB).setFileName("somefile.dat")
 				.setMimeType("text/plain");
@@ -117,18 +117,18 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// image
-			Binary binaryA = MeshInternal.get().boot().binaryRoot().create("someHashA", 200L);
+			Binary binaryA = mesh().boot().binaryRoot().create("someHashA", 200L);
 			binaryA.setImageHeight(200);
 			binaryA.setImageWidth(400);
 			nodeA.getLatestDraftFieldContainer(english()).createBinary("binary", binaryA).setFileName("somefile.jpg").setMimeType("image/jpeg")
 				.setImageDominantColor("#super");
 
 			// file
-			Binary binaryB = MeshInternal.get().boot().binaryRoot().create("someHashB", 200L);
+			Binary binaryB = mesh().boot().binaryRoot().create("someHashB", 200L);
 			BinaryGraphField binary = nodeB.getLatestDraftFieldContainer(english()).createBinary("binary", binaryB).setFileName("somefile.dat")
 				.setMimeType("text/plain");
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
-			MeshInternal.get().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binary.getBinary().getUuid()).blockingAwait();
+			mesh().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binary.getBinary().getUuid()).blockingAwait();
 			tx.success();
 		}
 

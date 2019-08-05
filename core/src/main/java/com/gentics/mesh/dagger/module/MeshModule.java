@@ -1,29 +1,51 @@
 package com.gentics.mesh.dagger.module;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+
 import javax.inject.Singleton;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.MeshVersion;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
+import com.gentics.mesh.etc.config.ClusterOptions;
+import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.MonitoringConfig;
+import com.gentics.mesh.graphdb.OrientDBDatabase;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
 import com.gentics.mesh.image.ImgscalrImageManipulator;
+import com.hazelcast.core.HazelcastInstance;
 
 import dagger.Module;
 import dagger.Provides;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
+import io.vertx.core.eventbus.EventBusOptions;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.dropwizard.DropwizardMetricsOptions;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
+import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 /**
  * Main dagger module class.
  */
 @Module
 public class MeshModule {
+
+	private static Logger log = LoggerFactory.getLogger(BootstrapInitializer.class);
 
 	private static final int PASSWORD_HASH_LOGROUND_COUNT = 10;
 
@@ -35,10 +57,9 @@ public class MeshModule {
 
 	@Provides
 	@Singleton
-	public static ImageManipulator imageProvider() {
-		return new ImgscalrImageManipulator();
+	public static ImageManipulator imageProvider(io.vertx.reactivex.core.Vertx vertx, MeshOptions options) {
+		return new ImgscalrImageManipulator(vertx, options);
 	}
-
 
 	@Provides
 	@Singleton
@@ -73,13 +94,13 @@ public class MeshModule {
 	}
 
 	@Provides
-	public static Vertx vertx() {
-		return Mesh.vertx();
+	public static Vertx vertx(BootstrapInitializer boot) {
+		return boot.vertx();
 	}
 
 	@Provides
-	public static io.vertx.reactivex.core.Vertx rxVertx() {
-		return Mesh.rxVertx();
+	public static io.vertx.reactivex.core.Vertx rxVertx(Vertx vertx) {
+		return new io.vertx.reactivex.core.Vertx(vertx);
 	}
 
 	/**

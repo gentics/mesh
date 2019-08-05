@@ -11,6 +11,8 @@ import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.etc.config.MeshOptions;
+
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
@@ -43,6 +45,12 @@ public class TrackingSearchProvider implements SearchProvider {
 	private Map<String, JsonObject> createIndexEvents = new HashMap<>();
 	private Map<String, JsonObject> pipelineEvents = new HashMap<>();
 	private List<Bulkable> bulkRequests = new ArrayList<>();
+
+	private MeshOptions options;
+
+	public TrackingSearchProvider(MeshOptions options) {
+		this.options = options;
+	}
 
 	@Override
 	public SearchProvider init() {
@@ -247,7 +255,7 @@ public class TrackingSearchProvider implements SearchProvider {
 
 	@Override
 	public String installationPrefix() {
-		return Mesh.mesh().getOptions().getSearchOptions().getPrefix();
+		return options.getSearchOptions().getPrefix();
 	}
 
 	@Override

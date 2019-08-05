@@ -28,7 +28,7 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 	}
 
 	protected Edge getGraphFieldContainerEdge(String languageTag, String branchUuid, ContainerType type) {
-		Database db = MeshInternal.get().database();
+		Database db = mesh().database();
 		FramedGraph graph = Tx.get().getGraph();
 		Iterator<Edge> iterator = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_branch_type_lang", db.createComposedIndexKey(id(),
 			branchUuid, type.getCode(), languageTag)).iterator();

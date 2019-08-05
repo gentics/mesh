@@ -113,7 +113,7 @@ public class WebRootServiceImpl implements WebRootService {
 
 	@Override
 	public NodeGraphFieldContainer findByUrlFieldPath(String branchUuid, String path, ContainerType type) {
-		Object key = GraphFieldContainerEdgeImpl.composeWebrootUrlFieldIndexKey(path, branchUuid, type);
+		Object key = GraphFieldContainerEdgeImpl.composeWebrootUrlFieldIndexKey(database, path, branchUuid, type);
 		GraphFieldContainerEdge edge = database.findEdge(WEBROOT_URLFIELD_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class);
 		if (edge != null) {
 			return edge.getNodeContainer();

@@ -503,7 +503,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testReadByUUID() throws Exception {
 
 		List<Pair<String, String>> branchInfo = new ArrayList<>();
-		EventQueueBatch batch = EventQueueBatch.create();
+		EventQueueBatch batch = createBatch();
 
 		try (Tx tx = tx()) {
 			Project project = project();
@@ -564,7 +564,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-		EventQueueBatch batch = EventQueueBatch.create();
+		EventQueueBatch batch = createBatch();
 		Branch initialBranch;
 		Branch firstBranch;
 		Branch thirdBranch;
@@ -591,7 +591,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testReadMultipleWithRestrictedPermissions() throws Exception {
-		EventQueueBatch batch = EventQueueBatch.create();
+		EventQueueBatch batch = createBatch();
 		Branch initialBranch = tx(() -> initialBranch());
 		Project project = project();
 
@@ -655,7 +655,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testUpdateWithNameConflict() throws Exception {
-		EventQueueBatch batch = EventQueueBatch.create();
+		EventQueueBatch batch = createBatch();
 		String newName = "New Branch Name";
 		try (Tx tx = tx()) {
 			project().getBranchRoot().create(newName, user(), batch);

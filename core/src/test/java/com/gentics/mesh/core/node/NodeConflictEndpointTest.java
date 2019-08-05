@@ -286,7 +286,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		schema.addField(stringListFieldSchema);
 		schema.addField(micronodeFieldSchema);
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
-		MeshInternal.get().serverSchemaStorage().addSchema(schema);
+		mesh().serverSchemaStorage().addSchema(schema);
 	}
 
 	/**

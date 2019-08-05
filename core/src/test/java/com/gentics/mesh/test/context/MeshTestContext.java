@@ -36,6 +36,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.changelog.MeshGraphHelper;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
@@ -44,7 +45,6 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.DaggerMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -53,7 +53,6 @@ import com.gentics.mesh.etc.config.OAuth2Options;
 import com.gentics.mesh.etc.config.OAuth2ServerConfig;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.monitoring.MonitoringClientConfig;
@@ -119,6 +118,8 @@ public class MeshTestContext extends TestWatcher {
 
 	private Consumer<MeshOptions> optionChanger = noopConsumer();
 
+	private Mesh mesh;
+
 	@Override
 	protected void starting(Description description) {
 		try {
@@ -141,7 +142,7 @@ public class MeshTestContext extends TestWatcher {
 				if (!settings.inMemoryDB()) {
 					DatabaseHelper.init(meshDagger.database());
 				}
-				initFolders(Mesh.mesh().getOptions());
+				initFolders(mesh.getOptions());
 				setupData();
 				listenToSearchIdleEvent();
 				switch (settings.elasticsearch()) {
@@ -213,7 +214,7 @@ public class MeshTestContext extends TestWatcher {
 			MeshTestSetting settings = getSettings(description);
 			if (description.isSuite()) {
 				// TODO CI does not like this, reactivate later:
-				// Mesh.mesh().shutdown();
+				// mesh.shutdown();
 				removeDataDirectory();
 				removeConfigDirectory();
 				if (elasticsearch != null && elasticsearch.isRunning()) {
@@ -283,7 +284,7 @@ public class MeshTestContext extends TestWatcher {
 	}
 
 	private void setupRestEndpoints(MeshTestSetting settings) throws Exception {
-		Mesh.mesh().getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
+		mesh.getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
 
 		log.info("Using port:  " + port);
 		RouterStorage.addProject(TestDataProvider.PROJECT_NAME);
@@ -372,15 +373,15 @@ public class MeshTestContext extends TestWatcher {
 		BootstrapInitializerImpl.clearReferences();
 		long start = System.currentTimeMillis();
 		if (settings.inMemoryDB()) {
-			MeshInternal.get().database().clear();
+			meshDagger.database().clear();
 		} else if (settings.clusterMode()) {
-			MeshInternal.get().database().clear();
+			meshDagger.database().clear();
 		} else {
-			MeshInternal.get().database().stop();
-			String dir = Mesh.mesh().getOptions().getStorageOptions().getDirectory();
+			meshDagger.database().stop();
+			String dir = mesh.getOptions().getStorageOptions().getDirectory();
 			File dbDir = new File(dir);
 			FileUtils.deleteDirectory(dbDir);
-			MeshInternal.get().database().setupConnectionPool();
+			meshDagger.database().setupConnectionPool();
 		}
 		long duration = System.currentTimeMillis() - start;
 		log.info("Clearing DB took {" + duration + "} ms.");
@@ -393,7 +394,7 @@ public class MeshTestContext extends TestWatcher {
 		for (File folder : tmpFolders) {
 			FileUtils.deleteDirectory(folder);
 		}
-		PermissionStore.invalidate(false);
+		PermissionStore.invalidate(vertx, false);
 	}
 
 	public TestDataProvider getData() {
@@ -411,7 +412,6 @@ public class MeshTestContext extends TestWatcher {
 	 * @throws Exception
 	 */
 	public MeshOptions init(MeshTestSetting settings) throws Exception {
-		MeshFactoryImpl.clear();
 		meshOptions = new MeshOptions();
 
 		if (settings == null) {
@@ -535,7 +535,6 @@ public class MeshTestContext extends TestWatcher {
 		}
 		settings.optionChanger().changer.accept(meshOptions);
 		optionChanger.accept(meshOptions);
-		Mesh.mesh(meshOptions);
 		return meshOptions;
 	}
 
@@ -590,14 +589,15 @@ public class MeshTestContext extends TestWatcher {
 			.configuration(options)
 			.searchProviderType(settings.elasticsearch().toSearchProviderType())
 			.build();
-		MeshInternal.set(meshDagger);
-		dataProvider = new TestDataProvider(settings.testSize(), meshDagger.boot(), meshDagger.database());
+		dataProvider = new TestDataProvider(settings.testSize(), meshDagger.boot(), meshDagger.database(), meshDagger.batchProvider());
 		if (meshDagger.searchProvider() instanceof TrackingSearchProvider) {
 			trackingSearchProvider = meshDagger.trackingSearchProvider();
 		}
 		try {
-			meshDagger.boot().init(Mesh.mesh(), false, options, null);
-			vertx = Mesh.vertx();
+			mesh = Mesh.create();
+			mesh.setMeshInternal(meshDagger);
+			meshDagger.boot().init(mesh, false, options, null);
+			vertx  = meshDagger.boot().vertx();
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
@@ -667,5 +667,13 @@ public class MeshTestContext extends TestWatcher {
 	public MeshTestContext setOptionChanger(Consumer<MeshOptions> optionChanger) {
 		this.optionChanger = optionChanger;
 		return this;
+	}
+
+	public MeshComponent getMeshComponent() {
+		return meshDagger;
+	}
+	
+	public Mesh getMesh() {
+		return mesh;
 	}
 }

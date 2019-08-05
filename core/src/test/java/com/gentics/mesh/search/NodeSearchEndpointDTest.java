@@ -116,7 +116,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 			schemaUuid = concorde.getSchemaContainer().getUuid();
 		}
 		// Clear the schema storage in order to purge the reference from the storage which we would otherwise modify.
-		MeshInternal.get().serverSchemaStorage().clear();
+		mesh().serverSchemaStorage().clear();
 
 		// 4. Invoke the schema migration
 		GenericMessageResponse message = call(() -> client().updateSchema(schemaUuid, schema, new SchemaUpdateParametersImpl()

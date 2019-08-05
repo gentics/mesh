@@ -11,36 +11,14 @@ import com.gentics.mesh.etc.config.MeshOptions;
  */
 public class MeshFactoryImpl implements MeshFactory {
 
-	private static Mesh instance;
-
 	@Override
-	public boolean isInitalized() {
-		return instance != null;
+	public Mesh create() {
+		return new MeshImpl(OptionsLoader.createOrloadOptions());
 	}
 
 	@Override
-	public Mesh mesh() {
-		if (instance == null) {
-			instance = new MeshImpl(OptionsLoader.createOrloadOptions());
-		}
-		return instance;
-	}
-
-	@Override
-	public Mesh mesh(MeshOptions options) {
-		if (instance == null) {
-			instance = new MeshImpl(options);
-			return instance;
-		} else {
-			throw new RuntimeException("Instance is still active. Please shutdown any running instance of mesh first.");
-		}
-	}
-
-	/**
-	 * Clear the stored instance.
-	 */
-	public static void clear() {
-		instance = null;
+	public Mesh create(MeshOptions options) {
+		return new MeshImpl(options);
 	}
 
 }

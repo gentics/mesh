@@ -32,7 +32,7 @@ import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
-import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.NodeUtil;
 
@@ -61,6 +61,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	};
 
 	public static FieldUpdater BINARY_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+		MeshComponent mesh = container.getGraph().getAttribute("meshComponent");
 		BinaryGraphField graphBinaryField = container.getBinary(fieldKey);
 		BinaryField binaryField = fieldMap.getBinaryField(fieldKey);
 		boolean isBinaryFieldSetToNull = fieldMap.hasField(fieldKey) && binaryField == null && graphBinaryField != null;
@@ -86,7 +87,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		// in fact initially being removed from the container.
 		String hash = binaryField.getSha512sum();
 		if (graphBinaryField == null && hash != null) {
-			Binary binary = MeshInternal.get().boot().binaryRoot().findByHash(hash);
+			Binary binary = mesh.boot().binaryRoot().findByHash(hash);
 			if (binary != null) {
 				graphBinaryField = container.createBinary(fieldKey, binary);
 			} else {

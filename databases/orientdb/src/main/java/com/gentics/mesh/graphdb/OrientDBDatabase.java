@@ -18,6 +18,7 @@ import com.codahale.metrics.Timer;
 import com.gentics.madl.tx.Tx;
 import com.gentics.madl.tx.TxAction;
 import com.gentics.mesh.changelog.changes.ChangesList;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
@@ -56,6 +57,8 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 import com.tinkerpop.pipes.util.FastNoSuchElementException;
 
+import dagger.Lazy;
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -87,9 +90,14 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private OrientDBClusterManager clusterManager;
 
+	private final Lazy<BootstrapInitializer> boot;
+
 	@Inject
-	public OrientDBDatabase(MetricsService metrics, OrientDBTypeHandler typeHandler, OrientDBIndexHandler indexHandler,
+	public OrientDBDatabase(Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, MetricsService metrics, OrientDBTypeHandler typeHandler,
+		OrientDBIndexHandler indexHandler,
 		OrientDBClusterManager clusterManager) {
+		super(vertx);
+		this.boot = boot;
 		this.metrics = metrics;
 		if (metrics != null) {
 			txTimer = metrics.timer(TX_TIME);
@@ -308,7 +316,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	@Deprecated
 	public Tx tx() {
-		return new OrientDBTx(txProvider, resolver);
+		return new OrientDBTx(boot.get(), txProvider, resolver);
 	}
 
 	@Override
@@ -436,7 +444,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public List<String> getChangeUuidList() {
-		return ChangesList.getList().stream().map(c -> c.getUuid()).collect(Collectors.toList());
+		return ChangesList.getList(options).stream().map(c -> c.getUuid()).collect(Collectors.toList());
 	}
 
 }

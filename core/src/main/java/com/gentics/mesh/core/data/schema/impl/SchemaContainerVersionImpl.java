@@ -107,10 +107,10 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public SchemaModel getSchema() {
-		SchemaModel schema = MeshInternal.get().serverSchemaStorage().getSchema(getName(), getVersion());
+		SchemaModel schema = mesh().serverSchemaStorage().getSchema(getName(), getVersion());
 		if (schema == null) {
 			schema = JsonUtil.readValue(getJson(), SchemaModelImpl.class);
-			MeshInternal.get().serverSchemaStorage().addSchema(schema);
+			mesh().serverSchemaStorage().addSchema(schema);
 		}
 		return schema;
 	}
@@ -132,8 +132,8 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public void setSchema(SchemaModel schema) {
-		MeshInternal.get().serverSchemaStorage().removeSchema(schema.getName(), schema.getVersion());
-		MeshInternal.get().serverSchemaStorage().addSchema(schema);
+		mesh().serverSchemaStorage().removeSchema(schema.getName(), schema.getVersion());
+		mesh().serverSchemaStorage().addSchema(schema);
 		String json = schema.toJson();
 		setJson(json);
 		setProperty(VERSION_PROPERTY_KEY, schema.getVersion());
@@ -166,7 +166,7 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public Single<SchemaResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return MeshInternal.get().database().asyncTx(() -> {
+		return mesh().database().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}
@@ -227,7 +227,7 @@ public class SchemaContainerVersionImpl extends
 			if (log.isDebugEnabled()) {
 				log.debug("No schema auto purge flag set. Falling back to mesh global setting");
 			}
-			MeshOptions options = Mesh.mesh().getOptions();
+			MeshOptions options = mesh().options();
 			ContentConfig contentOptions = options.getContentOptions();
 			if (contentOptions != null) {
 				return contentOptions.isAutoPurge();

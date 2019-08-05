@@ -21,7 +21,7 @@ public class AbstractOrientDBTest {
 		Mockito.when(metrics.counter(Mockito.any())).thenReturn(Mockito.mock(Counter.class));
 		Mockito.when(metrics.meter(Mockito.any())).thenReturn(Mockito.mock(Meter.class));
 		Mockito.when(metrics.resetableCounter(Mockito.any())).thenReturn(Mockito.mock(ResettableCounter.class));
-		Database db = new OrientDBDatabase(metrics, null, null, new OrientDBClusterManager(null, null));
+		Database db = new OrientDBDatabase(null, null, metrics, null, null, new OrientDBClusterManager(null, null, null));
 		return db;
 	}
 

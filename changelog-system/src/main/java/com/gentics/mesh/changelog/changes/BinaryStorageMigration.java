@@ -13,6 +13,7 @@ import org.apache.commons.io.FileUtils;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.AbstractChange;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.google.common.io.Files;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
@@ -43,6 +44,12 @@ public class BinaryStorageMigration extends AbstractChange {
 
 	static final String BINARY_IMAGE_HEIGHT_PROPERTY_KEY = "binaryImageHeight";
 
+	private final MeshOptions options;
+
+	public BinaryStorageMigration(MeshOptions options) {
+		this.options = options;
+	}
+
 	@Override
 	public String getName() {
 		return "Migration of the binary data";
@@ -53,13 +60,13 @@ public class BinaryStorageMigration extends AbstractChange {
 		return "Creates new graph elements to structure binaries and migrates the local binary filesystem to utilize the new filesystem format.";
 	}
 
-	private static File dataSourceFolder() {
-		String currentDataPath = Mesh.mesh().getOptions().getUploadOptions().getDirectory();
+	private File dataSourceFolder() {
+		String currentDataPath = options.getUploadOptions().getDirectory();
 		return new File(new File(currentDataPath).getParentFile(), "binaryFilesMigrationBackup");
 	}
 
-	private static File dataTargetFolder() {
-		String currentDataPath = Mesh.mesh().getOptions().getUploadOptions().getDirectory();
+	private File dataTargetFolder() {
+		String currentDataPath = options.getUploadOptions().getDirectory();
 		return new File(currentDataPath);
 	}
 
@@ -71,7 +78,7 @@ public class BinaryStorageMigration extends AbstractChange {
 			FileUtils.moveDirectory(dataTargetFolder(), dataSourceFolder());
 		} catch (Exception e) {
 			throw new RuntimeException("Could not move data folder to backup location {" + dataTargetFolder().getAbsolutePath()
-					+ "}. Maybe the permissions not allowing this?");
+				+ "}. Maybe the permissions not allowing this?");
 		}
 
 		// Create binary root
@@ -118,7 +125,7 @@ public class BinaryStorageMigration extends AbstractChange {
 					String fieldKey = fieldEdge.getProperty(FIELD_KEY_PROPERTY_KEY);
 					for (Vertex node : container.getVertices(IN, "HAS_FIELD_CONTAINER")) {
 						log.warn("Binary field {" + fieldKey + "} in node {" + node.getProperty("uuid")
-								+ "} has no binary data file. Touching the file.");
+							+ "} has no binary data file. Touching the file.");
 					}
 				}
 
@@ -225,13 +232,13 @@ public class BinaryStorageMigration extends AbstractChange {
 		return buffer.toString();
 	}
 
-	public static File getNewFile(String binaryUuid) {
+	public File getNewFile(String binaryUuid) {
 		File folder = new File(dataTargetFolder(), getNewSegmentedPath(binaryUuid));
 		File binaryFile = new File(folder, binaryUuid + ".bin");
 		return binaryFile;
 	}
 
-	public static String getOldSegmentedPath(String uuid) {
+	public String getOldSegmentedPath(String uuid) {
 		String[] parts = uuid.split("(?<=\\G.{4})");
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(File.separator);
@@ -241,7 +248,7 @@ public class BinaryStorageMigration extends AbstractChange {
 		return buffer.toString();
 	}
 
-	public static File getOldFile(String uuid) {
+	public File getOldFile(String uuid) {
 		File folder = new File(dataSourceFolder(), getOldSegmentedPath(uuid));
 		File binaryFile = new File(folder, uuid + ".bin");
 		return binaryFile;

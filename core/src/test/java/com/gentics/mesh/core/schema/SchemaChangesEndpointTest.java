@@ -75,7 +75,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		SchemaUpdateRequest request = JsonUtil.readValue(tx(() -> schemaContainer.getLatestVersion().getJson()), SchemaUpdateRequest.class);
 		request.setName(name);
 
-		MeshInternal.get().serverSchemaStorage().clear();
+		mesh().serverSchemaStorage().clear();
 
 		waitForJobs(() -> {
 			// Invoke the update of the schema which will trigger the node migration
@@ -123,7 +123,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			SchemaContainer schema = schemaContainer(originalSchemaName);
 			SchemaUpdateRequest request = JsonUtil.readValue(schema.getLatestVersion().getJson(), SchemaUpdateRequest.class);
 
-			MeshInternal.get().serverSchemaStorage().clear();
+			mesh().serverSchemaStorage().clear();
 
 			// Update name to folder to create a conflict
 			request.setName(name);
@@ -217,7 +217,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			tx.success();
 		}
 
-		MeshInternal.get().serverSchemaStorage().clear();
+		mesh().serverSchemaStorage().clear();
 
 		// 4. Update the schema server side -> 2.0
 		try (Tx tx = tx()) {
@@ -488,7 +488,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			schema = JsonUtil.readValue(container.getLatestVersion().getJson(), SchemaUpdateRequest.class);
 			assertEquals("The segment field slug should be set", "slug", schema.getSegmentField());
 			schema.getFields().add(FieldUtil.createStringFieldSchema("extraname").setLabel("someLabel"));
-			MeshInternal.get().serverSchemaStorage().clear();
+			mesh().serverSchemaStorage().clear();
 			tx.success();
 		}
 
@@ -545,7 +545,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			SchemaContainer container = schemaContainer("content");
 			schema = JsonUtil.readValue(container.getLatestVersion().getJson(), SchemaUpdateRequest.class);
 			schema.removeField("content");
-			MeshInternal.get().serverSchemaStorage().clear();
+			mesh().serverSchemaStorage().clear();
 		}
 
 		call(() -> client().updateSchema(containerUuid, schema, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
@@ -578,7 +578,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		try (Tx tx = tx()) {
 			request = JsonUtil.readValue(schemaContainer.getLatestVersion().getSchema().toJson(), SchemaUpdateRequest.class);
 			request.getFields().add(FieldUtil.createStringFieldSchema("extraname"));
-			MeshInternal.get().serverSchemaStorage().clear();
+			mesh().serverSchemaStorage().clear();
 			tx.success();
 		}
 

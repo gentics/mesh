@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.job;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -10,6 +9,7 @@ import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.DateUtils;
 
 import io.reactivex.Completable;
@@ -294,7 +294,7 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	 * Set the current node name.
 	 */
 	default void setNodeName() {
-		String nodeName = Mesh.mesh().getOptions().getNodeName();
+		String nodeName = options().getNodeName();
 		setNodeName(nodeName);
 	}
 
@@ -309,5 +309,7 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	 * @param warning
 	 */
 	void setWarnings(JobWarningList warnings);
+
+	MeshOptions options();
 
 }

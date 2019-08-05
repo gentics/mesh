@@ -45,7 +45,7 @@ public class MeshAuthUserImpl extends UserImpl implements MeshAuthUser {
 	 */
 	@Override
 	public JsonObject principal() {
-		Database db = MeshInternal.get().database();
+		Database db = mesh().database();
 		return db.tx(() -> {
 			JsonObject user = new JsonObject();
 			user.put("uuid", getUuid());

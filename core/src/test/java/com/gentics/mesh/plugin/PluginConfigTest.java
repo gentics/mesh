@@ -30,7 +30,7 @@ public class PluginConfigTest {
 		options.setNodeName("ABC");
 		options.getAuthenticationOptions().setKeystorePassword("ABC");
 		options.setPluginDirectory(PLUGIN_DIR);
-		Mesh.mesh(options);
+		Mesh.create(options);
 	}
 
 	@Before

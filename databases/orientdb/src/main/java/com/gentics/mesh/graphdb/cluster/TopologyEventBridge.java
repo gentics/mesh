@@ -8,10 +8,11 @@ import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_LEFT;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import com.gentics.mesh.Mesh;
 import com.orientechnologies.orient.server.distributed.ODistributedLifecycleListener;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
 
+import dagger.Lazy;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -24,16 +25,19 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 
 	private static final Logger log = LoggerFactory.getLogger(TopologyEventBridge.class);
 
+	private Lazy<Vertx> vertx;
+
 	private OrientDBClusterManager manager;
 
 	private CountDownLatch nodeJoinLatch = new CountDownLatch(1);
 
-	public TopologyEventBridge(OrientDBClusterManager manager) {
+	public TopologyEventBridge(Lazy<Vertx> vertx, OrientDBClusterManager manager) {
 		this.manager = manager;
+		this.vertx = vertx;
 	}
 
 	EventBus getEventBus() {
-		return Mesh.vertx().eventBus();
+		return vertx.get().eventBus();
 	}
 
 	@Override
@@ -41,9 +45,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 		if (log.isDebugEnabled()) {
 			log.debug("Node {" + nodeName + "} is joining the cluster.");
 		}
-		if (Mesh.isVertxReady()) {
-			getEventBus().publish(CLUSTER_NODE_JOINING.address, nodeName);
-		}
+		getEventBus().publish(CLUSTER_NODE_JOINING.address, nodeName);
 		return true;
 	}
 
@@ -52,9 +54,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 		if (log.isDebugEnabled()) {
 			log.debug("Node {" + iNode + "} joined the cluster.");
 		}
-		if (Mesh.isVertxReady()) {
-			getEventBus().publish(CLUSTER_NODE_JOINED.address, iNode);
-		}
+		getEventBus().publish(CLUSTER_NODE_JOINED.address, iNode);
 	}
 
 	@Override
@@ -63,21 +63,17 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 			log.debug("Node {" + iNode + "} left the cluster");
 		}
 		// db.removeNode(iNode);
-		if (Mesh.isVertxReady()) {
-			getEventBus().publish(CLUSTER_NODE_LEFT.address, iNode);
-		}
+		getEventBus().publish(CLUSTER_NODE_LEFT.address, iNode);
 	}
 
 	@Override
 	public void onDatabaseChangeStatus(String iNode, String iDatabaseName, DB_STATUS iNewStatus) {
 		log.info("Node {" + iNode + "} Database {" + iDatabaseName + "} changed status {" + iNewStatus.name() + "}");
-		if (Mesh.isVertxReady()) {
-			JsonObject statusInfo = new JsonObject();
-			statusInfo.put("node", iNode);
-			statusInfo.put("database", iDatabaseName);
-			statusInfo.put("status", iNewStatus.name());
-			getEventBus().publish(CLUSTER_DATABASE_CHANGE_STATUS.address, statusInfo);
-		}
+		JsonObject statusInfo = new JsonObject();
+		statusInfo.put("node", iNode);
+		statusInfo.put("database", iDatabaseName);
+		statusInfo.put("status", iNewStatus.name());
+		getEventBus().publish(CLUSTER_DATABASE_CHANGE_STATUS.address, statusInfo);
 		if ("storage".equals(iDatabaseName) && iNewStatus == DB_STATUS.ONLINE && iNode.equals(manager.getNodeName())) {
 			nodeJoinLatch.countDown();
 		}

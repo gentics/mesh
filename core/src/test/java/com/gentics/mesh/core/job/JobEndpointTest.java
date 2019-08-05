@@ -208,7 +208,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		// Change the job so that it will no longer fail
 		tx(()-> {
-			Branch branch = project().getBranchRoot().create("testBranch", user(), null, true, initialBranch(), EventQueueBatch.create());
+			Branch branch = project().getBranchRoot().create("testBranch", user(), null, true, initialBranch(), createBatch());
 			job.setBranch(branch);
 		});
 

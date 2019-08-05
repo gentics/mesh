@@ -1345,7 +1345,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.setSegmentField(null);
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
-			MeshInternal.get().serverSchemaStorage().clear();
+			mesh().serverSchemaStorage().clear();
 			tx.success();
 		}
 

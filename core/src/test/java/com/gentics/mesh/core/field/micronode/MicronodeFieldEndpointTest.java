@@ -416,7 +416,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 				nodeMicroschema.addField(new NodeFieldSchemaImpl().setName("nodefield_" + i));
 			}
 			microschemaContainers().put("noderef",
-				project().getMicroschemaContainerRoot().create(nodeMicroschema, getRequestUser(), EventQueueBatch.create()));
+				project().getMicroschemaContainerRoot().create(nodeMicroschema, getRequestUser(), createBatch()));
 
 			// 2. Update the folder schema and add a micronode field
 			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
@@ -477,7 +477,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			// 2. Add the microschema to the list of microschemas of the project
 			microschemaContainers().put("full",
-				project().getMicroschemaContainerRoot().create(fullMicroschema, getRequestUser(), EventQueueBatch.create()));
+				project().getMicroschemaContainerRoot().create(fullMicroschema, getRequestUser(), createBatch()));
 
 			// 3. Update the folder schema and inject a micronode field which uses the full schema
 			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();

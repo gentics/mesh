@@ -379,7 +379,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testUpdateConflictCheck() {
 		try (Tx tx = tx()) {
-			MeshInternal.get().boot().meshRoot().getRoleRoot().create("test123", user());
+			mesh().boot().meshRoot().getRoleRoot().create("test123", user());
 			tx.success();
 		}
 
