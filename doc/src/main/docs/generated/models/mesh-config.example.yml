@@ -7,6 +7,7 @@ vertxOptions:
   eventPoolSize: 16
 tempDirectory: "/opt/mesh/data/tmp"
 pluginDirectory: "plugins"
+pluginTimeout: 15
 httpServer:
   port: 8080
   host: "0.0.0.0"

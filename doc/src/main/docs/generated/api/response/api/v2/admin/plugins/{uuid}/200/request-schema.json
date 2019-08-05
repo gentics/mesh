@@ -2,10 +2,10 @@
   "type" : "object",
   "id" : "urn:jsonschema:com:gentics:mesh:core:rest:plugin:PluginResponse",
   "properties" : {
-    "uuid" : {
+    "id" : {
       "type" : "string",
       "required" : true,
-      "description" : "Deployment UUUID of the plugin. Note that each deployment will get a new UUID."
+      "description" : "Id of the plugin."
     },
     "name" : {
       "type" : "string",
@@ -14,10 +14,15 @@
     },
     "manifest" : {
       "type" : "object",
-      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:plugin:PluginManifest",
+      "id" : "urn:jsonschema:com:gentics:mesh:plugin:PluginManifest",
       "required" : true,
       "description" : "Manifest of the plugin",
       "properties" : {
+        "id" : {
+          "type" : "string",
+          "required" : true,
+          "description" : "Unique id of the plugin was defined by the plugin developer."
+        },
         "name" : {
           "type" : "string",
           "required" : true,

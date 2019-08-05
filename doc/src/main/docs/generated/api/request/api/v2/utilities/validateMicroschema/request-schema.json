@@ -34,16 +34,16 @@
         "type" : "object",
         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
         "properties" : {
+          "label" : {
+            "type" : "string",
+            "description" : "Label of the field."
+          },
           "required" : {
             "type" : "boolean"
           },
           "elasticsearch" : {
             "type" : "object",
             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-          },
-          "label" : {
-            "type" : "string",
-            "description" : "Label of the field."
           },
           "name" : {
             "type" : "string",

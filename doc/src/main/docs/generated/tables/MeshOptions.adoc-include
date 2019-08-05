@@ -332,6 +332,11 @@
 | string
 | Path to the plugin directory.
 
+| pluginTimeout
+| false
+| int
+| Timeout in seconds which is used for the plugin startup,initialization,de-initialization and stop processes.
+
 | nodeName
 | false
 | string

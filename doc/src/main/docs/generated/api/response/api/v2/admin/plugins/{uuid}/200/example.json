@@ -1,9 +1,9 @@
 {
-  "uuid" : "36fcb16dd9654e62bcb16dd9651e624e",
+  "id" : "hello-world",
   "name" : "Hello World 1",
   "manifest" : {
+    "id" : "hello-world",
     "name" : "Hello World 1",
-    "apiName" : "hello-world1",
     "description" : "A dummy plugin",
     "version" : "1.0",
     "author" : "Joe Doe",

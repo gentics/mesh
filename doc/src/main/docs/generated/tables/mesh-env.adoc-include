@@ -20,6 +20,9 @@
 | *MESH_HTTP_SSL_ENABLE*
 | Override the configured SSL enable flag.
 
+| *MESH_PLUGIN_TIMEOUT*
+| Override the configured plugin timeout.
+
 | *MESH_CLUSTER_NETWORK_HOST*
 | Override the cluster network host.
 

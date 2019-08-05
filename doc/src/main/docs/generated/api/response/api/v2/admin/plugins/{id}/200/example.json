@@ -4,7 +4,6 @@
   "manifest" : {
     "id" : "hello-world",
     "name" : "Hello World 1",
-    "apiName" : "hello",
     "description" : "A dummy plugin",
     "version" : "1.0",
     "author" : "Joe Doe",

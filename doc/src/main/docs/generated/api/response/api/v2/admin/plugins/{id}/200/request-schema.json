@@ -5,7 +5,7 @@
     "id" : {
       "type" : "string",
       "required" : true,
-      "description" : "Deployment ID of the plugin."
+      "description" : "Id of the plugin."
     },
     "name" : {
       "type" : "string",
@@ -21,7 +21,7 @@
         "id" : {
           "type" : "string",
           "required" : true,
-          "description" : "Unique id of the plugin"
+          "description" : "Unique id of the plugin was defined by the plugin developer."
         },
         "name" : {
           "type" : "string",

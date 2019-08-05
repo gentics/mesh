@@ -2,10 +2,10 @@
   "type" : "object",
   "id" : "urn:jsonschema:com:gentics:mesh:core:rest:plugin:PluginDeploymentRequest",
   "properties" : {
-    "name" : {
+    "path" : {
       "type" : "string",
       "required" : true,
-      "description" : "Deployment name of the plugin. This can either be a filesystem or maven deployment."
+      "description" : "Deployment path of the plugin which is relative to the plugin directory."
     }
   }
 }

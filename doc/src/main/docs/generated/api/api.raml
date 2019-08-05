@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "0.36.8"
+version: "0.37.0"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -4972,16 +4972,16 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
+                                                "label" : {
+                                                  "type" : "string",
+                                                  "description" : "Label of the field."
+                                                },
                                                 "required" : {
                                                   "type" : "boolean"
                                                 },
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                                },
-                                                "label" : {
-                                                  "type" : "string",
-                                                  "description" : "Label of the field."
                                                 },
                                                 "name" : {
                                                   "type" : "string",
@@ -5255,16 +5255,16 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "label" : {
+                                    "type" : "string",
+                                    "description" : "Label of the field."
+                                  },
                                   "required" : {
                                     "type" : "boolean"
                                   },
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "label" : {
-                                    "type" : "string",
-                                    "description" : "Label of the field."
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -5408,16 +5408,16 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "label" : {
+                                            "type" : "string",
+                                            "description" : "Label of the field."
+                                          },
                                           "required" : {
                                             "type" : "boolean"
                                           },
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "label" : {
-                                            "type" : "string",
-                                            "description" : "Label of the field."
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -5677,16 +5677,16 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "label" : {
+                                            "type" : "string",
+                                            "description" : "Label of the field."
+                                          },
                                           "required" : {
                                             "type" : "boolean"
                                           },
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "label" : {
-                                            "type" : "string",
-                                            "description" : "Label of the field."
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -5883,16 +5883,16 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "label" : {
+                                    "type" : "string",
+                                    "description" : "Label of the field."
+                                  },
                                   "required" : {
                                     "type" : "boolean"
                                   },
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "label" : {
-                                    "type" : "string",
-                                    "description" : "Label of the field."
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -6029,16 +6029,16 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "label" : {
+                                            "type" : "string",
+                                            "description" : "Label of the field."
+                                          },
                                           "required" : {
                                             "type" : "boolean"
                                           },
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "label" : {
-                                            "type" : "string",
-                                            "description" : "Label of the field."
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -6390,16 +6390,16 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "label" : {
+                                    "type" : "string",
+                                    "description" : "Label of the field."
+                                  },
                                   "required" : {
                                     "type" : "boolean"
                                   },
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "label" : {
-                                    "type" : "string",
-                                    "description" : "Label of the field."
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -6632,16 +6632,16 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "label" : {
+                                    "type" : "string",
+                                    "description" : "Label of the field."
+                                  },
                                   "required" : {
                                     "type" : "boolean"
                                   },
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "label" : {
-                                    "type" : "string",
-                                    "description" : "Label of the field."
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -6763,16 +6763,16 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "label" : {
+                                            "type" : "string",
+                                            "description" : "Label of the field."
+                                          },
                                           "required" : {
                                             "type" : "boolean"
                                           },
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "label" : {
-                                            "type" : "string",
-                                            "description" : "Label of the field."
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -6968,16 +6968,16 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
+                                                "label" : {
+                                                  "type" : "string",
+                                                  "description" : "Label of the field."
+                                                },
                                                 "required" : {
                                                   "type" : "boolean"
                                                 },
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                                },
-                                                "label" : {
-                                                  "type" : "string",
-                                                  "description" : "Label of the field."
                                                 },
                                                 "name" : {
                                                   "type" : "string",
@@ -7237,16 +7237,16 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "label" : {
+                                            "type" : "string",
+                                            "description" : "Label of the field."
+                                          },
                                           "required" : {
                                             "type" : "boolean"
                                           },
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "label" : {
-                                            "type" : "string",
-                                            "description" : "Label of the field."
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -7373,16 +7373,16 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "label" : {
+                                    "type" : "string",
+                                    "description" : "Label of the field."
+                                  },
                                   "required" : {
                                     "type" : "boolean"
                                   },
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "label" : {
-                                    "type" : "string",
-                                    "description" : "Label of the field."
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -7602,16 +7602,16 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "label" : {
+                                    "type" : "string",
+                                    "description" : "Label of the field."
+                                  },
                                   "required" : {
                                     "type" : "boolean"
                                   },
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "label" : {
-                                    "type" : "string",
-                                    "description" : "Label of the field."
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -8427,16 +8427,16 @@ mediaType: application/json
                           "type" : "object",
                           "id" : "urn:jsonschema:com:gentics:mesh:core:rest:plugin:PluginDeploymentRequest",
                           "properties" : {
-                            "name" : {
+                            "path" : {
                               "type" : "string",
                               "required" : true,
-                              "description" : "Deployment name of the plugin. This can either be a filesystem or maven deployment."
+                              "description" : "Deployment path of the plugin which is relative to the plugin directory."
                             }
                           }
                         }
                     example: |
                         {
-                          "name" : "filesystem:my-plugin.jar"
+                          "path" : "my-plugin.jar"
                         }
             responses: 
                 "200": 
@@ -8448,10 +8448,10 @@ mediaType: application/json
                                   "type" : "object",
                                   "id" : "urn:jsonschema:com:gentics:mesh:core:rest:plugin:PluginResponse",
                                   "properties" : {
-                                    "uuid" : {
+                                    "id" : {
                                       "type" : "string",
                                       "required" : true,
-                                      "description" : "Deployment UUUID of the plugin. Note that each deployment will get a new UUID."
+                                      "description" : "Id of the plugin."
                                     },
                                     "name" : {
                                       "type" : "string",
@@ -8460,10 +8460,15 @@ mediaType: application/json
                                     },
                                     "manifest" : {
                                       "type" : "object",
-                                      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:plugin:PluginManifest",
+                                      "id" : "urn:jsonschema:com:gentics:mesh:plugin:PluginManifest",
                                       "required" : true,
                                       "description" : "Manifest of the plugin",
                                       "properties" : {
+                                        "id" : {
+                                          "type" : "string",
+                                          "required" : true,
+                                          "description" : "Unique id of the plugin was defined by the plugin developer."
+                                        },
                                         "name" : {
                                           "type" : "string",
                                           "required" : true,
@@ -8505,11 +8510,11 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "uuid" : "36fcb16dd9654e62bcb16dd9651e624e",
+                                  "id" : "hello-world",
                                   "name" : "Hello World 1",
                                   "manifest" : {
+                                    "id" : "hello-world",
                                     "name" : "Hello World 1",
-                                    "apiName" : "hello-world1",
                                     "description" : "A dummy plugin",
                                     "version" : "1.0",
                                     "author" : "Joe Doe",
@@ -8537,10 +8542,10 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:plugin:PluginResponse",
                                         "properties" : {
-                                          "uuid" : {
+                                          "id" : {
                                             "type" : "string",
                                             "required" : true,
-                                            "description" : "Deployment UUUID of the plugin. Note that each deployment will get a new UUID."
+                                            "description" : "Id of the plugin."
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -8549,10 +8554,15 @@ mediaType: application/json
                                           },
                                           "manifest" : {
                                             "type" : "object",
-                                            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:plugin:PluginManifest",
+                                            "id" : "urn:jsonschema:com:gentics:mesh:plugin:PluginManifest",
                                             "required" : true,
                                             "description" : "Manifest of the plugin",
                                             "properties" : {
+                                              "id" : {
+                                                "type" : "string",
+                                                "required" : true,
+                                                "description" : "Unique id of the plugin was defined by the plugin developer."
+                                              },
                                               "name" : {
                                                 "type" : "string",
                                                 "required" : true,
@@ -8626,11 +8636,11 @@ mediaType: application/json
                             example: |
                                 {
                                   "data" : [ {
-                                    "uuid" : "36fcb16dd9654e62bcb16dd9651e624e",
+                                    "id" : "hello-world-1",
                                     "name" : "Hello World 1",
                                     "manifest" : {
+                                      "id" : "hello-world-1",
                                       "name" : "Hello World 1",
-                                      "apiName" : "hello-world1",
                                       "description" : "A dummy plugin",
                                       "version" : "1.0",
                                       "author" : "Joe Doe",
@@ -8638,11 +8648,11 @@ mediaType: application/json
                                       "license" : "Apache License 2.0"
                                     }
                                   }, {
-                                    "uuid" : "64d835773f894c5b9835773f89fc5b45",
+                                    "id" : "hello-world-2",
                                     "name" : "Hello World 2",
                                     "manifest" : {
+                                      "id" : "hello-world-2",
                                       "name" : "Hello World 2",
-                                      "apiName" : "hello-world2",
                                       "description" : "A dummy plugin",
                                       "version" : "1.0",
                                       "author" : "Joe Doe",
@@ -8650,11 +8660,11 @@ mediaType: application/json
                                       "license" : "Apache License 2.0"
                                     }
                                   }, {
-                                    "uuid" : "e94828addc2740e68828addc2730e69f",
+                                    "id" : "hello-world-3",
                                     "name" : "Hello World 3",
                                     "manifest" : {
+                                      "id" : "hello-world-3",
                                       "name" : "Hello World 3",
-                                      "apiName" : "hello-world3",
                                       "description" : "A dummy plugin",
                                       "version" : "1.0",
                                       "author" : "Joe Doe",
@@ -8669,15 +8679,15 @@ mediaType: application/json
                                     "totalCount" : 3
                                   }
                                 }
-    /plugins/{uuid}: 
+    /plugins/{id}: 
         uriParameters: 
-            uuid: 
-                displayName: uuid
-                description: Uuid of the plugin.
+            id: 
+                displayName: id
+                description: Id of the plugin.
                 type: string
                 required: true
                 repeat: false
-                example: "36fcb16dd9654e62bcb16dd9651e624e"
+                example: hello-world
         delete: 
             description: Undeploys the plugin with the given uuid.
             responses: 
@@ -8690,10 +8700,10 @@ mediaType: application/json
                                   "type" : "object",
                                   "id" : "urn:jsonschema:com:gentics:mesh:core:rest:plugin:PluginResponse",
                                   "properties" : {
-                                    "uuid" : {
+                                    "id" : {
                                       "type" : "string",
                                       "required" : true,
-                                      "description" : "Deployment UUUID of the plugin. Note that each deployment will get a new UUID."
+                                      "description" : "Id of the plugin."
                                     },
                                     "name" : {
                                       "type" : "string",
@@ -8702,10 +8712,15 @@ mediaType: application/json
                                     },
                                     "manifest" : {
                                       "type" : "object",
-                                      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:plugin:PluginManifest",
+                                      "id" : "urn:jsonschema:com:gentics:mesh:plugin:PluginManifest",
                                       "required" : true,
                                       "description" : "Manifest of the plugin",
                                       "properties" : {
+                                        "id" : {
+                                          "type" : "string",
+                                          "required" : true,
+                                          "description" : "Unique id of the plugin was defined by the plugin developer."
+                                        },
                                         "name" : {
                                           "type" : "string",
                                           "required" : true,
@@ -8747,11 +8762,11 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "uuid" : "36fcb16dd9654e62bcb16dd9651e624e",
+                                  "id" : "hello-world",
                                   "name" : "Hello World 1",
                                   "manifest" : {
+                                    "id" : "hello-world",
                                     "name" : "Hello World 1",
-                                    "apiName" : "hello-world1",
                                     "description" : "A dummy plugin",
                                     "version" : "1.0",
                                     "author" : "Joe Doe",
@@ -8759,6 +8774,15 @@ mediaType: application/json
                                     "license" : "Apache License 2.0"
                                   }
                                 }
+    /plugins/{uuid}: 
+        uriParameters: 
+            uuid: 
+                displayName: uuid
+                description: Uuid of the plugin.
+                type: string
+                required: true
+                repeat: false
+                example: hello-world
         get: 
             description: Loads deployment information for the plugin with the given id.
             responses: 
@@ -8771,10 +8795,10 @@ mediaType: application/json
                                   "type" : "object",
                                   "id" : "urn:jsonschema:com:gentics:mesh:core:rest:plugin:PluginResponse",
                                   "properties" : {
-                                    "uuid" : {
+                                    "id" : {
                                       "type" : "string",
                                       "required" : true,
-                                      "description" : "Deployment UUUID of the plugin. Note that each deployment will get a new UUID."
+                                      "description" : "Id of the plugin."
                                     },
                                     "name" : {
                                       "type" : "string",
@@ -8783,10 +8807,15 @@ mediaType: application/json
                                     },
                                     "manifest" : {
                                       "type" : "object",
-                                      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:plugin:PluginManifest",
+                                      "id" : "urn:jsonschema:com:gentics:mesh:plugin:PluginManifest",
                                       "required" : true,
                                       "description" : "Manifest of the plugin",
                                       "properties" : {
+                                        "id" : {
+                                          "type" : "string",
+                                          "required" : true,
+                                          "description" : "Unique id of the plugin was defined by the plugin developer."
+                                        },
                                         "name" : {
                                           "type" : "string",
                                           "required" : true,
@@ -8828,11 +8857,11 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "uuid" : "36fcb16dd9654e62bcb16dd9651e624e",
+                                  "id" : "hello-world",
                                   "name" : "Hello World 1",
                                   "manifest" : {
+                                    "id" : "hello-world",
                                     "name" : "Hello World 1",
-                                    "apiName" : "hello-world1",
                                     "description" : "A dummy plugin",
                                     "version" : "1.0",
                                     "author" : "Joe Doe",
@@ -9295,16 +9324,16 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
+                                                "label" : {
+                                                  "type" : "string",
+                                                  "description" : "Label of the field."
+                                                },
                                                 "required" : {
                                                   "type" : "boolean"
                                                 },
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                                },
-                                                "label" : {
-                                                  "type" : "string",
-                                                  "description" : "Label of the field."
                                                 },
                                                 "name" : {
                                                   "type" : "string",
@@ -10690,16 +10719,16 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
+                                                "label" : {
+                                                  "type" : "string",
+                                                  "description" : "Label of the field."
+                                                },
                                                 "required" : {
                                                   "type" : "boolean"
                                                 },
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                                },
-                                                "label" : {
-                                                  "type" : "string",
-                                                  "description" : "Label of the field."
                                                 },
                                                 "name" : {
                                                   "type" : "string",
@@ -12056,16 +12085,16 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "label" : {
+                                    "type" : "string",
+                                    "description" : "Label of the field."
+                                  },
                                   "required" : {
                                     "type" : "boolean"
                                   },
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "label" : {
-                                    "type" : "string",
-                                    "description" : "Label of the field."
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -12437,16 +12466,16 @@ mediaType: application/json
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                 "properties" : {
+                                  "label" : {
+                                    "type" : "string",
+                                    "description" : "Label of the field."
+                                  },
                                   "required" : {
                                     "type" : "boolean"
                                   },
                                   "elasticsearch" : {
                                     "type" : "object",
                                     "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                  },
-                                  "label" : {
-                                    "type" : "string",
-                                    "description" : "Label of the field."
                                   },
                                   "name" : {
                                     "type" : "string",
@@ -13084,13 +13113,13 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "0.36.8",
+                                  "meshVersion" : "0.37.0",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
                                   "searchVendor" : "elasticsearch",
                                   "searchVersion" : "2.4.3",
-                                  "vertxVersion" : "3.7.1"
+                                  "vertxVersion" : "3.8.0"
                                 }
     /raml: 
         get: 
@@ -26742,16 +26771,16 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
+                                                "label" : {
+                                                  "type" : "string",
+                                                  "description" : "Label of the field."
+                                                },
                                                 "required" : {
                                                   "type" : "boolean"
                                                 },
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                                },
-                                                "label" : {
-                                                  "type" : "string",
-                                                  "description" : "Label of the field."
                                                 },
                                                 "name" : {
                                                   "type" : "string",
@@ -27086,16 +27115,16 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "label" : {
+                                            "type" : "string",
+                                            "description" : "Label of the field."
+                                          },
                                           "required" : {
                                             "type" : "boolean"
                                           },
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "label" : {
-                                            "type" : "string",
-                                            "description" : "Label of the field."
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -27326,16 +27355,16 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "label" : {
+                                            "type" : "string",
+                                            "description" : "Label of the field."
+                                          },
                                           "required" : {
                                             "type" : "boolean"
                                           },
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "label" : {
-                                            "type" : "string",
-                                            "description" : "Label of the field."
                                           },
                                           "name" : {
                                             "type" : "string",
@@ -27562,16 +27591,16 @@ mediaType: application/json
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                               "properties" : {
+                                                "label" : {
+                                                  "type" : "string",
+                                                  "description" : "Label of the field."
+                                                },
                                                 "required" : {
                                                   "type" : "boolean"
                                                 },
                                                 "elasticsearch" : {
                                                   "type" : "object",
                                                   "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                                },
-                                                "label" : {
-                                                  "type" : "string",
-                                                  "description" : "Label of the field."
                                                 },
                                                 "name" : {
                                                   "type" : "string",
@@ -27817,16 +27846,16 @@ mediaType: application/json
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
                                         "properties" : {
+                                          "label" : {
+                                            "type" : "string",
+                                            "description" : "Label of the field."
+                                          },
                                           "required" : {
                                             "type" : "boolean"
                                           },
                                           "elasticsearch" : {
                                             "type" : "object",
                                             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
-                                          },
-                                          "label" : {
-                                            "type" : "string",
-                                            "description" : "Label of the field."
                                           },
                                           "name" : {
                                             "type" : "string",
