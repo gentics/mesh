@@ -16,7 +16,7 @@ Before we can start you need to install link:https://maven.apache.org/[Apache Ma
 
 The plugin consists of just two files.
 
-=== pom.xml
+**/pom.xml**
 
 The `pom.xml` file is used by link:https://maven.apache.org/[Apache Maven] to build the plugin Java project. It contains the needed build steps and also information that will be later on added to the plugin manifest.
 
@@ -25,9 +25,11 @@ The `pom.xml` file is used by link:https://maven.apache.org/[Apache Maven] to bu
 include::/site/content/examples/graphql/pom.xml[]
 ----
 
-=== GraphQLExamplePlugin.java
+**/src/main/java/com/gentics/mesh/plugin/GraphQLExamplePlugin.java**
 
-The plugin itself is very simple. We need to extend the `AbstractPlugin` class and implement the `GraphQLPlugin` interface since our plugin will extend the GraphQL API.
+The `GraphQLExamplePlugin` file contains the actual plugin code. The plugin itself is very simple.
+
+We need to extend the `AbstractPlugin` class and implement the `GraphQLPlugin` interface since our plugin will extend the GraphQL API.
 
 In the `initialize()` method we setup the `GraphQLSchema` for our plugin. The counterpart is the `shutdown()` method.
 
@@ -73,16 +75,59 @@ INFO: 127.0.0.1 - POST /api/v1/test/graphql HTTP/1.1 200 106 - 134 ms
 
 == Packaging
 
-Now we can package the plugin by running `mvn clean package`. The final plugin will be placed in the `target` directory.
+Now we can package the plugin by running `mvn clean package`. The built plugin will be placed in the `target` directory.
 
-We can now place the `mesh-graphql-plugin-0.0.1-SNAPSHOT.jar` file in the Gentics Mesh plugin directory.
+We can now place the `mesh-graphql-plugin-0.0.1-SNAPSHOT.jar` file in the Gentics Mesh `plugins` directory.
 
 == Deployment
 
-You can now deploy the plugin using docker:
+You can now deploy start a new Gentics Mesh instance which will deploy the plugin during start-up:
 
-```
- docker run --rm \ 
-       -v target/mesh-graphql-plugin-0.0.1-SNAPSHOT.jar:/plugins/graphql.jar \
-          gentics/mesh:0.36.7
-```
+[source,bash]
+----
+docker run --rm \ 
+    -v target/mesh-graphql-plugin-0.0.1-SNAPSHOT.jar:/plugins/graphql.jar \
+       gentics/mesh:0.36.7
+----
+
+
+It is also possible to deploy a plugin in a running instance via the `/admin/plugins` endpoint.
+
+With an admin token at hand you can invoke the deployment via cURL:
+
+[source,bash]
+----
+curl -X POST \
+ -d '{
+    "path":"mesh-graphql-plugin-0.0.1-SNAPSHOT.jar"
+    }' \ 
+ -H "Authorization: Bearer $MESH_TOKEN" \
+ -H "Content-Type: application/json" \
+ $MESH_BASE/admin/plugins
+----
+
+You can read more about how to use the REST API with cURL in the link:{{< relref "../guides/mesh-api-intro" >}}[API guide].
+
+== Accessing
+
+Once the plugin has been deployed you can use the plugin via the GraphQL endpoint.
+
+[source,bash]
+----
+curl -X POST \
+ -d '{
+    "query":"{ pluginApi { myPlugin { text } } }"
+    }' \ 
+ -H "Content-Type: application/json" \
+ $MESH_BASE/test/graphql
+
+{
+  "pluginApi" : {
+    "myPlugin" : {
+      "text" : "hello-world"
+    }
+  }
+}
+----
+
+

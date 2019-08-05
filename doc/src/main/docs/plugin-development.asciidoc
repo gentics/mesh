@@ -123,7 +123,7 @@ pluginApi {
 }
 ```
 
-NOTE: The `createRootSchema()` method will be invoked for every query. It is thus advised to only return graphql schema which has been generated up-front. 
+NOTE: The `createRootSchema()` method will be invoked for every query. It is thus advised to only return GraphQL schema which has been generated up-front. 
 
 ==== Context
 
@@ -134,7 +134,7 @@ In the datafetcher which will load the data it is possible to access the context
 |======
 | Method                                | Description
 | `GraphQLPluginContext#projectName()`  | Name of current project.
-| `GraphQLPluginContextprojectUuid()`   | Uuid of current project.
+| `GraphQLPluginContext#projectUuid()`   | Uuid of current project.
 | `GraphQLPluginContext#branchName()`   | Name of current active branch.
 | `GraphQLPluginContext#branchUuid()`   | Uuid of current active branch.
 | `GraphQLPluginContext#principal()`    | User information.
@@ -144,7 +144,7 @@ In the datafetcher which will load the data it is possible to access the context
 
 Additionally the plugin class provides some utility functions which make it easier to handle plugin configuration and plugin data.
 
-The configration of the plugin will be stored in the plugin directory in a `plugins/{pluginId}/config.yml` file which can be overriden by a `/plugins/{pluginId}/config.local.yml` file.
+The configuration of the plugin will be stored in the plugin directory in a `plugins/{pluginId}/config.yml` file which can be overridden by a `/plugins/{pluginId}/config.local.yml` file.
 
 [options="header"]
 |======
@@ -282,6 +282,23 @@ The plugin needs at least the `mesh-plugin-dep` dependency. It is important to s
 </dependency>
 ----
 
+== Access Data
+
+Plugins can access Gentics Mesh data via the provided clients.
+
+The `adminClient` will use the `admin` permissions and can by-default read everything. The `userClient` on the other hand will be created using the user information from the request that has been send to the plugin.
+
+[source,java]
+----
+
+router.route("/example").handler(rc -> {
+    PluginContext context = wrap(rc);
+    MeshRestClient adminClient = adminClient();
+    MeshRestClient userClient = context.client();
+    …
+});
+
+----
 
 == Plugin Extensions
 
@@ -425,7 +442,6 @@ I'm getting `java.lang.NoSuchMethodException: com.gentics.mesh.plugin.MyPlugin.<
         You get this error if you have not added the mandatory constructor to your plugin.
 I'm getting `NoClassDefFoundError` / `NoSuchMethodError`::
         You deployed your plugin on a Gentics Mesh instance which is not compatible with the classes you are using. You can rebuild the plugin with the new version or try to include your dependencies in the plugin jar to avoid classloader issues. Please note that `vertx-core`, `vertx-web`, `netty` should not be included in the jar.
-
 
 
 == Contributing
