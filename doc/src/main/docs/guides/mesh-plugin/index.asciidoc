@@ -22,7 +22,7 @@ The `pom.xml` file is used by link:https://maven.apache.org/[Apache Maven] to bu
 
 [source,xml]
 ----
-include::/site/content/examples/graphql/pom.xml[]
+include::content/examples/graphql/pom.xml[]
 ----
 
 **/src/main/java/com/gentics/mesh/plugin/GraphQLExamplePlugin.java**
@@ -38,7 +38,7 @@ In our case we only need a single type which contains the `text` field that just
 
 [source,java]
 ----
-include::/site/content/examples/graphql/src/main/java/com/gentics/mesh/plugin/GraphQLExamplePlugin.java[]
+include::content/examples/graphql/src/main/java/com/gentics/mesh/plugin/GraphQLExamplePlugin.java[]
 ----
 
 In the datafetcher which will load the data it is possible to access the context via `env.getContext()`. This will return a `GraphQLPluginContext` object that contains methods to access user and other request  information.
@@ -56,7 +56,7 @@ The test will:
 
 [source,java]
 ----
-include::/site/content/examples/graphql/src/test/java/com/gentics/mesh/plugin/GraphQlExamplePluginTest.java[]
+include::content/examples/graphql/src/test/java/com/gentics/mesh/plugin/GraphQlExamplePluginTest.java[]
 ----
 
 When running the test you should see the `hello-world` output in the result of the GraphQL test request.
