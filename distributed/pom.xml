@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>mesh-distributed</artifactId>
@@ -17,6 +18,18 @@
 		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
 	</properties>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-bom</artifactId>
+				<type>pom</type>
+				<scope>import</scope>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
@@ -27,14 +40,12 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-common</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<!-- Test -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-test-common</artifactId>
-			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

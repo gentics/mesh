@@ -96,9 +96,9 @@ public final class ExampleUuids {
 
 	// Plugins
 
-	public static final String PLUGIN_1_UUID = "36fcb16dd9654e62bcb16dd9651e624e";
-	public static final String PLUGIN_2_UUID = "64d835773f894c5b9835773f89fc5b45";
-	public static final String PLUGIN_3_UUID = "e94828addc2740e68828addc2730e69f";
+	public static final String PLUGIN_1_ID = "hello-world";
+	public static final String PLUGIN_2_ID = "markdown";
+	public static final String PLUGIN_3_ID = "sitemap";
 
 	private ExampleUuids() {
 	}

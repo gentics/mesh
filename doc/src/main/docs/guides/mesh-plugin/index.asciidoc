@@ -1,0 +1,133 @@
+---
+title: Gentics Mesh - Plugin Development
+---
+
+include::content/docs/variables.adoc-include[]
+
+== Intro
+
+In this guide you will learn how to create a plugin for Gentics Mesh.
+
+== Requirements
+
+Before we can start you need to install link:https://maven.apache.org/[Apache Maven] and a link:https://adoptopenjdk.net/[Java Development Kit].
+
+== Source files
+
+The plugin consists of just two files.
+
+**/pom.xml**
+
+The `pom.xml` file is used by link:https://maven.apache.org/[Apache Maven] to build the plugin Java project. It contains the needed build steps and also information that will be later on added to the plugin manifest.
+
+[source,xml]
+----
+include::/site/content/examples/graphql/pom.xml[]
+----
+
+**/src/main/java/com/gentics/mesh/plugin/GraphQLExamplePlugin.java**
+
+The `GraphQLExamplePlugin` file contains the actual plugin code. The plugin itself is very simple.
+
+We need to extend the `AbstractPlugin` class and implement the `GraphQLPlugin` interface since our plugin will extend the GraphQL API.
+
+In the `initialize()` method we setup the `GraphQLSchema` for our plugin. The counterpart is the `shutdown()` method.
+
+The schema defines the query type which is later on added to the GraphQL API of Gentics Mesh. 
+In our case we only need a single type which contains the `text` field that just returns `hello-world` when queried.
+
+[source,java]
+----
+include::/site/content/examples/graphql/src/main/java/com/gentics/mesh/plugin/GraphQLExamplePlugin.java[]
+----
+
+In the datafetcher which will load the data it is possible to access the context via `env.getContext()`. This will return a `GraphQLPluginContext` object that contains methods to access user and other request  information.
+
+== Testing
+
+For testing it is possible to use the `MeshLocalServer` class rule which will make it possible to start-up an in-memory Gentics Mesh server that can be used to run your plugin.
+
+The test will:
+
+* Start Gentics Mesh in memory
+* Deploy the plugin 
+* Setup an empty project
+* Finally run the `"{ pluginApi { myPlugin { text } } }"` query to fetch the data from the plugin
+
+[source,java]
+----
+include::/site/content/examples/graphql/src/test/java/com/gentics/mesh/plugin/GraphQlExamplePluginTest.java[]
+----
+
+When running the test you should see the `hello-world` output in the result of the GraphQL test request.
+
+[source]
+----
+INFO: 127.0.0.1 - POST /api/v1/test/graphql HTTP/1.1 200 106 - 134 ms
+{
+  "pluginApi" : {
+    "myPlugin" : {
+      "text" : "hello-world"
+    }
+  }
+}
+----
+
+== Packaging
+
+Now we can package the plugin by running `mvn clean package`. The built plugin will be placed in the `target` directory.
+
+We can now place the `mesh-graphql-plugin-0.0.1-SNAPSHOT.jar` file in the Gentics Mesh `plugins` directory.
+
+== Deployment
+
+You can now deploy start a new Gentics Mesh instance which will deploy the plugin during start-up:
+
+[source,bash]
+----
+docker run --rm \ 
+    -v target/mesh-graphql-plugin-0.0.1-SNAPSHOT.jar:/plugins/graphql.jar \
+       gentics/mesh:0.36.7
+----
+
+
+It is also possible to deploy a plugin in a running instance via the `/admin/plugins` endpoint.
+
+With an admin token at hand you can invoke the deployment via cURL:
+
+[source,bash]
+----
+curl -X POST \
+ -d '{
+    "path":"mesh-graphql-plugin-0.0.1-SNAPSHOT.jar"
+    }' \ 
+ -H "Authorization: Bearer $MESH_TOKEN" \
+ -H "Content-Type: application/json" \
+ $MESH_BASE/admin/plugins
+----
+
+You can read more about how to use the REST API with cURL in the link:{{< relref "../guides/mesh-api-intro" >}}[API guide].
+
+== Accessing
+
+Once the plugin has been deployed you can use the plugin via the GraphQL endpoint.
+
+[source,bash]
+----
+curl -X POST \
+ -d '{
+    "query":"{ pluginApi { myPlugin { text } } }"
+    }' \ 
+ -H "Content-Type: application/json" \
+ $MESH_BASE/test/graphql
+
+{
+  "pluginApi" : {
+    "myPlugin" : {
+      "text" : "hello-world"
+    }
+  }
+}
+----
+
+

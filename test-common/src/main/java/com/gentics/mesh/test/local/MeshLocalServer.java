@@ -1,8 +1,9 @@
 package com.gentics.mesh.test.local;
 
-
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -14,18 +15,19 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.MeshTestServer;
-
-import static com.gentics.mesh.core.rest.MeshEvent.STARTUP;
+import com.gentics.mesh.util.Tuple;
 
 public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 
 	private static boolean inUse = false;
+
 	/**
 	 * Name of the node.
 	 */
-	private String nodeName;
+	private String nodeName = "localServer_" + System.currentTimeMillis();
 
 	private MeshRestClient client;
 
@@ -44,6 +46,8 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 	private boolean startEmbeddedES = false;
 
 	private boolean isInMemory = false;
+
+	private List<Tuple<Class<? extends MeshPlugin>, String>> plugins = new ArrayList<>();
 
 	private Mesh mesh;
 
@@ -87,6 +91,7 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 		options.getHttpServerOptions().setEnableCors(true);
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
 		options.getAuthenticationOptions().setKeystorePath(basePath + "/keystore.jkms");
+		options.getMonitoringOptions().setEnabled(false);
 		options.getSearchOptions().setStartEmbedded(startEmbeddedES);
 		if (!startEmbeddedES) {
 			options.getSearchOptions().setUrl(null);
@@ -99,35 +104,21 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 
 		mesh = Mesh.mesh(options);
 
-		new Thread(() -> {
-			try {
-				mesh.run();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}).start();
-
-		while (mesh.getVertx() == null) {
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-
-		mesh.getVertx().eventBus().consumer(STARTUP.address, mh -> {
-			waitingLatch.countDown();
-		});
-
 		if (waitForStartup) {
-			try {
-				awaitStartup(200);
-			} catch (InterruptedException e) {
-				throw new RuntimeException("Local mesh instance did not not startup on-time", e);
-			}
+			mesh.rxRun().blockingAwait(200, TimeUnit.SECONDS);
+		} else {
+			new Thread(() -> {
+				try {
+					mesh.run(false);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}).start();
 		}
-
+		plugins.forEach(t -> {
+			mesh.deployPlugin(t.v1(), t.v2()).blockingAwait(10, TimeUnit.SECONDS);
+		});
 	}
 
 	@Override
@@ -260,6 +251,18 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 	 */
 	public Mesh getMesh() {
 		return mesh;
+	}
+
+	/**
+	 * Automatically deploy the given plugin once the server is ready.
+	 * 
+	 * @param clazz
+	 * @param id
+	 * @return Fluent API
+	 */
+	public MeshLocalServer withPlugin(Class<? extends MeshPlugin> clazz, String id) {
+		plugins.add(Tuple.tuple(clazz, id));
+		return this;
 	}
 
 }

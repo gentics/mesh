@@ -1,6 +1,7 @@
 package com.gentics.mesh.etc.config;
 
 import java.io.File;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -19,12 +20,14 @@ public class MeshOptions implements Option {
 	public static final String DEFAULT_LANGUAGE = "en";
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
 	public static final int DEFAULT_MAX_DEPTH = 10;
+	public static final int DEFAULT_PLUGIN_TIMEOUT = 15;
 
 	public static final String MESH_DEFAULT_LANG_ENV = "MESH_DEFAULT_LANG";
 	public static final String MESH_LANGUAGES_FILE_PATH_ENV = "MESH_LANGUAGES_FILE_PATH";
 	public static final String MESH_UPDATECHECK_ENV = "MESH_UPDATECHECK";
 	public static final String MESH_TEMP_DIR_ENV = "MESH_TEMP_DIR";
 	public static final String MESH_PLUGIN_DIR_ENV = "MESH_PLUGIN_DIR";
+	public static final String MESH_PLUGIN_TIMEOUT_ENV = "MESH_PLUGIN_TIMEOUT";
 	public static final String MESH_NODE_NAME_ENV = "MESH_NODE_NAME";
 	public static final String MESH_CLUSTER_INIT_ENV = "MESH_CLUSTER_INIT";
 	public static final String MESH_LOCK_PATH_ENV = "MESH_LOCK_PATH";
@@ -100,6 +103,11 @@ public class MeshOptions implements Option {
 	@JsonPropertyDescription("Path to the plugin directory.")
 	@EnvironmentVariable(name = MESH_PLUGIN_DIR_ENV, description = "Override the configured plugin directory.")
 	private String pluginDirectory = "plugins";
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Timeout in seconds which is used for the plugin startup,initialization,de-initialization and stop processes.")
+	@EnvironmentVariable(name = MESH_PLUGIN_TIMEOUT_ENV, description = "Override the configured plugin timeout.")
+	private int pluginTimeout = DEFAULT_PLUGIN_TIMEOUT;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Name of the cluster node instance. If not specified a name will be generated.")
@@ -464,6 +472,15 @@ public class MeshOptions implements Option {
 		return this;
 	}
 
+	public int getPluginTimeout() {
+		return pluginTimeout;
+	}
+
+	public MeshOptions setPluginTimeout(int pluginTimeout) {
+		this.pluginTimeout = pluginTimeout;
+		return this;
+	}
+
 	public void validate() {
 		if (getClusterOptions() != null) {
 			getClusterOptions().validate(this);
@@ -489,7 +506,7 @@ public class MeshOptions implements Option {
 		if (getContentOptions() != null) {
 			getContentOptions().validate(this);
 		}
-
+		Objects.requireNonNull(getNodeName(), "The node name must be specified.");
 		// TODO check for other invalid characters in node name
 	}
 

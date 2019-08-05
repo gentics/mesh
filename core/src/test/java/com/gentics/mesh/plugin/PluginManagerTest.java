@@ -9,78 +9,52 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
+import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
-import org.codehaus.plexus.util.FileUtils;
-import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.twelvemonkeys.io.FileUtil;
 
-import io.vertx.core.ServiceHelper;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 import okhttp3.HttpUrl;
 import okhttp3.Request;
 
 @MeshTestSetting(testSize = PROJECT, startServer = true, inMemoryDB = true)
-public class PluginManagerTest extends AbstractMeshTest {
+public class PluginManagerTest extends AbstractPluginTest {
 
 	private static final String NAME = "basic";
 
-	private static PluginManager manager = ServiceHelper.loadFactory(PluginManager.class);
-
-	private static final String DEPLOYMENT_NAME = "filesystem:target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar";
-
-	public static final String PLUGIN_DIR = "target/plugins" + System.currentTimeMillis();
-
-	@Before
-	public void clearDeployments() {
-		// Copy the uuids to avoid concurrency issues
-		Set<String> uuids = new HashSet<>(manager.getPlugins().keySet());
-		for (String uuid : uuids) {
-			manager.undeploy(uuid).blockingAwait();
-		}
-	}
-
-	@AfterClass
-	public static void cleanup() throws IOException {
-		FileUtils.deleteDirectory(PLUGIN_DIR);
-	}
-
 	@Test
 	public void testStop() {
-		int before = vertx().deploymentIDs().size();
-		final String CLONE_PLUGIN_DEPLOYMENT_NAME = ClonePlugin.class.getCanonicalName();
+		MeshPluginManager manager = pluginManager();
+		int before = manager.getPluginIds().size();
 		for (int i = 0; i < 100; i++) {
-			manager.deploy(CLONE_PLUGIN_DEPLOYMENT_NAME).blockingGet();
+			manager.deploy(ClonePlugin.class, "clone" + i).blockingAwait();
 		}
-		assertEquals(before + 100, vertx().deploymentIDs().size());
+		assertEquals(before + 100, manager.getPluginIds().size());
 
-		assertEquals(100, manager.getPlugins().size());
+		assertEquals(100, manager.getPluginIds().size());
 		manager.stop().blockingAwait();
-		assertEquals(0, manager.getPlugins().size());
-		assertEquals("Not all deployed verticles have been undeployed.", before, vertx().deploymentIDs().size());
+		manager.unloadPlugins();
+		assertEquals(0, manager.getPluginIds().size());
+		assertEquals("Not all deployed verticles have been undeployed.", before, manager.getPluginIds().size());
 	}
 
 	@Test
 	public void testFilesystemDeployment() throws Exception {
-		setPluginBaseDir(".");
-
-		Mesh mesh = Mesh.mesh();
-		mesh.getRxVertx().rxDeployVerticle(DEPLOYMENT_NAME).blockingGet();
+		setPluginBaseDir("abc");
+		String id = pluginManager().deploy(Paths.get(BASIC_PATH)).blockingGet();
+		assertEquals("basic", id);
 
 		for (int i = 0; i < 2; i++) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
@@ -96,22 +70,24 @@ public class PluginManagerTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartupDeployment() throws IOException {
-		setPluginBaseDir(PLUGIN_DIR);
-		FileUtil.copy(new File("target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar"), new File(PLUGIN_DIR, "plugin.jar"));
-		FileUtil.copy(new File("target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar"), new File(PLUGIN_DIR, "duplicate-plugin.jar"));
-		FileUtil.copy(new File("target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar"), new File(PLUGIN_DIR, "plugin.blub"));
+		MeshPluginManager manager = pluginManager();
+		FileUtil.copy(new File(BASIC_PATH), new File(pluginDir(), "plugin.jar"));
+		FileUtil.copy(new File(BASIC_PATH), new File(pluginDir(), "duplicate-plugin.jar"));
+		FileUtil.copy(new File(BASIC_PATH), new File(pluginDir(), "plugin.blub"));
 
-		assertEquals(0, manager.getPlugins().size());
+		assertEquals(0, manager.getPluginIds().size());
+		manager.deployExistingPluginFiles().blockingAwait();
+		assertEquals(1, manager.getPluginIds().size());
 		manager.deployExistingPluginFiles().blockingAwait();
 		manager.deployExistingPluginFiles().blockingAwait();
 		manager.deployExistingPluginFiles().blockingAwait();
-		assertEquals("Only one instance should have been deployed because all others are copies.", 1, manager.getPlugins().size());
+		assertEquals("Only one instance should have been deployed because all others are copies.", 1, manager.getPluginIds().size());
 
 		manager.stop().blockingAwait();
-		assertEquals(0, manager.getPlugins().size());
+		assertEquals(0, manager.getPluginIds().size());
 
 		manager.deployExistingPluginFiles().blockingAwait();
-		assertEquals(1, manager.getPlugins().size());
+		assertEquals(1, manager.getPluginIds().size());
 	}
 
 	/**
@@ -121,8 +97,8 @@ public class PluginManagerTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testPluginAuth() throws IOException {
-		Plugin plugin = new ClientPlugin();
-		manager.deploy(plugin).blockingGet();
+		MeshPluginManager manager = pluginManager();
+		manager.deploy(ClientPlugin.class, "client").blockingAwait();
 		JsonObject json = new JsonObject(getJSONViaClient(CURRENT_API_BASE_PATH + "/plugins/client/user"));
 		assertNotNull(json.getString("uuid"));
 	}
@@ -134,8 +110,7 @@ public class PluginManagerTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testClientAPI() throws IOException {
-		Plugin plugin = new ClientPlugin();
-		manager.deploy(plugin).blockingGet();
+		pluginManager().deploy(ClientPlugin.class, "client").blockingAwait();
 
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName("testabc");
@@ -170,46 +145,72 @@ public class PluginManagerTest extends AbstractMeshTest {
 	private <T extends RestModel> T getViaClient(Class<T> clazz, String path) throws IOException {
 		String json = getJSONViaClient(path);
 		return JsonUtil.readValue(json, clazz);
-
 	}
 
 	@Test
 	public void testJavaDeployment() throws IOException {
-		Plugin plugin = new DummyPlugin();
-		manager.deploy(plugin).blockingGet();
-		assertEquals(1, manager.getPlugins().size());
+		MeshPluginManager manager = pluginManager();
+		manager.deploy(DummyPlugin.class, "dummy").blockingAwait();
+		assertEquals(1, manager.getPluginIds().size());
 
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName("test");
 		request.setSchemaRef("folder");
 		call(() -> client().createProject(request));
 
-		String apiName = plugin.getManifest().getApiName();
+		String apiName = DummyPlugin.API_NAME;
 		PluginManifest manifest = JsonUtil.readValue(httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + apiName + "/manifest"), PluginManifest.class);
-		assertEquals("Johannes Schüth", manifest.getAuthor());
+		assertEquals("Unknown Author", manifest.getAuthor());
+		String pluginApiName = ((RestPlugin) manager.getPlugin("dummy").getPlugin()).restApiName();
+		assertEquals(apiName, pluginApiName);
+
+		JsonObject idInfo = new JsonObject(httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + apiName + "/id"));
+		String id = idInfo.getString("id");
+		assertEquals("Invalid id", "dummy", id);
 
 		assertEquals("world", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + apiName + "/hello"));
 		assertEquals("project", httpGetNow(CURRENT_API_BASE_PATH + "/test/plugins/" + apiName + "/hello"));
 	}
 
 	@Test
-	public void testRedeployAfterInitFailure() {
+	public void testDeployAfterShutdownFailure() {
+		MeshPluginManager manager = pluginManager();
+		manager.deploy(FailingShutdownPlugin.class, "failing").blockingAwait();
+		manager.undeploy("failing").blockingAwait(2, TimeUnit.SECONDS);
+		assertEquals(0, manager.getPluginIds().size());
+
+		manager.deploy(SucceedingPlugin.class, "succeeding").blockingAwait();
+		assertEquals(1, manager.getPluginIds().size());
+	}
+
+	@Test
+	public void testInitializeTimeoutPlugin() {
+		Mesh.mesh().getOptions().setPluginTimeout(2);
+		MeshPluginManager manager = pluginManager();
 		try {
-			manager.deploy(new FailingPlugin()).blockingGet();
+			manager.deploy(InitializeTimeoutPlugin.class, "timeout").blockingAwait();
+			fail("The deployment of the plugin should fail with a timeout.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		assertEquals(0, manager.getPluginIds().size());
+	}
+
+	@Test
+	public void testRedeployAfterInitFailure() {
+		MeshPluginManager manager = pluginManager();
+		try {
+			manager.deploy(FailingInitializePlugin.class, "failing").blockingAwait();
 			fail("Deployment should have failed");
 		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		assertEquals(0, manager.getPlugins().size());
+		assertEquals(0, manager.getPluginIds().size());
+		assertEquals(0, manager.getPluginsMap().size());
 
-		manager.deploy(new SucceedingPlugin()).blockingGet();
-		assertEquals(1, manager.getPlugins().size());
+		manager.deploy(SucceedingPlugin.class, "succeeding").blockingAwait();
+		assertEquals(1, manager.getPluginIds().size());
+		assertEquals(1, manager.getPluginsMap().size());
 	}
 
-	private void setPluginBaseDir(String baseDir) {
-		File pluginDir = new File(baseDir);
-		pluginDir.mkdirs();
-		MeshOptions options = new MeshOptions();
-		options.setPluginDirectory(baseDir);
-		manager.init(options);
-	}
 }

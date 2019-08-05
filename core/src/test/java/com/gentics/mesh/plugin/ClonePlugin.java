@@ -2,58 +2,70 @@ package com.gentics.mesh.plugin;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.gentics.mesh.core.rest.plugin.PluginManifest;
-import com.gentics.mesh.json.JsonUtil;
+import org.pf4j.PluginWrapper;
 
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.plugin.env.PluginEnvironment;
+
+import io.reactivex.Completable;
 import io.vertx.ext.web.Router;
 
 /**
  * A plugin which fakes the manifest in order to be deployable multiple times. This is useful to test deployments of multiple plugins.
  */
-public class ClonePlugin extends AbstractPluginVerticle {
+public class ClonePlugin extends AbstractPlugin implements RestPlugin {
 
-	public static AtomicInteger counter = new AtomicInteger(0);
+	public ClonePlugin(PluginWrapper wrapper, PluginEnvironment env) {
+		super(wrapper, env);
+	}
+
+	public static AtomicInteger counter = new AtomicInteger(1);
 
 	private Integer myCount = null;
 
-	private String uuid;
-
 	@Override
 	public PluginManifest getManifest() {
-		if (myCount == null) {
-			myCount = counter.incrementAndGet();
-		}
 		PluginManifest manifest = super.getManifest();
-		manifest.setApiName("clone" + myCount);
 		manifest.setName("Clone Plugin " + myCount);
+		manifest.setAuthor("Johannes Schüth");
+		manifest.setLicense("Apache License 2.0");
+		manifest.setVersion("1.0");
+		manifest.setDescription("A very dummy plugin for tests");
+		manifest.setInception("26-04-2018");
 		return manifest;
 	}
 
 	@Override
-	public String deploymentID() {
-		if (uuid != null) {
-			return uuid;
+	public Completable initialize() {
+		if (myCount == null) {
+			myCount = counter.getAndIncrement();
 		}
-		return super.deploymentID();
-	}
-
-	public void setUuid(String uuid) {
-		this.uuid = uuid;
+		return Completable.complete();
 	}
 
 	@Override
-	public void registerEndpoints(Router globalRouter, Router projectRouter) {
-		globalRouter.route("/hello").handler(rc -> {
-			rc.response().end("world");
-		});
-
-		projectRouter.route("/hello").handler(rc -> {
-			rc.response().end("project");
-		});
-
+	public Router createGlobalRouter() {
+		Router globalRouter = Router.router(vertx());
 		globalRouter.route("/manifest").handler(rc -> {
 			rc.response().end(JsonUtil.toJson(getManifest()));
 		});
+		globalRouter.route("/hello").handler(rc -> {
+			rc.response().end("world");
+		});
+		return globalRouter;
 	}
 
+	@Override
+	public Router createProjectRouter() {
+		Router projectRouter = Router.router(vertx());
+		projectRouter.route("/hello").handler(rc -> {
+			rc.response().end("project");
+		});
+		return projectRouter;
+	}
+
+	@Override
+	public String restApiName() {
+		return "clone" + myCount;
+	}
 }

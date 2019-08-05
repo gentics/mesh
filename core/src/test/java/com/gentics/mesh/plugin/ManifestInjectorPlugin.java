@@ -1,15 +1,21 @@
 package com.gentics.mesh.plugin;
 
-import com.gentics.mesh.core.rest.plugin.PluginManifest;
+import org.pf4j.PluginWrapper;
 
-import io.vertx.ext.web.Router;
+import com.gentics.mesh.plugin.env.PluginEnvironment;
 
 /**
  * A plugin which allows the injection of manifest data in order to test manifest validation.
  */
-public class ManifestInjectorPlugin extends AbstractPluginVerticle {
+public class ManifestInjectorPlugin extends AbstractPlugin implements RestPlugin {
+
+	public ManifestInjectorPlugin(PluginWrapper wrapper, PluginEnvironment env) {
+		super(wrapper, env);
+	}
 
 	public static PluginManifest manifest;
+
+	public static String apiName;
 
 	@Override
 	public PluginManifest getManifest() {
@@ -17,8 +23,8 @@ public class ManifestInjectorPlugin extends AbstractPluginVerticle {
 	}
 
 	@Override
-	public void registerEndpoints(Router globalRouter, Router projectRouter) {
-		// NOOP
+	public String restApiName() {
+		return apiName;
 	}
 
 }

@@ -1,16 +1,17 @@
 package com.gentics.mesh.graphql.context;
 
+import java.util.function.Supplier;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.error.PermissionException;
-
-import java.util.function.Supplier;
+import com.gentics.mesh.plugin.graphql.GraphQLPluginContext;
 
 /**
  * Extended context for GraphQL handling.
  */
-public interface GraphQLContext extends InternalActionContext {
+public interface GraphQLContext extends InternalActionContext, GraphQLPluginContext {
 
 	/**
 	 * Check whether at least one of the provided permissions is granted. Otherwise a failure {@link PermissionException} will be thrown.

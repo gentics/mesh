@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -18,16 +17,26 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-bom</artifactId>
+				<type>pom</type>
+				<scope>import</scope>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>madl-ferma</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-plugin-api</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
@@ -49,50 +58,48 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpcore</artifactId>
-			<version>4.4.5</version>
 		</dependency>
 
 		<!-- Caching -->
 		<dependency>
 			<groupId>com.github.ben-manes.caffeine</groupId>
 			<artifactId>caffeine</artifactId>
-			<version>2.5.6</version>
+		</dependency>
+
+		<!-- Plugin Support -->
+		<dependency>
+			<groupId>org.pf4j</groupId>
+			<artifactId>pf4j</artifactId>
 		</dependency>
 
 		<!-- YAML -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-yaml</artifactId>
-			<version>2.9.4</version>
 		</dependency>
 
 		<!-- Logging -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.2.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>log4j-over-slf4j</artifactId>
-			<version>1.7.25</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-api</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-rest-model</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.3.2</version>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
@@ -148,7 +155,6 @@
 		<dependency>
 			<groupId>commons-validator</groupId>
 			<artifactId>commons-validator</artifactId>
-			<version>1.6</version>
 		</dependency>
 
 		<!-- Test -->
@@ -166,14 +172,12 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-rest-model</artifactId>
-			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-api</artifactId>
-			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>

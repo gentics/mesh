@@ -1,0 +1,450 @@
+---
+title: Plugin Development
+---
+
+include::content/docs/variables.adoc-include[]
+
+Plugins which add custom endpoints are written in Java and are packaged as regular `jar` files. A plugin developer needs to extend the `AbstractPlugin` class. The plugin can hook into different parts of Gentics Mesh by implementing one of multiple interfaces for the different _plugin types_.
+
+== Plugin Setup
+
+New Plugin classes need to extend the `AbstractPlugin` and add the mandatory constructor.
+
+[source,java]
+----
+
+public class HelloWorldPlugin extends AbstractPlugin {
+
+	public BasicPlugin(PluginWrapper wrapper, PluginEnvironment env) {
+		super(wrapper, env);
+	}
+
+}
+----
+
+== Plugin Types
+
+=== REST API Plugin
+
+You can extend the REST API by adding the `RestPlugin` interface to your plugin class.
+
+You can now implement two different methods to extend the REST API at different places in the API.
+
+==== Global Routes
+
+You can hook your plugin routes to the `/api/v1/plugins` endpoint.
+
+Implementing the `createGlobalRouter` method as shown below would add the `/api/v1/plugins/hello-world/hello` endpoint for the plugin with the `hello-world` restApiName.
+
+[source,java]
+----
+@Override
+public Router createGlobalRouter() {
+    Router router = Router.router(vertx());
+
+    router.route("/hello").handler(rc -> {
+        rc.response().end("world");
+    });
+
+    return router;
+}
+----
+
+NOTE: The method `createGlobalRouter` will be invoked multiple times in order to register the endpoints to all request handlers.
+
+==== Project Routes
+
+Additionally you can also hook your plugin routes to the `/api/v1/:projectName/plugins` endpoint.
+
+Implementing the `createProjectRouter` method as shown below would add the `/api/v1/:projectName/plugins/hello-world/hello-project` endpoint for the plugin to all projects.
+
+[source,java]
+----
+@Override
+public Router createProjectRouter() {
+    Router router = Router.router(vertx());
+
+    router.route("/hello-project").handler(rc -> {
+        rc.response().end("world");
+    });
+
+    return router;
+}
+----
+
+NOTE: The method `createProjectRouter` will be invoked multiple times in order to register the endpoints to all request handlers.
+
+==== Context
+
+The Vert.x `RoutingContext` contains information which can be accessed by the plugin.
+
+The project context can be wrapped via `wrap(rc)` to get the `PluginContext` which makes it possible to access various information.
+
+.PluginContext methods
+[options="header"]
+|======
+| Method                        | Description
+| `PluginContext#project()`     | Return `JsonObject` which contains project name, uuid.
+| `PluginContext#projectName()` | Return the project name.
+| `PluginContext#client()`      | Return a new client which can be used to access the API . This client will in contrast to `MeshPlugin#adminClient()` use the user specific client.
+|======
+
+.Example
+[source,java]
+----
+router.route("/projectInfo").handler(rc -> {
+    PluginContext context = wrap(rc);
+    rc.response().end(context.project().encodePrettily());
+});
+----
+
+
+==== Router API
+
+You can read more about the Vert.x router API in the link:https://vertx.io/docs/vertx-web/java/#_basic_vert_x_web_concepts[Vert.x Web documentation].
+
+=== GraphQL Plugin
+
+Add the interface `GraphQLPlugin` to your plugin class. You will need to implement the `createRootSchema()` method to return the object type of your plugin. This type is added to the Gentics Mesh GraphQL API and can be accessed via the `pluginApi` field.
+
+Each plugin will be added to the `pluginApi` field using the `apiName` as the key for the new field:
+
+```gql
+pluginApi {
+    myPluginA {
+        text
+    }
+    myPluginB {
+        text
+        myField {
+            myInfo
+        }
+    }
+}
+```
+
+NOTE: The `createRootSchema()` method will be invoked for every query. It is thus advised to only return GraphQL schema which has been generated up-front. 
+
+==== Context
+
+In the datafetcher which will load the data it is possible to access the context via `env.getContext()`. This will return a `GraphQLPluginContext` object that contains methods to access user and other request  information.
+
+.GraphQLPluginContext methods excerpt
+[options="header"]
+|======
+| Method                                | Description
+| `GraphQLPluginContext#projectName()`  | Name of current project.
+| `GraphQLPluginContext#projectUuid()`   | Uuid of current project.
+| `GraphQLPluginContext#branchName()`   | Name of current active branch.
+| `GraphQLPluginContext#branchUuid()`   | Uuid of current active branch.
+| `GraphQLPluginContext#principal()`    | User information.
+|======
+
+== Plugin Methods
+
+Additionally the plugin class provides some utility functions which make it easier to handle plugin configuration and plugin data.
+
+The configuration of the plugin will be stored in the plugin directory in a `plugins/{pluginId}/config.yml` file which can be overridden by a `/plugins/{pluginId}/config.local.yml` file.
+
+[options="header"]
+|======
+| Method                                | Description
+| `AbstractPlugin#writeConfig(config)`  | Write the configuration POJO to the `config.yml` file.
+| `AbstractPlugin#readConfig(clazz)`    | Read the configuration using the class. This method will also use the `config.local.yml` values if present.
+| `AbstractPlugin#getConfigFile()`      | Return the config file. 
+| `AbstractPlugin#getLocalConfigFile()` | Return the local config file.
+| `AbstractPlugin#getStorageDir()`      | Return the path to the storage directory `plugins/{pluginId}/storage` in which a plugin can place files in the filesystem.
+|======
+
+== Plugin Lifecycle
+
+=== Deploy
+
+[options="header", cols="1,3"]
+|======
+| Name               | Description
+| **Loading**        | Plugin gets loaded and prepared for starting 
+| **Starting**       | Plugin gets started.
+| **Initialisation** | Plugin gets initialized. You can implement the `MeshPlugin#initialize()` method to initialize your plugin resources.
+| **Registration**   | Plugin gets finally registered so that it can be used.
+|======
+
+=== Undeploy
+
+[options="header", cols="1,3"]
+|======
+| Name                | Description
+| **De-registration** | Plugin registration gets removed. At this point the plugin integration with the server gets removed. REST and GraphQL extensions get removed.
+| **Shutdown**        | Plugin gets shutdown. You can implement the `MeshPlugin#shutdown()` method to stop and free your plugin resources.
+| **Stopping**        | Plugin gets stopped.
+| **Unloading**       | Finally the plugin gets unloaded.
+|======
+
+== Plugin Manifest
+
+The manifest of a plugin contains metadata information which will is used to load and categorize the plugin.
+
+
+.Plugin Manifest
+[options="header", cols="1,3"]
+|======
+| Name                  | Description
+| *Plugin-Id*           | Unique id of the plugin. Used to access the plugin once deployed.
+| *Plugin-Name*         | Full name of the plugin
+| *Plugin-Version*      | Current version of the plugin
+| *Plugin-Author*       | Author of the plugin
+| *Plugin-Class*        | Fully qualified path to the plugin class
+| *Plugin-Description*  | Short description of the plugin
+| *Plugin-License*      | License used by the plugin
+| *Plugin-Inception*    | Date when the plugin was initially created (DD-MM-YYYY)
+| *Plugin-Dependencies* | List of plugin ids of other plugins on which the plugin depends.
+|======
+
+=== Maven 
+
+The plugin manifest can directly be added when generating the shaded jar file.
+
+[source,xml]
+----
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-shade-plugin</artifactId>
+    <executions>
+        <execution>
+            <phase>package</phase>
+            <goals>
+                <goal>shade</goal>
+            </goals>
+            <configuration>
+                <transformers>
+                    <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                        <manifestEntries>
+                            <Plugin-Id>${plugin.id}</Plugin-Id>
+                            <Plugin-Name>${plugin.name}</Plugin-Name>
+                            <Plugin-Version>${plugin.version}</Plugin-Version>
+                            <Plugin-Author>${plugin.author}</Plugin-Author>
+                            <Plugin-Class>${plugin.class}</Plugin-Class>
+                            <Plugin-Description>${plugin.description}</Plugin-Description>
+                            <Plugin-License>${plugin.license}</Plugin-License>
+                            <Plugin-Inception>${plugin.inception}</Plugin-Inception>
+                        </manifestEntries>
+                    </transformer>
+                </transformers>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+----
+
+== Dependencies
+
+All the needed maven artifact are located at our Maven Repository. Please add the following section to your `pom.xml` in order to be able to download the dependencies.
+
+[source,xml]
+----
+<repositories>
+    <repository>
+        <id>maven.gentics.com</id>
+        <name>Gentics Maven Repository</name>
+        <url>https://maven.gentics.com/maven2</url>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+    </repository>
+</repositories>
+----
+
+The dependency version management can be managed more efficiently by just including the `mesh-plugin-bom` dependency. This will import the dependencyManagement for all plugin related dependencies.
+
+[source,xml]
+----
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.gentics.mesh</groupId>
+            <artifactId>mesh-plugin-bom</artifactId>
+            <version>${mesh.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+----
+
+The plugin needs at least the `mesh-plugin-dep` dependency. It is important to set the scope to `provided`. Otherwise the plugin can't be loaded by Gentics Mesh.
+
+[source,xml]
+----
+<dependency>
+    <groupId>com.gentics.mesh</groupId>
+    <artifactId>mesh-plugin-dep</artifactId>
+    <scope>provided</scope>
+</dependency>
+----
+
+== Access Data
+
+Plugins can access Gentics Mesh data via the provided clients.
+
+The `adminClient` will use the `admin` permissions and can by-default read everything. The `userClient` on the other hand will be created using the user information from the request that has been send to the plugin.
+
+[source,java]
+----
+
+router.route("/example").handler(rc -> {
+    PluginContext context = wrap(rc);
+    MeshRestClient adminClient = adminClient();
+    MeshRestClient userClient = context.client();
+    …
+});
+
+----
+
+== Plugin Extensions
+
+Plugins can also use and provide extensions. Extension can be used to modularize plugins. A plugin can for example provide a default implementation of a feature and another plugin can provide an extension which overrides or extends this feature. 
+
+The plugin (*consumer*) which uses the extension must provide an `ExtensionPoint` interface. This interface forms the contract which other plugins (*provider*) may use to implement the extension.
+
+[source,java]
+----
+public interface DummyExtensionPoint extends ExtensionPoint {
+
+	String name();
+
+}
+----
+
+The plugin which provides the extension now implements the extension.
+
+[source,java]
+----
+@Extension
+public class DummyExtension implements DummyExtensionPoint {
+
+	@Override
+	public String name() {
+		return "My dummy extension";
+	}
+
+}
+----
+
+Finally the consuming plugin may access the available extension via the plugin manager.
+
+[source,java]
+----
+getWrapper().getPluginManager().getExtensions(DummyExtensionPoint.class)
+----
+
+A full example can be found in our link:https://github.com/gentics/mesh-plugin-examples/tree/master/extensions[example repository].
+
+=== Building extension plugins
+
+The use of extensions requires additional build steps. Make sure to use the `ExtensionAnnotationProcessor` in the compile plugin.
+
+
+[source,xml]
+----
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>3.8.1</version>
+    <configuration>
+        <verbose>true</verbose>
+        <compilerVersion>1.8</compilerVersion>
+        <source>1.8</source>
+        <target>1.8</target>
+        <annotationProcessors>
+            <annotationProcessor>org.pf4j.processor.ExtensionAnnotationProcessor</annotationProcessor>
+        </annotationProcessors>
+    </configuration>
+    <dependencies>
+        <dependency>
+            <groupId>org.pf4j</groupId>
+            <artifactId>pf4j</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+    </dependencies>
+</plugin>
+----
+
+Additionally the plugin which provides the extension muse have an `<Plugin-Dependencies>` manifest entry that contains the consuming plugin id.
+
+NOTE: Make sure to share the extension point interfaces via a common maven module.
+
+== Integration Testing
+
+Plugins can be directly tested in your IDE by starting an embedded Gentics Mesh instance. 
+We provide a JUnit class rule which can be used to quickly startup Gentics Mesh.
+
+[source,java]
+----
+@ClassRule
+public static final MeshLocalServer server = new MeshLocalServer()
+    .withInMemoryMode()
+    .withPlugin(GraphQLExamplePlugin.class, "myPlugin")
+    .waitForStartup();
+----
+
+You need to following test dependencies in order to use the class rule.
+
+[source,xml]
+----
+<dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <version>4.12</version>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>com.gentics.mesh</groupId>
+    <artifactId>mesh-test-common</artifactId>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>com.gentics.mesh</groupId>
+    <artifactId>mesh-core</artifactId>
+    <scope>test</scope>
+</dependency>
+----
+
+=== Full Example
+
+This example shows how to use the `MeshLocalServer` and test the GraphQL plugin.
+
+.GraphQlExamplePluginTest.java
+[source,java]
+----
+include::/site/content/examples/graphql/src/test/java/com/gentics/mesh/plugin/GraphQlExamplePluginTest.java[lines=19..-1]
+----
+
+== Development Guide
+
+You can follow the link:{{< relref "guides/mesh-plugin" >}}[Plugin Development Guide] for a step by step introduction.
+
+== Examples
+
+The link:https://github.com/gentics/mesh-plugin-examples[Plugin Examples] demonstrates basic plugin usage and test setup.
+
+== Classloading
+
+The plugin system relies on link:https://github.com/pf4j/pf4j[PF4J] which uses a **Parent Last** classloader. This means that classes will be first loaded from the plugin even if they are also part of Gentics Mesh.
+
+To avoid `NoClassDefFoundError` / `NoSuchMethodError` it is thus recommended to add all the classes (libraries) that are used by the plugin jar.
+
+NOTE: The `mesh-plugin-api`, `vertx-core`, `vertx-web`, `netty` libraries should not be included in the plugin jar. Adding those libraries could cause stability issues and errors.
+
+== Troubleshoot
+
+
+[qanda]
+I'm getting `java.lang.NoSuchMethodException: com.gentics.mesh.plugin.MyPlugin.<init>(org.pf4j.PluginWrapper, com.gentics.mesh.plugin.env.PluginEnvironment)`::
+        You get this error if you have not added the mandatory constructor to your plugin.
+I'm getting `NoClassDefFoundError` / `NoSuchMethodError`::
+        You deployed your plugin on a Gentics Mesh instance which is not compatible with the classes you are using. You can rebuild the plugin with the new version or try to include your dependencies in the plugin jar to avoid classloader issues. Please note that `vertx-core`, `vertx-web`, `netty` should not be included in the jar.
+
+
+== Contributing
+
+You wrote a plugin? Great! Share it with the community via the link:https://github.com/gentics/mesh-awesome[Gentics Mesh Awesome List]

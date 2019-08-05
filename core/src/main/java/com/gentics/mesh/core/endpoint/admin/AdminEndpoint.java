@@ -15,7 +15,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_UNDEPLOYING;
 import static com.gentics.mesh.core.rest.MeshEvent.REPAIR_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.REPAIR_START;
 import static com.gentics.mesh.example.ExampleUuids.JOB_UUID;
-import static com.gentics.mesh.example.ExampleUuids.PLUGIN_1_UUID;
+import static com.gentics.mesh.example.ExampleUuids.PLUGIN_1_ID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
@@ -97,16 +97,16 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		});
 
 		InternalEndpointRoute undeployEndpoint = createRoute();
-		undeployEndpoint.path("/plugins/:uuid");
+		undeployEndpoint.path("/plugins/:id");
 		undeployEndpoint.method(DELETE);
 		undeployEndpoint.description("Undeploys the plugin with the given uuid.");
 		undeployEndpoint.produces(APPLICATION_JSON);
-		undeployEndpoint.addUriParameter("uuid", "Uuid of the plugin.", PLUGIN_1_UUID);
+		undeployEndpoint.addUriParameter("id", "Id of the plugin.", PLUGIN_1_ID);
 		undeployEndpoint.exampleResponse(OK, adminExamples.createHelloWorldPluginResponse(), "Plugin response.");
 		undeployEndpoint.events(PLUGIN_UNDEPLOYED, PLUGIN_UNDEPLOYING);
 		undeployEndpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
-			String uuid = ac.getParameter("uuid");
+			String uuid = ac.getParameter("id");
 			pluginHandler.handleUndeploy(ac, uuid);
 		});
 
@@ -115,7 +115,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		readEndpoint.method(GET);
 		readEndpoint.description("Loads deployment information for the plugin with the given id.");
 		readEndpoint.produces(APPLICATION_JSON);
-		readEndpoint.addUriParameter("uuid", "Uuid of the plugin.", PLUGIN_1_UUID);
+		readEndpoint.addUriParameter("uuid", "Uuid of the plugin.", PLUGIN_1_ID);
 		readEndpoint.exampleResponse(OK, adminExamples.createHelloWorldPluginResponse(), "Plugin response.");
 		readEndpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);

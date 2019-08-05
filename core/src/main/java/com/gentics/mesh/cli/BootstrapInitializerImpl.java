@@ -86,7 +86,7 @@ import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.plugin.PluginManager;
+import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.IndexHandlerRegistry;
@@ -99,7 +99,6 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 import dagger.Lazy;
-import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.eventbus.EventBusOptions;
@@ -115,8 +114,6 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	private static Logger log = LoggerFactory.getLogger(BootstrapInitializer.class);
-
-	private static PluginManager pluginManager = ServiceHelper.loadFactory(PluginManager.class);
 
 	@Inject
 	public ServerSchemaStorage schemaStorage;
@@ -147,6 +144,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Inject
 	public CacheRegistry cacheRegistry;
+
+	@Inject
+	public MeshPluginManager pluginManager;
 
 	private static MeshRoot meshRoot;
 
@@ -306,7 +306,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		handleLocalData(forceIndexSync, options, verticleLoader);
 
 		// Load existing plugins
-		pluginManager.init(options);
+		pluginManager.init();
 		pluginManager.deployExistingPluginFiles().subscribe(() -> {
 			// Finally fire the startup event and log that bootstrap has completed
 			log.info("Sending startup completed event to {" + STARTUP + "}");
@@ -364,9 +364,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 		vertxOptions.setPreferNativeTransport(true);
 		System.setProperty("vertx.cacheDirBase", options.getTempDirectory());
-		// TODO We need to find a different way to deal with the FileResolver classpath caching issue since disabling the cache
-		// has negative performance implications.
-		// vertxOptions.setFileResolverCachingEnabled(false);
 		Vertx vertx = null;
 		if (vertxOptions.getEventBusOptions().isClustered()) {
 			log.info("Creating clustered Vert.x instance");

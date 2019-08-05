@@ -1,9 +1,0 @@
-{
-  "name": "Basic Static Plugin",
-  "apiName": "static",
-  "description": "A very basic static plugin which demonstrates the plugin concept",
-  "license": "Apache License 2.0",
-  "inception": "05-03-2018",
-  "author": "Johannes Schüth",
-  "version": "1.0"
-}

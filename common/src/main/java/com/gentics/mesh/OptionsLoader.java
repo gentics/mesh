@@ -181,7 +181,7 @@ public final class OptionsLoader {
 	 * 
 	 * @return
 	 */
-	private static MeshOptions generateDefaultConfig() {
+	public static MeshOptions generateDefaultConfig() {
 		MeshOptions options = new MeshOptions();
 		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
 		options.setNodeName(MeshNameProvider.getInstance().getRandomName());

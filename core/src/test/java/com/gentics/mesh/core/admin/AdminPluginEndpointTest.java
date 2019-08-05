@@ -7,97 +7,71 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
-import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.plugin.AbstractPluginTest;
 import com.gentics.mesh.plugin.ClonePlugin;
 import com.gentics.mesh.plugin.ManifestInjectorPlugin;
-import com.gentics.mesh.plugin.NonMeshPluginVerticle;
-import com.gentics.mesh.plugin.PluginManager;
-import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.UUIDUtil;
 
-import io.vertx.core.ServiceHelper;
-import io.vertx.reactivex.core.Vertx;
-
+/**
+ * These tests require the test plugins to be build. You can build these plugins using the /core/build-test-plugins.sh script.
+ */
 @MeshTestSetting(testSize = PROJECT, startServer = true, inMemoryDB = true)
-public class AdminPluginEndpointTest extends AbstractMeshTest {
+public class AdminPluginEndpointTest extends AbstractPluginTest {
 
 	private static final String API_NAME = "basic";
 
-	private static final String DEPLOYMENT_NAME = "filesystem:target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar";
-
-	private static final String DEPLOYMENT2_NAME = "filesystem:target/test-plugins/basic2/target/basic2-plugin-0.0.1-SNAPSHOT.jar";
-
-	private static PluginManager manager = ServiceHelper.loadFactory(PluginManager.class);
-
-	@Before
-	public void clearDeployments() {
-		// Copy the uuids to avoid concurrency issues
-		Set<String> uuids = new HashSet<>(manager.getPlugins().keySet());
-		for (String uuid : uuids) {
-			manager.undeploy(uuid).blockingAwait();
-		}
-
-		setPluginBaseDir(".");
-	}
-
 	@Test
-	public void testDeployPluginMissingPermission() {
+	public void testDeployPluginMissingPermission() throws IOException {
 		revokeAdminRole();
-		PluginDeploymentRequest request = new PluginDeploymentRequest().setName(DEPLOYMENT_NAME);
-		call(() -> client().deployPlugin(request), FORBIDDEN, "error_admin_permission_required");
+		copyAndDeploy(BASIC_PATH, "plugin.jar", FORBIDDEN, "error_admin_permission_required");
 	}
 
 	@Test
-	public void testReadPluginMissingPermission() {
+	public void testReadPluginMissingPermission() throws IOException {
 		grantAdminRole();
-		PluginDeploymentRequest request = new PluginDeploymentRequest().setName(DEPLOYMENT_NAME);
-		PluginResponse deployment = call(() -> client().deployPlugin(request));
+		PluginResponse deployment = copyAndDeploy(BASIC_PATH, "plugin.jar");
 
 		revokeAdminRole();
-		String uuid = deployment.getUuid();
-		call(() -> client().findPlugin(uuid), FORBIDDEN, "error_admin_permission_required");
+		String id = deployment.getId();
+		call(() -> client().findPlugin(id), FORBIDDEN, "error_admin_permission_required");
 	}
 
 	@Test
-	public void testNonPluginDeployment() {
+	public void testNonPluginDeployment() throws IOException {
 		grantAdminRole();
-		String name = NonMeshPluginVerticle.class.getCanonicalName();
-		System.out.println(name);
-		int before = vertx().deploymentIDs().size();
-		call(() -> client().deployPlugin(new PluginDeploymentRequest().setName(name)), BAD_REQUEST, "admin_plugin_error_plugin_did_not_register");
-		assertEquals("The verticle should not stay deployed.", before, vertx().deploymentIDs().size());
+		String name = "non-mesh.jar";
+
+		int before = Mesh.mesh().pluginIds().size();
+		copyAndDeploy(NON_MESH_PATH, name, INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name);
+
+		int after = Mesh.mesh().pluginIds().size();
+		assertEquals("The verticle should not stay deployed.", before, after);
 	}
 
 	@Test
-	public void testUndeployPluginMissingPermission() {
+	public void testUndeployPluginMissingPermission() throws IOException {
 		grantAdminRole();
-		PluginDeploymentRequest request = new PluginDeploymentRequest().setName(DEPLOYMENT_NAME);
-		PluginResponse deployment = call(() -> client().deployPlugin(request));
+		PluginResponse deployment = copyAndDeploy(BASIC_PATH, "plugin.jar");
 
 		revokeAdminRole();
-		String uuid = deployment.getUuid();
-		call(() -> client().undeployPlugin(uuid), FORBIDDEN, "error_admin_permission_required");
+		String id = deployment.getId();
+		call(() -> client().undeployPlugin(id), FORBIDDEN, "error_admin_permission_required");
 	}
 
 	@Test
@@ -114,9 +88,9 @@ public class AdminPluginEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testDeployPlugin() throws IOException {
 		grantAdminRole();
-		PluginDeploymentRequest request = new PluginDeploymentRequest().setName(DEPLOYMENT_NAME);
-		PluginResponse deployment = call(() -> client().deployPlugin(request));
-		assertTrue(UUIDUtil.isUUID(deployment.getUuid()));
+
+		PluginResponse deployment = copyAndDeploy(BASIC_PATH, "basic-plugin.jar");
+		assertEquals("basic", deployment.getId());
 
 		assertEquals("world", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + API_NAME + "/hello"));
 		assertEquals("world-project", httpGetNow(CURRENT_API_BASE_PATH + "/" + PROJECT_NAME + "/plugins/" + API_NAME + "/hello"));
@@ -124,28 +98,28 @@ public class AdminPluginEndpointTest extends AbstractMeshTest {
 		PluginListResponse list = call(() -> client().findPlugins());
 		assertEquals(1, list.getMetainfo().getTotalCount());
 
-		PluginResponse response = call(() -> client().findPlugin(deployment.getUuid()));
+		PluginResponse response = call(() -> client().findPlugin(deployment.getId()));
 		assertEquals(deployment.getName(), response.getName());
 
-		call(() -> client().undeployPlugin(deployment.getUuid()));
+		call(() -> client().undeployPlugin(deployment.getId()));
 
 		assertEquals(404, httpGet(CURRENT_API_BASE_PATH + "/plugins/" + API_NAME + "/hello").execute().code());
 
 	}
 
 	@Test
-	public void testPluginList() {
+	public void testPluginList() throws IOException {
 		grantAdminRole();
-		PluginResponse response = call(() -> client().deployPlugin(new PluginDeploymentRequest().setName(DEPLOYMENT_NAME)));
-		assertEquals(1, manager.getPlugins().size());
+		PluginResponse response = copyAndDeploy(BASIC_PATH, "plugin.jar");
+		assertEquals(1, pluginManager().getPluginIds().size());
 
-		String bogusName = "filesystem:bogus.jar";
+		String bogusName = "bogus.jar";
 
-		call(() -> client().deployPlugin(new PluginDeploymentRequest().setName(bogusName)), BAD_REQUEST,
+		call(() -> client().deployPlugin(new PluginDeploymentRequest().setPath(bogusName)), BAD_REQUEST,
 			"admin_plugin_error_plugin_deployment_failed", bogusName);
 
-		PluginResponse response2 = call(() -> client().findPlugin(response.getUuid()));
-		assertEquals(response.getUuid(), response2.getUuid());
+		PluginResponse response2 = call(() -> client().findPlugin(response.getId()));
+		assertEquals(response.getId(), response2.getId());
 
 		call(() -> client().findPlugin("bogus"), NOT_FOUND, "admin_plugin_error_plugin_not_found", "bogus");
 		PluginListResponse pluginList = call(() -> client().findPlugins());
@@ -153,6 +127,8 @@ public class AdminPluginEndpointTest extends AbstractMeshTest {
 		assertEquals(1, pluginList.getMetainfo().getCurrentPage());
 		assertEquals(1, pluginList.getMetainfo().getPageCount());
 		assertEquals(1, pluginList.getMetainfo().getTotalCount());
+		PluginResponse first = pluginList.getData().get(0);
+		assertEquals("The id of the plugin did not match", "basic", first.getId());
 
 		pluginList = call(() -> client().findPlugins(new PagingParametersImpl().setPerPage(1L)));
 		assertEquals(1, pluginList.getMetainfo().getPerPage().longValue());
@@ -160,8 +136,8 @@ public class AdminPluginEndpointTest extends AbstractMeshTest {
 		assertEquals(1, pluginList.getMetainfo().getPageCount());
 		assertEquals(1, pluginList.getMetainfo().getTotalCount());
 
-		GenericMessageResponse msg = call(() -> client().undeployPlugin(response.getUuid()));
-		assertThat(msg).matches("admin_plugin_undeployed", response.getUuid());
+		GenericMessageResponse msg = call(() -> client().undeployPlugin(response.getId()));
+		assertThat(msg).matches("admin_plugin_undeployed", response.getId());
 		pluginList = call(() -> client().findPlugins(new PagingParametersImpl().setPerPage(1L)));
 		assertEquals(1, pluginList.getMetainfo().getPerPage().longValue());
 		assertEquals(1, pluginList.getMetainfo().getCurrentPage());
@@ -171,72 +147,78 @@ public class AdminPluginEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	@Ignore("The current classpath handling issue requires us to disable isolation levels and thus the test fails.")
 	public void testStaticHandler() throws IOException {
 		grantAdminRole();
-		PluginDeploymentRequest request = new PluginDeploymentRequest().setName(DEPLOYMENT_NAME);
-		call(() -> client().deployPlugin(request));
-		request.setName(DEPLOYMENT2_NAME);
-		call(() -> client().deployPlugin(request));
+
+		copyAndDeploy(BASIC_PATH, "plugin.jar");
+		copyAndDeploy(BASIC2_PATH, "plugin2.jar");
 
 		assertEquals("world", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/basic/hello"));
 		assertEquals("world2", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/basic2/hello"));
 		assertEquals("content", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/basic/static/file.txt"));
-		assertEquals("content2", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/basic2/static/file.txt"));
+		assertEquals("content2", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/basic2/static2/file.txt"));
 	}
 
 	@Test
-	public void testInvalidManifest() {
+	public void testClassLoaderHandling() throws IOException {
+		grantAdminRole();
+
+		copyAndDeploy(CLASSLOADER_PATH, "plugin.jar");
+
+		assertEquals("plugin", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/classloader/scope"));
+		assertEquals("plugin", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/classloader/check"));
+	}
+
+	@Test
+	public void testInvalidManifest() throws IOException {
 		ManifestInjectorPlugin.manifest = new PluginManifest()
-			.setApiName("api")
 			.setAuthor("Joe Doe")
-			.setName("test")
+			.setId("injector")
+			.setName("The injector test plugin")
 			.setInception("2018")
 			.setDescription("some Text")
 			.setLicense("Apache 2.0")
 			.setVersion(null);
+		ManifestInjectorPlugin.apiName = "api";
 
 		grantAdminRole();
-		final String DEPLOYMENT_NAME = ManifestInjectorPlugin.class.getCanonicalName();
-		call(() -> client().deployPlugin(new PluginDeploymentRequest().setName(DEPLOYMENT_NAME)), BAD_REQUEST,
-			"admin_plugin_error_validation_failed_field_missing", "version");
+		deployPlugin(ManifestInjectorPlugin.class, "inject", BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "version");
 	}
 
 	@Test
 	public void testManifestWithInvalidAPIName() {
 		ManifestInjectorPlugin.manifest = new PluginManifest()
-			.setApiName("api with spaces")
-			.setAuthor("Joe Doe")
+			.setId("injector")
+			.setName("Injector test plugin")
 			.setDescription("some Text")
-			.setName("test")
+			.setAuthor("Joe Doe")
 			.setInception("2018")
 			.setLicense("Apache 2.0")
 			.setVersion("1.0");
+		ManifestInjectorPlugin.apiName = "api with spaces";
 
 		grantAdminRole();
-		final String DEPLOYMENT_NAME = ManifestInjectorPlugin.class.getCanonicalName();
-		call(() -> client().deployPlugin(new PluginDeploymentRequest().setName(DEPLOYMENT_NAME)), BAD_REQUEST,
-			"admin_plugin_error_validation_failed_apiname_invalid", "test");
 
-		ManifestInjectorPlugin.manifest.setApiName("some/slash");
-		call(() -> client().deployPlugin(new PluginDeploymentRequest().setName(DEPLOYMENT_NAME)), BAD_REQUEST,
-			"admin_plugin_error_validation_failed_apiname_invalid", "test");
+		deployPlugin(ManifestInjectorPlugin.class, "injector", BAD_REQUEST, "admin_plugin_error_validation_failed_apiname_invalid", "injector");
 
-		ManifestInjectorPlugin.manifest.setApiName("ok");
-		call(() -> client().deployPlugin(new PluginDeploymentRequest().setName(DEPLOYMENT_NAME)));
+		ManifestInjectorPlugin.apiName = "api/with/slashes";
+		deployPlugin(ManifestInjectorPlugin.class, "injector", BAD_REQUEST, "admin_plugin_error_validation_failed_apiname_invalid", "injector");
+
+		ManifestInjectorPlugin.apiName = "ok";
+		deployPlugin(ManifestInjectorPlugin.class, "injector");
 	}
 
 	@Test
-	public void testMulitpleDeployments() throws IOException {
+	public void testMultipleDeployments() throws IOException {
 		grantAdminRole();
 
-		final String CLONE_PLUGIN_DEPLOYMENT_NAME = ClonePlugin.class.getCanonicalName();
-		for (int i = 0; i < 100; i++) {
-			call(() -> client().deployPlugin(new PluginDeploymentRequest().setName(CLONE_PLUGIN_DEPLOYMENT_NAME)));
+		for (int i = 1; i <= 100; i++) {
+			deployPlugin(ClonePlugin.class, "clone" + i);
 		}
 
 		PluginListResponse result = call(() -> client().findPlugins(new PagingParametersImpl().setPerPage(10L).setPage(10)));
 		PluginResponse lastElement = result.getData().get(9);
+		System.out.println(lastElement.toJson());
 		assertEquals("Clone Plugin 100", lastElement.getName());
 		assertEquals(10, result.getMetainfo().getPerPage().longValue());
 		assertEquals(10, result.getMetainfo().getCurrentPage());
@@ -248,24 +230,30 @@ public class AdminPluginEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testDuplicateDeployment() {
+	public void testDuplicateDeployment() throws IOException {
 		grantAdminRole();
-		call(() -> client().deployPlugin(new PluginDeploymentRequest().setName(DEPLOYMENT_NAME)));
-		assertEquals(1, manager.getPlugins().size());
 
-		int before = Vertx.vertx().deploymentIDs().size();
-		call(() -> client().deployPlugin(new PluginDeploymentRequest().setName(DEPLOYMENT_NAME)), BAD_REQUEST,
-			"admin_plugin_error_plugin_already_deployed", "Basic Plugin", "basic");
-		assertEquals("No additional plugins should have been deployed", before, Vertx.vertx().deploymentIDs().size());
-		assertEquals(1, manager.getPlugins().size());
+		copyAndDeploy(BASIC_PATH, "plugin.jar");
+		assertEquals(1, pluginManager().getPluginIds().size());
+
+		long before = pluginCount();
+		copyAndDeploy(BASIC_PATH, "plugin2.jar", BAD_REQUEST, "admin_plugin_error_plugin_with_id_already_deployed", "plugin2.jar");
+		assertEquals("No additional plugins should have been deployed", before, pluginCount());
+		assertEquals(1, pluginManager().getPluginIds().size());
 	}
 
-	private void setPluginBaseDir(String baseDir) {
-		File pluginDir = new File(baseDir);
-		pluginDir.mkdirs();
-		MeshOptions options = new MeshOptions();
-		options.setPluginDirectory(baseDir);
-		manager.init(options);
+	@Test
+	public void testExtensionHandling() throws IOException {
+		grantAdminRole();
+
+		copyAndDeploy(EXTENSION_CONSUMER_PATH, "extension-consumer.jar");
+		copyAndDeploy(EXTENSION_PROVIDER_PATH, "extension-provider.jar");
+
+		assertEquals("My dummy extension\n", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/extension-consumer/extensions"));
+
+		call(() -> client().undeployPlugin("extension-provider"));
+		assertEquals("", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/extension-consumer/extensions"));
+
 	}
 
 }

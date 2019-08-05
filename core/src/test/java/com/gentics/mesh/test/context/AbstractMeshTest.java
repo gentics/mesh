@@ -14,6 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -68,6 +69,7 @@ import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.context.event.EventAsserter;
 import com.gentics.mesh.test.context.event.EventAsserterChain;
 import com.gentics.mesh.test.docker.ElasticsearchContainer;
+import com.gentics.mesh.test.util.MeshAssert;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.VersionNumber;
 
@@ -84,7 +86,7 @@ import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import io.vertx.ext.web.RoutingContext;
 import okhttp3.OkHttpClient;
 
-public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelper {
+public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelper, PluginHelper {
 
 	static {
 		// Use slf4j instead of JUL
@@ -129,12 +131,17 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	public OkHttpClient httpClient() {
 		if (this.httpClient == null) {
-			int timeout = 45;
-			this.httpClient = new OkHttpClient.Builder()
-				.writeTimeout(timeout, TimeUnit.SECONDS)
-				.readTimeout(timeout, TimeUnit.SECONDS)
-				.connectTimeout(timeout, TimeUnit.SECONDS)
-				.build();
+			int timeout;
+			try {
+				timeout = MeshAssert.getTimeout();
+				this.httpClient = new OkHttpClient.Builder()
+					.writeTimeout(timeout, TimeUnit.SECONDS)
+					.readTimeout(timeout, TimeUnit.SECONDS)
+					.connectTimeout(timeout, TimeUnit.SECONDS)
+					.build();
+			} catch (UnknownHostException e) {
+				throw new RuntimeException(e);
+			}
 		}
 		return this.httpClient;
 	}
@@ -220,7 +227,6 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 			.orElseGet(() -> getClass().getResourceAsStream("/graphql/" + name));
 		return IOUtils.toString(stream);
 	}
-
 
 	/**
 	 * Return the es text for the given name.

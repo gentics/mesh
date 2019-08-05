@@ -2,6 +2,7 @@ package com.gentics.mesh.test;
 
 import com.gentics.mesh.core.data.i18n.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
@@ -120,7 +121,7 @@ public final class ClientHelper {
 				if (cause instanceof MeshRestClientMessageException) {
 					error = (MeshRestClientMessageException) e.getCause();
 				} else {
-					throw (RuntimeException)e;
+					throw (RuntimeException) e;
 				}
 			} else {
 				error = (MeshRestClientMessageException) e;
@@ -153,8 +154,9 @@ public final class ClientHelper {
 	 *            parameters of the expected response message
 	 * @return
 	 */
-	public static <T> MeshRestClientMessageException call(Single<GenericMessageResponse> request, HttpResponseStatus status, String bodyMessageI18nKey,
-														  String... i18nParams) {
+	public static <T> MeshRestClientMessageException call(Single<GenericMessageResponse> request, HttpResponseStatus status,
+		String bodyMessageI18nKey,
+		String... i18nParams) {
 		try {
 			request.blockingGet();
 			fail("We expected the future to have failed but it succeeded.");
@@ -200,8 +202,8 @@ public final class ClientHelper {
 				.map(ignore -> "dummy")
 				.toSingle("dummy")
 				.toObservable()
-				.onErrorResumeNext(Observable.empty())
-			).count().blockingGet();
+				.onErrorResumeNext(Observable.empty()))
+			.count().blockingGet();
 
 		assertFalse("We found more than one request that succeeded. Only one of the requests should be able to delete the node.", successCount > 1);
 		assertTrue("We did not find a single request which succeeded.", successCount != 0);
@@ -215,7 +217,16 @@ public final class ClientHelper {
 	}
 
 	public static void expectFailureMessage(Throwable e, HttpResponseStatus status, String message) {
-		if (e instanceof MeshRestClientMessageException) {
+		if (e instanceof GenericRestException) {
+			GenericRestException exception = ((GenericRestException) e);
+			assertEquals("The status code of the nested exception did not match the expected value.", status.code(), exception.getStatus().code());
+
+			if (message != null) {
+				Locale en = Locale.ENGLISH;
+				String exceptionMessage = I18NUtil.get(en, exception.getI18nKey(), exception.getI18nParameters());
+				assertEquals(message, exceptionMessage);
+			}
+		} else if (e instanceof MeshRestClientMessageException) {
 			MeshRestClientMessageException exception = ((MeshRestClientMessageException) e);
 			assertEquals("The status code of the nested exception did not match the expected value.", status.code(), exception.getStatusCode());
 

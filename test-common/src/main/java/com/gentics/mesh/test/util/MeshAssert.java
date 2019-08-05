@@ -36,7 +36,7 @@ public final class MeshAssert {
 	public static int getTimeout() throws UnknownHostException {
 		int timeout = CI_TIMEOUT_SECONDS;
 		String hostname = TestUtils.getHostname();
-		boolean isDevHost = Stream.of("plexus", "corvus.lan.apa.at", "dsvigen001f")
+		boolean isDevHost = Stream.of("plexus", "corvus", "corvus.lan.apa.at", "dsvigen001f")
 			.anyMatch(host -> host.equals(hostname));
 
 		if (isDevHost) {

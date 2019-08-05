@@ -42,6 +42,7 @@
 	<logger name="com.gentics.mesh.search.index" level="DEBUG" />
 	<logger name="com.gentics.mesh.event.impl.EventQueueBatchImpl" level="TRACE" />
 	<logger name="com.gentics.mesh.search.verticle" level="TRACE" />
+	<logger name="com.gentics.mesh.plugin" level="TRACE" />
  -->
 	<root level="ERROR">
 		<appender-ref ref="STDOUT"/>

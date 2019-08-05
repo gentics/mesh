@@ -49,14 +49,12 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.3.2</version>
 		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-test-common</artifactId>
-			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

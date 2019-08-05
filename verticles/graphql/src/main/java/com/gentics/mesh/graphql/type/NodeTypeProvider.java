@@ -8,7 +8,6 @@ import static com.gentics.mesh.graphql.type.NodeReferenceTypeProvider.NODE_REFER
 import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_TYPE_NAME;
-import static com.gentics.mesh.util.StreamUtil.toStream;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
@@ -59,6 +58,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
+
 import graphql.GraphQLException;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;

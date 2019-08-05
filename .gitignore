@@ -2,6 +2,7 @@
 target
 .classpath
 .project
+/build.sh
 .settings
 .bin
 .pmd*

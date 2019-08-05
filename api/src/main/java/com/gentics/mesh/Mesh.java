@@ -1,9 +1,12 @@
 
 package com.gentics.mesh;
 
+import java.util.Set;
+
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 
+import io.reactivex.Completable;
 import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
 
@@ -22,6 +25,7 @@ public interface Mesh {
 	 * @return Fluent API
 	 */
 	static Mesh mesh(MeshOptions options) {
+		options.validate();
 		return factory.mesh(options);
 	}
 
@@ -67,13 +71,24 @@ public interface Mesh {
 	MeshOptions getOptions();
 
 	/**
-	 * Start mesh. This will effectively block until {@link #shutdown()} is called from another thread. This method will initialise the dagger context and
+	 * Start Gentics Mesh. This will effectively block until {@link #shutdown()} is called from another thread. This method will initialise the dagger context and
 	 * deploy mandatory verticles and extensions.
 	 * 
 	 * @throws Exception
 	 * @return Fluent API
 	 */
 	Mesh run() throws Exception;
+
+	/**
+	 * Start Gentics Mesh and complete the completable once the server is ready.
+	 * 
+	 * @return
+	 */
+	default Completable rxRun() {
+		return Completable.fromAction(() -> {
+			run(false);
+		});
+	}
 
 	/**
 	 * Start mesh
@@ -155,5 +170,22 @@ public interface Mesh {
 	 * @throws InterruptedException
 	 */
 	void dontExit() throws InterruptedException;
+
+	/**
+	 * Deploy the plugin with the given class.
+	 * 
+	 * @param clazz
+	 * @param id
+	 *            The id of the plugin (e.g. hello-world)
+	 * @return
+	 */
+	Completable deployPlugin(Class<?> clazz, String id);
+
+	/**
+	 * Return a set of deployed plugin ids.
+	 * 
+	 * @return
+	 */
+	Set<String> pluginIds();
 
 }

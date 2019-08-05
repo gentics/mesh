@@ -86,6 +86,8 @@ import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.plugin.env.PluginEnvironment;
+import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
@@ -138,6 +140,14 @@ public interface TestHelper {
 
 	default BootstrapInitializer boot() {
 		return MeshInternal.get().boot();
+	}
+
+	default MeshPluginManager pluginManager() {
+		return MeshInternal.get().pluginManager();
+	}
+
+	default PluginEnvironment pluginEnv() {
+		return MeshInternal.get().pluginEnv();
 	}
 
 	default TestDataProvider data() {

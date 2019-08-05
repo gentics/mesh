@@ -55,21 +55,19 @@ public class PluginRouter {
 		parentRouter.mountSubRouter(PLUGINS_MOUNTPOINT, router);
 	}
 
-	/**
-	 * Return the plugin router with the given path segment name. A new router will be created if the router with the segment name can't be found.
-	 * 
-	 * @param name
-	 * @return Existing or created router
-	 */
-	public Router getRouter(String name) {
-		Router pluginRouter = pluginRouters.get(name);
-		if (pluginRouter == null) {
-			pluginRouter = Router.router(Mesh.vertx());
-			log.info("Added plugin subrouter {" + name + "}");
-			pluginRouters.put(name, pluginRouter);
-		}
+	public void addRouter(String name, Router pluginRouter) {
+		pluginRouters.put(name, pluginRouter);
 		router.mountSubRouter("/" + name, pluginRouter);
-		return pluginRouter;
+		log.info("Added plugin subrouter {" + name + "}");
+	}
+
+	public void removeRouter(String name) {
+		Router pluginRouter = pluginRouters.get(name);
+		if (pluginRouter != null) {
+			pluginRouter.clear();
+			pluginRouters.remove(name);
+			log.info("Removed plugin subrouter {" + name + "}");
+		}
 	}
 
 }

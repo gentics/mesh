@@ -13,9 +13,16 @@
 	</properties>
 
 	<modules>
-		<module>static</module>
 		<module>basic</module>
 		<module>basic2</module>
+		<module>non-mesh</module>
+		<module>failing</module>
+		<module>classloader</module>
+		<module>common</module>
+		<module>extension-provider</module>
+		<module>extension-consumer</module>
+		<module>graphql</module>
+		<module>invalid-graphql</module>
 	</modules>
 
 	<repositories>

@@ -16,7 +16,21 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<mesh.version>${project.version}</mesh.version>
+		<skip.test-plugins>true</skip.test-plugins>
 	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-bom</artifactId>
+				<type>pom</type>
+				<scope>import</scope>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 
 	<dependencies>
 		<!-- Internal dependencies -->
@@ -28,17 +42,14 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-common</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-distributed</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-elasticsearch</artifactId>
-			<version>${project.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>io.netty</groupId>
@@ -49,50 +60,30 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-graphql</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-rest-client</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-maven-service-factory</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.vertx</groupId>
-			<artifactId>vertx-filesystem-service-factory</artifactId>
-			<version>3.7.1</version>
-		</dependency>
-		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-http-service-factory</artifactId>
-			<version>${vertx.version}</version>
 		</dependency>
 
 		<!-- Common Tools -->
 		<dependency>
 			<groupId>commons-cli</groupId>
 			<artifactId>commons-cli</artifactId>
-			<version>1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.3.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
-			<version>1.5</version>
 		</dependency>
 
 		<!-- Default storage provider -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-service-local-storage</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<!-- Default image provider -->
@@ -106,7 +97,6 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-service-keycloak-auth</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<!-- Attachment parsing -->
@@ -126,7 +116,6 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-changelog-system</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
@@ -163,7 +152,6 @@
 		<dependency>
 			<groupId>com.hazelcast</groupId>
 			<artifactId>hazelcast-kubernetes</artifactId>
-			<version>1.2.2</version>
 		</dependency>
 
 		<dependency>
@@ -190,34 +178,29 @@
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
-			<version>2.9.6</version>
 		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-common</artifactId>
-			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-rest-model</artifactId>
-			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-test-common</artifactId>
-			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-api</artifactId>
-			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
@@ -255,11 +238,10 @@
 						<!-- Before the test phase -->
 						<phase>process-test-classes</phase>
 						<configuration>
-							<!--
-							<skipInvocation>${skip.unit.tests}</skipInvocation>
-							 -->
+							<skipInvocation>${skip.test-plugins}</skipInvocation>
 							<properties>
 								<mesh.version>${project.version}</mesh.version>
+								<skipTests>true</skipTests>
 							</properties>
 							<!-- Somehow invalid build hook are configured -->
 							<postBuildHookScript>/bin/true</postBuildHookScript>

@@ -1,0 +1,548 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>mesh-bom</artifactId>
+	<packaging>pom</packaging>
+	<name>Mesh - Bill Of Materials</name>
+
+	<parent>
+		<groupId>com.gentics.mesh</groupId>
+		<artifactId>mesh</artifactId>
+		<version>0.36.8-SNAPSHOT</version>
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<!-- when updating version, don't forget to update administration-guide.asciidoc -->
+		<graphql.version>10.0</graphql.version>
+		<pf4j.version>3.0.1</pf4j.version>
+		<asm.version>3.3.1</asm.version>
+		<spring.security.version>4.2.13.RELEASE</spring.security.version>
+		<ferma.version>${project.version}</ferma.version>
+		<elasticsearch.client.version>1.0.1</elasticsearch.client.version>
+		<orientdb.version>3.0.21</orientdb.version>
+		<hazelcast.version>3.10.4</hazelcast.version>
+		<jackson.version>2.9.9</jackson.version>
+		<netty.version>4.1.34.Final</netty.version>
+		<tika.version>1.21</tika.version>
+		<aws.sdk.version>2.1.0</aws.sdk.version>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+
+			<!-- Logging -->
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>${slf4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-slf4j-impl</artifactId>
+				<version>${log4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-api</artifactId>
+				<version>${log4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-core</artifactId>
+				<version>${log4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>1.2.3</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>log4j-over-slf4j</artifactId>
+				<version>1.7.25</version>
+			</dependency>
+
+
+			<!-- Dagger -->
+			<dependency>
+				<groupId>com.google.dagger</groupId>
+				<artifactId>dagger</artifactId>
+				<version>${dagger.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.dagger</groupId>
+				<artifactId>dagger-compiler</artifactId>
+				<version>${dagger.version}</version>
+				<optional>true</optional>
+			</dependency>
+
+			<!-- Utilities -->
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>20.0-rc1</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-cli</groupId>
+				<artifactId>commons-cli</artifactId>
+				<version>1.2</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>3.3.2</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<version>2.4</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-csv</artifactId>
+				<version>1.5</version>
+			</dependency>
+			<dependency>
+				<groupId>joda-time</groupId>
+				<artifactId>joda-time</artifactId>
+				<version>2.9.6</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpcore</artifactId>
+				<version>4.4.5</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-validator</groupId>
+				<artifactId>commons-validator</artifactId>
+				<version>1.6</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-codec</groupId>
+				<artifactId>commons-codec</artifactId>
+				<version>1.10</version>
+			</dependency>
+
+			<!-- HTTP Client -->
+			<dependency>
+				<groupId>com.squareup.okhttp3</groupId>
+				<artifactId>okhttp</artifactId>
+				<version>3.12.1</version>
+			</dependency>
+
+			<!-- S3 Support -->
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>s3</artifactId>
+				<version>${aws.sdk.version}</version>
+			</dependency>
+
+			<!-- RAML -->
+			<dependency>
+				<groupId>org.raml</groupId>
+				<artifactId>raml-parser</artifactId>
+				<version>0.8.14</version>
+			</dependency>
+
+			<!-- Json -->
+			<dependency>
+				<groupId>com.google.code.gson</groupId>
+				<artifactId>gson</artifactId>
+				<version>2.8.1</version>
+			</dependency>
+
+			<!-- Tika -->
+			<dependency>
+				<groupId>org.apache.tika</groupId>
+				<artifactId>tika-parsers</artifactId>
+				<version>${tika.version}</version>
+			</dependency>
+
+			<!-- Spring - bcrypt -->
+			<dependency>
+				<groupId>org.springframework.security</groupId>
+				<artifactId>spring-security-core</artifactId>
+				<version>${spring.security.version}</version>
+			</dependency>
+
+			<!-- Jackson -->
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-core</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-annotations</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.module</groupId>
+				<artifactId>jackson-module-jsonSchema</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+
+			<!-- YAML -->
+			<dependency>
+				<groupId>com.fasterxml.jackson.dataformat</groupId>
+				<artifactId>jackson-dataformat-yaml</artifactId>
+				<version>2.9.4</version>
+			</dependency>
+
+			<!-- Hazelcast -->
+			<dependency>
+				<groupId>com.hazelcast</groupId>
+				<artifactId>hazelcast</artifactId>
+				<version>${hazelcast.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.hazelcast</groupId>
+				<artifactId>hazelcast-kubernetes</artifactId>
+				<version>1.2.2</version>
+			</dependency>
+
+			<!-- Test dependencies -->
+			<dependency>
+				<groupId>org.assertj</groupId>
+				<artifactId>assertj-core</artifactId>
+				<version>3.4.1</version>
+			</dependency>
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-all</artifactId>
+				<version>1.10.19</version>
+			</dependency>
+			<dependency>
+				<groupId>com.jayway.jsonpath</groupId>
+				<artifactId>json-path</artifactId>
+				<version>2.2.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.skyscreamer</groupId>
+				<artifactId>jsonassert</artifactId>
+				<version>1.3.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.simpleframework</groupId>
+				<artifactId>simple-xml</artifactId>
+				<version>2.7.1</version>
+			</dependency>
+
+			<!-- RX -->
+			<dependency>
+				<groupId>io.vertx</groupId>
+				<artifactId>vertx-rx-java2</artifactId>
+				<version>${vertx.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.reactivex.rxjava2</groupId>
+				<artifactId>rxjava</artifactId>
+				<version>2.2.4</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.akarnokd</groupId>
+				<artifactId>rxjava2-jdk8-interop</artifactId>
+				<version>0.2.11</version>
+			</dependency>
+
+			<!-- Vert.x -->
+			<dependency>
+				<groupId>io.vertx</groupId>
+				<artifactId>vertx-unit</artifactId>
+				<version>${vertx.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.vertx</groupId>
+				<artifactId>vertx-dropwizard-metrics</artifactId>
+				<version>${vertx.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.vertx</groupId>
+				<artifactId>vertx-auth-oauth2</artifactId>
+				<version>${vertx.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.vertx</groupId>
+				<artifactId>vertx-web-templ-handlebars</artifactId>
+				<version>${vertx.version}</version>
+			</dependency>
+
+			<!-- Netty -->
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-transport-native-epoll</artifactId>
+				<classifier>linux-x86_64</classifier>
+				<version>${netty.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-buffer</artifactId>
+				<version>${netty.version}</version>
+			</dependency>
+
+			<!-- Reflections -->
+			<dependency>
+				<groupId>org.reflections</groupId>
+				<artifactId>reflections</artifactId>
+				<version>0.9.11</version>
+			</dependency>
+			<dependency>
+				<groupId>org.javassist</groupId>
+				<artifactId>javassist</artifactId>
+				<version>3.25.0-GA</version>
+			</dependency>
+
+			<!-- ZIP Support -->
+			<dependency>
+				<groupId>net.lingala.zip4j</groupId>
+				<artifactId>zip4j</artifactId>
+				<version>1.3.2</version>
+			</dependency>
+
+			<!-- UUID Support -->
+			<dependency>
+				<groupId>com.fasterxml.uuid</groupId>
+				<artifactId>java-uuid-generator</artifactId>
+				<version>3.1.4</version>
+			</dependency>
+
+			<!-- Plugin System -->
+			<dependency>
+				<groupId>org.pf4j</groupId>
+				<artifactId>pf4j</artifactId>
+				<version>${pf4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-plugin-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- Mesh -->
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-rest-model</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-distributed</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-server</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-graphql</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-rest-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- Default storage provider -->
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-service-local-storage</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- Default image provider -->
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>${mesh.image.provider}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- OAuthHandler -->
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-service-keycloak-auth</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- Caching -->
+			<dependency>
+				<groupId>com.github.ben-manes.caffeine</groupId>
+				<artifactId>caffeine</artifactId>
+				<version>2.5.6</version>
+			</dependency>
+
+			<!-- Changelog -->
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-changelog-system</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- Graph Database Support -->
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>ferma</artifactId>
+				<version>${ferma.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>madl-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>madl-core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>madl-ferma</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>${mesh.database.provider}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>${mesh.database.provider}</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-orientdb</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.tinkerpop.gremlin</groupId>
+				<artifactId>gremlin-java</artifactId>
+				<version>2.6.0</version>
+			</dependency>
+
+			<!-- Mesh Test Internals -->
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-common</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-common</artifactId>
+				<version>${project.version}</version>
+				<type>test-jar</type>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-core</artifactId>
+				<version>${project.version}</version>
+				<type>test-jar</type>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-rest-model</artifactId>
+				<version>${project.version}</version>
+				<type>test-jar</type>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-test-common</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-api</artifactId>
+				<version>${project.version}</version>
+				<type>test-jar</type>
+			</dependency>
+
+			<dependency>
+				<groupId>com.github.stefanbirkner</groupId>
+				<artifactId>system-rules</artifactId>
+				<version>1.18.0</version>
+			</dependency>
+
+			<!-- OrientDB -->
+			<dependency>
+				<groupId>com.orientechnologies</groupId>
+				<artifactId>orientdb-core</artifactId>
+				<version>${orientdb.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.orientechnologies</groupId>
+				<artifactId>orientdb-graphdb</artifactId>
+				<version>${orientdb.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.orientechnologies</groupId>
+				<artifactId>orientdb-gremlin</artifactId>
+				<version>${orientdb.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.orientechnologies</groupId>
+				<artifactId>orientdb-server</artifactId>
+				<version>${orientdb.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.orientechnologies</groupId>
+				<artifactId>orientdb-distributed</artifactId>
+				<version>${orientdb.version}</version>
+			</dependency>
+
+			<!-- Elasticsearch -->
+			<dependency>
+				<groupId>com.gentics.elasticsearch</groupId>
+				<artifactId>elasticsearch-client</artifactId>
+				<version>${elasticsearch.client.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-elasticsearch</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- HTML stripping -->
+			<dependency>
+				<groupId>org.jsoup</groupId>
+				<artifactId>jsoup</artifactId>
+				<version>1.11.2</version>
+			</dependency>
+
+			<!-- GraphQL -->
+			<dependency>
+				<groupId>com.graphql-java</groupId>
+				<artifactId>graphql-java</artifactId>
+				<version>${graphql.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.graphqlfilter</groupId>
+				<artifactId>graphql-java-filter</artifactId>
+				<version>1.0.1</version>
+			</dependency>
+
+		</dependencies>
+
+	</dependencyManagement>
+
+</project>

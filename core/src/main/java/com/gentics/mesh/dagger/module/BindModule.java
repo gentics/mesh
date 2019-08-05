@@ -14,6 +14,10 @@ import com.gentics.mesh.handler.RangeRequestHandler;
 import com.gentics.mesh.handler.impl.RangeRequestHandlerImpl;
 import com.gentics.mesh.metric.DropwizardMetricsService;
 import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.plugin.env.PluginEnvironment;
+import com.gentics.mesh.plugin.manager.MeshPluginManager;
+import com.gentics.mesh.plugin.manager.MeshPluginManagerImpl;
+import com.gentics.mesh.plugin.pf4j.PluginEnvironmentImpl;
 import com.gentics.mesh.search.index.common.DropIndexHandler;
 import com.gentics.mesh.search.index.common.DropIndexHandlerImpl;
 import com.gentics.mesh.storage.BinaryStorage;
@@ -51,4 +55,10 @@ public abstract class BindModule {
 
 	@Binds
 	abstract ProjectBranchNameCache bindBranchNameCache(ProjectBranchNameCacheImpl e);
+
+	@Binds
+	abstract PluginEnvironment bindPluginEnv(PluginEnvironmentImpl e);
+
+	@Binds
+	abstract MeshPluginManager bindPluginManager(MeshPluginManagerImpl pm);
 }

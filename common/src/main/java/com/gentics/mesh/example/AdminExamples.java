@@ -1,9 +1,6 @@
 package com.gentics.mesh.example;
 
 import static com.gentics.mesh.example.AbstractExamples.DATE_OLD;
-import static com.gentics.mesh.example.ExampleUuids.PLUGIN_1_UUID;
-import static com.gentics.mesh.example.ExampleUuids.PLUGIN_2_UUID;
-import static com.gentics.mesh.example.ExampleUuids.PLUGIN_3_UUID;
 import static com.gentics.mesh.example.ExampleUuids.UUID_1;
 
 import com.gentics.mesh.MeshStatus;
@@ -15,8 +12,8 @@ import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
-import com.gentics.mesh.core.rest.plugin.PluginManifest;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
+import com.gentics.mesh.plugin.PluginManifest;
 
 public class AdminExamples {
 
@@ -29,27 +26,26 @@ public class AdminExamples {
 	}
 
 	public PluginResponse createHelloWorldPluginResponse() {
-		return createPluginResponse("Hello World 1", "hello-world1", PLUGIN_1_UUID);
+		return createPluginResponse("hello-world", "Hello World 1", "hello");
 	}
-	
-	public PluginResponse createPluginResponse(String name, String key, String uuid) {
+
+	public PluginResponse createPluginResponse(String id, String name, String key) {
 		PluginManifest manifest = new PluginManifest();
+		manifest.setId(id);
 		manifest.setName(name);
-		manifest.setApiName(key);
 		manifest.setAuthor("Joe Doe");
 		manifest.setDescription("A dummy plugin");
 		manifest.setInception(DATE_OLD);
 		manifest.setLicense("Apache License 2.0");
 		manifest.setVersion("1.0");
-		manifest.validate();
-		return new PluginResponse().setUuid(uuid).setName(manifest.getName()).setManifest(manifest);
+		return new PluginResponse().setId(id).setName(manifest.getName()).setManifest(manifest);
 	}
 
 	public PluginListResponse createPluginListResponse() {
 		PluginListResponse list = new PluginListResponse();
-		list.add(createPluginResponse("Hello World 1", "hello-world1", PLUGIN_1_UUID));
-		list.add(createPluginResponse("Hello World 2", "hello-world2", PLUGIN_2_UUID));
-		list.add(createPluginResponse("Hello World 3", "hello-world3", PLUGIN_3_UUID));
+		list.add(createPluginResponse("hello-world-1", "Hello World 1", "hello-world1"));
+		list.add(createPluginResponse("hello-world-2", "Hello World 2", "hello-world2"));
+		list.add(createPluginResponse("hello-world-3", "Hello World 3", "hello-world3"));
 		list.getMetainfo().setTotalCount(3);
 		list.getMetainfo().setPageCount(1);
 		list.getMetainfo().setCurrentPage(1);
@@ -59,7 +55,7 @@ public class AdminExamples {
 
 	public PluginDeploymentRequest createPluginDeploymentRequest() {
 		PluginDeploymentRequest request = new PluginDeploymentRequest();
-		request.setName("filesystem:my-plugin.jar");
+		request.setPath("my-plugin.jar");
 		return request;
 	}
 

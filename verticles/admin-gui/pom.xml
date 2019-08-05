@@ -18,6 +18,18 @@
 		<frontend.maven.plugin.downloadRoot>http://nodejs.org/dist/</frontend.maven.plugin.downloadRoot>
 	</properties>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-bom</artifactId>
+				<type>pom</type>
+				<scope>import</scope>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
@@ -29,33 +41,28 @@
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-web-templ-handlebars</artifactId>
-			<version>${vertx.version}</version>
 		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-orientdb</artifactId>
-			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-core</artifactId>
-			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-core</artifactId>
-			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-test-common</artifactId>
-			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

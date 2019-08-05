@@ -3,6 +3,7 @@ package com.gentics.mesh.core.rest.plugin;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.plugin.PluginManifest;
 
 /**
  * Response which contains information about a deployed plugin.
@@ -10,8 +11,8 @@ import com.gentics.mesh.core.rest.common.RestModel;
 public class PluginResponse implements RestModel {
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Deployment UUUID of the plugin. Note that each deployment will get a new UUID.")
-	private String uuid;
+	@JsonPropertyDescription("Id of the plugin.")
+	private String id;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Name of the plugin.")
@@ -25,22 +26,22 @@ public class PluginResponse implements RestModel {
 	}
 
 	/**
-	 * Return the Vert.x deployment Uuid of the plugin.
+	 * Return the id of the plugin.
 	 * 
 	 * @return
 	 */
-	public String getUuid() {
-		return uuid;
+	public String getId() {
+		return id;
 	}
 
 	/**
-	 * Set the plugin verticle deployment Uuid.
+	 * Set the plugin Id.
 	 * 
-	 * @param uuid
+	 * @param id
 	 * @return
 	 */
-	public PluginResponse setUuid(String uuid) {
-		this.uuid = uuid;
+	public PluginResponse setId(String id) {
+		this.id = id;
 		return this;
 	}
 

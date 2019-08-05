@@ -21,24 +21,20 @@
 		<dependency>
 			<groupId>com.squareup.okhttp3</groupId>
 			<artifactId>okhttp</artifactId>
-			<version>3.9.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-common</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-auth-oauth2</artifactId>
-			<version>${vertx.version}</version>
 		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-test-common</artifactId>
-			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

@@ -1,0 +1,65 @@
+{
+	plugins(perPage: 1, page: 2) {
+		# [$.data.plugins.currentPage=2]
+		currentPage
+
+		# [$.data.plugins.pageCount=100]
+		pageCount
+
+		# [$.data.plugins.perPage=1]
+		perPage
+
+		# [$.data.plugins.totalCount=100]
+		totalCount
+
+		# [$.data.plugins.hasPreviousPage=true]
+		hasPreviousPage
+
+		# [$.data.plugins.hasNextPage=true]
+		hasNextPage
+
+		# [$.data.plugins.size=1]
+		size
+
+		# [$.data.plugins.elements.length()=1]
+		elements {
+			# [$.data.plugins.elements[0].id=<not-null>]
+			id 
+
+			# [$.data.plugins.elements[0].name=<not-null>] 
+			name
+
+			# [$.data.plugins.elements[0].apiName=<not-null>] 
+			apiName
+		}
+	}
+
+	# [$.data.bogus=<is-null>]
+	bogus: plugin(id:"bogus") {
+		id 
+	}
+
+	plugin(id:"clone22") {
+		# [$.data.plugin.id=clone22]
+		id
+
+		# [$.data.plugin.name=Clone Plugin 22]
+		name
+
+		# [$.data.plugin.apiName=clone22]
+		apiName
+
+		# [$.data.plugin.author=Johannes Schüth]
+		author
+
+		# [$.data.plugin.inception=26-04-2018]
+		inception
+
+		# [$.data.plugin.version=1.0]
+		version
+
+		# [$.data.plugin.description=A very dummy plugin for tests]
+		description
+	}
+}
+# [$.errors=<is-undefined>]

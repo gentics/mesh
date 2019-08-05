@@ -7,13 +7,32 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<plugin.id>basic2-plugin</plugin.id>
+		<plugin.name>Basic 2 Plugin</plugin.name>
+		<plugin.author>Johannes Schüth</plugin.author>
+		<plugin.class>com.gentics.mesh.plugin.Basic2Plugin</plugin.class>
+		<plugin.version>0.0.1</plugin.version>
+		<plugin.inception>2019-07-08</plugin.inception>
+		<plugin.dependencies></plugin.dependencies>
 	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-plugin-bom</artifactId>
+				<version>${mesh.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-plugin-api</artifactId>
-			<version>${mesh.version}</version>
+			<artifactId>mesh-plugin-dep</artifactId>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
@@ -31,19 +50,31 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.0.2</version>
-				<configuration>
-					<archive>
-						<index>true</index>
-						<manifest>
-							<addClasspath>true</addClasspath>
-						</manifest>
-						<manifestEntries>
-							<Main-Verticle>service:com.gentics.mesh.plugin.plugin-service</Main-Verticle>
-						</manifestEntries>
-					</archive>
-				</configuration>
+				<artifactId>maven-shade-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<transformers>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<manifestEntries>
+										<Plugin-Id>${plugin.id}</Plugin-Id>
+										<Plugin-Name>${plugin.name}</Plugin-Name>
+										<Plugin-Version>${plugin.version}</Plugin-Version>
+										<Plugin-Author>${plugin.author}</Plugin-Author>
+										<Plugin-Inception>${plugin.inception}</Plugin-Inception>
+										<Plugin-Class>${plugin.class}</Plugin-Class>
+										<Plugin-Description>My basic2 plugin</Plugin-Description>
+										<Plugin-License>Apache License 2.0</Plugin-License>
+									</manifestEntries>
+								</transformer>
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 
 		</plugins>

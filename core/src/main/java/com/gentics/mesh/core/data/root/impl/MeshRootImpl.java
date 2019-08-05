@@ -47,7 +47,6 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;

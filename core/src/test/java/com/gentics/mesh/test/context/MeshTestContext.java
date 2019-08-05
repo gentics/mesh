@@ -130,7 +130,12 @@ public class MeshTestContext extends TestWatcher {
 				removeDataDirectory();
 				removeConfigDirectory();
 				MeshOptions options = init(settings);
-				initDagger(options, settings);
+				try {
+					initDagger(options, settings);
+				} catch (Exception e) {
+					e.printStackTrace();
+					throw new RuntimeException("Error while creating dagger dependency graph", e);
+				}
 				meshDagger.boot().registerEventHandlers();
 			} else {
 				if (!settings.inMemoryDB()) {
@@ -550,6 +555,8 @@ public class MeshTestContext extends TestWatcher {
 		meshOptions.getStorageOptions().setBackupDirectory(backupPath);
 		String exportPath = newFolder("exports");
 		meshOptions.getStorageOptions().setExportDirectory(exportPath);
+		String plugindirPath = newFolder("plugins");
+		meshOptions.setPluginDirectory(plugindirPath);
 	}
 
 	/**

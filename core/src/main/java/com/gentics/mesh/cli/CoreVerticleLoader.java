@@ -42,8 +42,8 @@ public class CoreVerticleLoader {
 	@Inject
 	public Provider<RestAPIVerticle> restVerticle;
 
-	@Inject 
-	public Provider<MonitoringServerVerticle> publicAPIVerticle;
+	@Inject
+	public Provider<MonitoringServerVerticle> monitoringServerVerticle;
 
 	@Inject
 	public JobWorkerVerticle jobWorkerVerticle;
@@ -72,6 +72,7 @@ public class CoreVerticleLoader {
 
 	/**
 	 * Load verticles that are configured within the mesh configuration.
+	 * 
 	 * @param initialProjects
 	 */
 	public void loadVerticles(List<String> initialProjects) {
@@ -120,9 +121,8 @@ public class CoreVerticleLoader {
 	public Completable unloadVerticles() {
 		return Observable.merge(
 			searchVerticleId != null ? Observable.just(searchVerticleId) : Observable.empty(),
-			Observable.fromIterable(deploymentIds)
-		).flatMapCompletable(rxVertx::rxUndeploy)
-		.doOnComplete(deploymentIds::clear);
+			Observable.fromIterable(deploymentIds)).flatMapCompletable(rxVertx::rxUndeploy)
+			.doOnComplete(deploymentIds::clear);
 	}
 
 	public void reloadSearchVerticle() {
@@ -141,7 +141,9 @@ public class CoreVerticleLoader {
 	private List<Provider<? extends AbstractVerticle>> getMandatoryVerticleClasses() {
 		List<Provider<? extends AbstractVerticle>> verticles = new ArrayList<>();
 		verticles.add(restVerticle);
-		verticles.add(publicAPIVerticle);
+		if (meshOptions.getMonitoringOptions() != null && meshOptions.getMonitoringOptions().isEnabled()) {
+			verticles.add(monitoringServerVerticle);
+		}
 		return verticles;
 	}
 

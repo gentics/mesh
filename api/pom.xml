@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -18,6 +17,18 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-bom</artifactId>
+				<type>pom</type>
+				<scope>import</scope>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 		<dependency>
 			<groupId>io.vertx</groupId>
@@ -30,24 +41,20 @@
 		<dependency>
 			<groupId>com.github.akarnokd</groupId>
 			<artifactId>rxjava2-jdk8-interop</artifactId>
-			<version>0.2.11</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-cli</groupId>
 			<artifactId>commons-cli</artifactId>
-			<version>1.2</version>
 		</dependency>
 		<!-- UUID Support -->
 		<dependency>
 			<groupId>com.fasterxml.uuid</groupId>
 			<artifactId>java-uuid-generator</artifactId>
-			<version>3.1.4</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.github.stefanbirkner</groupId>
 			<artifactId>system-rules</artifactId>
-			<version>1.18.0</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
