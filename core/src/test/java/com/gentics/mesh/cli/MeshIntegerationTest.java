@@ -25,7 +25,7 @@ public class MeshIntegerationTest extends AbstractIntegrationTest {
 
 	@Test
 	public void testStartup() throws Exception {
-		Mesh mesh = Mesh.mesh();
+		Mesh mesh = Mesh.create();
 		mesh.rxRun().blockingAwait(TIMEOUT, TimeUnit.SECONDS);
 		mesh.shutdown();
 	}
@@ -38,7 +38,7 @@ public class MeshIntegerationTest extends AbstractIntegrationTest {
 		options.getSearchOptions().setUrl(null);
 		options.setNodeName("TestNode");
 
-		Mesh mesh = Mesh.mesh(options);
+		Mesh mesh = Mesh.create(options);
 		mesh.rxRun().blockingAwait(TIMEOUT, TimeUnit.SECONDS);
 		mesh.shutdown();
 	}

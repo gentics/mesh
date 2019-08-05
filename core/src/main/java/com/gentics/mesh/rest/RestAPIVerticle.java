@@ -1,6 +1,5 @@
 package com.gentics.mesh.rest;
 
-<<<<<<< HEAD
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.nio.file.Paths;
@@ -13,7 +12,6 @@ import javax.inject.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.endpoint.admin.AdminEndpoint;
 import com.gentics.mesh.core.endpoint.admin.RestInfoEndpoint;
 import com.gentics.mesh.core.endpoint.auth.AuthenticationEndpoint;
@@ -45,6 +43,7 @@ import com.gentics.mesh.search.SearchEndpointImpl;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonArray;
@@ -136,7 +135,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 	@Inject
 	public Provider<AdminEndpoint> adminEndpoint;
 
-	@Inject 
+	@Inject
 	public Vertx vertx;
 
 	@Inject
@@ -192,7 +191,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 		if (initialProjects != null) {
 			for (Object project : initialProjects) {
-				RouterStorage.addProject((String)project);
+				RouterStorage.addProject((String) project);
 			}
 		}
 

@@ -16,7 +16,6 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
@@ -57,10 +56,10 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		grantAdminRole();
 		String name = "non-mesh.jar";
 
-		int before = Mesh.mesh().pluginIds().size();
+		int before = meshApi().pluginIds().size();
 		copyAndDeploy(NON_MESH_PATH, name, INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name);
 
-		int after = Mesh.mesh().pluginIds().size();
+		int after = meshApi().pluginIds().size();
 		assertEquals("The verticle should not stay deployed.", before, after);
 	}
 

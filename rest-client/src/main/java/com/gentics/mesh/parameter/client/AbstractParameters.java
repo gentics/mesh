@@ -35,7 +35,8 @@ public abstract class AbstractParameters implements ParameterProvider {
 
 	@Override
 	public MeshOptions options() {
-		return options;
+		//TODO MESH MESH
+		return null;
 	}
 
 }

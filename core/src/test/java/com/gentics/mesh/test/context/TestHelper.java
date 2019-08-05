@@ -142,11 +142,11 @@ public interface TestHelper {
 	}
 
 	default MeshPluginManager pluginManager() {
-		return MeshInternal.get().pluginManager();
+		return mesh().pluginManager();
 	}
 
 	default PluginEnvironment pluginEnv() {
-		return MeshInternal.get().pluginEnv();
+		return mesh().pluginEnv();
 	}
 
 	default TestDataProvider data() {

@@ -55,8 +55,6 @@ public class MeshImpl implements Mesh {
 
 	private MeshComponent meshInternal;
 
-	private static PluginManager pluginManager = ServiceHelper.loadFactory(PluginManager.class);
-
 	static {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
@@ -334,7 +332,6 @@ public class MeshImpl implements Mesh {
 
 	@Override
 	public void shutdown() throws Exception {
-		MeshComponent meshInternal = MeshInternal.get();
 
 		log.info("Mesh shutting down...");
 		setStatus(MeshStatus.SHUTTING_DOWN);
@@ -354,7 +351,6 @@ public class MeshImpl implements Mesh {
 		}
 		meshInternal.database().stop();
 
-		MeshFactoryImpl.clear();
 		BootstrapInitializerImpl.clearReferences();
 		deleteLock();
 		meshInternal = null;
@@ -406,13 +402,13 @@ public class MeshImpl implements Mesh {
 	@Override
 	public Completable deployPlugin(Class<?> clazz, String id) {
 		return Completable.defer(() -> {
-			return MeshInternal.get().pluginManager().deploy(clazz, id);
+			return meshInternal.pluginManager().deploy(clazz, id);
 		});
 	}
 
 	@Override
 	public Set<String> pluginIds() {
-		return MeshInternal.get().pluginManager().getPluginIds();
+		return meshInternal.pluginManager().getPluginIds();
 	}
 
 	@Override

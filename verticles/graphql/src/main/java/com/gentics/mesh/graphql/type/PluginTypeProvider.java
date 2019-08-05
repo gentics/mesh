@@ -44,7 +44,7 @@ public class PluginTypeProvider extends AbstractTypeProvider {
 
 	@Inject
 	public PluginTypeProvider(MeshOptions options, MeshPluginManager manager) {
-		super(options)
+		super(options);
 		this.manager = manager;
 	}
 
