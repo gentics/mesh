@@ -15,9 +15,6 @@ public class DummyPlugin extends AbstractPlugin implements RestPlugin {
 
 	public static final String API_NAME = "dummy";
 
-	public DummyPlugin() {
-	}
-
 	public DummyPlugin(PluginWrapper wrapper, PluginEnvironment env) {
 		super(wrapper, env);
 	}

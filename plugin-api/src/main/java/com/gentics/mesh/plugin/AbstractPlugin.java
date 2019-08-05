@@ -30,11 +30,6 @@ public abstract class AbstractPlugin extends Plugin implements MeshPlugin {
 
 	private final PluginEnvironment env;
 
-	public AbstractPlugin() {
-		super(null);
-		this.env = null;
-	}
-
 	public AbstractPlugin(PluginWrapper wrapper, PluginEnvironment env) {
 		super(wrapper);
 		this.env = env;

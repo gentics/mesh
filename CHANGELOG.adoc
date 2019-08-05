@@ -43,7 +43,7 @@ The new plugin system will now utilize the plugin id for these REST and GraphQL 
 
 *New Java API / Structure*
 
-The plugin API and structure has been overhauled and existing plugins need to be migrated link:{{< relref "plugin-migration.asciidoc" >}}[(Migration Guide)] to the new API in order to be deployable.
+The plugin API and structure has been overhauled and existing plugins need to be migrated (link:{{< relref "plugin-migration.asciidoc" >}}[Migration Guide]) to the new API in order to be deployable.
 
 *GraphQL Plugin support*
 

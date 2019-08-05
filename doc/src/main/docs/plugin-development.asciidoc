@@ -86,7 +86,7 @@ The project context can be wrapped via `wrap(rc)` to get the `PluginContext` whi
 | Method                        | Description
 | `PluginContext#project()`     | Return `JsonObject` which contains project name, uuid.
 | `PluginContext#projectName()` | Return the project name.
-| `PluginContext#client()`      | Return a new client which can be used to access the API . This client will in contrast to `MeshPlugin#adminClient()` use the 
+| `PluginContext#client()`      | Return a new client which can be used to access the API . This client will in contrast to `MeshPlugin#adminClient()` use the user specific client.
 |======
 
 .Example
@@ -337,6 +337,7 @@ Finally the consuming plugin may access the available extension via the plugin m
 getWrapper().getPluginManager().getExtensions(DummyExtensionPoint.class)
 ----
 
+A full example can be found in our link:https://github.com/gentics/mesh-plugin-examples/tree/master/extensions[example repository].
 
 === Building extension plugins
 
