@@ -34,23 +34,6 @@
 			<artifactId>mesh-plugin-dep</artifactId>
 			<scope>provided</scope>
 		</dependency>
-
-		<!-- Test dependencies -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-test-common</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-core</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 
 	<build>
