@@ -27,6 +27,8 @@ public class PluginConfigTest {
 	@BeforeClass
 	public static void setupMeshOptions() {
 		MeshOptions options = new MeshOptions();
+		options.setNodeName("ABC");
+		options.getAuthenticationOptions().setKeystorePassword("ABC");
 		options.setPluginDirectory(PLUGIN_DIR);
 		Mesh.mesh(options);
 	}
