@@ -9,8 +9,6 @@ import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Stream;
-
 import com.gentics.madl.annotations.GraphElement;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.tx.Tx;

@@ -40,14 +40,9 @@ import com.gentics.mesh.image.focalpoint.FocalPointModifier;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageRect;
-import com.gentics.mesh.util.PropReadFileStream;
-import com.gentics.mesh.util.RxUtil;
 import com.twelvemonkeys.image.ResampleOp;
 
-import io.reactivex.Flowable;
-import io.reactivex.Maybe;
 import io.reactivex.Single;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;

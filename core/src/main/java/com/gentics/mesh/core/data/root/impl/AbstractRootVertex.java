@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.root.impl;
 
 import java.util.Set;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -12,8 +11,6 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.FramedGraph;
-import com.tinkerpop.blueprints.Edge;
 
 /**
  * Abstract implementation for root vertices which are aggregation vertices for mesh core vertices. The abstract implementation contains various helper methods

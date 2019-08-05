@@ -1,12 +1,13 @@
 package com.gentics.mesh.search.test;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.http.WebSocket;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.Router;
@@ -23,7 +24,7 @@ public class ServerWSTest extends AbstractVerticle {
 	}
 
 	@Override
-	public void start(Future<Void> startFuture) throws Exception {
+	public void start(Promise<Void> startFuture) throws Exception {
 
 		// 1. Create the initial router for our API
 		Router router = Router.router(vertx);
@@ -52,7 +53,7 @@ public class ServerWSTest extends AbstractVerticle {
 		options.setCompressionSupported(true);
 		options.setLogActivity(true);
 		HttpServer server = vertx.createHttpServer(options);
-		server.requestHandler(router::accept);
+		server.requestHandler(router);
 
 		server.listen(rh -> {
 			if (rh.failed()) {
@@ -66,7 +67,8 @@ public class ServerWSTest extends AbstractVerticle {
 					HttpClient client = vertx.createHttpClient(clientOptions);
 
 					// Connect to the created websocket endpoint and log the bridged events
-					client.websocket("/test/websocket", ws -> {
+					client.webSocket("/test/websocket", wsHandler -> {
+						WebSocket ws = wsHandler.result();
 						System.out.println("WS Connected");
 
 						// Register to migration events

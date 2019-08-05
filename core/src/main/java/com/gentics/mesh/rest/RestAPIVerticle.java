@@ -1,5 +1,17 @@
 package com.gentics.mesh.rest;
 
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.endpoint.admin.AdminEndpoint;
 import com.gentics.mesh.core.endpoint.admin.RestInfoEndpoint;
@@ -29,24 +41,15 @@ import com.gentics.mesh.search.ProjectRawSearchEndpointImpl;
 import com.gentics.mesh.search.ProjectSearchEndpointImpl;
 import com.gentics.mesh.search.RawSearchEndpointImpl;
 import com.gentics.mesh.search.SearchEndpointImpl;
+
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.web.Router;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
-import javax.inject.Provider;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * Central REST API Verticle which will provide all core REST API Endpoints
@@ -137,7 +140,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 	}
 
 	@Override
-	public void start(Future<Void> startFuture) throws Exception {
+	public void start(Promise<Void> promise) throws Exception {
 		int port = config().getInteger("port");
 		String host = config().getString("host");
 		JsonArray initialProjects = config().getJsonArray("initialProjects");
@@ -157,15 +160,15 @@ public class RestAPIVerticle extends AbstractVerticle {
 			options.setSsl(true);
 			PemKeyCertOptions keyOptions = new PemKeyCertOptions();
 			if (isEmpty(httpServerOptions.getCertPath()) || isEmpty(httpServerOptions.getKeyPath())) {
-				startFuture.fail("SSL is enabled but either the server key or the cert path was not specified.");
+				promise.fail("SSL is enabled but either the server key or the cert path was not specified.");
 				return;
 			}
 			if (!Paths.get(httpServerOptions.getKeyPath()).toFile().exists()) {
-				startFuture.fail("Could not find SSL key within path {" + httpServerOptions.getKeyPath() + "}");
+				promise.fail("Could not find SSL key within path {" + httpServerOptions.getKeyPath() + "}");
 				return;
 			}
 			if (!Paths.get(httpServerOptions.getCertPath()).toFile().exists()) {
-				startFuture.fail("Could not find SSL cert within path {" + httpServerOptions.getCertPath() + "}");
+				promise.fail("Could not find SSL cert within path {" + httpServerOptions.getCertPath() + "}");
 				return;
 			}
 
@@ -179,7 +182,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		server = vertx.createHttpServer(options);
 		RouterStorage storage = routerStorage.get();
 		Router rootRouter = storage.root().getRouter();
-		server.requestHandler(rootRouter::handle);
+		server.requestHandler(rootRouter);
 
 		if (initialProjects != null) {
 			for (Object project : initialProjects) {
@@ -189,17 +192,17 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 		server.listen(rh -> {
 			if (rh.failed()) {
-				startFuture.fail(rh.cause());
+				promise.fail(rh.cause());
 			} else {
 				if (log.isInfoEnabled()) {
 					log.info("Started http server.. Port: " + config().getInteger("port"));
 				}
 				try {
 					registerEndPoints(storage);
-					startFuture.complete();
+					promise.complete();
 				} catch (Exception e) {
 					e.printStackTrace();
-					startFuture.fail(e);
+					promise.fail(e);
 				}
 			}
 		});
@@ -207,12 +210,12 @@ public class RestAPIVerticle extends AbstractVerticle {
 	}
 
 	@Override
-	public void stop(Future<Void> stopFuture) throws Exception {
+	public void stop(Promise<Void> promise) throws Exception {
 		server.close(rh -> {
 			if (rh.failed()) {
-				stopFuture.fail(rh.cause());
+				promise.fail(rh.cause());
 			} else {
-				stopFuture.complete();
+				promise.complete();
 			}
 		});
 	}

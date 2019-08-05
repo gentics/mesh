@@ -11,7 +11,7 @@ import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.demo.DemoDataProvider;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -31,7 +31,7 @@ public class DemoVerticle extends AbstractVerticle {
 	}
 
 	@Override
-	public void start(Future<Void> startFuture) throws Exception {
+	public void start(Promise<Void> promise) throws Exception {
 		File outputDir = new File("demo");
 		if (!outputDir.exists()) {
 			unzip("/mesh-demo.zip", outputDir.getAbsolutePath());
@@ -48,7 +48,7 @@ public class DemoVerticle extends AbstractVerticle {
 				}
 			}, false, rh -> {
 				if (rh.failed()) {
-					startFuture.fail(rh.cause());
+					promise.fail(rh.cause());
 				} else {
 					log.warn("--------------------------------");
 					log.warn("- Demo setup complete          -");
@@ -56,7 +56,7 @@ public class DemoVerticle extends AbstractVerticle {
 					log.warn("- http://localhost:8080/demo   -");
 					log.warn("- Login: webclient/webclient   -");
 					log.warn("--------------------------------");
-					startFuture.complete();
+					promise.complete();
 				}
 			});
 		} else {
@@ -65,7 +65,7 @@ public class DemoVerticle extends AbstractVerticle {
 				demoDataProvider.invokeFullIndex();
 				bc.complete();
 			}, false, rh -> {
-				startFuture.complete();
+				promise.complete();
 			});
 		}
 

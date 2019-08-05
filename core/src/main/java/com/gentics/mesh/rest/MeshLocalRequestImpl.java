@@ -1,16 +1,16 @@
 package com.gentics.mesh.rest;
 
-import com.gentics.mesh.rest.client.MeshResponse;
-import io.reactivex.Maybe;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.MeshResponse;
 
+import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.vertx.core.Future;
-
-import java.util.List;
-import java.util.Map;
 
 public class MeshLocalRequestImpl<T> implements MeshRequest<T> {
 

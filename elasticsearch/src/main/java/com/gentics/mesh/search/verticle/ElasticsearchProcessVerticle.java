@@ -37,7 +37,7 @@ import io.reactivex.processors.FlowableProcessor;
 import io.reactivex.processors.PublishProcessor;
 import io.reactivex.subjects.BehaviorSubject;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -137,7 +137,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	}
 
 	@Override
-	public void stop(Future<Void> stopFuture) {
+	public void stop(Promise<Void> promise) {
 		log.trace("Stopping Elasticsearch process verticle");
 		stopped.set(true);
 		Observable.fromIterable(vertxHandlers)
@@ -147,7 +147,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 				requests.onComplete();
 				idleChecker.close();
 				log.trace("Done stopping Elasticsearch process verticle");
-				stopFuture.complete();
+				promise.complete();
 			});
 	}
 

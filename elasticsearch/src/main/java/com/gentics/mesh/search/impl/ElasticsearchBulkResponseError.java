@@ -2,8 +2,6 @@ package com.gentics.mesh.search.impl;
 
 import io.vertx.core.json.JsonObject;
 
-import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
