@@ -10,9 +10,11 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -171,18 +173,27 @@ public class PluginManagerTest extends AbstractPluginTest {
 	}
 
 	@Test
-	public void testRedeployAfterStartFailure() {
+	public void testDeployAfterShutdownFailure() {
 		MeshPluginManager manager = pluginManager();
-		try {
-			manager.deploy(FailingShutdownPlugin.class, "failing").blockingAwait();
-			fail("Deployment should have failed");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		manager.deploy(FailingShutdownPlugin.class, "failing").blockingAwait();
+		manager.undeploy("failing").blockingAwait(2, TimeUnit.SECONDS);
 		assertEquals(0, manager.getPluginIds().size());
 
 		manager.deploy(SucceedingPlugin.class, "succeeding").blockingAwait();
 		assertEquals(1, manager.getPluginIds().size());
+	}
+
+	@Test
+	public void testInitializeTimeoutPlugin() {
+		Mesh.mesh().getOptions().setPluginTimeout(2);
+		MeshPluginManager manager = pluginManager();
+		try {
+			manager.deploy(InitializeTimeoutPlugin.class, "timeout").blockingAwait();
+			fail("The deployment of the plugin should fail with a timeout.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		assertEquals(0, manager.getPluginIds().size());
 	}
 
 	@Test

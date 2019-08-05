@@ -8,8 +8,11 @@ import org.apache.commons.lang.StringUtils;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.plugin.RestPlugin;
+import com.gentics.mesh.plugin.graphql.GraphQLPlugin;
 
 public final class PluginUtils {
+
+	public static final String NAME_REGEX = "^[_a-zA-Z][_a-zA-Z0-9]*$";
 
 	private PluginUtils() {
 	}
@@ -54,9 +57,19 @@ public final class PluginUtils {
 		}
 	}
 
+	public static void validate(GraphQLPlugin plugin) {
+		String name = plugin.gqlApiName();
+		if (name != null && !name.matches(NAME_REGEX)) {
+			throw error(BAD_REQUEST, "admin_plugin_error_invalid_gql_name", name);
+		}
+	}
+
 	public static void validate(MeshPlugin plugin) {
 		if (plugin instanceof RestPlugin) {
 			validate((RestPlugin) plugin);
+		}
+		if (plugin instanceof GraphQLPlugin) {
+			validate((GraphQLPlugin) plugin);
 		}
 	}
 

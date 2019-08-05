@@ -22,6 +22,7 @@
 		<module>extension-provider</module>
 		<module>extension-consumer</module>
 		<module>graphql</module>
+		<module>invalid-graphql</module>
 	</modules>
 
 	<repositories>

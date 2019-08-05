@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -25,12 +26,8 @@ import org.pf4j.CompoundPluginLoader;
 import org.pf4j.CompoundPluginRepository;
 import org.pf4j.DefaultExtensionFactory;
 import org.pf4j.DefaultExtensionFinder;
-import org.pf4j.DefaultPluginLoader;
-import org.pf4j.DefaultPluginRepository;
 import org.pf4j.DefaultPluginStatusProvider;
 import org.pf4j.DefaultVersionManager;
-import org.pf4j.DevelopmentPluginLoader;
-import org.pf4j.DevelopmentPluginRepository;
 import org.pf4j.ExtensionFactory;
 import org.pf4j.ExtensionFinder;
 import org.pf4j.JarPluginLoader;
@@ -139,13 +136,14 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 					plugin.start();
 					pluginWrapper.setPluginState(PluginState.STARTED);
 					if (plugin instanceof MeshPlugin) {
-						pluginRegistry.register((MeshPlugin) plugin).blockingAwait(getPluginTimeout().getSeconds(), TimeUnit.SECONDS);
+						MeshPlugin meshPlugin = (MeshPlugin) plugin;
+						withTimeout(meshPlugin.id(), "registration", pluginRegistry.register(meshPlugin));
 					}
 					startedPlugins.add(pluginWrapper);
 
 					firePluginStateEvent(new PluginStateEvent(this, pluginWrapper, pluginState));
 				} catch (Exception e) {
-					log.error(e.getMessage(), e);
+					log.error("Error while starting plugins " + e.getMessage(), e);
 				}
 			}
 		}
@@ -221,7 +219,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			Plugin plugin = wrapper.getPlugin();
 			if (plugin instanceof MeshPlugin) {
 				MeshPlugin meshPlugin = (MeshPlugin) plugin;
-				meshPlugin.initialize().andThen(pluginRegistry.register(meshPlugin)).blockingAwait(getPluginTimeout().getSeconds(), TimeUnit.SECONDS);
+				withTimeout(meshPlugin.id(), "registration", meshPlugin.initialize().andThen(pluginRegistry.register(meshPlugin)));
 			}
 		} catch (Throwable e) {
 			log.error("Plugin registration failed with error", e);
@@ -256,9 +254,12 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			PluginWrapper wrapper = getPlugin(id);
 			Plugin plugin = wrapper.getPlugin();
 			if (plugin instanceof MeshPlugin) {
-				MeshPlugin meshPlugin = (MeshPlugin) plugin;
-				pluginRegistry.deregister(meshPlugin).andThen(meshPlugin.shutdown()).blockingAwait(getPluginTimeout().getSeconds(),
-					TimeUnit.SECONDS);
+				try {
+					MeshPlugin meshPlugin = (MeshPlugin) plugin;
+					withTimeout(id, "shudown", pluginRegistry.deregister(meshPlugin).andThen(meshPlugin.shutdown()));
+				} catch (Throwable t) {
+					log.error("Error while calling shutdown of plugin. Trying to unload anyway.", t);
+				}
 			}
 			unloadPlugin(id);
 		});
@@ -300,8 +301,11 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			Plugin plugin = wrapper.getPlugin();
 			if (plugin instanceof MeshPlugin) {
 				MeshPlugin meshPlugin = (MeshPlugin) plugin;
-				pluginRegistry.deregister((MeshPlugin) plugin).andThen(meshPlugin.shutdown()).blockingAwait(getPluginTimeout().getSeconds(),
-					TimeUnit.SECONDS);
+				try {
+					withTimeout(meshPlugin.id(), "shtdown", pluginRegistry.deregister((MeshPlugin) plugin).andThen(meshPlugin.shutdown()));
+				} catch (Exception e) {
+					log.error("Shutdown call of plugin {" + meshPlugin.id() + "} failed. Unloading anyway.", e);
+				}
 			}
 			undeploy(wrapper.getPluginId());
 			unloadPlugin(wrapper.getPluginId());
@@ -357,7 +361,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 	public Completable deploy(Class<?> clazz, String id) {
 		Objects.requireNonNull(id, "A plugin must have a unique id (e.g. hello-world)");
 		if (!isMeshPlugin(clazz)) {
-			return rxError(BAD_REQUEST, "admin_plugin_error_wrong_type").toCompletable();
+			return rxError(BAD_REQUEST, "admin_plugin_error_wrong_type").ignoreElement();
 		}
 		String name = clazz.getSimpleName();
 		return Completable.defer(() -> {
@@ -367,7 +371,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			try {
 				PluginDescriptor desc = loadPlugin(clazz, id).getDescriptor();
 				if (!(desc instanceof MeshPluginDescriptor)) {
-					return rxError(INTERNAL_SERVER_ERROR, "plugin_desc_wrong").toCompletable();
+					return rxError(INTERNAL_SERVER_ERROR, "plugin_desc_wrong").ignoreElement();
 				}
 			} catch (Throwable e) {
 				return Completable.error(new RuntimeException("Error while deploying plugin {" + clazz + "}", e));
@@ -379,7 +383,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 				if (wrapper == null || wrapper.getPlugin() == null) {
 					log.error("The plugin {" + name + "/" + id + "} could not be loaded.");
 					plugins.remove(id);
-					return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name).toCompletable();
+					return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name).ignoreElement();
 				}
 				validate(wrapper.getPlugin());
 			} catch (GenericRestException e) {
@@ -389,7 +393,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			} catch (Throwable e) {
 				log.error("Error while loading plugin class", e);
 				plugins.remove(id);
-				return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name).toCompletable();
+				return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name).ignoreElement();
 			}
 
 			// 3. Start plugin
@@ -398,7 +402,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			} catch (Throwable e) {
 				log.error("Error while starting plugin", e);
 				rollback(id);
-				return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_starting_failed", name).toCompletable();
+				return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_starting_failed", name).ignoreElement();
 			}
 
 			// 4. Register plugin
@@ -407,8 +411,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 				Plugin plugin = wrapper.getPlugin();
 				if (plugin instanceof MeshPlugin) {
 					MeshPlugin meshPlugin = (MeshPlugin) plugin;
-					meshPlugin.initialize().andThen(pluginRegistry.register(meshPlugin)).blockingAwait(getPluginTimeout().getSeconds(),
-						TimeUnit.SECONDS);
+					withTimeout(id, "registration", meshPlugin.initialize().andThen(pluginRegistry.register(meshPlugin)));
 				}
 			} catch (Throwable e) {
 				log.error("Plugin registration failed with error", e);
@@ -418,11 +421,24 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 					log.error("Error while stopping failed plugin. Directly unloading it.", e2);
 				}
 				rollback(id);
-				return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_did_not_register").toCompletable();
+				return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_did_not_register").ignoreElement();
 			}
 			return Completable.complete();
 		});
 
+	}
+
+	private void withTimeout(String id, String operationName, Completable op) {
+		try {
+			op.timeout(getPluginTimeout().getSeconds(), TimeUnit.SECONDS).blockingAwait();
+		} catch (Throwable t) {
+			if (t instanceof TimeoutException) {
+				log.error("The " + operationName + " of plugin {" + id + "} did not complete within {" + getPluginTimeout().getSeconds()
+					+ "} seconds. Unloading plugin.");
+				throw error(INTERNAL_SERVER_ERROR, "admin_plugin_error_timeout", id);
+			}
+			throw t;
+		}
 	}
 
 	private boolean isMeshPlugin(Class<?> clazz) {

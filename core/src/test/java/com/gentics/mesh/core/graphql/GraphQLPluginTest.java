@@ -3,6 +3,7 @@ package com.gentics.mesh.core.graphql;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.IOException;
 
@@ -45,5 +46,13 @@ public class GraphQLPluginTest extends AbstractPluginTest {
 			() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));
 		System.out.println(response.toJson());
 		assertThat(new JsonObject(response.toJson())).compliesToAssertions(queryName);
+	}
+
+	@Test
+	public void testInvalidGraphQLPlugin() throws IOException {
+		grantAdminRole();
+
+		copyAndDeploy(INVALID_GRAPHQL_PATH, "graphql.jar", BAD_REQUEST, "admin_plugin_error_invalid_gql_name", "invalid-plugin");
+
 	}
 }

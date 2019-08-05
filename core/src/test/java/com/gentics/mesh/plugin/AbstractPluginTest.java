@@ -39,6 +39,8 @@ public class AbstractPluginTest extends AbstractMeshTest {
 	public static final String EXTENSION_CONSUMER_PATH = "target/test-plugins/extension-consumer/target/extension-consumer-plugin-0.0.1-SNAPSHOT.jar";
 
 	public static final String GRAPHQL_PATH = "target/test-plugins/graphql/target/graphql-plugin-0.0.1-SNAPSHOT.jar";
+	
+	public static final String INVALID_GRAPHQL_PATH = "target/test-plugins/invalid-graphql/target/invalid-graphql-plugin-0.0.1-SNAPSHOT.jar";
 
 	@Before
 	public void preparePluginDir() throws IOException {

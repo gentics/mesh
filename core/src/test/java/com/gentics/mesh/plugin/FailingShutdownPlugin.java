@@ -17,7 +17,7 @@ public class FailingShutdownPlugin extends AbstractPlugin {
 
 	@Override
 	public Completable shutdown() {
-		return Completable.error(new RuntimeException("Startup failure"));
+		return Completable.error(new RuntimeException("Shutdown failure"));
 	}
 
 }

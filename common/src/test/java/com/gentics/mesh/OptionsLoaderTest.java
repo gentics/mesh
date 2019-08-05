@@ -104,6 +104,7 @@ public class OptionsLoaderTest {
 	@Test
 	public void testInvalidOptions3() {
 		MeshOptions options = new MeshOptions();
+		options.getAuthenticationOptions().setKeystorePassword("ABC");
 		options.setNodeName("someNode");
 		options.getClusterOptions().setEnabled(true).setClusterName("someName");
 		options.validate();
@@ -120,6 +121,8 @@ public class OptionsLoaderTest {
 	@Test
 	public void testInvalidOptions5() {
 		MeshOptions options = new MeshOptions();
+		options.setNodeName("ABC");
+		options.getAuthenticationOptions().setKeystorePassword("ABC");
 		options.getStorageOptions().setDirectory(null);
 		options.validate();
 	}
