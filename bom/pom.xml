@@ -26,6 +26,7 @@
 		<orientdb.version>3.0.21</orientdb.version>
 		<hazelcast.version>3.10.4</hazelcast.version>
 		<jackson.version>2.9.9</jackson.version>
+		<jackson-databind.version>2.9.9.2</jackson-databind.version>
 		<netty.version>4.1.34.Final</netty.version>
 		<tika.version>1.21</tika.version>
 		<aws.sdk.version>2.1.0</aws.sdk.version>
@@ -173,7 +174,7 @@
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
-				<version>${jackson.version}</version>
+				<version>${jackson-databind.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
