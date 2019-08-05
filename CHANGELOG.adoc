@@ -67,6 +67,7 @@ The plugin development process documentation has been enhanced.
 
 ____
 
+icon:check[] Core: Fixed a bug that caused an error when changing a field in a schema to a binary field.
 
 [[v0.36.8]]
 == 0.36.8 (02.08.2019)

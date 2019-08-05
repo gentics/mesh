@@ -38,6 +38,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
+import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
@@ -116,6 +117,9 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 				break;
 			case "string":
 				field = new StringFieldSchemaImpl();
+				break;
+			case "binary":
+				field = new BinaryFieldSchemaImpl();
 				break;
 			case "list":
 				ListFieldSchema listField = new ListFieldSchemaImpl();
