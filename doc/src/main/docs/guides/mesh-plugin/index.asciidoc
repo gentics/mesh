@@ -87,7 +87,7 @@ You can now deploy start a new Gentics Mesh instance which will deploy the plugi
 ----
 docker run --rm \ 
     -v target/mesh-graphql-plugin-0.0.1-SNAPSHOT.jar:/plugins/graphql.jar \
-       gentics/mesh:0.36.7
+       gentics/mesh:0.37.0
 ----
 
 
