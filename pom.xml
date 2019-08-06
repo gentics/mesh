@@ -14,7 +14,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<mesh.admin-ui.version>0.9.4</mesh.admin-ui.version>
 
-		<dagger.version>2.11</dagger.version>
+		<dagger.version>2.24</dagger.version>
 		<surefire.forkcount>2</surefire.forkcount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>
 		<skip.unit.tests>false</skip.unit.tests>
