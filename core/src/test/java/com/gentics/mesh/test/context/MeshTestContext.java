@@ -594,7 +594,7 @@ public class MeshTestContext extends TestWatcher {
 			trackingSearchProvider = meshDagger.trackingSearchProvider();
 		}
 		try {
-			mesh = Mesh.create();
+			mesh = Mesh.create(options);
 			mesh.setMeshInternal(meshDagger);
 			meshDagger.boot().init(mesh, false, options, null);
 			vertx  = meshDagger.boot().vertx();
