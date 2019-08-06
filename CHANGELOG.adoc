@@ -23,6 +23,12 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+
+[[NEXT]]
+== NEXT
+
+icon:plus[] Core: The core Dagger library was updated to from version `2.11` to `2.24`.
+
 [[v0.37.0]]
 == 0.37.0 (05.08.2019)
 
