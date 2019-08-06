@@ -1,5 +1,5 @@
 {
-  "meshVersion" : "0.37.0",
+  "meshVersion" : "0.37.1",
   "meshNodeName" : "Reminiscent Tirtouga",
   "databaseVendor" : "orientdb",
   "databaseVersion" : "2.2.16",
