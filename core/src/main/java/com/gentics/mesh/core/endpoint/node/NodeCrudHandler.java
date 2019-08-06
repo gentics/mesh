@@ -36,6 +36,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -51,13 +52,16 @@ import io.vertx.core.logging.LoggerFactory;
  */
 public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
-	private BootstrapInitializer boot;
+	private final BootstrapInitializer boot;
+
+	private final MeshOptions options;
 
 	private static final Logger log = LoggerFactory.getLogger(NodeCrudHandler.class);
 
 	@Inject
-	public NodeCrudHandler(Database db, HandlerUtilities utils, BootstrapInitializer boot) {
+	public NodeCrudHandler(Database db, HandlerUtilities utils, MeshOptions options, BootstrapInitializer boot) {
 		super(db, utils);
+		this.options = options;
 		this.boot = boot;
 	}
 
@@ -190,7 +194,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			VersioningParameters versionParams = ac.getVersioningParameters();
 			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, requiredPermission);
-			TransformablePage<? extends Node> page = node.getChildren(ac, nodeParams.getLanguageList(),
+			TransformablePage<? extends Node> page = node.getChildren(ac, nodeParams.getLanguageList(options),
 				ac.getBranch(node.getProject()).getUuid(), ContainerType.forVersion(versionParams.getVersion()), pagingParams);
 
 			// Handle etag

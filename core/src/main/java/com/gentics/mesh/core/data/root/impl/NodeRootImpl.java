@@ -159,7 +159,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		if (perm == READ_PUBLISHED_PERM) {
 			Branch branch = ac.getBranch(element.getProject());
 
-			List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList();
+			List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList(options());
 			NodeGraphFieldContainer fieldContainer = element.findVersion(requestedLanguageTags, branch.getUuid(),
 					ac.getVersioningParameters().getVersion());
 

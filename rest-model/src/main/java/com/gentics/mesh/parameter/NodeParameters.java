@@ -49,9 +49,6 @@ public interface NodeParameters extends ParameterProvider {
 		if (value != null) {
 			languages = value.split(",");
 		}
-		if (languages == null) {
-			languages = new String[] { options().getDefaultLanguage() };
-		}
 		return languages;
 	}
 
@@ -137,10 +134,15 @@ public interface NodeParameters extends ParameterProvider {
 
 	/**
 	 * @see #getLanguages()
+	 * @param options Mesh options which contains the default language information
 	 * @return
 	 */
-	default List<String> getLanguageList() {
-		return Arrays.asList(getLanguages());
+	default List<String> getLanguageList(MeshOptions options) {
+		String[] langs = getLanguages();
+		if (langs == null) {
+			return Arrays.asList(options.getDefaultLanguage());
+		}
+		return Arrays.asList(langs);
 	}
 
 	/**
@@ -151,6 +153,4 @@ public interface NodeParameters extends ParameterProvider {
 	default List<String> getExpandedFieldnameList() {
 		return Arrays.asList(getExpandedFieldNames());
 	}
-
-	MeshOptions options();
 }

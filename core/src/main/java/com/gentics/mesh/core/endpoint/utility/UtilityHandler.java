@@ -17,6 +17,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
 import com.gentics.mesh.core.rest.validation.ValidationStatus;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
@@ -34,19 +35,22 @@ public class UtilityHandler extends AbstractHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(UtilityHandler.class);
 
-	private Database db;
+	private final MeshOptions options;
 
-	private WebRootLinkReplacer linkReplacer;
+	private final Database db;
 
-	private NodeIndexHandler nodeIndexHandler;
+	private final WebRootLinkReplacer linkReplacer;
 
-	private MicroschemaContainerIndexHandler microschemaIndexHandler;
+	private final NodeIndexHandler nodeIndexHandler;
 
-	private HandlerUtilities utils;
+	private final MicroschemaContainerIndexHandler microschemaIndexHandler;
+
+	private final HandlerUtilities utils;
 
 	@Inject
-	public UtilityHandler(Database db, WebRootLinkReplacer linkReplacer, NodeIndexHandler nodeIndexHandler,
+	public UtilityHandler(MeshOptions options, Database db, WebRootLinkReplacer linkReplacer, NodeIndexHandler nodeIndexHandler,
 		MicroschemaContainerIndexHandler microschemaIndexHandler, HandlerUtilities utils) {
+		this.options = options;
 		this.db = db;
 		this.linkReplacer = linkReplacer;
 		this.nodeIndexHandler = nodeIndexHandler;
@@ -61,14 +65,14 @@ public class UtilityHandler extends AbstractHandler {
 	 */
 	public void handleResolveLinks(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
-			
+
 			String projectName = ac.getParameter("project");
 			if (projectName == null) {
 				projectName = "project";
 			}
 
 			return linkReplacer.replace(ac, null, null, ac.getBodyAsString(), ac.getNodeParameters().getResolveLinks(), projectName,
-				ac.getNodeParameters().getLanguageList());
+				ac.getNodeParameters().getLanguageList(options));
 		}, body -> ac.send(body, OK, "text/plain"));
 	}
 

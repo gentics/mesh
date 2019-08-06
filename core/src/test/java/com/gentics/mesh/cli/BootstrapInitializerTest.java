@@ -68,7 +68,7 @@ public class BootstrapInitializerTest extends AbstractMeshTest {
 	public void testIndexLookup() {
 		try (Tx tx = tx()) {
 			boot().meshRoot();
-			BootstrapInitializerImpl.clearReferences();
+			boot().clearReferences();
 			assertNotNull(boot().meshRoot());
 		}
 	}

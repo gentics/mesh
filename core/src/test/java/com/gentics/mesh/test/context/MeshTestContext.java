@@ -370,7 +370,7 @@ public class MeshTestContext extends TestWatcher {
 	 * @throws Exception
 	 */
 	private void resetDatabase(MeshTestSetting settings) throws Exception {
-		BootstrapInitializerImpl.clearReferences();
+		meshDagger.boot().clearReferences();
 		long start = System.currentTimeMillis();
 		if (settings.inMemoryDB()) {
 			meshDagger.database().clear();

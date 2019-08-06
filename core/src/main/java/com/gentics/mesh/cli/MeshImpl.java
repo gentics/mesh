@@ -351,7 +351,7 @@ public class MeshImpl implements Mesh {
 		}
 		meshInternal.database().stop();
 
-		BootstrapInitializerImpl.clearReferences();
+		meshInternal.boot().clearReferences();
 		deleteLock();
 		meshInternal = null;
 		log.info("Shutdown completed...");

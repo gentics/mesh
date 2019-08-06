@@ -79,7 +79,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 		List<String> requestedLanguageTags = new ArrayList<>();
 		if (languageTags.length == 0) {
-			requestedLanguageTags.addAll(parameters.getLanguageList());
+			requestedLanguageTags.addAll(parameters.getLanguageList(options()));
 		} else {
 			requestedLanguageTags.addAll(Arrays.asList(languageTags));
 		}

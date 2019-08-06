@@ -67,7 +67,7 @@ public class DemoRunner {
 			// Add demo content provider
 			registry.register(DemoAppEndpoint.class);
 			DemoDataProvider data = new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(), meshInternal.boot());
-			DemoVerticle demoVerticle = new DemoVerticle(data);
+			DemoVerticle demoVerticle = new DemoVerticle(meshInternal.boot(), data);
 			DeploymentUtil.deployAndWait(vertx, config, demoVerticle, false);
 
 			// Add admin ui

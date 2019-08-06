@@ -53,7 +53,7 @@ public class RunnerNodeA {
 
 			// Add demo content provider
 			registry.register(DemoAppEndpoint.class);
-			DemoVerticle demoVerticle = new DemoVerticle(new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(),
+			DemoVerticle demoVerticle = new DemoVerticle(meshInternal.boot(), new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(),
 					meshInternal.boot()));
 			DeploymentUtil.deployAndWait(vertx, config, demoVerticle, false);
 

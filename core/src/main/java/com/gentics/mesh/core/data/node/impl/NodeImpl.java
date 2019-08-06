@@ -722,7 +722,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (languageTags != null && languageTags.length > 0) {
 			requestedLanguageTags = Arrays.asList(languageTags);
 		} else {
-			requestedLanguageTags = nodeParameters.getLanguageList();
+			requestedLanguageTags = nodeParameters.getLanguageList(options());
 		}
 
 		// First check whether the NGFC for the requested language,branch and version could be found.
@@ -1611,7 +1611,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeParameters nodeParameters = ac.getNodeParameters();
 		VersioningParameters versioningParameters = ac.getVersioningParameters();
 
-		NodeGraphFieldContainer container = findVersion(nodeParameters.getLanguageList(), ac.getBranch(getProject()).getUuid(), versioningParameters
+		NodeGraphFieldContainer container = findVersion(nodeParameters.getLanguageList(options()), ac.getBranch(getProject()).getUuid(), versioningParameters
 			.getVersion());
 		if (container == null) {
 			if (log.isDebugEnabled()) {
@@ -2014,7 +2014,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		ContainerType type = forVersion(versioiningParameters.getVersion());
 
 		Node parentNode = getParentNode(branch.getUuid());
-		NodeGraphFieldContainer container = findVersion(ac.getNodeParameters().getLanguageList(), branch.getUuid(), ac.getVersioningParameters()
+		NodeGraphFieldContainer container = findVersion(ac.getNodeParameters().getLanguageList(options()), branch.getUuid(), ac.getVersioningParameters()
 			.getVersion());
 
 		StringBuilder keyBuilder = new StringBuilder();

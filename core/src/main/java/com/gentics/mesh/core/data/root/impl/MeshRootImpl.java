@@ -46,7 +46,6 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.dagger.MeshInternal;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -352,23 +351,23 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	/**
 	 * Clear static references to the aggregation vertices.
 	 */
-	public static void clearReferences() {
-//		MeshRootImpl.projectRoot = null;
-//		MeshRootImpl.nodeRoot = null;
-//		MeshRootImpl.tagRoot = null;
-//		MeshRootImpl.binaryRoot = null;
-//
-//		MeshRootImpl.userRoot = null;
-//		MeshRootImpl.groupRoot = null;
-//		MeshRootImpl.roleRoot = null;
-//
-//		MeshRootImpl.schemaContainerRoot = null;
-//		MeshRootImpl.tagFamilyRoot = null;
-//		MeshRootImpl.microschemaContainerRoot = null;
-//		MeshRootImpl.languageRoot = null;
-//		MeshRootImpl.jobRoot = null;
-//		MeshRootImpl.changelogRoot = null;
+	public void clearReferences() {
+		projectRoot = null;
+		nodeRoot = null;
+		tagRoot = null;
+		binaryRoot = null;
 
+		userRoot = null;
+		groupRoot = null;
+		roleRoot = null;
+
+		schemaContainerRoot = null;
+		tagFamilyRoot = null;
+		microschemaContainerRoot = null;
+		languageRoot = null;
+		jobRoot = null;
+		changelogRoot = null;
+		
 	}
 
 	@Override

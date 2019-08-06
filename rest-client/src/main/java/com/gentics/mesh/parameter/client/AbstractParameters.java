@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.raml.model.parameter.QueryParameter;
 
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.ParameterProvider;
 
 
@@ -30,12 +29,6 @@ public abstract class AbstractParameters implements ParameterProvider {
 
 	@Override
 	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
-		return null;
-	}
-
-	@Override
-	public MeshOptions options() {
-		//TODO MESH MESH
 		return null;
 	}
 

@@ -7,6 +7,7 @@ import java.io.File;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.demo.DemoDataProvider;
 
@@ -23,10 +24,13 @@ public class DemoVerticle extends AbstractVerticle {
 
 	private static Logger log = LoggerFactory.getLogger(DemoVerticle.class);
 
-	private DemoDataProvider demoDataProvider;
+	private final DemoDataProvider demoDataProvider;
+
+	private final BootstrapInitializer boot;
 
 	@Inject
-	public DemoVerticle(DemoDataProvider demoDataProvider) {
+	public DemoVerticle(BootstrapInitializer boot, DemoDataProvider demoDataProvider) {
+		this.boot = boot;
 		this.demoDataProvider = demoDataProvider;
 	}
 
@@ -37,7 +41,7 @@ public class DemoVerticle extends AbstractVerticle {
 			unzip("/mesh-demo.zip", outputDir.getAbsolutePath());
 		}
 		// We only want to setup the demo data once
-		if (BootstrapInitializerImpl.isInitialSetup) {
+		if (boot.isInitialSetup()) {
 			vertx.executeBlocking(bc -> {
 				try {
 					demoDataProvider.setup(true);

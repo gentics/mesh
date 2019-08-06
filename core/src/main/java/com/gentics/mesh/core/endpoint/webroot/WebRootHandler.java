@@ -147,7 +147,7 @@ public class WebRootHandler {
 					// Use the language for which the node was resolved
 					List<String> languageTags = new ArrayList<>();
 					languageTags.add(lastSegment.getLanguageTag());
-					languageTags.addAll(ac.getNodeParameters().getLanguageList());
+					languageTags.addAll(ac.getNodeParameters().getLanguageList(options));
 					ac.setWebrootResponseType("node");
 					return node.transformToRest(ac, 0, languageTags.toArray(new String[0])).map(model -> Optional.of(model));
 				}

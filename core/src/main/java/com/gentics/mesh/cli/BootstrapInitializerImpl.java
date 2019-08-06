@@ -161,7 +161,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	private HazelcastClusterManager manager;
 
-	public static boolean isInitialSetup = true;
+	public boolean isInitialSetup = true;
 
 	private List<String> allLanguageTags = new ArrayList<>();
 
@@ -710,10 +710,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	/**
 	 * Clear all stored references to main graph vertices.
 	 */
-	public static void clearReferences() {
-//		BootstrapInitializerImpl.meshRoot = null;
-//		BootstrapInitializerImpl.anonymousRole = null;
-		MeshRootImpl.clearReferences();
+	@Override
+	public void clearReferences() {
+		if (meshRoot != null) {
+			meshRoot.clearReferences();
+		}
+		meshRoot = null;
+		anonymousRole = null;
 	}
 
 	@Override
@@ -1011,4 +1014,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		return mesh;
 	}
 
+	@Override
+	public boolean isInitialSetup() {
+		return isInitialSetup;
+	}
 }
