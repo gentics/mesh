@@ -130,7 +130,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	}
 
 	public MeshComponent mesh() {
-		return getGraph().getAttribute("meshComponent");
+		return super.getGraph().getAttribute("meshComponent");
 	}
 
 	public Mesh meshApi() {

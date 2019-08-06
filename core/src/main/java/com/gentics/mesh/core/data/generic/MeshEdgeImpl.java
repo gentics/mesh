@@ -73,7 +73,7 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	}
 
 	public MeshComponent mesh() {
-		return getGraph().getAttribute("meshComponent");
+		return super.getGraph().getAttribute("meshComponent");
 	}
 
 	public Database db() {
