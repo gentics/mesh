@@ -101,6 +101,7 @@ import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 import dagger.Lazy;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.EventBusOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -362,6 +363,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				.setJmxEnabled(true);
 			vertxOptions.setMetricsOptions(metricsOptions);
 		}
+		boolean logActivity = LoggerFactory.getLogger(EventBus.class).isDebugEnabled();
+		vertxOptions.getEventBusOptions().setLogActivity(logActivity);
 		vertxOptions.setPreferNativeTransport(true);
 		System.setProperty("vertx.cacheDirBase", options.getTempDirectory());
 		Vertx vertx = null;
