@@ -6,16 +6,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -25,8 +22,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 
@@ -38,6 +33,8 @@ public class DemoDumpGeneratorTest {
 
 	private Database db;
 
+	private Mesh mesh;
+
 	private static DemoDumpGenerator generator = new DemoDumpGenerator();
 
 	@BeforeClass
@@ -47,11 +44,11 @@ public class DemoDumpGeneratorTest {
 	}
 
 	@Before
-	public void setup() throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
-		MeshComponent meshDagger = MeshInternal.create(new MeshOptions());
-		boot = meshDagger.boot();
-		searchProvider = meshDagger.searchProvider();
-		db = meshDagger.database();
+	public void setup() throws Exception {
+		MeshComponent internal = generator.getMeshInternal();
+		boot = internal.boot();
+		searchProvider = internal.searchProvider();
+		db = internal.database();
 	}
 
 	@Test
@@ -69,7 +66,7 @@ public class DemoDumpGeneratorTest {
 			assertTrue("The webclient role has not read permission on the user.", role.hasPermission(GraphPermission.READ_PERM, user));
 			assertTrue("The webclient user has no permission on itself.", user.hasPermission(user, GraphPermission.READ_PERM));
 			assertTrue("The webclient user has no read permission on the user root node..", user.hasPermission(boot.meshRoot().getUserRoot(),
-					GraphPermission.READ_PERM));
+				GraphPermission.READ_PERM));
 
 			assertTrue("We expected to find at least 5 nodes.", boot.meshRoot().getNodeRoot().computeCount() > 5);
 
@@ -88,10 +85,17 @@ public class DemoDumpGeneratorTest {
 				String documentId = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), languageTag);
 				if (searchProvider.getDocument(indexName, documentId).blockingGet() == null) {
 					String msg = "The search document for node {" + node.getUuid() + "} container {" + languageTag
-							+ "} could not be found within index {" + indexName + "} - {" + documentId + "}";
+						+ "} could not be found within index {" + indexName + "} - {" + documentId + "}";
 					fail(msg);
 				}
 			}
+		}
+	}
+
+	@After
+	public void shutdown() throws Exception {
+		if (mesh != null) {
+			mesh.shutdown();
 		}
 	}
 }

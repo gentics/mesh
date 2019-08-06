@@ -11,8 +11,6 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.UUIDUtil;
@@ -32,6 +30,10 @@ public class DemoDumpGenerator {
 	}
 
 	private MeshComponent meshInternal;
+
+	public MeshComponent getMeshInternal() {
+		return meshInternal;
+	}
 
 	public void init() throws Exception {
 		MeshOptions options = new MeshOptions();
@@ -63,12 +65,18 @@ public class DemoDumpGenerator {
 			KeyStoreHelper.gen(keyStoreFile.getAbsolutePath(), keyStorePass);
 		}
 		options.setNodeName("dumpGenerator");
-		Mesh mesh = Mesh.create(options);
+		// // Setup dagger
+		// meshInternal = MeshInternal.create(options);
+		// BootstrapInitializer boot = meshInternal.boot();
+		// boot.init(mesh, false, options, null);
+		init(options);
+	}
 
-		// Setup dagger
-		meshInternal = MeshInternal.create(options);
-		BootstrapInitializer boot = meshInternal.boot();
-		boot.init(mesh, false, options, null);
+	public void init(MeshOptions options) throws Exception {
+		Mesh mesh = Mesh.create(options);
+		mesh.run(false);
+		meshInternal = mesh.internal();
+
 	}
 
 	/**
@@ -85,7 +93,8 @@ public class DemoDumpGenerator {
 
 	}
 
-	private void shutdown() throws MeshConfigurationException, InterruptedException, IOException {
+	private void shutdown() throws Exception {
+		meshInternal.boot().mesh().shutdown();
 		Thread.sleep(2000);
 		System.exit(0);
 	}
@@ -115,13 +124,13 @@ public class DemoDumpGenerator {
 	 * @throws InterruptedException
 	 */
 	private void invokeDump(BootstrapInitializer boot, DemoDataProvider provider)
-			throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
-		boot.initMandatoryData();
-		boot.initOptionalData(true);
-		boot.initPermissions();
+		throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
 
 		// Setup demo data
-		provider.setup(false);
+		meshInternal.database().tx(tx -> {
+			provider.setup(false);
+			tx.success();
+		});
 	}
 
 }

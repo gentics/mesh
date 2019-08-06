@@ -24,7 +24,6 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.util.VersionUtil;
 
 import io.reactivex.Completable;
@@ -55,6 +54,8 @@ public class MeshImpl implements Mesh {
 
 	private MeshComponent meshInternal;
 
+	boolean shutdown = false;
+
 	static {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
@@ -68,6 +69,9 @@ public class MeshImpl implements Mesh {
 
 	@Override
 	public Vertx getVertx() {
+		if (meshInternal == null) {
+			return null;
+		}
 		return meshInternal.vertx();
 	}
 
@@ -88,6 +92,7 @@ public class MeshImpl implements Mesh {
 
 	@Override
 	public Mesh run(boolean block) throws Exception {
+		shutdown = false;
 		checkSystemRequirements();
 
 		setupKeystore(options);
@@ -119,8 +124,8 @@ public class MeshImpl implements Mesh {
 		// Create dagger context and invoke bootstrap init in order to startup mesh
 		try {
 			meshInternal = MeshInternal.create(options);
+			setMeshInternal(meshInternal);
 			meshInternal.boot().init(this, forceIndexSync, options, verticleLoader);
-
 			if (options.isUpdateCheckEnabled()) {
 				try {
 					invokeUpdateCheck();
@@ -332,6 +337,10 @@ public class MeshImpl implements Mesh {
 
 	@Override
 	public void shutdown() throws Exception {
+		if (shutdown) {
+			log.info("Instance is already shut down...");
+			return;
+		}
 
 		log.info("Mesh shutting down...");
 		setStatus(MeshStatus.SHUTTING_DOWN);
@@ -356,6 +365,7 @@ public class MeshImpl implements Mesh {
 		meshInternal = null;
 		log.info("Shutdown completed...");
 		latch.countDown();
+		shutdown = true;
 	}
 
 	/**
