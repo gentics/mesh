@@ -86,10 +86,10 @@ This is useful for integration testing or when creating custom Gentics Mesh serv
 [source,java]
 ----
 Mesh mesh = Mesh.mesh();
-mesh.run();
+mesh.run(false);
 
 # Embedded in your IDE
-mesh.deploy(YourPlugin.class, "your-plugin").blockingAwait();
+mesh.deployPlugin(YourPlugin.class, "your-plugin").blockingAwait();
 ----
 
 == Plugin Development
