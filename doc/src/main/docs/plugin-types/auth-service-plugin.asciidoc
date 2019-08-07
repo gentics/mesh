@@ -1,0 +1,24 @@
+---
+title: Authentication Service Plugin API
+---
+
+include::content/docs/variables.adoc-include[]
+
+== Intro
+
+By default groups and roles will not be handled by the synchronization process. It is however possible to provide a custom authentication plugin which can extract role and group information from the access token infromation.
+This way groups and roles can be directly created.
+
+== Setup
+
+Additionally the input and output information will be printed to the log.
+
+NOTE: The synchronization process will only be invoked if the access token changes. Remember that you need to issue a new access token if you change the mapping in keycloak. The old token may still contain the old information.
+
+All returned groups will automatically be created if not present in Gentics Mesh. This also applies to roles.
+
+In addition to this the user will also automatically be assigned to the returned groups. The user will be removed from any other group to keep the data in sync even if the user was removed from a group in the authentication system.
+
+== Examples
+
+* link:https://github.com/gentics/mesh-plugin-examples/tree/master/authentication-plugin[Authentication Service Plugin Example]

@@ -38,9 +38,12 @@ public class RoleResponse extends AbstractGenericRestResponse {
 	 * 
 	 * @param name
 	 *            Name of the role
+	 * @param Fluent
+	 *            API
 	 */
-	public void setName(String name) {
+	public RoleResponse setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 	/**
@@ -57,9 +60,12 @@ public class RoleResponse extends AbstractGenericRestResponse {
 	 * 
 	 * @param groups
 	 *            List of groups to which the role was assigned
+	 * @param Fluent
+	 *            API
 	 */
-	public void setGroups(List<GroupReference> groups) {
+	public RoleResponse setGroups(List<GroupReference> groups) {
 		this.groups = groups;
+		return this;
 	}
 
 }

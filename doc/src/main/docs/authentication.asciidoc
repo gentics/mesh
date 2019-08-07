@@ -223,8 +223,6 @@ You can use the Keycloak OIDC JSON as a source for the needed properties. You ca
 security:
   oauth2:
     enabled: false
-    mapperScriptPath: "config/mymapper.js"
-    mapperScriptDevMode: false
     config:
       realm: "master"
       authServerUrl: "http://localhost:3000/auth"
@@ -257,42 +255,12 @@ The `preferred_username` field is the main id property which will be used to loc
 
 NOTE: If the `preferred_username` changes a new user will be created in Gentics Mesh.
 
-=== Mapping Script
+=== Authentication Service Plugin API
 
-By default groups and roles will not be handled by the synchronization process. It is however possible to provide a custom mapper script which can extract role and group information from the access token infromation.
+By default groups and roles will not be handled by the synchronization process. It is however possible to provide a custom authentication plugin which can extract role and group information from the access token infromation.
 This way groups and roles can be directly created.
 
-The `security.oauth2.mapperScriptDevMode` flag can be used to ease the development of mapper scripts. When enabled the mapper script will be read from disk for each mapper call.
-Additionally the input and output information will be printed to the log.
-
-The synchronization process will however only be invoked if the access token changes. Remember that you need to issue a new access token if you change the mapping in keycloak. The old token may still contain the old information.
-
-NOTE: Make sure to disable this flag in production.
-
-Example script:
-
-[source,javascript]
-----
-function extractGroups(principle) {
-	var groups = [];
-	groups.push("group1");
-	groups.push("group2");
-	return groups;
-}
-
-function extractRoles(principle) {
-	var roles = [];
-	roles.push("role1");
-	roles.push("role2");
-	return roles;
-}
-----
-
-All returned groups will automatically be created if not present in Gentics Mesh. This also applies to roles.
-
-In addition to this the user will also automatically be assigned to the returned groups. The user will be removed from any other group to keep the data in sync even if the user was removed from a group in the authentication system.
-
-No automatic assignment for roles will be executed. Roles will just be created if not present.
+You can read more on this topic in the link:{{< relref "plugin-types/auth-service-plugin.asciidoc" >}}[Authentication Service Plugin API] section.
 
 === Supported Providers
 

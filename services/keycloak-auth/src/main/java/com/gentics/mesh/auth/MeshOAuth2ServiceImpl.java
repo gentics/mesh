@@ -2,41 +2,41 @@ package com.gentics.mesh.auth;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.rest.role.RoleReference;
+import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OAuth2Options;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.plugin.auth.AuthServicePlugin;
+import com.gentics.mesh.plugin.auth.MappingResult;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -46,6 +46,7 @@ import io.vertx.ext.auth.oauth2.OAuth2Auth;
 import io.vertx.ext.auth.oauth2.OAuth2FlowType;
 import io.vertx.ext.auth.oauth2.providers.KeycloakAuth;
 import io.vertx.ext.web.Route;
+import io.vertx.ext.web.RoutingContext;
 import jdk.nashorn.api.scripting.ClassFilter;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import okhttp3.OkHttpClient;
@@ -64,104 +65,99 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	 */
 	public static final Cache<String, String> TOKEN_ID_LOG = Caffeine.newBuilder().maximumSize(20_000).expireAfterWrite(24, TimeUnit.HOURS).build();
 
+	protected AuthServicePluginRegistry authPluginRegistry;
 	protected MeshOAuth2AuthHandlerImpl oauth2Handler;
 	protected NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
 	protected OAuth2Options options;
-	protected String mapperScript = null;
 	protected OAuth2Auth oauth2Provider;
 	protected Database db;
 	protected BootstrapInitializer boot;
 
 	@Inject
-	public MeshOAuth2ServiceImpl(Database db, BootstrapInitializer boot, MeshOptions meshOptions, Vertx vertx) {
+	public MeshOAuth2ServiceImpl(Database db, BootstrapInitializer boot, MeshOptions meshOptions, Vertx vertx,
+		AuthServicePluginRegistry authPluginRegistry) {
 		this.db = db;
 		this.boot = boot;
+		this.authPluginRegistry = authPluginRegistry;
 		this.options = meshOptions.getAuthenticationOptions().getOauth2();
 		if (options == null || !options.isEnabled()) {
 			return;
 		}
 
 		JsonObject config = loadRealmInfo(vertx, meshOptions);
-		this.mapperScript = loadScript();
 
 		this.oauth2Provider = KeycloakAuth.create(vertx, OAuth2FlowType.AUTH_CODE, config);
 		this.oauth2Handler = new MeshOAuth2AuthHandlerImpl(oauth2Provider);
 
 	}
 
-	/**
-	 * Read the mapper script from the configured path.
-	 * 
-	 * @return
-	 */
-	protected String loadScript() {
-		String path = options.getMapperScriptPath();
-		if (path == null) {
-			return null;
-		}
-		File scriptFile = new File(path);
-		if (scriptFile.exists()) {
-			try {
-				return FileUtils.readFileToString(scriptFile, StandardCharsets.UTF_8);
-			} catch (IOException e) {
-				throw error(INTERNAL_SERVER_ERROR, "oauth_mapper_file_not_readable", e);
-			}
-		} else {
-			log.warn("The OAuth2 mapper script {" + path + "} could not be found.");
-			return null;
-		}
-	}
+	// /**
+	// * Read the mapper script from the configured path.
+	// *
+	// * @return
+	// */
+	// protected String loadScript() {
+	// String path = options.getMapperScriptPath();
+	// if (path == null) {
+	// return null;
+	// }
+	// File scriptFile = new File(path);
+	// if (scriptFile.exists()) {
+	// try {
+	// return FileUtils.readFileToString(scriptFile, StandardCharsets.UTF_8);
+	// } catch (IOException e) {
+	// throw error(INTERNAL_SERVER_ERROR, "oauth_mapper_file_not_readable", e);
+	// }
+	// } else {
+	// log.warn("The OAuth2 mapper script {" + path + "} could not be found.");
+	// return null;
+	// }
+	// }
 
-	protected JsonObject executeMapperScript(JsonObject principle) throws ScriptException {
-		JsonObject info = new JsonObject();
-		info.put("roles", new JsonArray());
-		info.put("groups", new JsonArray());
-
-		boolean devMode = options.isMapperScriptDevMode();
-		if (devMode) {
-			log.info("Reloading mapper script due to enabled development mode.");
-			mapperScript = loadScript();
-		}
-
-		if (StringUtils.isEmpty(mapperScript)) {
-			return info;
-		}
-
-		ScriptEngine engine = factory.getScriptEngine(new Sandbox());
-		engine.put("principle", principle);
-		StringBuilder script = new StringBuilder();
-		script.append(mapperScript);
-		script.append("\ngroups = JSON.stringify(extractGroups(JSON.parse(principle)));");
-		script.append("\nroles = JSON.stringify(extractRoles(JSON.parse(principle)));");
-
-		if (devMode || log.isDebugEnabled()) {
-			log.info("Executing mapper script:\n" + script.toString());
-			log.info("Using principle:\n" + principle.encodePrettily());
-		}
-
-		engine.eval(script.toString());
-		Object rolesResult = engine.get("roles");
-		if (rolesResult != null) {
-			if (rolesResult instanceof String) {
-				info.put("roles", new JsonArray((String) rolesResult));
-			} else {
-				throw new RuntimeException("The mapper script must return roles as a string. Got {" + rolesResult.getClass().getName() + "}");
-			}
-		}
-
-		Object groupResult = engine.get("groups");
-		if (groupResult != null) {
-			if (groupResult instanceof String) {
-				info.put("groups", new JsonArray((String) groupResult));
-			} else {
-				throw new RuntimeException("The mapper script must return groups as a string. Got {" + groupResult.getClass().getName() + "}");
-			}
-		}
-		if (devMode || log.isDebugEnabled()) {
-			log.info("Mapping script output:\n" + info.encodePrettily());
-		}
-		return info;
-	}
+	// protected JsonObject executeMapperScript(JsonObject principle) throws ScriptException {
+	// JsonObject info = new JsonObject();
+	// info.put("roles", new JsonArray());
+	// info.put("groups", new JsonArray());
+	//
+	// if (StringUtils.isEmpty(mapperScript)) {
+	// return info;
+	// }
+	//
+	// ScriptEngine engine = factory.getScriptEngine(new Sandbox());
+	// engine.put("principle", principle);
+	// StringBuilder script = new StringBuilder();
+	// script.append(mapperScript);
+	// script.append("\ngroups = JSON.stringify(extractGroups(JSON.parse(principle)));");
+	// script.append("\nroles = JSON.stringify(extractRoles(JSON.parse(principle)));");
+	//
+	// if (log.isDebugEnabled()) {
+	// log.info("Executing mapper script:\n" + script.toString());
+	// log.info("Using principle:\n" + principle.encodePrettily());
+	// }
+	//
+	// engine.eval(script.toString());
+	// Object rolesResult = engine.get("roles");
+	// if (rolesResult != null) {
+	// if (rolesResult instanceof String) {
+	// info.put("roles", new JsonArray((String) rolesResult));
+	// } else {
+	// throw new RuntimeException("The mapper script must return roles as a string. Got {" + rolesResult.getClass().getName() + "}");
+	// }
+	// }
+	//
+	// Object groupResult = engine.get("groups");
+	// if (groupResult != null) {
+	// if (groupResult instanceof String) {
+	// info.put("groups", new JsonArray((String) groupResult));
+	// } else {
+	// throw new RuntimeException("The mapper script must return groups as a string. Got {" + groupResult.getClass().getName() + "}");
+	// }
+	// }
+	// if (devMode || log.isDebugEnabled()) {
+	// log.info("Mapping script output:\n" + info.encodePrettily());
+	// }
+	// return info;
+	// }
 
 	@Override
 	public void secure(Route route) {
@@ -177,7 +173,14 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					rc.fail(401);
 					return;
 				} else {
-					rc.setUser(syncUser(token.accessToken()));
+					List<AuthServicePlugin> plugins = authPluginRegistry.getPlugins();
+					for (AuthServicePlugin plugin : plugins) {
+						if (!plugin.acceptToken(rc.request(), token.accessToken())) {
+							rc.fail(401);
+							return;
+						}
+					}
+					rc.setUser(syncUser(rc, token.accessToken()));
 				}
 			}
 			rc.next();
@@ -187,13 +190,14 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	/**
 	 * Utilize the user information to return the matching mesh user.
 	 * 
-	 * @param userInfo
+	 * @param rc
+	 * @param token
 	 * @return
 	 */
-	protected MeshAuthUser syncUser(JsonObject userInfo) {
-		String username = userInfo.getString("preferred_username");
+	protected MeshAuthUser syncUser(RoutingContext rc, JsonObject token) {
+		String username = token.getString("preferred_username");
 		Objects.requireNonNull(username, "The preferred_username property could not be found in the principle user info.");
-		String currentTokenId = userInfo.getString("jti");
+		String currentTokenId = token.getString("jti");
 
 		EventQueueBatch batch = EventQueueBatch.create();
 		MeshAuthUser authUser = db.tx(() -> {
@@ -207,7 +211,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 				user = root.findMeshAuthUserByUsername(username);
 				String uuid = user.getUuid();
-				syncUser(batch, user, admin, userInfo);
+				runPlugins(rc, batch, admin, user, token);
 				TOKEN_ID_LOG.put(uuid, currentTokenId);
 			} else {
 				// Compare the stored and current token id to see whether the current token is different.
@@ -216,7 +220,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				String lastSeenTokenId = TOKEN_ID_LOG.getIfPresent(user.getUuid());
 				if (lastSeenTokenId == null || !lastSeenTokenId.equals(currentTokenId)) {
 					com.gentics.mesh.core.data.User admin = root.findByUsername("admin");
-					syncUser(batch, user, admin, userInfo);
+					runPlugins(rc, batch, admin, user, token);
 					TOKEN_ID_LOG.put(uuid, currentTokenId);
 				}
 			}
@@ -227,78 +231,156 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 	}
 
-	/**
-	 * Synchronize the other components of the user (e.g.: roles, groups).
-	 * 
-	 * @param batch
-	 * @param user
-	 * @param admin
-	 * @param userInfo
-	 */
-	protected void syncUser(EventQueueBatch batch, MeshAuthUser user, com.gentics.mesh.core.data.User admin, JsonObject userInfo) {
-		String givenName = userInfo.getString("given_name");
+	private void defaultUserMapper(EventQueueBatch batch, MeshAuthUser user, JsonObject token) {
+		boolean modified = false;
+		String givenName = token.getString("given_name");
 		if (givenName == null) {
 			log.warn("Did not find given_name property in OAuth2 principle.");
 		} else {
-			user.setFirstname(givenName);
+			String currentFirstName = user.getFirstname();
+			if (!Objects.equals(currentFirstName, givenName)) {
+				user.setFirstname(givenName);
+				modified = true;
+			}
 		}
 
-		String familyName = userInfo.getString("family_name");
+		String familyName = token.getString("family_name");
 		if (familyName == null) {
 			log.warn("Did not find family_name property in OAuth2 principle.");
 		} else {
-			user.setLastname(familyName);
+			String currentLastName = user.getLastname();
+			if (!Objects.equals(currentLastName, familyName)) {
+				user.setLastname(familyName);
+				modified = true;
+			}
 		}
 
-		String email = userInfo.getString("email");
+		String email = token.getString("email");
 		if (email == null) {
 			log.warn("Did not find email property in OAuth2 principle");
 		} else {
-			user.setEmailAddress(email);
-		}
-		batch.add(user.onUpdated());
-
-		try {
-			JsonObject mappingInfo = executeMapperScript(userInfo);
-			JsonArray roles = mappingInfo.getJsonArray("roles");
-			RoleRoot roleRoot = boot.roleRoot();
-			for (int i = 0; i < roles.size(); i++) {
-				String roleName = roles.getString(i);
-				Role role = roleRoot.findByName(roleName);
-				if (role == null) {
-					role = roleRoot.create(roleName, admin);
-					admin.addCRUDPermissionOnRole(roleRoot, CREATE_PERM, role);
-					batch.add(role.onUpdated());
-				}
-				// The group<->role assignment must be done manually. We don't want to enforce this here.
+			String currentEmail = user.getEmailAddress();
+			if (!Objects.equals(currentEmail, email)) {
+				user.setEmailAddress(email);
+				modified = true;
 			}
-			JsonArray groups = mappingInfo.getJsonArray("groups");
+		}
+		if (modified) {
+			batch.add(user.onUpdated());
+		}
+
+	}
+
+	private void runPlugins(RoutingContext rc, EventQueueBatch batch, com.gentics.mesh.core.data.User admin, MeshAuthUser user, JsonObject token) {
+		List<AuthServicePlugin> plugins = authPluginRegistry.getPlugins();
+		// Only load the needed data for plugins if there are any plugins
+		if (!plugins.isEmpty()) {
+			RoleRoot roleRoot = boot.roleRoot();
 			GroupRoot groupRoot = boot.groupRoot();
 
-			// First remove the user from all groups
-			for (Group group : groupRoot.findAll()) {
-				// TODO only remove the user if needed.
-				// We should not touch other groups if not needed.
-				// Otherwise the permission store and index sync gets a lot of work.
-				group.removeUser(user);
-				batch.add(group.onUpdated());
+			for (AuthServicePlugin plugin : plugins) {
+				try {
+					MappingResult result = plugin.mapToken(rc, token);
+					// Just invoke the default mapper if the plugin provides no mapping
+					if (result == null) {
+						log.debug("Plugin did not provide a mapping result. Using only default mapping for user");
+						defaultUserMapper(batch, user, token);
+						continue;
+					}
+					// 1. Map the user
+					UserUpdateRequest mappedUser = result.getUser();
+					if (mappedUser != null) {
+						InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+						ac.setBody(mappedUser);
+						ac.setUser(admin.toAuthUser());
+						user.update(ac, batch);
+					} else {
+						defaultUserMapper(batch, user, token);
+					}
+
+					// 2. Map the roles
+					List<RoleResponse> mappedRoles = result.getRoles();
+					if (mappedRoles != null) {
+						for (RoleResponse mappedRole : mappedRoles) {
+							String roleName = mappedRole.getName();
+							Role role = roleRoot.findByName(roleName);
+							// Role not found - Lets create it
+							if (role == null) {
+								role = roleRoot.create(roleName, admin);
+								admin.addCRUDPermissionOnRole(roleRoot, CREATE_PERM, role);
+								batch.add(role.onCreated());
+							}
+						}
+					}
+
+					// 3. Map the groups
+					List<GroupResponse> mappedGroups = result.getGroups();
+					if (mappedGroups != null) {
+
+						// Now create the groups and assign the user to the listed groups
+						for (GroupResponse mappedGroup : mappedGroups) {
+							String groupName = mappedGroup.getName();
+							Group group = groupRoot.findByName(groupName);
+
+							// Group not found - Lets create it
+							if (group == null) {
+								group = groupRoot.create(groupName, admin);
+								admin.addCRUDPermissionOnRole(groupRoot, CREATE_PERM, group);
+								batch.add(group.onCreated());
+							}
+							if (!group.hasUser(user)) {
+								// Ensure that the user is part of the group
+								group.addUser(user);
+								batch.add(group.onUpdated());
+							}
+							// 4. Assign roles to groups
+							for (RoleReference assignedRole : mappedGroup.getRoles()) {
+								String roleName = assignedRole.getName();
+								String roleUuid = assignedRole.getUuid();
+								Role role = null;
+								// Try name
+								if (roleName != null) {
+									role = roleRoot.findByName(roleName);
+								}
+								// Try uuid
+								if (role == null) {
+									role = roleRoot.findByUuid(roleUuid);
+								}
+								// Add the role if it is missing
+								if (!group.hasRole(role)) {
+									group.addRole(role);
+								}
+								// TODO permission clear? What event?
+							}
+
+							// 6. Check if the plugin wants to remove any of the roles from the mapped groups.
+							for (Role role : group.getRoles()) {
+								if (plugin.removeRoleFromGroup(role.getName(), group.getName(), token)) {
+									group.removeRole(role);
+									batch.add(group.onUpdated());
+								}
+							}
+						}
+
+					}
+
+					// 5. Check if the plugin wants to remove the user user from any of its current groups.
+					for (Group group : user.getGroups()) {
+						if (plugin.removeUserFromGroup(group.getName(), token)) {
+							group.removeUser(user);
+							batch.add(group.onUpdated());
+						}
+					}
+
+				} catch (Exception e) {
+					log.error("Error while executing mapping plugin {" + plugin.id() + "}. Ignoring result.", e);
+				}
 			}
 
-			// Now create the groups and assign the user to the listed groups
-			for (int i = 0; i < groups.size(); i++) {
-				String groupName = groups.getString(i);
-				Group group = groupRoot.findByName(groupName);
-				if (group == null) {
-					group = groupRoot.create(groupName, admin);
-					admin.addCRUDPermissionOnRole(groupRoot, CREATE_PERM, group);
-				}
-				// Ensure that the user is part of the group
-				group.addUser(user);
-				batch.add(group.onUpdated());
-			}
-		} catch (Exception e) {
-			log.error("Error while executing mapping script. Ignoring mapping script.", e);
+		} else {
+			defaultUserMapper(batch, user, token);
 		}
+
 	}
 
 	public OAuth2Auth getOauth2Provider() {

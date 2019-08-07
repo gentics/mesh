@@ -519,4 +519,11 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 		setProperty(API_TOKEN_ISSUE_TIMESTAMP, null);
 	}
 
+	/**
+	 * Transform the user to a {@link MeshAuthUser}.
+	 * 
+	 * @return
+	 */
+	MeshAuthUser toAuthUser();
+
 }

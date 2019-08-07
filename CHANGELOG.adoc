@@ -23,6 +23,10 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[vNEXT]]
+== NEXT (TBD)
+
+* The `auth.mapperScriptDevMode` and `auth.mapperScriptPath` configuration options have been removed.
 
 [[v0.37.1]]
 == 0.37.1 (06.08.2019)

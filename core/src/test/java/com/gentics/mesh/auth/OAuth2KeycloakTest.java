@@ -2,7 +2,6 @@ package com.gentics.mesh.auth;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
-import static com.gentics.mesh.test.context.MeshOptionChanger.WITH_MAPPER_SCRIPT;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -36,11 +35,13 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 @Ignore
-@MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = true, useKeycloak = true, optionChanger = WITH_MAPPER_SCRIPT)
+@MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = true, useKeycloak = true)
 public class OAuth2KeycloakTest extends AbstractMeshTest {
 
 	@Test
 	public void testKeycloakAuth() throws Exception {
+
+		deployPlugin(MapperTestPlugin.class, "myMapper");
 
 		// 1. Login the user
 		JsonObject authInfo = loginKeycloak();

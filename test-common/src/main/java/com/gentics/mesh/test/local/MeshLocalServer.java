@@ -51,6 +51,8 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 
 	private Mesh mesh;
 
+	private MeshOptions meshOptions;
+
 	/**
 	 * Create a new local server.
 	 * 
@@ -76,33 +78,36 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 		if (initCluster) {
 			args = new String[] { "-" + MeshCLI.INIT_CLUSTER };
 		}
-		MeshOptions options = OptionsLoader.createOrloadOptions(args);
+
+		if (meshOptions == null) {
+			meshOptions = OptionsLoader.createOrloadOptions(args);
+		}
 		if (nodeName != null) {
-			options.setNodeName(nodeName);
+			meshOptions.setNodeName(nodeName);
 		}
 		if (isInMemory) {
-			options.getStorageOptions().setDirectory(null);
+			meshOptions.getStorageOptions().setDirectory(null);
 		} else {
-			options.getStorageOptions().setDirectory(basePath + "/graph");
+			meshOptions.getStorageOptions().setDirectory(basePath + "/graph");
 		}
-		options.getUploadOptions().setDirectory(basePath + "/binaryFiles");
-		options.getUploadOptions().setTempDirectory(basePath + "/temp");
-		options.getHttpServerOptions().setPort(httpPort);
-		options.getHttpServerOptions().setEnableCors(true);
-		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
-		options.getAuthenticationOptions().setKeystorePath(basePath + "/keystore.jkms");
-		options.getMonitoringOptions().setEnabled(false);
-		options.getSearchOptions().setStartEmbedded(startEmbeddedES);
+		meshOptions.getUploadOptions().setDirectory(basePath + "/binaryFiles");
+		meshOptions.getUploadOptions().setTempDirectory(basePath + "/temp");
+		meshOptions.getHttpServerOptions().setPort(httpPort);
+		meshOptions.getHttpServerOptions().setEnableCors(true);
+		meshOptions.getHttpServerOptions().setCorsAllowedOriginPattern("*");
+		meshOptions.getAuthenticationOptions().setKeystorePath(basePath + "/keystore.jkms");
+		meshOptions.getMonitoringOptions().setEnabled(false);
+		meshOptions.getSearchOptions().setStartEmbedded(startEmbeddedES);
 		if (!startEmbeddedES) {
-			options.getSearchOptions().setUrl(null);
+			meshOptions.getSearchOptions().setUrl(null);
 		}
 
-		options.getClusterOptions().setEnabled(clustering);
+		meshOptions.getClusterOptions().setEnabled(clustering);
 		if (clusterName != null) {
-			options.getClusterOptions().setClusterName(clusterName);
+			meshOptions.getClusterOptions().setClusterName(clusterName);
 		}
 
-		mesh = Mesh.mesh(options);
+		mesh = Mesh.mesh(meshOptions);
 
 		if (waitForStartup) {
 			mesh.rxRun().blockingAwait(200, TimeUnit.SECONDS);
@@ -263,6 +268,26 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 	public MeshLocalServer withPlugin(Class<? extends MeshPlugin> clazz, String id) {
 		plugins.add(Tuple.tuple(clazz, id));
 		return this;
+	}
+
+	/**
+	 * Set the initial mesh options to be used by the server.
+	 * 
+	 * @param meshOptions
+	 * @return Fluent API
+	 */
+	public MeshLocalServer withOptions(MeshOptions meshOptions) {
+		this.meshOptions = meshOptions;
+		return this;
+	}
+
+	/**
+	 * Return the mesh options of the server.
+	 * 
+	 * @return
+	 */
+	public MeshOptions getMeshOptions() {
+		return meshOptions;
 	}
 
 }

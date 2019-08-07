@@ -26,11 +26,6 @@ public enum MeshOptionChanger {
 		} catch (Exception e) {
 			throw new RuntimeException("Could not find free port", e);
 		}
-	}), WITH_MAPPER_SCRIPT(options -> {
-		AuthenticationOptions auth = options.getAuthenticationOptions();
-		OAuth2Options oauth2options = auth.getOauth2();
-		oauth2options.setMapperScriptDevMode(true);
-		oauth2options.setMapperScriptPath("src/test/resources/oauth2/mapperscript.js");
 	});
 
 	final Consumer<MeshOptions> changer;
