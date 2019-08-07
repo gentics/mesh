@@ -1,12 +1,15 @@
 package com.gentics.mesh.cli;
 
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.when;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 
-import com.gentics.mesh.Mesh;
+import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.impl.MeshFactoryImpl;
+
+import io.vertx.core.Vertx;
 
 public class MeshImplTest {
 
@@ -18,8 +21,12 @@ public class MeshImplTest {
 
 	@Test
 	public void testUpdateCheck() throws Exception {
-		Mesh mesh = new MeshFactoryImpl().create();
-		((MeshImpl) mesh).invokeUpdateCheck();
+		MeshImpl mesh = new MeshImpl(new MeshOptions());
+		MeshComponent i = Mockito.mock(MeshComponent.class);
+		when(i.vertx()).thenReturn(Vertx.vertx());
+		mesh.setMeshInternal(i);
+
+		mesh.invokeUpdateCheck();
 	}
 
 }
