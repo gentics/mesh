@@ -1,5 +1,5 @@
 ---
-title: Gentics Mesh - Plugin Development
+title: Gentics Mesh - GraphQL Plugin Guide
 ---
 
 include::content/docs/variables.adoc-include[]

@@ -157,6 +157,22 @@ ul.doc-toc h2 {
                     </li>
 
                     <li class="section">
+                        <h2><a href="plugins">Commercial Plugins</a></h2>
+                        <ul>
+                            <li>
+                                <a href="plugins/#_favourites_plugin">Favourites Plugin</a>
+                            </li>
+                            <li>
+                                <a href="plugins/#_comments_plugin">Comments Plugin</a>
+                            </li>
+                            <li>
+                                <a href="plugins/#_likes_plugin">Likes Plugin</a>
+                            </li>
+                        </ul>
+                    </li>
+                    
+
+                    <li class="section">
                         <h2><a href="support">Support</a></h2>
                         <ul>
                             <li>
@@ -311,7 +327,7 @@ ul.doc-toc h2 {
                                 <a href="guides/mesh-hugo">Hugo Guide</a>
                             </li>
                             <li>
-                                <a href="guides/mesh-plugin">Plugin Development Guide</a>
+                                <a href="guides/mesh-plugin">GraphQL Plugin Guide</a>
                             </li>
                         </ul>
                     </li>
@@ -478,9 +494,6 @@ ul.doc-toc h2 {
                     <li class="section">
                         <h2><a href="plugin-system">Plugin System</a></h2>
                         <ul>
-                            <li>
-                                <a href="plugins#_list">Plugins</a>
-                            </li>
                             <li>
                                 <a href="plugin-development">Plugin Development</a>
                             </li>

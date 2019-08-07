@@ -6,18 +6,48 @@ include::content/docs/variables.adoc-include[]
 
 == Intro
 
-By default groups and roles will not be handled by the synchronization process. It is however possible to provide a custom authentication plugin which can extract role and group information from the access token infromation.
-This way groups and roles can be directly created.
+Authentication Service Plugin API can be used to create plugins which can extend the authentication/authorization functionality of Gentics Mesh.
+
+Those plugins are intended to work in conjunction with the link:{{< relref "authentication.asciidoc" >}}#_oauth2[OAuth2] interation. When the OAuth2 integration with the Keycloak Identity Provider is enabled Gentics Mesh will automatically sync users provided by Keycloak with the users that are stored in Gentics Mesh.
+
+
+Once a JWT has been obtained by keycloak it can be used for Gentics Mesh requests. The token is validated and the user is sycned. 
+
+Often it is however also desired to sync permission specific information from identity provider. This is where most of the Authentication Service Plugin API comes into play. The API can be used to create plugins which map the information from the JWT to Gentics Mesh roles and groups.
+
+This way any public claim information from the JWT can be used to dynamically update the user, create roles and groups.
 
 == Setup
 
-Additionally the input and output information will be printed to the log.
+The `AuthServicePlugin` interface must be used for an authentication plugin. This interface provides various methods which will be invoked by Gentics Mesh during the authentication process.
+
+
+== Mapping JWT
+
+.AuthServicePlugin methods excerpt
+[options="header"]
+|======
+| Method                            | Description
+| `AuthServicePlugin#mapToken()`    | Use the token information to create a mapping result which will be used to sync user, groups, roles.
+|======
+
+The information from the returned `MappingResult` will be used to sync the elements in Gentics Mesh. Any of the elements can be omitted.
+
+Sync process is as follows:
+
+1. Update user with `MappingResult#getUser` information or use default mapper if no user was specified.
+2. Create roles that are listed in `MappingResult#getRoles`.
+3. Create groups that are listed in `MappingResult#getGroups`.
+4. Assign user to groups of `MappingResult#getGroups` list.
+5. Link roles that are listed within `MappingResult#getGroups` entries to the groups (via `GroupResponse#getRoles`).
+6. Iterate over all roles of the mapped groups and invoke `AuthServicePlugin#removeRoleFromGroup` to check whether the role should be unlinked from the group. You can use this to ensure that only specific roles are linkes to the groups.
+7. Iterate over all groups of the user and invoke `AuthServicePlugin#removeUserFromGroup` to check whether the user should be removed from the group. You can use this to ensure that the use is only part of specific groups.
+
+NOTE: A default mapper which maps _firstname_, _lastname_, _email address_ will be used for user information if you do not set the user field in the `MappingResult` object.
 
 NOTE: The synchronization process will only be invoked if the access token changes. Remember that you need to issue a new access token if you change the mapping in keycloak. The old token may still contain the old information.
 
-All returned groups will automatically be created if not present in Gentics Mesh. This also applies to roles.
-
-In addition to this the user will also automatically be assigned to the returned groups. The user will be removed from any other group to keep the data in sync even if the user was removed from a group in the authentication system.
+WARNING: It is important to note that the mapper API can not be used to *delete* users, roles or groups.
 
 == Examples
 

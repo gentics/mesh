@@ -4,7 +4,17 @@ title: Plugin Development
 
 include::content/docs/variables.adoc-include[]
 
-Plugins which add custom endpoints are written in Java and are packaged as regular `jar` files. A plugin developer needs to extend the `AbstractPlugin` class. The plugin can hook into different parts of Gentics Mesh by implementing one of multiple interfaces for the different _plugin types_.
+Plugins can extend the REST and GraphQL API and also hook into various places of Gentics Mesh.
+A plugin developer needs to extend the `AbstractPlugin` class. The plugin can hook into different parts of Gentics Mesh by implementing one of multiple interfaces for the different _plugin types_.
+The plugin code needs to be packages as a regular `jar` file.
+
+In general the plugin developer just needs to implement the methods which will be invoked by Gentics Mesh.
+
+== Plugin Types
+
+* link:{{< relref "plugin-types/rest-plugin" >}}[REST Plugin API]
+* link:{{< relref "plugin-types/graphql-plugin" >}}[GraphQL Plugin API]
+* link:{{< relref "plugin-types/auth-service-plugin" >}}[Authentication Service Plugin API]
 
 == Plugin Setup
 
@@ -21,13 +31,6 @@ public class HelloWorldPlugin extends AbstractPlugin {
 
 }
 ----
-
-== Plugin Types
-
-* link:{{< relref "plugin-types/rest-plugin" >}}[REST Plugin API]
-* link:{{< relref "plugin-types/graphql-plugin" >}}[GraphQL Plugin API]
-* link:{{< relref "plugin-types/auth-service-plugin" >}}[Authentication Service Plugin API]
-
 
 == Plugin Methods
 
