@@ -33,20 +33,10 @@ import io.vertx.core.json.JsonObject;
 @MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = true, useKeycloak = true)
 public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 
-	private static String initialKey;
-
 	@Before
 	public void deployPlugin() {
-		if (initialKey == null) {
-			initialKey = client().getAPIKey();
-		}
 		MapperTestPlugin.reset();
 		deployPlugin(MapperTestPlugin.class, "myMapper");
-		client().setAPIKey(initialKey);
-	}
-
-	protected void setAdminToken() {
-		client().setAPIKey(initialKey);
 	}
 
 	@Test
