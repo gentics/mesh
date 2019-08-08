@@ -257,11 +257,17 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// We need to init the graph db before starting the OrientDB Server. Otherwise the database will not get picked up by the orientdb server which
 				// handles the clustering.
 				db.setupConnectionPool();
+				//TODO find a better way around the chicken and the egg issues. 
+				// Vert.x is currently needed for eventQueueBatch creation. 
+				// This process fails if vert.x has not been made accessible during local data setup.
+				vertx = Vertx.vertx();
 				boolean setupData = initLocalData(options, false);
 				db.closeConnectionPool();
 				db.shutdown();
 
 				db.clusterManager().startServer();
+				vertx.close();
+				vertx = null;
 				initVertx(options, isClustered);
 				db.clusterManager().registerEventHandlers();
 				db.setupConnectionPool();
