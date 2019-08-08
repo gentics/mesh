@@ -26,7 +26,16 @@ include::content/docs/variables.adoc-include[]
 [[vNEXT]]
 == NEXT (TBD)
 
-* The `auth.mapperScriptDevMode` and `auth.mapperScriptPath` configuration options have been removed.
+CAUTION: Removal of mapper script support
+
+[quote]
+____
+
+The mapper script support has been dropped due to deprecation of the Nashorn JavaScript engine. The functionality of mapper scripts can be replaced by usage of the new link:{{< relref "plugin-types/auth-service-plugin.asciidoc" >}}[Authentication Service Plugin API].
+
+The `auth.mapperScriptDevMode` and `auth.mapperScriptPath` configuration options are no longer needed and have been removed.
+____
+
 
 [[v0.37.1]]
 == 0.37.1 (06.08.2019)
