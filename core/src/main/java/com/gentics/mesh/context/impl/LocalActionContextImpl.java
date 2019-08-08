@@ -189,7 +189,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	 * @param projectName
 	 */
 	public void setProject(String projectName) {
-		MeshComponent mesh = user.getGraph().getAttribute("meshComponent");
+		MeshComponent mesh = user.getGraphAttribute("meshComponent");
 		mesh.database().tx(() -> {
 			BootstrapInitializer boot = mesh.boot();
 			Project project = boot.projectRoot().findByName(projectName);

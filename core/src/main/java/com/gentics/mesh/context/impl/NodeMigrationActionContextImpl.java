@@ -563,6 +563,11 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
+			public <T> T getGraphAttribute(String key) {
+				return null;
+			}
+
+			@Override
 			public <T> T getProperty(String name) {
 				return null;
 			}

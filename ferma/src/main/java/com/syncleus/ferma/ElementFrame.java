@@ -132,4 +132,6 @@ public interface ElementFrame {
 	 */
 	EdgeTraversal<?, ?, ?> e(final Object... ids);
 
+	<T> T getGraphAttribute(String key);
+
 }
