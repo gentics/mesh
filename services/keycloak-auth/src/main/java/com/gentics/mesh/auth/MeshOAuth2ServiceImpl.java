@@ -2,6 +2,8 @@ package com.gentics.mesh.auth;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.event.Assignment.ASSIGNED;
+import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 
 import java.io.IOException;
 import java.net.URL;
@@ -21,6 +23,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -93,74 +96,6 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 	}
 
-	// /**
-	// * Read the mapper script from the configured path.
-	// *
-	// * @return
-	// */
-	// protected String loadScript() {
-	// String path = options.getMapperScriptPath();
-	// if (path == null) {
-	// return null;
-	// }
-	// File scriptFile = new File(path);
-	// if (scriptFile.exists()) {
-	// try {
-	// return FileUtils.readFileToString(scriptFile, StandardCharsets.UTF_8);
-	// } catch (IOException e) {
-	// throw error(INTERNAL_SERVER_ERROR, "oauth_mapper_file_not_readable", e);
-	// }
-	// } else {
-	// log.warn("The OAuth2 mapper script {" + path + "} could not be found.");
-	// return null;
-	// }
-	// }
-
-	// protected JsonObject executeMapperScript(JsonObject principle) throws ScriptException {
-	// JsonObject info = new JsonObject();
-	// info.put("roles", new JsonArray());
-	// info.put("groups", new JsonArray());
-	//
-	// if (StringUtils.isEmpty(mapperScript)) {
-	// return info;
-	// }
-	//
-	// ScriptEngine engine = factory.getScriptEngine(new Sandbox());
-	// engine.put("principle", principle);
-	// StringBuilder script = new StringBuilder();
-	// script.append(mapperScript);
-	// script.append("\ngroups = JSON.stringify(extractGroups(JSON.parse(principle)));");
-	// script.append("\nroles = JSON.stringify(extractRoles(JSON.parse(principle)));");
-	//
-	// if (log.isDebugEnabled()) {
-	// log.info("Executing mapper script:\n" + script.toString());
-	// log.info("Using principle:\n" + principle.encodePrettily());
-	// }
-	//
-	// engine.eval(script.toString());
-	// Object rolesResult = engine.get("roles");
-	// if (rolesResult != null) {
-	// if (rolesResult instanceof String) {
-	// info.put("roles", new JsonArray((String) rolesResult));
-	// } else {
-	// throw new RuntimeException("The mapper script must return roles as a string. Got {" + rolesResult.getClass().getName() + "}");
-	// }
-	// }
-	//
-	// Object groupResult = engine.get("groups");
-	// if (groupResult != null) {
-	// if (groupResult instanceof String) {
-	// info.put("groups", new JsonArray((String) groupResult));
-	// } else {
-	// throw new RuntimeException("The mapper script must return groups as a string. Got {" + groupResult.getClass().getName() + "}");
-	// }
-	// }
-	// if (devMode || log.isDebugEnabled()) {
-	// log.info("Mapping script output:\n" + info.encodePrettily());
-	// }
-	// return info;
-	// }
-
 	@Override
 	public void secure(Route route) {
 		route.handler(oauth2Handler);
@@ -213,7 +148,8 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 				user = root.findMeshAuthUserByUsername(username);
 				String uuid = user.getUuid();
-				runPlugins(rc, batch, admin, user, token);
+				// Not setting uuid since the user has not yet been comitted.
+				runPlugins(rc, batch, admin, user, null, token);
 				TOKEN_ID_LOG.put(uuid, currentTokenId);
 			} else {
 				// Compare the stored and current token id to see whether the current token is different.
@@ -222,7 +158,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				String lastSeenTokenId = TOKEN_ID_LOG.getIfPresent(user.getUuid());
 				if (lastSeenTokenId == null || !lastSeenTokenId.equals(currentTokenId)) {
 					com.gentics.mesh.core.data.User admin = root.findByUsername("admin");
-					runPlugins(rc, batch, admin, user, token);
+					runPlugins(rc, batch, admin, user, uuid, token);
 					TOKEN_ID_LOG.put(uuid, currentTokenId);
 				}
 			}
@@ -273,7 +209,8 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 	}
 
-	private void runPlugins(RoutingContext rc, EventQueueBatch batch, com.gentics.mesh.core.data.User admin, MeshAuthUser user, JsonObject token) {
+	private void runPlugins(RoutingContext rc, EventQueueBatch batch, com.gentics.mesh.core.data.User admin, MeshAuthUser user, String userUuid,
+		JsonObject token) {
 		List<AuthServicePlugin> plugins = authPluginRegistry.getPlugins();
 		// Only load the needed data for plugins if there are any plugins
 		if (!plugins.isEmpty()) {
@@ -282,7 +219,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 			for (AuthServicePlugin plugin : plugins) {
 				try {
-					MappingResult result = plugin.mapToken(rc, token);
+					MappingResult result = plugin.mapToken(rc.request(), userUuid, token);
 					// Just invoke the default mapper if the plugin provides no mapping
 					if (result == null) {
 						log.debug("Plugin did not provide a mapping result. Using only default mapping for user");
@@ -325,15 +262,21 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 							Group group = groupRoot.findByName(groupName);
 
 							// Group not found - Lets create it
+							boolean created = false;
 							if (group == null) {
 								group = groupRoot.create(groupName, admin);
 								admin.addCRUDPermissionOnRole(groupRoot, CREATE_PERM, group);
 								batch.add(group.onCreated());
+								created = true;
 							}
 							if (!group.hasUser(user)) {
 								// Ensure that the user is part of the group
 								group.addUser(user);
-								batch.add(group.onUpdated());
+								batch.add(group.createUserAssignmentEvent(user, ASSIGNED));
+								// We only need one event
+								if (!created) {
+									batch.add(group.onUpdated());
+								}
 							}
 							// 4. Assign roles to groups
 							for (RoleReference assignedRole : mappedGroup.getRoles()) {
@@ -349,24 +292,58 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 									role = roleRoot.findByUuid(roleUuid);
 								}
 								// Add the role if it is missing
-								if (!group.hasRole(role)) {
+								if (role != null && !group.hasRole(role)) {
 									group.addRole(role);
+									group.setLastEditedTimestamp();
+									group.setEditor(admin);
+									batch.add(group.createRoleAssignmentEvent(role, ASSIGNED));
 								}
-								// TODO permission clear? What event?
 							}
 
+							// 6. Check if the plugin wants to remove any of the roles from the mapped group.
 							RoleFilter roleFilter = result.getRoleFilter();
 							if (roleFilter != null) {
-								// 6. Check if the plugin wants to remove any of the roles from the mapped groups.
 								for (Role role : group.getRoles()) {
 									if (roleFilter.filter(group.getName(), role.getName())) {
+										log.info("Unassigning role {" + role.getName() + "} from group {" + group.getName() + "}");
 										group.removeRole(role);
-										batch.add(group.onUpdated());
+										batch.add(group.createRoleAssignmentEvent(role, UNASSIGNED));
 									}
 								}
 							}
 						}
+					}
 
+					if (mappedRoles != null) {
+						for (RoleResponse mappedRole : mappedRoles) {
+							String roleName = mappedRole.getName();
+							Role role = roleRoot.findByName(roleName);
+
+							if (role == null) {
+								log.warn("Could not find referenced role {" + role + "}");
+								continue;
+							}
+							// Assign groups to roles
+							for (GroupReference assignedGroup : mappedRole.getGroups()) {
+								String groupName = assignedGroup.getName();
+								String groupUuid = assignedGroup.getUuid();
+								Group group = null;
+								// Try name
+								if (groupName != null) {
+									group = groupRoot.findByName(groupName);
+								}
+								// Try uuid
+								if (group == null) {
+									group = groupRoot.findByUuid(groupUuid);
+								}
+								// Add the role if it is missing
+								if (group != null && !group.hasRole(role)) {
+									group.addRole(role);
+									batch.add(group.createRoleAssignmentEvent(role, ASSIGNED));
+								}
+							}
+
+						}
 					}
 
 					// 5. Check if the plugin wants to remove the user user from any of its current groups.
@@ -374,11 +351,13 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					if (groupFilter != null) {
 						for (Group group : user.getGroups()) {
 							if (groupFilter.filter(group.getName())) {
+								log.info("Unassigning group {" + group.getName() + "} from user {" + user.getUsername() + "}");
 								group.removeUser(user);
-								batch.add(group.onUpdated());
+								batch.add(group.createUserAssignmentEvent(user, UNASSIGNED));
 							}
 						}
 					}
+
 				} catch (Exception e) {
 					log.error("Error while executing mapping plugin {" + plugin.id() + "}. Ignoring result.", e);
 				}

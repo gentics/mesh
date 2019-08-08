@@ -31,7 +31,6 @@ public abstract class AbstractOAuthTest extends AbstractMeshTest {
 
 	protected void setClientTokenFromKeycloak() throws IOException {
 		JsonObject authInfo = loginKeycloak();
-		System.out.println("Login Token:\n" + authInfo.encodePrettily());
 		String token = authInfo.getString("access_token");
 		client().setAPIKey(token);
 	}

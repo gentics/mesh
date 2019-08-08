@@ -13,14 +13,18 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.rest.group.GroupReference;
+import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
+import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.plugin.auth.AuthServicePluginUtils;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -29,10 +33,20 @@ import io.vertx.core.json.JsonObject;
 @MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = true, useKeycloak = true)
 public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 
+	private static String initialKey;
+
 	@Before
 	public void deployPlugin() {
+		if (initialKey == null) {
+			initialKey = client().getAPIKey();
+		}
 		MapperTestPlugin.reset();
 		deployPlugin(MapperTestPlugin.class, "myMapper");
+		client().setAPIKey(initialKey);
+	}
+
+	protected void setAdminToken() {
+		client().setAPIKey(initialKey);
 	}
 
 	@Test
@@ -53,7 +67,6 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 		call(() -> client().me());
 
 		UserResponse me2 = call(() -> client().me());
-		System.out.println(me2.toJson());
 
 		assertEquals("The uuid should not change. The previously created user should be returned.", uuid, me2.getUuid());
 		assertEquals("group1", me2.getGroups().get(0).getName());
@@ -108,9 +121,9 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 
 		// Check the roles of the group
 		setAdminToken();
-		assertGroupRoles("group1");
+		assertGroupRoles("group1", "role3");
 		assertGroupRoles("group2", "role1");
-		assertGroupRoles("group3", "role2");
+		assertGroupRoles("group3", "role2"); // role1 should be filtered out
 
 		// Test with no role filter
 		MapperTestPlugin.roleFilter = null;
@@ -119,9 +132,29 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 		assertGroupsOfUser("dummyUser", "group1", "group2", "group3");
 
 		setAdminToken();
-		assertGroupRoles("group1");
+		assertGroupRoles("group1", "role3");
 		assertGroupRoles("group2", "role1");
 		assertGroupRoles("group3", "role1", "role2");
+
+		// Add the admin role so that the group1 gets the admin role
+		MapperTestPlugin.roleList.add(new RoleResponse().setName("admin").setGroups(new GroupReference().setName("group1")));
+		setClientTokenFromKeycloak();
+		call(() -> client().me());
+		setAdminToken();
+		assertGroupRoles("group1", "role3", "admin");
+
+		// Reset the fields and set the filter. This should remove the admin role
+		MapperTestPlugin.reset();
+		MapperTestPlugin.roleFilter = AuthServicePluginUtils.createRoleFilter(MapperTestPlugin.roleList, MapperTestPlugin.groupList);
+
+		setClientTokenFromKeycloak();
+		call(() -> client().me());
+		assertGroupsOfUser("dummyUser", "group1", "group2", "group3");
+		setAdminToken();
+		assertGroupRoles("group1", "role3");
+		assertGroupRoles("group2", "role1");
+		assertGroupRoles("group3", "role1", "role2");
+
 	}
 
 	@Test
@@ -140,6 +173,19 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 		setClientTokenFromKeycloak();
 		call(() -> client().me());
 		assertGroupsOfUser("dummyUser", "group1", "group2", "group3");
+
+		// Add the admin group and invoke a request to assign the user to the admin group
+		MapperTestPlugin.groupList.add(new GroupResponse().setName("admin"));
+		setClientTokenFromKeycloak();
+		call(() -> client().me());
+		assertGroupsOfUser("dummyUser", "group1", "group2", "group3", "admin");
+
+		// Reset and add a group filter. The admin group should now be removed.
+		MapperTestPlugin.reset();
+		MapperTestPlugin.groupFilter = AuthServicePluginUtils.createGroupFilter(MapperTestPlugin.groupList);
+		setClientTokenFromKeycloak();
+		call(() -> client().me());
+		assertGroupsOfUser("dummyUser", "group1", "group2", "group3");
 	}
 
 	@Test
@@ -155,7 +201,6 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 
 	@Test
 	public void testWebroot() throws IOException {
-
 		// Upload test image
 		String parentUuid = tx(() -> folder("2015").getUuid());
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();

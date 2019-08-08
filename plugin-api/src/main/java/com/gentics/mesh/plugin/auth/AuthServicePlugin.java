@@ -4,7 +4,6 @@ import com.gentics.mesh.plugin.MeshPlugin;
 
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.RoutingContext;
 
 /**
  * The authentication service plugin allows to hook into the authentication process.
@@ -16,6 +15,7 @@ public interface AuthServicePlugin extends MeshPlugin {
 	 * 
 	 * @param httpServerRequest
 	 * @param token
+	 *            Authentication token that has been passed to Gentics Mesh
 	 * @return True the token will be accepted and the request can pass. Otherwise the request will fail.
 	 */
 	default boolean acceptToken(HttpServerRequest httpServerRequest, JsonObject token) {
@@ -25,11 +25,15 @@ public interface AuthServicePlugin extends MeshPlugin {
 	/**
 	 * Map the token information to mesh elements. You can use this method to extract information from the token and sync roles, groups in Gentics Mesh.
 	 * 
-	 * @param rc
+	 * @param req
+	 *            Http Sever request that needs authentication
+	 * @param userUuid
+	 *            Uuid of the user. This will only be set if the user has already been created before.
 	 * @param token
-	 * @return
+	 *            Authentication token that has been passed to Gentics Mesh
+	 * @return Mapping result which will be used to setup the roles, groups and user
 	 */
-	default MappingResult mapToken(RoutingContext rc, JsonObject token) {
+	default MappingResult mapToken(HttpServerRequest req, String userUuid, JsonObject token) {
 		return null;
 	}
 

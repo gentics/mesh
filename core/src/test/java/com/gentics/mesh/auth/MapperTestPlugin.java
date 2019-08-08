@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.pf4j.PluginWrapper;
 
+import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -20,7 +21,6 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 
 public class MapperTestPlugin extends AbstractPlugin implements AuthServicePlugin {
 
@@ -38,6 +38,10 @@ public class MapperTestPlugin extends AbstractPlugin implements AuthServicePlugi
 
 	public static UserUpdateRequest userResult;
 
+	public static List<RoleResponse> roleList;
+
+	public static List<GroupResponse> groupList;
+
 	public MapperTestPlugin(PluginWrapper wrapper, PluginEnvironment env) {
 		super(wrapper, env);
 	}
@@ -48,39 +52,23 @@ public class MapperTestPlugin extends AbstractPlugin implements AuthServicePlugi
 	}
 
 	@Override
-	public MappingResult mapToken(RoutingContext rc, JsonObject token) {
-		log.info("Mapping groups in plugin");
+	public MappingResult mapToken(HttpServerRequest req, String userUuid, JsonObject token) {
 		MappingResult result = new MappingResult();
-		List<GroupResponse> groupList = new ArrayList<>();
-		groupList.add(new GroupResponse()
-			.setName("group1"));
 
-		groupList.add(new GroupResponse()
-			.setName("group2")
-			.setRoles(new RoleReference().setName("role1")));
-
-		groupList.add(new GroupResponse()
-			.setName("group3")
-			.setRoles(new RoleReference().setName("role1"), new RoleReference().setName("role2")));
+		log.info("Mapping groups in plugin");
 		result.setGroups(groupList);
 
 		log.info("Mapping role in plugin");
-		List<RoleResponse> roleList = new ArrayList<>();
-		roleList.add(new RoleResponse().setName("role1"));
-		roleList.add(new RoleResponse().setName("role2"));
 		result.setRoles(roleList);
 
 		log.info("Mapping user in plugin");
-		// printToken(token);
 		if (userResult != null) {
 			String username = token.getString("preferred_username");
 			userResult.setUsername(username);
 		}
 		result.setUser(userResult);
-
 		result.setRoleFilter(roleFilter);
 		result.setGroupFilter(groupFilter);
-
 		return result;
 	}
 
@@ -102,6 +90,23 @@ public class MapperTestPlugin extends AbstractPlugin implements AuthServicePlugi
 			log.info("Handling removel of user from group {" + groupName + "}");
 			return false;
 		};
+
+		roleList = new ArrayList<>();
+		roleList.add(new RoleResponse().setName("role1"));
+		roleList.add(new RoleResponse().setName("role2"));
+		roleList.add(new RoleResponse().setName("role3").setGroups(new GroupReference().setName("group1")));
+
+		groupList = new ArrayList<>();
+		groupList.add(new GroupResponse()
+			.setName("group1"));
+
+		groupList.add(new GroupResponse()
+			.setName("group2")
+			.setRoles(new RoleReference().setName("role1")));
+
+		groupList.add(new GroupResponse()
+			.setName("group3")
+			.setRoles(new RoleReference().setName("role1"), new RoleReference().setName("role2")));
 
 		UserUpdateRequest user = new UserUpdateRequest();
 		user.setEmailAddress("mapped@email.tld");

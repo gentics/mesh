@@ -12,8 +12,8 @@ import com.gentics.mesh.plugin.auth.AuthServicePlugin;
 import com.gentics.mesh.plugin.auth.MappingResult;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.RoutingContext;
 
 public class AuthServiceTestPlugin extends AbstractPlugin implements AuthServicePlugin {
 
@@ -22,7 +22,7 @@ public class AuthServiceTestPlugin extends AbstractPlugin implements AuthService
 	}
 
 	@Override
-	public MappingResult mapToken(RoutingContext rc, JsonObject token) {
+	public MappingResult mapToken(HttpServerRequest req, String userUuid, JsonObject token) {
 		MappingResult result = new MappingResult();
 		List<GroupResponse> groups = new ArrayList<>();
 		groups.add(new GroupResponse().setName("group1"));

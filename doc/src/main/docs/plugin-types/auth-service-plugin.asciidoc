@@ -49,6 +49,13 @@ NOTE: The synchronization process will only be invoked if the access token chang
 
 WARNING: It is important to note that the mapper API can not be used to *delete* users, roles or groups.
 
+
+== Utils
+
+The `AuthServicePluginUtils` provides additional utility functions that can be used in your plugin implementation. The `AuthServicePluginUtils#createRoleFilter()` and `AuthServicePluginUtils#createGroupFilter()` methods can be used to create filters which will only keep role/group, user/group assignments that have been specified in the given lists.
+
+This is useful if you want to ensure that users only belong in the groups that are managed by your identity provider/auth plugin.
+
 == Examples
 
 * link:https://github.com/gentics/mesh-plugin-examples/tree/master/authentication-plugin[Authentication Service Plugin Example]
