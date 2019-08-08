@@ -31,7 +31,9 @@ import com.gentics.mesh.etc.config.OAuth2Options;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.auth.AuthServicePlugin;
+import com.gentics.mesh.plugin.auth.GroupFilter;
 import com.gentics.mesh.plugin.auth.MappingResult;
+import com.gentics.mesh.plugin.auth.RoleFilter;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
@@ -353,11 +355,14 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 								// TODO permission clear? What event?
 							}
 
-							// 6. Check if the plugin wants to remove any of the roles from the mapped groups.
-							for (Role role : group.getRoles()) {
-								if (plugin.removeRoleFromGroup(role.getName(), group.getName(), token)) {
-									group.removeRole(role);
-									batch.add(group.onUpdated());
+							RoleFilter roleFilter = result.getRoleFilter();
+							if (roleFilter != null) {
+								// 6. Check if the plugin wants to remove any of the roles from the mapped groups.
+								for (Role role : group.getRoles()) {
+									if (roleFilter.filter(group.getName(), role.getName())) {
+										group.removeRole(role);
+										batch.add(group.onUpdated());
+									}
 								}
 							}
 						}
@@ -365,13 +370,15 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					}
 
 					// 5. Check if the plugin wants to remove the user user from any of its current groups.
-					for (Group group : user.getGroups()) {
-						if (plugin.removeUserFromGroup(group.getName(), token)) {
-							group.removeUser(user);
-							batch.add(group.onUpdated());
+					GroupFilter groupFilter = result.getGroupFilter();
+					if (groupFilter != null) {
+						for (Group group : user.getGroups()) {
+							if (groupFilter.filter(group.getName())) {
+								group.removeUser(user);
+								batch.add(group.onUpdated());
+							}
 						}
 					}
-
 				} catch (Exception e) {
 					log.error("Error while executing mapping plugin {" + plugin.id() + "}. Ignoring result.", e);
 				}

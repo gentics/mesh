@@ -31,7 +31,7 @@ The `AuthServicePlugin` interface must be used for an authentication plugin. Thi
 | `AuthServicePlugin#mapToken()`    | Use the token information to create a mapping result which will be used to sync user, groups, roles.
 |======
 
-The information from the returned `MappingResult` will be used to sync the elements in Gentics Mesh. Any of the elements can be omitted.
+The information from the returned `MappingResult` will be used to sync the elements in Gentics Mesh. Any of the fields in the result can be omitted.
 
 Sync process is as follows:
 
@@ -40,8 +40,8 @@ Sync process is as follows:
 3. Create groups that are listed in `MappingResult#getGroups`.
 4. Assign user to groups of `MappingResult#getGroups` list.
 5. Link roles that are listed within `MappingResult#getGroups` entries to the groups (via `GroupResponse#getRoles`).
-6. Iterate over all roles of the mapped groups and invoke `AuthServicePlugin#removeRoleFromGroup` to check whether the role should be unlinked from the group. You can use this to ensure that only specific roles are linkes to the groups.
-7. Iterate over all groups of the user and invoke `AuthServicePlugin#removeUserFromGroup` to check whether the user should be removed from the group. You can use this to ensure that the use is only part of specific groups.
+6. Iterate over all roles of the mapped groups and invoke `MappingResult#getRoleFilter` to check whether the role should be unlinked from the group. You can use this to ensure that only specific roles are links to the groups.
+7. Iterate over all groups of the user and invoke `MappingResult#getGroupFilter` to check whether the user should be removed from the group. You can use this to ensure that the use is only part of specific groups.
 
 NOTE: A default mapper which maps _firstname_, _lastname_, _email address_ will be used for user information if you do not set the user field in the `MappingResult` object.
 
