@@ -244,7 +244,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 		String oldName = getName();
 		String newName = requestModel.getName();
-		RouterStorage.assertProjectName(newName);
+		mesh().routerStorageRegistry().assertProjectName(newName);
 		if (shouldUpdate(newName, oldName)) {
 			// Check for conflicting project name
 			Project projectWithSameName = mesh().boot().meshRoot().getProjectRoot().findByName(newName);
@@ -325,7 +325,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	public MeshElementEventModel onCreated() {
 		MeshElementEventModel event = super.onCreated();
 		try {
-			RouterStorage.addProject(getName());
+			mesh().routerStorageRegistry().addProject(getName());
 		} catch (InvalidNameException e) {
 			log.error("Failed to register project {" + getName() + "}");
 			throw error(BAD_REQUEST, "project_error_name_already_reserved", getName());

@@ -27,7 +27,7 @@ public class RouterStorageTest {
 		MeshAuthChain chain = Mockito.mock(MeshAuthChain.class);
 		RouterStorage storage = new RouterStorage(Vertx.vertx(), new MeshOptions(), chain, null, null, null, () -> {
 			return Mockito.mock(Database.class);
-		}, null);
+		}, null, null);
 
 		RoutingContext rc = mock(RoutingContext.class);
 		Route currentRoute = mock(RouteImpl.class);

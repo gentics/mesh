@@ -5,9 +5,6 @@ import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.inject.Inject;
 import javax.naming.InvalidNameException;
 
@@ -52,11 +49,6 @@ public class RouterStorage {
 
 	private final RootRouter rootRouter;
 
-	/**
-	 * Set of creates storages
-	 */
-	private static Set<RouterStorage> instances = new HashSet<>();
-
 	private final Vertx vertx;
 
 	private final MeshOptions options;
@@ -73,9 +65,12 @@ public class RouterStorage {
 
 	private MeshAuthChain authChain;
 
+	private final RouterStorageRegistry routerStorageRegistry;
+
 	@Inject
-	public RouterStorage(Vertx vertx, MeshOptions options, MeshAuthChain authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler, Lazy<BootstrapInitializer> boot,
-						 Lazy<Database> db, VersionHandler versionHandler) {
+	public RouterStorage(Vertx vertx, MeshOptions options, MeshAuthChain authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler,
+		Lazy<BootstrapInitializer> boot,
+		Lazy<Database> db, VersionHandler versionHandler, RouterStorageRegistry routerStorageRegistry) {
 		this.vertx = vertx;
 		this.options = options;
 		this.boot = boot;
@@ -84,45 +79,16 @@ public class RouterStorage {
 		this.bodyHandler = bodyHandler;
 		this.authChain = authChain;
 		this.versionHandler = versionHandler;
+		this.routerStorageRegistry = routerStorageRegistry;
 
 		// Initialize the router chain. The root router will create additional routers which will be mounted.
 		rootRouter = new RootRouter(vertx, this, options);
-		RouterStorage.instances.add(this);
+
+		// TODO move this to the place where the routerstorage is created
+		routerStorageRegistry.getInstances().add(this);
 	}
 
-	public synchronized static void registerEventbus() {
-		for (RouterStorage rs : instances) {
-			rs.registerEventbusHandlers();
-		}
-	}
-
-	/**
-	 * Iterate over all created router storages and assert that no project/api route causes a conflict with the given name
-	 * 
-	 * @param name
-	 */
-	public synchronized static void assertProjectName(String name) {
-		for (RouterStorage rs : instances) {
-			rs.rootRouter.apiRouter().projectsRouter().assertProjectNameValid(name);
-		}
-	}
-
-	/**
-	 * Return all created router storage instances.
-	 * 
-	 * @return
-	 */
-	public static Set<RouterStorage> getInstances() {
-		return instances;
-	}
-
-	public synchronized static void addProject(String name) throws InvalidNameException {
-		for (RouterStorage rs : instances) {
-			rs.rootRouter.apiRouter().projectsRouter().addProjectRouter(name);
-		}
-	}
-
-	private void registerEventbusHandlers() {
+	public void registerEventbusHandlers() {
 		ProjectsRouter projectsRouter = rootRouter.apiRouter().projectsRouter();
 		EventBus eb = vertx.eventBus();
 		eb.consumer(PROJECT_CREATED.address, (Message<JsonObject> rh) -> {
@@ -138,7 +104,7 @@ public class RouterStorage {
 			}
 			String name = json.getString("name");
 			try {
-				addProject(name);
+				routerStorageRegistry.addProject(name);
 				rh.reply(true);
 				if (log.isInfoEnabled()) {
 					log.info("Registered project {" + name + "}");
@@ -168,15 +134,6 @@ public class RouterStorage {
 
 		});
 
-	}
-
-	public synchronized static boolean hasProject(String projectName) {
-		for (RouterStorage rs : instances) {
-			if (rs.rootRouter.apiRouter().projectsRouter().hasProjectRouter(projectName)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	public Lazy<Database> getDb() {

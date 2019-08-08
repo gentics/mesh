@@ -38,9 +38,7 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.router.RouterStorage;
 
 /**
  * @see ProjectRoot
@@ -196,7 +194,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		if (conflictingProject != null) {
 			throw new NameConflictException("project_conflicting_name", projectName, conflictingProject.getUuid());
 		}
-		RouterStorage.assertProjectName(requestModel.getName());
+		mesh().routerStorageRegistry().assertProjectName(requestModel.getName());
 
 		if (requestModel.getSchema() == null || !requestModel.getSchema().isSet()) {
 			throw error(BAD_REQUEST, "project_error_no_schema_reference");

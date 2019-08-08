@@ -36,7 +36,6 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.changelog.MeshGraphHelper;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
@@ -57,7 +56,6 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.monitoring.MonitoringClientConfig;
 import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
-import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import com.gentics.mesh.test.TestDataProvider;
@@ -287,7 +285,7 @@ public class MeshTestContext extends TestWatcher {
 		mesh.getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
 
 		log.info("Using port:  " + port);
-		RouterStorage.addProject(TestDataProvider.PROJECT_NAME);
+		meshDagger.routerStorageRegistry().addProject(TestDataProvider.PROJECT_NAME);
 
 		// Setup the rest client
 		try (Tx tx = db().tx()) {

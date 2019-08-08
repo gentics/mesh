@@ -25,10 +25,13 @@ public class EndpointRegistry {
 	private final Vertx vertx;
 	private final MeshOptions options;
 
+	private final RouterStorageRegistry routerStorageRegistry;
+
 	@Inject
-	public EndpointRegistry(Vertx vertx, MeshOptions options) {
+	public EndpointRegistry(Vertx vertx, MeshOptions options, RouterStorageRegistry routerStorageRegistry) {
 		this.vertx = vertx;
 		this.options = options;
+		this.routerStorageRegistry = routerStorageRegistry;
 	}
 
 	/**
@@ -39,7 +42,7 @@ public class EndpointRegistry {
 	 * @throws IllegalAccessException
 	 */
 	public <T extends AbstractInternalEndpoint> void register(Class<T> clazz) throws InstantiationException, IllegalAccessException {
-		for (RouterStorage rs : RouterStorage.getInstances()) {
+		for (RouterStorage rs : routerStorageRegistry.getInstances()) {
 			Constructor<?> constructor;
 			try {
 				constructor = clazz.getConstructor(new Class[] { MeshOptions.class });
@@ -58,7 +61,7 @@ public class EndpointRegistry {
 	 * @param provider
 	 */
 	public <T extends AbstractInternalEndpoint> void register(Supplier<T> supplier) {
-		for (RouterStorage rs : RouterStorage.getInstances()) {
+		for (RouterStorage rs : routerStorageRegistry.getInstances()) {
 			T endpoint = supplier.get();
 			endpoint.init(vertx, rs);
 			endpoint.registerEndPoints();

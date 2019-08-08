@@ -32,7 +32,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
@@ -41,6 +40,7 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.router.RouterStorageRegistry;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.reactivex.Completable;
@@ -68,13 +68,15 @@ public class AdminHandler extends AbstractHandler {
 
 	private final SearchProvider searchProvider;
 
-	private HandlerUtilities utils;
+	private final HandlerUtilities utils;
 
 	private final Vertx vertx;
 
+	private final RouterStorageRegistry routerStorageRegistry;
+
 	@Inject
 	public AdminHandler(Vertx vertx, Database db, RouterStorage routerStorage, BootstrapInitializer boot, SearchProvider searchProvider, HandlerUtilities utils,
-		MeshOptions options) {
+		MeshOptions options, RouterStorageRegistry routerStorageRegistry) {
 		this.vertx = vertx;
 		this.db = db;
 		this.routerStorage = routerStorage;
@@ -82,6 +84,7 @@ public class AdminHandler extends AbstractHandler {
 		this.searchProvider = searchProvider;
 		this.utils = utils;
 		this.options = options;
+		this.routerStorageRegistry = routerStorageRegistry;
 	}
 
 	public void handleMeshStatus(InternalActionContext ac) {
@@ -186,7 +189,7 @@ public class AdminHandler extends AbstractHandler {
 	 */
 	private void initProjects() throws InvalidNameException {
 		for (Project project : boot.meshRoot().getProjectRoot().findAll()) {
-			RouterStorage.addProject(project.getName());
+			routerStorageRegistry.addProject(project.getName());
 			if (log.isDebugEnabled()) {
 				log.debug("Initalized project {" + project.getName() + "}");
 			}

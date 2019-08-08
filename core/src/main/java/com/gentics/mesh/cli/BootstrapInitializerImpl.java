@@ -87,7 +87,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
-import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.router.RouterStorageRegistry;
 import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
@@ -150,6 +150,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Inject
 	public MeshOptions options;
+
+	@Inject
+	public RouterStorageRegistry routerStorageRegistry;
 
 	private MeshRoot meshRoot;
 
@@ -257,8 +260,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// We need to init the graph db before starting the OrientDB Server. Otherwise the database will not get picked up by the orientdb server which
 				// handles the clustering.
 				db.setupConnectionPool();
-				//TODO find a better way around the chicken and the egg issues. 
-				// Vert.x is currently needed for eventQueueBatch creation. 
+				// TODO find a better way around the chicken and the egg issues.
+				// Vert.x is currently needed for eventQueueBatch creation.
 				// This process fails if vert.x has not been made accessible during local data setup.
 				vertx = Vertx.vertx();
 				boolean setupData = initLocalData(options, false);
@@ -485,7 +488,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public void registerEventHandlers() {
-		RouterStorage.registerEventbus();
+		routerStorageRegistry.registerEventbus();
 		PermissionStore.registerEventHandler(vertx);
 		pathStore.registerEventHandler(vertx);
 	}

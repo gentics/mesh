@@ -18,6 +18,7 @@ import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.router.RouterStorageRegistry;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
 
 import dagger.Lazy;
@@ -43,11 +44,14 @@ public class DistributedEventManager {
 
 	private final Lazy<BootstrapInitializer> boot;
 
+	private final RouterStorageRegistry routerStorageRegistry;
+
 	@Inject
-	public DistributedEventManager(Lazy<Vertx> vertx, Lazy<Database> db, Lazy<BootstrapInitializer> boot) {
+	public DistributedEventManager(Lazy<Vertx> vertx, Lazy<Database> db, Lazy<BootstrapInitializer> boot, RouterStorageRegistry routerStorageRegistry) {
 		this.vertx = vertx;
 		this.db = db;
 		this.boot = boot;
+		this.routerStorageRegistry = routerStorageRegistry;
 	}
 
 	public void registerHandlers() {
@@ -112,7 +116,7 @@ public class DistributedEventManager {
 		Database cdb = db.get();
 
 		try (Tx tx = cdb.tx()) {
-			for (RouterStorage rs : RouterStorage.getInstances()) {
+			for (RouterStorage rs : routerStorageRegistry.getInstances()) {
 				Map<String, Router> registeredProjectRouters = rs.root().apiRouter().projectsRouter().getProjectRouters();
 				// Load all projects and check whether they are already registered
 				for (Project project : cboot.meshRoot().getProjectRoot().findAll()) {

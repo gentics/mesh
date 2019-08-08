@@ -15,6 +15,7 @@ import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.router.PluginRouter;
 import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.router.RouterStorageRegistry;
 
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
@@ -31,8 +32,11 @@ public class RestPluginRegistry implements PluginRegistry {
 	 */
 	private static Set<String> apiNameSyncSet = Collections.synchronizedSet(new HashSet<>());
 
+	private final RouterStorageRegistry routerStorageRegistry;
+
 	@Inject
-	public RestPluginRegistry() {
+	public RestPluginRegistry(RouterStorageRegistry routerStorageRegistry) {
+		this.routerStorageRegistry = routerStorageRegistry;
 	}
 
 	@Override
@@ -44,7 +48,7 @@ public class RestPluginRegistry implements PluginRegistry {
 				String name = plugin.name();
 				String apiName = restPlugin.restApiName();
 				log.info("Registering rest plugin {" + name + "} with id {" + plugin.id() + "}");
-				for (RouterStorage rs : RouterStorage.getInstances()) {
+				for (RouterStorage rs : routerStorageRegistry.getInstances()) {
 					PluginRouter globalPluginRouter = rs.root().apiRouter().pluginRouter();
 					PluginRouter projectPluginRouter = rs.root().apiRouter().projectsRouter().projectRouter().pluginRouter();
 
@@ -86,7 +90,7 @@ public class RestPluginRegistry implements PluginRegistry {
 				String name = plugin.name();
 				log.info("Deregistering {" + name + "} rest plugin.");
 				String apiName = restPlugin.restApiName();
-				for (RouterStorage rs : RouterStorage.getInstances()) {
+				for (RouterStorage rs : routerStorageRegistry.getInstances()) {
 					PluginRouter globalPluginRouter = rs.root().apiRouter().pluginRouter();
 					PluginRouter projectPluginRouter = rs.root().apiRouter().projectsRouter().projectRouter().pluginRouter();
 

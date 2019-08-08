@@ -109,7 +109,6 @@ public abstract class AbstractElementFrame implements ElementFrame {
 		return graph.getAttribute(key);
 	}
 
-
 	@Override
 	public <T> T getProperty(final String name) {
 		return getElement().getProperty(name);
