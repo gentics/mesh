@@ -26,6 +26,7 @@ public abstract class AbstractOAuthTest extends AbstractMeshTest {
 	protected void setAdminToken() {
 		client().setAPIKey(null);
 		client().setLogin("joe1", "test123");
+		client().login().blockingGet();
 	}
 
 	protected void setClientTokenFromKeycloak() throws IOException {
