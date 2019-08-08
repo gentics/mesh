@@ -35,20 +35,20 @@ The information from the returned `MappingResult` will be used to sync the eleme
 
 Sync process is as follows:
 
-1. Update user with `MappingResult#getUser` information or use default mapper if no user was specified.
+1. Update user with `MappingResult#getUser` information or use _default mapper_ if no user was specified.
 2. Create roles that are listed in `MappingResult#getRoles`.
 3. Create groups that are listed in `MappingResult#getGroups`.
 4. Assign user to groups of `MappingResult#getGroups` list.
 5. Link roles that are listed within `MappingResult#getGroups` entries to the groups (via `GroupResponse#getRoles`).
 6. Iterate over all roles of the mapped groups and invoke `MappingResult#getRoleFilter` to check whether the role should be unlinked from the group. You can use this to ensure that only specific roles are links to the groups.
-7. Iterate over all groups of the user and invoke `MappingResult#getGroupFilter` to check whether the user should be removed from the group. You can use this to ensure that the use is only part of specific groups.
+7. Link roles that are listed within `MappingResult#getRoles` entries to the groups (via `GroupResponse#getGroups`).
+8. Iterate over all groups of the user and invoke `MappingResult#getGroupFilter` to check whether the user should be removed from the group. You can use this to ensure that the use is only part of specific groups.
 
 NOTE: A default mapper which maps _firstname_, _lastname_, _email address_ will be used for user information if you do not set the user field in the `MappingResult` object.
 
 NOTE: The synchronization process will only be invoked if the access token changes. Remember that you need to issue a new access token if you change the mapping in keycloak. The old token may still contain the old information.
 
 WARNING: It is important to note that the mapper API can not be used to *delete* users, roles or groups.
-
 
 == Utils
 

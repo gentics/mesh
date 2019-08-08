@@ -226,6 +226,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						defaultUserMapper(batch, user, token);
 						continue;
 					}
+
 					// 1. Map the user
 					UserUpdateRequest mappedUser = result.getUser();
 					if (mappedUser != null) {
@@ -300,7 +301,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 								}
 							}
 
-							// 6. Check if the plugin wants to remove any of the roles from the mapped group.
+							// 5. Check if the plugin wants to remove any of the roles from the mapped group.
 							RoleFilter roleFilter = result.getRoleFilter();
 							if (roleFilter != null) {
 								for (Role role : group.getRoles()) {
@@ -314,6 +315,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						}
 					}
 
+					// 6. Now check the roles again and handle their group assignments
 					if (mappedRoles != null) {
 						for (RoleResponse mappedRole : mappedRoles) {
 							String roleName = mappedRole.getName();
@@ -346,7 +348,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						}
 					}
 
-					// 5. Check if the plugin wants to remove the user user from any of its current groups.
+					// 7. Check if the plugin wants to remove the user user from any of its current groups.
 					GroupFilter groupFilter = result.getGroupFilter();
 					if (groupFilter != null) {
 						for (Group group : user.getGroups()) {
@@ -360,6 +362,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 				} catch (Exception e) {
 					log.error("Error while executing mapping plugin {" + plugin.id() + "}. Ignoring result.", e);
+					throw e;
 				}
 			}
 
