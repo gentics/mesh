@@ -6,6 +6,7 @@ import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.madl.traversal.RawTraversalResultImpl;
 import com.gentics.madl.tx.AbstractTx;
 import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.madl.tp3.mock.Element;
@@ -18,7 +19,12 @@ import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
+
+	private static final Logger log = LoggerFactory.getLogger(OrientDBTx.class);
 
 	boolean isWrapped = false;
 	private final TypeResolver typeResolver;
@@ -108,7 +114,12 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 
 	@Override
 	protected void init(FramedTransactionalGraph transactionalGraph) {
-		transactionalGraph.setAttribute("meshComponent", boot.mesh().internal());
+		Mesh mesh = boot.mesh();
+		if (mesh != null) {
+			transactionalGraph.setAttribute("meshComponent", mesh.internal());
+		} else {
+			log.error("Could not set mesh component attribute. Followup errors may happen.");
+		}
 		super.init(transactionalGraph);
 	}
 }
