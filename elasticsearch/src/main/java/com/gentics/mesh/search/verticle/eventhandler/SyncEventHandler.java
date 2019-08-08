@@ -53,7 +53,7 @@ public class SyncEventHandler implements EventHandler {
 	}
 
 	public static Completable invokeSyncCompletable(Mesh mesh) {
-		return MeshEvent.doAndWaitForEvent(mesh, INDEX_SYNC_FINISHED, () -> SyncEventHandler.invokeClear(mesh.getVertx()));
+		return MeshEvent.doAndWaitForEvent(mesh, INDEX_SYNC_FINISHED, () -> SyncEventHandler.invokeSync(mesh.getVertx()));
 	}
 
 	public static void invokeClear(Vertx vertx) {
