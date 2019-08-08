@@ -117,6 +117,13 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	MeshRestClient setAPIKey(String apiKey);
 
 	/**
+	 * Return the set api key from the client.
+	 * 
+	 * @return
+	 */
+	String getAPIKey();
+
+	/**
 	 * Disable the anonymous access handling. Requests will only work if you are logged in.
 	 * 
 	 * @return Fluent API

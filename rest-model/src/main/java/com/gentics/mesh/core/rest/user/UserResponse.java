@@ -271,4 +271,5 @@ public class UserResponse extends AbstractGenericRestResponse {
 		this.forcedPasswordChange = forcedPasswordChange;
 		return this;
 	}
+
 }

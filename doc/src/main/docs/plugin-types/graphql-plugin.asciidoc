@@ -1,0 +1,62 @@
+---
+title: GraphQL Plugin API
+---
+
+include::content/docs/variables.adoc-include[]
+
+== Setup
+
+Add the interface `GraphQLPlugin` to your plugin class. You will need to implement the `createRootSchema()` method to return the object type of your plugin. This type is added to the Gentics Mesh GraphQL API and can be accessed via the `pluginApi` field.
+
+Each plugin will be added to the `pluginApi` field using the `apiName` as the key for the new field:
+
+```gql
+pluginApi {
+    myPluginA {
+        text
+    }
+    myPluginB {
+        text
+        myField {
+            myInfo
+        }
+    }
+}
+```
+
+NOTE: The `createRootSchema()` method will be invoked for every query. It is thus advised to only return GraphQL schema which has been generated up-front. 
+
+== Context
+
+In the datafetcher which will load the data it is possible to access the context via `env.getContext()`. This will return a `GraphQLPluginContext` object that contains methods to access user and other request  information.
+
+.GraphQLPluginContext methods excerpt
+[options="header"]
+|======
+| Method                                | Description
+| `GraphQLPluginContext#projectName()`  | Name of current project.
+| `GraphQLPluginContext#projectUuid()`   | Uuid of current project.
+| `GraphQLPluginContext#branchName()`   | Name of current active branch.
+| `GraphQLPluginContext#branchUuid()`   | Uuid of current active branch.
+| `GraphQLPluginContext#principal()`    | User information.
+|======
+
+.Example
+[source,java]
+----
+…
+.dataFetcher(env -> {
+    GraphQLPluginContext ctx = env.getContext();
+    // We can check for which project the query was executed
+    System.out.println("Project Name: " + ctx.projectName());
+    System.out.println("Project Uuid: " + ctx.projectUuid());
+    // We can also access the user
+    System.out.println("User: " + ctx.principal().encodePrettily());
+    return "hello-world";
+})
+…
+----
+
+== Examples
+
+* link:https://github.com/gentics/mesh-plugin-examples/tree/master/graphql[GraphQL Plugin Example]

@@ -6,6 +6,7 @@ import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.auth.AuthServicePluginRegistry;
 import com.gentics.mesh.graphql.plugin.GraphQLPluginRegistry;
 import com.gentics.mesh.plugin.MeshPlugin;
 
@@ -26,10 +27,14 @@ public class DelegatingPluginRegistry implements PluginRegistry {
 
 	private final RestPluginRegistry restRegistry;
 
+	private final AuthServicePluginRegistry authServiceRegistry;
+
 	@Inject
-	public DelegatingPluginRegistry(RestPluginRegistry restRegistry, GraphQLPluginRegistry graphqlRegistry) {
+	public DelegatingPluginRegistry(RestPluginRegistry restRegistry, GraphQLPluginRegistry graphqlRegistry,
+		AuthServicePluginRegistry authServiceRegistry) {
 		this.restRegistry = restRegistry;
 		this.graphqlRegistry = graphqlRegistry;
+		this.authServiceRegistry = authServiceRegistry;
 	}
 
 	@Override
@@ -59,6 +64,6 @@ public class DelegatingPluginRegistry implements PluginRegistry {
 	}
 
 	private Observable<PluginRegistry> registries() {
-		return Observable.fromArray(graphqlRegistry, restRegistry);
+		return Observable.fromArray(graphqlRegistry, restRegistry, authServiceRegistry);
 	}
 }

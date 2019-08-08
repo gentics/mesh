@@ -1,8 +1,10 @@
 package com.gentics.mesh.core.rest.role;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
@@ -38,9 +40,11 @@ public class RoleResponse extends AbstractGenericRestResponse {
 	 * 
 	 * @param name
 	 *            Name of the role
+	 * @return Fluent API
 	 */
-	public void setName(String name) {
+	public RoleResponse setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 	/**
@@ -57,9 +61,24 @@ public class RoleResponse extends AbstractGenericRestResponse {
 	 * 
 	 * @param groups
 	 *            List of groups to which the role was assigned
+	 * @return Fluent API
 	 */
-	public void setGroups(List<GroupReference> groups) {
+	@JsonProperty("groups")
+	public RoleResponse setGroups(List<GroupReference> groups) {
 		this.groups = groups;
+		return this;
+	}
+
+	/**
+	 * Set the groups for the role.
+	 * 
+	 * @param groups
+	 * @return Fluent API
+	 */
+	@JsonIgnore
+	public RoleResponse setGroups(GroupReference... groups) {
+		this.groups = Arrays.asList(groups);
+		return this;
 	}
 
 }
