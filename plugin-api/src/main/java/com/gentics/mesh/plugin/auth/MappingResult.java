@@ -8,8 +8,8 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 
 /**
  * The mapping result can be used in combination with plugins which implement {@link AuthServicePlugin}. The result contains information about which groups and
- * roles should be synced in Gentics Mesh once an OAuth2 request is being processed. The filter functions can be used to remove older group->role and
- * group->user assignments. The detailed process on how this information is used is described in the {@link AuthServicePlugin} documentation.
+ * roles should be synced in Gentics Mesh once an OAuth2 request is being processed. The filter functions can be used to remove older group-role and
+ * group-user assignments. The detailed process on how this information is used is described in the {@link AuthServicePlugin} documentation.
  * 
  * Roles which are listed in the {@link GroupResponse} will automatically be loaded and assigned to the group. 
  */
