@@ -56,26 +56,6 @@
             "required" : true,
             "description" : "Name of the group"
           },
-          "roles" : {
-            "type" : "array",
-            "required" : true,
-            "description" : "List of role references",
-            "items" : {
-              "type" : "object",
-              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference",
-              "properties" : {
-                "name" : {
-                  "type" : "string",
-                  "description" : "Name of the referenced element"
-                },
-                "uuid" : {
-                  "type" : "string",
-                  "required" : true,
-                  "description" : "Uuid of the referenced element"
-                }
-              }
-            }
-          },
           "permissions" : {
             "type" : "object",
             "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfo",
@@ -115,6 +95,26 @@
             "type" : "object",
             "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfo",
             "description" : "Permission information for provided role. This property will only be populated if a role query parameter has been specified."
+          },
+          "roles" : {
+            "type" : "array",
+            "required" : true,
+            "description" : "List of role references",
+            "items" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference",
+              "properties" : {
+                "name" : {
+                  "type" : "string",
+                  "description" : "Name of the referenced element"
+                },
+                "uuid" : {
+                  "type" : "string",
+                  "required" : true,
+                  "description" : "Uuid of the referenced element"
+                }
+              }
+            }
           }
         }
       }
