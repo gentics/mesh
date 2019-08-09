@@ -284,7 +284,7 @@ This example shows how to use the `MeshLocalServer` and test the GraphQL plugin.
 .GraphQlExamplePluginTest.java
 [source,java]
 ----
-include::content/examples/graphql/src/test/java/com/gentics/mesh/plugin/GraphQlExamplePluginTest.java[lines=19..-1]
+include::content/examples/graphql-plugin/src/test/java/com/gentics/mesh/plugin/GraphQlExamplePluginTest.java[lines=19..-1]
 ----
 
 == Development Guide

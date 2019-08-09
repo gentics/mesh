@@ -57,6 +57,9 @@ In the datafetcher which will load the data it is possible to access the context
 …
 ----
 
+It is also possible to use the link:https://www.graphql-java.com/documentation/v12/schema/#creating-a-schema-using-the-sdl[GraphQL SDL] to define the schema. The link:https://github.com/gentics/mesh-plugin-examples/tree/master/graphql-book-library-plugin[GraphQL Book Library Plugin Example] shows how to setup the API using a static schema definition.
+
 == Examples
 
-* link:https://github.com/gentics/mesh-plugin-examples/tree/master/graphql[GraphQL Plugin Example]
+* link:https://github.com/gentics/mesh-plugin-examples/tree/master/graphql-plugin[GraphQL Basic Plugin Example]
+* link:https://github.com/gentics/mesh-plugin-examples/tree/master/graphql-book-library-plugin[GraphQL Book Library Plugin Example]
