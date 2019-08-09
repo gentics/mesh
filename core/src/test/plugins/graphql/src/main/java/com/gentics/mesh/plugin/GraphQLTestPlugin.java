@@ -25,7 +25,7 @@ public class GraphQLTestPlugin extends AbstractPlugin implements GraphQLPlugin {
 	public Completable initialize() {
 		Builder schemaBuilder = GraphQLSchema.newSchema();
 		schema = schemaBuilder.query(newObject()
-			.name(prefixType("PluginDataType"))
+			.name("PluginDataType")
 			.description("Dummy GraphQL Test")
 			.field(newFieldDefinition().name("text")
 				.type(GraphQLString)
