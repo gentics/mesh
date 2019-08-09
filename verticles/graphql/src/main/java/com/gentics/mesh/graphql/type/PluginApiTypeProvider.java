@@ -76,4 +76,13 @@ public class PluginApiTypeProvider extends AbstractTypeProvider {
 		return root.build();
 	}
 
+	/**
+	 * Check whether there are any graphql plugins.
+	 * 
+	 * @return
+	 */
+	public boolean hasPlugins() {
+		return !pluginTypeRegistry.getPlugins().isEmpty();
+	}
+
 }
