@@ -1,13 +1,14 @@
 package com.gentics.mesh.rest.client;
 
+import java.io.InputStream;
+
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.impl.HttpMethod;
-import io.reactivex.Single;
 
-import java.io.InputStream;
+import io.reactivex.Single;
 
 /**
  * Abstract class for mesh REST clients.
@@ -37,6 +38,11 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 		// Internally the API is just a regular JWT which does not expire.
 		authentication.setToken(apiKey);
 		return this;
+	}
+
+	@Override
+	public String getAPIKey() {
+		return authentication.getToken();
 	}
 
 	@Override
@@ -76,12 +82,14 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	 *            POJO class for the response
 	 * @param bodyData
 	 *            Buffer which contains the body data which should be send to the server
-	 * @param fileSize Total size of the data in bytes
+	 * @param fileSize
+	 *            Total size of the data in bytes
 	 * @param contentType
 	 *            Content type of the posted data
 	 * @return
 	 */
-	abstract public <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, InputStream bodyData, long fileSize, String contentType);
+	abstract public <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, InputStream bodyData,
+		long fileSize, String contentType);
 
 	/**
 	 * Prepare the request using the provides information and return a mesh request which is ready to be invoked.

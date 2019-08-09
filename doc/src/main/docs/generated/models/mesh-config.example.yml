@@ -74,8 +74,6 @@ security:
       credentials:
         secret: "9b65c378-5b4c-4e25-b5a1-a53a381b5fb4"
       confidentialPort: 0
-    mapperScriptPath: "config/mymapper.js"
-    mapperScriptDevMode: true
 image:
   imageCacheDirectory: "data/binaryImageCache"
   maxWidth: 2048

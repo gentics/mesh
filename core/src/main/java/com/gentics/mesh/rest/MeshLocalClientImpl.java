@@ -1226,6 +1226,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public String getAPIKey() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public void close() {
 		// TODO Auto-generated method stub
 	}

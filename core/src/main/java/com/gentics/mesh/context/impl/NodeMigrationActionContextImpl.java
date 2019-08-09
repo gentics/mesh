@@ -730,6 +730,11 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public void fillPermissionChanged(PermissionChangedEventModelImpl model, Role role) {
 			}
+
+			@Override
+			public MeshAuthUser toAuthUser() {
+				return null;
+			}
 		};
 		return user;
 	}

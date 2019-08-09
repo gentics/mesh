@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "0.37.1"
+version: "0.38.0"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -679,7 +679,6 @@ mediaType: application/json
                                   },
                                   "edited" : "2018-11-20T20:12:01.084Z",
                                   "name" : "New role",
-                                  "groups" : [ ],
                                   "permissions" : {
                                     "create" : true,
                                     "read" : true,
@@ -687,7 +686,8 @@ mediaType: application/json
                                     "delete" : true,
                                     "publish" : false,
                                     "readPublished" : false
-                                  }
+                                  },
+                                  "groups" : [ ]
                                 }
         get: 
             description: Load multiple roles and return a paged list response
@@ -738,7 +738,6 @@ mediaType: application/json
                                     },
                                     "edited" : "2018-11-20T20:12:01.084Z",
                                     "name" : "Reader role",
-                                    "groups" : [ ],
                                     "permissions" : {
                                       "create" : true,
                                       "read" : true,
@@ -746,7 +745,8 @@ mediaType: application/json
                                       "delete" : true,
                                       "publish" : false,
                                       "readPublished" : false
-                                    }
+                                    },
+                                    "groups" : [ ]
                                   }, {
                                     "uuid" : "cc9999a4194d4f069999a4194d1f06d7",
                                     "creator" : {
@@ -762,13 +762,6 @@ mediaType: application/json
                                     },
                                     "edited" : "2018-11-20T20:12:01.084Z",
                                     "name" : "Admin role",
-                                    "groups" : [ {
-                                      "name" : "editors",
-                                      "uuid" : "e728c2fc5a0146a2a8c2fc5a0186a28d"
-                                    }, {
-                                      "name" : "clients",
-                                      "uuid" : "df81c23d9ff1450081c23d9ff195005e"
-                                    } ],
                                     "permissions" : {
                                       "create" : true,
                                       "read" : true,
@@ -776,7 +769,14 @@ mediaType: application/json
                                       "delete" : true,
                                       "publish" : false,
                                       "readPublished" : false
-                                    }
+                                    },
+                                    "groups" : [ {
+                                      "name" : "editors",
+                                      "uuid" : "e728c2fc5a0146a2a8c2fc5a0186a28d"
+                                    }, {
+                                      "name" : "clients",
+                                      "uuid" : "df81c23d9ff1450081c23d9ff195005e"
+                                    } ]
                                   } ],
                                   "_metainfo" : {
                                     "currentPage" : 1,
@@ -841,7 +841,6 @@ mediaType: application/json
                                   },
                                   "edited" : "2018-11-20T20:12:01.084Z",
                                   "name" : "Admin Role",
-                                  "groups" : [ ],
                                   "permissions" : {
                                     "create" : true,
                                     "read" : true,
@@ -849,7 +848,8 @@ mediaType: application/json
                                     "delete" : true,
                                     "publish" : false,
                                     "readPublished" : false
-                                  }
+                                  },
+                                  "groups" : [ ]
                                 }
         post: 
             description: Update the role with the given uuid. The role is created if no role with the specified uuid could be found.
@@ -901,7 +901,6 @@ mediaType: application/json
                                   },
                                   "edited" : "2018-11-20T20:12:01.084Z",
                                   "name" : "New role name",
-                                  "groups" : [ ],
                                   "permissions" : {
                                     "create" : true,
                                     "read" : true,
@@ -909,7 +908,8 @@ mediaType: application/json
                                     "delete" : true,
                                     "publish" : false,
                                     "readPublished" : false
-                                  }
+                                  },
+                                  "groups" : [ ]
                                 }
         delete: 
             description: Delete the role with the given uuid
@@ -1049,10 +1049,6 @@ mediaType: application/json
                                   },
                                   "edited" : "2018-11-20T20:12:01.084Z",
                                   "name" : "New group",
-                                  "roles" : [ {
-                                    "name" : "admin",
-                                    "uuid" : "cc9999a4194d4f069999a4194d1f06d7"
-                                  } ],
                                   "permissions" : {
                                     "create" : true,
                                     "read" : true,
@@ -1060,7 +1056,11 @@ mediaType: application/json
                                     "delete" : true,
                                     "publish" : false,
                                     "readPublished" : false
-                                  }
+                                  },
+                                  "roles" : [ {
+                                    "name" : "admin",
+                                    "uuid" : "cc9999a4194d4f069999a4194d1f06d7"
+                                  } ]
                                 }
         get: 
             description: Read multiple groups and return a paged list response.
@@ -1120,22 +1120,21 @@ mediaType: application/json
                                     },
                                     "edited" : "2018-11-20T20:12:01.084Z",
                                     "name" : "Admin Group",
+                                    "permissions" : {
+                                      "create" : true,
+                                      "read" : true,
+                                      "update" : true,
+                                      "delete" : true,
+                                      "publish" : false,
+                                      "readPublished" : false
+                                    },
                                     "roles" : [ {
                                       "name" : "admin",
                                       "uuid" : "cc9999a4194d4f069999a4194d1f06d7"
-                                    } ],
-                                    "permissions" : {
-                                      "create" : true,
-                                      "read" : true,
-                                      "update" : true,
-                                      "delete" : true,
-                                      "publish" : false,
-                                      "readPublished" : false
-                                    }
+                                    } ]
                                   }, {
                                     "uuid" : "e728c2fc5a0146a2a8c2fc5a0186a28d",
                                     "name" : "Editor Group",
-                                    "roles" : [ ],
                                     "permissions" : {
                                       "create" : true,
                                       "read" : true,
@@ -1143,7 +1142,8 @@ mediaType: application/json
                                       "delete" : true,
                                       "publish" : false,
                                       "readPublished" : false
-                                    }
+                                    },
+                                    "roles" : [ ]
                                   } ],
                                   "_metainfo" : {
                                     "currentPage" : 1,
@@ -1217,10 +1217,6 @@ mediaType: application/json
                                   },
                                   "edited" : "2018-11-20T20:12:01.084Z",
                                   "name" : "Admin Group",
-                                  "roles" : [ {
-                                    "name" : "admin",
-                                    "uuid" : "cc9999a4194d4f069999a4194d1f06d7"
-                                  } ],
                                   "permissions" : {
                                     "create" : true,
                                     "read" : true,
@@ -1228,7 +1224,11 @@ mediaType: application/json
                                     "delete" : true,
                                     "publish" : false,
                                     "readPublished" : false
-                                  }
+                                  },
+                                  "roles" : [ {
+                                    "name" : "admin",
+                                    "uuid" : "cc9999a4194d4f069999a4194d1f06d7"
+                                  } ]
                                 }
         post: 
             description: Update the group with the given uuid. The group is created if no group with the specified uuid could be found.
@@ -1280,10 +1280,6 @@ mediaType: application/json
                                   },
                                   "edited" : "2018-11-20T20:12:01.084Z",
                                   "name" : "New group name",
-                                  "roles" : [ {
-                                    "name" : "admin",
-                                    "uuid" : "cc9999a4194d4f069999a4194d1f06d7"
-                                  } ],
                                   "permissions" : {
                                     "create" : true,
                                     "read" : true,
@@ -1291,7 +1287,11 @@ mediaType: application/json
                                     "delete" : true,
                                     "publish" : false,
                                     "readPublished" : false
-                                  }
+                                  },
+                                  "roles" : [ {
+                                    "name" : "admin",
+                                    "uuid" : "cc9999a4194d4f069999a4194d1f06d7"
+                                  } ]
                                 }
         delete: 
             description: Delete the given group.
@@ -1359,7 +1359,6 @@ mediaType: application/json
                                     },
                                     "edited" : "2018-11-20T20:12:01.084Z",
                                     "name" : "Reader role",
-                                    "groups" : [ ],
                                     "permissions" : {
                                       "create" : true,
                                       "read" : true,
@@ -1367,7 +1366,8 @@ mediaType: application/json
                                       "delete" : true,
                                       "publish" : false,
                                       "readPublished" : false
-                                    }
+                                    },
+                                    "groups" : [ ]
                                   }, {
                                     "uuid" : "cc9999a4194d4f069999a4194d1f06d7",
                                     "creator" : {
@@ -1383,13 +1383,6 @@ mediaType: application/json
                                     },
                                     "edited" : "2018-11-20T20:12:01.084Z",
                                     "name" : "Admin role",
-                                    "groups" : [ {
-                                      "name" : "editors",
-                                      "uuid" : "e728c2fc5a0146a2a8c2fc5a0186a28d"
-                                    }, {
-                                      "name" : "clients",
-                                      "uuid" : "df81c23d9ff1450081c23d9ff195005e"
-                                    } ],
                                     "permissions" : {
                                       "create" : true,
                                       "read" : true,
@@ -1397,7 +1390,14 @@ mediaType: application/json
                                       "delete" : true,
                                       "publish" : false,
                                       "readPublished" : false
-                                    }
+                                    },
+                                    "groups" : [ {
+                                      "name" : "editors",
+                                      "uuid" : "e728c2fc5a0146a2a8c2fc5a0186a28d"
+                                    }, {
+                                      "name" : "clients",
+                                      "uuid" : "df81c23d9ff1450081c23d9ff195005e"
+                                    } ]
                                   } ],
                                   "_metainfo" : {
                                     "currentPage" : 1,
@@ -1462,10 +1462,6 @@ mediaType: application/json
                                   },
                                   "edited" : "2018-11-20T20:12:01.084Z",
                                   "name" : "Group name",
-                                  "roles" : [ {
-                                    "name" : "admin",
-                                    "uuid" : "cc9999a4194d4f069999a4194d1f06d7"
-                                  } ],
                                   "permissions" : {
                                     "create" : true,
                                     "read" : true,
@@ -1473,7 +1469,11 @@ mediaType: application/json
                                     "delete" : true,
                                     "publish" : false,
                                     "readPublished" : false
-                                  }
+                                  },
+                                  "roles" : [ {
+                                    "name" : "admin",
+                                    "uuid" : "cc9999a4194d4f069999a4194d1f06d7"
+                                  } ]
                                 }
         delete: 
             description: Remove the given role from the group.
@@ -1669,10 +1669,6 @@ mediaType: application/json
                                   },
                                   "edited" : "2018-11-20T20:12:01.084Z",
                                   "name" : "Group name",
-                                  "roles" : [ {
-                                    "name" : "admin",
-                                    "uuid" : "cc9999a4194d4f069999a4194d1f06d7"
-                                  } ],
                                   "permissions" : {
                                     "create" : true,
                                     "read" : true,
@@ -1680,7 +1676,11 @@ mediaType: application/json
                                     "delete" : true,
                                     "publish" : false,
                                     "readPublished" : false
-                                  }
+                                  },
+                                  "roles" : [ {
+                                    "name" : "admin",
+                                    "uuid" : "cc9999a4194d4f069999a4194d1f06d7"
+                                  } ]
                                 }
         delete: 
             description: Remove the given user from the group.
@@ -3708,22 +3708,21 @@ mediaType: application/json
                                     },
                                     "edited" : "2018-11-20T20:12:01.084Z",
                                     "name" : "Admin Group",
+                                    "permissions" : {
+                                      "create" : true,
+                                      "read" : true,
+                                      "update" : true,
+                                      "delete" : true,
+                                      "publish" : false,
+                                      "readPublished" : false
+                                    },
                                     "roles" : [ {
                                       "name" : "admin",
                                       "uuid" : "cc9999a4194d4f069999a4194d1f06d7"
-                                    } ],
-                                    "permissions" : {
-                                      "create" : true,
-                                      "read" : true,
-                                      "update" : true,
-                                      "delete" : true,
-                                      "publish" : false,
-                                      "readPublished" : false
-                                    }
+                                    } ]
                                   }, {
                                     "uuid" : "e728c2fc5a0146a2a8c2fc5a0186a28d",
                                     "name" : "Editor Group",
-                                    "roles" : [ ],
                                     "permissions" : {
                                       "create" : true,
                                       "read" : true,
@@ -3731,7 +3730,8 @@ mediaType: application/json
                                       "delete" : true,
                                       "publish" : false,
                                       "readPublished" : false
-                                    }
+                                    },
+                                    "roles" : [ ]
                                   } ],
                                   "_metainfo" : {
                                     "currentPage" : 1,
@@ -4241,7 +4241,6 @@ mediaType: application/json
                                     },
                                     "edited" : "2018-11-20T20:12:01.084Z",
                                     "name" : "Reader role",
-                                    "groups" : [ ],
                                     "permissions" : {
                                       "create" : true,
                                       "read" : true,
@@ -4249,7 +4248,8 @@ mediaType: application/json
                                       "delete" : true,
                                       "publish" : false,
                                       "readPublished" : false
-                                    }
+                                    },
+                                    "groups" : [ ]
                                   }, {
                                     "uuid" : "cc9999a4194d4f069999a4194d1f06d7",
                                     "creator" : {
@@ -4265,13 +4265,6 @@ mediaType: application/json
                                     },
                                     "edited" : "2018-11-20T20:12:01.084Z",
                                     "name" : "Admin role",
-                                    "groups" : [ {
-                                      "name" : "editors",
-                                      "uuid" : "e728c2fc5a0146a2a8c2fc5a0186a28d"
-                                    }, {
-                                      "name" : "clients",
-                                      "uuid" : "df81c23d9ff1450081c23d9ff195005e"
-                                    } ],
                                     "permissions" : {
                                       "create" : true,
                                       "read" : true,
@@ -4279,7 +4272,14 @@ mediaType: application/json
                                       "delete" : true,
                                       "publish" : false,
                                       "readPublished" : false
-                                    }
+                                    },
+                                    "groups" : [ {
+                                      "name" : "editors",
+                                      "uuid" : "e728c2fc5a0146a2a8c2fc5a0186a28d"
+                                    }, {
+                                      "name" : "clients",
+                                      "uuid" : "df81c23d9ff1450081c23d9ff195005e"
+                                    } ]
                                   } ],
                                   "_metainfo" : {
                                     "currentPage" : 1,
@@ -5711,7 +5711,7 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "0.37.1",
+                                  "meshVersion" : "0.38.0",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",

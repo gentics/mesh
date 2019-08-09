@@ -14,7 +14,6 @@
     },
     "edited" : "2018-11-20T20:12:01.084Z",
     "name" : "Reader role",
-    "groups" : [ ],
     "permissions" : {
       "create" : true,
       "read" : true,
@@ -22,7 +21,8 @@
       "delete" : true,
       "publish" : false,
       "readPublished" : false
-    }
+    },
+    "groups" : [ ]
   }, {
     "uuid" : "cc9999a4194d4f069999a4194d1f06d7",
     "creator" : {
@@ -38,13 +38,6 @@
     },
     "edited" : "2018-11-20T20:12:01.084Z",
     "name" : "Admin role",
-    "groups" : [ {
-      "name" : "editors",
-      "uuid" : "e728c2fc5a0146a2a8c2fc5a0186a28d"
-    }, {
-      "name" : "clients",
-      "uuid" : "df81c23d9ff1450081c23d9ff195005e"
-    } ],
     "permissions" : {
       "create" : true,
       "read" : true,
@@ -52,7 +45,14 @@
       "delete" : true,
       "publish" : false,
       "readPublished" : false
-    }
+    },
+    "groups" : [ {
+      "name" : "editors",
+      "uuid" : "e728c2fc5a0146a2a8c2fc5a0186a28d"
+    }, {
+      "name" : "clients",
+      "uuid" : "df81c23d9ff1450081c23d9ff195005e"
+    } ]
   } ],
   "_metainfo" : {
     "currentPage" : 1,

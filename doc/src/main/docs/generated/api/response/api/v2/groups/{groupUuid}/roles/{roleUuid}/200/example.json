@@ -13,10 +13,6 @@
   },
   "edited" : "2018-11-20T20:12:01.084Z",
   "name" : "Group name",
-  "roles" : [ {
-    "name" : "admin",
-    "uuid" : "cc9999a4194d4f069999a4194d1f06d7"
-  } ],
   "permissions" : {
     "create" : true,
     "read" : true,
@@ -24,5 +20,9 @@
     "delete" : true,
     "publish" : false,
     "readPublished" : false
-  }
+  },
+  "roles" : [ {
+    "name" : "admin",
+    "uuid" : "cc9999a4194d4f069999a4194d1f06d7"
+  } ]
 }

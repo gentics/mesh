@@ -4,7 +4,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.GraphField;
 
 /**
- * A webroot path is build using multiple path segments. Each node is able to provide multiple path segments. Each language of the node may provide different
+ * A webroot path is built using multiple path segments. Each node is able to provide multiple path segments. Each language of the node may provide different
  * path segments. The path segment will store a reference to the found container.
  */
 public class PathSegment {

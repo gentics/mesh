@@ -74,9 +74,6 @@
 | *MESH_ELASTICSEARCH_STARTUP_TIMEOUT*
 | Override the configured elasticsearch server timeout.
 
-| *MESH_AUTH_OAUTH2_MAPPER_SCRIPT_PATH*
-| Override the configured OAuth2 mapper script path.
-
 | *MESH_LANGUAGES_FILE_PATH*
 | Override the path to the optional languages file
 
@@ -205,9 +202,6 @@
 
 | *MESH_GRAPH_DB_DIRECTORY*
 | Override the graph database storage directory.
-
-| *MESH_AUTH_OAUTH2_MAPPER_SCRIPT_DEV_MODE*
-| Override the configured OAuth2 mapper script development mode flag.
 
 | *MESH_NODE_NAME*
 | Override the configured node name.

@@ -1,0 +1,61 @@
+---
+title: Authentication Service Plugin API
+---
+
+include::content/docs/variables.adoc-include[]
+
+== Intro
+
+Authentication Service Plugin API can be used to create plugins which can extend the authentication/authorization functionality of Gentics Mesh.
+
+Those plugins are intended to work in conjunction with the link:{{< relref "authentication.asciidoc" >}}#_oauth2[OAuth2] interation. When the OAuth2 integration with the Keycloak Identity Provider is enabled Gentics Mesh will automatically sync users provided by Keycloak with the users that are stored in Gentics Mesh.
+
+
+Once a JWT has been obtained by keycloak it can be used for Gentics Mesh requests. The token is validated and the user is sycned. 
+
+Often it is however also desired to sync permission specific information from identity provider. This is where most of the Authentication Service Plugin API comes into play. The API can be used to create plugins which map the information from the JWT to Gentics Mesh roles and groups.
+
+This way any public claim information from the JWT can be used to dynamically update the user, create roles and groups.
+
+== Setup
+
+The `AuthServicePlugin` interface must be used for an authentication plugin. This interface provides various methods which will be invoked by Gentics Mesh during the authentication process.
+
+
+== Mapping JWT
+
+.AuthServicePlugin methods excerpt
+[options="header"]
+|======
+| Method                            | Description
+| `AuthServicePlugin#mapToken()`    | Use the token information to create a mapping result which will be used to sync user, groups, roles.
+|======
+
+The information from the returned `MappingResult` will be used to sync the elements in Gentics Mesh. Any of the fields in the result can be omitted.
+
+Sync process is as follows:
+
+1. Update user with `MappingResult#getUser` information or use _default mapper_ if no user was specified.
+2. Create roles that are listed in `MappingResult#getRoles`.
+3. Create groups that are listed in `MappingResult#getGroups`.
+4. Assign user to groups of `MappingResult#getGroups` list.
+5. Link roles that are listed within `MappingResult#getGroups` entries to the groups (via `GroupResponse#getRoles`).
+6. Iterate over all roles of the mapped groups and invoke `MappingResult#getRoleFilter` to check whether the role should be unlinked from the group. You can use this to ensure that only specific roles are links to the groups.
+7. Link roles that are listed within `MappingResult#getRoles` entries to the groups (via `GroupResponse#getGroups`).
+8. Iterate over all groups of the user and invoke `MappingResult#getGroupFilter` to check whether the user should be removed from the group. You can use this to ensure that the use is only part of specific groups.
+
+NOTE: A default mapper which maps _firstname_, _lastname_, _email address_ will be used for user information if you do not set the user field in the `MappingResult` object.
+
+NOTE: The synchronization process will only be invoked if the access token changes. Remember that you need to issue a new access token if you change the mapping in keycloak. The old token may still contain the old information.
+
+WARNING: It is important to note that the mapper API can not be used to *delete* users, roles or groups.
+
+== Utils
+
+The `AuthServicePluginUtils` provides additional utility functions that can be used in your plugin implementation. The `AuthServicePluginUtils#createRoleFilter()` and `AuthServicePluginUtils#createGroupFilter()` methods can be used to create filters which will only keep role/group, user/group assignments that have been specified in the given lists.
+
+This is useful if you want to ensure that users only belong in the groups that are managed by your identity provider/auth plugin.
+
+== Examples
+
+* link:https://github.com/gentics/mesh-plugin-examples/tree/master/authentication-plugin[Authentication Service Plugin Example]

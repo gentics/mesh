@@ -11,11 +11,17 @@ import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.graphql.GraphQLPlugin;
 
 import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLOutputType;
+import graphql.schema.GraphQLSchema;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
 public class PluginApiTypeProvider extends AbstractTypeProvider {
+
+	private static final Logger log = LoggerFactory.getLogger(PluginApiTypeProvider.class);
 
 	public static final String PLUGIN_API_TYPE_NAME = "PluginAPIType";
 
@@ -44,15 +50,27 @@ public class PluginApiTypeProvider extends AbstractTypeProvider {
 		root.description("The Plugin API");
 
 		for (GraphQLPlugin currentPlugin : pluginTypeRegistry.getPlugins()) {
-			GraphQLFieldDefinition pluginField = newFieldDefinition()
-				.name(currentPlugin.gqlApiName())
-				.description("API of plugin: " + currentPlugin.getManifest().getDescription())
-				.type(currentPlugin.createRootSchema().getQueryType())
-				.dataFetcher(env -> {
-					return pluginEnv;
-				}).build();
 
-			root.field(pluginField);
+			GraphQLSchema pluginSchema = currentPlugin.createRootSchema();
+			if (pluginSchema != null) {
+				String apiName = currentPlugin.gqlApiName();
+				GraphQLObjectType queryType = pluginSchema.getQueryType();
+				GraphQLObjectType prefixedType = queryType.transform(e -> {
+					e.name(apiName + "_" + queryType.getName());
+				});
+
+				GraphQLFieldDefinition pluginField = newFieldDefinition()
+					.name(currentPlugin.gqlApiName())
+					.description("API of plugin: " + currentPlugin.getManifest().getDescription())
+					.type(prefixedType)
+					.dataFetcher(env -> {
+						return pluginEnv;
+					}).build();
+
+				root.field(pluginField);
+			} else {
+				log.debug("Plugin {" + currentPlugin.name() + "} did not provide a schema. Not adding GraphQL plugin field.");
+			}
 		}
 
 		return root.build();
