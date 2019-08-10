@@ -137,7 +137,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 					pluginWrapper.setPluginState(PluginState.STARTED);
 					if (plugin instanceof MeshPlugin) {
 						MeshPlugin meshPlugin = (MeshPlugin) plugin;
-						withTimeout(meshPlugin.id(), "registration", pluginRegistry.register(meshPlugin));
+						withTimeout(meshPlugin.id(), "registration", meshPlugin.initialize().andThen(pluginRegistry.register(meshPlugin)));
 					}
 					startedPlugins.add(pluginWrapper);
 
