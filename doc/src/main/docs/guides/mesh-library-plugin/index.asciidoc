@@ -1,0 +1,184 @@
+---
+title: Gentics Mesh - GraphQL Library Plugin Guide
+---
+
+include::content/docs/variables.adoc-include[]
+
+== Intro
+
+In this guide you will learn how to create a plugin for Gentics Mesh which will extend the GraphQL API in order query a small library inventory.
+
+image:graphiql.png[GraphiQL Example, role="img-responsive"]
+
+This example is inspired by the 
+link:https://www.graphql-java.com/tutorials/getting-started-with-spring-boot/[GraphQL Java Getting Started Guide].
+
+All sources for this example are available on link:https://github.com/gentics/mesh-plugin-examples/tree/master/graphql-library-plugin[GitHub].
+
+== Requirements
+
+Before we can start you need to install link:https://maven.apache.org/[Apache Maven] and a link:https://adoptopenjdk.net/[Java Development Kit].
+
+== Files
+
+*Plugin Code:*
+
+* `pom.xml`
+  
+  Maven project descriptor
+
+* `src/main/resources/schema.graphqls`
+
+  GraphQL Schema
+
+* `src/main/java/com/gentics/mesh/plugin/GraphQLDataFetchers.java`
+  
+  Data fetchers for the inventory data
+
+* `src/main/java/com/gentics/mesh/plugin/GraphQLExamplePlugin.java`
+
+  The actual plugin implementation
+
+*Test Code:*
+
+* `src/test/java/com/gentics/mesh/plugin/GraphQlExamplePluginTest.java`
+
+  Plugin integration test
+
+* `src/test/java/com/gentics/mesh/plugin/PluginRunnerExample.java`
+
+  Example runner which will start Mesh and the plugin
+
+
+=== Project Setup
+
+**/pom.xml**
+
+The first thing we need to do is to setup our project. In this example we'll use the `pom.xml` file which is used by link:https://maven.apache.org/[Apache Maven] to build the plugin project.
+
+The `pom.xml` will also contain plugin metadata. It is the place where the plugin manifest will be specified that is later added to the final `.jar` file.
+
+[source,xml]
+----
+include::content/examples/graphql-library-plugin/pom.xml[]
+----
+
+=== Schema
+
+The `schema.graphqls` file contains the GraphQL Schema definition (SDL) which is used to setup the types for the inventory. It defines fields for each type. In our case we only need the `Book` and the `Author` types.
+
+[source,xml]
+----
+include::content/examples/graphql-library-plugin/src/main/resources/schema.graphqls[]
+----
+
+=== Plugin Code
+
+**GraphQLExamplePlugin.java**
+
+The `GraphQLExamplePlugin` file contains the actual plugin code. The plugin itself is very simple.
+
+We need to extend the `AbstractPlugin` class and implement the `GraphQLPlugin` interface since our plugin will extend the GraphQL API.
+
+In the `initialize()` method we setup the `GraphQLSchema` for our plugin. The counterpart is the `shutdown()` method.
+
+[source,java]
+----
+include::content/examples/graphql-library-plugin/src/main/java/com/gentics/mesh/plugin/GraphQLExamplePlugin.java[]
+----
+
+=== Data Fetcher
+
+The data fetcher contains the code that is used to actually retrieve the inventory information. One fetcher is used for looking up books by id. The other one will return the author.
+
+[source,java]
+----
+include::content/examples/graphql-library-plugin/src/main/java/com/gentics/mesh/plugin/GraphQLDataFetchers.java[]
+----
+
+== Testing
+
+For testing it is possible to use the `MeshLocalServer` class rule which will make it possible to start-up an in-memory Gentics Mesh server that can be used to run your plugin.
+
+The test will:
+
+* Start Gentics Mesh in memory
+* Deploy the plugin 
+* Setup an empty project
+* Finally run the the query to fetch the data from the plugin
+
+[source,java]
+----
+include::content/examples/graphql-plugin/src/test/java/com/gentics/mesh/plugin/GraphQlExamplePluginTest.java[]
+----
+
+When running the test you should see the output in the result of the GraphQL test request.
+
+[source]
+----
+INFO: 127.0.0.1 - POST /api/v1/test/graphql HTTP/1.1 200 106 - 12 ms
+{
+  "pluginApi" : {
+    "myPlugin" : {
+      "bookById" : {
+        "id" : "book-1",
+        "name" : "Harry Potter and the Philosopher's Stone"
+      }
+    }
+  }
+}
+----
+
+== Packaging
+
+Now we can package the plugin by running `mvn clean package`. The built plugin will be placed in the `target` directory.
+
+We can now place the `mesh-graphql-library-example-plugin-0.0.1-SNAPSHOT.jar` file in the Gentics Mesh `plugins` directory.
+
+== Deployment
+
+You can now deploy start a new Gentics Mesh instance which will deploy the plugin during start-up:
+  
+[source,bash]
+----
+docker run --rm \
+    -v $PWD/target/mesh-graphql-library-example-plugin-0.0.1-SNAPSHOT.jar:/plugins/graphql.jar \
+    -p 8080:8080 \
+    gentics/mesh:0.38.0
+----
+
+
+It is also possible to deploy a plugin in a running instance via the `/admin/plugins` endpoint.
+
+With an admin token at hand you can invoke the deployment via cURL:
+
+[source,bash]
+----
+curl -X POST \
+ -d '{
+    "path":"mesh-graphql-library-example-plugin-0.0.1-SNAPSHOT.jar"
+    }' \ 
+ -H "Authorization: Bearer $MESH_TOKEN" \
+ -H "Content-Type: application/json" \
+ $MESH_BASE/admin/plugins
+----
+
+You can read more about how to use the REST API with cURL in the link:{{< relref "../guides/mesh-api-intro" >}}[API guide].
+
+== Accessing
+
+Once the plugin has been deployed you can use the plugin via the GraphQL endpoint.
+
+[source,bash]
+----
+curl -X POST \
+ -d '{
+    "query":"{ pluginApi { myPlugin { bookById(id: \"book-1\") {id name } } } }"
+    }' \ 
+ -H "Content-Type: application/json" \
+ $MESH_BASE/test/graphql
+----
+
+
+
+

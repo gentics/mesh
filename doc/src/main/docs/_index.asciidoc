@@ -327,7 +327,7 @@ ul.doc-toc h2 {
                                 <a href="guides/mesh-hugo">Hugo Guide</a>
                             </li>
                             <li>
-                                <a href="guides/mesh-plugin">GraphQL Plugin Guide</a>
+                                <a href="guides/mesh-library-plugin">GraphQL Library Plugin</a>
                             </li>
                         </ul>
                     </li>

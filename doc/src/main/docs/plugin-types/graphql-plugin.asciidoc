@@ -62,4 +62,8 @@ It is also possible to use the link:https://www.graphql-java.com/documentation/v
 == Examples
 
 * link:https://github.com/gentics/mesh-plugin-examples/tree/master/graphql-plugin[GraphQL Basic Plugin Example]
-* link:https://github.com/gentics/mesh-plugin-examples/tree/master/graphql-book-library-plugin[GraphQL Book Library Plugin Example]
+* link:https://github.com/gentics/mesh-plugin-examples/tree/master/graphql-library-plugin[GraphQL Library Plugin Example]
+
+== Guides
+
+* link:{{< relref "../guides/mesh-library-plugin" >}}[GraphQL Library Plugin Guide].
