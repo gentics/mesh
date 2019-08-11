@@ -1,7 +1,9 @@
 package com.gentics.mesh.plugin;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -16,6 +18,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -74,20 +77,30 @@ public class PluginManagerTest extends AbstractPluginTest {
 		FileUtil.copy(new File(BASIC_PATH), new File(pluginDir(), "plugin.jar"));
 		FileUtil.copy(new File(BASIC_PATH), new File(pluginDir(), "duplicate-plugin.jar"));
 		FileUtil.copy(new File(BASIC_PATH), new File(pluginDir(), "plugin.blub"));
+		FileUtil.copy(new File(GRAPHQL_PATH), new File(pluginDir(), "gql-plugin.jar"));
+		FileUtil.copy(new File(GRAPHQL_PATH), new File(pluginDir(), "gql-plugin2.jar"));
 
 		assertEquals(0, manager.getPluginIds().size());
 		manager.deployExistingPluginFiles().blockingAwait();
-		assertEquals(1, manager.getPluginIds().size());
+		assertEquals(2, manager.getPluginIds().size());
 		manager.deployExistingPluginFiles().blockingAwait();
 		manager.deployExistingPluginFiles().blockingAwait();
 		manager.deployExistingPluginFiles().blockingAwait();
-		assertEquals("Only one instance should have been deployed because all others are copies.", 1, manager.getPluginIds().size());
+		assertEquals("Only two plugins should have been deployed because all others are copies.", 2, manager.getPluginIds().size());
 
 		manager.stop().blockingAwait();
 		assertEquals(0, manager.getPluginIds().size());
 
 		manager.deployExistingPluginFiles().blockingAwait();
-		assertEquals(1, manager.getPluginIds().size());
+		assertEquals(2, manager.getPluginIds().size());
+
+		// Assert that plugins were registered and initialized
+		String queryName = "plugin/graphql-plugin-query";
+		GraphQLResponse response = call(
+			() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));
+		System.out.println(response.toJson());
+		assertThat(new JsonObject(response.toJson())).compliesToAssertions(queryName);
+
 	}
 
 	/**
