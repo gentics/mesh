@@ -39,6 +39,7 @@ import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
@@ -58,6 +59,7 @@ import io.reactivex.Single;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.AuthProvider;
@@ -654,7 +656,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public Single<UserResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-				MeshComponent mesh = null;
+				MeshComponent mesh = getGraphAttribute("meshComponent");
 				return mesh.database().asyncTx(() -> {
 					return Single.just(transformToRestSync(ac, level, languageTags));
 				});
@@ -735,6 +737,16 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public void fillPermissionChanged(PermissionChangedEventModelImpl model, Role role) {
+			}
+
+			@Override
+			public Vertx vertx() {
+				return null;
+			}
+
+			@Override
+			public Database db() {
+				return null;
 			}
 		};
 		return user;

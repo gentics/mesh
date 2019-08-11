@@ -76,12 +76,12 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	public Job findByUuid(String uuid) {
 		FramedGraph graph = Tx.get().getGraph();
 		// 1. Find the element with given uuid within the whole graph
-		Iterator<Vertex> it = database().getVertices(MeshVertexImpl.class, new String[] { "uuid" }, new String[] { uuid });
+		Iterator<Vertex> it = db().getVertices(MeshVertexImpl.class, new String[] { "uuid" }, new String[] { uuid });
 		if (it.hasNext()) {
 			Vertex potentialElement = it.next();
 			// 2. Use the edge index to determine whether the element is part of this root vertex
 			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
-				database().createComposedIndexKey(potentialElement.getId(), id()));
+				db().createComposedIndexKey(potentialElement.getId(), id()));
 			if (edges.iterator().hasNext()) {
 				// Don't frame explicitly since multiple types can be returned
 				return graph.frameElement(potentialElement, getPersistanceClass());

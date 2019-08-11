@@ -10,8 +10,6 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.AsyncResult;
@@ -45,8 +43,7 @@ public class MeshAuthUserImpl extends UserImpl implements MeshAuthUser {
 	 */
 	@Override
 	public JsonObject principal() {
-		Database db = mesh().database();
-		return db.tx(() -> {
+		return db().tx(() -> {
 			JsonObject user = new JsonObject();
 			user.put("uuid", getUuid());
 			user.put("username", getUsername());

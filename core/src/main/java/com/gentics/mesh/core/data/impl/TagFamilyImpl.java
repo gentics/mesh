@@ -71,11 +71,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public Database database() {
-		return mesh().database();
-	}
-
-	@Override
 	public TagFamilyReference transformToReference() {
 		return new TagFamilyReference().setName(getName()).setUuid(getUuid());
 	}

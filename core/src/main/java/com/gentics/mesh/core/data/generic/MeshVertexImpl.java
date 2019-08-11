@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -130,7 +131,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	}
 
 	public MeshComponent mesh() {
-		return super.getGraph().getAttribute("meshComponent");
+		return getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 	}
 
 	public Mesh meshApi() {
@@ -141,10 +142,12 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		return mesh().options();
 	}
 
+	@Override
 	public Database db() {
 		return mesh().database();
 	}
 
+	@Override
 	public Vertx vertx() {
 		return mesh().vertx();
 	}

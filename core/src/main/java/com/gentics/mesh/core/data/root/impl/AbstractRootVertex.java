@@ -27,11 +27,6 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	abstract public String getRootLabel();
 
 	@Override
-	public Database database() {
-		return mesh().database();
-	}
-
-	@Override
 	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
 		Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {

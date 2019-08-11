@@ -32,7 +32,6 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madl.field.FieldType;
@@ -147,7 +146,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	@Override
 	public void revokePermissions(MeshVertex vertex, GraphPermission... permissions) {
 		FramedGraph graph = Tx.get().getGraph();
-		Object indexKey = mesh().database().createComposedIndexKey(vertex.id(), getId());
+		Object indexKey = db().createComposedIndexKey(vertex.id(), getId());
 
 		long edgesRemoved = Arrays.stream(permissions).map(perm -> "e." + perm.label() + "_inout")
 			.map(e -> e.toLowerCase())

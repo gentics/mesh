@@ -4,6 +4,7 @@ import com.gentics.madl.annotations.GraphElement;
 import com.gentics.madl.frame.AbstractEdgeFrame;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.MeshEdge;
+import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.UUIDUtil;
@@ -12,6 +13,8 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedEdge;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
+
+import io.vertx.core.Vertx;
 
 /**
  * @see MeshEdge
@@ -73,11 +76,17 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	}
 
 	public MeshComponent mesh() {
-		return super.getGraph().getAttribute("meshComponent");
+		return super.getGraph().getAttribute(GraphAttribute.MESH_COMPONENT);
 	}
 
+	@Override
 	public Database db() {
 		return mesh().database();
+	}
+
+	@Override
+	public Vertx vertx() {
+		return mesh().vertx();
 	}
 
 }

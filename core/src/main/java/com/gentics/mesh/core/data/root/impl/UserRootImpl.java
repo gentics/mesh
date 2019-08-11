@@ -29,7 +29,6 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 
@@ -110,7 +109,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	@Override
 	public MeshAuthUser findMeshAuthUserByUuid(String userUuid) {
 		// Load the user vertex directly via the index - This way no record loading will occur.
-		MeshAuthUserImpl t = database().index().findByUuid(MeshAuthUserImpl.class, userUuid);
+		MeshAuthUserImpl t = db().index().findByUuid(MeshAuthUserImpl.class, userUuid);
 		if (t != null) {
 			// Note: The found user will be directly returned. No check will be performed to verify that the found element is a user or assigned to the user root.
 			// This method will only be used when loading the user via the uuid which was loaded from an immutable JWT. We thus can avoid this check to increase performance.
