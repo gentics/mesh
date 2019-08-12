@@ -2,6 +2,7 @@ package com.gentics.mesh.changelog;
 
 import java.util.Iterator;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
 
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
@@ -38,6 +39,35 @@ public abstract class AbstractChange implements Change {
 			log.error("Invoking rollback due to error", e);
 			graph.rollback();
 			throw e;
+		} finally {
+			graph.shutdown();
+		}
+	}
+
+	/**
+	 * Run the given action multiple times. Abort if the action returns false.
+	 * 
+	 * @param action
+	 */
+	protected void runBatchAction(BooleanSupplier action) {
+		do {
+			log.info("Running batch");
+		} while (applyBatchActionInTx(action));
+	}
+
+	/**
+	 * Run the given action in a transaction and return its value.
+	 * 
+	 * @param action
+	 * @return
+	 */
+	protected boolean applyBatchActionInTx(BooleanSupplier action) {
+		TransactionalGraph graph = getDb().rawTx();
+		setGraph(graph);
+		try {
+			boolean b = action.getAsBoolean();
+			getGraph().commit();
+			return b;
 		} finally {
 			graph.shutdown();
 		}

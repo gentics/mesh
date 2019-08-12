@@ -23,6 +23,11 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[NEXT]]
+== NEXT (TBD)
+
+icon:plus[] Changelog: The `ReleaseBranchRenameChange` entry has been updated to reduce required memory and increase execution performance on large databases (2m+ nodes).
+
 [[v0.38.0]]
 == 0.38.0 (TBD)
 
