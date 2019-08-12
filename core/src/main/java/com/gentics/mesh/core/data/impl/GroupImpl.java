@@ -24,7 +24,6 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
@@ -100,7 +99,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 		// The user does no longer belong to the group so lets update the shortcut edges
 		user.updateShortcutEdges();
-		PermissionStore.invalidate(vertx());
+		mesh().permissionCache().clear();
 	}
 
 	@Override
@@ -127,7 +126,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		for (User user : getUsers()) {
 			user.updateShortcutEdges();
 		}
-		PermissionStore.invalidate(vertx());
+		mesh().permissionCache().clear();
 	}
 
 	@Override
@@ -198,7 +197,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 			bac.inc();
 		}
 		bac.process();
-		PermissionStore.invalidate(vertx());
+		mesh().permissionCache().clear();
 	}
 
 	@Override

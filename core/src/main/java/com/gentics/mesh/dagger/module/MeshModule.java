@@ -1,43 +1,24 @@
 package com.gentics.mesh.dagger.module;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-
 import javax.inject.Singleton;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import com.gentics.mesh.Mesh;
-import com.gentics.mesh.MeshStatus;
-import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
-import com.gentics.mesh.core.image.spi.ImageManipulatorService;
-import com.gentics.mesh.etc.config.ClusterOptions;
-import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.MonitoringConfig;
-import com.gentics.mesh.graphdb.OrientDBDatabase;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
 import com.gentics.mesh.image.ImgscalrImageManipulator;
-import com.hazelcast.core.HazelcastInstance;
 
 import dagger.Module;
 import dagger.Provides;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
-import io.vertx.core.eventbus.EventBusOptions;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.dropwizard.DropwizardMetricsOptions;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
-import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 /**
  * Main dagger module class.
@@ -48,12 +29,6 @@ public class MeshModule {
 	private static Logger log = LoggerFactory.getLogger(BootstrapInitializer.class);
 
 	private static final int PASSWORD_HASH_LOGROUND_COUNT = 10;
-
-	@Provides
-	@Singleton
-	public static ImageManipulatorService imageProviderService() {
-		return ImageManipulatorService.getInstance();
-	}
 
 	@Provides
 	@Singleton

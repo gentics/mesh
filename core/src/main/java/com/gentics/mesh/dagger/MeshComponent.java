@@ -8,8 +8,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
-import com.gentics.mesh.cache.ProjectBranchNameCacheImpl;
-import com.gentics.mesh.cache.ProjectNameCacheImpl;
+import com.gentics.mesh.cache.PermissionCache;
+import com.gentics.mesh.cache.ProjectBranchNameCache;
+import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
@@ -132,9 +133,11 @@ public interface MeshComponent {
 
 	MetricsService metrics();
 
-	ProjectBranchNameCacheImpl branchCache();
+	ProjectBranchNameCache branchCache();
 
-	ProjectNameCacheImpl projectNameCache();
+	ProjectNameCache projectNameCache();
+
+	PermissionCache permissionCache();
 
 	Vertx vertx();
 

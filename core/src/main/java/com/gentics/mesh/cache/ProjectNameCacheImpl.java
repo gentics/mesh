@@ -3,6 +3,8 @@ package com.gentics.mesh.cache;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
 
+import java.util.function.Function;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -12,6 +14,7 @@ import io.vertx.core.Vertx;
 
 @Singleton
 public class ProjectNameCacheImpl implements ProjectNameCache {
+
 	public EventAwareCache<String, Project> cache;
 
 	@Inject
@@ -40,4 +43,10 @@ public class ProjectNameCacheImpl implements ProjectNameCache {
 	public void clear() {
 		cache.invalidate();
 	}
+
+	@Override
+	public Project get(String projectName, Function<String, Project> mappingFunction) {
+		return cache.get(projectName, mappingFunction);
+	}
+
 }

@@ -73,7 +73,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 	@Override
 	public Project findByName(String name) {
-		return mesh().projectNameCache().cache().get(name, n-> {
+		return mesh().projectNameCache().get(name, n -> {
 			return super.findByName(n);
 		});
 	}

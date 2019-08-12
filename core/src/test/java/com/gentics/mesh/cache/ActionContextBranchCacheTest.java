@@ -11,7 +11,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;

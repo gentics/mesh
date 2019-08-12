@@ -36,8 +36,8 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cache.PermissionCacheImpl;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
-import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -392,7 +392,7 @@ public class MeshTestContext extends TestWatcher {
 		for (File folder : tmpFolders) {
 			FileUtils.deleteDirectory(folder);
 		}
-		PermissionStore.invalidate(vertx, false);
+		meshDagger.permissionCache().clear(false);
 	}
 
 	public TestDataProvider getData() {

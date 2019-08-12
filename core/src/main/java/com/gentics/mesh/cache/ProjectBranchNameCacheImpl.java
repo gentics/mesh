@@ -20,11 +20,8 @@ public class ProjectBranchNameCacheImpl implements ProjectBranchNameCache {
 	@Inject
 	public ProjectBranchNameCacheImpl(Vertx vertx, CacheRegistry registry) {
 
-		/**
-		 * Cache for project specific branches.
-		 */
 		cache = EventAwareCache.<String, Branch>builder()
-			.size(500)
+			.maxSize(500)
 			.events(BRANCH_UPDATED, BRANCH_CREATED)
 			.vertx(vertx)
 			.build();

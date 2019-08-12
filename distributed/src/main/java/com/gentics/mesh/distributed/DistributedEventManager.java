@@ -13,8 +13,8 @@ import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
 import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorage;
@@ -46,12 +46,15 @@ public class DistributedEventManager {
 
 	private final RouterStorageRegistry routerStorageRegistry;
 
+	private final Lazy<PermissionCache> permCache;
+
 	@Inject
-	public DistributedEventManager(Lazy<Vertx> vertx, Lazy<Database> db, Lazy<BootstrapInitializer> boot, RouterStorageRegistry routerStorageRegistry) {
+	public DistributedEventManager(Lazy<Vertx> vertx, Lazy<Database> db, Lazy<BootstrapInitializer> boot, RouterStorageRegistry routerStorageRegistry, Lazy<PermissionCache> permCache) {
 		this.vertx = vertx;
 		this.db = db;
 		this.boot = boot;
 		this.routerStorageRegistry = routerStorageRegistry;
+		this.permCache = permCache;
 	}
 
 	public void registerHandlers() {
@@ -70,7 +73,7 @@ public class DistributedEventManager {
 		// Register for events which are send whenever the permission store must be invalidated.
 		eb.consumer(CLEAR_PERMISSION_STORE.address, handler -> {
 			log.debug("Received permissionstore clear event");
-			PermissionStore.invalidate(vertx.get(), false);
+			permCache.get().clear(false);
 		});
 
 		// React on project creates
@@ -108,7 +111,7 @@ public class DistributedEventManager {
 			handler.fail(400, "Could not initialize projects.");
 		}
 		// Invalidate permission store since the permissions may have changed
-		PermissionStore.invalidate(vertx.get());
+		permCache.get().clear();
 	}
 
 	private void synchronizeProjectRoutes() throws InvalidNameException {

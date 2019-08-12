@@ -40,7 +40,6 @@ import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ReindexAction;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
-import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -67,7 +66,6 @@ import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
-import com.gentics.mesh.core.data.service.WebrootPathStore;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -138,9 +136,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Inject
 	public HighLevelChangelogSystem highlevelChangelogSystem;
-
-	@Inject
-	public WebrootPathStore pathStore;
 
 	@Inject
 	public CacheRegistry cacheRegistry;
@@ -332,9 +327,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public void globalCacheClear() {
 		cacheRegistry.clear();
-		// TODO remove the two other caches also to registry
-		PermissionStore.invalidate(vertx, false);
-		pathStore.invalidate();
 	}
 
 	/**
@@ -489,8 +481,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public void registerEventHandlers() {
 		routerStorageRegistry.registerEventbus();
-		PermissionStore.registerEventHandler(vertx);
-		pathStore.registerEventHandler(vertx);
 	}
 
 	@Override

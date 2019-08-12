@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.service;
+package com.gentics.mesh.cache;
 
 import static com.gentics.mesh.core.rest.MeshEvent.CLEAR_PATH_STORE;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
@@ -10,23 +10,20 @@ import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNPUBLISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_FINISHED;
 
-import java.util.Arrays;
+import java.time.temporal.ChronoUnit;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.CacheConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.path.Path;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -34,18 +31,48 @@ import io.vertx.core.logging.LoggerFactory;
  * Central LRU webroot path cache which is used to quickly lookup cached paths.
  */
 @Singleton
-public class WebrootPathStore {
+public class WebrootPathCacheImpl implements WebrootPathCache {
 
-	private static final Logger log = LoggerFactory.getLogger(WebrootPathStore.class);
+	private static final Logger log = LoggerFactory.getLogger(WebrootPathCacheImpl.class);
 
-	private final Cache<String, Path> pathCache;
+	private EventAwareCache<String, Path> cache;
 
-	private CacheConfig cacheOptions;
+	private final CacheConfig cacheOptions;
+
+	private final MeshEvent events[] = {
+		CLEAR_PATH_STORE,
+		NODE_UPDATED,
+		NODE_DELETED,
+		NODE_PUBLISHED,
+		NODE_UNPUBLISHED,
+		NODE_MOVED,
+		NODE_CONTENT_CREATED,
+		NODE_CONTENT_DELETED,
+		SCHEMA_MIGRATION_FINISHED };
 
 	@Inject
-	public WebrootPathStore(MeshOptions options) {
+	public WebrootPathCacheImpl(Vertx vertx, CacheRegistry registry, MeshOptions options) {
 		this.cacheOptions = options.getCacheConfig();
-		this.pathCache = Caffeine.newBuilder().maximumSize(cacheOptions.getPathCacheSize()).build();
+
+		// No need to register when cache is disabled.
+		if (isDisabled()) {
+			return;
+		}
+
+		cache = EventAwareCache.<String, Path>builder()
+			.events(events)
+			.action((event, cache) -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Clearing path store due to received event from {" + event.address() + "}");
+				}
+				cache.invalidate();
+			})
+			.maxSize(100_000)
+			.expireAfter(30, ChronoUnit.SECONDS)
+			.vertx(vertx)
+			.build();
+
+		registry.register(cache);
 	}
 
 	/**
@@ -65,41 +92,7 @@ public class WebrootPathStore {
 			return null;
 		}
 		String key = createCacheKey(project, branch, type, path);
-		return pathCache.getIfPresent(key);
-	}
-
-	/**
-	 * Register the event handler which can be used to invalidate the LRU cache.
-	 */
-	public void registerEventHandler(Vertx vertx) {
-		// No need to register when cache is disabled.
-		if (isDisabled()) {
-			return;
-		}
-		EventBus eb = vertx.eventBus();
-
-		Arrays.asList(CLEAR_PATH_STORE,
-			NODE_UPDATED,
-			NODE_DELETED,
-			NODE_PUBLISHED,
-			NODE_UNPUBLISHED,
-			NODE_MOVED,
-			NODE_CONTENT_CREATED,
-			NODE_CONTENT_DELETED,
-			SCHEMA_MIGRATION_FINISHED)
-			.forEach(event -> {
-				eb.consumer(event.address, e -> {
-					invalidateByEvent(e);
-				});
-			});
-
-	}
-
-	private void invalidateByEvent(Message<Object> e) {
-		if (log.isDebugEnabled()) {
-			log.debug("Clearing path store due to received event from {" + e.address() + "}");
-		}
-		pathCache.invalidateAll();
+		return cache.get(key);
 	}
 
 	/**
@@ -131,7 +124,7 @@ public class WebrootPathStore {
 		if (isDisabled()) {
 			return;
 		}
-		pathCache.put(createCacheKey(project, branch, type, path), resolvedPath);
+		cache.put(createCacheKey(project, branch, type, path), resolvedPath);
 	}
 
 	public boolean isDisabled() {
@@ -141,7 +134,8 @@ public class WebrootPathStore {
 	/**
 	 * Invalidate the cache.
 	 */
-	public void invalidate() {
-		pathCache.invalidateAll();
+	@Override
+	public void clear() {
+		cache.invalidate();
 	}
 }

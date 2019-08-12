@@ -1,6 +1,9 @@
 package com.gentics.mesh.cache.impl;
 
+import java.time.Duration;
+import java.time.temporal.TemporalUnit;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -33,11 +36,15 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 
 	private boolean disabled = false;
 
-	public EventAwareCacheImpl(long size, Vertx vertx, Predicate<Message<JsonObject>> filter,
+	public EventAwareCacheImpl(long maxSize, Duration expireAfter, Vertx vertx, Predicate<Message<JsonObject>> filter,
 		BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext,
 		MeshEvent... events) {
 		this.vertx = vertx;
-		this.cache = Caffeine.newBuilder().maximumSize(size).build();
+		Caffeine<Object, Object> cacheBuilder = Caffeine.newBuilder().maximumSize(maxSize);
+		if (expireAfter != null) {
+			cacheBuilder = cacheBuilder.expireAfterWrite(expireAfter.getSeconds(), TimeUnit.SECONDS);
+		}
+		this.cache = cacheBuilder.build();
 		this.filter = filter;
 		this.onNext = onNext;
 		registerEventHandlers(events);
@@ -129,16 +136,17 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 	public static class Builder<K, V> {
 
 		private boolean disabled = false;
-		private long size = 1000;
+		private long maxSize = 1000;
 		private Predicate<Message<JsonObject>> filter = null;
 		private BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext = null;
 		private MeshEvent[] events = null;
 		private Vertx vertx;
+		private Duration expireAfter;
 
 		public EventAwareCache<K, V> build() {
 			Objects.requireNonNull(events, "No events for the cache have been set");
 			Objects.requireNonNull(vertx, "No Vert.x instance has been set");
-			EventAwareCacheImpl<K, V> c = new EventAwareCacheImpl<>(size, vertx, filter, onNext, events);
+			EventAwareCacheImpl<K, V> c = new EventAwareCacheImpl<>(maxSize, expireAfter, vertx, filter, onNext, events);
 			if (disabled) {
 				c.disable();
 			}
@@ -179,17 +187,6 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		}
 
 		/**
-		 * Set the cache size.
-		 * 
-		 * @param size
-		 * @return Fluent API
-		 */
-		public Builder<K, V> size(long size) {
-			this.size = size;
-			return this;
-		}
-
-		/**
 		 * Disable the created cache.
 		 * 
 		 * @return Fluent API
@@ -200,13 +197,36 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		}
 
 		/**
-		 * Set the vertx instance to be used for eventbus communcation.
+		 * Set the vertx instance to be used for eventbus communication.
 		 * 
 		 * @param vertx
 		 * @return Fluent API
 		 */
 		public Builder<K, V> vertx(Vertx vertx) {
 			this.vertx = vertx;
+			return this;
+		}
+
+		/**
+		 * Set the maximum size for the cache.
+		 * 
+		 * @param maxSize
+		 * @return Fluent API
+		 */
+		public Builder<K, V> maxSize(long maxSize) {
+			this.maxSize = maxSize;
+			return this;
+		}
+
+		/**
+		 * Define when the cache should automatically expire.
+		 * 
+		 * @param amount
+		 * @param unit
+		 * @return Fluent API
+		 */
+		public Builder<K, V> expireAfter(long amount, TemporalUnit unit) {
+			this.expireAfter = Duration.of(amount, unit);
 			return this;
 		}
 

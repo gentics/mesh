@@ -34,9 +34,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
+import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -61,7 +61,6 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -341,7 +340,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public boolean hasPermissionForId(Object elementId, GraphPermission permission) {
-		if (PermissionStore.hasPermission(getId(), permission, elementId)) {
+		PermissionCache permissionCache = mesh().permissionCache();
+		if (permissionCache.hasPermission(id(), permission, elementId)) {
 			return true;
 		} else {
 			FramedGraph graph = getGraph();
@@ -362,7 +362,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 					// reduce the invalidation calls.
 					// This way we do not need to invalidate the cache if a role
 					// is removed from a group or a role is deleted.
-					PermissionStore.store(getId(), permission, elementId);
+					permissionCache.store(id(), permission, elementId);
 					return true;
 				}
 			}
@@ -556,7 +556,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		bac.add(onDeleted());
 		getElement().remove();
 		bac.process();
-		PermissionStore.invalidate(vertx());
+		mesh().permissionCache().clear();
 	}
 
 	/**
