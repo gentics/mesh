@@ -36,7 +36,7 @@ import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.MeshVersion;
-import com.gentics.mesh.cache.CacheRegistry;
+import com.gentics.mesh.cache.CacheRegistryImpl;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ReindexAction;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
@@ -138,7 +138,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public HighLevelChangelogSystem highlevelChangelogSystem;
 
 	@Inject
-	public CacheRegistry cacheRegistry;
+	public CacheRegistryImpl cacheRegistry;
 
 	@Inject
 	public MeshPluginManager pluginManager;

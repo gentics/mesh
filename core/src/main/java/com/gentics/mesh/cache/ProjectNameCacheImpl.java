@@ -3,8 +3,6 @@ package com.gentics.mesh.cache;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
 
-import java.util.function.Function;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -13,13 +11,17 @@ import com.gentics.mesh.core.data.Project;
 import io.vertx.core.Vertx;
 
 @Singleton
-public class ProjectNameCacheImpl implements ProjectNameCache {
+public class ProjectNameCacheImpl extends AbstractMeshCache<String, Project> implements ProjectNameCache {
 
-	public EventAwareCache<String, Project> cache;
+	public static final long CACHE_SIZE = 100;
 
 	@Inject
 	public ProjectNameCacheImpl(Vertx vertx, CacheRegistry registry) {
-		cache = EventAwareCache.<String, Project>builder()
+		super(createCache(vertx), registry, CACHE_SIZE);
+	}
+
+	private static EventAwareCache<String, Project> createCache(Vertx vertx) {
+		return EventAwareCache.<String, Project>builder()
 			.events(PROJECT_DELETED, PROJECT_UPDATED)
 			.action((event, cache) -> {
 				String name = event.body().getString("name");
@@ -29,24 +31,9 @@ public class ProjectNameCacheImpl implements ProjectNameCache {
 					cache.invalidate();
 				}
 			})
+			.maxSize(CACHE_SIZE)
 			.vertx(vertx)
 			.build();
-
-		registry.register(cache);
-	}
-
-	public EventAwareCache<String, Project> cache() {
-		return cache;
-	}
-
-	@Override
-	public void clear() {
-		cache.invalidate();
-	}
-
-	@Override
-	public Project get(String projectName, Function<String, Project> mappingFunction) {
-		return cache.get(projectName, mappingFunction);
 	}
 
 }

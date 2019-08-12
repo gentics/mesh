@@ -10,8 +10,6 @@ import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNPUBLISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_FINISHED;
 
-import java.time.temporal.ChronoUnit;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -31,15 +29,11 @@ import io.vertx.core.logging.LoggerFactory;
  * Central LRU webroot path cache which is used to quickly lookup cached paths.
  */
 @Singleton
-public class WebrootPathCacheImpl implements WebrootPathCache {
+public class WebrootPathCacheImpl extends AbstractMeshCache<String, Path> implements WebrootPathCache {
 
 	private static final Logger log = LoggerFactory.getLogger(WebrootPathCacheImpl.class);
 
-	private EventAwareCache<String, Path> cache;
-
-	private final CacheConfig cacheOptions;
-
-	private final MeshEvent events[] = {
+	private static final MeshEvent EVENTS[] = {
 		CLEAR_PATH_STORE,
 		NODE_UPDATED,
 		NODE_DELETED,
@@ -52,27 +46,21 @@ public class WebrootPathCacheImpl implements WebrootPathCache {
 
 	@Inject
 	public WebrootPathCacheImpl(Vertx vertx, CacheRegistry registry, MeshOptions options) {
-		this.cacheOptions = options.getCacheConfig();
+		super(createCache(vertx, options.getCacheConfig()), registry, options.getCacheConfig().getPathCacheSize());
+	}
 
-		// No need to register when cache is disabled.
-		if (isDisabled()) {
-			return;
-		}
-
-		cache = EventAwareCache.<String, Path>builder()
-			.events(events)
+	private static EventAwareCache<String, Path> createCache(Vertx vertx, CacheConfig config) {
+		return EventAwareCache.<String, Path>builder()
+			.events(EVENTS)
 			.action((event, cache) -> {
 				if (log.isDebugEnabled()) {
 					log.debug("Clearing path store due to received event from {" + event.address() + "}");
 				}
 				cache.invalidate();
 			})
-			.maxSize(100_000)
-			.expireAfter(30, ChronoUnit.SECONDS)
+			.maxSize(config.getPathCacheSize())
 			.vertx(vertx)
 			.build();
-
-		registry.register(cache);
 	}
 
 	/**
@@ -127,15 +115,4 @@ public class WebrootPathCacheImpl implements WebrootPathCache {
 		cache.put(createCacheKey(project, branch, type, path), resolvedPath);
 	}
 
-	public boolean isDisabled() {
-		return cacheOptions.getPathCacheSize() == 0;
-	}
-
-	/**
-	 * Invalidate the cache.
-	 */
-	@Override
-	public void clear() {
-		cache.invalidate();
-	}
 }

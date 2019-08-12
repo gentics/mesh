@@ -1,5 +1,7 @@
 package com.gentics.mesh.cache;
 
-public interface WebrootPathCache extends MeshCache {
+import com.gentics.mesh.path.Path;
+
+public interface WebrootPathCache extends MeshCache<String, Path> {
 
 }

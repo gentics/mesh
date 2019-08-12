@@ -2,7 +2,7 @@ package com.gentics.mesh.cache;
 
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 
-public interface PermissionCache extends MeshCache {
+public interface PermissionCache extends MeshCache<String, Boolean> {
 
 	/**
 	 * Clear the local cache and send an event to inform other instances to also clear their caches.

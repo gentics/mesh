@@ -772,4 +772,12 @@ public interface TestHelper {
 		return mesh().batchProvider().get();
 	}
 
+	default void sleep(long timeMs) {
+		try {
+			Thread.sleep(timeMs);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
 }

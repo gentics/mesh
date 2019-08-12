@@ -2,6 +2,8 @@ package com.gentics.mesh.cache;
 
 import static com.gentics.mesh.core.rest.MeshEvent.CLEAR_PERMISSION_STORE;
 
+import java.time.temporal.ChronoUnit;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -16,22 +18,25 @@ import io.vertx.core.logging.LoggerFactory;
  * Central LRU permission cache which is used to quickly lookup cached permissions.
  */
 @Singleton
-public class PermissionCacheImpl implements PermissionCache {
+public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> implements PermissionCache {
 
 	private static final Logger log = LoggerFactory.getLogger(PermissionCacheImpl.class);
-
-	private final EventAwareCache<String, Boolean> cache;
 
 	private final Vertx vertx;
 
 	private final MeshOptions options;
 
+	private static final long CACHE_SIZE = 100_000;
+
 	@Inject
 	public PermissionCacheImpl(Vertx vertx, CacheRegistry registry, MeshOptions options) {
+		super(createCache(vertx), registry, CACHE_SIZE);
 		this.vertx = vertx;
 		this.options = options;
-		// = Caffeine.newBuilder().maximumSize(100_000).expireAfterWrite(30, TimeUnit.MINUTES).build();
-		cache = EventAwareCache.<String, Boolean>builder()
+	}
+
+	private static EventAwareCache<String, Boolean> createCache(Vertx vertx) {
+		return EventAwareCache.<String, Boolean>builder()
 			.events(CLEAR_PERMISSION_STORE)
 			.action((event, cache) -> {
 				if (log.isDebugEnabled()) {
@@ -39,10 +44,10 @@ public class PermissionCacheImpl implements PermissionCache {
 				}
 				cache.invalidate();
 			})
+			.expireAfter(30, ChronoUnit.MINUTES)
+			.maxSize(CACHE_SIZE)
 			.vertx(vertx)
 			.build();
-
-		registry.register(cache);
 	}
 
 	/**

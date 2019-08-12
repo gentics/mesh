@@ -1,9 +1,55 @@
 package com.gentics.mesh.cache;
 
-public interface MeshCache {
+import java.util.function.Function;
+
+public interface MeshCache<K, V> {
 
 	/**
 	 * Clear the cache.
 	 */
 	void clear();
+
+	/**
+	 * Return the cache entry.
+	 * 
+	 * @param key
+	 *            Cache key
+	 * @param mappingFunction
+	 *            Mapper that is called to load the entry if it can't be found in the cache
+	 * @return Loaded entry or null if no entry could be found
+	 */
+	V get(K key, Function<K, V> mappingFunction);
+
+	/**
+	 * Return the cache entry.
+	 * 
+	 * @param key
+	 *            Cache key
+	 * @return Found entry or null if the entry is not cached
+	 */
+	V get(K key);
+
+	/**
+	 * Check whether the cache is disabled.
+	 * 
+	 * @return
+	 */
+	boolean isDisabled();
+
+	/**
+	 * Enable the cache.
+	 */
+	void enable();
+
+	/**
+	 * Disable the cache.
+	 */
+	void disable();
+
+	/**
+	 * Return the current size of the cache.
+	 * 
+	 * @return
+	 */
+	long size();
 }
