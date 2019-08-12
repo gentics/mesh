@@ -153,4 +153,4 @@ POST {apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binaryTransform/ima
 
 include::content/docs/examples/tables/ImageManipulationParametersImpl.adoc-include[]
 
-Find out more about this topic in our blog post about https://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].
+Find out more about this topic in our blog post about https://getmesh.io//blog/gentics-mesh-image-manipulation/[Gentics Mesh's Image Manipulation API and Interface].
