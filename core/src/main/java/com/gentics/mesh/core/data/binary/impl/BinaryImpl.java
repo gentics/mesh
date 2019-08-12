@@ -13,7 +13,6 @@ import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Supplier;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.traversal.TraversalResult;

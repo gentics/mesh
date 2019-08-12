@@ -13,7 +13,6 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.EdgeTraversal;

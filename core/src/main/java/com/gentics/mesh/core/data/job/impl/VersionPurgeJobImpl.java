@@ -17,7 +17,6 @@ import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.job.ProjectVersionPurgeEventModel;
 import com.gentics.mesh.core.rest.job.JobStatus;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.DateUtils;

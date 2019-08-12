@@ -50,7 +50,7 @@ public class HandlerUtilities {
 
 	private static final Logger log = LoggerFactory.getLogger(HandlerUtilities.class);
 
-	private static Semaphore writeLock = new Semaphore(1);
+	private Semaphore writeLock = new Semaphore(1);
 
 	private final Database database;
 	private final MetricsService metrics;

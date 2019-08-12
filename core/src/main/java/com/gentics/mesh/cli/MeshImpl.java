@@ -20,8 +20,8 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.crypto.KeyStoreHelper;
+import com.gentics.mesh.dagger.DaggerMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.VersionUtil;
@@ -123,7 +123,7 @@ public class MeshImpl implements Mesh {
 		}
 		// Create dagger context and invoke bootstrap init in order to startup mesh
 		try {
-			meshInternal = MeshInternal.create(options);
+			meshInternal = DaggerMeshComponent.builder().configuration(options).build();
 			setMeshInternal(meshInternal);
 			meshInternal.boot().init(this, forceIndexSync, options, verticleLoader);
 			if (options.isUpdateCheckEnabled()) {

@@ -24,7 +24,6 @@ import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**

@@ -72,11 +72,11 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	@Override
 	public String getElementVersion() {
 		Edge edge = getElement();
-		return mesh().database().getElementVersion(edge);
+		return db().getElementVersion(edge);
 	}
 
 	public MeshComponent mesh() {
-		return super.getGraph().getAttribute(GraphAttribute.MESH_COMPONENT);
+		return getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 	}
 
 	@Override

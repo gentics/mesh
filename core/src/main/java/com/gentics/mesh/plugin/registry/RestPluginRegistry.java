@@ -30,7 +30,7 @@ public class RestPluginRegistry implements PluginRegistry {
 	/**
 	 * Set which is used to detect conflicting deployments.
 	 */
-	private static Set<String> apiNameSyncSet = Collections.synchronizedSet(new HashSet<>());
+	private Set<String> apiNameSyncSet = Collections.synchronizedSet(new HashSet<>());
 
 	private final RouterStorageRegistry routerStorageRegistry;
 
