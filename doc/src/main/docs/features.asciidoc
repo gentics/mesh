@@ -921,7 +921,7 @@ https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/b
 [TIP]
 https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?rect=10,100,800,400&w=300&crop=rect
 
-Find out more about this topic in our blog post about https://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].
+Find out more about this topic in our blog post about https://getmesh.io/blog/gentics-mesh-image-manipulation/[Gentics Mesh's Image Manipulation API and Interface].
 
 
 == Link Resolving
