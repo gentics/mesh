@@ -14,6 +14,10 @@ import com.tinkerpop.blueprints.Vertex;
 
 public class RenameReleasesToBranches extends AbstractChange {
 
+	private static long EDGE_BATCH_LIMIT = 200_000;
+
+	private static long VERTEX_BATCH_LIMIT = 10_000;
+
 	@Override
 	public String getName() {
 		return "ReleaseBranchRenameChange";
@@ -30,17 +34,17 @@ public class RenameReleasesToBranches extends AbstractChange {
 		getDb().type().addVertexType("BranchRootImpl", "MeshVertexImpl");
 		getDb().type().addVertexType("BranchMigrationJobImpl", "MeshVertexImpl");
 
-		runBatchAction(() -> migrateVertices("ReleaseImpl", "BranchImpl"));
-		runBatchAction(() -> migrateVertices("ReleaseRootImpl", "BranchRootImpl"));
-		runBatchAction(() -> migrateVertices("ReleaseMigrationJobImpl", "BranchMigrationJobImpl"));
+		runBatchAction(() -> migrateVertices("ReleaseImpl", "BranchImpl", VERTEX_BATCH_LIMIT));
+		runBatchAction(() -> migrateVertices("ReleaseRootImpl", "BranchRootImpl", VERTEX_BATCH_LIMIT));
+		runBatchAction(() -> migrateVertices("ReleaseMigrationJobImpl", "BranchMigrationJobImpl", VERTEX_BATCH_LIMIT));
 
-		migrateEdgeProps("HAS_TAG");
-		migrateEdgeProps("HAS_FIELD_CONTAINER");
-		migrateEdgeProps("HAS_PARENT_NODE");
+		migrateEdgeProps("HAS_TAG", EDGE_BATCH_LIMIT);
+		migrateEdgeProps("HAS_FIELD_CONTAINER", EDGE_BATCH_LIMIT);
+		migrateEdgeProps("HAS_PARENT_NODE", EDGE_BATCH_LIMIT);
 
 	}
 
-	private void migrateEdgeProps(String label) {
+	private void migrateEdgeProps(String label, long limit) {
 		PriorityQueue<Object> jobQueue = new PriorityQueue<>();
 		TransactionalGraph graph = getDb().rawTx();
 		setGraph(graph);
@@ -57,11 +61,9 @@ public class RenameReleasesToBranches extends AbstractChange {
 			graph.shutdown();
 		}
 		log.info("Created queue for " + label + " (" + jobQueue.size() + " entries)");
-		runBatchAction(() -> migrateBranchEdgeProperties(label, jobQueue));
+		runBatchAction(() -> migrateBranchEdgeProperties(label, jobQueue, limit));
 
 	}
-
-
 
 	@Override
 	public void applyInTx() {
@@ -108,7 +110,7 @@ public class RenameReleasesToBranches extends AbstractChange {
 		}
 	}
 
-	private boolean migrateBranchEdgeProperties(String label, Queue<Object> jobQueue) {
+	private boolean migrateBranchEdgeProperties(String label, Queue<Object> jobQueue, long limit) {
 		long n = 0;
 		while (!jobQueue.isEmpty()) {
 			Object id = jobQueue.poll();
@@ -123,7 +125,7 @@ public class RenameReleasesToBranches extends AbstractChange {
 				log.info("Migrated {" + n + "} " + label + " edges. Remaining " + jobQueue.size() + " (" + (percent * 100) + "%)");
 				getGraph().commit();
 			}
-			if (n > 200_000) {
+			if (n > limit) {
 				log.info("Limit for batch reached. Remaining " + jobQueue.size());
 				return true;
 			}
@@ -132,7 +134,7 @@ public class RenameReleasesToBranches extends AbstractChange {
 		return !jobQueue.isEmpty();
 	}
 
-	private boolean migrateVertices(String from, String to) {
+	private boolean migrateVertices(String from, String to, long limit) {
 		log.info("Migrating vertex type {" + from + "} to {" + to + "}");
 		Iterable<Vertex> it = getGraph().getVertices("@class", from);
 		long count = 0;
@@ -168,7 +170,7 @@ public class RenameReleasesToBranches extends AbstractChange {
 				log.info("Migrated {" + count + "} vertices.");
 				getGraph().commit();
 			}
-			if (count >= 10_000) {
+			if (count >= limit) {
 				log.info("Limit for batch reached");
 				return true;
 			}
