@@ -1,13 +1,15 @@
 package com.gentics.mesh.router;
 
+import static com.gentics.mesh.handler.VersionHandler.API_MOUNTPOINT;
+
 import com.gentics.mesh.router.route.DefaultNotFoundHandler;
 import com.gentics.mesh.router.route.FailureHandler;
+import com.gentics.mesh.router.route.PoweredByHandler;
+
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.LoggerFormat;
 import io.vertx.ext.web.handler.LoggerHandler;
-
-import static com.gentics.mesh.handler.VersionHandler.API_MOUNTPOINT;
 
 /**
  * The root router is the top level router of the routing stack.
@@ -36,6 +38,7 @@ public class RootRouter {
 		// routes)
 		router.route().last().handler(DefaultNotFoundHandler.create());
 		router.route().failureHandler(FailureHandler.create());
+		router.route().handler(PoweredByHandler.create());
 		router.route(API_MOUNTPOINT).handler(storage.versionHandler);
 
 		this.apiRouter = new APIRouter(this);

@@ -32,6 +32,8 @@ icon:check[] GraphQL: The `pluginApi` field will no longer be added to the schem
 
 icon:plus[] Changelog: The `ReleaseBranchRenameChange` entry has been updated to reduce required memory and increase execution performance on large databases (2m+ nodes).
 
+icon:plus[] REST: A `X-Powered-By` header was added to all http responses.
+
 [[v0.38.0]]
 == 0.38.0 (09.08.2019)
 
