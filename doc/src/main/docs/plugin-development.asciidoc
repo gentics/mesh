@@ -205,7 +205,7 @@ Finally the consuming plugin may access the available extension via the plugin m
 getWrapper().getPluginManager().getExtensions(DummyExtensionPoint.class)
 ----
 
-A full example can be found in our link:https://github.com/gentics/mesh-plugin-examples/tree/master/extensions[example repository].
+A full example can be found in our link:https://github.com/gentics/mesh-plugin-examples/tree/master/extensions-plugin[example repository].
 
 === Building extension plugins
 
