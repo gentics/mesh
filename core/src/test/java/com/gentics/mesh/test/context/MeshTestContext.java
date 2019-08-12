@@ -36,7 +36,6 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.cache.PermissionCacheImpl;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.search.IndexHandler;
@@ -258,7 +257,10 @@ public class MeshTestContext extends TestWatcher {
 	}
 
 	private void removeDataDirectory() throws IOException {
-		FileUtils.deleteDirectory(new File("data"));
+		File dataDir = new File("data");
+		if (dataDir.exists()) {
+			FileUtils.deleteDirectory(dataDir);
+		}
 	}
 
 	protected void setupIndexHandlers() throws Exception {
@@ -595,7 +597,7 @@ public class MeshTestContext extends TestWatcher {
 			mesh = Mesh.create(options);
 			mesh.setMeshInternal(meshDagger);
 			meshDagger.boot().init(mesh, false, options, null);
-			vertx  = meshDagger.boot().vertx();
+			vertx = meshDagger.boot().vertx();
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
@@ -670,7 +672,7 @@ public class MeshTestContext extends TestWatcher {
 	public MeshComponent getMeshComponent() {
 		return meshDagger;
 	}
-	
+
 	public Mesh getMesh() {
 		return mesh;
 	}
