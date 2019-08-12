@@ -457,7 +457,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		root.field(pluginProvider.createPluginPageField());
 
 		// .pluginApi
-		root.field(pluginApiProvider.createPluginAPIField());
+		if (pluginApiProvider.hasPlugins()) {
+			root.field(pluginApiProvider.createPluginAPIField());
+		}
 
 		// .mesh
 		root.field(meshTypeProvider.createMeshFieldType());
