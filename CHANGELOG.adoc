@@ -96,7 +96,7 @@ The plugin development process documentation has been enhanced.
 
 * link:{{< relref "plugin-development" >}}[Plugin Development]
 * link:https://github.com/gentics/mesh-plugin-examples[Plugin Examples]
-* link:{{< relref "guides/mesh-plugin" >}}[Example Plugin Guide]
+* link:{{< relref "guides/mesh-library-plugin" >}}[Example Plugin Guide]
 
 ____
 

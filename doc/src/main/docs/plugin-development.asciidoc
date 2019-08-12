@@ -289,7 +289,7 @@ include::content/examples/graphql-plugin/src/test/java/com/gentics/mesh/plugin/G
 
 == Development Guide
 
-You can follow the link:{{< relref "guides/mesh-plugin" >}}[Plugin Development Guide] for a step by step introduction.
+You can follow the link:{{< relref "guides/mesh-library-plugin" >}}[Plugin Development Guide] for a step by step introduction.
 
 == Examples
 
