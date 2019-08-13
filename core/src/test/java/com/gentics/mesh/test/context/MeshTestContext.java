@@ -37,14 +37,12 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
-import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.DaggerMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -53,12 +51,10 @@ import com.gentics.mesh.etc.config.OAuth2Options;
 import com.gentics.mesh.etc.config.OAuth2ServerConfig;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.monitoring.MonitoringClientConfig;
 import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
-import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import com.gentics.mesh.test.TestDataProvider;
@@ -119,6 +115,8 @@ public class MeshTestContext extends TestWatcher {
 
 	private Consumer<MeshOptions> optionChanger = noopConsumer();
 
+	private Mesh mesh;
+
 	@Override
 	protected void starting(Description description) {
 		try {
@@ -127,7 +125,6 @@ public class MeshTestContext extends TestWatcher {
 			if (description.isSuite()) {
 				port = TestUtils.getRandomPort();
 				monitoringPort = TestUtils.getRandomPort();
-				removeDataDirectory();
 				removeConfigDirectory();
 				MeshOptions options = init(settings);
 				try {
@@ -141,7 +138,7 @@ public class MeshTestContext extends TestWatcher {
 				if (!settings.inMemoryDB()) {
 					DatabaseHelper.init(meshDagger.database());
 				}
-				initFolders(Mesh.mesh().getOptions());
+				initFolders(mesh.getOptions());
 				setupData();
 				listenToSearchIdleEvent();
 				switch (settings.elasticsearch()) {
@@ -213,8 +210,7 @@ public class MeshTestContext extends TestWatcher {
 			MeshTestSetting settings = getSettings(description);
 			if (description.isSuite()) {
 				// TODO CI does not like this, reactivate later:
-				// Mesh.mesh().shutdown();
-				removeDataDirectory();
+				// mesh.shutdown();
 				removeConfigDirectory();
 				if (elasticsearch != null && elasticsearch.isRunning()) {
 					elasticsearch.stop();
@@ -258,10 +254,6 @@ public class MeshTestContext extends TestWatcher {
 		System.setProperty("mesh.confDirName", CONF_PATH);
 	}
 
-	private void removeDataDirectory() throws IOException {
-		FileUtils.deleteDirectory(new File("data"));
-	}
-
 	protected void setupIndexHandlers() throws Exception {
 		// We need to call init() again in order create missing indices for the created test data
 		for (IndexHandler<?> handler : meshDagger.indexHandlerRegistry().getHandlers()) {
@@ -283,10 +275,10 @@ public class MeshTestContext extends TestWatcher {
 	}
 
 	private void setupRestEndpoints(MeshTestSetting settings) throws Exception {
-		Mesh.mesh().getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
+		mesh.getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
 
 		log.info("Using port:  " + port);
-		RouterStorage.addProject(TestDataProvider.PROJECT_NAME);
+		meshDagger.routerStorageRegistry().addProject(TestDataProvider.PROJECT_NAME);
 
 		// Setup the rest client
 		try (Tx tx = db().tx()) {
@@ -369,18 +361,18 @@ public class MeshTestContext extends TestWatcher {
 	 * @throws Exception
 	 */
 	private void resetDatabase(MeshTestSetting settings) throws Exception {
-		BootstrapInitializerImpl.clearReferences();
+		meshDagger.boot().clearReferences();
 		long start = System.currentTimeMillis();
 		if (settings.inMemoryDB()) {
-			MeshInternal.get().database().clear();
+			meshDagger.database().clear();
 		} else if (settings.clusterMode()) {
-			MeshInternal.get().database().clear();
+			meshDagger.database().clear();
 		} else {
-			MeshInternal.get().database().stop();
-			String dir = Mesh.mesh().getOptions().getStorageOptions().getDirectory();
+			meshDagger.database().stop();
+			String dir = mesh.getOptions().getStorageOptions().getDirectory();
 			File dbDir = new File(dir);
 			FileUtils.deleteDirectory(dbDir);
-			MeshInternal.get().database().setupConnectionPool();
+			meshDagger.database().setupConnectionPool();
 		}
 		long duration = System.currentTimeMillis() - start;
 		log.info("Clearing DB took {" + duration + "} ms.");
@@ -393,7 +385,7 @@ public class MeshTestContext extends TestWatcher {
 		for (File folder : tmpFolders) {
 			FileUtils.deleteDirectory(folder);
 		}
-		PermissionStore.invalidate(false);
+		meshDagger.permissionCache().clear(false);
 	}
 
 	public TestDataProvider getData() {
@@ -411,7 +403,6 @@ public class MeshTestContext extends TestWatcher {
 	 * @throws Exception
 	 */
 	public MeshOptions init(MeshTestSetting settings) throws Exception {
-		MeshFactoryImpl.clear();
 		meshOptions = new MeshOptions();
 
 		if (settings == null) {
@@ -452,6 +443,7 @@ public class MeshTestContext extends TestWatcher {
 		monitoringOptions.setPort(monitoringPort);
 
 		// The database provider will switch to in memory mode when no directory has been specified.
+		GraphStorageOptions storageOptions = meshOptions.getStorageOptions();
 
 		String graphPath = null;
 		if (!settings.inMemoryDB() || settings.clusterMode()) {
@@ -460,7 +452,6 @@ public class MeshTestContext extends TestWatcher {
 			directory.deleteOnExit();
 			directory.mkdirs();
 		}
-		GraphStorageOptions storageOptions = meshOptions.getStorageOptions();
 		if (!settings.inMemoryDB() && settings.startStorageServer()) {
 			storageOptions.setStartServer(true);
 		}
@@ -535,7 +526,6 @@ public class MeshTestContext extends TestWatcher {
 		}
 		settings.optionChanger().changer.accept(meshOptions);
 		optionChanger.accept(meshOptions);
-		Mesh.mesh(meshOptions);
 		return meshOptions;
 	}
 
@@ -545,6 +535,7 @@ public class MeshTestContext extends TestWatcher {
 
 		String uploads = newFolder("testuploads");
 		meshOptions.getUploadOptions().setDirectory(uploads);
+
 		String targetUploadTmpDir = newFolder("uploadTmpDir");
 		meshOptions.getUploadOptions().setTempDirectory(targetUploadTmpDir);
 
@@ -553,8 +544,10 @@ public class MeshTestContext extends TestWatcher {
 
 		String backupPath = newFolder("backups");
 		meshOptions.getStorageOptions().setBackupDirectory(backupPath);
+
 		String exportPath = newFolder("exports");
 		meshOptions.getStorageOptions().setExportDirectory(exportPath);
+
 		String plugindirPath = newFolder("plugins");
 		meshOptions.setPluginDirectory(plugindirPath);
 	}
@@ -590,14 +583,15 @@ public class MeshTestContext extends TestWatcher {
 			.configuration(options)
 			.searchProviderType(settings.elasticsearch().toSearchProviderType())
 			.build();
-		MeshInternal.set(meshDagger);
-		dataProvider = new TestDataProvider(settings.testSize(), meshDagger.boot(), meshDagger.database());
+		dataProvider = new TestDataProvider(settings.testSize(), meshDagger.boot(), meshDagger.database(), meshDagger.batchProvider());
 		if (meshDagger.searchProvider() instanceof TrackingSearchProvider) {
 			trackingSearchProvider = meshDagger.trackingSearchProvider();
 		}
 		try {
-			meshDagger.boot().init(Mesh.mesh(), false, options, null);
-			vertx = Mesh.vertx();
+			mesh = Mesh.create(options);
+			mesh.setMeshInternal(meshDagger);
+			meshDagger.boot().init(mesh, false, options, null);
+			vertx = meshDagger.boot().vertx();
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
@@ -667,5 +661,13 @@ public class MeshTestContext extends TestWatcher {
 	public MeshTestContext setOptionChanger(Consumer<MeshOptions> optionChanger) {
 		this.optionChanger = optionChanger;
 		return this;
+	}
+
+	public MeshComponent getMeshComponent() {
+		return meshDagger;
+	}
+
+	public Mesh getMesh() {
+		return mesh;
 	}
 }

@@ -38,7 +38,6 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
@@ -142,7 +141,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			SchemaModel schema = folderSchema.getLatestVersion().getSchema();
 			schema.getFields().add(FieldUtil.createNodeFieldSchema("nodeRef"));
 			folderSchema.getLatestVersion().setSchema(schema);
-			MeshInternal.get().serverSchemaStorage().addSchema(schema);
+			mesh().serverSchemaStorage().addSchema(schema);
 
 			// Create content which is only german
 			SchemaContainer contentSchema = schemaContainer("content");

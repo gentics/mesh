@@ -25,7 +25,6 @@ import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.binary.BinaryFieldTestHelper;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.FileUtils;
@@ -46,7 +45,7 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	final DataProvider FILL = (container, name) -> {
 		Buffer buffer = Buffer.buffer(FILECONTENTS);
 		hash = FileUtils.hash(buffer).blockingGet();
-		BinaryRoot binaryRoot = MeshInternal.get().boot().binaryRoot();
+		BinaryRoot binaryRoot = mesh().boot().binaryRoot();
 
 		// Check whether the binary could already be found
 		Binary binary = binaryRoot.findByHash(hash);

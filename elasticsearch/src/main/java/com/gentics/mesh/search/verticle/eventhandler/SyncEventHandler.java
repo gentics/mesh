@@ -47,21 +47,21 @@ public class SyncEventHandler implements EventHandler {
 	/**
 	 * Send the index sync event which will trigger the index sync job.
 	 */
-	public static void invokeSync() {
+	public static void invokeSync(Vertx vertx) {
 		log.info("Sending sync event");
-		Mesh.mesh().getVertx().eventBus().publish(INDEX_SYNC_REQUEST.address, null);
+		vertx.eventBus().publish(INDEX_SYNC_REQUEST.address, null);
 	}
 
-	public static Completable invokeSyncCompletable() {
-		return MeshEvent.doAndWaitForEvent(INDEX_SYNC_FINISHED, SyncEventHandler::invokeSync);
+	public static Completable invokeSyncCompletable(Mesh mesh) {
+		return MeshEvent.doAndWaitForEvent(mesh, INDEX_SYNC_FINISHED, () -> SyncEventHandler.invokeSync(mesh.getVertx()));
 	}
 
-	public static void invokeClear() {
-		Mesh.mesh().getVertx().eventBus().publish(INDEX_CLEAR_REQUEST.address, null);
+	public static void invokeClear(Vertx vertx) {
+		vertx.eventBus().publish(INDEX_CLEAR_REQUEST.address, null);
 	}
 
-	public static Completable invokeClearCompletable() {
-		return MeshEvent.doAndWaitForEvent(INDEX_CLEAR_FINISHED, SyncEventHandler::invokeClear);
+	public static Completable invokeClearCompletable(Mesh mesh) {
+		return MeshEvent.doAndWaitForEvent(mesh, INDEX_CLEAR_FINISHED, () -> SyncEventHandler.invokeClear(mesh.getVertx()));
 	}
 
 	@Inject

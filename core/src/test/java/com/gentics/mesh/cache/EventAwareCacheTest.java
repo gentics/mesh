@@ -20,7 +20,7 @@ public class EventAwareCacheTest extends AbstractMeshTest {
 	@Test
 	public void testCustomHandler() {
 		EventAwareCache<String, Boolean> USER_STATE_CACHE = EventAwareCache.<String, Boolean>builder()
-			.size(15_000)
+			.maxSize(15_000)
 			.events(USER_UPDATED)
 			.action((event, cache) -> {
 				String uuid = event.body().getString("uuid");

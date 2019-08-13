@@ -8,7 +8,6 @@ import static io.vertx.core.http.HttpMethod.GET;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.example.RestInfoExamples;
@@ -17,6 +16,7 @@ import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.Router;
 
@@ -39,9 +39,9 @@ public class RestInfoEndpoint extends AbstractInternalEndpoint {
 	}
 
 	@Override
-	public void init(RouterStorage rs) {
+	public void init(Vertx vertx, RouterStorage rs) {
 		this.routerStorage = rs;
-		localRouter = Router.router(Mesh.vertx());
+		localRouter = Router.router(vertx);
 	}
 
 	@Override

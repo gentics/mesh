@@ -7,18 +7,20 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class CacheRegistry {
+public class CacheRegistryImpl implements CacheRegistry {
 
 	private Set<EventAwareCache<?, ?>> caches = new HashSet<>();
 
 	@Inject
-	public CacheRegistry() {
+	public CacheRegistryImpl() {
 	}
 
+	@Override
 	public void register(EventAwareCache<?, ?> cache) {
 		caches.add(cache);
 	}
 
+	@Override
 	public void clear() {
 		caches.forEach(EventAwareCache::invalidate);
 	}

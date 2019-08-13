@@ -17,14 +17,15 @@ import org.apache.commons.collections4.map.HashedMap;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.binary.AbstractBinaryProcessor;
 import com.gentics.mesh.core.binary.DocumentTikaParser;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.etc.config.MeshOptions;
 
+import dagger.Lazy;
 import io.reactivex.Maybe;
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
@@ -41,6 +42,8 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 
 	private final Set<String> skipSet = new HashSet<>();
 
+	private final Lazy<Vertx> vertx;
+
 	private final MeshOptions options;
 
 	/**
@@ -49,7 +52,8 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	private static final int DEFAULT_NON_DOC_TIKA_PARSE_LIMIT = 0;
 
 	@Inject
-	public TikaBinaryProcessor(MeshOptions options) {
+	public TikaBinaryProcessor(Lazy<Vertx> vertx, MeshOptions options) {
+		this.vertx = vertx;
 		this.options = options;
 
 		// document
@@ -137,7 +141,7 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 			}
 		});
 
-		return result.observeOn(RxHelper.blockingScheduler(Mesh.vertx(), false)).onErrorComplete();
+		return result.observeOn(RxHelper.blockingScheduler(vertx.get(), false)).onErrorComplete();
 
 	}
 

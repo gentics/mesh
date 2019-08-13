@@ -5,6 +5,7 @@ import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import dagger.Lazy;
@@ -31,7 +32,8 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 	public Lazy<UserTypeProvider> userTypeProvider;
 
 	@Inject
-	public InterfaceTypeProvider() {
+	public InterfaceTypeProvider(MeshOptions options) {
+		super(options);
 	}
 
 	// protected GraphQLInterfaceType createCommonType() {

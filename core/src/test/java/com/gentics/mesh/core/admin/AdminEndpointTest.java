@@ -8,7 +8,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -19,7 +18,7 @@ public class AdminEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMeshStatus() {
-		Mesh.mesh().setStatus(MeshStatus.WAITING_FOR_CLUSTER);
+		meshApi().setStatus(MeshStatus.WAITING_FOR_CLUSTER);
 		MeshStatusResponse status = call(() -> client().meshStatus());
 		assertEquals(MeshStatus.WAITING_FOR_CLUSTER, status.getStatus());
 	}

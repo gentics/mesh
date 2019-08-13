@@ -1,12 +1,12 @@
 package com.gentics.mesh.router;
 
-import com.gentics.mesh.Mesh;
+import java.util.HashMap;
+import java.util.Map;
+
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * This class manages the project routers (e.g. routers for endpoints like :apibase:/:projectName/nodes)
@@ -14,6 +14,8 @@ import java.util.Map;
 public class ProjectRouter {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectRouter.class);
+
+	private final Vertx vertx;
 
 	private final PluginRouter pluginRouter;
 
@@ -24,9 +26,11 @@ public class ProjectRouter {
 	 */
 	private Map<String, Router> projectRouters = new HashMap<>();
 
-	public ProjectRouter(RouterStorage storage) {
-		this.router = Router.router(Mesh.vertx());
-		this.pluginRouter = new PluginRouter(storage.getAuthChain(), storage.getDb().get(), router);
+
+	public ProjectRouter(Vertx vertx, RouterStorage storage) {
+		this.vertx = vertx;
+		this.router = Router.router(vertx);
+		this.pluginRouter = new PluginRouter(vertx, storage.getAuthChain(), storage.getDb().get(), router);
 	}
 
 	/**
@@ -37,7 +41,7 @@ public class ProjectRouter {
 	public Router getOrCreate(String name) {
 		Router projectRouter = projectRouters.get(name);
 		if (projectRouter == null) {
-			projectRouter = Router.router(Mesh.vertx());
+			projectRouter = Router.router(vertx);
 			projectRouters.put(name, projectRouter);
 			log.info("Added project subrouter {" + name + "}");
 			router.mountSubRouter("/" + name, projectRouter);

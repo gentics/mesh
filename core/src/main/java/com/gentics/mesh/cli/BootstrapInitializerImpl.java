@@ -36,11 +36,10 @@ import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.MeshVersion;
-import com.gentics.mesh.cache.CacheRegistry;
+import com.gentics.mesh.cache.CacheRegistryImpl;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ReindexAction;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
-import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -67,7 +66,6 @@ import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
-import com.gentics.mesh.core.data.service.WebrootPathStore;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -87,7 +85,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
-import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.router.RouterStorageRegistry;
 import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
@@ -140,27 +138,32 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public HighLevelChangelogSystem highlevelChangelogSystem;
 
 	@Inject
-	public WebrootPathStore pathStore;
-
-	@Inject
-	public CacheRegistry cacheRegistry;
+	public CacheRegistryImpl cacheRegistry;
 
 	@Inject
 	public MeshPluginManager pluginManager;
 
-	private static MeshRoot meshRoot;
+	@Inject
+	public MeshOptions options;
+
+	@Inject
+	public RouterStorageRegistry routerStorageRegistry;
+
+	private MeshRoot meshRoot;
 
 	// TODO: Changing the role name or deleting the role would cause code that utilizes this field to break.
 	// This is however a rare case.
-	private static Role anonymousRole;
+	private Role anonymousRole;
 
 	private MeshImpl mesh;
 
 	private HazelcastClusterManager manager;
 
-	public static boolean isInitialSetup = true;
+	public boolean isInitialSetup = true;
 
 	private List<String> allLanguageTags = new ArrayList<>();
+
+	private Vertx vertx;
 
 	private final ReindexAction SYNC_INDEX_ACTION = (() -> {
 
@@ -178,7 +181,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 		// Ensure indices are setup and sync the documents
 		log.info("Invoking index sync. This may take some time..");
-		SyncEventHandler.invokeSyncCompletable().blockingAwait();
+		SyncEventHandler.invokeSyncCompletable(mesh()).blockingAwait();
 		log.info("Index sync completed.");
 	});
 
@@ -232,7 +235,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		boolean startOrientServer = storageOptions != null && storageOptions.getStartServer();
 
 		try {
-			db.init(Mesh.mesh().getOptions(), MeshVersion.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
+			db.init(mesh.getOptions(), MeshVersion.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -252,11 +255,17 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// We need to init the graph db before starting the OrientDB Server. Otherwise the database will not get picked up by the orientdb server which
 				// handles the clustering.
 				db.setupConnectionPool();
+				// TODO find a better way around the chicken and the egg issues.
+				// Vert.x is currently needed for eventQueueBatch creation.
+				// This process fails if vert.x has not been made accessible during local data setup.
+				vertx = Vertx.vertx();
 				boolean setupData = initLocalData(options, false);
 				db.closeConnectionPool();
 				db.shutdown();
 
 				db.clusterManager().startServer();
+				vertx.close();
+				vertx = null;
 				initVertx(options, isClustered);
 				db.clusterManager().registerEventHandlers();
 				db.setupConnectionPool();
@@ -310,7 +319,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		pluginManager.deployExistingPluginFiles().subscribe(() -> {
 			// Finally fire the startup event and log that bootstrap has completed
 			log.info("Sending startup completed event to {" + STARTUP + "}");
-			Mesh.vertx().eventBus().publish(STARTUP.address, true);
+			vertx.eventBus().publish(STARTUP.address, true);
 		}, log::error);
 
 	}
@@ -318,9 +327,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public void globalCacheClear() {
 		cacheRegistry.clear();
-		// TODO remove the two other caches also to registry
-		PermissionStore.invalidate(false);
-		pathStore.invalidate();
 	}
 
 	/**
@@ -378,7 +384,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			log.warn("Current environment does not support native transports");
 		}
 
-		mesh.setVertx(vertx);
+		this.vertx = vertx;
 	}
 
 	/**
@@ -448,7 +454,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 		loader.get().loadVerticles(initialProjects);
 		if (verticleLoader != null) {
-			verticleLoader.apply(Mesh.vertx());
+			verticleLoader.apply(vertx);
 		}
 
 		// Invoke reindex as requested
@@ -474,9 +480,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public void registerEventHandlers() {
-		RouterStorage.registerEventbus();
-		PermissionStore.registerEventHandler();
-		pathStore.registerEventHandler();
+		routerStorageRegistry.registerEventbus();
 	}
 
 	@Override
@@ -564,7 +568,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public void invokeChangelog() {
 		log.info("Invoking database changelog check...");
-		ChangelogSystem cls = new ChangelogSystem(db);
+		ChangelogSystem cls = new ChangelogSystem(db, options);
 		if (!cls.applyChanges(SYNC_INDEX_ACTION)) {
 			throw new RuntimeException("The changelog could not be applied successfully. See log above.");
 		}
@@ -582,7 +586,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public void markChangelogApplied() {
 		log.info("This is the initial setup.. marking all found changelog entries as applied");
-		ChangelogSystem cls = new ChangelogSystem(db);
+		ChangelogSystem cls = new ChangelogSystem(db, options);
 		cls.markAllAsApplied();
 		highlevelChangelogSystem.markAllAsApplied(meshRoot);
 		log.info("All changes marked");
@@ -705,10 +709,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	/**
 	 * Clear all stored references to main graph vertices.
 	 */
-	public static void clearReferences() {
-		BootstrapInitializerImpl.meshRoot = null;
-		BootstrapInitializerImpl.anonymousRole = null;
-		MeshRootImpl.clearReferences();
+	@Override
+	public void clearReferences() {
+		if (meshRoot != null) {
+			meshRoot.clearReferences();
+		}
+		meshRoot = null;
+		anonymousRole = null;
 	}
 
 	@Override
@@ -996,4 +1003,23 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		return allLanguageTags;
 	}
 
+	@Override
+	public Vertx vertx() {
+		return vertx;
+	}
+
+	@Override
+	public Mesh mesh() {
+		return mesh;
+	}
+
+	@Override
+	public boolean isInitialSetup() {
+		return isInitialSetup;
+	}
+
+	@Override
+	public boolean isVertxReady() {
+		return vertx != null;
+	}
 }

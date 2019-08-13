@@ -32,7 +32,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
@@ -41,10 +40,12 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.router.RouterStorageRegistry;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.vertx.core.Vertx;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -67,22 +68,28 @@ public class AdminHandler extends AbstractHandler {
 
 	private final SearchProvider searchProvider;
 
-	private HandlerUtilities utils;
+	private final HandlerUtilities utils;
+
+	private final Vertx vertx;
+
+	private final RouterStorageRegistry routerStorageRegistry;
 
 	@Inject
-	public AdminHandler(Database db, RouterStorage routerStorage, BootstrapInitializer boot, SearchProvider searchProvider, HandlerUtilities utils,
-		MeshOptions options) {
+	public AdminHandler(Vertx vertx, Database db, RouterStorage routerStorage, BootstrapInitializer boot, SearchProvider searchProvider, HandlerUtilities utils,
+		MeshOptions options, RouterStorageRegistry routerStorageRegistry) {
+		this.vertx = vertx;
 		this.db = db;
 		this.routerStorage = routerStorage;
 		this.boot = boot;
 		this.searchProvider = searchProvider;
 		this.utils = utils;
 		this.options = options;
+		this.routerStorageRegistry = routerStorageRegistry;
 	}
 
 	public void handleMeshStatus(InternalActionContext ac) {
 		MeshStatusResponse response = new MeshStatusResponse();
-		response.setStatus(Mesh.mesh().getStatus());
+		response.setStatus(boot.mesh().getStatus());
 		ac.send(response, OK);
 	}
 
@@ -92,7 +99,7 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleBackup(InternalActionContext ac) {
-		Mesh mesh = Mesh.mesh();
+		Mesh mesh = boot.mesh();
 		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
@@ -122,6 +129,7 @@ public class AdminHandler extends AbstractHandler {
 	 */
 	public void handleRestore(InternalActionContext ac) {
 		MeshOptions config = options;
+		Mesh mesh = boot.mesh();
 		String dir = config.getStorageOptions().getDirectory();
 		File backupDir = new File(options.getStorageOptions().getBackupDirectory());
 		boolean inMemory = dir == null;
@@ -154,22 +162,22 @@ public class AdminHandler extends AbstractHandler {
 		if (latestFile == null) {
 			throw error(INTERNAL_SERVER_ERROR, "error_backup", backupDir.getAbsolutePath());
 		}
-		MeshStatus oldStatus = Mesh.mesh().getStatus();
+		MeshStatus oldStatus = mesh.getStatus();
 		Completable.fromAction(() -> {
-			Mesh.mesh().setStatus(MeshStatus.RESTORE);
+			mesh.setStatus(MeshStatus.RESTORE);
 			vertx.eventBus().publish(GRAPH_RESTORE_START.address, null);
 			db.stop();
 			db.restoreGraph(latestFile.getAbsolutePath());
 			db.setupConnectionPool();
 			boot.globalCacheClear();
+			boot.clearReferences();
 			routerStorage.root().apiRouter().projectsRouter().getProjectRouters().clear();
-			MeshRootImpl.clearReferences();
 		}).andThen(db.asyncTx(() -> {
 			// Update the routes by loading the projects
 			initProjects();
 			return Single.just(message(ac, "restore_finished"));
 		})).doFinally(() -> {
-			Mesh.mesh().setStatus(oldStatus);
+			mesh.setStatus(oldStatus);
 			vertx.eventBus().publish(GRAPH_RESTORE_FINISHED.address, null);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
@@ -181,7 +189,7 @@ public class AdminHandler extends AbstractHandler {
 	 */
 	private void initProjects() throws InvalidNameException {
 		for (Project project : boot.meshRoot().getProjectRoot().findAll()) {
-			RouterStorage.addProject(project.getName());
+			routerStorageRegistry.addProject(project.getName());
 			if (log.isDebugEnabled()) {
 				log.debug("Initalized project {" + project.getName() + "}");
 			}
@@ -257,7 +265,7 @@ public class AdminHandler extends AbstractHandler {
 		info.setSearchVendor(searchProvider.getVendorName());
 		info.setSearchVersion(searchProvider.getVersion());
 		info.setMeshVersion(Mesh.getPlainVersion());
-		info.setMeshNodeName(Mesh.mesh().getOptions().getNodeName());
+		info.setMeshNodeName(options.getNodeName());
 		info.setVertxVersion(VersionCommand.getVersion());
 		info.setDatabaseRevision(db.getDatabaseRevision());
 		ac.send(info, OK);

@@ -8,10 +8,10 @@ import java.util.regex.Pattern;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.AuthenticationResult;
 import com.gentics.mesh.auth.MeshOAuthService;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
+import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -43,12 +43,15 @@ public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandle
 
 	private final JsonObject options;
 
-	private MeshJWTAuthProvider authProvider;
+	private final MeshJWTAuthProvider authProvider;
+
+	private final MeshOptions meshOptions;
 
 	@Inject
-	public MeshJWTAuthHandler(MeshJWTAuthProvider authProvider, MeshOAuthService oauthService) {
+	public MeshJWTAuthHandler(MeshJWTAuthProvider authProvider, MeshOAuthService oauthService, MeshOptions meshOptions) {
 		super(authProvider);
 		this.authProvider = authProvider;
+		this.meshOptions = meshOptions;
 
 		options = new JsonObject();
 	}
@@ -161,7 +164,7 @@ public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandle
 					// Remove the original cookie and set the new one
 					context.removeCookie(MeshJWTAuthProvider.TOKEN_COOKIE_KEY);
 					context.addCookie(Cookie.cookie(MeshJWTAuthProvider.TOKEN_COOKIE_KEY, jwtToken)
-						.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
+						.setMaxAge(meshOptions.getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
 				}
 				authorizeUser(authenticatedUser, context);
 				return;

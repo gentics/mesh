@@ -31,16 +31,16 @@ public class SearchProviderModule {
 	public static SearchProvider searchProvider(@Nullable SearchProviderType type, MeshOptions options, Lazy<ElasticSearchProvider> elasticsearchProvider) {
 		if (type == null) {
 			if (options.getSearchOptions().getUrl() == null) {
-				return new DevNullSearchProvider();
+				return new DevNullSearchProvider(options);
 			} else {
 				return elasticsearchProvider.get();
 			}
 		}
 		switch (type) {
 		case NULL:
-			return new DevNullSearchProvider();
+			return new DevNullSearchProvider(options);
 		case TRACKING:
-			return new TrackingSearchProvider();
+			return new TrackingSearchProvider(options);
 		case ELASTICSEARCH:
 		default:
 			return elasticsearchProvider.get();

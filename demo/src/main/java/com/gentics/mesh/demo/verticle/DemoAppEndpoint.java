@@ -2,10 +2,10 @@ package com.gentics.mesh.demo.verticle;
 
 import static io.vertx.core.http.HttpMethod.GET;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
+import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 
@@ -24,8 +24,8 @@ public class DemoAppEndpoint extends AbstractInternalEndpoint {
 	}
 
 	@Override
-	public void init(RouterStorage rs) {
-		Router router = Router.router(Mesh.vertx());
+	public void init(Vertx vertx, RouterStorage rs) {
+		Router router = Router.router(vertx);
 		rs.root().getRouter().mountSubRouter("/" + basePath, router);
 		this.routerStorage = rs;
 		this.localRouter = router;

@@ -22,7 +22,7 @@ public class IndexClearTest extends AbstractMeshTest {
 
 	@Test
 	public void testClear() throws Exception {
-		waitForEvent(INDEX_SYNC_FINISHED, SyncEventHandler::invokeSync);
+		waitForEvent(INDEX_SYNC_FINISHED, () -> SyncEventHandler.invokeSync(vertx()));
 
 		call(() -> client().invokeIndexClear(), FORBIDDEN, "error_admin_permission_required");
 		tx(() -> group().addRole(roles().get("admin")));

@@ -24,7 +24,6 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -208,7 +207,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		// Change the job so that it will no longer fail
 		tx(()-> {
-			Branch branch = project().getBranchRoot().create("testBranch", user(), null, true, initialBranch(), EventQueueBatch.create());
+			Branch branch = project().getBranchRoot().create("testBranch", user(), null, true, initialBranch(), createBatch());
 			job.setBranch(branch);
 		});
 

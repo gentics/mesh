@@ -27,6 +27,8 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
+import dagger.Lazy;
+import io.vertx.core.Vertx;
 import scala.NotImplementedError;
 
 @Singleton
@@ -40,7 +42,8 @@ public class Neo4jDatabase extends AbstractDatabase {
 	private TypeResolver resolver;
 
 	@Inject
-	public Neo4jDatabase(MetricsService metrics, Neo4jTypeHandler typeHandler, Neo4jIndexHandler indexHandler, Neo4jClusterManager clusterManager) {
+	public Neo4jDatabase(Lazy<Vertx> vertx, MetricsService metrics, Neo4jTypeHandler typeHandler, Neo4jIndexHandler indexHandler, Neo4jClusterManager clusterManager) {
+		super(vertx);
 		this.metrics = metrics;
 		this.typeHandler = typeHandler;
 		this.indexHandler = indexHandler;
@@ -148,7 +151,7 @@ public class Neo4jDatabase extends AbstractDatabase {
 
 	@Override
 	public List<String> getChangeUuidList() {
-		return ChangesList.getList().stream().map(c -> c.getUuid()).collect(Collectors.toList());
+		return ChangesList.getList(options).stream().map(c -> c.getUuid()).collect(Collectors.toList());
 	}
 
 	@Override

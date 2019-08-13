@@ -28,7 +28,6 @@ import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 
 import io.vertx.core.logging.Logger;
@@ -76,7 +75,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 		tagFamily.setProject(getProject());
 
 		// Add created tag family to tag family root
-		TagFamilyRoot root = MeshInternal.get().boot().tagFamilyRoot();
+		TagFamilyRoot root = mesh().boot().tagFamilyRoot();
 		if (root != null && !root.equals(this)) {
 			root.addTagFamily(tagFamily);
 		}

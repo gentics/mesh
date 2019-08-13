@@ -9,9 +9,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -24,8 +23,8 @@ public class ActionContextBranchCacheTest extends AbstractMeshTest {
 		cache().enable();
 	}
 
-	private EventAwareCache<String, Branch> cache() {
-		return MeshInternal.get().branchCache().cache();
+	private ProjectBranchNameCache cache() {
+		return mesh().branchCache();
 	}
 
 	@Test
@@ -40,7 +39,11 @@ public class ActionContextBranchCacheTest extends AbstractMeshTest {
 
 		// Update the branch
 		BranchUpdateRequest request1 = new BranchUpdateRequest().setName(newName);
-		call(() -> client().updateBranch(projectName(), initialBranchUuid(), request1));
+		waitForEvent(MeshEvent.BRANCH_UPDATED, () -> {
+			call(() -> client().updateBranch(projectName(), initialBranchUuid(), request1));
+		});
+		// Event is processed async and thus the cache clear is also done async
+		sleep(100);
 
 		assertFalse("The cache should have been invalidated.", hasBranchInCache());
 		assertEquals(0, branchCacheSize());

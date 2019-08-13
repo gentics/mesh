@@ -34,7 +34,6 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
@@ -89,18 +88,18 @@ public class MicroschemaContainerVersionImpl extends
 
 	@Override
 	public MicroschemaModel getSchema() {
-		MicroschemaModel microschema = MeshInternal.get().serverSchemaStorage().getMicroschema(getName(), getVersion());
+		MicroschemaModel microschema = mesh().serverSchemaStorage().getMicroschema(getName(), getVersion());
 		if (microschema == null) {
 			microschema = JsonUtil.readValue(getJson(), MicroschemaModelImpl.class);
-			MeshInternal.get().serverSchemaStorage().addMicroschema(microschema);
+			mesh().serverSchemaStorage().addMicroschema(microschema);
 		}
 		return microschema;
 	}
 
 	@Override
 	public void setSchema(MicroschemaModel microschema) {
-		MeshInternal.get().serverSchemaStorage().removeMicroschema(microschema.getName(), microschema.getVersion());
-		MeshInternal.get().serverSchemaStorage().addMicroschema(microschema);
+		mesh().serverSchemaStorage().removeMicroschema(microschema.getName(), microschema.getVersion());
+		mesh().serverSchemaStorage().addMicroschema(microschema);
 		String json = microschema.toJson();
 		setJson(json);
 		property(VERSION_PROPERTY_KEY, microschema.getVersion());
@@ -161,7 +160,7 @@ public class MicroschemaContainerVersionImpl extends
 
 	@Override
 	public Single<MicroschemaResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return MeshInternal.get().database().asyncTx(() -> {
+		return mesh().database().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

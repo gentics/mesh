@@ -10,7 +10,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BranchMigrationContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Branch;
@@ -23,9 +22,6 @@ import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
-import com.gentics.mesh.dagger.DB;
-import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.event.EventQueueBatch;
 
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
@@ -50,18 +46,18 @@ public class BranchMigrationJobImpl extends JobImpl {
 		model.setProject(project.transformToReference());
 
 		model.setStatus(status);
-		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
+		model.setOrigin(options().getNodeName());
 		return model;
 	}
 
 	private BranchMigrationContext prepareContext() {
-		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), JobType.branch);
+		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(this, vertx(), JobType.branch);
 		try {
-			return DB.get().tx(() -> {
+			return db().tx(() -> {
 				BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 				context.setStatus(status);
 
-				EventQueueBatch.create().add(createEvent(BRANCH_MIGRATION_START, STARTING)).dispatch();
+				createBatch().add(createEvent(BRANCH_MIGRATION_START, STARTING)).dispatch();
 
 				Branch newBranch = getBranch();
 				if (newBranch == null) {
@@ -84,7 +80,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 
 				BranchMigrationCause cause = new BranchMigrationCause();
 				cause.setProject(newBranch.getProject().transformToReference());
-				cause.setOrigin(Mesh.mesh().getOptions().getNodeName());
+				cause.setOrigin(options().getNodeName());
 				cause.setUuid(getUuid());
 				context.setCause(cause);
 
@@ -92,7 +88,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 				return context;
 			});
 		} catch (Exception e) {
-			DB.get().tx(() -> {
+			db().tx(() -> {
 				status.error(e, "Error while preparing branch migration.");
 			});
 			throw e;
@@ -101,21 +97,21 @@ public class BranchMigrationJobImpl extends JobImpl {
 
 	@Override
 	protected Completable processTask() {
-		BranchMigrationHandler handler = MeshInternal.get().branchMigrationHandler();
+		BranchMigrationHandler handler = mesh().branchMigrationHandler();
 
 		return Completable.defer(() -> {
 			BranchMigrationContext context = prepareContext();
 
 			return handler.migrateBranch(context)
 				.doOnComplete(() -> {
-					DB.get().tx(() -> {
+					db().tx(() -> {
 						finalizeMigration(context);
 						context.getStatus().done();
 					});
 				}).doOnError(err -> {
-					DB.get().tx(() -> {
+					db().tx(() -> {
 						context.getStatus().error(err, "Error in branch migration.");
-						EventQueueBatch.create().add(createEvent(BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
+						createBatch().add(createEvent(BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
 					});
 				});
 
@@ -125,13 +121,13 @@ public class BranchMigrationJobImpl extends JobImpl {
 
 	private void finalizeMigration(BranchMigrationContext context) {
 		// Mark branch as active & migrated
-		DB.get().tx(() -> {
+		db().tx(() -> {
 			Branch branch = context.getNewBranch();
 			branch.setActive(true);
 			branch.setMigrated(true);
 		});
-		DB.get().tx(() -> {
-			EventQueueBatch.create().add(createEvent(BRANCH_MIGRATION_FINISHED, COMPLETED)).dispatch();
+		db().tx(() -> {
+			createBatch().add(createEvent(BRANCH_MIGRATION_FINISHED, COMPLETED)).dispatch();
 		});
 	}
 

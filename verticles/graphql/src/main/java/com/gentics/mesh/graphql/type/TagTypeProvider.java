@@ -17,6 +17,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import graphql.schema.GraphQLObjectType;
@@ -33,7 +34,8 @@ public class TagTypeProvider extends AbstractTypeProvider {
 	private final InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public TagTypeProvider(InterfaceTypeProvider interfaceTypeProvider) {
+	public TagTypeProvider(MeshOptions options, InterfaceTypeProvider interfaceTypeProvider) {
+		super(options);
 		this.interfaceTypeProvider = interfaceTypeProvider;
 	}
 

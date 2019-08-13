@@ -73,7 +73,7 @@ public interface EventAwareCache<K, V> {
 	void enable();
 
 	/**
-	 * Return the size of the cache.
+	 * Return the current size of the cache.
 	 * 
 	 * @return
 	 */

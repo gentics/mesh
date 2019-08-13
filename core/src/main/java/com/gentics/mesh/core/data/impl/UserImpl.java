@@ -34,9 +34,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
+import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -61,8 +61,6 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.dagger.DB;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -87,18 +85,6 @@ import io.vertx.core.logging.LoggerFactory;
 public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> implements User {
 
 	private static final Logger log = LoggerFactory.getLogger(UserImpl.class);
-
-//	public static EventAwareCache<String, Boolean> USER_STATE_CACHE = EventAwareCache.<String, Boolean>builder()
-//		.size(15_000)
-//		.events(USER_UPDATED)
-//		.action((event, cache) -> {
-//			String uuid = event.body().getString("uuid");
-//			if (uuid != null) {
-//				cache.invalidate(uuid);
-//			} else {
-//				cache.invalidate();
-//			}
-//		}).build();
 
 	public static final String FIRSTNAME_PROPERTY_KEY = "firstname";
 
@@ -342,7 +328,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public boolean hasPermissionForId(Object elementId, GraphPermission permission) {
-		if (PermissionStore.hasPermission(getId(), permission, elementId)) {
+		PermissionCache permissionCache = mesh().permissionCache();
+		if (permissionCache.hasPermission(id(), permission, elementId)) {
 			return true;
 		} else {
 			FramedGraph graph = getGraph();
@@ -356,14 +343,14 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				// vertex with the specified label
 				String roleEdgeIdx = "e." + permission.label() + "_inout";
 				Iterable<Edge> edges = graph.getEdges(roleEdgeIdx.toLowerCase(),
-					MeshInternal.get().database().index().createComposedIndexKey(elementId, role.getId()));
+					db().index().createComposedIndexKey(elementId, role.getId()));
 				boolean foundPermEdge = edges.iterator().hasNext();
 				if (foundPermEdge) {
 					// We only store granting permissions in the store in order
 					// reduce the invalidation calls.
 					// This way we do not need to invalidate the cache if a role
 					// is removed from a group or a role is deleted.
-					PermissionStore.store(getId(), permission, elementId);
+					permissionCache.store(id(), permission, elementId);
 					return true;
 				}
 			}
@@ -557,7 +544,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		bac.add(onDeleted());
 		getElement().remove();
 		bac.process();
-		PermissionStore.invalidate();
+		mesh().permissionCache().clear();
 	}
 
 	/**
@@ -569,7 +556,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	 */
 	@Override
 	public User setPassword(String password) {
-		setPasswordHash(MeshInternal.get().passwordEncoder().encode(password));
+		setPasswordHash(mesh().passwordEncoder().encode(password));
 		return this;
 	}
 
@@ -578,7 +565,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		UserUpdateRequest requestModel = ac.fromJson(UserUpdateRequest.class);
 		boolean modified = false;
 		if (shouldUpdate(requestModel.getUsername(), getUsername())) {
-			User conflictingUser = MeshInternal.get().boot().userRoot().findByUsername(requestModel.getUsername());
+			User conflictingUser = mesh().boot().userRoot().findByUsername(requestModel.getUsername());
 			if (conflictingUser != null && !conflictingUser.getUuid().equals(getUuid())) {
 				throw conflict(conflictingUser.getUuid(), requestModel.getUsername(), "user_conflicting_username");
 			}
@@ -607,7 +594,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		}
 
 		if (!isEmpty(requestModel.getPassword())) {
-			BCryptPasswordEncoder encoder = MeshInternal.get().passwordEncoder();
+			BCryptPasswordEncoder encoder = mesh().passwordEncoder();
 			setPasswordHash(encoder.encode(requestModel.getPassword()));
 			modified = true;
 		}
@@ -640,7 +627,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				/*
 				 * TODO decide whether we need to check perms on the project as well
 				 */
-				Project project = MeshInternal.get().boot().projectRoot().findByName(projectName);
+				Project project = mesh().boot().projectRoot().findByName(projectName);
 				if (project == null) {
 					throw error(BAD_REQUEST, "project_not_found", projectName);
 				}
@@ -712,7 +699,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public Single<UserResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return DB.get().asyncTx(() -> {
+		return db().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

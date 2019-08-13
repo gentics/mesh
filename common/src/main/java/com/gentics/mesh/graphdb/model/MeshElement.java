@@ -1,7 +1,11 @@
 package com.gentics.mesh.graphdb.model;
 
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.ElementFrame;
 import com.tinkerpop.blueprints.Element;
+
+import io.vertx.core.Vertx;
 
 /**
  * Basic interface for graph elements.
@@ -66,4 +70,24 @@ public interface MeshElement extends ElementFrame {
 		setProperty(key, null);
 	}
 
+	/**
+	 * Return the db reference.
+	 * 
+	 * @return
+	 */
+	Database db();
+
+	/**
+	 * Return the used Vert.x instance.
+	 * 
+	 * @return
+	 */
+	Vertx vertx();
+
+	/**
+	 * Return the mesh options.
+	 * 
+	 * @return
+	 */
+	MeshOptions options();
 }

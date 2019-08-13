@@ -21,7 +21,7 @@ public class MeshOAuthServiceImplTest {
 		File scriptFile = new File("src/test/resources/dummyscript.js");
 		MeshOptions meshOptions = new MeshOptions();
 
-		MeshOAuth2ServiceImpl service = new MeshOAuth2ServiceImpl(null, null, meshOptions, Vertx.vertx());
+		MeshOAuth2ServiceImpl service = new MeshOAuth2ServiceImpl(null, null, meshOptions, Vertx.vertx(), null);
 		service.options.setMapperScriptPath(scriptFile.getAbsolutePath());
 		String script = service.loadScript();
 		assertNotNull(script);

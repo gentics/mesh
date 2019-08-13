@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import com.gentics.madl.tx.Tx;
@@ -29,9 +30,12 @@ public class ProjectVersionPurgeHandler {
 
 	private final Database db;
 
+	private final Provider<BulkActionContext> bulkProvider;
+
 	@Inject
-	public ProjectVersionPurgeHandler(Database db) {
+	public ProjectVersionPurgeHandler(Database db, Provider<BulkActionContext> bulkProvider) {
 		this.db = db;
+		this.bulkProvider = bulkProvider;
 	}
 
 	public long getBatchSize() {
@@ -64,7 +68,7 @@ public class ProjectVersionPurgeHandler {
 		Iterable<? extends NodeGraphFieldContainer> initials = node.getGraphFieldContainers(ContainerType.INITIAL);
 		for (NodeGraphFieldContainer initial : initials) {
 			Long counter = 0L;
-			purgeVersion(tx, counter, BulkActionContext.create(), initial, initial, false, maxAge);
+			purgeVersion(tx, counter, bulkProvider.get(), initial, initial, false, maxAge);
 		}
 	}
 

@@ -13,7 +13,6 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
-import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.metric.Metrics;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -27,7 +26,7 @@ public class MonitoringServerEndpointTest extends AbstractMeshTest {
 
 	@Before
 	public void setup() {
-		Mesh.mesh().setStatus(MeshStatus.READY);
+		meshApi().setStatus(MeshStatus.READY);
 	}
 
 	@Test
@@ -41,7 +40,7 @@ public class MonitoringServerEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStatus() {
-		Mesh.mesh().setStatus(MeshStatus.WAITING_FOR_CLUSTER);
+		meshApi().setStatus(MeshStatus.WAITING_FOR_CLUSTER);
 		MeshStatusResponse status = call(() -> monClient().status());
 		assertEquals(MeshStatus.WAITING_FOR_CLUSTER, status.getStatus());
 
@@ -55,7 +54,7 @@ public class MonitoringServerEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadinessProbe() {
 		call(() -> monClient().ready());
-		Mesh.mesh().setStatus(MeshStatus.SHUTTING_DOWN);
+		meshApi().setStatus(MeshStatus.SHUTTING_DOWN);
 		call(() -> monClient().ready(), SERVICE_UNAVAILABLE, "error_internal");
 	}
 
@@ -71,9 +70,9 @@ public class MonitoringServerEndpointTest extends AbstractMeshTest {
 		assertEquals("orientdb", info.getDatabaseVendor());
 		assertEquals("dev-null", info.getSearchVendor());
 		assertEquals(VersionCommand.getVersion(), info.getVertxVersion());
-		assertEquals(Mesh.mesh().getOptions().getNodeName(), info.getMeshNodeName());
+		assertEquals(options().getNodeName(), info.getMeshNodeName());
 		assertEquals("The database version did not match.", OConstants.getVersion(), info.getDatabaseVersion());
 		assertEquals("1.0", info.getSearchVersion());
-		assertEquals(DB.get().getDatabaseRevision(), info.getDatabaseRevision());
+		assertEquals(db().getDatabaseRevision(), info.getDatabaseRevision());
 	}
 }

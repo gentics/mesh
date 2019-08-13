@@ -97,7 +97,7 @@ public class SchemaChangeTest extends AbstractMeshTest{
 	private SchemaChange<?> chainChanges(GraphFieldSchemaContainerVersion versionA, GraphFieldSchemaContainerVersion versionB) {
 		SchemaChange<?> oldChange = null;
 		for (int i = 0; i < 3; i++) {
-			SchemaChange<?> change = Tx.getActive().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+			SchemaChange<?> change = Tx.get().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 			if (oldChange == null) {
 				oldChange = change;
 				assertNull("The change has not yet been connected to any schema", oldChange.getPreviousContainerVersion());

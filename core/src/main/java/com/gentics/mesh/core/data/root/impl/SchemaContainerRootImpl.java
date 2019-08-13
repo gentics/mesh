@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -34,9 +33,9 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -84,8 +83,8 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	public SchemaContainer create(SchemaModel schema, User creator, String uuid, boolean validate) {
 		// TODO FIXME - We need to skip the validation check if the instance is creating a clustered instance because vert.x is not yet ready.
 		// https://github.com/gentics/mesh/issues/210
-		if (validate && Mesh.vertx() != null) {
-			validateSchema(schema);
+		if (validate && vertx() != null) {
+			validateSchema(mesh().nodeContainerIndexHandler(), schema);
 		}
 
 		String name = schema.getName();
@@ -94,7 +93,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 			throw conflict(conflictingSchema.getUuid(), name, "schema_conflicting_name", name);
 		}
 
-		MicroschemaContainer conflictingMicroschema = MeshInternal.get().boot().microschemaContainerRoot().findByName(name);
+		MicroschemaContainer conflictingMicroschema = mesh().boot().microschemaContainerRoot().findByName(name);
 		if (conflictingMicroschema != null) {
 			throw conflict(conflictingMicroschema.getUuid(), name, "microschema_conflicting_name", name);
 		}
@@ -114,13 +113,13 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		container.setCreated(creator);
 		container.setName(schema.getName());
 
-		EventQueueBatch batch = EventQueueBatch.create();
+		EventQueueBatch batch = createBatch();
 		addSchemaContainer(creator, container, batch);
 		return container;
 	}
 
-	public static void validateSchema(SchemaModel schema) {
-		Throwable error = MeshInternal.get().nodeContainerIndexHandler().validate(schema).blockingGet(10, TimeUnit.SECONDS);
+	public static void validateSchema(NodeIndexHandler indexHandler, SchemaModel schema) {
+		Throwable error = indexHandler.validate(schema).blockingGet(10, TimeUnit.SECONDS);
 		if (error != null) {
 			if (error instanceof GenericRestException) {
 				throw (GenericRestException) error;
@@ -141,7 +140,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		if (MeshInternal.get().boot().meshRoot().getSchemaContainerRoot() == this) {
+		if (mesh().boot().meshRoot().getSchemaContainerRoot() == this) {
 			throw error(INTERNAL_SERVER_ERROR, "Deletion of the global schema root is not possible");
 		}
 		if (log.isDebugEnabled()) {

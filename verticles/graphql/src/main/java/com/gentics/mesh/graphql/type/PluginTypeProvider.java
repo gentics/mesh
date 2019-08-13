@@ -17,6 +17,7 @@ import org.pf4j.PluginWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.rest.error.PermissionException;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.RestPlugin;
@@ -42,7 +43,8 @@ public class PluginTypeProvider extends AbstractTypeProvider {
 	private final MeshPluginManager manager;
 
 	@Inject
-	public PluginTypeProvider(MeshPluginManager manager) {
+	public PluginTypeProvider(MeshOptions options, MeshPluginManager manager) {
+		super(options);
 		this.manager = manager;
 	}
 

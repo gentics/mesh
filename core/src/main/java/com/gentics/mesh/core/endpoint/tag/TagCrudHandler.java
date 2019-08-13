@@ -15,6 +15,7 @@ import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
@@ -24,10 +25,12 @@ import com.gentics.mesh.util.ResultInfo;
  */
 public class TagCrudHandler extends AbstractHandler {
 
-	private HandlerUtilities utils;
+	private final HandlerUtilities utils;
+	private final MeshOptions options;
 
 	@Inject
-	public TagCrudHandler(HandlerUtilities utils) {
+	public TagCrudHandler(MeshOptions options, HandlerUtilities utils) {
+		this.options = options;
 		this.utils = utils;
 	}
 
@@ -55,7 +58,7 @@ public class TagCrudHandler extends AbstractHandler {
 			PagingParameters pagingParams = ac.getPagingParameters();
 			NodeParameters nodeParams = ac.getNodeParameters();
 			Tag tag = getTagFamily(ac, tagFamilyUuid).loadObjectByUuid(ac, tagUuid, READ_PERM);
-			TransformablePage<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getBranch(), nodeParams.getLanguageList(),
+			TransformablePage<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getBranch(), nodeParams.getLanguageList(options),
 				ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
 			return page.transformToRest(ac, 0);
 		}, model -> ac.send(model, OK));

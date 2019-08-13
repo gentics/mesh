@@ -32,7 +32,6 @@ import org.junit.Test;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -448,7 +447,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	public void testFileUploadLimit() throws IOException {
 
 		int binaryLen = 10000;
-		Mesh.mesh().getOptions().getUploadOptions().setByteLimit(binaryLen - 1);
+		options().getUploadOptions().setByteLimit(binaryLen - 1);
 		String contentType = "application/octet-stream";
 		String fileName = "somefile.dat";
 		Node node = folder("news");

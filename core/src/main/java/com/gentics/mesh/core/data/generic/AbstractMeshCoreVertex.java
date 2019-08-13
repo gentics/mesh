@@ -6,7 +6,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Set;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
@@ -27,7 +26,6 @@ import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
@@ -49,14 +47,14 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 	@Override
 	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
-		return new TraversalResult<>(in(perm.label()).frameExplicit(RoleImpl.class));
+		return in(perm.label(), RoleImpl.class);
 	}
 
 	@Override
 	public void setRolePermissions(InternalActionContext ac, GenericRestResponse model) {
 		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
 		if (!isEmpty(roleUuid)) {
-			Role role = MeshInternal.get().boot().meshRoot().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+			Role role = mesh().boot().meshRoot().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
 
 				PermissionInfo permissionInfo = new PermissionInfo();
@@ -156,7 +154,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		if (this instanceof NamedElement) {
 			model.setName(((NamedElement) this).getName());
 		}
-		model.setOrigin(Mesh.mesh().getOptions().getNodeName());
+		model.setOrigin(options().getNodeName());
 		model.setUuid(getUuid());
 	}
 

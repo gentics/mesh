@@ -1,10 +1,11 @@
 package com.gentics.mesh.search;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.Bulkable;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.etc.config.MeshOptions;
+
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
@@ -18,6 +19,12 @@ import java.util.Set;
  * Search provider which will accept any action without actually doing anything.
  */
 public class DevNullSearchProvider implements SearchProvider {
+
+	private MeshOptions options;
+
+	public DevNullSearchProvider(MeshOptions options) {
+		this.options = options;
+	}
 
 	@Override
 	public SearchProvider init() {
@@ -132,7 +139,7 @@ public class DevNullSearchProvider implements SearchProvider {
 
 	@Override
 	public String installationPrefix() {
-		return Mesh.mesh().getOptions().getSearchOptions().getPrefix();
+		return options.getSearchOptions().getPrefix();
 	}
 
 	@Override

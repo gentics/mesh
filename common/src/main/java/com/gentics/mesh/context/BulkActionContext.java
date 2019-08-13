@@ -1,22 +1,13 @@
 package com.gentics.mesh.context;
 
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.core.rest.event.EventCauseAction;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.event.EventQueueBatch;
+
 import io.reactivex.Completable;
 
 public interface BulkActionContext {
-
-	/**
-	 * Create a new context.
-	 * 
-	 * @return
-	 */
-	static BulkActionContext create() {
-		return new BulkActionContextImpl();
-	}
 
 	/**
 	 * Increment the counter which tracks deleted elements.

@@ -35,14 +35,17 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 
 	private SchemaCrudHandler crudHandler;
 
+	private SchemaLock schemaLock;
+
 	public SchemaEndpoint() {
 		super("schemas", null);
 	}
 
 	@Inject
-	public SchemaEndpoint(MeshAuthChain chain, SchemaCrudHandler crudHandler) {
+	public SchemaEndpoint(MeshAuthChain chain, SchemaCrudHandler crudHandler, SchemaLock schemaLock) {
 		super("schemas", chain);
 		this.crudHandler = crudHandler;
+		this.schemaLock = schemaLock;
 	}
 
 	@Override
@@ -123,8 +126,6 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 		});
 	}
 
-	private static Object mutex = new Object();
-
 	private void addUpdateHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:schemaUuid");
@@ -139,7 +140,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 		endpoint.events(SCHEMA_UPDATED, SCHEMA_MIGRATION_START, SCHEMA_MIGRATION_FINISHED);
 		endpoint.blockingHandler(rc -> {
 			// Update operations should always be executed sequentially - never in parallel
-			synchronized (mutex) {
+			synchronized (schemaLock.mutex()) {
 				InternalActionContext ac = wrap(rc);
 				String uuid = ac.getParameter("schemaUuid");
 				crudHandler.handleUpdate(ac, uuid);

@@ -15,12 +15,12 @@
  */
 package com.syncleus.ferma;
 
-import com.syncleus.ferma.traversals.VertexTraversal;
+import java.util.Iterator;
+
 import com.syncleus.ferma.traversals.EdgeTraversal;
+import com.syncleus.ferma.traversals.VertexTraversal;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.*;
-
-import java.util.Iterator;
 
 /**
  * The primary class for framing your blueprints graphs.
@@ -201,4 +201,8 @@ public interface FramedGraph extends Graph {
 	<T> Iterator<? extends T> frameExplicit(Iterator<? extends Element> pipeline, final Class<T> kind);
 
 	<T> T frameElementExplicitById(final Object id, final Class<T> kind);
+
+	<T> T getAttribute(String key);
+
+	void setAttribute(String key, Object value);
 }

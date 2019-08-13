@@ -252,4 +252,37 @@ public interface BootstrapInitializer {
 	 */
 	void registerEventHandlers();
 
+	/**
+	 * Return the Vert.x instance.
+	 * 
+	 * @return
+	 */
+	Vertx vertx();
+
+	/**
+	 * Return the Mesh API
+	 * 
+	 * @return
+	 */
+	Mesh mesh();
+
+	/**
+	 * Flag that indicates whether this is the initial setup run for the graph.
+	 * 
+	 * @return
+	 */
+	boolean isInitialSetup();
+
+	/**
+	 * Clear stored references to graph elements.
+	 */
+	void clearReferences();
+
+	/**
+	 * Check whether the Vert.x instance is ready.
+	 * 
+	 * @return
+	 */
+	boolean isVertxReady();
+
 }

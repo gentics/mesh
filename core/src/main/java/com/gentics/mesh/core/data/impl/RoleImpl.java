@@ -19,7 +19,6 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
@@ -32,8 +31,6 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
-import com.gentics.mesh.dagger.DB;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madl.field.FieldType;
@@ -105,7 +102,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	public boolean hasPermission(GraphPermission permission, MeshVertex vertex) {
 		FramedGraph graph = Tx.getActive().getGraph();
 		String idxKey = "e." + permission.label() + "_inout";
-		Iterable<Edge> edges = graph.getEdges(idxKey.toLowerCase(), MeshInternal.get().database().createComposedIndexKey(vertex
+		Iterable<Edge> edges = graph.getEdges(idxKey.toLowerCase(), mesh().database().createComposedIndexKey(vertex
 			.id(), id()));
 		return edges.iterator().hasNext();
 	}
@@ -148,7 +145,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	@Override
 	public void revokePermissions(MeshVertex vertex, GraphPermission... permissions) {
 		FramedGraph graph = Tx.get().getGraph();
-		Object indexKey = MeshInternal.get().database().createComposedIndexKey(vertex.id(), getId());
+		Object indexKey = db().createComposedIndexKey(vertex.id(), getId());
 
 		long edgesRemoved = Arrays.stream(permissions).map(perm -> "e." + perm.label() + "_inout")
 			.map(e -> e.toLowerCase())
@@ -157,7 +154,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 			.count();
 
 		if (edgesRemoved > 0) {
-			PermissionStore.invalidate();
+			mesh().permissionCache().clear();
 		}
 	}
 
@@ -186,13 +183,13 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 		bac.add(onDeleted());
 		getVertex().remove();
 		bac.process();
-		PermissionStore.invalidate();
+		mesh().permissionCache().clear();
 	}
 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
 		RoleUpdateRequest requestModel = ac.fromJson(RoleUpdateRequest.class);
-		BootstrapInitializer boot = MeshInternal.get().boot();
+		BootstrapInitializer boot = mesh().boot();
 		if (shouldUpdate(requestModel.getName(), getName())) {
 			// Check for conflict
 			Role roleWithSameName = boot.roleRoot().findByName(requestModel.getName());
@@ -232,7 +229,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public Single<RoleResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return DB.get().asyncTx(() -> {
+		return db().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

@@ -12,7 +12,6 @@ import javax.inject.Singleton;
 import org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.impl.LocalActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -183,6 +182,9 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	@Inject
 	public PluginHandler pluginHandler;
 
+	@Inject
+	public Vertx vertx;
+	
 	@Inject
 	public MeshLocalClientImpl() {
 
@@ -1092,7 +1094,6 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version, String fieldKey,
 		byte[] fileData, String fileName, String contentType, ParameterProvider... parameters) {
 
-		Vertx vertx = Mesh.vertx();
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class);
 		ac.setProject(projectName);
 

@@ -144,7 +144,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		versionA.setNextVersion(versionB);
 
 		// create a node based on the old schema
-		EventQueueBatch batch = EventQueueBatch.create();
+		EventQueueBatch batch = createBatch();
 		project().getLatestBranch().assignSchemaVersion(user(), versionA, batch);
 		User user = user();
 		String english = english();
@@ -219,7 +219,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		VersionNumber oldVersion = oldContainer.getVersion();
 
 		// migrate the node
-		project().getLatestBranch().assignMicroschemaVersion(user(), versionB, EventQueueBatch.create());
+		project().getLatestBranch().assignMicroschemaVersion(user(), versionB, createBatch());
 		Tx.getActive().getGraph().commit();
 		MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();
 		context.setBranch(project().getLatestBranch());
@@ -319,7 +319,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create a node based on the old schema
 		User user = user();
-		EventQueueBatch batch = EventQueueBatch.create();
+		EventQueueBatch batch = createBatch();
 		project().getLatestBranch().assignSchemaVersion(user, versionA, batch);
 		String english = english();
 		Node parentNode = folder("2015");
@@ -400,7 +400,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		VersionNumber oldVersion = oldContainer.getVersion();
 
 		// migrate the micronode
-		Job job = project().getLatestBranch().assignMicroschemaVersion(user(), versionB, EventQueueBatch.create());
+		Job job = project().getLatestBranch().assignMicroschemaVersion(user(), versionB, createBatch());
 		Tx.getActive().getGraph().commit();
 		if (job != null) {
 			triggerAndWaitForJob(job.getUuid());
@@ -500,7 +500,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		versionA.setNextVersion(versionB);
 
 		// create a node based on the old schema
-		EventQueueBatch batch = EventQueueBatch.create();
+		EventQueueBatch batch = createBatch();
 		project().getLatestBranch().assignSchemaVersion(user(), versionA, batch);
 		User user = user();
 		String english = english();
@@ -585,7 +585,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		change.setNextSchemaContainerVersion(versionB);
 		versionA.setNextVersion(versionB);
 
-		project().getMicroschemaContainerRoot().addMicroschema(user(), container, EventQueueBatch.create());
+		project().getMicroschemaContainerRoot().addMicroschema(user(), container, createBatch());
 		Node node = folder("2015").create(user(), schemaContainer("content").getLatestVersion(), project());
 
 		// create a node based on the old schema
@@ -697,7 +697,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		versionA.setNextVersion(versionB);
 
 		// create a node based on the old schema
-		EventQueueBatch batch = EventQueueBatch.create();
+		EventQueueBatch batch = createBatch();
 		project().getLatestBranch().assignSchemaVersion(user(), versionA, batch);
 		User user = user();
 		String english = english();
@@ -749,7 +749,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the microschema
 		FieldSchema oldField = creator.create(fieldName);
-		MicroschemaContainer container = Tx.getActive().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		MicroschemaContainer container = Tx.get().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 		container.setName(microschemaName);
 		container.setCreated(user());
 		MicroschemaContainerVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", oldField);
@@ -759,7 +759,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		MicroschemaContainerVersion versionB = createMicroschemaVersion(container, microschemaName, "2.0", newField);
 
 		// link the schemas with the changes in between
-		UpdateFieldChangeImpl updateFieldChange = Tx.getActive().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		UpdateFieldChangeImpl updateFieldChange = Tx.get().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(fieldName);
 
 		updateFieldChange.setPreviousContainerVersion(versionA);
@@ -767,15 +767,15 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		versionA.setNextVersion(versionB);
 
 		// create a micronode based on the old schema
-		project().getMicroschemaContainerRoot().addMicroschema(user(), container, EventQueueBatch.create());
+		project().getMicroschemaContainerRoot().addMicroschema(user(), container, createBatch());
 		Node node = folder("2015").create(user(), schemaContainer("content").getLatestVersion(), project());
 		MicronodeGraphField micronodeField = createMicronodefield(node, micronodeFieldName, versionA, dataProvider, fieldName);
 		NodeGraphFieldContainer oldContainer = node.getGraphFieldContainer("en");
 		VersionNumber oldVersion = oldContainer.getVersion();
 
 		// migrate the micronode
-		project().getLatestBranch().assignMicroschemaVersion(user(), versionB, EventQueueBatch.create());
-		Tx.getActive().getGraph().commit();
+		project().getLatestBranch().assignMicroschemaVersion(user(), versionB, createBatch());
+		Tx.get().getGraph().commit();
 		MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();
 		context.setBranch(project().getLatestBranch());
 		context.setFromVersion(versionA);
@@ -868,7 +868,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create a node based on the old schema
 		User user = user();
-		EventQueueBatch batch = EventQueueBatch.create();
+		EventQueueBatch batch = createBatch();
 		project().getLatestBranch().assignSchemaVersion(user, versionA, batch);
 		String english = english();
 		Node parentNode = folder("2015");
@@ -930,7 +930,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		createMicronodefield(folder("2015"), micronodeFieldName, versionA, dataProvider, fieldName);
 
 		// migrate the node
-		project().getLatestBranch().assignMicroschemaVersion(user(), versionB, EventQueueBatch.create());
+		project().getLatestBranch().assignMicroschemaVersion(user(), versionB, createBatch());
 		Tx.getActive().getGraph().commit();
 		MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();
 		context.setBranch(project().getLatestBranch());

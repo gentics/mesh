@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+import javax.inject.Provider;
 
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -29,7 +30,6 @@ import com.gentics.mesh.util.StreamUtil;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-@SuppressWarnings("restriction")
 public abstract class AbstractMigrationHandler extends AbstractHandler implements MigrationHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractMigrationHandler.class);
@@ -40,10 +40,13 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 
 	protected MetricsService metrics;
 
-	public AbstractMigrationHandler(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics) {
+	protected final Provider<EventQueueBatch> batchProvider;
+
+	public AbstractMigrationHandler(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider) {
 		this.db = db;
 		this.binaryFieldHandler = binaryFieldHandler;
 		this.metrics = metrics;
+		this.batchProvider = batchProvider;
 	}
 
 	/**
@@ -109,13 +112,13 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 		// Iterate over all containers and invoke a migration for each one
 		long count = 0;
 		List<Exception> errorsDetected = new ArrayList<>();
-		EventQueueBatch sqb = EventQueueBatch.create();
+		EventQueueBatch sqb = batchProvider.get();
 		sqb.setCause(cause);
 		for (T container : containers) {
 			try {
 				// Each container migration has its own search queue batch which is then combined with other batch entries.
 				// This prevents adding partial entries from failed migrations.
-				EventQueueBatch containerBatch = EventQueueBatch.create();
+				EventQueueBatch containerBatch = batchProvider.get();
 				db.tx(() -> {
 					migrator.accept(containerBatch, container, errorsDetected);
 				});

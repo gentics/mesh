@@ -33,7 +33,7 @@ public interface RestPlugin extends MeshPlugin {
 	 * @return Wrapped context
 	 */
 	default PluginContext wrap(RoutingContext rc) {
-		return new PluginContext(rc);
+		return new PluginContext(rc, environment());
 	}
 
 	/**

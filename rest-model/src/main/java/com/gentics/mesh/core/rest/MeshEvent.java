@@ -628,13 +628,14 @@ public enum MeshEvent {
 	/**
 	 * Invoke the given runnable and wait for the event.
 	 * 
+	 * @param mesh
 	 * @param event
 	 * @param runnable
 	 * @return
 	 */
-	public static Completable doAndWaitForEvent(MeshEvent event, Action runnable) {
+	public static Completable doAndWaitForEvent(Mesh mesh, MeshEvent event, Action runnable) {
 		return Completable.create(sub -> {
-			EventBus eventbus = Mesh.mesh().getVertx().eventBus();
+			EventBus eventbus = mesh.getVertx().eventBus();
 			MessageConsumer<Object> consumer = eventbus.consumer(event.address)
 				.handler(ev -> sub.onComplete())
 				.exceptionHandler(sub::onError);
@@ -650,8 +651,8 @@ public enum MeshEvent {
 		});
 	}
 
-	public static Completable waitForEvent(MeshEvent event) {
-		return doAndWaitForEvent(event, () -> {
+	public static Completable waitForEvent(Mesh mesh, MeshEvent event) {
+		return doAndWaitForEvent(mesh, event, () -> {
 		});
 	}
 
@@ -660,8 +661,7 @@ public enum MeshEvent {
 		return address;
 	}
 
-	public static void triggerJobWorker() {
-		Mesh mesh = Mesh.mesh();
+	public static void triggerJobWorker(Mesh mesh) {
 		EventBus eb = mesh.getVertx().eventBus();
 		String name = mesh.getOptions().getNodeName();
 		eb.publish(JOB_WORKER_ADDRESS + name, null);

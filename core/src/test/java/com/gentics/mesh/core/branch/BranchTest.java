@@ -65,7 +65,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testFindAllVisible() throws Exception {
 		try (Tx tx = tx()) {
-			EventQueueBatch batch = EventQueueBatch.create();
+			EventQueueBatch batch = createBatch();
 			Project project = project();
 			BranchRoot branchRoot = project.getBranchRoot();
 			Branch initialBranch = branchRoot.getInitialBranch();
@@ -297,7 +297,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			}
 
 			// assign the schema to the project
-			EventQueueBatch batch = EventQueueBatch.create();
+			EventQueueBatch batch = createBatch();
 			project.getSchemaContainerRoot().addSchemaContainer(user(), schemaContainer, batch);
 
 			for (Branch branch : Arrays.asList(initialBranch, newBranch)) {
@@ -322,7 +322,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			Branch initialBranch = initialBranch();
 			Branch newBranch = createBranch("New Branch");
 
-			EventQueueBatch batch = EventQueueBatch.create();
+			EventQueueBatch batch = createBatch();
 			project.getSchemaContainerRoot().removeSchemaContainer(schemaContainer, batch);
 			for (Branch branch : Arrays.asList(initialBranch, newBranch)) {
 				assertThat(branch).as(branch.getName()).hasNotSchema(schemaContainer).hasNotSchemaVersion(schemaContainer.getLatestVersion());
@@ -353,7 +353,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			SchemaContainerVersion firstVersion = schemaContainer.getLatestVersion();
 
 			// assign the schema to the project
-			EventQueueBatch batch = EventQueueBatch.create();
+			EventQueueBatch batch = createBatch();
 			project.getSchemaContainerRoot().addSchemaContainer(user(), schemaContainer, batch);
 
 			// update schema
@@ -411,7 +411,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			}
 
 			// assign the schema to the project
-			project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, EventQueueBatch.create());
+			project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, createBatch());
 
 			for (Branch branch : Arrays.asList(initialBranch, newBranch)) {
 				assertThat(branch).as(branch.getName()).hasMicroschema(microschemaContainer).hasMicroschemaVersion(latestVersion)
@@ -435,7 +435,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			Branch initialBranch = initialBranch();
 			Branch newBranch = createBranch("New Branch");
 
-			project.getMicroschemaContainerRoot().removeMicroschema(microschemaContainer, EventQueueBatch.create());
+			project.getMicroschemaContainerRoot().removeMicroschema(microschemaContainer, createBatch());
 
 			for (Branch branch : Arrays.asList(initialBranch, newBranch)) {
 				assertThat(branch).as(branch.getName()).hasNotMicroschema(microschemaContainer)
@@ -453,7 +453,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			MicroschemaContainerVersion firstVersion = microschemaContainer.getLatestVersion();
 
 			// assign the microschema to the project
-			project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, EventQueueBatch.create());
+			project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, createBatch());
 
 			// update microschema
 			updateMicroschema(microschemaContainer, "newfield");

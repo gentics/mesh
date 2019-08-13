@@ -25,7 +25,6 @@ import javax.naming.InvalidNameException;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -57,8 +56,6 @@ import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
-import com.gentics.mesh.dagger.DB;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.VersionHandler;
@@ -66,7 +63,6 @@ import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
-import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.util.ETag;
 
 import io.reactivex.Single;
@@ -195,12 +191,12 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			baseNode.setSchemaContainer(schemaContainerVersion.getSchemaContainer());
 			baseNode.setProject(this);
 			baseNode.setCreated(creator);
-			Language language = MeshInternal.get().boot().languageRoot().findByLanguageTag(Mesh.mesh().getOptions().getDefaultLanguage());
+			Language language = mesh().boot().languageRoot().findByLanguageTag(mesh().boot().mesh().getOptions().getDefaultLanguage());
 			baseNode.createGraphFieldContainer(language.getLanguageTag(), getLatestBranch(), creator);
 			setBaseNode(baseNode);
 			// Add the node to the aggregation nodes
 			getNodeRoot().addNode(baseNode);
-			MeshInternal.get().boot().nodeRoot().addNode(baseNode);
+			mesh().boot().nodeRoot().addNode(baseNode);
 		}
 		return baseNode;
 	}
@@ -247,10 +243,10 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 		String oldName = getName();
 		String newName = requestModel.getName();
-		RouterStorage.assertProjectName(newName);
+		mesh().routerStorageRegistry().assertProjectName(newName);
 		if (shouldUpdate(newName, oldName)) {
 			// Check for conflicting project name
-			Project projectWithSameName = MeshInternal.get().boot().meshRoot().getProjectRoot().findByName(newName);
+			Project projectWithSameName = mesh().boot().meshRoot().getProjectRoot().findByName(newName);
 			if (projectWithSameName != null && !projectWithSameName.getUuid().equals(getUuid())) {
 				throw conflict(projectWithSameName.getUuid(), newName, "project_conflicting_name");
 			}
@@ -319,7 +315,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public Single<ProjectResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return DB.get().asyncTx(() -> {
+		return db().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}
@@ -328,7 +324,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	public MeshElementEventModel onCreated() {
 		MeshElementEventModel event = super.onCreated();
 		try {
-			RouterStorage.addProject(getName());
+			mesh().routerStorageRegistry().addProject(getName());
 		} catch (InvalidNameException e) {
 			log.error("Failed to register project {" + getName() + "}");
 			throw error(BAD_REQUEST, "project_error_name_already_reserved", getName());
@@ -370,7 +366,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public Branch findBranch(String branchNameOrUuid) {
-		return MeshInternal.get().branchCache().get(id() + "-" + branchNameOrUuid, key -> {
+		return mesh().branchCache().get(id() + "-" + branchNameOrUuid, key -> {
 			Branch branch = null;
 
 			if (!isEmpty(branchNameOrUuid)) {

@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.gentics.mesh.changelog.Change;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
@@ -12,7 +13,7 @@ import com.gentics.mesh.util.UUIDUtil;
  */
 public final class ChangesList {
 
-	public static List<Change> getList() {
+	public static List<Change> getList(MeshOptions options) {
 		return Arrays.asList(
 			new ReindexDatabase(),
 			new ChangeAddPublishFlag(),
@@ -32,7 +33,7 @@ public final class ChangesList {
 			new PurgeOldJobs(),
 			new UpdateReleaseSchemaEdge(),
 			new MigrateSchemaRawInfo(),
-			new BinaryStorageMigration(),
+			new BinaryStorageMigration(options),
 			new ChangeNumberStringsToNumber(),
 			new RenameReleasesToBranches(),
 			new NodeContentLanguageMigration(),

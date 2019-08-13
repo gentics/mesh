@@ -1,7 +1,5 @@
 package com.gentics.mesh.log;
 
-import com.gentics.mesh.Mesh;
-
 import ch.qos.logback.classic.pattern.ClassicConverter;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 
@@ -12,10 +10,9 @@ public class MeshLogNameConverter extends ClassicConverter {
 
 	@Override
 	public String convert(ILoggingEvent event) {
-		if (Mesh.isInitalized()) {
-			return Mesh.mesh().getOptions().getNodeName();
-		} else {
-			return "";
-		}
+
+		// TODO Which node name to use in a multi tenancy setup
+		// return Mesh.mesh().getOptions().getNodeName();
+		return "";
 	}
 }

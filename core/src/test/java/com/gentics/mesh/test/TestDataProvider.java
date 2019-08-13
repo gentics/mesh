@@ -15,6 +15,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.inject.Provider;
+
 import org.apache.commons.lang3.StringUtils;
 import org.mockito.Mockito;
 
@@ -104,10 +106,13 @@ public class TestDataProvider {
 
 	private String contentUuid;
 
-	public TestDataProvider(TestSize size, BootstrapInitializer boot, Database database) {
+	private Provider<EventQueueBatch> queueProvider;
+
+	public TestDataProvider(TestSize size, BootstrapInitializer boot, Database database, Provider<EventQueueBatch> queueProvider) {
 		this.size = size;
 		this.boot = boot;
 		this.db = database;
+		this.queueProvider = queueProvider;
 		instance = this;
 	}
 
@@ -454,9 +459,9 @@ public class TestDataProvider {
 		vcardMicroschema.addField(postcodeFieldSchema);
 
 		MicroschemaContainer vcardMicroschemaContainer = boot.microschemaContainerRoot().create(vcardMicroschema, userInfo.getUser(),
-			EventQueueBatch.create());
+			createBatch());
 		microschemaContainers.put(vcardMicroschemaContainer.getName(), vcardMicroschemaContainer);
-		project.getMicroschemaContainerRoot().addMicroschema(user(), vcardMicroschemaContainer, EventQueueBatch.create());
+		project.getMicroschemaContainerRoot().addMicroschema(user(), vcardMicroschemaContainer, createBatch());
 	}
 
 	/**
@@ -483,9 +488,9 @@ public class TestDataProvider {
 		captionedImageMicroschema.addField(captionFieldSchema);
 
 		MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(captionedImageMicroschema, userInfo.getUser(),
-			EventQueueBatch.create());
+			createBatch());
 		microschemaContainers.put(captionedImageMicroschema.getName(), microschemaContainer);
-		project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, EventQueueBatch.create());
+		project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, createBatch());
 	}
 
 	public Node addFolder(Node rootNode, String englishName, String germanName) {
@@ -693,6 +698,10 @@ public class TestDataProvider {
 
 	public long getContentCount() {
 		return contentCount;
+	}
+
+	public EventQueueBatch createBatch() {
+		return queueProvider.get();
 	}
 
 }

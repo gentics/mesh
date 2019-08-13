@@ -83,7 +83,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 					boot.jobRoot().enqueueVersionPurge(user, project);
 				}
 			});
-			MeshEvent.triggerJobWorker();
+			MeshEvent.triggerJobWorker(boot.mesh());
 
 			return message(ac, "project_version_purge_enqueued");
 		}, message -> ac.send(message, OK));

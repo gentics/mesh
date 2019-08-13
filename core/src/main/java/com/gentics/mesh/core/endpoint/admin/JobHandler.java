@@ -154,7 +154,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 					job.resetJob();
 				}
 			});
-			MeshEvent.triggerJobWorker();
+			MeshEvent.triggerJobWorker(boot.mesh());
 			return job.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
 	}
@@ -169,7 +169,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			MeshEvent.triggerJobWorker();
+			MeshEvent.triggerJobWorker(boot.mesh());
 			return message(ac, "job_processing_invoked");
 		}, model -> ac.send(model, OK));
 	}

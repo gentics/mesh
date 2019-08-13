@@ -37,7 +37,7 @@ public class NodeMigrationDuringSyncTest extends AbstractNodeSearchEndpointTest 
 
 		// Wait so that sync does not happen at the beginning of the migration
 		Thread.sleep(1000);
-		SyncEventHandler.invokeSyncCompletable().blockingAwait(30, TimeUnit.SECONDS);
+		SyncEventHandler.invokeSyncCompletable(meshApi()).blockingAwait(30, TimeUnit.SECONDS);
 
 		waitForSearchIdleEvent();
 

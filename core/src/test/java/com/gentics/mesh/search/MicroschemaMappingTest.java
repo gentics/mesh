@@ -29,7 +29,6 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.search.index.node.NodeContainerMappingProvider;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.test.TestSize;
@@ -213,7 +212,7 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 
 	@Test
 	public void testMicroschemaCustomMappingJson() {
-		NodeIndexHandler handler = MeshInternal.get().indexHandlerRegistry().nodeIndexHandler;
+		NodeIndexHandler handler = mesh().indexHandlerRegistry().nodeIndexHandler;
 		NodeContainerMappingProvider provider = handler.getMappingProvider();
 
 		tx(() -> {

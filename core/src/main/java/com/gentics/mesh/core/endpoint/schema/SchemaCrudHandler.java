@@ -39,6 +39,7 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
@@ -49,12 +50,15 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 	private Lazy<BootstrapInitializer> boot;
 
+	private final NodeIndexHandler nodeIndexHandler;
+
 	@Inject
 	public SchemaCrudHandler(Database db, SchemaComparator comparator, Lazy<BootstrapInitializer> boot,
-		HandlerUtilities utils) {
+		HandlerUtilities utils, NodeIndexHandler nodeIndexHandler) {
 		super(db, utils);
 		this.comparator = comparator;
 		this.boot = boot;
+		this.nodeIndexHandler = nodeIndexHandler;
 	}
 
 	@Override
@@ -98,7 +102,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			SchemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			SchemaUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
 
-			SchemaContainerRootImpl.validateSchema(requestModel);
+			SchemaContainerRootImpl.validateSchema(nodeIndexHandler, requestModel);
 
 			// 2. Diff the schema with the latest version
 			SchemaChangesListModel model = new SchemaChangesListModel();
@@ -173,7 +177,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			});
 
 			if (updateParams.getUpdateAssignedBranches()) {
-				MeshEvent.triggerJobWorker();
+				MeshEvent.triggerJobWorker(boot.get().mesh());
 				return message(ac, "schema_updated_migration_invoked", schemaName, version);
 			} else {
 				return message(ac, "schema_updated_migration_deferred", schemaName, version);

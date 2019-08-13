@@ -76,7 +76,6 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -540,7 +539,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		waitForSearchIdleEvent();
 
 		// Assert that the routerstorage was updates
-		assertTrue("The new project router should have been added", RouterStorage.hasProject(newName));
+		assertTrue("The new project router should have been added", mesh().routerStorageRegistry().hasProject(newName));
 		call(() -> client().findNodes(newName));
 
 		try (Tx tx = tx()) {

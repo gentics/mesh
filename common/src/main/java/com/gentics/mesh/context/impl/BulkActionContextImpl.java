@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
+
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -29,8 +32,9 @@ public class BulkActionContextImpl implements BulkActionContext {
 	private List<Completable> asyncActions = new ArrayList<>();
 	private EventQueueBatch batch;
 
-	public BulkActionContextImpl() {
-		this.batch = EventQueueBatch.create();
+	@Inject
+	public BulkActionContextImpl(Provider<EventQueueBatch> provider) {
+		this.batch = provider.get();
 	}
 
 	@Override

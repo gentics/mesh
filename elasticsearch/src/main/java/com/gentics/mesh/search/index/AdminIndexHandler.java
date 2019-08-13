@@ -1,5 +1,17 @@
 package com.gentics.mesh.search.index;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.rest.Messages.message;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -9,26 +21,19 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
+
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.HashMap;
-import java.util.Map;
-
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.rest.Messages.message;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 @Singleton
 public class AdminIndexHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminIndexHandler.class);
+
+	private final Vertx vertx;
 
 	private Database db;
 
@@ -41,7 +46,8 @@ public class AdminIndexHandler {
 	private HandlerUtilities utils;
 
 	@Inject
-	public AdminIndexHandler(Database db, SearchProvider searchProvider, SyncEventHandler syncVerticle, IndexHandlerRegistry registry, HandlerUtilities utils) {
+	public AdminIndexHandler(Vertx vertx, Database db, SearchProvider searchProvider, SyncEventHandler syncVerticle, IndexHandlerRegistry registry, HandlerUtilities utils) {
+		this.vertx = vertx;
 		this.db = db;
 		this.searchProvider = searchProvider;
 		this.syncVerticle = syncVerticle;
@@ -71,7 +77,7 @@ public class AdminIndexHandler {
 		db.asyncTx(() -> Single.just(ac.getUser().hasAdminRole()))
 			.subscribe(hasAdminRole -> {
 				if (hasAdminRole) {
-					SyncEventHandler.invokeSync();
+					SyncEventHandler.invokeSync(vertx);
 					ac.send(message(ac, "search_admin_index_sync_invoked"), OK);
 				} else {
 					ac.fail(error(FORBIDDEN, "error_admin_permission_required"));

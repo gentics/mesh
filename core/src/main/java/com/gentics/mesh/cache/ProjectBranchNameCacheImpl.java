@@ -1,9 +1,8 @@
 package com.gentics.mesh.cache;
 
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
-
-import java.util.function.Function;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -13,37 +12,23 @@ import com.gentics.mesh.core.data.Branch;
 import io.vertx.core.Vertx;
 
 @Singleton
-public class ProjectBranchNameCacheImpl implements ProjectBranchNameCache {
+public class ProjectBranchNameCacheImpl extends AbstractMeshCache<String, Branch> implements ProjectBranchNameCache {
 
-	private final EventAwareCache<String, Branch> cache;
+	private static final long CACHE_SIZE = 500;
 
 	@Inject
 	public ProjectBranchNameCacheImpl(Vertx vertx, CacheRegistry registry) {
+		super(createCache(vertx), registry, CACHE_SIZE);
+	}
 
-		/**
-		 * Cache for project specific branches.
-		 */
-		cache = EventAwareCache.<String, Branch>builder()
-			.size(500)
-			.events(BRANCH_UPDATED, BRANCH_CREATED)
+	private static EventAwareCache<String, Branch> createCache(Vertx vertx) {
+		return EventAwareCache.<String, Branch>builder()
+			.events(BRANCH_UPDATED, BRANCH_CREATED, BRANCH_DELETED)
+			.action((event, cache) -> {
+				cache.invalidate();
+			})
+			.maxSize(CACHE_SIZE)
 			.vertx(vertx)
 			.build();
-
-		registry.register(cache);
-
-	}
-
-	@Override
-	public void clear() {
-		cache.invalidate();
-	}
-
-	@Override
-	public Branch get(String key, Function<String, Branch> mappingFunction) {
-		return cache.get(key, mappingFunction);
-	}
-
-	public EventAwareCache<String, Branch> cache() {
-		return cache;
 	}
 }

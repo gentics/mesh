@@ -9,6 +9,7 @@ import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.rest.impl.InternalEndpointRouteImpl;
 import com.gentics.mesh.router.RouterStorage;
 
+import io.vertx.core.Vertx;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 
@@ -32,7 +33,7 @@ public abstract class AbstractInternalEndpoint implements InternalEndpoint {
 		this.chain = chain;
 	}
 
-	public void init(RouterStorage rs) {
+	public void init(Vertx vertx, RouterStorage rs) {
 		this.routerStorage = rs;
 		this.localRouter = rs.root().apiRouter().createSubRouter(basePath);
 	}

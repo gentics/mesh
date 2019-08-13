@@ -4,7 +4,6 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.util.TestUtils.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -59,6 +58,8 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.dagger.MeshComponent;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.router.ProjectsRouter;
@@ -95,7 +96,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	private OkHttpClient httpClient;
 
-	private EventAsserter eventAsserter = new EventAsserter();
+	private EventAsserter eventAsserter = new EventAsserter(testContext);
 
 	@Rule
 	@ClassRule
@@ -104,6 +105,14 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	@Override
 	public MeshTestContext getTestContext() {
 		return testContext;
+	}
+
+	public MeshComponent mesh() {
+		return getTestContext().getMeshComponent();
+	}
+
+	public Database db() {
+		return mesh().database();
 	}
 
 	@After
@@ -153,8 +162,8 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	 */
 	protected void recreateIndices() throws Exception {
 		// We potentially modified existing data thus we need to drop all indices and create them and reindex all data
-		SyncEventHandler.invokeClearCompletable().blockingAwait(10, TimeUnit.SECONDS);
-		SyncEventHandler.invokeSyncCompletable().blockingAwait(30, TimeUnit.SECONDS);
+		SyncEventHandler.invokeClearCompletable(meshApi()).blockingAwait(10, TimeUnit.SECONDS);
+		SyncEventHandler.invokeSyncCompletable(meshApi()).blockingAwait(30, TimeUnit.SECONDS);
 		refreshIndices();
 	}
 
@@ -421,13 +430,13 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	 */
 	protected JobListResponse triggerAndWaitForJob(String jobUuid, JobStatus status) {
 		waitForJob(() -> {
-			MeshEvent.triggerJobWorker();
+			MeshEvent.triggerJobWorker(meshApi());
 		}, jobUuid, status);
 		return call(() -> client().findJobs());
 	}
 
 	protected void triggerAndWaitForAllJobs(JobStatus expectedStatus) {
-		MeshEvent.triggerJobWorker();
+		MeshEvent.triggerJobWorker(meshApi());
 
 		// Now poll the migration status and check the response
 		final int MAX_WAIT = 120;
@@ -713,7 +722,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		return findSchemaByName(schemaName)
 			.flatMapCompletable(schema -> client().updateSchema(schema.getUuid(), addRandomField(schema)).toCompletable())
 			.andThen(wait
-				? MeshEvent.waitForEvent(MeshEvent.SCHEMA_MIGRATION_FINISHED)
+				? MeshEvent.waitForEvent(meshApi(), MeshEvent.SCHEMA_MIGRATION_FINISHED)
 				: Completable.complete());
 	}
 

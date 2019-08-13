@@ -7,8 +7,8 @@ import static io.vertx.core.http.HttpMethod.GET;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.endpoint.admin.AdminHandler;
@@ -29,6 +29,8 @@ public class MonitoringRoutes {
 
 	private static final Logger log = LoggerFactory.getLogger(MonitoringRoutes.class);
 
+	private final BootstrapInitializer boot;
+
 	private final RouterImpl router;
 
 	private final RouterImpl apiRouter;
@@ -38,8 +40,9 @@ public class MonitoringRoutes {
 	private final AdminHandler adminHandler;
 
 	@Inject
-	public MonitoringRoutes(Vertx vertx, MetricsHandler metrics, AdminHandler adminHandler) {
+	public MonitoringRoutes(Vertx vertx, BootstrapInitializer boot, MetricsHandler metrics, AdminHandler adminHandler) {
 		this.router = new RouterImpl(vertx);
+		this.boot = boot;
 		this.apiRouter = new RouterImpl(vertx);
 		VersionHandler.generateVersionMountpoints()
 			.forEach(mountPoint -> router.mountSubRouter(mountPoint, apiRouter));
@@ -101,7 +104,7 @@ public class MonitoringRoutes {
 		apiRouter.route("/health/ready")
 			.method(GET)
 			.handler(rc -> {
-				MeshStatus status = Mesh.mesh().getStatus();
+				MeshStatus status = boot.mesh().getStatus();
 				if (status.equals(MeshStatus.READY)) {
 					rc.response().end();
 				} else {
