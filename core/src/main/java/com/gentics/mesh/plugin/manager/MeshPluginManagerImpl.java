@@ -144,7 +144,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 					startedPlugins.add(pluginWrapper);
 
 					firePluginStateEvent(new PluginStateEvent(this, pluginWrapper, pluginState));
-				} catch (Exception e) {
+				} catch (Throwable e) {
 					log.error("Error while starting plugins " + e.getMessage(), e);
 				}
 			}
