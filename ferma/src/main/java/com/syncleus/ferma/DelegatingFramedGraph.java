@@ -23,7 +23,9 @@
  */
 package com.syncleus.ferma;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
@@ -47,6 +49,7 @@ public class DelegatingFramedGraph<G extends Graph> extends WrappedGraph<G> impl
 	private final TypeResolver defaultResolver;
 	private final TypeResolver untypedResolver;
 	private final FrameFactory builder;
+	private final Map<String, Object> attributes = new HashMap<>();
 
 	/**
 	 * Construct a framed graph.
@@ -313,5 +316,15 @@ public class DelegatingFramedGraph<G extends Graph> extends WrappedGraph<G> impl
 	@Override
 	public Edge addEdgeExplicit(final Object id, final Vertex outVertex, final Vertex inVertex, final String label) {
 		return this.getBaseGraph().addEdge(id, outVertex, inVertex, label);
+	}
+
+	@Override
+	public <T> T getAttribute(String key) {
+		return (T) attributes.get(key);
+	}
+
+	@Override
+	public void setAttribute(String key, Object value) {
+		attributes.put(key, value);
 	}
 }

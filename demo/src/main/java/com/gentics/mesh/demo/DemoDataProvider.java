@@ -47,7 +47,6 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -94,7 +93,7 @@ public class DemoDataProvider {
 
 	public void setup(boolean syncIndex) throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
 		MeshAuthUser user = db.tx(() -> {
-			return MeshInternal.get().boot().meshRoot().getUserRoot().findMeshAuthUserByUsername("admin");
+			return boot.meshRoot().getUserRoot().findMeshAuthUserByUsername("admin");
 		});
 		client.setUser(user);
 

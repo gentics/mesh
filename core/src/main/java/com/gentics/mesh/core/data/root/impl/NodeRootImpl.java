@@ -50,7 +50,6 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
@@ -159,7 +158,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		if (perm == READ_PUBLISHED_PERM) {
 			Branch branch = ac.getBranch(element.getProject());
 
-			List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList();
+			List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList(options());
 			NodeGraphFieldContainer fieldContainer = element.findVersion(requestedLanguageTags, branch.getUuid(),
 					ac.getVersioningParameters().getVersion());
 
@@ -252,7 +251,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			String uuid) {
 		Project project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
-		BootstrapInitializer boot = MeshInternal.get().boot();
+		BootstrapInitializer boot = mesh().boot();
 
 		NodeCreateRequest requestModel = ac.fromJson(NodeCreateRequest.class);
 		if (requestModel.getParentNode() == null || isEmpty(requestModel.getParentNode().getUuid())) {

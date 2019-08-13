@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 
@@ -26,8 +27,11 @@ public class MeshTypeProvider {
 
 	private final SearchProvider searchProvider;
 
+	private final BootstrapInitializer boot;
+
 	@Inject
-	public MeshTypeProvider(Database db, SearchProvider searchProvider) {
+	public MeshTypeProvider(BootstrapInitializer boot, Database db, SearchProvider searchProvider) {
+		this.boot = boot;
 		this.db = db;
 		this.searchProvider = searchProvider;
 	}
@@ -42,7 +46,7 @@ public class MeshTypeProvider {
 
 		// .meshNodeId
 		root.field(newFieldDefinition().name("meshNodeId").description("Node id of this mesh instance").type(GraphQLString).dataFetcher((env) -> {
-			return Mesh.mesh().getOptions().getNodeName();
+			return boot.mesh().getOptions().getNodeName();
 		}));
 
 		// .databaseVendor
@@ -78,7 +82,7 @@ public class MeshTypeProvider {
 	public GraphQLFieldDefinition createMeshFieldType() {
 		return newFieldDefinition().name("mesh").description("The mesh instance").type(new GraphQLTypeReference(MESH_TYPE_NAME))
 				.dataFetcher((env) -> {
-					return Mesh.mesh();
+					return boot.mesh();
 				}).build();
 	}
 

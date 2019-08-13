@@ -42,7 +42,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.util.CompareUtils;
@@ -79,7 +78,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 		List<String> requestedLanguageTags = new ArrayList<>();
 		if (languageTags.length == 0) {
-			requestedLanguageTags.addAll(parameters.getLanguageList());
+			requestedLanguageTags.addAll(parameters.getLanguageList(options()));
 		} else {
 			requestedLanguageTags.addAll(Arrays.asList(languageTags));
 		}
@@ -284,7 +283,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public Single<MicronodeResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return MeshInternal.get().database().asyncTx(() -> {
+		return db().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

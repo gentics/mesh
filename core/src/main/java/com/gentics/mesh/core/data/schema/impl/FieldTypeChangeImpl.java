@@ -54,7 +54,7 @@ import com.google.common.collect.ImmutableSet;
  */
 public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements FieldTypeChange {
 
-	public static Set<String> UUID_TYPES = ImmutableSet.of("binary", "node", "micronode");
+	public static final Set<String> UUID_TYPES = ImmutableSet.of("binary", "node", "micronode");
 
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(FieldTypeChangeImpl.class, MeshVertexImpl.class);

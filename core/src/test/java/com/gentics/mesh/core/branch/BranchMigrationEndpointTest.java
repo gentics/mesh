@@ -56,7 +56,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartBranchMigration() throws Throwable {
-		EventQueueBatch batch = EventQueueBatch.create();
+		EventQueueBatch batch = createBatch();
 		Branch newBranch;
 		List<? extends Node> nodes;
 		List<? extends Node> published;
@@ -135,7 +135,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartAgain() throws Throwable {
-		EventQueueBatch batch = EventQueueBatch.create();
+		EventQueueBatch batch = createBatch();
 		Branch newBranch = tx(() -> project().getBranchRoot().create("newbranch", user(), batch));
 		String jobUuidA = requestBranchMigration(newBranch);
 		triggerAndWaitForJob(jobUuidA, COMPLETED);
@@ -151,7 +151,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testStartOrder() throws Throwable {
 		Project project = project();
-		EventQueueBatch batch = EventQueueBatch.create();
+		EventQueueBatch batch = createBatch();
 		Branch newBranch = tx(() -> project.getBranchRoot().create("newbranch", user(), batch));
 		Branch newestBranch = tx(() -> project.getBranchRoot().create("newestbranch", user(), batch));
 
@@ -199,7 +199,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testBigData() throws Throwable {
-		EventQueueBatch batch = EventQueueBatch.create();
+		EventQueueBatch batch = createBatch();
 		MetricRegistry metrics = new MetricRegistry();
 		Meter createdNode = metrics.meter("Create Node");
 		metrics.timer("Migration");

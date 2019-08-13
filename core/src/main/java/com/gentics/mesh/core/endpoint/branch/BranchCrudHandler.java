@@ -126,7 +126,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			});
 
 			// 2. Invoke migrations which will populate the created index
-			MeshEvent.triggerJobWorker();
+			MeshEvent.triggerJobWorker(boot.mesh());
 
 			return branchList;
 
@@ -180,7 +180,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				}
 			});
 
-			MeshEvent.triggerJobWorker();
+			MeshEvent.triggerJobWorker(boot.mesh());
 			return getMicroschemaVersions(branch).blockingGet();
 		}, model -> ac.send(model, OK));
 	}
@@ -284,7 +284,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			return message(ac, "schema_migration_invoked");
 		}, model -> {
 			// Trigger job worker after jobs have been queued
-			MeshEvent.triggerJobWorker();
+			MeshEvent.triggerJobWorker(boot.mesh());
 			ac.send(model, OK);
 		});
 	}

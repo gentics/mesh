@@ -22,10 +22,11 @@ import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
-import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.util.CompareUtils;
 
@@ -42,6 +43,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 	};
 
 	public static FieldUpdater NODE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		NodeFieldList nodeList = fieldMap.getNodeFieldList(fieldKey);
 		NodeGraphFieldList graphNodeFieldList = container.getNodeList(fieldKey);
 		boolean isNodeListFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeList == null);
@@ -70,7 +72,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 		graphNodeFieldList = container.createNodeList(fieldKey);
 
 		// Handle Update
-		BootstrapInitializer boot = MeshInternal.get().boot();
+		BootstrapInitializer boot = mesh.boot();
 		// Remove all and add the listed items
 		graphNodeFieldList.removeAll();
 		AtomicInteger integer = new AtomicInteger();

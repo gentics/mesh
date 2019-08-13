@@ -27,7 +27,6 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
@@ -291,7 +290,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 		assertThat(response).hasDepth(1).isValid(4);
 
 		tx(() -> createBranch(newBranchName));
-		MeshInternal.get().branchCache().clear();
+		mesh().branchCache().clear();
 
 		// latest branch (again)
 		response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),

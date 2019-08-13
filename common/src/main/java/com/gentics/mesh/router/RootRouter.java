@@ -2,6 +2,7 @@ package com.gentics.mesh.router;
 
 import static com.gentics.mesh.handler.VersionHandler.API_MOUNTPOINT;
 
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.router.route.DefaultNotFoundHandler;
 import com.gentics.mesh.router.route.FailureHandler;
 import com.gentics.mesh.router.route.PoweredByHandler;
@@ -26,7 +27,7 @@ public class RootRouter {
 
 	private Vertx vertx;
 
-	public RootRouter(Vertx vertx, RouterStorage storage) {
+	public RootRouter(Vertx vertx, RouterStorage storage, MeshOptions options) {
 		this.storage = storage;
 		this.vertx = vertx;
 		this.router = Router.router(vertx);
@@ -41,8 +42,8 @@ public class RootRouter {
 		router.route().handler(PoweredByHandler.create());
 		router.route(API_MOUNTPOINT).handler(storage.versionHandler);
 
-		this.apiRouter = new APIRouter(this);
-		this.customRouter = new CustomRouter(this);
+		this.apiRouter = new APIRouter(vertx, this, options);
+		this.customRouter = new CustomRouter(vertx, this);
 	}
 
 	public Router getRouter() {

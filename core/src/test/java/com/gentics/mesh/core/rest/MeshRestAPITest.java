@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -27,7 +26,7 @@ public class MeshRestAPITest extends AbstractMeshTest {
 		options.setDefaultHost("localhost");
 		options.setDefaultPort(port());
 
-		HttpClient client = Mesh.vertx().createHttpClient(options);
+		HttpClient client = vertx().createHttpClient(options);
 		CompletableFuture<String> future = new CompletableFuture<>();
 		HttpClientRequest request = client.request(HttpMethod.POST, VersionHandler.CURRENT_API_BASE_PATH + "/test", rh -> {
 			rh.bodyHandler(bh -> {

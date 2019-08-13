@@ -30,7 +30,6 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 
@@ -75,7 +74,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 			throw conflict(conflictingMicroSchema.getUuid(), name, "microschema_conflicting_name", name);
 		}
 
-		SchemaContainer conflictingSchema = MeshInternal.get().boot().schemaContainerRoot().findByName(name);
+		SchemaContainer conflictingSchema = mesh().boot().schemaContainerRoot().findByName(name);
 		if (conflictingSchema != null) {
 			throw conflict(conflictingSchema.getUuid(), name, "schema_conflicting_name", name);
 		}

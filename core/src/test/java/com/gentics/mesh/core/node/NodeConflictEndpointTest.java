@@ -14,7 +14,6 @@ import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -286,7 +285,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		schema.addField(stringListFieldSchema);
 		schema.addField(micronodeFieldSchema);
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
-		MeshInternal.get().serverSchemaStorage().addSchema(schema);
+		mesh().serverSchemaStorage().addSchema(schema);
 	}
 
 	/**

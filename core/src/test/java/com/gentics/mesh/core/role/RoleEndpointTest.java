@@ -45,7 +45,6 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -379,7 +378,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testUpdateConflictCheck() {
 		try (Tx tx = tx()) {
-			MeshInternal.get().boot().meshRoot().getRoleRoot().create("test123", user());
+			mesh().boot().meshRoot().getRoleRoot().create("test123", user());
 			tx.success();
 		}
 

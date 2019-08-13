@@ -1,5 +1,7 @@
 package com.gentics.mesh.cache;
 
-public interface ProjectNameCache extends MeshCache {
+import com.gentics.mesh.core.data.Project;
+
+public interface ProjectNameCache extends MeshCache<String, Project> {
 
 }

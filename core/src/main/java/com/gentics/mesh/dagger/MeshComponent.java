@@ -8,9 +8,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
-import com.gentics.mesh.cache.ProjectBranchNameCacheImpl;
-import com.gentics.mesh.cache.ProjectNameCacheImpl;
+import com.gentics.mesh.cache.PermissionCache;
+import com.gentics.mesh.cache.ProjectBranchNameCache;
+import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandler;
@@ -25,6 +27,7 @@ import com.gentics.mesh.dagger.module.BindModule;
 import com.gentics.mesh.dagger.module.MeshModule;
 import com.gentics.mesh.dagger.module.SearchProviderModule;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
@@ -33,6 +36,7 @@ import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.router.EndpointRegistry;
 import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.router.RouterStorageRegistry;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
@@ -50,6 +54,7 @@ import com.gentics.mesh.storage.LocalBinaryStorage;
 
 import dagger.BindsInstance;
 import dagger.Component;
+import io.vertx.core.Vertx;
 
 /**
  * Central dagger mesh component which will expose dependencies.
@@ -128,13 +133,25 @@ public interface MeshComponent {
 
 	MetricsService metrics();
 
-	ProjectBranchNameCacheImpl branchCache();
+	ProjectBranchNameCache branchCache();
 
-	ProjectNameCacheImpl projectNameCache();
+	ProjectNameCache projectNameCache();
+
+	PermissionCache permissionCache();
+
+	Vertx vertx();
+
+	Provider<EventQueueBatch> batchProvider();
+
+	Provider<BulkActionContext> bulkProvider();
+
+	MeshOptions options();
 
 	PluginEnvironment pluginEnv();
 
 	MeshPluginManager pluginManager();
+
+	RouterStorageRegistry routerStorageRegistry();
 
 	@Component.Builder
 	interface Builder {
@@ -146,4 +163,5 @@ public interface MeshComponent {
 
 		MeshComponent build();
 	}
+
 }

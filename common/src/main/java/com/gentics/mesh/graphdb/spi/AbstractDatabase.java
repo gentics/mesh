@@ -9,6 +9,8 @@ import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.ETag;
 
+import dagger.Lazy;
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -22,6 +24,12 @@ public abstract class AbstractDatabase implements Database {
 	protected MeshOptions options;
 	protected String meshVersion;
 	protected String[] basePaths;
+
+	private final Lazy<Vertx> vertx;
+
+	public AbstractDatabase(Lazy<Vertx> vertx) {
+		this.vertx = vertx;
+	}
 
 	@Override
 	public void clear() {
@@ -75,6 +83,11 @@ public abstract class AbstractDatabase implements Database {
 			builder.append(changeUuid);
 		}
 		return ETag.hash(builder.toString() + getVersion());
+	}
+
+	@Override
+	public Vertx vertx() {
+		return vertx.get();
 	}
 
 }

@@ -14,7 +14,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.router.EndpointRegistry;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -28,7 +27,7 @@ public class AdminGUIEndpointTest extends AbstractMeshTest {
 
 	@Before
 	public void setupVerticle() throws Exception {
-		EndpointRegistry registry = MeshInternal.get().endpointRegistry();
+		EndpointRegistry registry = mesh().endpointRegistry();
 		registry.register(AdminGUIEndpoint.class);
 	}
 

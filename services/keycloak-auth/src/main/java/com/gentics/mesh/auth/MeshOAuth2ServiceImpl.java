@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -78,11 +79,14 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	protected Database db;
 	protected BootstrapInitializer boot;
 
+	private final Provider<EventQueueBatch> batchProvider;
+
 	@Inject
 	public MeshOAuth2ServiceImpl(Database db, BootstrapInitializer boot, MeshOptions meshOptions, Vertx vertx,
-		AuthServicePluginRegistry authPluginRegistry) {
+		Provider<EventQueueBatch> batchProvider, AuthServicePluginRegistry authPluginRegistry) {
 		this.db = db;
 		this.boot = boot;
+		this.batchProvider = batchProvider;
 		this.authPluginRegistry = authPluginRegistry;
 		this.options = meshOptions.getAuthenticationOptions().getOauth2();
 		if (options == null || !options.isEnabled()) {
@@ -136,7 +140,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		Objects.requireNonNull(username, "The preferred_username property could not be found in the principle user info.");
 		String currentTokenId = token.getString("jti");
 
-		EventQueueBatch batch = EventQueueBatch.create();
+		EventQueueBatch batch = batchProvider.get();
 		MeshAuthUser authUser = db.tx(() -> {
 			UserRoot root = boot.userRoot();
 			MeshAuthUser user = root.findMeshAuthUserByUsername(username);

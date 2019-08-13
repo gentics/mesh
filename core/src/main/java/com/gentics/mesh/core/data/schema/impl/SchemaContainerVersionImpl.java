@@ -18,7 +18,6 @@ import java.util.stream.StreamSupport;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -42,9 +41,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.ContentConfig;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
@@ -107,10 +104,10 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public SchemaModel getSchema() {
-		SchemaModel schema = MeshInternal.get().serverSchemaStorage().getSchema(getName(), getVersion());
+		SchemaModel schema = mesh().serverSchemaStorage().getSchema(getName(), getVersion());
 		if (schema == null) {
 			schema = JsonUtil.readValue(getJson(), SchemaModelImpl.class);
-			MeshInternal.get().serverSchemaStorage().addSchema(schema);
+			mesh().serverSchemaStorage().addSchema(schema);
 		}
 		return schema;
 	}
@@ -132,8 +129,8 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public void setSchema(SchemaModel schema) {
-		MeshInternal.get().serverSchemaStorage().removeSchema(schema.getName(), schema.getVersion());
-		MeshInternal.get().serverSchemaStorage().addSchema(schema);
+		mesh().serverSchemaStorage().removeSchema(schema.getName(), schema.getVersion());
+		mesh().serverSchemaStorage().addSchema(schema);
 		String json = schema.toJson();
 		setJson(json);
 		setProperty(VERSION_PROPERTY_KEY, schema.getVersion());
@@ -166,7 +163,7 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public Single<SchemaResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return MeshInternal.get().database().asyncTx(() -> {
+		return db().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}
@@ -227,8 +224,7 @@ public class SchemaContainerVersionImpl extends
 			if (log.isDebugEnabled()) {
 				log.debug("No schema auto purge flag set. Falling back to mesh global setting");
 			}
-			MeshOptions options = Mesh.mesh().getOptions();
-			ContentConfig contentOptions = options.getContentOptions();
+			ContentConfig contentOptions = options().getContentOptions();
 			if (contentOptions != null) {
 				return contentOptions.isAutoPurge();
 			} else {

@@ -12,7 +12,6 @@ import javax.inject.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.endpoint.admin.AdminEndpoint;
 import com.gentics.mesh.core.endpoint.admin.RestInfoEndpoint;
 import com.gentics.mesh.core.endpoint.auth.AuthenticationEndpoint;
@@ -36,6 +35,7 @@ import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.GraphQLEndpoint;
 import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.router.RouterStorageRegistry;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.search.ProjectRawSearchEndpointImpl;
 import com.gentics.mesh.search.ProjectSearchEndpointImpl;
@@ -44,6 +44,7 @@ import com.gentics.mesh.search.SearchEndpointImpl;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonArray;
@@ -136,6 +137,15 @@ public class RestAPIVerticle extends AbstractVerticle {
 	public Provider<AdminEndpoint> adminEndpoint;
 
 	@Inject
+	public RouterStorageRegistry routerStorageRegistry;
+	
+	@Inject
+	public Vertx vertx;
+
+	@Inject
+	public MeshOptions meshOptions;
+
+	@Inject
 	public RestAPIVerticle() {
 	}
 
@@ -151,7 +161,6 @@ public class RestAPIVerticle extends AbstractVerticle {
 		options.setCompressionSupported(true);
 		options.setHandle100ContinueAutomatically(true);
 		// options.setLogActivity(true);
-		MeshOptions meshOptions = Mesh.mesh().getOptions();
 		HttpServerConfig httpServerOptions = meshOptions.getHttpServerOptions();
 		if (httpServerOptions.getSsl()) {
 			if (log.isDebugEnabled()) {
@@ -186,7 +195,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 		if (initialProjects != null) {
 			for (Object project : initialProjects) {
-				RouterStorage.addProject((String)project);
+				routerStorageRegistry.addProject((String) project);
 			}
 		}
 
@@ -262,7 +271,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		endpoints.add(projectInfoEndpoint.get());
 
 		for (AbstractInternalEndpoint endpoint : endpoints) {
-			endpoint.init(storage);
+			endpoint.init(vertx, storage);
 			endpoint.registerEndPoints();
 		}
 	}

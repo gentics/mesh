@@ -127,7 +127,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 			// Add language filter
 			if (filterLanguage) {
-				List<String> requestedLanguageTags = db.tx(() -> ac.getNodeParameters().getLanguageList());
+				List<String> requestedLanguageTags = db.tx(() -> ac.getNodeParameters().getLanguageList(options));
 				if (requestedLanguageTags != null && !requestedLanguageTags.isEmpty()) {
 					JsonArray termsFilter = userJson.getJsonObject("query").getJsonObject("bool").getJsonArray("filter");
 					termsFilter.add(new JsonObject().put("terms", new JsonObject().put("language", new JsonArray(requestedLanguageTags))));

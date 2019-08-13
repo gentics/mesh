@@ -11,6 +11,7 @@ import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 
 public class ProjectInfoEndpoint extends AbstractInternalEndpoint {
@@ -28,7 +29,7 @@ public class ProjectInfoEndpoint extends AbstractInternalEndpoint {
 	}
 
 	@Override
-	public void init(RouterStorage rs) {
+	public void init(Vertx vertx, RouterStorage rs) {
 		localRouter = rs.root().apiRouter().getRouter();
 	}
 

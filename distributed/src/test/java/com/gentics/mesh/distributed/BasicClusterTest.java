@@ -13,7 +13,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
@@ -107,8 +107,8 @@ public class BasicClusterTest extends AbstractClusterTest {
 	public void testClusterStatus() {
 		ClusterStatusResponse response = call(() -> clientA.clusterStatus());
 		assertThat(response.getInstances()).hasSize(2);
-		Set<String> names = response.getInstances().stream().map(i -> i.getName()).collect(Collectors.toSet());
-		Set<String> stati = response.getInstances().stream().map(i -> i.getStatus()).collect(Collectors.toSet());
+		List<String> names = response.getInstances().stream().map(i -> i.getName()).collect(Collectors.toList());
+		List<String> stati = response.getInstances().stream().map(i -> i.getStatus()).collect(Collectors.toList());
 		assertThat(names).containsExactlyInAnyOrder("nodeA", "nodeB");
 		assertThat(stati).containsExactly("ONLINE", "ONLINE");
 	}

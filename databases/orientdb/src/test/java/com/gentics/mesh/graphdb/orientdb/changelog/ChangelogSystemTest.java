@@ -105,7 +105,7 @@ public class ChangelogSystemTest {
 
 		Database db = getDatabase(options);
 		db.setupConnectionPool();
-		ChangelogSystem cls = new ChangelogSystem(db);
+		ChangelogSystem cls = new ChangelogSystem(db, options);
 		List<Change> testChanges = Arrays.asList(new ChangeDummy2(), new ChangeDummy());
 		assertTrue("All changes should have been applied", cls.applyChanges(null, testChanges));
 		assertTrue("All changes should have been applied", cls.applyChanges(null, testChanges));
@@ -129,7 +129,7 @@ public class ChangelogSystemTest {
 		Mockito.when(metrics.counter(Mockito.any())).thenReturn(Mockito.mock(Counter.class));
 		Mockito.when(metrics.meter(Mockito.any())).thenReturn(Mockito.mock(Meter.class));
 		Mockito.when(metrics.resetableCounter(Mockito.any())).thenReturn(Mockito.mock(ResettableCounter.class));
-		Database database = new OrientDBDatabase(metrics, null, null, new OrientDBClusterManager(options, null));
+		Database database = new OrientDBDatabase(null, null, metrics, null, null, new OrientDBClusterManager(null, null, options, null));
 		try {
 			database.init(options, null);
 			return database;

@@ -66,7 +66,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
@@ -132,7 +131,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		 * both indices exist.
 		 */
 		// Stop the job worker so that we can inspect the job in detail
-		MeshInternal.get().jobWorkerVerticle().stop();
+		mesh().jobWorkerVerticle().stop();
 		// Update the schema again.
 		SchemaUpdateRequest updateRequest = new SchemaUpdateRequest();
 		updateRequest.setName("dummy");
@@ -168,7 +167,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		 * 3. Start the job worker and verify that the job has been completed. Make sure that initial index was removed since the new index now takes its place.
 		 */
 		// Now start the worker again
-		MeshInternal.get().jobWorkerVerticle().start();
+		mesh().jobWorkerVerticle().start();
 		triggerAndWaitForAllJobs(COMPLETED);
 
 		try (Tx tx = tx()) {
@@ -190,7 +189,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		 * must be recorded for the new index.
 		 */
 		trackingSearchProvider().clear().blockingAwait();
-		MeshInternal.get().jobWorkerVerticle().stop();
+		mesh().jobWorkerVerticle().stop();
 
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setLanguage("en");
@@ -235,7 +234,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		// Now start the worker again
-		MeshInternal.get().jobWorkerVerticle().start();
+		mesh().jobWorkerVerticle().start();
 		triggerAndWaitForAllJobs(COMPLETED);
 		waitForSearchIdleEvent();
 
@@ -375,7 +374,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			versionA = versionB.getPreviousVersion();
 
 			User user = user();
-			EventQueueBatch batch = EventQueueBatch.create();
+			EventQueueBatch batch = createBatch();
 			assertNull("No job should be scheduled since this is the first time we assigned the schema to the branch. No need for a migration",
 				project().getLatestBranch().assignSchemaVersion(user, versionA, batch));
 			batch.dispatch();
@@ -499,7 +498,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			versionA = versionB.getPreviousVersion();
 
 			User user = user();
-			EventQueueBatch batch = EventQueueBatch.create();
+			EventQueueBatch batch = createBatch();
 			assertNull("No job should be scheduled since this is the first time we assigned the schema to the branch. No need for a migration",
 				project().getLatestBranch().assignSchemaVersion(user, versionA, batch));
 
@@ -546,7 +545,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
 
-			EventQueueBatch batch = EventQueueBatch.create();
+			EventQueueBatch batch = createBatch();
 			project().getLatestBranch().assignSchemaVersion(user(), versionA, batch);
 
 			// create a node and publish
@@ -884,7 +883,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			microschemaA.addField(oldField);
 			versionA.setName("migratedSchema");
 			versionA.setSchema(microschemaA);
-			EventQueueBatch batch = EventQueueBatch.create();
+			EventQueueBatch batch = createBatch();
 			boot().microschemaContainerRoot().addMicroschema(user, container, batch);
 
 			// create version 2 of the microschema (with the field renamed)
@@ -983,7 +982,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			microschemaA.addField(oldField);
 			versionA.setName("migratedSchema");
 			versionA.setSchema(microschemaA);
-			boot().microschemaContainerRoot().addMicroschema(user(), container, EventQueueBatch.create());
+			boot().microschemaContainerRoot().addMicroschema(user(), container, createBatch());
 
 			// create version 2 of the microschema (with the field renamed)
 			versionB = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
@@ -1105,7 +1104,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			microschemaA.addField(oldField);
 			versionA.setName("migratedSchema");
 			versionA.setSchema(microschemaA);
-			boot().microschemaContainerRoot().addMicroschema(user(), container, EventQueueBatch.create());
+			boot().microschemaContainerRoot().addMicroschema(user(), container, createBatch());
 
 			// create version 2 of the microschema (with the field renamed)
 			versionB = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
@@ -1190,7 +1189,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		SchemaContainer container = Tx.getActive().getGraph().addFramedVertex(SchemaContainerImpl.class);
 		container.setName(UUID.randomUUID().toString());
 		container.setCreated(user());
-		EventQueueBatch batch = EventQueueBatch.create();
+		EventQueueBatch batch = createBatch();
 		boot().schemaContainerRoot().addSchemaContainer(user(), container, batch);
 
 		// create version 1 of the schema

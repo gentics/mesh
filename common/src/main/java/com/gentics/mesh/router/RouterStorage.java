@@ -5,17 +5,14 @@ import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.inject.Inject;
 import javax.naming.InvalidNameException;
 
 import com.gentics.madl.tx.Tx;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.VersionHandler;
 
@@ -52,10 +49,9 @@ public class RouterStorage {
 
 	private final RootRouter rootRouter;
 
-	/**
-	 * Set of creates storages
-	 */
-	private static Set<RouterStorage> instances = new HashSet<>();
+	private final Vertx vertx;
+
+	private final MeshOptions options;
 
 	private Lazy<BootstrapInitializer> boot;
 
@@ -69,70 +65,46 @@ public class RouterStorage {
 
 	private MeshAuthChain authChain;
 
+	private final RouterStorageRegistry routerStorageRegistry;
+
 	@Inject
-	public RouterStorage(Vertx vertx, MeshAuthChain authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler, Lazy<BootstrapInitializer> boot,
-						 Lazy<Database> db, VersionHandler versionHandler) {
+	public RouterStorage(Vertx vertx, MeshOptions options, MeshAuthChain authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler,
+		Lazy<BootstrapInitializer> boot,
+		Lazy<Database> db, VersionHandler versionHandler, RouterStorageRegistry routerStorageRegistry) {
+		this.vertx = vertx;
+		this.options = options;
 		this.boot = boot;
 		this.db = db;
 		this.corsHandler = corsHandler;
 		this.bodyHandler = bodyHandler;
 		this.authChain = authChain;
 		this.versionHandler = versionHandler;
+		this.routerStorageRegistry = routerStorageRegistry;
 
 		// Initialize the router chain. The root router will create additional routers which will be mounted.
-		rootRouter = new RootRouter(vertx, this);
-		RouterStorage.instances.add(this);
+		rootRouter = new RootRouter(vertx, this, options);
+
+		// TODO move this to the place where the routerstorage is created
+		routerStorageRegistry.getInstances().add(this);
 	}
 
-	public synchronized static void registerEventbus() {
-		for (RouterStorage rs : instances) {
-			rs.registerEventbusHandlers();
-		}
-	}
-
-	/**
-	 * Iterate over all created router storages and assert that no project/api route causes a conflict with the given name
-	 * 
-	 * @param name
-	 */
-	public synchronized static void assertProjectName(String name) {
-		for (RouterStorage rs : instances) {
-			rs.rootRouter.apiRouter().projectsRouter().assertProjectNameValid(name);
-		}
-	}
-
-	/**
-	 * Return all created router storage instances.
-	 * 
-	 * @return
-	 */
-	public static Set<RouterStorage> getInstances() {
-		return instances;
-	}
-
-	public synchronized static void addProject(String name) throws InvalidNameException {
-		for (RouterStorage rs : instances) {
-			rs.rootRouter.apiRouter().projectsRouter().addProjectRouter(name);
-		}
-	}
-
-	private void registerEventbusHandlers() {
+	public void registerEventbusHandlers() {
 		ProjectsRouter projectsRouter = rootRouter.apiRouter().projectsRouter();
-		EventBus eb = Mesh.vertx().eventBus();
+		EventBus eb = vertx.eventBus();
 		eb.consumer(PROJECT_CREATED.address, (Message<JsonObject> rh) -> {
 			JsonObject json = rh.body();
 
 			// Check whether this is a local message. We only need to react on foreign messages.
 			// Local updates for project creation / deletion is already handled locally
 			String origin = json.getString("origin");
-			String nodeName = Mesh.mesh().getOptions().getNodeName();
+			String nodeName = options.getNodeName();
 			if (nodeName.equals(origin)) {
 				rh.reply(true);
 				return;
 			}
 			String name = json.getString("name");
 			try {
-				addProject(name);
+				routerStorageRegistry.addProject(name);
 				rh.reply(true);
 				if (log.isInfoEnabled()) {
 					log.info("Registered project {" + name + "}");
@@ -162,15 +134,6 @@ public class RouterStorage {
 
 		});
 
-	}
-
-	public synchronized static boolean hasProject(String projectName) {
-		for (RouterStorage rs : instances) {
-			if (rs.rootRouter.apiRouter().projectsRouter().hasProjectRouter(projectName)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	public Lazy<Database> getDb() {

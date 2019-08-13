@@ -8,18 +8,11 @@ import com.gentics.mesh.etc.config.MeshOptions;
 public interface MeshFactory {
 
 	/**
-	 * Check whether the factory has already provided a mesh instance.
-	 * 
-	 * @return
-	 */
-	boolean isInitalized();
-
-	/**
-	 * Return a new or the current instance of mesh.
+	 * Return a new instance of mesh.
 	 * 
 	 * @return Mesh instance
 	 */
-	Mesh mesh();
+	Mesh create();
 
 	/**
 	 * Return a new instance of mesh.
@@ -28,6 +21,6 @@ public interface MeshFactory {
 	 *            Mesh options
 	 * @return Mesh instance
 	 */
-	Mesh mesh(MeshOptions options);
+	Mesh create(MeshOptions options);
 
 }

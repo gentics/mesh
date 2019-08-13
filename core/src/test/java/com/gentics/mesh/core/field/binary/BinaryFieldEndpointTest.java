@@ -16,8 +16,6 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
-import com.gentics.mesh.parameter.image.CropMode;
-import com.gentics.mesh.rest.client.MeshRequest;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -25,7 +23,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.madl.tx.Tx;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
@@ -42,9 +39,11 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
+import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.VersionNumber;
@@ -187,7 +186,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		NodeResponse response = createNodeWithField();
 
 		// Clear the local binary storage directory to simulate a storage inconsistency
-		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory()));
+		FileUtils.deleteDirectory(new File(options().getUploadOptions().getDirectory()));
 
 		// 2. Delete the node
 		call(() -> client().deleteNode(PROJECT_NAME, response.getUuid()));
@@ -390,7 +389,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			new ByteArrayInputStream(bytes), bytes.length, fileName, "image/jpg").blockingGet();
 
 		// Clear the local binary storage directory to simulate a storage inconsistency
-		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory()));
+		FileUtils.deleteDirectory(new File(options().getUploadOptions().getDirectory()));
 
 		call(() -> client().downloadBinaryField(PROJECT_NAME, updatedResponse.getUuid(), updatedResponse.getLanguage(), "binary"),
 			NOT_FOUND, "node_error_binary_data_not_found");

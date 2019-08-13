@@ -20,7 +20,9 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
+import dagger.Lazy;
 import io.reactivex.Maybe;
+import io.vertx.core.Vertx;
 import io.vertx.ext.web.FileUpload;
 
 @MeshTestSetting(elasticsearch = NONE, testSize = TestSize.EMPTY, startServer = false)
@@ -28,7 +30,9 @@ public class TikaBinaryProcessorTest extends AbstractMeshTest {
 
 	@Test
 	public void tikaCachingTest() throws FileNotFoundException, IOException {
-		TikaBinaryProcessor processor = new TikaBinaryProcessor(new MeshOptions());
+		Lazy<Vertx> lazy = Mockito.mock(Lazy.class);
+		when(lazy.get()).thenReturn(Vertx.vertx());
+		TikaBinaryProcessor processor = new TikaBinaryProcessor(lazy, new MeshOptions());
 		FileUpload ul = mockUpload("test.pdf", "application/pdf");
 
 		Maybe<Consumer<BinaryGraphField>> result = processor.process(ul, "HASHSUM");

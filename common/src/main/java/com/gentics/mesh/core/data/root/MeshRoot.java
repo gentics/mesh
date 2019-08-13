@@ -142,4 +142,6 @@ public interface MeshRoot extends MeshVertex {
 	 */
 	MeshVertex resolvePathToElement(String pathToElement);
 
+	void clearReferences();
+
 }

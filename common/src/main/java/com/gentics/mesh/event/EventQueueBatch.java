@@ -7,7 +7,6 @@ import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.rest.event.EventCauseAction;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
-import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 
 /**
  * A batch of event queue entries.
@@ -32,15 +31,6 @@ public interface EventQueueBatch {
 	 * Dispatch events for all entries in the batch.
 	 */
 	void dispatch();
-
-	/**
-	 * Create a new event queue batch.
-	 * 
-	 * @return
-	 */
-	static EventQueueBatch create() {
-		return new EventQueueBatchImpl();
-	}
 
 	/**
 	 * Clear all entries.

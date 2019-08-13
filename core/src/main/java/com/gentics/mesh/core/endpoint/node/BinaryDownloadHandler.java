@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.ext.web.RoutingContext;
@@ -22,11 +23,13 @@ import io.vertx.ext.web.RoutingContext;
 @Singleton
 public class BinaryDownloadHandler extends AbstractHandler {
 
+	private final MeshOptions options;
 	private final BinaryFieldResponseHandler binaryFieldResponseHandler;
 	private final Database db;
 
 	@Inject
-	public BinaryDownloadHandler(Database db, BinaryFieldResponseHandler binaryFieldResponseHandler) {
+	public BinaryDownloadHandler(MeshOptions options, Database db, BinaryFieldResponseHandler binaryFieldResponseHandler) {
+		this.options = options;
 		this.db = db;
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
 	}
@@ -42,7 +45,7 @@ public class BinaryDownloadHandler extends AbstractHandler {
 			// }
 
 			Branch branch = ac.getBranch(node.getProject());
-			NodeGraphFieldContainer fieldContainer = node.findVersion(ac.getNodeParameters().getLanguageList(), branch.getUuid(),
+			NodeGraphFieldContainer fieldContainer = node.findVersion(ac.getNodeParameters().getLanguageList(options), branch.getUuid(),
 				ac.getVersioningParameters().getVersion());
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());

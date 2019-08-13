@@ -6,7 +6,6 @@ import com.gentics.mesh.madl.field.FieldMap;
 import com.gentics.mesh.madl.index.ElementIndexDefinition;
 import com.gentics.mesh.madl.index.impl.EdgeIndexDefinitionImpl.EdgeIndexDefinitonBuilder;
 import com.gentics.mesh.madl.index.impl.VertexIndexDefinitionImpl.VertexIndexDefinitionBuilder;
-import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.ElementFrame;
 import com.syncleus.ferma.VertexFrame;
 

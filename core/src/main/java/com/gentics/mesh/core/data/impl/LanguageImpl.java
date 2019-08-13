@@ -13,7 +13,6 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
-import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.util.ETag;
 
@@ -98,7 +97,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 
 	@Override
 	public Single<LanguageResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return DB.get().asyncTx(() -> {
+		return db().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

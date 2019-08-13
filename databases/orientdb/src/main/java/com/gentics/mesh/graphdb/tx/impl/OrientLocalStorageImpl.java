@@ -36,7 +36,7 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 		GraphStorageOptions storageOptions = options.getStorageOptions();
 		if (storageOptions == null || storageOptions.getDirectory() == null) {
 			log.info("No graph database settings found. Fallback to in memory mode.");
-			factory = new OrientGraphFactory("memory:tinkerpop").setupPool(16, 100);
+			factory = new OrientGraphFactory("memory:tinkerpop" +  System.currentTimeMillis()).setupPool(16, 100);
 		} else {
 			factory = new OrientGraphFactory("plocal:" + new File(storageOptions.getDirectory(), DB_NAME).getAbsolutePath()).setupPool(16, 100);
 		}

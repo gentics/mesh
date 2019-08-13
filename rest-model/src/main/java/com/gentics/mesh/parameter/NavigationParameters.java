@@ -1,6 +1,5 @@
 package com.gentics.mesh.parameter;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.util.NumberUtils;
 
 public interface NavigationParameters extends ParameterProvider {
@@ -15,7 +14,7 @@ public interface NavigationParameters extends ParameterProvider {
 	 * @return
 	 */
 	default Integer getMaxDepth() {
-		return NumberUtils.toInteger(getParameter(MAX_DEPTH_QUERY_PARAM_KEY), Mesh.mesh().getOptions().getDefaultMaxDepth());
+		return NumberUtils.toInteger(getParameter(MAX_DEPTH_QUERY_PARAM_KEY), 10);
 	}
 
 	/**

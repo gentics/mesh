@@ -32,6 +32,7 @@ import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -46,6 +47,8 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 	private Database db;
 
 	private HandlerUtilities utils;
+
+	private Vertx vertx;
 
 	private static List<ConsistencyCheck> checks = Arrays.asList(
 		new GroupCheck(),
@@ -73,7 +76,8 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 	}
 
 	@Inject
-	public ConsistencyCheckHandler(Database db, HandlerUtilities utils) {
+	public ConsistencyCheckHandler(Vertx vertx, Database db, HandlerUtilities utils) {
+		this.vertx = vertx;
 		this.db = db;
 		this.utils = utils;
 	}

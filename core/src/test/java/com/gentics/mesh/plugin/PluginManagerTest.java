@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -198,7 +197,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 
 	@Test
 	public void testInitializeTimeoutPlugin() {
-		Mesh.mesh().getOptions().setPluginTimeout(2);
+		options().setPluginTimeout(2);
 		MeshPluginManager manager = pluginManager();
 		try {
 			manager.deploy(InitializeTimeoutPlugin.class, "timeout").blockingAwait();

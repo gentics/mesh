@@ -31,10 +31,10 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Mode;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Supplier;
 import com.gentics.mesh.image.focalpoint.FocalPointModifier;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
@@ -59,8 +59,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 	private WorkerExecutor workerPool;
 
-	public ImgscalrImageManipulator() {
-		this(new Vertx(Mesh.vertx()), Mesh.mesh().getOptions().getImageOptions());
+	public ImgscalrImageManipulator(Vertx vertx, MeshOptions options) {
+		this(vertx, options.getImageOptions());
 	}
 
 	ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options) {

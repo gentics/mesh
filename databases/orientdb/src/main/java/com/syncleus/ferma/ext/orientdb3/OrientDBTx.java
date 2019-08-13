@@ -6,6 +6,8 @@ import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.madl.traversal.RawTraversalResultImpl;
 import com.gentics.madl.tx.AbstractTx;
 import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.madl.tp3.mock.Element;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
@@ -17,13 +19,20 @@ import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
+
+	private static final Logger log = LoggerFactory.getLogger(OrientDBTx.class);
 
 	boolean isWrapped = false;
 	private final TypeResolver typeResolver;
+	private BootstrapInitializer boot;
 
-	public OrientDBTx(OrientGraphFactory factory, TypeResolver typeResolver) {
+	public OrientDBTx(BootstrapInitializer boot, OrientGraphFactory factory, TypeResolver typeResolver) {
 		this.typeResolver = typeResolver;
+		this.boot = boot;
 		// Check if an active transaction already exists.
 		Tx activeTx = Tx.get();
 		if (activeTx != null) {
@@ -35,8 +44,9 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 		}
 	}
 
-	public OrientDBTx(OrientStorage provider, TypeResolver typeResolver) {
+	public OrientDBTx(BootstrapInitializer boot, OrientStorage provider, TypeResolver typeResolver) {
 		this.typeResolver = typeResolver;
+		this.boot = boot;
 		// Check if an active transaction already exists.
 		Tx activeTx = Tx.get();
 		if (activeTx != null) {
@@ -100,5 +110,16 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	public int txId() {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	@Override
+	protected void init(FramedTransactionalGraph transactionalGraph) {
+		Mesh mesh = boot.mesh();
+		if (mesh != null) {
+			transactionalGraph.setAttribute("meshComponent", mesh.internal());
+		} else {
+			log.error("Could not set mesh component attribute. Followup errors may happen.");
+		}
+		super.init(transactionalGraph);
 	}
 }

@@ -40,7 +40,6 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.DaggerMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
@@ -80,7 +79,6 @@ public class SearchModelGenerator extends AbstractGenerator {
 	}
 
 	public static void initPaths() {
-		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
 		options.setNodeName("Example Generator");
 		options.getAuthenticationOptions().setKeystorePassword("ABCD");
@@ -102,7 +100,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		options.getStorageOptions().setDirectory(null);
 		options.getSearchOptions().setUrl(null);
 		options.setNodeName("exampleGenerator");
-		Mesh.mesh(options);
+		Mesh.create(options);
 	}
 
 	public void run() throws Exception {

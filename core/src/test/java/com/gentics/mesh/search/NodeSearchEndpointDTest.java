@@ -36,7 +36,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagResponse;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -116,7 +115,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 			schemaUuid = concorde.getSchemaContainer().getUuid();
 		}
 		// Clear the schema storage in order to purge the reference from the storage which we would otherwise modify.
-		MeshInternal.get().serverSchemaStorage().clear();
+		mesh().serverSchemaStorage().clear();
 
 		// 4. Invoke the schema migration
 		GenericMessageResponse message = call(() -> client().updateSchema(schemaUuid, schema, new SchemaUpdateParametersImpl()

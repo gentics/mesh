@@ -30,7 +30,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -191,7 +190,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		MeshInternal.get().branchCache().clear();
+		mesh().branchCache().clear();
 
 		try (Tx tx = tx()) {
 			NodeResponse migrated = migrateNode(PROJECT_NAME, movedNode.getUuid(), initialBranch().getName(), newBranch.getName());

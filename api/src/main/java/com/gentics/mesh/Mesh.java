@@ -24,9 +24,9 @@ public interface Mesh {
 	 * 
 	 * @return Fluent API
 	 */
-	static Mesh mesh(MeshOptions options) {
+	static Mesh create(MeshOptions options) {
 		options.validate();
-		return factory.mesh(options);
+		return factory.create(options);
 	}
 
 	/**
@@ -34,17 +34,8 @@ public interface Mesh {
 	 * 
 	 * @return Fluent API
 	 */
-	static Mesh mesh() {
-		return factory.mesh();
-	}
-
-	/**
-	 * Check whether Gentics Mesh has already been initialized.
-	 * 
-	 * @return
-	 */
-	static boolean isInitalized() {
-		return factory.isInitalized();
+	static Mesh create() {
+		return factory.create();
 	}
 
 	/**
@@ -115,28 +106,6 @@ public interface Mesh {
 	io.vertx.reactivex.core.Vertx getRxVertx();
 
 	/**
-	 * Returns the used vertx instance for mesh.
-	 * 
-	 * @return Vertx instance
-	 */
-	public static Vertx vertx() {
-		return factory.mesh().getVertx();
-	}
-
-	/**
-	 * Return the used vertx (rx variant) instance for mesh.
-	 * 
-	 * @return Rx Vertx instance
-	 */
-	public static io.vertx.reactivex.core.Vertx rxVertx() {
-		return factory.mesh().getRxVertx();
-	}
-
-	public static void main(String[] args) throws Exception {
-		Mesh.mesh().run();
-	}
-
-	/**
 	 * Set the current server status.
 	 * 
 	 * @param status
@@ -156,20 +125,21 @@ public interface Mesh {
 	}
 
 	/**
-	 * Check whether Vert.x ready to be used.
-	 * 
-	 * @return
-	 */
-	static boolean isVertxReady() {
-		return vertx() != null;
-	}
-
-	/**
 	 * Wait until shutdown has been invoked.
 	 * 
 	 * @throws InterruptedException
 	 */
 	void dontExit() throws InterruptedException;
+
+	/**
+	 * Returns the internal Mesh API.
+	 * 
+	 * @param <T>
+	 * @return
+	 */
+	<T> T internal();
+
+	<T> void setMeshInternal(T meshInternal);
 
 	/**
 	 * Deploy the plugin with the given class.

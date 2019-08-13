@@ -16,8 +16,6 @@ import com.gentics.mesh.BuildInfo;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.dagger.DB;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -118,7 +116,7 @@ public class MeshRootTest extends AbstractMeshTest {
 
 		// Downgrade one bugfix version is allowed if the database rev is the same
 		setMeshVersions("1.0.1", "1.0.0");
-		setDatabaseRev(DB.get().getDatabaseRevision());
+		setDatabaseRev(db().getDatabaseRevision());
 		boot().handleMeshVersion();
 
 		// Downgrade one bugfix version is not allowed if the database rev is different
@@ -195,7 +193,7 @@ public class MeshRootTest extends AbstractMeshTest {
 	}
 
 	private MeshVertex resolve(String pathToElement) throws InterruptedException {
-		return MeshInternal.get().boot().meshRoot().resolvePathToElement(pathToElement);
+		return mesh().boot().meshRoot().resolvePathToElement(pathToElement);
 	}
 
 }

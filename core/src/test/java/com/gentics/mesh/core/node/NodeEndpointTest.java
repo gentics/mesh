@@ -73,7 +73,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.VersioningParameters;
@@ -1345,7 +1344,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.setSegmentField(null);
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
-			MeshInternal.get().serverSchemaStorage().clear();
+			mesh().serverSchemaStorage().clear();
 			tx.success();
 		}
 

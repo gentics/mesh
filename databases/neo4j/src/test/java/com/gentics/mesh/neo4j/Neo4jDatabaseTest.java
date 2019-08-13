@@ -21,7 +21,7 @@ public class Neo4jDatabaseTest {
 		Neo4jIndexHandler indexHandler = new Neo4jIndexHandler();
 		Neo4jClusterManager clusterManager = new Neo4jClusterManager();
 		MetricsService metrics = Mockito.mock(MetricsService.class);
-		Neo4jDatabase db = new Neo4jDatabase(metrics, typeHandler, indexHandler, clusterManager);
+		Neo4jDatabase db = new Neo4jDatabase(null, metrics, typeHandler, indexHandler, clusterManager);
 
 		db.init(options, "1.0", "com.gentics.mesh.neo4j");
 		db.setupConnectionPool();

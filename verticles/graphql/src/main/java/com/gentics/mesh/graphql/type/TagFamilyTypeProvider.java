@@ -10,6 +10,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.parameter.PagingParameters;
 
@@ -28,7 +29,8 @@ public class TagFamilyTypeProvider extends AbstractTypeProvider {
 	public InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public TagFamilyTypeProvider() {
+	public TagFamilyTypeProvider(MeshOptions options) {
+		super(options);
 	}
 
 	public GraphQLObjectType createType() {

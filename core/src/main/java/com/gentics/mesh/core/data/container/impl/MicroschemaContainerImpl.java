@@ -21,7 +21,6 @@ import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
-import com.gentics.mesh.dagger.MeshInternal;
 
 /**
  * See {@link MicroschemaContainer}
@@ -51,7 +50,7 @@ public class MicroschemaContainerImpl extends
 
 	@Override
 	public RootVertex<MicroschemaContainer> getRoot() {
-		return MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot();
+		return mesh().boot().meshRoot().getMicroschemaContainerRoot();
 	}
 
 	@Override

@@ -7,10 +7,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.http.HttpConstants;
+import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.reactivex.annotations.Nullable;
@@ -40,15 +40,19 @@ public class PluginContext implements RoutingContext {
 
 	private static final Pattern BEARER = Pattern.compile("^Bearer$", Pattern.CASE_INSENSITIVE);
 
-	private RoutingContext rc;
+	private final RoutingContext rc;
+
+	private final PluginEnvironment env;
 
 	/**
 	 * Create a new plugin context which will wrap the {@link RoutingContext} of the handled request.
 	 * 
 	 * @param rc
+	 * @param env
 	 */
-	public PluginContext(RoutingContext rc) {
+	public PluginContext(RoutingContext rc, PluginEnvironment env) {
 		this.rc = rc;
+		this.env = env;
 	}
 
 	/**
@@ -57,7 +61,7 @@ public class PluginContext implements RoutingContext {
 	 * @return
 	 */
 	public MeshRestClient client() {
-		MeshOptions options = Mesh.mesh().getOptions();
+		MeshOptions options = env.options();
 		int port = options.getHttpServerOptions().getPort();
 		String host = options.getHttpServerOptions().getHost();
 		MeshRestClient client = MeshRestClient.create(host, port, false);

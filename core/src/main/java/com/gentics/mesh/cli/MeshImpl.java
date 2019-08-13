@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -20,11 +21,10 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.crypto.KeyStoreHelper;
+import com.gentics.mesh.dagger.DaggerMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.util.VersionUtil;
 
 import io.reactivex.Completable;
@@ -43,19 +43,21 @@ import io.vertx.core.logging.SLF4JLogDelegateFactory;
  */
 public class MeshImpl implements Mesh {
 
+	private static AtomicLong instanceCounter = new AtomicLong(0);
+
 	private static final Logger log;
 
 	private MeshCustomLoader<Vertx> verticleLoader;
 
 	private MeshOptions options;
 
-	private Vertx vertx;
-
-	private io.vertx.reactivex.core.Vertx rxVertx;
-
 	private CountDownLatch latch = new CountDownLatch(1);
 
 	private MeshStatus status = MeshStatus.STARTING;
+
+	private MeshComponent meshInternal;
+
+	boolean shutdown = false;
 
 	static {
 		// Use slf4j instead of jul
@@ -64,28 +66,34 @@ public class MeshImpl implements Mesh {
 	}
 
 	public MeshImpl(MeshOptions options) {
+		long current = instanceCounter.incrementAndGet();
+		if (current >= 2) {
+			if (options.getClusterOptions().isEnabled()) {
+				throw new RuntimeException("Clustering is currently limited to a single instance mode.");
+			}
+			if (options.getSearchOptions().isStartEmbedded()) {
+				throw new RuntimeException("Embedded ES support is currently limited to single instance mode");
+			}
+		}
 		Objects.requireNonNull(options, "Please specify a valid options object.");
 		this.options = options;
 	}
 
 	@Override
 	public Vertx getVertx() {
-		return vertx;
+		if (meshInternal == null) {
+			return null;
+		}
+		return meshInternal.vertx();
 	}
 
 	@Override
 	public io.vertx.reactivex.core.Vertx getRxVertx() {
-		if (vertx == null) {
+		if (getVertx() == null) {
 			return null;
 		}
-		if (rxVertx == null) {
-			rxVertx = new io.vertx.reactivex.core.Vertx(vertx);
-		}
-		return rxVertx;
-	}
 
-	public void setVertx(Vertx vertx) {
-		this.vertx = vertx;
+		return new io.vertx.reactivex.core.Vertx(getVertx());
 	}
 
 	@Override
@@ -96,6 +104,7 @@ public class MeshImpl implements Mesh {
 
 	@Override
 	public Mesh run(boolean block) throws Exception {
+		shutdown = false;
 		checkSystemRequirements();
 
 		setupKeystore(options);
@@ -126,8 +135,9 @@ public class MeshImpl implements Mesh {
 		}
 		// Create dagger context and invoke bootstrap init in order to startup mesh
 		try {
-			MeshInternal.create(options).boot().init(this, forceIndexSync, options, verticleLoader);
-
+			meshInternal = DaggerMeshComponent.builder().configuration(options).build();
+			setMeshInternal(meshInternal);
+			meshInternal.boot().init(this, forceIndexSync, options, verticleLoader);
 			if (options.isUpdateCheckEnabled()) {
 				try {
 					invokeUpdateCheck();
@@ -193,7 +203,7 @@ public class MeshImpl implements Mesh {
 	public void invokeUpdateCheck() {
 		String currentVersion = Mesh.getPlainVersion();
 		log.info("Checking for updates..");
-		HttpClientRequest request = Mesh.vertx().createHttpClient(new HttpClientOptions().setSsl(true).setTrustAll(false)).get(443, "getmesh.io",
+		HttpClientRequest request = getVertx().createHttpClient(new HttpClientOptions().setSsl(true).setTrustAll(false)).get(443, "getmesh.io",
 			"/api/updatecheck?v=" + Mesh.getPlainVersion(), rh -> {
 				int code = rh.statusCode();
 				if (code < 200 || code >= 299) {
@@ -339,7 +349,10 @@ public class MeshImpl implements Mesh {
 
 	@Override
 	public void shutdown() throws Exception {
-		MeshComponent meshInternal = MeshInternal.get();
+		if (shutdown) {
+			log.info("Instance is already shut down...");
+			return;
+		}
 
 		log.info("Mesh shutting down...");
 		setStatus(MeshStatus.SHUTTING_DOWN);
@@ -359,11 +372,12 @@ public class MeshImpl implements Mesh {
 		}
 		meshInternal.database().stop();
 
-		MeshFactoryImpl.clear();
-		BootstrapInitializerImpl.clearReferences();
+		meshInternal.boot().clearReferences();
 		deleteLock();
+		meshInternal = null;
 		log.info("Shutdown completed...");
 		latch.countDown();
+		shutdown = true;
 	}
 
 	/**
@@ -410,13 +424,23 @@ public class MeshImpl implements Mesh {
 	@Override
 	public Completable deployPlugin(Class<?> clazz, String id) {
 		return Completable.defer(() -> {
-			return MeshInternal.get().pluginManager().deploy(clazz, id);
+			return meshInternal.pluginManager().deploy(clazz, id);
 		});
 	}
 
 	@Override
 	public Set<String> pluginIds() {
-		return MeshInternal.get().pluginManager().getPluginIds();
+		return meshInternal.pluginManager().getPluginIds();
+	}
+
+	@Override
+	public <T> T internal() {
+		return (T) meshInternal;
+	}
+
+	@Override
+	public <T> void setMeshInternal(T meshInternal) {
+		this.meshInternal = (MeshComponent) meshInternal;
 	}
 
 }

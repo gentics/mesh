@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.binary.BinaryDataProcessor;
@@ -39,6 +38,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.storage.BinaryStorage;
@@ -79,6 +79,8 @@ public class BinaryUploadHandler extends AbstractHandler {
 
 	private FileSystem fs;
 
+	private final MeshOptions options;
+
 	@Inject
 	public BinaryUploadHandler(ImageManipulator imageManipulator,
 		Database db,
@@ -86,7 +88,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 		BinaryFieldResponseHandler binaryFieldResponseHandler,
 		BinaryStorage binaryStorage,
 		BinaryProcessorRegistry binaryProcessorRegistry,
-		HandlerUtilities utils, Vertx rxVertx) {
+		HandlerUtilities utils, Vertx rxVertx, MeshOptions options) {
 
 		this.db = db;
 		this.boot = boot;
@@ -95,10 +97,11 @@ public class BinaryUploadHandler extends AbstractHandler {
 		this.binaryProcessorRegistry = binaryProcessorRegistry;
 		this.utils = utils;
 		this.fs = rxVertx.fileSystem();
+		this.options = options;
 	}
 
 	private void validateFileUpload(FileUpload ul, String fieldName) {
-		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
+		MeshUploadOptions uploadOptions = options.getUploadOptions();
 		long byteLimit = uploadOptions.getByteLimit();
 
 		if (ul.size() > byteLimit) {

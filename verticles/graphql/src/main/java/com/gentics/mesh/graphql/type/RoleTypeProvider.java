@@ -9,6 +9,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import graphql.schema.GraphQLObjectType;
@@ -25,7 +26,8 @@ public class RoleTypeProvider extends AbstractTypeProvider {
 	public InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public RoleTypeProvider() {
+	public RoleTypeProvider(MeshOptions options) {
+		super(options);
 	}
 
 	public GraphQLObjectType createType() {

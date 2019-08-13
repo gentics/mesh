@@ -59,10 +59,10 @@ public class TxFactoryTest implements TxFactory {
 		FramedTransactionalGraph graph = Mockito.mock(FramedTransactionalGraph.class);
 		tx.init(graph);
 		try (Tx tx2 = tx) {
-			assertNotNull(Tx.getActive());
+			assertNotNull(Tx.get());
 			tx2.success();
 		}
-		assertNull(Tx.getActive());
+		assertNull(Tx.get());
 		verify(tx).close();
 		verify(graph).commit();
 		verify(graph).close();
@@ -77,10 +77,10 @@ public class TxFactoryTest implements TxFactory {
 		FramedTransactionalGraph graph = Mockito.mock(FramedTransactionalGraph.class);
 		tx.init(graph);
 		try (Tx tx2 = tx) {
-			assertNotNull(Tx.getActive());
+			assertNotNull(Tx.get());
 			// Don't call tx2.success() or tx2.failure()
 		}
-		assertNull(Tx.getActive());
+		assertNull(Tx.get());
 		verify(tx).close();
 		verify(graph).rollback();
 		verify(graph).close();
@@ -95,10 +95,10 @@ public class TxFactoryTest implements TxFactory {
 		FramedTransactionalGraph graph = Mockito.mock(FramedTransactionalGraph.class);
 		tx.init(graph);
 		try (Tx tx2 = tx) {
-			assertNotNull(Tx.getActive());
+			assertNotNull(Tx.get());
 			tx2.failure();
 		}
-		assertNull(Tx.getActive());
+		assertNull(Tx.get());
 		verify(tx).close();
 		verify(graph).rollback();
 		verify(graph).close();

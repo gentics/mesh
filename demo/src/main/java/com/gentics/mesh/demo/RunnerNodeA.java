@@ -6,7 +6,6 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.demo.verticle.DemoAppEndpoint;
 import com.gentics.mesh.demo.verticle.DemoVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -45,16 +44,16 @@ public class RunnerNodeA {
 		options.getClusterOptions().setEnabled(true);
 		options.getClusterOptions().setClusterName("testcluster");
 
-		Mesh mesh = Mesh.mesh(options);
+		final Mesh mesh = Mesh.create(options);
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());
-			MeshComponent meshInternal = MeshInternal.get();
+			MeshComponent meshInternal = mesh.internal();
 			EndpointRegistry registry = meshInternal.endpointRegistry();
 
 			// Add demo content provider
 			registry.register(DemoAppEndpoint.class);
-			DemoVerticle demoVerticle = new DemoVerticle(new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(),
+			DemoVerticle demoVerticle = new DemoVerticle(meshInternal.boot(), new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(),
 					meshInternal.boot()));
 			DeploymentUtil.deployAndWait(vertx, config, demoVerticle, false);
 

@@ -18,7 +18,7 @@ public final class MavenUtilities {
 	/**
 	 * Url that points to the internal repository
 	 */
-	public static String INTERNAL_REPOSITORY_URL_SEGMENT = "maven.gentics.com/maven2";
+	public static final String INTERNAL_REPOSITORY_URL_SEGMENT = "maven.gentics.com/maven2";
 
 	/**
 	 * Return the artifact url for the given maven coordinates.

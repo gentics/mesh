@@ -4,9 +4,8 @@ import javax.inject.Singleton;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
-import com.gentics.mesh.core.image.spi.ImageManipulatorService;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
@@ -16,6 +15,8 @@ import dagger.Module;
 import dagger.Provides;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
 
@@ -25,20 +26,15 @@ import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
 @Module
 public class MeshModule {
 
+	private static Logger log = LoggerFactory.getLogger(BootstrapInitializer.class);
+
 	private static final int PASSWORD_HASH_LOGROUND_COUNT = 10;
 
 	@Provides
 	@Singleton
-	public static ImageManipulatorService imageProviderService() {
-		return ImageManipulatorService.getInstance();
+	public static ImageManipulator imageProvider(io.vertx.reactivex.core.Vertx vertx, MeshOptions options) {
+		return new ImgscalrImageManipulator(vertx, options);
 	}
-
-	@Provides
-	@Singleton
-	public static ImageManipulator imageProvider() {
-		return new ImgscalrImageManipulator();
-	}
-
 
 	@Provides
 	@Singleton
@@ -73,13 +69,13 @@ public class MeshModule {
 	}
 
 	@Provides
-	public static Vertx vertx() {
-		return Mesh.vertx();
+	public static Vertx vertx(BootstrapInitializer boot) {
+		return boot.vertx();
 	}
 
 	@Provides
-	public static io.vertx.reactivex.core.Vertx rxVertx() {
-		return Mesh.rxVertx();
+	public static io.vertx.reactivex.core.Vertx rxVertx(Vertx vertx) {
+		return new io.vertx.reactivex.core.Vertx(vertx);
 	}
 
 	/**

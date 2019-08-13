@@ -1,21 +1,23 @@
 package com.gentics.mesh.router;
 
-import com.gentics.mesh.Mesh;
-import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.graphdb.spi.Database;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.Router;
-
-import javax.naming.InvalidNameException;
-import java.util.HashMap;
-import java.util.Map;
-
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.naming.InvalidNameException;
+
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.graphdb.spi.Database;
+
+import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.Router;
 
 /**
  * Router for all projects (e.g.: :apibase:/demo) The project router {@link ProjectRouter} will later contain the actual project specific endpoints. (e.g.:
@@ -34,14 +36,18 @@ public class ProjectsRouter {
 	 */
 	private Map<String, Router> projectRouters = new HashMap<>();
 
+	private final Vertx vertx;
+
 	private APIRouter apiRouter;
 
 	private Router router;
 
-	public ProjectsRouter(APIRouter apiRouter) {
+
+	public ProjectsRouter(Vertx vertx, APIRouter apiRouter) {
+		this.vertx = vertx;
 		this.apiRouter = apiRouter;
-		this.router = Router.router(Mesh.vertx());
-		this.projectRouter = new ProjectRouter(apiRouter.getRoot().getStorage());
+		this.router = Router.router(vertx);
+		this.projectRouter = new ProjectRouter(vertx, apiRouter.getRoot().getStorage());
 		apiRouter.getRouter().mountSubRouter("/", router);
 	}
 
@@ -72,7 +78,7 @@ public class ProjectsRouter {
 		assertProjectNameValid(name);
 		Router projectRouter = projectRouters.get(name);
 		if (projectRouter == null) {
-			projectRouter = Router.router(Mesh.vertx());
+			projectRouter = Router.router(vertx);
 
 			projectRouters.put(name, projectRouter);
 			log.info("Added project router {" + name + "}");

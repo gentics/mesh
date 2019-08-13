@@ -19,7 +19,6 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.gentics.graphqlfilter.filter.StartFilter;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -33,6 +32,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.error.MeshConfigurationException;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.parameter.LinkType;
@@ -53,8 +53,10 @@ public abstract class AbstractTypeProvider {
 
 	public static final String LINK_TYPE_NAME = "LinkType";
 
-	public AbstractTypeProvider() {
+	private final MeshOptions options;
 
+	public AbstractTypeProvider(MeshOptions options) {
+		this.options = options;
 	}
 
 	/**
@@ -96,7 +98,7 @@ public abstract class AbstractTypeProvider {
 		if (argument != null) {
 			return argument;
 		} else {
-			return Mesh.mesh().getOptions().getDefaultLanguage();
+			return options.getDefaultLanguage();
 		}
 	}
 
@@ -130,7 +132,7 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	public List<String> getLanguageArgument(DataFetchingEnvironment env, List<String> preferedLanguages) {
-		String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
+		String defaultLanguage = options.getDefaultLanguage();
 		List<String> languageTags = new ArrayList<>();
 
 		// 1. Any manual specified fallback is preferred
@@ -158,7 +160,7 @@ public abstract class AbstractTypeProvider {
 	public GraphQLArgument createLanguageTagArg(boolean withDefaultLang) {
 
 		// #lang
-		String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
+		String defaultLanguage = options.getDefaultLanguage();
 		graphql.schema.GraphQLArgument.Builder arg = newArgument()
 			.name("lang")
 			.type(new GraphQLList(GraphQLString))
@@ -174,7 +176,7 @@ public abstract class AbstractTypeProvider {
 	public GraphQLArgument createSingleLanguageTagArg(boolean withDefaultLang) {
 
 		// #lang
-		String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
+		String defaultLanguage = options.getDefaultLanguage();
 		graphql.schema.GraphQLArgument.Builder arg = newArgument()
 			.name("lang")
 			.type(GraphQLString)

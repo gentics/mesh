@@ -2,6 +2,7 @@ package com.gentics.mesh.graphql.type;
 
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
@@ -30,7 +31,8 @@ public class UserTypeProvider extends AbstractTypeProvider {
 	public InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public UserTypeProvider() {
+	public UserTypeProvider(MeshOptions options) {
+		super(options);
 	}
 
 	public GraphQLObjectType createType() {

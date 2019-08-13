@@ -23,7 +23,7 @@ import com.tinkerpop.blueprints.Element;
 
 public interface ElementFrame {
 
-	static String TYPE_RESOLUTION_KEY = "ferma_type";
+	static final String TYPE_RESOLUTION_KEY = "ferma_type";
 
 	/**
 	 * @return The id of this element.
@@ -131,5 +131,7 @@ public interface ElementFrame {
 	 * @return The query.
 	 */
 	EdgeTraversal<?, ?, ?> e(final Object... ids);
+
+	<T> T getGraphAttribute(String key);
 
 }
