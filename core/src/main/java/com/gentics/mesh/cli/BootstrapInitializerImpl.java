@@ -1017,4 +1017,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public boolean isInitialSetup() {
 		return isInitialSetup;
 	}
+
+	@Override
+	public boolean isVertxReady() {
+		return vertx != null;
+	}
 }

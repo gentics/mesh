@@ -278,4 +278,11 @@ public interface BootstrapInitializer {
 	 */
 	void clearReferences();
 
+	/**
+	 * Check whether the Vert.x instance is ready.
+	 * 
+	 * @return
+	 */
+	boolean isVertxReady();
+
 }

@@ -23,6 +23,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.etc.config.ClusterOptions;
@@ -76,9 +77,12 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	private final Lazy<OrientDBDatabase> db;
 
+	private final Lazy<BootstrapInitializer> boot;
+
 	@Inject
-	public OrientDBClusterManager(Lazy<Vertx> vertx, MeshOptions options, Lazy<OrientDBDatabase> db) {
+	public OrientDBClusterManager(Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, MeshOptions options, Lazy<OrientDBDatabase> db) {
 		this.vertx = vertx;
+		this.boot = boot;
 		this.options = options;
 		this.db = db;
 	}
@@ -370,7 +374,7 @@ public class OrientDBClusterManager implements ClusterManager {
 		server.activate();
 		if (isClusteringEnabled) {
 			ODistributedServerManager distributedManager = server.getDistributedManager();
-			topologyEventBridge = new TopologyEventBridge(vertx, this);
+			topologyEventBridge = new TopologyEventBridge(vertx, boot, this);
 			distributedManager.registerLifecycleListener(topologyEventBridge);
 			if (server.getDistributedManager() instanceof OHazelcastPlugin) {
 				hazelcastPlugin = (OHazelcastPlugin) distributedManager;

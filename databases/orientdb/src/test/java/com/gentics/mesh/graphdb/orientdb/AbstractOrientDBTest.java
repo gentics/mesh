@@ -30,7 +30,7 @@ public class AbstractOrientDBTest {
 		Lazy<BootstrapInitializer> lazyBoot = mock(Lazy.class);
 		BootstrapInitializer bootMock = mock(BootstrapInitializer.class);
 		when(lazyBoot.get()).thenReturn(bootMock);
-		Database db = new OrientDBDatabase(null, lazyBoot, metrics, null, null, new OrientDBClusterManager(null, null, null));
+		Database db = new OrientDBDatabase(null, lazyBoot, metrics, null, null, new OrientDBClusterManager(null, null, null, null));
 		return db;
 	}
 
