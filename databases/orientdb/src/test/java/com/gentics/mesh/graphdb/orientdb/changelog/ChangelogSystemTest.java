@@ -40,7 +40,6 @@ import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.ResettableCounter;
 import com.tinkerpop.blueprints.Vertex;
 
-import io.vertx.core.Vertx;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 

@@ -10,7 +10,7 @@ import java.util.stream.IntStream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.cache.WebrootPathCacheImpl;
+import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
@@ -34,10 +34,10 @@ public class WebRootServiceImpl implements WebRootService {
 
 	private final Database database;
 
-	private final WebrootPathCacheImpl pathStore;
+	private final WebrootPathCache pathStore;
 
 	@Inject
-	public WebRootServiceImpl(Database database, WebrootPathCacheImpl pathStore) {
+	public WebRootServiceImpl(Database database, WebrootPathCache pathStore) {
 		this.database = database;
 		this.pathStore = pathStore;
 	}

@@ -24,7 +24,7 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAnonymousAccess() {
-		client().logout().toCompletable().blockingAwait();
+		client().logout().ignoreElement().blockingAwait();
 		UserResponse response = call(() -> client().me());
 		assertEquals(MeshJWTAuthHandler.ANONYMOUS_USERNAME, response.getUsername());
 
@@ -41,9 +41,9 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
 
 		// Test toggling the anonymous option
-		meshApi().getOptions().getAuthenticationOptions().setEnableAnonymousAccess(false);
+		options().getAuthenticationOptions().setEnableAnonymousAccess(false);
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), UNAUTHORIZED, "error_not_authorized");
-		meshApi().getOptions().getAuthenticationOptions().setEnableAnonymousAccess(true);
+		options().getAuthenticationOptions().setEnableAnonymousAccess(true);
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
 
 		// Verify that anonymous access does not work if the anonymous user is deleted
@@ -61,7 +61,7 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		client().logout().toCompletable().blockingAwait();
+		client().logout().ignoreElement().blockingAwait();
 		call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new VersioningParametersImpl().setVersion("published")));
 	}
 

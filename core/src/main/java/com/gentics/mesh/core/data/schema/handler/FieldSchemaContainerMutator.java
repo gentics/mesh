@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.schema.handler;
 
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
+import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -22,7 +23,7 @@ public class FieldSchemaContainerMutator {
 	 * @return
 	 */
 	public <RM extends FieldSchemaContainer> RM apply(GraphFieldSchemaContainerVersion<?, RM, ?, ?, ?> containerVersion) {
-		MeshComponent mesh = containerVersion.getGraph().getAttribute("meshComponent");
+		MeshComponent mesh = containerVersion.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		RM oldSchema = containerVersion.getSchema();
 		mesh.serverSchemaStorage().remove(oldSchema);
 		SchemaChange<?> change = containerVersion.getNextChange();

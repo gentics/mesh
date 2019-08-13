@@ -63,15 +63,7 @@ public class WebrootPathCacheImpl extends AbstractMeshCache<String, Path> implem
 			.build();
 	}
 
-	/**
-	 * Check whether the cache has the path already stored.
-	 * 
-	 * @param project
-	 * @param branch
-	 * @param type
-	 * @param path
-	 * @return Path, if the path could be found in the cache. Otherwise null
-	 */
+	@Override
 	public Path getPath(Project project, Branch branch, ContainerType type, String path) {
 		if (isDisabled()) {
 			if (log.isTraceEnabled()) {
@@ -83,6 +75,14 @@ public class WebrootPathCacheImpl extends AbstractMeshCache<String, Path> implem
 		return cache.get(key);
 	}
 
+	@Override
+	public void store(Project project, Branch branch, ContainerType type, String path, Path resolvedPath) {
+		if (isDisabled()) {
+			return;
+		}
+		cache.put(createCacheKey(project, branch, type, path), resolvedPath);
+	}
+
 	/**
 	 * Create the cache key.
 	 * 
@@ -92,27 +92,6 @@ public class WebrootPathCacheImpl extends AbstractMeshCache<String, Path> implem
 	 */
 	private String createCacheKey(Project project, Branch branch, ContainerType type, String path) {
 		return project.id() + "-" + branch.id() + "-" + type.getCode() + "-" + path;
-	}
-
-	/**
-	 * Store a path in the cache.
-	 * 
-	 * @param project
-	 *            Project for which the path is valid
-	 * @param branch
-	 *            Used branch
-	 * @param type
-	 *            Type of the resolved content
-	 * @param path
-	 *            Webroot path
-	 * @param resolvedPath
-	 *            Resolved webroot path to be put in the cache
-	 */
-	public void store(Project project, Branch branch, ContainerType type, String path, Path resolvedPath) {
-		if (isDisabled()) {
-			return;
-		}
-		cache.put(createCacheKey(project, branch, type, path), resolvedPath);
 	}
 
 }

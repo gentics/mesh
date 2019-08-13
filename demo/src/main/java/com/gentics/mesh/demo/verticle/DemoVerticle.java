@@ -8,7 +8,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.demo.DemoDataProvider;
 
 import io.vertx.core.AbstractVerticle;

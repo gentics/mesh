@@ -310,6 +310,4 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	 */
 	void setWarnings(JobWarningList warnings);
 
-	MeshOptions options();
-
 }

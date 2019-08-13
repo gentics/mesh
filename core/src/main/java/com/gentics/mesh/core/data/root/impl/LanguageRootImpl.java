@@ -21,7 +21,6 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -76,8 +75,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 	 */
 	@Override
 	public Language findByLanguageTag(String languageTag) {
-		Database db = mesh().database();
-		Iterator<Vertex> it = db.getVertices(LanguageImpl.class, new String[] { LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY },
+		Iterator<Vertex> it = db().getVertices(LanguageImpl.class, new String[] { LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY },
 				new Object[] { languageTag });
 		if (it.hasNext()) {
 			//TODO check whether the language was assigned to this root node?

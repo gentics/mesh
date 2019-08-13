@@ -380,7 +380,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			String segmentInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(parentNode, segment);
 			Object webRootIndexKey = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(db(), segmentInfo, branchUuid, type);
 			// check for uniqueness of webroot path
-			GraphFieldContainerEdge conflictingEdge = mesh().database().index().checkIndexUniqueness(WEBROOT_INDEX_NAME, edge, webRootIndexKey);
+			GraphFieldContainerEdge conflictingEdge = db().index().checkIndexUniqueness(WEBROOT_INDEX_NAME, edge, webRootIndexKey);
 			if (conflictingEdge != null) {
 				Node conflictingNode = conflictingEdge.getNode();
 				NodeGraphFieldContainer conflictingContainer = conflictingEdge.getNodeContainer();

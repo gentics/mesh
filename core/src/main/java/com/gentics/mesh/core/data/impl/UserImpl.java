@@ -343,7 +343,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				// vertex with the specified label
 				String roleEdgeIdx = "e." + permission.label() + "_inout";
 				Iterable<Edge> edges = graph.getEdges(roleEdgeIdx.toLowerCase(),
-					mesh().database().index().createComposedIndexKey(elementId, role.getId()));
+					db().index().createComposedIndexKey(elementId, role.getId()));
 				boolean foundPermEdge = edges.iterator().hasNext();
 				if (foundPermEdge) {
 					// We only store granting permissions in the store in order

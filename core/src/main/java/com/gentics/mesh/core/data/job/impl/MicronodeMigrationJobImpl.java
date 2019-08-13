@@ -11,7 +11,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.MicronodeMigrationContext;
 import com.gentics.mesh.context.impl.MicronodeMigrationContextImpl;
 import com.gentics.mesh.core.data.Branch;
@@ -29,8 +28,6 @@ import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
-import com.gentics.mesh.event.EventQueueBatch;
-
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -60,7 +57,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 			model.setBranch(branch.transformToReference());
 		}
 
-		model.setOrigin(mesh().options().getNodeName());
+		model.setOrigin(options().getNodeName());
 		model.setStatus(status);
 		return model;
 	}
@@ -68,7 +65,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 	private MicronodeMigrationContext prepareContext() {
 		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, vertx(), JobType.microschema);
 		try {
-			return mesh().database().tx(() -> {
+			return db().tx(() -> {
 				MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();
 				context.setStatus(status);
 
@@ -104,7 +101,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 				cause.setFromVersion(fromContainerVersion.transformToReference());
 				cause.setToVersion(toContainerVersion.transformToReference());
 				cause.setBranch(branch.transformToReference());
-				cause.setOrigin(mesh().options().getNodeName());
+				cause.setOrigin(options().getNodeName());
 				cause.setUuid(getUuid());
 				context.setCause(cause);
 
@@ -112,7 +109,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 				return context;
 			});
 		} catch (Exception e) {
-			mesh().database().tx(() -> {
+			db().tx(() -> {
 				status.error(e, "Error while preparing micronode migration.");
 			});
 			throw e;
@@ -126,14 +123,14 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 			MicronodeMigrationHandler handler = mesh().micronodeMigrationHandler();
 			return handler.migrateMicronodes(context)
 				.doOnComplete(() -> {
-					mesh().database().tx(() -> {
+					db().tx(() -> {
 						JobWarningList warnings = new JobWarningList();
 						setWarnings(warnings);
 						finializeMigration(context);
 						context.getStatus().done();
 					});
 				}).doOnError(err -> {
-					mesh().database().tx(() -> {
+					db().tx(() -> {
 						context.getStatus().error(err, "Error in micronode migration.");
 						createBatch().add(createEvent(BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
 					});
@@ -142,7 +139,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 	}
 
 	private void finializeMigration(MicronodeMigrationContext context) {
-		mesh().database().tx(() -> {
+		db().tx(() -> {
 			createBatch().add(createEvent(MICROSCHEMA_MIGRATION_FINISHED, COMPLETED)).dispatch();
 		});
 	}

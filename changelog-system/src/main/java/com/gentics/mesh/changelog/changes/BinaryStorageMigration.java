@@ -11,7 +11,6 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.AbstractChange;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.google.common.io.Files;

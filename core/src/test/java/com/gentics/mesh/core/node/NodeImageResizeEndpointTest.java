@@ -70,7 +70,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 		// 1. Upload image
 		uploadImage(node, "en", "image");
-		ImageManipulatorOptions options = meshApi().getOptions().getImageOptions();
+		ImageManipulatorOptions options = options().getImageOptions();
 
 		// 2. Resize image
 		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(options.getMaxWidth() + 1).setHeight(102);
@@ -85,7 +85,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 		// 1. Upload image
 		uploadImage(node, "en", "image");
-		ImageManipulatorOptions options = meshApi().getOptions().getImageOptions();
+		ImageManipulatorOptions options = options().getImageOptions();
 
 		// 2. Resize image
 		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(options.getMaxWidth()).setHeight(102);

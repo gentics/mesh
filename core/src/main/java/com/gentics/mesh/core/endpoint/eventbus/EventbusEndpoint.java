@@ -2,7 +2,6 @@ package com.gentics.mesh.core.endpoint.eventbus;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.rest.InternalEndpointRoute;

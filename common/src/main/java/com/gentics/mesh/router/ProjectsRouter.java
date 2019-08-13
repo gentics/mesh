@@ -10,7 +10,6 @@ import java.util.Map;
 
 import javax.naming.InvalidNameException;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;

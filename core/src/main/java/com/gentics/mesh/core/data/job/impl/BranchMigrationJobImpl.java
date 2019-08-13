@@ -10,7 +10,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BranchMigrationContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Branch;
@@ -23,7 +22,6 @@ import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
-import com.gentics.mesh.event.EventQueueBatch;
 
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
@@ -48,7 +46,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 		model.setProject(project.transformToReference());
 
 		model.setStatus(status);
-		model.setOrigin(mesh().options().getNodeName());
+		model.setOrigin(options().getNodeName());
 		return model;
 	}
 
@@ -82,7 +80,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 
 				BranchMigrationCause cause = new BranchMigrationCause();
 				cause.setProject(newBranch.getProject().transformToReference());
-				cause.setOrigin(mesh().options().getNodeName());
+				cause.setOrigin(options().getNodeName());
 				cause.setUuid(getUuid());
 				context.setCause(cause);
 

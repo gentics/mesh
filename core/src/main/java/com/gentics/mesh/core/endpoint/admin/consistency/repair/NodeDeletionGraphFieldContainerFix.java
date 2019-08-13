@@ -17,6 +17,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.syncleus.ferma.FramedGraph;
 
@@ -32,7 +33,7 @@ public class NodeDeletionGraphFieldContainerFix {
 	private static final Logger log = LoggerFactory.getLogger(NodeDeletionGraphFieldContainerFix.class);
 
 	public boolean repair(NodeGraphFieldContainer container) {
-		MeshComponent mesh = container.getGraph().getAttribute("meshComponent");
+		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		BootstrapInitializer boot = mesh.boot();
 		// Pick the first project we find to fetch the initial branchUuid
 		Project project = boot.meshRoot().getProjectRoot().findAll().iterator().next();

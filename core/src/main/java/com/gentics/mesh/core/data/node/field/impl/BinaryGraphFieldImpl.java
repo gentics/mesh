@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
@@ -61,7 +62,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	};
 
 	public static FieldUpdater BINARY_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		MeshComponent mesh = container.getGraph().getAttribute("meshComponent");
+		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		BinaryGraphField graphBinaryField = container.getBinary(fieldKey);
 		BinaryField binaryField = fieldMap.getBinaryField(fieldKey);
 		boolean isBinaryFieldSetToNull = fieldMap.hasField(fieldKey) && binaryField == null && graphBinaryField != null;

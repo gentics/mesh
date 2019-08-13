@@ -55,7 +55,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 		model.setProject(project.transformToReference());
 		model.setBranch(branch.transformToReference());
 
-		model.setOrigin(mesh().boot().mesh().getOptions().getNodeName());
+		model.setOrigin(options().getNodeName());
 		model.setStatus(status);
 		return model;
 	}
@@ -110,7 +110,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 				cause.setToVersion(toContainerVersion.transformToReference());
 				cause.setProject(project.transformToReference());
 				cause.setBranch(branch.transformToReference());
-				cause.setOrigin(mesh().boot().mesh().getOptions().getNodeName());
+				cause.setOrigin(options().getNodeName());
 				cause.setUuid(getUuid());
 				context.setCause(cause);
 

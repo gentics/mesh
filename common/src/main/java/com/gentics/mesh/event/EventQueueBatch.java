@@ -7,7 +7,6 @@ import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.rest.event.EventCauseAction;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
-import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 
 /**
  * A batch of event queue entries.

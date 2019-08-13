@@ -14,6 +14,7 @@ import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.handler.VersionHandler;
@@ -189,7 +190,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	 * @param projectName
 	 */
 	public void setProject(String projectName) {
-		MeshComponent mesh = user.getGraphAttribute("meshComponent");
+		MeshComponent mesh = user.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		mesh.database().tx(() -> {
 			BootstrapInitializer boot = mesh.boot();
 			Project project = boot.projectRoot().findByName(projectName);

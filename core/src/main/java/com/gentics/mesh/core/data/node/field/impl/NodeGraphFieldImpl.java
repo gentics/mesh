@@ -33,6 +33,7 @@ import com.gentics.mesh.core.data.node.field.list.ListGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.NodeField;
@@ -57,7 +58,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	};
 
 	public static FieldUpdater NODE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		MeshComponent mesh = container.getGraph().getAttribute("meshComponent");
+		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		NodeGraphField graphNodeField = container.getNode(fieldKey);
 		NodeField nodeField = fieldMap.getNodeField(fieldKey);
 		boolean isNodeFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeField == null);

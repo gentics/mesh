@@ -2,7 +2,6 @@
 package com.gentics.mesh.core.eventbus;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.assertj.MeshAssertions;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;

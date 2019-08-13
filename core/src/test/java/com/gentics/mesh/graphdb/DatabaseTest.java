@@ -35,7 +35,7 @@ public class DatabaseTest extends AbstractMeshTest {
 	public void createOutputDirectory() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
 		outputDirectory = new File("target", "tmp_" + System.currentTimeMillis());
 		outputDirectory.mkdirs();
-		meshApi().getOptions().getStorageOptions().setDirectory(new File(outputDirectory, "graphdb").getAbsolutePath());
+		options().getStorageOptions().setDirectory(new File(outputDirectory, "graphdb").getAbsolutePath());
 		// db().reset();
 		// setupData();
 	}

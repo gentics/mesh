@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -198,7 +199,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 */
 	public static boolean matchesBranchAndType(Object nodeId, String branchUuid, ContainerType type) {
 		FramedGraph graph = Tx.get().getGraph();
-		MeshComponent mesh = graph.getAttribute("meshComponent");
+		MeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
 			mesh.database().index().createComposedIndexKey(nodeId, branchUuid, type.getCode()));
 		return edges.iterator().hasNext();
@@ -206,7 +207,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 
 	public static GraphFieldContainerEdge findEdge(Object nodeId, String branchUuid, String code, String lang) {
 		FramedGraph graph = Tx.get().getGraph();
-		MeshComponent mesh = graph.getAttribute("meshComponent");
+		MeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_branch_type_lang",
 			mesh.database().index().createComposedIndexKey(nodeId, branchUuid, code, lang));
 		Iterator<? extends GraphFieldContainerEdge> frames = graph.frameExplicit(edges.iterator(), GraphFieldContainerEdgeImpl.class);
@@ -219,7 +220,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 
 	public static TraversalResult<? extends GraphFieldContainerEdgeImpl> findEdges(Object nodeId, String branchUuid, ContainerType type) {
 		FramedGraph graph = Tx.get().getGraph();
-		MeshComponent mesh = graph.getAttribute("meshComponent");
+		MeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
 			mesh.database().index().createComposedIndexKey(nodeId, branchUuid, type.getCode()));
 		Iterator<? extends GraphFieldContainerEdgeImpl> frames = graph.frameExplicit(edges.iterator(), GraphFieldContainerEdgeImpl.class);

@@ -79,7 +79,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 
 	private FileSystem fs;
 
-	private MeshOptions options;
+	private final MeshOptions options;
 
 	@Inject
 	public BinaryUploadHandler(ImageManipulator imageManipulator,

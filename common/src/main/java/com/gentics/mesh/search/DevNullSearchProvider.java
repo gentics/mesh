@@ -1,6 +1,5 @@
 package com.gentics.mesh.search;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.Bulkable;

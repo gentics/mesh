@@ -37,7 +37,6 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
 
 /**
  * @see BranchRoot
@@ -112,7 +111,6 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 
 	@Override
 	public Branch create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		Database db = mesh().database();
 
 		BranchCreateRequest request = ac.fromJson(BranchCreateRequest.class);
 		MeshAuthUser requestUser = ac.getUser();
@@ -131,7 +129,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		}
 
 		// Check for uniqueness of branch name (per project)
-		Branch conflictingBranch = db.index().checkIndexUniqueness(BranchImpl.UNIQUENAME_INDEX_NAME, BranchImpl.class, getUniqueNameKey(request
+		Branch conflictingBranch = db().index().checkIndexUniqueness(BranchImpl.UNIQUENAME_INDEX_NAME, BranchImpl.class, getUniqueNameKey(request
 			.getName()));
 		if (conflictingBranch != null) {
 			throw conflict(conflictingBranch.getUuid(), conflictingBranch.getName(), "branch_conflicting_name", request.getName());

@@ -12,7 +12,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.madl.tx.Tx;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -26,7 +25,7 @@ public class NodeContainerTransformerTest extends AbstractMeshTest {
 
 	@Test
 	public void testNodeTagFamilyTransformer() {
-		NodeContainerTransformer transformer = new NodeContainerTransformer(meshApi().getOptions());
+		NodeContainerTransformer transformer = new NodeContainerTransformer(options());
 		try (Tx tx = tx()) {
 			Branch branch = project().getLatestBranch();
 			NodeGraphFieldContainer node = content("concorde").getGraphFieldContainer(english(), branch, PUBLISHED);

@@ -79,6 +79,7 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.dagger.MeshComponent;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.LinkType;
@@ -139,6 +140,10 @@ public interface TestHelper {
 
 	default BootstrapInitializer boot() {
 		return mesh().boot();
+	}
+
+	default MeshOptions options() {
+		return mesh().options();
 	}
 
 	default MeshPluginManager pluginManager() {

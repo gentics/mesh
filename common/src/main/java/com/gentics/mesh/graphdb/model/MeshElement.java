@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphdb.model;
 
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.ElementFrame;
 import com.tinkerpop.blueprints.Element;
@@ -82,4 +83,11 @@ public interface MeshElement extends ElementFrame {
 	 * @return
 	 */
 	Vertx vertx();
+
+	/**
+	 * Return the mesh options.
+	 * 
+	 * @return
+	 */
+	MeshOptions options();
 }

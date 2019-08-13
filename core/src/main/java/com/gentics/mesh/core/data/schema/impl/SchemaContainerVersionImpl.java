@@ -18,7 +18,6 @@ import java.util.stream.StreamSupport;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -43,7 +42,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.etc.config.ContentConfig;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
@@ -165,7 +163,7 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public Single<SchemaResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return mesh().database().asyncTx(() -> {
+		return db().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}
@@ -226,8 +224,7 @@ public class SchemaContainerVersionImpl extends
 			if (log.isDebugEnabled()) {
 				log.debug("No schema auto purge flag set. Falling back to mesh global setting");
 			}
-			MeshOptions options = mesh().options();
-			ContentConfig contentOptions = options.getContentOptions();
+			ContentConfig contentOptions = options().getContentOptions();
 			if (contentOptions != null) {
 				return contentOptions.isAutoPurge();
 			} else {

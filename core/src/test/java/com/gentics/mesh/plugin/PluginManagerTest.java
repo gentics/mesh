@@ -184,7 +184,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 
 	@Test
 	public void testInitializeTimeoutPlugin() {
-		meshApi().getOptions().setPluginTimeout(2);
+		options().setPluginTimeout(2);
 		MeshPluginManager manager = pluginManager();
 		try {
 			manager.deploy(InitializeTimeoutPlugin.class, "timeout").blockingAwait();

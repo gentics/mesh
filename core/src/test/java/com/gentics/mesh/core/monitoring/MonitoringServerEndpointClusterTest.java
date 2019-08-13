@@ -8,7 +8,6 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -26,6 +25,6 @@ public class MonitoringServerEndpointClusterTest extends AbstractMeshTest {
 		assertNotNull(info.getAddress());
 		assertEquals("ONLINE", info.getStatus());
 		assertNotNull(info.getStartDate());
-		assertEquals(meshApi().getOptions().getNodeName(), info.getName());
+		assertEquals(options().getNodeName(), info.getName());
 	}
 }

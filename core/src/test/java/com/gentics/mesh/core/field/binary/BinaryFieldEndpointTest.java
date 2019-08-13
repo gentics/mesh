@@ -186,7 +186,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		NodeResponse response = createNodeWithField();
 
 		// Clear the local binary storage directory to simulate a storage inconsistency
-		FileUtils.deleteDirectory(new File(boot().mesh().getOptions().getUploadOptions().getDirectory()));
+		FileUtils.deleteDirectory(new File(options().getUploadOptions().getDirectory()));
 
 		// 2. Delete the node
 		call(() -> client().deleteNode(PROJECT_NAME, response.getUuid()));
@@ -389,7 +389,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			new ByteArrayInputStream(bytes), bytes.length, fileName, "image/jpg").blockingGet();
 
 		// Clear the local binary storage directory to simulate a storage inconsistency
-		FileUtils.deleteDirectory(new File(boot().mesh().getOptions().getUploadOptions().getDirectory()));
+		FileUtils.deleteDirectory(new File(options().getUploadOptions().getDirectory()));
 
 		call(() -> client().downloadBinaryField(PROJECT_NAME, updatedResponse.getUuid(), updatedResponse.getLanguage(), "binary"),
 			NOT_FOUND, "node_error_binary_data_not_found");

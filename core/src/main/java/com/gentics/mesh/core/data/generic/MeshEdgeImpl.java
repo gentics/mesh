@@ -6,6 +6,7 @@ import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.dagger.MeshComponent;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.FramedGraph;
@@ -87,6 +88,11 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	@Override
 	public Vertx vertx() {
 		return mesh().vertx();
+	}
+
+	@Override
+	public MeshOptions options() {
+		return mesh().options();
 	}
 
 }

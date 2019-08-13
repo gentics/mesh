@@ -125,7 +125,6 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.webroot.PathPrefixUtil;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.json.JsonUtil;
@@ -511,9 +510,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public TraversalResult<Node> getChildren(String branchUuid) {
-		Database db = mesh().database();
 		FramedGraph graph = Tx.get().getGraph();
-		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_branch", db.createComposedIndexKey(id(), branchUuid));
+		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_branch", db().createComposedIndexKey(id(), branchUuid));
 		Iterator<Edge> it = edges.iterator();
 		Iterable<Edge> iterable = () -> it;
 		Stream<Edge> stream = StreamSupport.stream(iterable.spliterator(), false);
@@ -527,12 +525,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Stream<Node> getChildrenStream(InternalActionContext ac) {
-		Database db = mesh().database();
 		FramedGraph graph = Tx.get().getGraph();
 		MeshAuthUser user = ac.getUser();
 
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_branch",
-			db.createComposedIndexKey(id(), ac.getBranch().getUuid()));
+			db().createComposedIndexKey(id(), ac.getBranch().getUuid()));
 		Iterator<Edge> it = edges.iterator();
 		Iterable<Edge> iterable = () -> it;
 		Stream<Edge> stream = StreamSupport.stream(iterable.spliterator(), false);
@@ -547,9 +544,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Node getParentNode(String branchUuid) {
-		Database db = mesh().database();
 		FramedGraph graph = Tx.get().getGraph();
-		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_branch_out", db.createComposedIndexKey(id(), branchUuid));
+		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_branch_out", db().createComposedIndexKey(id(), branchUuid));
 		Iterator<Edge> it = edges.iterator();
 		if (it.hasNext()) {
 			Vertex in = it.next().getVertex(IN);
@@ -960,7 +956,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (parameters.getMaxDepth() < 0) {
 			throw error(BAD_REQUEST, "navigation_error_invalid_max_depth");
 		}
-		return mesh().database().asyncTx(() -> {
+		return db().asyncTx(() -> {
 			// TODO assure that the schema version is correct
 			if (!getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
 				throw error(BAD_REQUEST, "navigation_error_no_container");
@@ -1570,7 +1566,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public TransformablePage<? extends Node> getChildren(InternalActionContext ac, List<String> languageTags, String branchUuid, ContainerType type,
 		PagingParameters pagingInfo) {
 		String indexName = "e." + HAS_PARENT_NODE.toLowerCase() + "_branch";
-		Object indexKey = mesh().database().createComposedIndexKey(id(), branchUuid);
+		Object indexKey = db().createComposedIndexKey(id(), branchUuid);
 
 		GraphPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
 		if (languageTags == null) {
@@ -2244,7 +2240,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Single<NodeResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return mesh().database().asyncTx(() -> {
+		return db().asyncTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

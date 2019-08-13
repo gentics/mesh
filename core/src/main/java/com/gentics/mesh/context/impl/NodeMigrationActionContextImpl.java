@@ -37,7 +37,7 @@ import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.dagger.MeshComponent;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madl.frame.EdgeFrame;
@@ -656,8 +656,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public Single<UserResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-				MeshComponent mesh = getGraphAttribute("meshComponent");
-				return mesh.database().asyncTx(() -> {
+				return db().asyncTx(() -> {
 					return Single.just(transformToRestSync(ac, level, languageTags));
 				});
 			}
@@ -746,6 +745,11 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public Database db() {
+				return null;
+			}
+
+			@Override
+			public MeshOptions options() {
 				return null;
 			}
 		};

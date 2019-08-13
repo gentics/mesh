@@ -38,7 +38,7 @@ public class AdminGUIEndpoint extends AbstractInternalEndpoint {
 	// TODO handle NPEs
 	private static String meshAdminUiVersion = readBuildProperties().getProperty("mesh.admin-ui.version");
 
-	private MeshOptions options;
+	private final MeshOptions options;
 
 	public AdminGUIEndpoint(MeshOptions options) {
 		super("mesh-ui", null);

@@ -3,6 +3,9 @@ package com.gentics.mesh.core.endpoint.schema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * Container for the schema update mutex
+ */
 @Singleton
 public class SchemaLock {
 
@@ -13,6 +16,11 @@ public class SchemaLock {
 
 	}
 
+	/**
+	 * Return the mutex to be used for locks.
+	 * 
+	 * @return
+	 */
 	public Object mutex() {
 		return mutex;
 	}

@@ -65,10 +65,6 @@ public class DemoDumpGenerator {
 			KeyStoreHelper.gen(keyStoreFile.getAbsolutePath(), keyStorePass);
 		}
 		options.setNodeName("dumpGenerator");
-		// // Setup dagger
-		// meshInternal = MeshInternal.create(options);
-		// BootstrapInitializer boot = meshInternal.boot();
-		// boot.init(mesh, false, options, null);
 		init(options);
 	}
 
