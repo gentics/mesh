@@ -114,11 +114,13 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			try {
 				loadPlugins();
 			} catch (Throwable e) {
+				log.error("Error while loading plugin.", e);
 				return Completable.error(new RuntimeException("Error while loading plugins.", e));
 			}
 			try {
 				startPlugins();
 			} catch (Throwable e) {
+				log.error("Error while starting plugin.", e);
 				return Completable.error(new RuntimeException("Error while starting plugins.", e));
 			}
 			return Completable.complete();
@@ -374,6 +376,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 					return rxError(INTERNAL_SERVER_ERROR, "plugin_desc_wrong").ignoreElement();
 				}
 			} catch (Throwable e) {
+				log.error("Error while deploying plugin via class", e);
 				return Completable.error(new RuntimeException("Error while deploying plugin {" + clazz + "}", e));
 			}
 
