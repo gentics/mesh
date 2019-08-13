@@ -749,7 +749,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the microschema
 		FieldSchema oldField = creator.create(fieldName);
-		MicroschemaContainer container = Tx.getActive().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		MicroschemaContainer container = Tx.get().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 		container.setName(microschemaName);
 		container.setCreated(user());
 		MicroschemaContainerVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", oldField);
@@ -759,7 +759,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		MicroschemaContainerVersion versionB = createMicroschemaVersion(container, microschemaName, "2.0", newField);
 
 		// link the schemas with the changes in between
-		UpdateFieldChangeImpl updateFieldChange = Tx.getActive().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		UpdateFieldChangeImpl updateFieldChange = Tx.get().getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(fieldName);
 
 		updateFieldChange.setPreviousContainerVersion(versionA);
@@ -775,7 +775,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// migrate the micronode
 		project().getLatestBranch().assignMicroschemaVersion(user(), versionB, createBatch());
-		Tx.getActive().getGraph().commit();
+		Tx.get().getGraph().commit();
 		MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();
 		context.setBranch(project().getLatestBranch());
 		context.setFromVersion(versionA);

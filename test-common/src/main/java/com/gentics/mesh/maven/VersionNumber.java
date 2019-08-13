@@ -11,7 +11,7 @@ public class VersionNumber implements Comparable<VersionNumber> {
 	/**
 	 * Pattern for version numbers (without branch specifier)
 	 */
-	public static Pattern snapshotVersion = Pattern.compile("([0-9]+)\\.([0-9]+)\\.([0-9]+)(\\-SNAPSHOT)?");
+	public static final Pattern SNAPSHOT_VERSION = Pattern.compile("([0-9]+)\\.([0-9]+)\\.([0-9]+)(\\-SNAPSHOT)?");
 
 	/**
 	 * Major number
@@ -55,7 +55,7 @@ public class VersionNumber implements Comparable<VersionNumber> {
 		if (versionNumberString == null) {
 			return null;
 		}
-		Matcher m = snapshotVersion.matcher(versionNumberString);
+		Matcher m = SNAPSHOT_VERSION.matcher(versionNumberString);
 
 		if (!m.matches()) {
 			return null;

@@ -86,18 +86,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	private static final Logger log = LoggerFactory.getLogger(UserImpl.class);
 
-//	public static EventAwareCache<String, Boolean> USER_STATE_CACHE = EventAwareCache.<String, Boolean>builder()
-//		.size(15_000)
-//		.events(USER_UPDATED)
-//		.action((event, cache) -> {
-//			String uuid = event.body().getString("uuid");
-//			if (uuid != null) {
-//				cache.invalidate(uuid);
-//			} else {
-//				cache.invalidate();
-//			}
-//		}).build();
-
 	public static final String FIRSTNAME_PROPERTY_KEY = "firstname";
 
 	public static final String LASTNAME_PROPERTY_KEY = "lastname";
