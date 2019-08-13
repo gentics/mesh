@@ -125,7 +125,6 @@ public class MeshTestContext extends TestWatcher {
 			if (description.isSuite()) {
 				port = TestUtils.getRandomPort();
 				monitoringPort = TestUtils.getRandomPort();
-				removeDataDirectory();
 				removeConfigDirectory();
 				MeshOptions options = init(settings);
 				try {
@@ -212,7 +211,6 @@ public class MeshTestContext extends TestWatcher {
 			if (description.isSuite()) {
 				// TODO CI does not like this, reactivate later:
 				// mesh.shutdown();
-				removeDataDirectory();
 				removeConfigDirectory();
 				if (elasticsearch != null && elasticsearch.isRunning()) {
 					elasticsearch.stop();
@@ -254,13 +252,6 @@ public class MeshTestContext extends TestWatcher {
 	private void removeConfigDirectory() throws IOException {
 		FileUtils.deleteDirectory(new File(CONF_PATH));
 		System.setProperty("mesh.confDirName", CONF_PATH);
-	}
-
-	private void removeDataDirectory() throws IOException {
-		File dataDir = new File("data");
-		if (dataDir.exists()) {
-			FileUtils.deleteDirectory(dataDir);
-		}
 	}
 
 	protected void setupIndexHandlers() throws Exception {
@@ -452,6 +443,7 @@ public class MeshTestContext extends TestWatcher {
 		monitoringOptions.setPort(monitoringPort);
 
 		// The database provider will switch to in memory mode when no directory has been specified.
+		GraphStorageOptions storageOptions = meshOptions.getStorageOptions();
 
 		String graphPath = null;
 		if (!settings.inMemoryDB() || settings.clusterMode()) {
@@ -460,7 +452,6 @@ public class MeshTestContext extends TestWatcher {
 			directory.deleteOnExit();
 			directory.mkdirs();
 		}
-		GraphStorageOptions storageOptions = meshOptions.getStorageOptions();
 		if (!settings.inMemoryDB() && settings.startStorageServer()) {
 			storageOptions.setStartServer(true);
 		}
@@ -544,6 +535,7 @@ public class MeshTestContext extends TestWatcher {
 
 		String uploads = newFolder("testuploads");
 		meshOptions.getUploadOptions().setDirectory(uploads);
+
 		String targetUploadTmpDir = newFolder("uploadTmpDir");
 		meshOptions.getUploadOptions().setTempDirectory(targetUploadTmpDir);
 
@@ -552,8 +544,10 @@ public class MeshTestContext extends TestWatcher {
 
 		String backupPath = newFolder("backups");
 		meshOptions.getStorageOptions().setBackupDirectory(backupPath);
+
 		String exportPath = newFolder("exports");
 		meshOptions.getStorageOptions().setExportDirectory(exportPath);
+
 		String plugindirPath = newFolder("plugins");
 		meshOptions.setPluginDirectory(plugindirPath);
 	}

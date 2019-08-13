@@ -15,13 +15,13 @@ public class MeshImplTest {
 
 	@Test
 	public void testHostname() throws Exception {
-		MeshImpl mesh = new MeshImpl(new MeshOptions());
+		MeshImpl mesh = new MeshImpl(options());
 		assertNotNull(mesh.getHostname());
 	}
 
 	@Test
 	public void testUpdateCheck() throws Exception {
-		MeshImpl mesh = new MeshImpl(new MeshOptions());
+		MeshImpl mesh = new MeshImpl(options());
 		MeshComponent i = Mockito.mock(MeshComponent.class);
 		when(i.vertx()).thenReturn(Vertx.vertx());
 		mesh.setMeshInternal(i);
@@ -29,4 +29,9 @@ public class MeshImplTest {
 		mesh.invokeUpdateCheck();
 	}
 
+	public MeshOptions options() {
+		MeshOptions opts = new MeshOptions();
+		opts.getSearchOptions().setStartEmbedded(false);
+		return opts;
+	}
 }

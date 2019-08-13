@@ -6,12 +6,15 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.test.AbstractIntegrationTest;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MeshIntegerationTest extends AbstractIntegrationTest {
 
 	public final static long TIMEOUT = DEFAULT_TIMEOUT_SECONDS * 20;
