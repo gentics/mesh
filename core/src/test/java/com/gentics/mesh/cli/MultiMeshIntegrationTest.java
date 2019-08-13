@@ -3,20 +3,23 @@ package com.gentics.mesh.cli;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 
-//@Ignore
+@Ignore
 public class MultiMeshIntegrationTest {
+
+	public static final int INSTANCE_COUNT = 10;
 
 	@Test
 	public void testMeshMesh() throws Exception {
 
 		List<Mesh> meshes = new ArrayList<>();
-		for (int i = 0; i <= 50; i++) {
+		for (int i = 0; i <= INSTANCE_COUNT; i++) {
 			MeshOptions option = new MeshOptions().setNodeName("M" + i);
 			option.getAuthenticationOptions().setKeystorePassword("ABC");
 			option.getSearchOptions().setStartEmbedded(false);
