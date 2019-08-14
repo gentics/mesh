@@ -2,6 +2,7 @@ package com.gentics.mesh.demo.verticle;
 
 import static io.vertx.core.http.HttpMethod.GET;
 
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -14,7 +15,7 @@ import io.vertx.ext.web.handler.StaticHandler;
  */
 public class DemoAppEndpoint extends AbstractInternalEndpoint {
 
-	public DemoAppEndpoint() {
+	public DemoAppEndpoint(MeshOptions options) {
 		super("demo", null);
 	}
 
