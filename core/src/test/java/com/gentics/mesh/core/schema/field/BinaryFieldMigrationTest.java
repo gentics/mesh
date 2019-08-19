@@ -120,6 +120,7 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		});
 	}
 
+	@Test
 	@Override
 	public void testEmptyChangeToBooleanList() throws Exception {
 		changeType(CREATEBINARY, NOOP, FETCH, CREATEBOOLEANLIST, (container, name) -> {
