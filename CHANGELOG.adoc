@@ -23,6 +23,12 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.39.2]]
+== 0.39.2 (TBD)
+
+icon:check[] A regression in `v0.38.0` caused migration errors for nodes which contained not yet populated fields. This issue has now been fixed. Failed migrations can be re-run by deleting the failed job via `DELETE /api/v2/admin/jobs/{jobUuid}` and triggering `POST /api/v2/{project}/branches/{branchUuid}/migrateSchemas` to create a new migration job.
+
+
 [[v0.39.1]]
 == 0.39.1 (14.08.2019)
 
