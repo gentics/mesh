@@ -72,7 +72,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final String RIDBAG_PARAM_KEY = "ridBag.embeddedToSbtreeBonsaiThreshold";
 
-	private static final String RX_RETRY_DELAY_PARAM_KEY = "tx.retry.delay";
+	private static final String TX_RETRY_DELAY_PARAM_KEY = "tx.retry.delay";
 
 	private static final int DEFAULT_TX_RETRY_DELAY_MS = 6000;
 
@@ -195,13 +195,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private int getTxRetryDelay() {
 		GraphStorageOptions storageOptions = options.getStorageOptions();
-		String val = storageOptions.getParameters().get(RX_RETRY_DELAY_PARAM_KEY);
+		String val = storageOptions.getParameters().get(TX_RETRY_DELAY_PARAM_KEY);
 		if (val != null) {
 			try {
 				return Integer.parseInt(val);
 			} catch (Exception e) {
-				log.error("Could not parse value of storage parameter {" + RX_RETRY_DELAY_PARAM_KEY + "}");
-				throw new RuntimeException("Parameter {" + RX_RETRY_DELAY_PARAM_KEY + "} could not be parsed.");
+				log.error("Could not parse value of storage parameter {" + TX_RETRY_DELAY_PARAM_KEY + "}");
+				throw new RuntimeException("Parameter {" + TX_RETRY_DELAY_PARAM_KEY + "} could not be parsed.");
 			}
 		}
 		return DEFAULT_TX_RETRY_DELAY_MS;
