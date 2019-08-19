@@ -11,21 +11,39 @@ import static com.gentics.mesh.test.TestSize.FULL;
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class NumberListMicroFieldMigrationTest extends NumberListFieldMigrationTest {
 
+	@Test
 	@Override
 	@Ignore("Not applicable for micronodes")
-	@Test
 	public void testChangeToBinary() throws Exception {
 	}
 
+	@Test
 	@Override
 	@Ignore("Not applicable for micronodes")
+	public void testEmptyChangeToBinary() throws Exception {
+	}
+
 	@Test
+	@Override
+	@Ignore("Not applicable for micronodes")
 	public void testChangeToMicronode() throws Exception {
+	}
+
+	@Test
+	@Override
+	@Ignore("Not applicable for micronodes")
+	public void testEmptyChangeToMicronode() throws Exception {
 	}
 
 	@Override
 	@Ignore("Not applicable for micronodes")
 	@Test
 	public void testChangeToMicronodeList() throws Exception {
+	}
+
+	@Test
+	@Override
+	@Ignore("Not applicable for micronodes")
+	public void testEmptyChangeToMicronodeList() throws Exception {
 	}
 }

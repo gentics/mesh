@@ -15,6 +15,7 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
+import static com.gentics.mesh.core.field.FieldTestHelper.NOOP;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -88,6 +89,15 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 
 	@Test
 	@Override
+	public void testEmptyChangeToBinary() throws Exception {
+		changeType(CREATEBINARY, NOOP, FETCH, CREATEBINARY, (container, name) -> {
+			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
+		});
+
+	}
+
+	@Test
+	@Override
 	public void testChangeToBoolean() throws Exception {
 		changeType(CREATEBINARY, FILL, FETCH, CREATEBOOLEAN, (container, name) -> {
 			assertThat(container.getBoolean(name)).as(NEWFIELD).isNull();
@@ -96,8 +106,23 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 
 	@Test
 	@Override
+	public void testEmptyChangeToBoolean() throws Exception {
+		changeType(CREATEBINARY, NOOP, FETCH, CREATEBOOLEAN, (container, name) -> {
+			assertThat(container.getBoolean(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToBooleanList() throws Exception {
 		changeType(CREATEBINARY, FILL, FETCH, CREATEBOOLEANLIST, (container, name) -> {
+			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Override
+	public void testEmptyChangeToBooleanList() throws Exception {
+		changeType(CREATEBINARY, NOOP, FETCH, CREATEBOOLEANLIST, (container, name) -> {
 			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNull();
 		});
 	}
@@ -112,8 +137,24 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 
 	@Test
 	@Override
+	public void testEmptyChangeToDate() throws Exception {
+		changeType(CREATEBINARY, NOOP, FETCH, CREATEDATE, (container, name) -> {
+			assertThat(container.getDate(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToDateList() throws Exception {
 		changeType(CREATEBINARY, FILL, FETCH, CREATEDATELIST, (container, name) -> {
+			assertThat(container.getDateList(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
+	public void testEmptyChangeToDateList() throws Exception {
+		changeType(CREATEBINARY, NOOP, FETCH, CREATEDATELIST, (container, name) -> {
 			assertThat(container.getDateList(name)).as(NEWFIELD).isNull();
 		});
 	}
@@ -128,8 +169,23 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 
 	@Test
 	@Override
+	public void testEmptyChangeToHtml() throws Exception {
+		changeType(CREATEBINARY, NOOP, FETCH, CREATEHTML, (container, name) -> {
+			assertThat(container.getHtml(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToHtmlList() throws Exception {
 		changeType(CREATEBINARY, FILL, FETCH, CREATEHTMLLIST, (container, name) -> {
+			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Override
+	public void testEmptyChangeToHtmlList() throws Exception {
+		changeType(CREATEBINARY, NOOP, FETCH, CREATEHTMLLIST, (container, name) -> {
 			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNull();
 		});
 	}
@@ -144,8 +200,24 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 
 	@Test
 	@Override
+	public void testEmptyChangeToMicronode() throws Exception {
+		changeType(CREATEBINARY, NOOP, FETCH, CREATEMICRONODE, (container, name) -> {
+			assertThat(container.getMicronode(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToMicronodeList() throws Exception {
 		changeType(CREATEBINARY, FILL, FETCH, CREATEMICRONODELIST, (container, name) -> {
+			assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
+	public void testEmptyChangeToMicronodeList() throws Exception {
+		changeType(CREATEBINARY, NOOP, FETCH, CREATEMICRONODELIST, (container, name) -> {
 			assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNull();
 		});
 	}
@@ -160,8 +232,24 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 
 	@Test
 	@Override
+	public void testEmptyChangeToNode() throws Exception {
+		changeType(CREATEBINARY, NOOP, FETCH, CREATENODE, (container, name) -> {
+			assertThat(container.getNode(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToNodeList() throws Exception {
 		changeType(CREATEBINARY, FILL, FETCH, CREATENODELIST, (container, name) -> {
+			assertThat(container.getNodeList(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
+	public void testEmptyChangeToNodeList() throws Exception {
+		changeType(CREATEBINARY, NOOP, FETCH, CREATENODELIST, (container, name) -> {
 			assertThat(container.getNodeList(name)).as(NEWFIELD).isNull();
 		});
 	}
@@ -176,8 +264,24 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 
 	@Test
 	@Override
+	public void testEmptyChangeToNumber() throws Exception {
+		changeType(CREATEBINARY, NOOP, FETCH, CREATENUMBER, (container, name) -> {
+			assertThat(container.getNumber(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToNumberList() throws Exception {
 		changeType(CREATEBINARY, FILL, FETCH, CREATENUMBERLIST, (container, name) -> {
+			assertThat(container.getNumberList(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
+	public void testEmptyChangeToNumberList() throws Exception {
+		changeType(CREATEBINARY, NOOP, FETCH, CREATENUMBERLIST, (container, name) -> {
 			assertThat(container.getNumberList(name)).as(NEWFIELD).isNull();
 		});
 	}
@@ -192,8 +296,24 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 
 	@Test
 	@Override
+	public void testEmptyChangeToString() throws Exception {
+		changeType(CREATEBINARY, NOOP, FETCH, CREATESTRING, (container, name) -> {
+			assertThat(container.getString(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToStringList() throws Exception {
 		changeType(CREATEBINARY, FILL, FETCH, CREATESTRINGLIST, (container, name) -> {
+			assertThat(container.getStringList(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
+	public void testEmptyChangeToStringList() throws Exception {
+		changeType(CREATEBINARY, NOOP, FETCH, CREATESTRINGLIST, (container, name) -> {
 			assertThat(container.getStringList(name)).as(NEWFIELD).isNull();
 		});
 	}

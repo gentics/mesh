@@ -359,6 +359,42 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
+	public void testStringHtmlMigration() {
+		final String FIELD_NAME_1 = "testField1";
+		final String FIELD_NAME_2 = "testField2";
+		final String SCHEMA_NAME = "testSchema";
+		final String PARENT_NODE_UUID = tx(() -> project().getBaseNode().getUuid());
+
+		// 1. Create the schema
+		SchemaCreateRequest schemaCreate = new SchemaCreateRequest();
+		schemaCreate.addField(FieldUtil.createStringFieldSchema(FIELD_NAME_1));
+		schemaCreate.addField(FieldUtil.createStringFieldSchema(FIELD_NAME_2));
+		schemaCreate.setName(SCHEMA_NAME);
+		schemaCreate.setDisplayField(FIELD_NAME_1);
+
+		SchemaResponse schema = call(() -> client().createSchema(schemaCreate));
+		call(() -> client().assignSchemaToProject(PROJECT_NAME, schema.getUuid()));
+
+		// 2. Create a node
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setSchemaName(SCHEMA_NAME);
+		nodeCreateRequest.getFields().put(FIELD_NAME_1, FieldUtil.createStringField("test123"));
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setParentNodeUuid(PARENT_NODE_UUID);
+		call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+
+		// 3. Update the schema
+		SchemaUpdateRequest schemaUpdate = new SchemaUpdateRequest();
+		schemaUpdate.addField(FieldUtil.createStringFieldSchema(FIELD_NAME_1));
+		schemaUpdate.addField(FieldUtil.createHtmlFieldSchema(FIELD_NAME_2));
+		schemaUpdate.setName(SCHEMA_NAME);
+		schemaUpdate.setDisplayField(FIELD_NAME_1);
+		waitForJob(() -> {
+			call(() -> client().updateSchema(schema.getUuid(), schemaUpdate));
+		});
+	}
+
+	@Test
 	public void testStartSchemaMigration() throws Throwable {
 		SchemaContainer container;
 		SchemaContainerVersion versionA;
@@ -417,7 +453,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			int update = 0;
 			int delete = 2;
 			int indexDrop = 2;
-			int indexCreate =2;
+			int indexCreate = 2;
 			assertThat(trackingSearchProvider()).hasEvents(store, update, delete, indexDrop, indexCreate);
 		}
 

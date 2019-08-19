@@ -11,21 +11,39 @@ import static com.gentics.mesh.test.TestSize.FULL;
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class DateMicroFieldMigrationTest extends DateFieldMigrationTest {
 
-	@Override
-	@Ignore("Not applicable for micronodes")
 	@Test
+	@Ignore("Not applicable for micronodes")
+	@Override
 	public void testChangeToBinary() throws Exception {
 	}
 
-	@Override
-	@Ignore("Not applicable for micronodes")
 	@Test
+	@Ignore("Not applicable for micronodes")
+	@Override
+	public void testEmptyChangeToBinary() throws Exception {
+	}
+
+	@Test
+	@Ignore("Not applicable for micronodes")
+	@Override
 	public void testChangeToMicronode() throws Exception {
 	}
 
-	@Override
-	@Ignore("Not applicable for micronodes")
 	@Test
+	@Ignore("Not applicable for micronodes")
+	@Override
+	public void testEmptyChangeToMicronode() throws Exception {
+	}
+
+	@Test
+	@Ignore("Not applicable for micronodes")
+	@Override
 	public void testChangeToMicronodeList() throws Exception {
+	}
+
+	@Test
+	@Ignore("Not applicable for micronodes")
+	@Override
+	public void testEmptyChangeToMicronodeList() throws Exception {
 	}
 }

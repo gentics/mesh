@@ -15,6 +15,7 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
+import static com.gentics.mesh.core.field.FieldTestHelper.NOOP;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -42,6 +43,14 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 
 	@Test
 	@Override
+	public void testEmptyChangeToBinary() throws Exception {
+		changeType(CREATEHTMLLIST, NOOP, FETCH, CREATEBINARY, (container, name) -> {
+			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToBoolean() throws Exception {
 		changeType(CREATEHTMLLIST, FILLTRUEFALSE, FETCH, CREATEBOOLEAN, (container, name) -> {
 			assertThat(container.getBoolean(name)).as(NEWFIELD).isNotNull();
@@ -54,6 +63,14 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 		});
 
 		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATEBOOLEAN, (container, name) -> {
+			assertThat(container.getBoolean(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
+	public void testEmptyChangeToBoolean() throws Exception {
+		changeType(CREATEHTMLLIST, NOOP, FETCH, CREATEBOOLEAN, (container, name) -> {
 			assertThat(container.getBoolean(name)).as(NEWFIELD).isNull();
 		});
 	}
@@ -78,10 +95,18 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 
 	@Test
 	@Override
+	public void testEmptyChangeToBooleanList() throws Exception {
+		changeType(CREATEHTMLLIST, NOOP, FETCH, CREATEBOOLEANLIST, (container, name) -> {
+			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToDate() throws Exception {
 		changeType(CREATEHTMLLIST, FILLNUMBERS, FETCH, CREATEDATE, (container, name) -> {
 			assertThat(container.getDate(name)).as(NEWFIELD).isNotNull();
-			//Internally timestamps are stored in miliseconds
+			// Internally timestamps are stored in miliseconds
 			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(1000L);
 		});
 
@@ -92,14 +117,30 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 
 	@Test
 	@Override
+	public void testEmptyChangeToDate() throws Exception {
+		changeType(CREATEHTMLLIST, NOOP, FETCH, CREATEDATE, (container, name) -> {
+			assertThat(container.getDate(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToDateList() throws Exception {
 		changeType(CREATEHTMLLIST, FILLNUMBERS, FETCH, CREATEDATELIST, (container, name) -> {
 			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
-			//Internally timestamps are stored in miliseconds
+			// Internally timestamps are stored in miliseconds
 			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1000L, 0L);
 		});
 
 		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATEDATELIST, (container, name) -> {
+			assertThat(container.getDateList(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
+	public void testEmptyChangeToDateList() throws Exception {
+		changeType(CREATEHTMLLIST, NOOP, FETCH, CREATEDATELIST, (container, name) -> {
 			assertThat(container.getDateList(name)).as(NEWFIELD).isNull();
 		});
 	}
@@ -115,6 +156,15 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 
 	@Test
 	@Override
+	public void testEmptyChangeToHtml() throws Exception {
+		changeType(CREATEHTMLLIST, NOOP, FETCH, CREATEHTML, (container, name) -> {
+			assertThat(container.getHtml(name)).as(NEWFIELD).isNull();
+		});
+
+	}
+
+	@Test
+	@Override
 	public void testChangeToHtmlList() throws Exception {
 		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATEHTMLLIST, (container, name) -> {
 			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNotNull();
@@ -124,8 +174,24 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 
 	@Test
 	@Override
+	public void testEmptyChangeToHtmlList() throws Exception {
+		changeType(CREATEHTMLLIST, NOOP, FETCH, CREATEHTMLLIST, (container, name) -> {
+			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToMicronode() throws Exception {
 		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATEMICRONODE, (container, name) -> {
+			assertThat(container.getMicronode(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
+	public void testEmptyChangeToMicronode() throws Exception {
+		changeType(CREATEHTMLLIST, NOOP, FETCH, CREATEMICRONODE, (container, name) -> {
 			assertThat(container.getMicronode(name)).as(NEWFIELD).isNull();
 		});
 	}
@@ -140,6 +206,14 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 
 	@Test
 	@Override
+	public void testEmptyChangeToMicronodeList() throws Exception {
+		changeType(CREATEHTMLLIST, NOOP, FETCH, CREATEMICRONODELIST, (container, name) -> {
+			assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToNode() throws Exception {
 		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATENODE, (container, name) -> {
 			assertThat(container.getNode(name)).as(NEWFIELD).isNull();
@@ -148,8 +222,24 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 
 	@Test
 	@Override
+	public void testEmptyChangeToNode() throws Exception {
+		changeType(CREATEHTMLLIST, NOOP, FETCH, CREATENODE, (container, name) -> {
+			assertThat(container.getNode(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToNodeList() throws Exception {
 		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATENODELIST, (container, name) -> {
+			assertThat(container.getNodeList(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
+	public void testEmptyChangeToNodeList() throws Exception {
+		changeType(CREATEHTMLLIST, NOOP, FETCH, CREATENODELIST, (container, name) -> {
 			assertThat(container.getNodeList(name)).as(NEWFIELD).isNull();
 		});
 	}
@@ -165,7 +255,14 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATENUMBER, (container, name) -> {
 			assertThat(container.getNumber(name)).as(NEWFIELD).isNull();
 		});
+	}
 
+	@Test
+	@Override
+	public void testEmptyChangeToNumber() throws Exception {
+		changeType(CREATEHTMLLIST, NOOP, FETCH, CREATENUMBER, (container, name) -> {
+			assertThat(container.getNumber(name)).as(NEWFIELD).isNull();
+		});
 	}
 
 	@Test
@@ -183,6 +280,14 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 
 	@Test
 	@Override
+	public void testEmptyChangeToNumberList() throws Exception {
+		changeType(CREATEHTMLLIST, NOOP, FETCH, CREATENUMBERLIST, (container, name) -> {
+			assertThat(container.getNumberList(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToString() throws Exception {
 		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATESTRING, (container, name) -> {
 			assertThat(container.getString(name)).as(NEWFIELD).isNotNull();
@@ -192,10 +297,27 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest imple
 
 	@Test
 	@Override
+	public void testEmptyChangeToString() throws Exception {
+		changeType(CREATEHTMLLIST, NOOP, FETCH, CREATESTRING, (container, name) -> {
+			assertThat(container.getString(name)).as(NEWFIELD).isNull();
+		});
+
+	}
+
+	@Test
+	@Override
 	public void testChangeToStringList() throws Exception {
 		changeType(CREATEHTMLLIST, FILLTEXT, FETCH, CREATESTRINGLIST, (container, name) -> {
 			assertThat(container.getStringList(name)).as(NEWFIELD).isNotNull();
 			assertThat(container.getStringList(name).getValues()).as(NEWFIELDVALUE).containsExactly(TEXT1, TEXT2, TEXT3);
+		});
+	}
+
+	@Test
+	@Override
+	public void testEmptyChangeToStringList() throws Exception {
+		changeType(CREATEHTMLLIST, NOOP, FETCH, CREATESTRINGLIST, (container, name) -> {
+			assertThat(container.getStringList(name)).as(NEWFIELD).isNull();
 		});
 	}
 
