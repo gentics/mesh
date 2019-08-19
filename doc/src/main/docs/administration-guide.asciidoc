@@ -222,6 +222,7 @@ include::content/docs/snippets/config/storage.inc[]
 |======
 | Configuration                                   | Type    | Default        | Description
 | ```ridBag.embeddedToSbtreeBonsaiThreshold```    | Number  | 2147483647     | Configures the ridbag threshold for OrientDB. This setting controls how OrientDB manages the internal ridbag data structure. This setting will be ignored when run in clustered mode. See OrientDB documentation for more details.
+| ```tx.retry.delay```                            | Number  | 6000           | Sets the initial transaction retry delay which is applied when retrying failed transactions due to concurrent changes. A value of 0 will disable the delay.
 |======
 
 

@@ -72,6 +72,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final String RIDBAG_PARAM_KEY = "ridBag.embeddedToSbtreeBonsaiThreshold";
 
+	private static final String RX_RETRY_DELAY_PARAM_KEY = "tx.retry.delay";
+
+	private static final int DEFAULT_TX_RETRY_DELAY_MS = 6000;
+
 	private TypeResolver resolver;
 
 	private int maxRetry = 10;
@@ -187,6 +191,20 @@ public class OrientDBDatabase extends AbstractDatabase {
 		}
 		// Default instead of 40 to avoid sudden changes in sort order
 		return Integer.MAX_VALUE;
+	}
+
+	private int getTxRetryDelay() {
+		GraphStorageOptions storageOptions = options.getStorageOptions();
+		String val = storageOptions.getParameters().get(RX_RETRY_DELAY_PARAM_KEY);
+		if (val != null) {
+			try {
+				return Integer.parseInt(val);
+			} catch (Exception e) {
+				log.error("Could not parse value of storage parameter {" + RX_RETRY_DELAY_PARAM_KEY + "}");
+				throw new RuntimeException("Parameter {" + RX_RETRY_DELAY_PARAM_KEY + "} could not be parsed.");
+			}
+		}
+		return DEFAULT_TX_RETRY_DELAY_MS;
 	}
 
 	@Override
@@ -342,12 +360,15 @@ public class OrientDBDatabase extends AbstractDatabase {
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}
-				int rnd = (int) (Math.random() * 6000.0);
-				try {
-					// Increase the delay for each retry by 25ms to give the other transaction a chance to finish
-					Thread.sleep(50 + (retry * 25) + rnd);
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
+				int delay = getTxRetryDelay();
+				if (delay > 0) {
+					int rnd = (int) (Math.random() * delay);
+					try {
+						// Increase the delay for each retry by 25ms to give the other transaction a chance to finish
+						Thread.sleep(50 + (retry * 25) + rnd);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}
 				}
 				// Reset previous result
 				handlerFinished = false;

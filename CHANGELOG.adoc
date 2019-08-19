@@ -23,6 +23,11 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+NEXT
+== NEXT
+
+icon:plus[] Graph: It is now possible to configure the OrientDB transaction delay by adding the `tx.retry.delay` parameter to the the `storage.parameters` field.
+
 [[v0.39.1]]
 == 0.39.1 (14.08.2019)
 
