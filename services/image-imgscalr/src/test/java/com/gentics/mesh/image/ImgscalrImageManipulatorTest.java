@@ -65,8 +65,8 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		checkImages((imageName, width, height, color, refImage, path, bs) -> {
 			log.debug("Handling " + imageName);
 
-
-			Single<byte[]> obs = manipulator.handleResize(createMockedBinary(path), new ImageManipulationParametersImpl().setWidth(150).setHeight(180))
+			Single<byte[]> obs = manipulator
+				.handleResize(createMockedBinary(path), new ImageManipulationParametersImpl().setWidth(150).setHeight(180))
 				.map(file -> Files.readAllBytes(Paths.get(file)));
 			CountDownLatch latch = new CountDownLatch(1);
 			obs.subscribe(data -> {
@@ -113,10 +113,10 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 	/**
 	 * Get the corresponding reference filename for the given input filename.
 	 *
-	 * When the original filename is <code>NAME.EXTENTION</code> the result will be
-	 * <code>/references/NAME.reference.EXTENSION</code>.
+	 * When the original filename is <code>NAME.EXTENTION</code> the result will be <code>/references/NAME.reference.EXTENSION</code>.
 	 *
-	 * @param filename The filename of the original image
+	 * @param filename
+	 *            The filename of the original image
 	 * @return The filename for the corresponding reference file
 	 */
 	public static String getReferenceFilename(String filename) {
@@ -245,6 +245,14 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		assertEquals(25, outputImage.getWidth());
 		assertEquals(20, outputImage.getHeight());
 
+	}
+
+	@Test
+	public void testSmartCrop() throws IOException {
+		BufferedImage bi = ImageTestUtil.readImage("12382975864_09e6e069e7_o.jpg");
+		BufferedImage outputImage = manipulator.cropAndResize(bi,
+			new ImageManipulationParametersImpl().setRect(1, 1, 600, 905).setWidth(250).setHeight(550));
+		ImageTestUtil.displayImage(outputImage);
 	}
 
 	@Test

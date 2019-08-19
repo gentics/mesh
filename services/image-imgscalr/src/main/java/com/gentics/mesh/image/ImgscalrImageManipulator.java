@@ -219,7 +219,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	 * @param parameters The parameters defining cropping and resizing requests
 	 * @return The modified image
 	 */
-	private BufferedImage cropAndResize(BufferedImage image, ImageManipulationParameters parameters) {
+	protected BufferedImage cropAndResize(BufferedImage image, ImageManipulationParameters parameters) {
 		CropMode cropMode = parameters.getCropMode();
 		boolean omitResize = false;
 		if (cropMode != null) {
