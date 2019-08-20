@@ -23,6 +23,11 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+
+== NEXT
+
+icon:plus[] OrientDB: The included OrientDB version has been updated to version 3.0.22
+
 [[v0.39.2]]
 == 0.39.2 (20.08.2019)
 
