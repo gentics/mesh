@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.schema.field;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.lang.annotation.ElementType;
@@ -42,6 +43,7 @@ import com.gentics.mesh.core.field.DataAsserter;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
 import com.gentics.mesh.core.field.FieldSchemaCreator;
+import com.gentics.mesh.core.field.FieldTestHelper;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -510,7 +512,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		dataProvider.set(englishContainer, fieldName);
 		assertThat(englishContainer).isOf(versionA).hasVersion("0.1");
 
-		assertThat(oldFieldFetcher.fetch(englishContainer, fieldName)).as(OLDFIELD).isNotNull();
+		if (dataProvider == FieldTestHelper.NOOP) {
+			assertThat(oldFieldFetcher.fetch(englishContainer, fieldName)).as(OLDFIELD).isNull();
+		} else {
+			assertThat(oldFieldFetcher.fetch(englishContainer, fieldName)).as(OLDFIELD).isNotNull();
+		}
 
 		// migrate the node
 		project().getLatestBranch().assignSchemaVersion(user(), versionB, batch);
@@ -593,7 +599,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		NodeGraphFieldContainer oldContainer = node.getGraphFieldContainer("en");
 		VersionNumber oldVersion = oldContainer.getVersion();
 
-		assertThat(oldFieldFetcher.fetch(micronodeField.getMicronode(), fieldName)).as(OLDFIELD).isNotNull();
+		if (dataProvider == FieldTestHelper.NOOP) {
+			assertThat(oldFieldFetcher.fetch(micronodeField.getMicronode(), fieldName)).as(OLDFIELD).isNull();
+		} else {
+			assertThat(oldFieldFetcher.fetch(micronodeField.getMicronode(), fieldName)).as(OLDFIELD).isNotNull();
+		}
 
 		// migrate the micronode
 		MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();

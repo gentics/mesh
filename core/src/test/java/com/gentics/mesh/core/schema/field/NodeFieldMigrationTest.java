@@ -16,6 +16,7 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
+import static com.gentics.mesh.core.field.FieldTestHelper.NOOP;
 import static com.gentics.mesh.test.TestSize.FULL;
 
 import org.junit.Before;
@@ -52,8 +53,24 @@ public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implement
 
 	@Test
 	@Override
+	public void testEmptyChangeToBinary() throws Exception {
+		changeType(CREATENODE, NOOP, FETCH, CREATEBINARY, (container, name) -> {
+			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToBoolean() throws Exception {
 		changeType(CREATENODE, FILL, FETCH, CREATEBOOLEAN, (container, name) -> {
+			assertThat(container.getBoolean(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
+	public void testEmptyChangeToBoolean() throws Exception {
+		changeType(CREATENODE, NOOP, FETCH, CREATEBOOLEAN, (container, name) -> {
 			assertThat(container.getBoolean(name)).as(NEWFIELD).isNull();
 		});
 	}
@@ -68,8 +85,24 @@ public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implement
 
 	@Test
 	@Override
+	public void testEmptyChangeToBooleanList() throws Exception {
+		changeType(CREATENODE, NOOP, FETCH, CREATEBOOLEANLIST, (container, name) -> {
+			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToDate() throws Exception {
 		changeType(CREATENODE, FILL, FETCH, CREATEDATE, (container, name) -> {
+			assertThat(container.getDate(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
+	public void testEmptyChangeToDate() throws Exception {
+		changeType(CREATENODE, NOOP, FETCH, CREATEDATE, (container, name) -> {
 			assertThat(container.getDate(name)).as(NEWFIELD).isNull();
 		});
 	}
@@ -84,9 +117,25 @@ public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implement
 
 	@Test
 	@Override
+	public void testEmptyChangeToDateList() throws Exception {
+		changeType(CREATENODE, NOOP, FETCH, CREATEDATELIST, (container, name) -> {
+			assertThat(container.getDateList(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToHtml() throws Exception {
 		changeType(CREATENODE, FILL, FETCH, CREATEHTML, (container, name) -> {
 			assertThat(container.getHtml(name).getHTML()).as(NEWFIELD).isEqualTo(nodeUuid);
+		});
+	}
+
+	@Test
+	@Override
+	public void testEmptyChangeToHtml() throws Exception {
+		changeType(CREATENODE, NOOP, FETCH, CREATEHTML, (container, name) -> {
+			assertThat(container.getHtml(name)).as(NEWFIELD).isNull();
 		});
 	}
 
@@ -100,6 +149,14 @@ public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implement
 
 	@Test
 	@Override
+	public void testEmptyChangeToHtmlList() throws Exception {
+		changeType(CREATENODE, NOOP, FETCH, CREATEHTMLLIST, (container, name) -> {
+			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToMicronode() throws Exception {
 		changeType(CREATENODE, FILL, FETCH, CREATEMICRONODE, (container, name) -> {
 			assertThat(container.getMicronode(name)).as(NEWFIELD).isNull();
@@ -108,8 +165,24 @@ public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implement
 
 	@Test
 	@Override
+	public void testEmptyChangeToMicronode() throws Exception {
+		changeType(CREATENODE, NOOP, FETCH, CREATEMICRONODE, (container, name) -> {
+			assertThat(container.getMicronode(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToMicronodeList() throws Exception {
 		changeType(CREATENODE, FILL, FETCH, CREATEMICRONODELIST, (container, name) -> {
+			assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
+	public void testEmptyChangeToMicronodeList() throws Exception {
+		changeType(CREATENODE, NOOP, FETCH, CREATEMICRONODELIST, (container, name) -> {
 			assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNull();
 		});
 	}
@@ -125,6 +198,14 @@ public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implement
 
 	@Test
 	@Override
+	public void testEmptyChangeToNode() throws Exception {
+		changeType(CREATENODE, NOOP, FETCH, CREATENODE, (container, name) -> {
+			assertThat(container.getNode(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToNodeList() throws Exception {
 		changeType(CREATENODE, FILL, FETCH, CREATENODELIST, (container, name) -> {
 			assertThat(container.getNodeList(name)).as(NEWFIELD).isNotNull();
@@ -134,8 +215,24 @@ public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implement
 
 	@Test
 	@Override
+	public void testEmptyChangeToNodeList() throws Exception {
+		changeType(CREATENODE, NOOP, FETCH, CREATENODELIST, (container, name) -> {
+			assertThat(container.getNodeList(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToNumber() throws Exception {
 		changeType(CREATENODE, FILL, FETCH, CREATENUMBER, (container, name) -> {
+			assertThat(container.getNumber(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
+	public void testEmptyChangeToNumber() throws Exception {
+		changeType(CREATENODE, NOOP, FETCH, CREATENUMBER, (container, name) -> {
 			assertThat(container.getNumber(name)).as(NEWFIELD).isNull();
 		});
 	}
@@ -150,10 +247,27 @@ public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implement
 
 	@Test
 	@Override
+	public void testEmptyChangeToNumberList() throws Exception {
+		changeType(CREATENODE, NOOP, FETCH, CREATENUMBERLIST, (container, name) -> {
+			assertThat(container.getNumberList(name)).as(NEWFIELD).isNull();
+		});
+	}
+
+	@Test
+	@Override
 	public void testChangeToString() throws Exception {
 		changeType(CREATENODE, FILL, FETCH, CREATESTRING, (container, name) -> {
 			assertThat(container.getString(name).getString()).as(NEWFIELD).isEqualTo(nodeUuid);
 		});
+	}
+
+	@Test
+	@Override
+	public void testEmptyChangeToString() throws Exception {
+		changeType(CREATENODE, NOOP, FETCH, CREATESTRING, (container, name) -> {
+			assertThat(container.getString(name)).as(NEWFIELD).isNull();
+		});
+
 	}
 
 	@Test
@@ -164,4 +278,11 @@ public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implement
 		});
 	}
 
+	@Test
+	@Override
+	public void testEmptyChangeToStringList() throws Exception {
+		changeType(CREATENODE, NOOP, FETCH, CREATESTRINGLIST, (container, name) -> {
+			assertThat(container.getStringList(name)).isNull();
+		});
+	}
 }

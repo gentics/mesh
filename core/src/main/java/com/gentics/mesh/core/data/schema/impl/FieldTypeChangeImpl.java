@@ -163,26 +163,26 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 		String newType = getType();
 
 		switch (newType) {
-			case "boolean":
-				return Collections.singletonMap(getFieldName(), changeToBoolean(oldSchema, oldContent));
-			case "number":
-				return Collections.singletonMap(getFieldName(), changeToNumber(oldSchema, oldContent));
-			case "date":
-				return Collections.singletonMap(getFieldName(), changeToDate(oldSchema, oldContent));
-			case "html":
-				return Collections.singletonMap(getFieldName(), changeToHtml(oldSchema, oldContent));
-			case "string":
-				return Collections.singletonMap(getFieldName(), changeToString(oldSchema, oldContent));
-			case "binary":
-				return Collections.singletonMap(getFieldName(), changeToBinary(oldSchema, oldContent));
-			case "list":
-				return Collections.singletonMap(getFieldName(), changeToList(oldSchema, oldContent));
-			case "micronode":
-				return Collections.singletonMap(getFieldName(), changeToMicronode(oldSchema, oldContent));
-			case "node":
-				return Collections.singletonMap(getFieldName(), changeToNode(oldSchema, oldContent));
-			default:
-				throw error(BAD_REQUEST, "Unknown type {" + newType + "} for change " + getUuid());
+		case "boolean":
+			return Collections.singletonMap(getFieldName(), changeToBoolean(oldSchema, oldContent));
+		case "number":
+			return Collections.singletonMap(getFieldName(), changeToNumber(oldSchema, oldContent));
+		case "date":
+			return Collections.singletonMap(getFieldName(), changeToDate(oldSchema, oldContent));
+		case "html":
+			return Collections.singletonMap(getFieldName(), changeToHtml(oldSchema, oldContent));
+		case "string":
+			return Collections.singletonMap(getFieldName(), changeToString(oldSchema, oldContent));
+		case "binary":
+			return Collections.singletonMap(getFieldName(), changeToBinary(oldSchema, oldContent));
+		case "list":
+			return Collections.singletonMap(getFieldName(), changeToList(oldSchema, oldContent));
+		case "micronode":
+			return Collections.singletonMap(getFieldName(), changeToMicronode(oldSchema, oldContent));
+		case "node":
+			return Collections.singletonMap(getFieldName(), changeToNode(oldSchema, oldContent));
+		default:
+			throw error(BAD_REQUEST, "Unknown type {" + newType + "} for change " + getUuid());
 		}
 	}
 
@@ -190,7 +190,11 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 		String fieldName = getFieldName();
 		FieldSchema fieldSchema = oldSchema.getField(fieldName);
 
-		return new BooleanFieldImpl().setValue(typeConverter.toBoolean(oldContent.getFields().getField(fieldName, fieldSchema).getValue()));
+		Field oldField = oldContent.getFields().getField(fieldName, fieldSchema);
+		if (oldField == null) {
+			return null;
+		}
+		return new BooleanFieldImpl().setValue(typeConverter.toBoolean(oldField.getValue()));
 	}
 
 	private NumberField changeToNumber(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
@@ -198,17 +202,21 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 		FieldSchema fieldSchema = oldSchema.getField(fieldName);
 
 		String oldType = fieldSchema.getType();
-		Object oldValue = oldContent.getFields().getField(fieldName, fieldSchema).getValue();
+		Field oldField = oldContent.getFields().getField(fieldName, fieldSchema);
+		if (oldField == null) {
+			return null;
+		}
+		Object oldValue = oldField.getValue();
 
 		if (isUuidType(fieldSchema)) {
 			return null;
 		}
 
 		switch (oldType) {
-			case "number":
-				return oldContent.getFields().getNumberField(fieldName);
-			default:
-				return new NumberFieldImpl().setNumber(typeConverter.toNumber(oldValue));
+		case "number":
+			return oldContent.getFields().getNumberField(fieldName);
+		default:
+			return new NumberFieldImpl().setNumber(typeConverter.toNumber(oldValue));
 		}
 	}
 
@@ -216,7 +224,11 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 		String fieldName = getFieldName();
 		FieldSchema fieldSchema = oldSchema.getField(fieldName);
 
-		return new DateFieldImpl().setDate(typeConverter.toDate(oldContent.getFields().getField(fieldName, fieldSchema).getValue()));
+		Field oldField = oldContent.getFields().getField(fieldName, fieldSchema);
+		if (oldField == null) {
+			return null;
+		}
+		return new DateFieldImpl().setDate(typeConverter.toDate(oldField.getValue()));
 	}
 
 	private HtmlField changeToHtml(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
@@ -226,7 +238,11 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 		if (isNonNodeUuidType(fieldSchema)) {
 			return null;
 		}
-		return new HtmlFieldImpl().setHTML(typeConverter.toString(oldContent.getFields().getField(fieldName, fieldSchema).getValue()));
+		Field field = oldContent.getFields().getField(fieldName, fieldSchema);
+		if (field == null) {
+			return null;
+		}
+		return new HtmlFieldImpl().setHTML(typeConverter.toString(field.getValue()));
 	}
 
 	private StringField changeToString(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
@@ -236,7 +252,11 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 		if (isNonNodeUuidType(fieldSchema)) {
 			return null;
 		}
-		return new StringFieldImpl().setString(typeConverter.toString(oldContent.getFields().getField(fieldName, fieldSchema).getValue()));
+		Field oldField = oldContent.getFields().getField(fieldName, fieldSchema);
+		if (oldField == null) {
+			return null;
+		}
+		return new StringFieldImpl().setString(typeConverter.toString(oldField.getValue()));
 	}
 
 	private BinaryField changeToBinary(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
@@ -245,10 +265,10 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 
 		String oldType = fieldSchema.getType();
 		switch (oldType) {
-			case "binary":
-				return oldContent.getFields().getBinaryField(fieldName);
-			default:
-				return null;
+		case "binary":
+			return oldContent.getFields().getBinaryField(fieldName);
+		default:
+			return null;
 		}
 	}
 
@@ -257,42 +277,45 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 		FieldSchema fieldSchema = oldSchema.getField(fieldName);
 		String listType = getListType();
 		Field oldField = oldContent.getFields().getField(fieldName, fieldSchema);
+		if (oldField == null) {
+			return null;
+		}
 		Object oldValue = oldField.getValue();
 		String oldType = fieldSchema.getType();
 
 		switch (listType) {
-			case "boolean":
-				return typeConverter.toBooleanList(oldValue);
+		case "boolean":
+			return typeConverter.toBooleanList(oldValue);
+		case "number":
+			if (isUuidType(fieldSchema)) {
+				return null;
+			}
+			switch (oldType) {
 			case "number":
-				if (isUuidType(fieldSchema)) {
-					return null;
-				}
-				switch (oldType) {
-					case "number":
-						return new NumberFieldListImpl().setItems(Collections.singletonList(oldContent.getFields().getNumberField(fieldName).getNumber()));
-					default:
-						return typeConverter.toNumberList(oldValue);
-				}
-			case "date":
-				return typeConverter.toDateList(oldValue);
-			case "html":
-				if (isNonNodeUuidType(fieldSchema)) {
-					return null;
-				} else {
-					return typeConverter.toHtmlList(oldValue);
-				}
-			case "string":
-				if (isNonNodeUuidType(fieldSchema)) {
-					return null;
-				} else {
-					return typeConverter.toStringList(oldValue);
-				}
-			case "micronode":
-				return typeConverter.toMicronodeList(oldField);
-			case "node":
-				return typeConverter.toNodeList(oldField);
+				return new NumberFieldListImpl().setItems(Collections.singletonList(oldContent.getFields().getNumberField(fieldName).getNumber()));
 			default:
-				throw error(BAD_REQUEST, "Unknown list type {" + listType + "} for change " + getUuid());
+				return typeConverter.toNumberList(oldValue);
+			}
+		case "date":
+			return typeConverter.toDateList(oldValue);
+		case "html":
+			if (isNonNodeUuidType(fieldSchema)) {
+				return null;
+			} else {
+				return typeConverter.toHtmlList(oldValue);
+			}
+		case "string":
+			if (isNonNodeUuidType(fieldSchema)) {
+				return null;
+			} else {
+				return typeConverter.toStringList(oldValue);
+			}
+		case "micronode":
+			return typeConverter.toMicronodeList(oldField);
+		case "node":
+			return typeConverter.toNodeList(oldField);
+		default:
+			throw error(BAD_REQUEST, "Unknown list type {" + listType + "} for change " + getUuid());
 		}
 	}
 
@@ -303,7 +326,7 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 	private boolean isUuidType(FieldSchema fieldSchema) {
 		if (fieldSchema instanceof ListFieldSchema) {
 			return UUID_TYPES.contains(fieldSchema.getType()) ||
-			UUID_TYPES.contains(((ListFieldSchema) fieldSchema).getListType());
+				UUID_TYPES.contains(((ListFieldSchema) fieldSchema).getListType());
 		} else {
 			return UUID_TYPES.contains(fieldSchema.getType());
 		}
