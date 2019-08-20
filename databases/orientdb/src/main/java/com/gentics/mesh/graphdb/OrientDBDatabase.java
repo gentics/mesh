@@ -74,7 +74,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final String TX_RETRY_DELAY_PARAM_KEY = "tx.retry.delay";
 
-	private static final int DEFAULT_TX_RETRY_DELAY_MS = 6000;
+	private static final int DEFAULT_TX_RETRY_DELAY_MS = 0;
 
 	private TypeResolver resolver;
 
