@@ -133,7 +133,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 			double pAspectRatio = (double) pWidth / (double) pHeight;
 			// if we want to use smart resizing we need to crop the original image to the correct format before resizing to avoid distortion
-			if(resizeMode == ResizeMode.SMART && aspectRatio != pAspectRatio ) { // TODO: decide if default should be SMART
+			if(resizeMode != ResizeMode.FORCE && aspectRatio != pAspectRatio ) { 
 				if (aspectRatio < pAspectRatio) {
 					// crop height (top & bottom)
 					int resizeHeight = (int) ( originalWidth / pAspectRatio );
