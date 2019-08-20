@@ -40,6 +40,7 @@ import com.gentics.mesh.image.focalpoint.FocalPointModifier;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageRect;
+import com.gentics.mesh.parameter.image.ResizeMode;
 import com.twelvemonkeys.image.ResampleOp;
 
 import io.reactivex.Single;
@@ -107,7 +108,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		// Resize if required and calculate missing parameters if needed
 		Integer pHeight = parameters.getHeight();
 		Integer pWidth = parameters.getWidth();
-
+		
 		// Resizing is only needed when one of the parameters has been specified
 		if (pHeight != null || pWidth != null) {
 
@@ -125,11 +126,28 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			if (pWidth != null && pWidth == originalWidth && pHeight != null && pHeight == originalHeight) {
 				return originalImage;
 			}
-
 			int width = pWidth == null ? (int) (pHeight * aspectRatio) : pWidth;
 			int height = pHeight == null ? (int) (width / aspectRatio) : pHeight;
+			
+			ResizeMode resizeMode = parameters.getResizeMode();
+
+			double pAspectRatio = (double) pWidth / (double) pHeight;
+			// if we want to use smart resizing we need to crop the original image to the correct format before resizing to avoid distortion
+			if(resizeMode == ResizeMode.SMART && aspectRatio != pAspectRatio ) { // TODO: decide if default should be SMART
+				if (aspectRatio < pAspectRatio) {
+					// crop height (top & bottom)
+					int resizeHeight = (int) ( originalWidth / pAspectRatio );
+					int startY = (int) ( originalHeight * 0.5 - resizeHeight * 0.5);
+					originalImage = crop(originalImage, new ImageRect(0, startY, resizeHeight, originalWidth));
+				} else {
+					// crop width (left & right)
+					int resizeWidth = (int) ( originalHeight * pAspectRatio );
+					int startX = (int) ( originalWidth * 0.5 - resizeWidth * 0.5);
+					originalImage = crop(originalImage, new ImageRect(startX, 0, originalHeight, resizeWidth));
+				}
+			}
 			try {
-				BufferedImage image = Scalr.apply(originalImage, new ResampleOp(width, height, options.getResampleFilter().getFilter()));
+				BufferedImage image = Scalr.apply(originalImage, new ResampleOp(width, height, options.getResampleFilter().getFilter()));	
 				originalImage.flush();
 				return image;
 			} catch (IllegalArgumentException e) {

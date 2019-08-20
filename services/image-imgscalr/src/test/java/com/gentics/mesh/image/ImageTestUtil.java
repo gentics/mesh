@@ -41,20 +41,19 @@ public final class ImageTestUtil {
 				}
 			}
 		});
+		System.out.println("Press Enter to continue ...");
 		System.in.read();
 	}
 
 	private static void createImageFrame(BufferedImage image) throws IOException {
 		JFrame frame = new JFrame();
-		frame.getContentPane().setLayout(new FlowLayout());
-		// frame.getContentPane().add(new JLabel(new ImageIcon(image)));
-		// frame.getContentPane().add(new TestJPanel(image));
+		frame.getContentPane().setLayout(new FlowLayout(FlowLayout.CENTER, 0, (int)(image.getHeight()*0.025)));
 		frame.getContentPane().add(new JLabel(new ImageIcon(image)));
-		frame.setPreferredSize(new Dimension(image.getWidth(), image.getHeight()));
+		frame.setPreferredSize(new Dimension((int)(image.getWidth()*1.05), (int)(image.getHeight()*1.05+22)));
 		frame.repaint();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.pack();
 		frame.setVisible(true);
+		frame.pack();
 
 	}
 

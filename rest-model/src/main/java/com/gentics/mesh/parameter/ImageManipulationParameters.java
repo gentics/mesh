@@ -9,6 +9,7 @@ import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageRect;
+import com.gentics.mesh.parameter.image.ResizeMode;
 
 public interface ImageManipulationParameters extends ParameterProvider {
 
@@ -25,6 +26,8 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	public static final String RECT_QUERY_PARAM_KEY = "rect";
 
 	public static final String CROP_MODE_QUERY_PARAM_KEY = "crop";
+	
+	public static final String RESIZE_MODE_QUERY_PARAM_KEY = "resize";
 
 	public static final String FOCAL_POINT_DEBUG_PARAM_KEY = "fpdebug";
 
@@ -181,6 +184,41 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	}
 
 	/**
+	 * Return the resize mode parameter value.
+	 * 
+	 * @return
+	 */
+	default ResizeMode getResizeMode() {
+		String mode = getParameter(RESIZE_MODE_QUERY_PARAM_KEY);
+		return ResizeMode.get(mode);
+	}
+
+	/**
+	 * Set the resize mode parameter.
+	 * 
+	 * @param mode
+	 * @return Fluent API
+	 */
+	default ImageManipulationParameters setResizeMode(String mode) {
+		ResizeMode resizeMode = ResizeMode.get(mode);
+		if (resizeMode == null) {
+			throw error(BAD_REQUEST, "image_error_parameter_invalid", RESIZE_MODE_QUERY_PARAM_KEY, mode);
+		}
+		return setResizeMode(resizeMode);
+	}
+
+	/**
+	 * Set the resize mode parameter.
+	 * 
+	 * @param mode
+	 * @return Fluent API
+	 */
+	default ImageManipulationParameters setResizeMode(ResizeMode mode) {
+		setParameter(RESIZE_MODE_QUERY_PARAM_KEY, mode.getKey());
+		return this;
+	}
+	
+	/**
 	 * Check whether focal point parameters have been set.
 	 * 
 	 * @return
@@ -333,6 +371,9 @@ public interface ImageManipulationParameters extends ParameterProvider {
 		if (getCropMode() != null) {
 			builder.append("crop" + getCropMode());
 		}
+		if (getResizeMode() != null) {
+			builder.append("resize" + getResizeMode());
+		}
 		if (getWidth() != null) {
 			builder.append("rw" + getWidth());
 		}
@@ -349,6 +390,7 @@ public interface ImageManipulationParameters extends ParameterProvider {
 		if (getFocalPointZoom() != null) {
 			builder.append("fpz" + getFocalPointZoom());
 		}
+		
 		return builder.toString();
 	}
 
