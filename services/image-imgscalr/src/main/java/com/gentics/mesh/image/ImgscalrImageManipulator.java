@@ -130,22 +130,25 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			int height = pHeight == null ? (int) (width / aspectRatio) : pHeight;
 			
 			ResizeMode resizeMode = parameters.getResizeMode();
-
-			double pAspectRatio = (double) pWidth / (double) pHeight;
+			
 			// if we want to use smart resizing we need to crop the original image to the correct format before resizing to avoid distortion
-			if(resizeMode != ResizeMode.FORCE && aspectRatio != pAspectRatio ) { 
-				if (aspectRatio < pAspectRatio) {
-					// crop height (top & bottom)
-					int resizeHeight = (int) ( originalWidth / pAspectRatio );
-					int startY = (int) ( originalHeight * 0.5 - resizeHeight * 0.5);
-					originalImage = crop(originalImage, new ImageRect(0, startY, resizeHeight, originalWidth));
-				} else {
-					// crop width (left & right)
-					int resizeWidth = (int) ( originalHeight * pAspectRatio );
-					int startX = (int) ( originalWidth * 0.5 - resizeWidth * 0.5);
-					originalImage = crop(originalImage, new ImageRect(startX, 0, originalHeight, resizeWidth));
-				}
+			if( pWidth != null && pHeight != null && resizeMode != ResizeMode.FORCE) {
+				double pAspectRatio = (double) pWidth / (double) pHeight;
+				if(aspectRatio != pAspectRatio ) { 
+					if (aspectRatio < pAspectRatio) {
+						// crop height (top & bottom)
+						int resizeHeight = (int) ( originalWidth / pAspectRatio );
+						int startY = (int) ( originalHeight * 0.5 - resizeHeight * 0.5);
+						originalImage = crop(originalImage, new ImageRect(0, startY, resizeHeight, originalWidth));
+					} else {
+						// crop width (left & right)
+						int resizeWidth = (int) ( originalHeight * pAspectRatio );
+						int startX = (int) ( originalWidth * 0.5 - resizeWidth * 0.5);
+						originalImage = crop(originalImage, new ImageRect(startX, 0, originalHeight, resizeWidth));
+					}
+				}	
 			}
+			
 			try {
 				BufferedImage image = Scalr.apply(originalImage, new ResampleOp(width, height, options.getResampleFilter().getFilter()));	
 				originalImage.flush();
