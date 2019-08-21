@@ -192,7 +192,7 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	 */
 	default ResizeMode getResizeMode() {
 		String mode = getParameter(RESIZE_MODE_QUERY_PARAM_KEY);
-		return ResizeMode.get(mode);
+		return ResizeMode.get(mode) == null ? ResizeMode.SMART : ResizeMode.get(mode);
 	}
 
 	/**
