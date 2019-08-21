@@ -34,6 +34,7 @@ CAUTION: New default image resize mode is `smart` which crops an image instead o
 ____
 Should you have used resizing to intentionally distort images you now have to change your Image Manipulator calls to include the `resize=force` option.
 ____
+CAUTION: The different resizing of images caused by this change might not apply when an image is already in the cache. To make sure that the changes take effect, the cache in `data/binaryImageCache/` must be cleared.
 
 [[v0.39.1]]
 == 0.39.1 (14.08.2019)
