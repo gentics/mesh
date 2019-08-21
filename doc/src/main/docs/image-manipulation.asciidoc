@@ -13,19 +13,45 @@ Endpoint: ```{apiLatest}/:projectName/nodes/:uuid/binary/:fieldname?w=220```
 
 .Try the example
 [TIP]
-https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=300
+https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=500
 
 .via UUID
 image::https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=300&version=1.0[Example Image,role="img-responsive"] 
 
-== Fetch and Crop an Image with WebRoot Path
+== Fetch and Resize an Image with WebRoot Path
 
-Images can be loaded similar to regular contents. It is also possible to load them using the path.
+Images can be loaded similar to regular contents. It is also possible to load them using the WebRoot path.
 
-TIP: By Path: https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500
+TIP: By Path: https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?h=300
 
 .via webroot path
 image::https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500[Image By Path]
+
+== Resizing Options
+
+When loading an image with resizing parameters you can provide either the desired width by appending `w=:width` or the desired height by appending by appending `h=:height`. 
+It also possible to provide both dimensions. Note that in this case Mesh potentially crops your image to fit the desired dimensions. This happens when the aspect ratio of the source image is different from the requested dimensions.
+Should you _not_ want to crop the image but instead have Mesh transform the image to fit the requested width and height you can use the resizing option `resize=force`.
+Note that using the force-resizing mode can potentially lead to non-proportional resizing and thus potentially distort your image. Since this is seldomly desired the default resizing option, that gets used when no resize-parameter is provided, is `resize=smart`.
+
+.When providing width and height Mesh crops the image to the desired format 
+image::https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500&h=200[Image with width and height]
+
+.When adding the resize parameter `force` the image gets distorted to fit the dimensions 
+image::https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500&h=200&resize=force[Image with width and height and forced resize]
+
+NOTE: Providing no resize parameter yields the same result as providing `resize=smart`
+
+== Fetch and Crop an Image with WebRoot Pat
+
+You can also selectively extract a certain portion of your image by providing a cropping rectangle with the paramater `rect=:startPositionXCoordinate,:startPositionYCoordinate,:WidthOfRectangle,:HeightOfRectangle&crop=rect`.
+
+NOTE: It is mandatory to specify all four crop parameters when cropping an image.
+
+.Let's say we want to highlight the motorcycle behind the car. We could do this by cropping everything else.
+image::https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?rect=520,70,280,160&crop=rect[Cropped image]
+
+TIP: Cropping can also be combined with resizing.
 
 == Placeholders
 
@@ -38,8 +64,6 @@ Endpoint: ```{apiLatest}/:projectName/webroot/:path?rect=10,100,800,400&crop=rec
 .Try the example
 [TIP]
 https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?rect=10,100,800,400&crop=rect
-
-NOTE: It is mandatory to specify all four crop parameters when cropping an image.
 
 == Focal Point Handling
 
