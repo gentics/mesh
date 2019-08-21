@@ -30,6 +30,8 @@ icon:plus[] Graph: The default value for `tx.retry.delay` has been set to 0. The
 
 icon:plus[] Clustering: The `storage.synchronizeWrites` option will be enabled by default when clustering is active.
 
+icon:plus[] OrientDB: The included OrientDB version has been updated to version 3.0.22
+
 [[v0.39.2]]
 == 0.39.2 (20.08.2019)
 
