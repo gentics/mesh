@@ -7,7 +7,9 @@ include::content/docs/variables.adoc-include[]
 Images can be resized and/or cropped by appending the <<imagemanipulationparams,image manipulation query parameters>> on the relevant API endpoints.
 The following image formats are supported: `png`, `jpg`, `bmp` and `gif`
 
-== Fetch and Resize an Image with UUID
+== Resize
+
+=== Using UUID
 
 Endpoint: ```{apiLatest}/:projectName/nodes/:uuid/binary/:fieldname?w=220```
 
@@ -18,7 +20,7 @@ https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/b
 .via UUID
 image::https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=300&version=1.0[Example Image,role="img-responsive"] 
 
-== Fetch and Resize an Image with WebRoot Path
+=== Using Path
 
 Images can be loaded similar to regular contents. It is also possible to load them using the WebRoot path.
 
@@ -27,7 +29,7 @@ TIP: By Path: https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg
 .via webroot path
 image::https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500[Image By Path]
 
-== Resizing Options
+=== Resizing Options
 
 When loading an image with resizing parameters you can provide either the desired width by appending `w=:width` or the desired height by appending by appending `h=:height`. 
 It also possible to provide both dimensions. Note that in this case Mesh potentially crops your image to fit the desired dimensions. This happens when the aspect ratio of the source image is different from the requested dimensions.
@@ -42,7 +44,7 @@ image::https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500&
 
 NOTE: Providing no resize parameter yields the same result as providing `resize=smart`
 
-== Fetch and Crop an Image with WebRoot Pat
+== Crop
 
 You can also selectively extract a certain portion of your image by providing a cropping rectangle with the paramater `rect=:startPositionXCoordinate,:startPositionYCoordinate,:WidthOfRectangle,:HeightOfRectangle&crop=rect`.
 
@@ -57,6 +59,8 @@ TIP: Cropping can also be combined with resizing.
 
 NOTE: You can use the `dominantColor`, `width` and `height` properties of the image fields to generate colored placeholder areas for your images. The `dominantColor` of the image will  automatically be computed for each uploaded image.
 
+include::content/docs/examples/graphql/dominant-colors-query[]
+
 It is also possible to use the image manipulation in combination with the WebRoot endpoint.
 
 Endpoint: ```{apiLatest}/:projectName/webroot/:path?rect=10,100,800,400&crop=rect```
@@ -65,7 +69,7 @@ Endpoint: ```{apiLatest}/:projectName/webroot/:path?rect=10,100,800,400&crop=rec
 [TIP]
 https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?rect=10,100,800,400&crop=rect
 
-== Focal Point Handling
+== Focal Point
 
 Responsive designs often suggest the usage of https://developer.mozilla.org/en-US/docs/Learn/HTML/Multimedia_and_embedding/Responsive_images[srcset images for responsive images].
 Sometimes those designs require image sizes which lead to cropped images. This could result in images which seem chopped off at the worst possible place or images which miss the important part.
