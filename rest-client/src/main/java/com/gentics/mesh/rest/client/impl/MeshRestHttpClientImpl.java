@@ -1134,6 +1134,8 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 		transformRequest.setCropRect(parameters.getRect());
 		transformRequest.setWidth(parameters.getWidth());
 		transformRequest.setHeight(parameters.getHeight());
+		transformRequest.setCropMode(parameters.getCropMode());
+		transformRequest.setResizeMode(parameters.getResizeMode());
 		transformRequest.setLanguage(languageTag).setVersion(version);
 		if (parameters.hasFocalPoint()) {
 			transformRequest.setFocalPoint(parameters.getFocalPoint());

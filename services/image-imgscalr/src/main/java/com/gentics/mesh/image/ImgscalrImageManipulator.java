@@ -132,7 +132,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			ResizeMode resizeMode = parameters.getResizeMode();
 			
 			// if we want to use smart resizing we need to crop the original image to the correct format before resizing to avoid distortion
-			if( pWidth != null && pHeight != null && resizeMode != ResizeMode.FORCE) {
+			if( pWidth != null && pHeight != null && resizeMode == ResizeMode.SMART) {
 				double pAspectRatio = (double) pWidth / (double) pHeight;
 				if(aspectRatio != pAspectRatio ) { 
 					if (aspectRatio < pAspectRatio) {

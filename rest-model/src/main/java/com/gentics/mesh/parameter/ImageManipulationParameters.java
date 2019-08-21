@@ -179,7 +179,9 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	 * @return Fluent API
 	 */
 	default ImageManipulationParameters setCropMode(CropMode mode) {
-		setParameter(CROP_MODE_QUERY_PARAM_KEY, mode.getKey());
+		if(mode != null) {
+			setParameter(CROP_MODE_QUERY_PARAM_KEY, mode.getKey());	
+		}
 		return this;
 	}
 
@@ -214,7 +216,9 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	 * @return Fluent API
 	 */
 	default ImageManipulationParameters setResizeMode(ResizeMode mode) {
-		setParameter(RESIZE_MODE_QUERY_PARAM_KEY, mode.getKey());
+		if(mode != null) {
+			setParameter(RESIZE_MODE_QUERY_PARAM_KEY, mode.getKey());
+		}
 		return this;
 	}
 	

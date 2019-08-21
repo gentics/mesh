@@ -1,7 +1,7 @@
 package com.gentics.mesh.image;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.image.ImageTestUtil.createMockedBinary;
+import static com.gentics.mesh.test.util.ImageTestUtil.createMockedBinary;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -37,6 +37,7 @@ import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+import com.gentics.mesh.test.util.ImageTestUtil;
 import com.gentics.mesh.util.RxUtil;
 
 import io.reactivex.Flowable;

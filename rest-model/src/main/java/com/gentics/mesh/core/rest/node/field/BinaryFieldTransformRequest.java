@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageRect;
+import com.gentics.mesh.parameter.image.ResizeMode;
 
 /**
  * POJO for a binary field transform request
@@ -28,6 +30,14 @@ public class BinaryFieldTransformRequest implements RestModel {
 	@JsonPropertyDescription("Crop area.")
 	private ImageRect cropRect;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Crop mode. To be used in conjunction with cropRect")
+	private CropMode cropMode;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Resize mode.")
+	private ResizeMode resizeMode;
+	
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Optional new focal point for the transformed image.")
 	private FocalPoint focalPoint;
@@ -104,6 +114,39 @@ public class BinaryFieldTransformRequest implements RestModel {
 		return setCropRect(new ImageRect(startX, startY, height, width));
 	}
 
+	/**
+	 * Return the crop mode.
+	 * 
+	 * @return
+	 */
+	public CropMode getCropMode() {
+		return cropMode;
+	}
+
+	/**
+	 * Set the crop mode.
+	 */
+	public BinaryFieldTransformRequest setCropMode(CropMode mode) {
+		this.cropMode = mode;
+		return this;
+	}
+
+	/**
+	 * Return the resize mode.
+	 * 
+	 * @return
+	 */
+	public ResizeMode getResizeMode() {
+		return resizeMode;
+	}
+
+	/**
+	 * Set the resize mode.
+	 */
+	public BinaryFieldTransformRequest setResizeMode(ResizeMode mode) {
+		this.resizeMode = mode;
+		return this;
+	}
 	/**
 	 * Return the node language.
 	 * 

@@ -1,4 +1,4 @@
-package com.gentics.mesh.image;
+package com.gentics.mesh.test.util;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
