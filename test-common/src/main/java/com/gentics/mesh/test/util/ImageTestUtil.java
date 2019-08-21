@@ -1,18 +1,24 @@
 package com.gentics.mesh.test.util;
 
+import static org.junit.Assume.assumeNoException;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -64,5 +70,14 @@ public final class ImageTestUtil {
 		ImageReader reader = it.next();
 		reader.setInput(ins, true);
 		return reader.read(0);
+	}
+	
+	public static void writePngImage(BufferedImage output, File target) throws IOException {
+		try(ImageOutputStream out = new FileImageOutputStream(target)) {
+			ImageWriter imageWriter = ImageIO.getImageWritersByFormatName("png").next();
+			imageWriter.setOutput(out);
+			imageWriter.write(null, new IIOImage(output, null, null), null);
+		}
+		
 	}
 }
