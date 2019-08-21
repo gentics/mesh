@@ -23,6 +23,18 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[Next release]]
+== Next release (insert date here)
+
+icon:check[] Image Manipulation: Add new smart resizing option that crops an image to the desired dimensions instead of distorting it when providing width _and_ height paramenters that result in an aspect ratio that is different from the original images aspect ratio.
+The he old behaviour can now be achieved by using `resize=force`.
+
+CAUTION: New default image resize mode is `smart` which crops an image instead of distorting it
+[quote]
+____
+Should you have used resizing to intentionally distort images you now have to change your Image Manipulator calls to include the `resize=force` option.
+____
+
 [[v0.39.1]]
 == 0.39.1 (14.08.2019)
 
