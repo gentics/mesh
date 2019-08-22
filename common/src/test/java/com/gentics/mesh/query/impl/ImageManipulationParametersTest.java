@@ -18,6 +18,7 @@ import com.gentics.mesh.core.rest.test.Assert;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
+import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.util.HttpQueryUtils;
 
@@ -148,13 +149,16 @@ public class ImageManipulationParametersTest {
 	@Test
 	public void testCacheKey() {
 		String cacheKey = new ImageManipulationParametersImpl().getCacheKey();
-		assertEquals("fp0.5-0.5", cacheKey);
+		assertEquals("resizeSMARTfp0.5-0.5", cacheKey);
+		
+		cacheKey = new ImageManipulationParametersImpl().setResizeMode(ResizeMode.FORCE).getCacheKey();
+		assertEquals("resizeFORCEfp0.5-0.5", cacheKey);
 
 		cacheKey = new ImageManipulationParametersImpl().setWidth(100).setHeight(200).getCacheKey();
-		assertEquals("rw100rh200fp0.5-0.5", cacheKey);
+		assertEquals("resizeSMARTrw100rh200fp0.5-0.5", cacheKey);
 
 		cacheKey = new ImageManipulationParametersImpl().setWidth(100).setHeight(200).setRect(10, 22, 20, 21).getCacheKey();
-		assertEquals("rect10,22,21,20rw100rh200fp0.5-0.5", cacheKey);
+		assertEquals("rect10,22,21,20resizeSMARTrw100rh200fp0.5-0.5", cacheKey);
 	}
 
 }
