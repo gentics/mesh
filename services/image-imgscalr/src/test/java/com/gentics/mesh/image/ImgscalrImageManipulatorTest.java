@@ -77,7 +77,12 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 					assertNotNull(data);
 					try (ByteArrayInputStream bis = new ByteArrayInputStream(data)) {
 						BufferedImage resizedImage = ImageIO.read(bis);
-						assertThat(resizedImage).as(imageName).hasSize(150, 180).matches(refImage);
+						String referenceFilename = "outputImage-" + imageName.replace(".", "_") + "-resize-reference.png";
+						// when you want to update the referenceImage, execute the code below 
+						// and copy the files to src/test/resources/references/ 
+						// ImageTestUtil.writePngImage(resizedImage, new File("target/" + referenceFilename));
+						// ImageTestUtil.displayImage(resizedImage);
+						assertThat(resizedImage).as(imageName).hasSize(150, 180).matches(ImageIO.read(new File("src/test/resources/references/"+referenceFilename)));
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
