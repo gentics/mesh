@@ -137,12 +137,12 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 				if(aspectRatio != pAspectRatio ) { 
 					if (aspectRatio < pAspectRatio) {
 						// crop height (top & bottom)
-						int resizeHeight = (int) ( originalWidth / pAspectRatio );
+						int resizeHeight = Math.max(1, (int) ( originalWidth / pAspectRatio ));
 						int startY = (int) ( originalHeight * 0.5 - resizeHeight * 0.5);
 						originalImage = crop(originalImage, new ImageRect(0, startY, resizeHeight, originalWidth));
 					} else {
 						// crop width (left & right)
-						int resizeWidth = (int) ( originalHeight * pAspectRatio );
+						int resizeWidth = Math.max(1, (int) ( originalHeight * pAspectRatio ));
 						int startX = (int) ( originalWidth * 0.5 - resizeWidth * 0.5);
 						originalImage = crop(originalImage, new ImageRect(startX, 0, originalHeight, resizeWidth));
 					}
