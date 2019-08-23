@@ -149,6 +149,25 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 				}	
 			}
 			
+			// if we want to use proportional resizing we need to make sure the destination dimension fits inside the provided dimensions
+			if( pWidth != null && pHeight != null && resizeMode == ResizeMode.PROP) {
+				double pAspectRatio = (double) pWidth / (double) pHeight;
+				if (aspectRatio < pAspectRatio) { 
+					//scale to pHeight
+					width = Math.max(1, (int)(pHeight * aspectRatio));
+					height = Math.max(1, pHeight);
+				} else {  
+					// scale to pWidth
+					width = Math.max(1, pWidth);
+					height = Math.max(1, (int)(pWidth / aspectRatio));
+				}
+
+				// Should the resulting format be the same as the original image we do not need to resize
+				if (width == originalWidth && height == originalHeight) {
+					return originalImage;
+				}
+			}
+			
 			try {
 				BufferedImage image = Scalr.apply(originalImage, new ResampleOp(width, height, options.getResampleFilter().getFilter()));	
 				originalImage.flush();

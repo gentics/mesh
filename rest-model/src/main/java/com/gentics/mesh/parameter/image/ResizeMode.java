@@ -13,7 +13,10 @@ public enum ResizeMode {
 			"The force mode will resize the image to the specified dimensions. This can lead to a distorted image when the aspect ratio of the source image does not match the destination aspect ratio"),
 
 	SMART("smart",
-			"The smart mode will resize the image proportionally so that the resulting destination format matches the source format in at least one dimension. No distortion of the image will occur.");
+			"The smart mode will resize the image proportionally so that the resulting destination format matches the source format in at least one dimension. No distortion of the image will occur."),
+	
+	PROP("prop",
+			"The prop mode will resize the image proportionally so that the resulting destination format fits inside the provided dimensions. No distortion of the image will occur.");
 
 	private final String key;
 	private final String description;
