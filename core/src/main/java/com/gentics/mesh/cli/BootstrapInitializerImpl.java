@@ -99,6 +99,7 @@ import dagger.Lazy;
 import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.dropwizard.DropwizardMetricsOptions;
@@ -354,6 +355,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				.setJmxEnabled(true);
 			vertxOptions.setMetricsOptions(metricsOptions);
 		}
+		boolean logActivity = LoggerFactory.getLogger(EventBus.class).isDebugEnabled();
+		vertxOptions.getEventBusOptions().setLogActivity(logActivity);
 		vertxOptions.setPreferNativeTransport(true);
 		// TODO We need to find a different way to deal with the FileResolver classpath caching issue since disabling the cache
 		// has negative performance implications.
