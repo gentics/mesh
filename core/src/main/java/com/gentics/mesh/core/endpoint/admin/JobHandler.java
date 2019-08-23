@@ -129,7 +129,9 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 			}
 			JobRoot root = boot.jobRoot();
 			Job job = root.loadObjectByUuidNoPerm(uuid, true);
-			job.resetJob();
+			db.tx(() -> {
+				job.resetJob();
+			});
 			return job.transformToRestSync(ac, 0);
 		}, (model) -> ac.send(model, OK));
 	}
