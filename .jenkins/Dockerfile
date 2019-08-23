@@ -1,11 +1,7 @@
 # This Dockerfile is used to build an image containing basic stuff to be used as a Jenkins slave build node.
-FROM jenkinsci/jnlp-slave
+FROM jenkinsci/jnlp-slave:3.27-1
 MAINTAINER Johannes Schüth <j.schueth@gentics.com>
 USER root
-
-# Key chains
-RUN wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C2518248EEA14886
 
 # APT
 RUN echo 'deb http://debian.apa.at/debian stretch main contrib non-free' > /etc/apt/sources.list
@@ -14,11 +10,16 @@ RUN echo 'deb http://security.debian.org/ stretch/updates main contrib' >> /etc/
 
 RUN apt-get update && apt-get -y upgrade && apt-get install -y git-core gawk sed wget curl sudo \
   less vim curl tar wget sed psmisc file pwgen locales zip unzip software-properties-common devscripts \
-  bzip2 rsync maven
+  bzip2 rsync
+
+# Maven
+RUN cd /opt && wget -nv -O maven.tar.gz "http://mirror.klaus-uwe.me/apache/maven/maven-3/3.6.1/binaries/apache-maven-3.6.1-bin.tar.gz" && \
+    tar -xzf maven.tar.gz && mv apache-maven* maven && rm maven.tar.gz && \
+    ln -s /opt/maven/bin/mvn /usr/local/bin/mvn
 
 # Docker
 RUN curl "https://get.docker.com/builds/`uname -s`/`uname -m`/docker-latest.tgz" > docker.tgz &&\
-    tar -xvzf docker.tgz &&\
+    tar -xzf docker.tgz &&\
     mv docker/* /usr/bin &&\
     rm -rf docke*
 
@@ -31,20 +32,20 @@ RUN mkdir -p /usr/lib/jvm/ && \
    mv jdk8u202-b08/ java-8
 ENV JAVA_1_8_HOME /usr/lib/jvm/java-8
 
-# Install Java 10
-#RUN mkdir -p /usr/lib/jvm/ && \
-#   cd /usr/lib/jvm/ && \
-#   wget -nv -O openjdk-10.0.1_linux-x64_bin.tar.gz "https://download.java.net/java/GA/jdk10/10.0.1/fb4372174a714e6b8c52526dc134031e/10/openjdk-10.0.1_linux-x64_bin.tar.gz" && \
-#   tar xfz openjdk-10.0.1_linux-x64_bin.tar.gz && \
-#   rm *.gz && \
-#   mv jdk-10* java-10
-#ENV JAVA_1_10_HOME /usr/lib/jvm/java-10
+# Install Java 11
+RUN mkdir -p /usr/lib/jvm/ && \
+   cd /usr/lib/jvm/ && \
+   wget -nv -O openjdk-11.tar.gz "https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.3%2B7/OpenJDK11U-jre_x64_linux_hotspot_11.0.3_7.tar.gz" && \
+   tar xfz openjdk-11.tar.gz && \
+   rm *.gz && \
+   mv jdk-11* java-11
+ENV JAVA_1_11_HOME /usr/lib/jvm/java-11
 
 # Add Jenkins user
 RUN echo "jenkins:jenkins" | chpasswd
 RUN mkdir -p /home/jenkins/workspace && mkdir -p /home/jenkins/.ssh
 
-ADD ./files/settings.xml /home/jenkins/.m2/settings.xml
+ADD ./files/settings.xml /opt/maven/conf/settings.xml
 #ADD ./files/gentics /home/jenkins/.gnupg/gentics
 RUN chown jenkins: /home/jenkins -R
 
