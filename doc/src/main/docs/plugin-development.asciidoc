@@ -301,17 +301,37 @@ The plugin system relies on link:https://github.com/pf4j/pf4j[PF4J] which uses a
 
 To avoid `NoClassDefFoundError` / `NoSuchMethodError` it is thus recommended to add all the classes (libraries) that are used by the plugin jar.
 
-NOTE: The `mesh-plugin-api`, `vertx-core`, `vertx-web`, `netty` libraries should not be included in the plugin jar. Adding those libraries could cause stability issues and errors.
+== Vert.x
+
+The `mesh-plugin-api`, `vertx-core`, `vertx-web`, `netty` libraries must not be included in the plugin jar. Adding those libraries could cause stability issues and errors.
+
+Instead you must mark those dependencies as **provided**.
+
+[source,xml]
+----
+...
+<dependency>
+    <groupId>io.vertx</groupId>
+    <artifactId>vertx-core</artifactId>
+    <scope>provided</scope>
+</dependency>
+<dependency>
+    <groupId>io.vertx</groupId>
+    <artifactId>vertx-web</artifactId>
+    <scope>provided</scope>
+</dependency>
+...
+----
 
 == Troubleshoot
-
 
 [qanda]
 I'm getting `java.lang.NoSuchMethodException: com.gentics.mesh.plugin.MyPlugin.<init>(org.pf4j.PluginWrapper, com.gentics.mesh.plugin.env.PluginEnvironment)`::
         You get this error if you have not added the mandatory constructor to your plugin.
 I'm getting `NoClassDefFoundError` / `NoSuchMethodError`::
         You deployed your plugin on a Gentics Mesh instance which is not compatible with the classes you are using. You can rebuild the plugin with the new version or try to include your dependencies in the plugin jar to avoid classloader issues. Please note that `vertx-core`, `vertx-web`, `netty` should not be included in the jar.
-
+I'm getting `Caused by: java.lang.ClassCastException: io.vertx.core.logging.SLF4JLogDelegateFactory cannot be cast to io.vertx.core.spi.logging.LogDelegateFactory`::
+        This error happens if you include `vert-core` in your plugin. Please ensure that you don't include any vert.x dependency that is part of Gentics Mesh. Instead mark those as `provided`.
 
 == Contributing
 

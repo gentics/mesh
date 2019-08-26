@@ -276,6 +276,11 @@
 				<artifactId>vertx-web-templ-handlebars</artifactId>
 				<version>${vertx.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>io.vertx</groupId>
+				<artifactId>vertx-web-common</artifactId>
+				<version>${vertx.version}</version>
+			</dependency>
 
 			<!-- Netty -->
 			<dependency>
