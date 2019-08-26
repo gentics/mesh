@@ -661,7 +661,6 @@ Example:
 ----
 {
 	"displayField": "name",
-	"segmentField": "slug",
 	"container": true,
 	"name": "category",
 	"fields": [
