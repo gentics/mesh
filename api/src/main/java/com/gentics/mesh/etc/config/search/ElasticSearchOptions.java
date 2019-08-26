@@ -31,7 +31,7 @@ public class ElasticSearchOptions implements Option {
 	public static final int DEFAULT_RETRY_LIMIT = 3;
 	public static final boolean DEFAULT_WAIT_FOR_IDLE = true;
 	public static final boolean DEFAULT_INCLUDE_BINARY_FIELDS = true;
-	public static final boolean DEFAULT_FIELD_MAPPINGS = true;
+	public static final MappingMode DEFAULT_MAPPING_MODE = MappingMode.DYNAMIC;
 
 	public static final String DEFAULT_PREFIX = "mesh-";
 
@@ -57,7 +57,7 @@ public class ElasticSearchOptions implements Option {
 	public static final String MESH_ELASTICSEARCH_RETRY_INTERVAL_ENV = "MESH_ELASTICSEARCH_RETRY_INTERVAL";
 	public static final String MESH_ELASTICSEARCH_RETRY_LIMIT_ENV = "MESH_ELASTICSEARCH_RETRY_LIMIT";
 	public static final String MESH_ELASTICSEARCH_WAIT_FOR_IDLE_ENV = "MESH_ELASTICSEARCH_WAIT_FOR_IDLE";
-	public static final String MESH_ELASTICSEARCH_DEFAULT_FIELD_MAPPINGS_ENV = "MESH_ELASTICSEARCH_DEFAULT_FIELD_MAPPINGS";
+	public static final String MESH_ELASTICSEARCH_MAPPING_MODE_ENV = "MESH_ELASTICSEARCH_MAPPING_MODE";
 	public static final String MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION_ENV = "MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION";
 	public static final String MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS_ENV = "MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS";
 
@@ -170,10 +170,9 @@ public class ElasticSearchOptions implements Option {
 	private boolean includeBinaryFields = DEFAULT_INCLUDE_BINARY_FIELDS;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("If false, no default mappings will be created for node fields without a custom elasticsearch mapping. Default: "
-		+ DEFAULT_FIELD_MAPPINGS)
-	@EnvironmentVariable(name = MESH_ELASTICSEARCH_DEFAULT_FIELD_MAPPINGS_ENV, description = "Override the search default field mappings flag.")
-	private boolean defaultFieldMappings = DEFAULT_FIELD_MAPPINGS;
+	@JsonPropertyDescription("This setting controls the mapping mode of fields for Elasticsearch. When set to STRICT only fields which have a custom mapping will be added to Elasticsearch. Mode DYNAMIC will automatically use the Gentics Mesh default mappings which can be suplemented with custom mappings. Default: DYNAMIC")
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_MAPPING_MODE_ENV, description = "Override the search mapping mode.")
+	private MappingMode mappingMode = DEFAULT_MAPPING_MODE;
 
 	public ElasticSearchOptions() {
 
@@ -383,12 +382,12 @@ public class ElasticSearchOptions implements Option {
 		return this;
 	}
 
-	public boolean isDefaultFieldMappings() {
-		return defaultFieldMappings;
+	public MappingMode getMappingMode() {
+		return mappingMode;
 	}
 
-	public ElasticSearchOptions setDefaultFieldMappings(boolean defaultFieldMappings) {
-		this.defaultFieldMappings = defaultFieldMappings;
+	public ElasticSearchOptions setMappingMode(MappingMode mode) {
+		this.mappingMode = mode;
 		return this;
 	}
 

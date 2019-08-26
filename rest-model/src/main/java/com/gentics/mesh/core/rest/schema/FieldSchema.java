@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
+import com.gentics.mesh.etc.config.search.MappingMode;
 
 import io.vertx.core.json.JsonObject;
 
@@ -139,7 +140,7 @@ public interface FieldSchema {
 	 */
 	@JsonIgnore
 	default boolean isMappingRequired(ElasticSearchOptions options) {
-		boolean defaultMappingEnabled = options.isDefaultFieldMappings();
-		return defaultMappingEnabled || !defaultMappingEnabled && getElasticsearch() != null;
+		MappingMode mode = options.getMappingMode();
+		return mode == MappingMode.DYNAMIC || mode == MappingMode.STRICT && getElasticsearch() != null;
 	}
 }

@@ -26,7 +26,9 @@ include::content/docs/variables.adoc-include[]
 [[NEXT]]
 == NEXT
 
-icon:plus[] Search: A new search option `search.defaultFieldMappings` has been added. When disabled no default field mappings and fields will be added to the search index. Only those fields which specify a custom elasticsearch mapping will be added to the index. This is useful if you want to have finer control of what contents should be added to Elasticsearch. The setting is enabled by default. This way this change will not affect existing setups.
+icon:plus[] Search: A new search option `search.mappingMode` has been added. The mapping mode setting influences how mappings for fields will be generated. By default the mode `DYNAMIC` is used. In this mode mappings are generated as before. When using the mode `STRICT` only mappings for fields which have a custom mapping via the `elasticsearch` schema parameter will be created. This way it is possible to exclude.
+
+# When disabled no default field mappings and fields will be added to the search index. Only those fields which specify a custom elasticsearch mapping will be added to the index. This is useful if you want to have finer control of what contents should be added to Elasticsearch. The setting is enabled by default. This way this change will not affect existing setups.
 
 icon:plus[] Graph: The default value for `tx.retry.delay` has been set to 0. The tx delay will thus be disabled by default.
 
