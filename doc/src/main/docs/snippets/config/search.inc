@@ -20,5 +20,6 @@
 | ```search.retryLimit```           | Number     | `3`                     | The amount of retries on a single request before the request is discarded.
 | ```search.waitForIdle```          | Number     | `true`                  | If true, search endpoints wait for elasticsearch to be idle before sending a response.
 | ```search.includeBinaryFields```  | Boolean    | `true`                  | If true, the content and metadata of binary fields will be included in the search index.
+| ```search.mappingMode```          | String     | `DYNAMIC`               | This setting controls the mapping mode of fields for Elasticsearch. When set to STRICT only fields which have a custom mapping will be added to Elasticsearch. Mode DYNAMIC will automatically use the Gentics Mesh default mappings which can be supplemented with custom mappings.
 |======
 

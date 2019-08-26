@@ -27,7 +27,7 @@ public class ServerRunner {
 		LoggingConfigurator.init();
 		MeshOptions options = OptionsLoader.createOrloadOptions(args);
 
-		options.setAdminPassword("admin");
+		// options.setAdminPassword("admin");
 		// options.getStorageOptions().setStartServer(true);
 		// options.getHttpServerOptions().setCorsAllowCredentials(true);
 		// options.getHttpServerOptions().setEnableCors(true);
@@ -44,7 +44,7 @@ public class ServerRunner {
 		// options.getMonitoringOptions().setHost("0.0.0.0");
 		// options.getSearchOptions().setUrl(null);
 		// options.getSearchOptions().setStartEmbedded(false);
-		options.getSearchOptions().setMappingMode(MappingMode.STRICT);
+		// options.getSearchOptions().setMappingMode(MappingMode.STRICT);
 
 		Mesh mesh = Mesh.create(options);
 		mesh.setCustomLoader((vertx) -> {

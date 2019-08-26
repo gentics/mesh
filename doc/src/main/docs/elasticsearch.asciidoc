@@ -633,6 +633,68 @@ Custom mappings can currently only be specified for the following types:
 
 NOTE: Index settings for other elements (e.g: Users, Roles etc) can currently not be configured.
 
+=== Mapping Modes
+
+Gentics Mesh currently supports two way of managing mappings for your content fields.
+
+The mode can be controlled via the `search.mappingMode` option or the `MESH_ELASTICSEARCH_MAPPING_MODE` environment variable.
+
+The mapping mode setting influences how elasticsearch mappings for fields will be generated.
+
+**DYNAMIC** (_default_)
+
+In this mode Gentics Mesh will automatically create default mappings for any content field.
+The custom mapping which can be added via the `elasticsearch` parameter will be used to supplement the default mapping.
+
+**STRICT**
+
+In the strict mode Gentics Mesh will not generate default mappings. Only field mappings which have been specified in the `elasticsearch` property will be added to the index mapping.
+
+NOTE: Please note that your custom mapping will directly replace the field mapping in this mode. If you switch modes you need to adapt your `elasticsearch` property value. The setting will no longer be added as a nested element.
+
+This mode is useful if you want to have finer control of what contents should be added to Elasticsearch.
+
+Fields which have no mapping will by-default also not added to the source document.
+
+Example:
+[source,json]
+----
+{
+	"displayField": "name",
+	"segmentField": "slug",
+	"container": true,
+	"name": "category",
+	"fields": [
+		{
+			"name": "name",
+			"label": "Name",
+			"required": true,
+			"type": "string"
+		},
+		{
+			"name": "description",
+			"label": "Description",
+			"required": false,
+			"type": "string",
+			"elasticsearch": {
+				"type": "keyword",
+				"index": false,
+				"fields": {
+					"search": {
+						"type": "text",
+						"analyzer": "trigrams"
+					}
+				}
+			}
+		}
+	]
+}
+----
+
+TIP: You can use the `POST {apiLatest}/utilities/validateSchema` endpoint to validate your schema and check what index mapping is actually being generated.
+
+TIP: If you just want to add your field to the source document you can create a mapping with `"index": false`.
+
 == Binary Fields
 
 You can add custom mappings to the `mimeType` and `file.content` field. The elasticsearch property needs to contain a custom mapping for each type.

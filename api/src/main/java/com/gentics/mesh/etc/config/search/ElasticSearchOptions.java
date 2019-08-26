@@ -170,7 +170,7 @@ public class ElasticSearchOptions implements Option {
 	private boolean includeBinaryFields = DEFAULT_INCLUDE_BINARY_FIELDS;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("This setting controls the mapping mode of fields for Elasticsearch. When set to STRICT only fields which have a custom mapping will be added to Elasticsearch. Mode DYNAMIC will automatically use the Gentics Mesh default mappings which can be suplemented with custom mappings. Default: DYNAMIC")
+	@JsonPropertyDescription("This setting controls the mapping mode of fields for Elasticsearch. When set to STRICT only fields which have a custom mapping will be added to Elasticsearch. Mode DYNAMIC will automatically use the Gentics Mesh default mappings which can be supplemented with custom mappings. Default: DYNAMIC")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_MAPPING_MODE_ENV, description = "Override the search mapping mode.")
 	private MappingMode mappingMode = DEFAULT_MAPPING_MODE;
 
