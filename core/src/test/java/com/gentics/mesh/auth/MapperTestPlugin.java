@@ -87,7 +87,7 @@ public class MapperTestPlugin extends AbstractPlugin implements AuthServicePlugi
 		};
 
 		groupFilter = (groupName) -> {
-			log.info("Handling removel of user from group {" + groupName + "}");
+			log.info("Handling removal of user from group {" + groupName + "}");
 			return false;
 		};
 
