@@ -26,6 +26,8 @@ include::content/docs/variables.adoc-include[]
 [[NEXT]]
 == NEXT
 
+icon:plus[] Search: A new search option `search.mappingMode` has been added. The mapping mode setting influences how mappings for fields will be generated. By default the mode `DYNAMIC` is used. In this mode mappings are generated as before. When using the mode `STRICT` only mappings for fields which have a custom mapping via the `elasticsearch` schema parameter will be created. This is useful if you want to have finer control of what contents should be added to Elasticsearch.
+
 icon:plus[] Graph: The default value for `tx.retry.delay` has been set to 0. The tx delay will thus be disabled by default.
 
 icon:plus[] Clustering: The `storage.synchronizeWrites` option will be enabled by default when clustering is active.

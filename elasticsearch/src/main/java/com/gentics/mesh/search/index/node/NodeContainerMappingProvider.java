@@ -17,14 +17,12 @@ import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
 import static com.gentics.mesh.search.index.MappingHelper.trigramTextType;
 
-import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -35,6 +33,7 @@ import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.MappingMode;
 import com.gentics.mesh.search.index.AbstractMappingProvider;
 import com.google.common.collect.Sets;
 
@@ -48,14 +47,14 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeContainerMappingProvider.class);
 
-	public final BootstrapInitializer boot;
-
 	private final MeshOptions options;
 
+	private final boolean isStrictMode;
+
 	@Inject
-	public NodeContainerMappingProvider(BootstrapInitializer boot, MeshOptions options) {
-		this.boot = boot;
+	public NodeContainerMappingProvider(MeshOptions options) {
 		this.options = options;
+		this.isStrictMode = MappingMode.STRICT == options.getSearchOptions().getMappingMode();
 	}
 
 	@Override
@@ -86,8 +85,6 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	public JsonObject getMapping(Schema schema, Branch branch) {
 		// 1. Get the common type specific mapping
 		JsonObject mapping = getMapping();
-
-		addBinaryFieldExcludes(mapping, schema);
 
 		// 2. Enhance the type specific mapping
 		JsonObject typeMapping = mapping.getJsonObject(DEFAULT_TYPE);
@@ -159,29 +156,12 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		mapping.put(DEFAULT_TYPE, typeMapping);
 
 		for (FieldSchema field : schema.getFields()) {
-			JsonObject fieldInfo = getFieldMapping(field, branch);
-			fieldProps.put(field.getName(), fieldInfo);
+			Optional<JsonObject> mappingInfo = getFieldMapping(field, branch);
+			mappingInfo.ifPresent(info -> {
+				fieldProps.put(field.getName(), info);
+			});
 		}
 		return mapping;
-	}
-
-	/**
-	 * Add custom exclude for the source document. We don't want to store the base64 encoded data fields.
-	 * 
-	 * @param mapping
-	 * @param schema
-	 */
-	private void addBinaryFieldExcludes(JsonObject mapping, Schema schema) {
-		JsonObject sourceInfo = new JsonObject();
-
-		JsonArray excludes = new JsonArray();
-		List<String> binaryFields = schema.getFields().stream().filter(f -> f.getType().equals("binary")).map(f -> f.getType())
-			.collect(Collectors.toList());
-		for (String field : binaryFields) {
-			excludes.add("fields." + field + ".data");
-		}
-		sourceInfo.put("excludes", excludes);
-		mapping.getJsonObject(DEFAULT_TYPE).put("_source", sourceInfo);
 	}
 
 	/**
@@ -189,9 +169,19 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	 * 
 	 * @param fieldSchema
 	 *            Field schema which will be used to construct the mapping info
-	 * @return JSON object which contains the mapping info
+	 * @return Optional with the JSON object which contains the mapping info or it can be empty if the mapping should be omitted.
 	 */
-	public JsonObject getFieldMapping(FieldSchema fieldSchema, Branch branch) {
+	public Optional<JsonObject> getFieldMapping(FieldSchema fieldSchema, Branch branch) {
+
+		// Create the mapping if the field is required.
+		// It may be required if the mapping mode is set to dynamic
+		// of if the schema contains a custom mapping and the mode is
+		// set to strict.
+		boolean mappingRequired = fieldSchema.isMappingRequired(options.getSearchOptions());
+		if (!mappingRequired) {
+			return Optional.empty();
+		}
+
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		JsonObject customIndexOptions = fieldSchema.getElasticsearch();
 		JsonObject fieldInfo = new JsonObject();
@@ -202,19 +192,19 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 			addStringFieldMapping(fieldInfo, customIndexOptions);
 			break;
 		case BOOLEAN:
-			addBooleanFieldMapping(fieldInfo);
+			addBooleanFieldMapping(fieldInfo, customIndexOptions);
 			break;
 		case DATE:
-			addDataFieldMapping(fieldInfo);
+			addDataFieldMapping(fieldInfo, customIndexOptions);
 			break;
 		case BINARY:
 			addBinaryFieldMapping(fieldInfo, customIndexOptions);
 			break;
 		case NUMBER:
-			addNumberFieldMapping(fieldInfo);
+			addNumberFieldMapping(fieldInfo, customIndexOptions);
 			break;
 		case NODE:
-			addNodeMapping(fieldInfo);
+			addNodeMapping(fieldInfo, customIndexOptions);
 			break;
 		case LIST:
 			if (fieldSchema instanceof ListFieldSchemaImpl) {
@@ -222,134 +212,165 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 			}
 			break;
 		case MICRONODE:
-			addMicronodeMapping(fieldInfo, fieldSchema, branch);
+			addMicronodeMapping(fieldInfo, fieldSchema, branch, customIndexOptions);
 			break;
 		default:
 			throw new RuntimeException("Mapping type  for field type {" + type + "} unknown.");
 		}
-		return fieldInfo;
+		return Optional.of(fieldInfo);
 	}
 
-	private void addBooleanFieldMapping(JsonObject fieldInfo) {
-		fieldInfo.put("type", BOOLEAN);
-	}
-
-	private void addDataFieldMapping(JsonObject fieldInfo) {
-		fieldInfo.put("type", DATE);
-	}
-
-	private void addNumberFieldMapping(JsonObject fieldInfo) {
-		// Note: Lucene does not support BigDecimal/Decimal. It is not possible to store such values. ES will fallback to string in those cases.
-		// The mesh json parser will not deserialize numbers into BigDecimal at this point. No need to check for big decimal is therefore needed.
-		fieldInfo.put("type", DOUBLE);
-	}
-
-	private void addMicronodeMapping(JsonObject fieldInfo, FieldSchema fieldSchema, Branch branch) {
-		fieldInfo.put("type", OBJECT);
-
-		// Cast to MicronodeFieldSchema should be safe as it's a Micronode-Field
-		String[] allowed = ((MicronodeFieldSchema) fieldSchema).getAllowedMicroSchemas();
-
-		// Merge the options into the info
-		fieldInfo.mergeIn(getMicroschemaMappingOptions(allowed, branch));
-	}
-
-	private void addNodeMapping(JsonObject fieldInfo) {
-		fieldInfo.put("type", KEYWORD);
-		fieldInfo.put("index", INDEX_VALUE);
-	}
-
-	private void addListFieldMapping(JsonObject fieldInfo, Branch branch, ListFieldSchemaImpl fieldSchema, JsonObject customIndexOptions) {
-		ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
-		String type = listFieldSchema.getListType();
-		switch (type) {
-		case "node":
-			fieldInfo.put("type", KEYWORD);
-			fieldInfo.put("index", INDEX_VALUE);
-			break;
-		case "date":
-			fieldInfo.put("type", DATE);
-			break;
-		case "number":
-			fieldInfo.put("type", DOUBLE);
-			break;
-		case "boolean":
+	private void addBooleanFieldMapping(JsonObject fieldInfo, JsonObject customIndexOptions) {
+		if (isStrictMode) {
+			fieldInfo.mergeIn(customIndexOptions);
+		} else {
 			fieldInfo.put("type", BOOLEAN);
-			break;
-		case "micronode":
-			fieldInfo.put("type", NESTED);
+		}
+	}
 
-			// All allowed microschemas
-			String[] allowed = listFieldSchema.getAllowedSchemas();
+	private void addDataFieldMapping(JsonObject fieldInfo, JsonObject customIndexOptions) {
+		if (isStrictMode) {
+			fieldInfo.mergeIn(customIndexOptions);
+		} else {
+			fieldInfo.put("type", DATE);
+		}
+	}
+
+	private void addNumberFieldMapping(JsonObject fieldInfo, JsonObject customIndexOptions) {
+		if (isStrictMode) {
+			fieldInfo.mergeIn(customIndexOptions);
+		} else {
+			// Note: Lucene does not support BigDecimal/Decimal. It is not possible to store such values. ES will fallback to string in those cases.
+			// The mesh json parser will not deserialize numbers into BigDecimal at this point. No need to check for big decimal is therefore needed.
+			fieldInfo.put("type", DOUBLE);
+		}
+	}
+
+	private void addMicronodeMapping(JsonObject fieldInfo, FieldSchema fieldSchema, Branch branch, JsonObject customIndexOptions) {
+		if (isStrictMode) {
+			fieldInfo.mergeIn(customIndexOptions);
+		} else {
+			fieldInfo.put("type", OBJECT);
+
+			// Cast to MicronodeFieldSchema should be safe as it's a Micronode-Field
+			String[] allowed = ((MicronodeFieldSchema) fieldSchema).getAllowedMicroSchemas();
 
 			// Merge the options into the info
 			fieldInfo.mergeIn(getMicroschemaMappingOptions(allowed, branch));
-
-			// fieldProps.put(field.getName(), fieldInfo);
-			break;
-		case "string":
-		case "html":
-			fieldInfo.put("type", TEXT);
-			if (customIndexOptions != null) {
-				fieldInfo.put("fields", customIndexOptions);
-			}
-			break;
-		default:
-			log.error("Unknown list type {" + listFieldSchema.getListType() + "}");
-			throw new RuntimeException("Mapping type  for field type {" + type + "} unknown.");
 		}
+	}
 
+	private void addNodeMapping(JsonObject fieldInfo, JsonObject customIndexOptions) {
+		if (isStrictMode) {
+			fieldInfo.mergeIn(customIndexOptions);
+		} else {
+			fieldInfo.put("type", KEYWORD);
+			fieldInfo.put("index", INDEX_VALUE);
+		}
+	}
+
+	private void addListFieldMapping(JsonObject fieldInfo, Branch branch, ListFieldSchemaImpl fieldSchema, JsonObject customIndexOptions) {
+		if (isStrictMode) {
+			fieldInfo.mergeIn(customIndexOptions);
+		} else {
+			ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
+			String type = listFieldSchema.getListType();
+			switch (type) {
+			case "node":
+				fieldInfo.put("type", KEYWORD);
+				fieldInfo.put("index", INDEX_VALUE);
+				break;
+			case "date":
+				fieldInfo.put("type", DATE);
+				break;
+			case "number":
+				fieldInfo.put("type", DOUBLE);
+				break;
+			case "boolean":
+				fieldInfo.put("type", BOOLEAN);
+				break;
+			case "micronode":
+				fieldInfo.put("type", NESTED);
+
+				// All allowed microschemas
+				String[] allowed = listFieldSchema.getAllowedSchemas();
+
+				// Merge the options into the info
+				fieldInfo.mergeIn(getMicroschemaMappingOptions(allowed, branch));
+
+				// fieldProps.put(field.getName(), fieldInfo);
+				break;
+			case "string":
+			case "html":
+				fieldInfo.put("type", TEXT);
+				if (customIndexOptions != null) {
+					fieldInfo.put("fields", customIndexOptions);
+				}
+				break;
+			default:
+				log.error("Unknown list type {" + listFieldSchema.getListType() + "}");
+				throw new RuntimeException("Mapping type  for field type {" + type + "} unknown.");
+			}
+		}
 	}
 
 	private void addStringFieldMapping(JsonObject fieldInfo, JsonObject customIndexOptions) {
-		fieldInfo.put("type", TEXT);
-		fieldInfo.put("index", INDEX_VALUE);
-		fieldInfo.put("analyzer", TRIGRAM_ANALYZER);
-		if (customIndexOptions != null) {
-			fieldInfo.put("fields", customIndexOptions);
+		if (isStrictMode) {
+			fieldInfo.mergeIn(customIndexOptions);
+		} else {
+			fieldInfo.put("type", TEXT);
+			fieldInfo.put("index", INDEX_VALUE);
+			fieldInfo.put("analyzer", TRIGRAM_ANALYZER);
+			if (customIndexOptions != null) {
+				fieldInfo.put("fields", customIndexOptions);
+			}
 		}
 	}
 
 	private void addBinaryFieldMapping(JsonObject fieldInfo, JsonObject customIndexOptions) {
-		fieldInfo.put("type", OBJECT);
-		JsonObject binaryProps = new JsonObject();
-		fieldInfo.put("properties", binaryProps);
+		if (isStrictMode) {
+			fieldInfo.mergeIn(customIndexOptions);
+		} else {
+			fieldInfo.put("type", OBJECT);
+			JsonObject binaryProps = new JsonObject();
+			fieldInfo.put("properties", binaryProps);
 
-		// .sha512sum
-		binaryProps.put("sha512sum", notAnalyzedType(KEYWORD));
+			// .sha512sum
+			binaryProps.put("sha512sum", notAnalyzedType(KEYWORD));
 
-		// .filename
-		JsonObject customFilenameMapping = null;
-		if (customIndexOptions != null && customIndexOptions.containsKey("filename")) {
-			customFilenameMapping = customIndexOptions.getJsonObject("filename");
-		}
-		binaryProps.put("filename", notAnalyzedType(KEYWORD, customFilenameMapping));
+			// .filename
+			JsonObject customFilenameMapping = null;
+			if (customIndexOptions != null && customIndexOptions.containsKey("filename")) {
+				customFilenameMapping = customIndexOptions.getJsonObject("filename");
+			}
+			binaryProps.put("filename", notAnalyzedType(KEYWORD, customFilenameMapping));
 
-		// .filesize
-		binaryProps.put("filesize", notAnalyzedType(LONG));
+			// .filesize
+			binaryProps.put("filesize", notAnalyzedType(LONG));
 
-		// .mimeType
-		JsonObject customMimeTypeMapping = null;
-		if (customIndexOptions != null && customIndexOptions.containsKey("mimeType")) {
-			customMimeTypeMapping = customIndexOptions.getJsonObject("mimeType");
-		}
-		binaryProps.put("mimeType", notAnalyzedType(KEYWORD, customMimeTypeMapping));
+			// .mimeType
+			JsonObject customMimeTypeMapping = null;
+			if (customIndexOptions != null && customIndexOptions.containsKey("mimeType")) {
+				customMimeTypeMapping = customIndexOptions.getJsonObject("mimeType");
+			}
+			binaryProps.put("mimeType", notAnalyzedType(KEYWORD, customMimeTypeMapping));
 
-		// .width
-		binaryProps.put("width", notAnalyzedType(LONG));
+			// .width
+			binaryProps.put("width", notAnalyzedType(LONG));
 
-		// .height
-		binaryProps.put("height", notAnalyzedType(LONG));
+			// .height
+			binaryProps.put("height", notAnalyzedType(LONG));
 
-		// .dominantColor
-		binaryProps.put("dominantColor", notAnalyzedType(KEYWORD));
+			// .dominantColor
+			binaryProps.put("dominantColor", notAnalyzedType(KEYWORD));
 
-		if (options.getSearchOptions().isIncludeBinaryFields()) {
-			// Add mapping for plain text fields
-			addBinaryFieldPlainTextMapping(binaryProps, customIndexOptions);
+			if (options.getSearchOptions().isIncludeBinaryFields()) {
+				// Add mapping for plain text fields
+				addBinaryFieldPlainTextMapping(binaryProps, customIndexOptions);
 
-			// .metadata - Add metadata properties which are mostly dynamic string values
-			addMetadataMapping(binaryProps);
+				// .metadata - Add metadata properties which are mostly dynamic string values
+				addMetadataMapping(binaryProps);
+			}
 		}
 	}
 
@@ -438,10 +459,14 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 				}
 
 				// Create and save a mapping for all microschema fields
-				JsonObject fields = new JsonObject(microschema
-					.getFields()
-					.stream()
-					.collect(Collectors.toMap(FieldSchema::getName, field -> this.getFieldMapping(field, branch))));
+				JsonObject fields = new JsonObject();
+				microschema.getFields().stream()
+					.forEach(microschemaField -> {
+						Optional<JsonObject> mapping = getFieldMapping(microschemaField, branch);
+						mapping.ifPresent(info -> {
+							fields.put(microschemaField.getName(), info);
+						});
+					});
 
 				// Save the created mapping to the properties
 				properties.put("fields-" + microschemaName, new JsonObject()

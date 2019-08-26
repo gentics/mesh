@@ -150,6 +150,10 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	public void addFields(JsonObject document, String fieldKey, GraphFieldContainer container, List<? extends FieldSchema> fields) {
 		Map<String, Object> fieldsMap = new HashMap<>();
 		for (FieldSchema fieldSchema : fields) {
+			// Check whether the field is needed
+			if (!fieldSchema.isMappingRequired(options.getSearchOptions())) {
+				continue;
+			}
 			String name = fieldSchema.getName();
 			FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 			JsonObject customIndexOptions = fieldSchema.getElasticsearch();

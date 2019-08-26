@@ -30,6 +30,7 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
+
 @MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
 public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
@@ -136,11 +137,11 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 			SchemaUpdateRequest.class));
 		request.getField("teaser").setElasticsearch(IndexOptionHelper.getRawFieldOption());
 
-		tx(() -> group().addRole(roles().get("admin")));
-		waitForJobs(() -> {
+		grantAdminRole();
+		waitForJob(() -> {
 			call(() -> client().updateSchema(schemaUuid, request));
-		}, COMPLETED, 1);
-		tx(() -> group().removeRole(roles().get("admin")));
+		});
+		revokeAdminRole();
 
 	}
 
