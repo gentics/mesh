@@ -460,10 +460,14 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 				}
 
 				// Create and save a mapping for all microschema fields
-				JsonObject fields = new JsonObject(microschema
-					.getFields()
-					.stream()
-					.collect(Collectors.toMap(FieldSchema::getName, field -> this.getFieldMapping(field, branch))));
+				JsonObject fields = new JsonObject();
+				microschema.getFields().stream()
+					.forEach(microschemaField -> {
+						Optional<JsonObject> mapping = getFieldMapping(microschemaField, branch);
+						mapping.ifPresent(info -> {
+							fields.put(microschemaField.getName(), info);
+						});
+					});
 
 				// Save the created mapping to the properties
 				properties.put("fields-" + microschemaName, new JsonObject()
