@@ -35,6 +35,7 @@ import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
@@ -52,7 +53,6 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
 import io.reactivex.Completable;
-import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
@@ -391,9 +391,13 @@ public class BinaryUploadHandler extends AbstractHandler {
 					"Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in plugin {" + p.id()
 						+ "} completed.");
 			})
-			.flatMap(e -> {
-				// TODO convert to Consumer<BinaryGraphField> 
-				return Maybe.empty();
+			.map(restFieldConsumer -> {
+				return (graphField) -> {
+					BinaryField restField = graphField.transformToRest(null);
+					restFieldConsumer.accept(restField);
+					// TODO now update the graph field using the rest model
+					// See BinaryGraphFieldImpl.BINARY_UPDATER
+				};
 			}));
 		return consumerObs;
 	}

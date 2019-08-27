@@ -2,7 +2,7 @@ package com.gentics.mesh.plugin.binary;
 
 import java.util.function.Consumer;
 
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.plugin.MeshPlugin;
 
 import io.reactivex.Maybe;
@@ -47,6 +47,6 @@ public interface BinaryStoragePlugin extends MeshPlugin {
 	 * @param hash SHA512 sum of the upload
 	 * @return Modifier for the binary graph field.
 	 */
-	Maybe<Consumer<Object>> process(FileUpload upload, String hash);
+	Maybe<Consumer<BinaryField>> process(FileUpload upload, String hash);
 
 }
