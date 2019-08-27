@@ -26,10 +26,10 @@ include::content/docs/variables.adoc-include[]
 [[Next release]]
 == Next release (insert date here)
 
-icon:check[] Image Manipulation: Add new smart resizing option that crops an image to the desired dimensions instead of distorting it when providing width _and_ height paramenters that result in an aspect ratio that is different from the original images aspect ratio.
-The he old behaviour can now be achieved by using `resize=force`.
+icon:check[] Image Manipulation: Added new `smart` and `prop` resizing options that crop and/or resize an image to the desired dimensions instead of distorting it when providing width _and_ height parameters that result in an aspect ratio that is different from the original images aspect ratio.
+The old behaviour can now be achieved by using `resize=force`.
 
-CAUTION: New default image resize mode is `smart` which crops an image instead of distorting it
+CAUTION: New default image resize mode is `smart` which potentially crops an image when requested aspect ratio that diverge from the source images aspectratio. To avoid cropping, request either only width _or_ height or make sure that the aspect ratio of the requested dimensions fit the source images aspect ratio. Alternatively request the image with `resize=prop` or `resize=force`. For details on image manipulation and resizing opions visit link:https://getmesh.io/docs/image-manipulation/ .
 [quote]
 ____
 Should you have used resizing to intentionally distort images you now have to change your Image Manipulator calls to include the `resize=force` option.
