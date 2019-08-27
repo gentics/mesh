@@ -57,7 +57,7 @@ public class ImageManipulationParametersImpl extends AbstractParameters implemen
 		if (fpz != null && fpz < 1) {
 			throw error(BAD_REQUEST, "image_error_parameter_focal_point_zoom", String.valueOf(fpz));
 		}
-		
+
 		validateFocalPointParameter();
 
 	}
