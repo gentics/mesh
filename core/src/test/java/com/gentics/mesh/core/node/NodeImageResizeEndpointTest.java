@@ -187,7 +187,6 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		ImageManipulationParameters params = new ImageManipulationParametersImpl();
 		params.setWidth(200);
 		params.setHeight(500);
-		// params.setResizeMode(ResizeMode.SMART); // this is the default behaviour
 
 		NodeResponse transformResponse = call(() -> client().transformNodeBinaryField(PROJECT_NAME, uuid, "en", version, "image", params));
 		assertEquals("The image should have been resized", 200, transformResponse.getFields().getBinaryField("image").getWidth().intValue());
@@ -422,7 +421,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		failingLatch(latch);
 		assertThat(targetFile).exists();
 		BufferedImage img = ImageIO.read(targetFile);
-		ImageTestUtil.displayImage(img);
+		//ImageTestUtil.displayImage(img);
 		assertEquals(expectedWidth, img.getWidth());
 		assertEquals(expectedHeight, img.getHeight());
 

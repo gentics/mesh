@@ -266,36 +266,34 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		// .. to horizontal output
 		BufferedImage outputImage1 = manipulator.cropAndResize(biH,
 			new ImageManipulationParametersImpl().setWidth(500).setHeight(300));
-		// ImageTestUtil.displayImage(outputImage1);
 		assertThat(outputImage1).matchesReference("outputImage1-smart-reference.png");
 
 		// .. to vertical output
 		BufferedImage outputImage2 = manipulator.cropAndResize(biH,
 			new ImageManipulationParametersImpl().setWidth(300).setHeight(500));
-		// ImageTestUtil.displayImage(outputImage2);
 		assertThat(outputImage2).matchesReference("outputImage2-smart-reference.png");
+
 		// .. to square output
 		BufferedImage outputImage3 = manipulator.cropAndResize(biH,
 			new ImageManipulationParametersImpl().setWidth(500).setHeight(500));
-		// ImageTestUtil.displayImage(outputImage3);
 		assertThat(outputImage3).matchesReference("outputImage3-smart-reference.png");
 
 		// tests with vertical input ...
 		BufferedImage biV = ImageTestUtil.readImage("testgrid-vertical-hd_1080x1920.png");
+
 		// .. to horizontal output
 		BufferedImage outputImage4 = manipulator.cropAndResize(biV,
 			new ImageManipulationParametersImpl().setWidth(500).setHeight(300));
-		// ImageTestUtil.displayImage(outputImage4);
 		assertThat(outputImage4).matchesReference("outputImage4-smart-reference.png");
+
 		// .. to vertical output
 		BufferedImage outputImage5 = manipulator.cropAndResize(biV,
 			new ImageManipulationParametersImpl().setWidth(300).setHeight(500));
-		// ImageTestUtil.displayImage(outputImage5);
 		assertThat(outputImage5).matchesReference("outputImage5-smart-reference.png");
+
 		// .. to square output
 		BufferedImage outputImage6 = manipulator.cropAndResize(biV,
 			new ImageManipulationParametersImpl().setWidth(500).setHeight(500));
-		// ImageTestUtil.displayImage(outputImage6);
 		assertThat(outputImage6).matchesReference("outputImage6-smart-reference.png");
 
 		// tests with square input ...
@@ -303,17 +301,14 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		// .. to horizontal output
 		BufferedImage outputImage7 = manipulator.cropAndResize(biS,
 			new ImageManipulationParametersImpl().setWidth(500).setHeight(300));
-		// ImageTestUtil.displayImage(outputImage7);
 		assertThat(outputImage7).matchesReference("outputImage7-smart-reference.png");
 		// .. to vertical output
 		BufferedImage outputImage8 = manipulator.cropAndResize(biS,
 			new ImageManipulationParametersImpl().setWidth(300).setHeight(500));
-		// ImageTestUtil.displayImage(outputImage8);
 		assertThat(outputImage8).matchesReference("outputImage8-smart-reference.png");
 		// .. to square output
 		BufferedImage outputImage9 = manipulator.cropAndResize(biS,
 			new ImageManipulationParametersImpl().setWidth(500).setHeight(500));
-		// ImageTestUtil.displayImage(outputImage9);
 		assertThat(outputImage9).matchesReference("outputImage9-smart-reference.png");
 
 		// test if same input and ouput format omits resampling
@@ -349,13 +344,11 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		// .. fit to width
 		BufferedImage outputImage1 = manipulator.cropAndResize(biH,
 			new ImageManipulationParametersImpl().setWidth(500).setHeight(400).setResizeMode(ResizeMode.PROP));
-		// ImageTestUtil.displayImage(outputImage1);
 		assertThat(outputImage1).matchesReference("outputImage1-prop-reference.png");
 
 		// .. fit to height
 		BufferedImage outputImage2 = manipulator.cropAndResize(biH,
 			new ImageManipulationParametersImpl().setWidth(2000).setHeight(500).setResizeMode(ResizeMode.PROP));
-		// ImageTestUtil.displayImage(outputImage2);
 		assertThat(outputImage2).matchesReference("outputImage2-prop-reference.png");
 
 		// tests with vertical input ...
@@ -364,12 +357,10 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		// .. fit to width
 		BufferedImage outputImage3 = manipulator.cropAndResize(biV,
 			new ImageManipulationParametersImpl().setWidth(500).setHeight(1500).setResizeMode(ResizeMode.PROP));
-		// ImageTestUtil.displayImage(outputImage3);
 		assertThat(outputImage3).matchesReference("outputImage3-prop-reference.png");
 		// .. fit to height
 		BufferedImage outputImage4 = manipulator.cropAndResize(biV,
 			new ImageManipulationParametersImpl().setWidth(400).setHeight(500).setResizeMode(ResizeMode.PROP));
-		// ImageTestUtil.displayImage(outputImage4);
 		assertThat(outputImage4).matchesReference("outputImage4-prop-reference.png");
 
 		// tests with square input ...
@@ -378,12 +369,11 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		// .. fit to width
 		BufferedImage outputImage5 = manipulator.cropAndResize(biS,
 			new ImageManipulationParametersImpl().setWidth(500).setHeight(1000).setResizeMode(ResizeMode.PROP));
-		// ImageTestUtil.displayImage(outputImage5);
 		assertThat(outputImage5).matchesReference("outputImage5-prop-reference.png");
+
 		// .. fit to height
 		BufferedImage outputImage6 = manipulator.cropAndResize(biS,
 			new ImageManipulationParametersImpl().setWidth(1000).setHeight(500).setResizeMode(ResizeMode.PROP));
-		// ImageTestUtil.displayImage(outputImage6);
 		assertThat(outputImage6).matchesReference("outputImage6-prop-reference.png");
 
 		// test if certain formats omit resampling
@@ -515,13 +505,12 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		BufferedImage outputImage8 = manipulator.cropAndResize(biS,
 			new ImageManipulationParametersImpl().setWidth(200).setHeight(500).setRect(0, 0, 540, 540).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.SMART));
-		// ImageTestUtil.displayImage(outputImage8);
+		assertThat(outputImage8).matchesReference("outputImage8-smart-crop-reference.png");
 
 		// .. to square output
 		BufferedImage outputImage9 = manipulator.cropAndResize(biS,
 			new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setRect(0, 0, 540, 540).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.SMART));
-		// ImageTestUtil.displayImage(outputImage9);
 		assertThat(outputImage9).matchesReference("outputImage9-smart-crop-reference.png");
 
 		// when you want to update the referenceImage, execute the code below
@@ -539,29 +528,31 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		// .. to horizontal output
 		BufferedImage outputImage1 = manipulator.cropAndResize(biH,
 			new ImageManipulationParametersImpl().setWidth(500).setHeight(200).setResizeMode(ResizeMode.FORCE));
-		// ImageTestUtil.displayImage(outputImage1);
 		assertThat(outputImage1).matchesReference("outputImage1-force-reference.png");
+
 		// .. to vertical output
 		BufferedImage outputImage2 = manipulator.cropAndResize(biH,
 			new ImageManipulationParametersImpl().setWidth(200).setHeight(500).setResizeMode(ResizeMode.FORCE));
-		// ImageTestUtil.displayImage(outputImage2);
 		assertThat(outputImage2).matchesReference("outputImage2-force-reference.png");
+
 		// .. to square output
 		BufferedImage outputImage3 = manipulator.cropAndResize(biH,
 			new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setResizeMode(ResizeMode.FORCE));
-		// ImageTestUtil.displayImage(outputImage3);
 		assertThat(outputImage3).matchesReference("outputImage3-force-reference.png");
 
 		// tests with vertical input ...
 		BufferedImage biV = ImageTestUtil.readImage("testgrid-vertical-hd_1080x1920.png");
+
 		// .. to horizontal output
 		BufferedImage outputImage4 = manipulator.cropAndResize(biV,
 			new ImageManipulationParametersImpl().setWidth(500).setHeight(200).setResizeMode(ResizeMode.FORCE));
 		assertThat(outputImage4).matchesReference("outputImage4-force-reference.png");
+
 		// .. to vertical output
 		BufferedImage outputImage5 = manipulator.cropAndResize(biV,
 			new ImageManipulationParametersImpl().setWidth(200).setHeight(500).setResizeMode(ResizeMode.FORCE));
 		assertThat(outputImage5).matchesReference("outputImage5-force-reference.png");
+
 		// .. to square output
 		BufferedImage outputImage6 = manipulator.cropAndResize(biV,
 			new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setResizeMode(ResizeMode.FORCE));
@@ -569,19 +560,19 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 		// tests with square input ...
 		BufferedImage biS = ImageTestUtil.readImage("testgrid-square_1080x1080.png");
+
 		// .. to horizontal output
 		BufferedImage outputImage7 = manipulator.cropAndResize(biS,
 			new ImageManipulationParametersImpl().setWidth(500).setHeight(300).setResizeMode(ResizeMode.FORCE));
 		assertThat(outputImage7).matchesReference("outputImage7-force-reference.png");
+
 		// .. to vertical output
 		BufferedImage outputImage8 = manipulator.cropAndResize(biS,
 			new ImageManipulationParametersImpl().setWidth(300).setHeight(500).setResizeMode(ResizeMode.FORCE));
-		// ImageTestUtil.displayImage(outputImage8);
 		assertThat(outputImage8).matchesReference("outputImage8-force-reference.png");
 		// .. to square output
 		BufferedImage outputImage9 = manipulator.cropAndResize(biS,
 			new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setResizeMode(ResizeMode.FORCE));
-		// ImageTestUtil.displayImage(outputImage9);
 		assertThat(outputImage9).matchesReference("outputImage9-force-reference.png");
 
 		// test if same input and ouput format omits resampling
@@ -605,15 +596,6 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 		// when you want to update the referenceImage, execute the code below
 		// and copy the files to src/test/resources/references/
-
-		// ImageTestUtil.writePngImage(outputImage1, new File("target/outputImage1-force-reference.png"));
-		// ImageTestUtil.writePngImage(outputImage2, new File("target/outputImage2-force-reference.png"));
-		// ImageTestUtil.writePngImage(outputImage3, new File("target/outputImage3-force-reference.png"));
-		// ImageTestUtil.writePngImage(outputImage4, new File("target/outputImage4-force-reference.png"));
-		// ImageTestUtil.writePngImage(outputImage5, new File("target/outputImage5-force-reference.png"));
-		// ImageTestUtil.writePngImage(outputImage6, new File("target/outputImage6-force-reference.png"));
-		// ImageTestUtil.writePngImage(outputImage7, new File("target/outputImage7-force-reference.png"));
-		// ImageTestUtil.writePngImage(outputImage8, new File("target/outputImage8-force-reference.png"));
 		// ImageTestUtil.writePngImage(outputImage9, new File("target/outputImage9-force-reference.png"));
 	}
 
@@ -643,7 +625,6 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		BufferedImage outputImage4 = manipulator.cropAndResize(biV,
 			new ImageManipulationParametersImpl().setWidth(500).setHeight(200).setRect(0, 0, 960, 540).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.FORCE));
-		// ImageTestUtil.displayImage(outputImage4);
 		assertThat(outputImage4).matchesReference("outputImage4-force-crop-reference.png");
 
 		// .. to vertical output
@@ -665,21 +646,18 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		BufferedImage outputImage7 = manipulator.cropAndResize(biS,
 			new ImageManipulationParametersImpl().setWidth(500).setHeight(200).setRect(0, 0, 540, 540).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.FORCE));
-		// ImageTestUtil.displayImage(outputImage7);
 		assertThat(outputImage7).matchesReference("outputImage7-force-crop-reference.png");
 
 		// .. to vertical output
 		BufferedImage outputImage8 = manipulator.cropAndResize(biS,
 			new ImageManipulationParametersImpl().setWidth(200).setHeight(500).setRect(0, 0, 540, 540).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.FORCE));
-		// ImageTestUtil.displayImage(outputImage8);
 		assertThat(outputImage8).matchesReference("outputImage8-force-crop-reference.png");
 
 		// .. to square output
 		BufferedImage outputImage9 = manipulator.cropAndResize(biS,
 			new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setRect(0, 0, 540, 540).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.FORCE));
-		// ImageTestUtil.displayImage(outputImage9);
 		assertThat(outputImage9).matchesReference("outputImage9-force-crop-reference.png");
 
 		// when you want to update the referenceImage, execute the code below

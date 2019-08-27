@@ -37,6 +37,12 @@ public final class ImageTestUtil {
 		return mock;
 	}
 
+	/**
+	 * Displays the given image in a window and waits for a keypress. Don't use this in CI.
+	 * 
+	 * @param image
+	 * @throws IOException
+	 */
 	public static void displayImage(BufferedImage image) throws IOException {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
