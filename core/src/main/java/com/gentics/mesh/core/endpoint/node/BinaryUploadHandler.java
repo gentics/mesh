@@ -41,6 +41,8 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.plugin.binary.BinaryStoragePlugin;
+import com.gentics.mesh.plugin.registry.BinaryStoragePluginRegistry;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.NodeUtil;
@@ -50,6 +52,7 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
 import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
@@ -75,6 +78,8 @@ public class BinaryUploadHandler extends AbstractHandler {
 
 	private final BinaryProcessorRegistry binaryProcessorRegistry;
 
+	private final BinaryStoragePluginRegistry binaryStoragePluginRegistry;
+
 	private final HandlerUtilities utils;
 
 	private FileSystem fs;
@@ -88,6 +93,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 		BinaryFieldResponseHandler binaryFieldResponseHandler,
 		BinaryStorage binaryStorage,
 		BinaryProcessorRegistry binaryProcessorRegistry,
+		BinaryStoragePluginRegistry binaryStoragePluginRegistry,
 		HandlerUtilities utils, Vertx rxVertx, MeshOptions options) {
 
 		this.db = db;
@@ -95,6 +101,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 
 		this.binaryStorage = binaryStorage;
 		this.binaryProcessorRegistry = binaryProcessorRegistry;
+		this.binaryStoragePluginRegistry = binaryStoragePluginRegistry;
 		this.utils = utils;
 		this.fs = rxVertx.fileSystem();
 		this.options = options;
@@ -164,7 +171,9 @@ public class BinaryUploadHandler extends AbstractHandler {
 
 		// First process the upload data
 		hashUpload(ul).flatMap(hash -> {
-			Single<List<Consumer<BinaryGraphField>>> modifierOp = postProcessUpload(ul, hash).toList();
+			Observable<Consumer<BinaryGraphField>> postProcessors = postProcessUpload(ul, hash);
+			Observable<Consumer<BinaryGraphField>> pluginPostProcessors = pluginPostProcessUpload(ul, hash);
+			Single<List<Consumer<BinaryGraphField>>> modifierOp = postProcessors.toList();
 			return modifierOp.map(list -> {
 				return Tuple.tuple(hash, list);
 			});
@@ -365,6 +374,28 @@ public class BinaryUploadHandler extends AbstractHandler {
 			});
 			return node.transformToRestSync(ac, 0);
 		});
+	}
+
+	private Observable<Consumer<BinaryGraphField>> pluginPostProcessUpload(FileUpload upload, String hash) {
+		String contentType = upload.contentType();
+		Observable<BinaryStoragePlugin> pluginObs = Observable.fromIterable(binaryStoragePluginRegistry.getPlugins());
+
+		Observable<Consumer<BinaryGraphField>> consumerObs = pluginObs.flatMapMaybe(p -> p.process(upload, hash)
+			.doOnSuccess(s -> {
+				log.info(
+					"Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in plugin {" + p.id()
+						+ "} completed.");
+			})
+			.doOnComplete(() -> {
+				log.warn(
+					"Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in plugin {" + p.id()
+						+ "} completed.");
+			})
+			.flatMap(e -> {
+				// TODO convert to Consumer<BinaryGraphField> 
+				return Maybe.empty();
+			}));
+		return consumerObs;
 	}
 
 	/**

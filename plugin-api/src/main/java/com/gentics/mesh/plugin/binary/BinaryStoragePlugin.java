@@ -1,7 +1,12 @@
 package com.gentics.mesh.plugin.binary;
 
+import java.util.function.Consumer;
+
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.plugin.MeshPlugin;
 
+import io.reactivex.Maybe;
+import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -26,5 +31,22 @@ public interface BinaryStoragePlugin extends MeshPlugin {
 	 * @param contentType
 	 */
 	void handle(RoutingContext rc, String storageId, String contentType);
+
+	/**
+	 * Check whether the processor accepts the specified content type.
+	 * 
+	 * @param contentType
+	 * @return
+	 */
+	boolean accepts(String contentType);
+
+	/**
+	 * Process the binary data and return a consumer for the binary field.
+	 * 
+	 * @param upload
+	 * @param hash SHA512 sum of the upload
+	 * @return Modifier for the binary graph field.
+	 */
+	Maybe<Consumer<Object>> process(FileUpload upload, String hash);
 
 }

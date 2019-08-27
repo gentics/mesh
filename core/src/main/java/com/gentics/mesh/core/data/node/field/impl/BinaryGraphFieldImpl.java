@@ -336,7 +336,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 
 	@Override
 	public Binary getBinary() {
-		return inV().nextOrDefaultExplicit(BinaryImpl.class, null);
+		return inV(BinaryImpl.class).nextOrNull();
 	}
 
 	@Override
