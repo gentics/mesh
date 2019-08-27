@@ -3,6 +3,7 @@ package com.gentics.mesh.test.docker;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -44,6 +45,7 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
 
 		withExposedPorts(8080);
 		withLogConsumer(logConsumer);
+		withStartupTimeout(Duration.ofSeconds(120));
 		setStartupAttempts(1);
 
 		List<String> args = new ArrayList<>();
