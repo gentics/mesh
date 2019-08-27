@@ -26,10 +26,14 @@ include::content/docs/variables.adoc-include[]
 [[NEXT]]
 == NEXT
 
-icon:bullhorn[] Image Manipulation: The new resizing options `smart` and `prop` have been added.
+icon:bullhorn[] Image Manipulation: The new resizing options `smart`, `prop` and `force` have been added.
 
 [quote]
 ____
+
+**force**
+
+The `?resize=force` mode will resize the image to the specified dimensions. This can lead to a distorted image when the aspect ratio of the source image does not match the destination aspect ratio.
 
 **smart**
 
@@ -39,7 +43,9 @@ The new default image resize mode is `smart` which potentially crops an image wh
 
 **prop**
 
-To avoid cropping, request either only `width` _or_ `height` or make sure that the aspect ratio of the requested dimensions fit the source images aspect ratio. Alternatively request the image with `?resize=prop` or `?resize=force`. For details on image manipulation and resizing opions read the link:{{< relref "plugin-types/image-manipulation.asciidoc" >}}[Image Manipulation documentation].
+The `?resize=prop` mode will resize the image proportionally so that the resulting destination format fits inside the provided dimensions (`width`, `height`). No distortion of the image will occur.
+
+For details on image manipulation and resizing opions read the link:{{< relref "plugin-types/image-manipulation.asciidoc" >}}[Image Manipulation documentation].
 
 This change might not automatically apply when an image is already in the cache. To make sure that the changes take effect, the cache in `data/binaryImageCache/` must be manually cleared.
 
