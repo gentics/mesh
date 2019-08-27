@@ -14,6 +14,7 @@ import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageRect;
+import com.gentics.mesh.parameter.image.ResizeMode;
 
 /**
  * Crop and resize parameters for image manipulation.
@@ -122,10 +123,18 @@ public class ImageManipulationParametersImpl extends AbstractParameters implemen
 		// crop
 		QueryParameter cropParameter = new QueryParameter();
 		cropParameter.setDescription("Set the crop mode. Possible modes: " + CropMode.description());
-		cropParameter.setExample("rect");
+		cropParameter.setExample(CropMode.RECT.getKey());
 		cropParameter.setRequired(false);
 		cropParameter.setType(ParamType.STRING);
 		parameters.put(CROP_MODE_QUERY_PARAM_KEY, cropParameter);
+
+		// resize
+		QueryParameter resizeParameter = new QueryParameter();
+		resizeParameter.setDescription("Set the resize mode. Possible modes: " + ResizeMode.description());		
+		resizeParameter.setExample(ResizeMode.SMART.getKey());
+		resizeParameter.setRequired(false);
+		resizeParameter.setType(ParamType.STRING);
+		parameters.put(RESIZE_MODE_QUERY_PARAM_KEY, resizeParameter);
 
 		return parameters;
 	}

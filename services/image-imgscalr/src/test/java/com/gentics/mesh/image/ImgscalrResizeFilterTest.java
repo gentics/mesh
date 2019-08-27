@@ -1,25 +1,24 @@
 package com.gentics.mesh.image;
 
-import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.etc.config.ResampleFilter;
-import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.reactivex.core.Vertx;
+import static org.junit.Assert.assertEquals;
+
+import java.awt.image.BufferedImage;
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.awt.image.BufferedImage;
-import java.util.Arrays;
-import java.util.Collection;
-import static org.junit.Assert.assertEquals;
+import com.gentics.mesh.etc.config.ImageManipulatorOptions;
+import com.gentics.mesh.etc.config.ResampleFilter;
+import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+
+import io.vertx.reactivex.core.Vertx;
 
 @RunWith(Parameterized.class)
 public class ImgscalrResizeFilterTest extends AbstractImageTest {
-
-	private static final Logger log = LoggerFactory.getLogger(ImgscalrResizeFilterTest.class);
 
 	private ImgscalrImageManipulator manipulator;
 	private final ResampleFilter filter;

@@ -26,6 +26,31 @@ include::content/docs/variables.adoc-include[]
 [[NEXT]]
 == NEXT
 
+icon:bullhorn[] Image Manipulation: The new resizing options `smart`, `prop` and `force` have been added.
+
+[quote]
+____
+
+**force**
+
+The `?resize=force` mode will resize the image to the specified dimensions. This can lead to a distorted image when the aspect ratio of the source image does not match the destination aspect ratio.
+
+**smart**
+
+When using `?resize=smart` the resizer will automatically crop the image to the desired dimensions instead of distorting it when providing `width` _and_ `height` parameters which would result in an aspect ratio that is different from the original images aspect ratio. 
+
+The new default image resize mode is `smart` which potentially crops an image when requested aspect ratio that diverge from the source images aspectratio. The old behaviour can now be achieved by using the `?resize=force` parameter.
+
+**prop**
+
+The `?resize=prop` mode will resize the image proportionally so that the resulting destination format fits inside the provided dimensions (`width`, `height`). No distortion of the image will occur.
+
+For details on image manipulation and resizing opions read the link:{{< relref "plugin-types/image-manipulation.asciidoc" >}}[Image Manipulation documentation].
+
+This change might not automatically apply when an image is already in the cache. To make sure that the changes take effect, the cache in `data/binaryImageCache/` must be manually cleared.
+
+____
+
 icon:plus[] Search: A new search option `search.mappingMode` has been added. The mapping mode setting influences how mappings for fields will be generated. By default the mode `DYNAMIC` is used. In this mode mappings are generated as before. When using the mode `STRICT` only mappings for fields which have a custom mapping via the `elasticsearch` schema parameter will be created. This is useful if you want to have finer control of what contents should be added to Elasticsearch.
 
 icon:plus[] Graph: The default value for `tx.retry.delay` has been set to 0. The tx delay will thus be disabled by default.

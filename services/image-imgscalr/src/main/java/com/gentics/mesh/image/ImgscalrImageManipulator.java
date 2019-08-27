@@ -40,6 +40,7 @@ import com.gentics.mesh.image.focalpoint.FocalPointModifier;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageRect;
+import com.gentics.mesh.parameter.image.ResizeMode;
 import com.twelvemonkeys.image.ResampleOp;
 
 import io.reactivex.Single;
@@ -125,9 +126,48 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			if (pWidth != null && pWidth == originalWidth && pHeight != null && pHeight == originalHeight) {
 				return originalImage;
 			}
-
 			int width = pWidth == null ? (int) (pHeight * aspectRatio) : pWidth;
 			int height = pHeight == null ? (int) (width / aspectRatio) : pHeight;
+
+			ResizeMode resizeMode = parameters.getResizeMode();
+
+			// if we want to use smart resizing we need to crop the original image to the correct format before resizing to avoid distortion
+			if (pWidth != null && pHeight != null && resizeMode == ResizeMode.SMART) {
+				double pAspectRatio = (double) pWidth / (double) pHeight;
+				if (aspectRatio != pAspectRatio) {
+					if (aspectRatio < pAspectRatio) {
+						// crop height (top & bottom)
+						int resizeHeight = Math.max(1, (int) (originalWidth / pAspectRatio));
+						int startY = (int) (originalHeight * 0.5 - resizeHeight * 0.5);
+						originalImage = crop(originalImage, new ImageRect(0, startY, resizeHeight, originalWidth));
+					} else {
+						// crop width (left & right)
+						int resizeWidth = Math.max(1, (int) (originalHeight * pAspectRatio));
+						int startX = (int) (originalWidth * 0.5 - resizeWidth * 0.5);
+						originalImage = crop(originalImage, new ImageRect(startX, 0, originalHeight, resizeWidth));
+					}
+				}
+			}
+
+			// if we want to use proportional resizing we need to make sure the destination dimension fits inside the provided dimensions
+			if (pWidth != null && pHeight != null && resizeMode == ResizeMode.PROP) {
+				double pAspectRatio = (double) pWidth / (double) pHeight;
+				if (aspectRatio < pAspectRatio) {
+					// scale to pHeight
+					width = Math.max(1, (int) (pHeight * aspectRatio));
+					height = Math.max(1, pHeight);
+				} else {
+					// scale to pWidth
+					width = Math.max(1, pWidth);
+					height = Math.max(1, (int) (pWidth / aspectRatio));
+				}
+
+				// Should the resulting format be the same as the original image we do not need to resize
+				if (width == originalWidth && height == originalHeight) {
+					return originalImage;
+				}
+			}
+
 			try {
 				BufferedImage image = Scalr.apply(originalImage, new ResampleOp(width, height, options.getResampleFilter().getFilter()));
 				originalImage.flush();
@@ -143,7 +183,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	/**
 	 * Create an image reader for the given input.
 	 *
-	 * @param input The input stream to read the original image from.
+	 * @param input
+	 *            The input stream to read the original image from.
 	 * @return An image reader reading from the given input stream
 	 */
 	private ImageReader getImageReader(ImageInputStream input) {
@@ -164,13 +205,14 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	}
 
 	/**
-	 * Create an image writer from the same image format as the specified image reader writing
-	 * to the given output stream.
+	 * Create an image writer from the same image format as the specified image reader writing to the given output stream.
 	 *
 	 * When no respective writer to the given reader is available, a PNG writer will be created.
 	 *
-	 * @param reader The reader used to read the original image
-	 * @param out The output stream the writer should use
+	 * @param reader
+	 *            The reader used to read the original image
+	 * @param out
+	 *            The output stream the writer should use
 	 * @return An image writer for the same type as the specified reader, or a PNG writer if that is not available
 	 */
 	private ImageWriter getImageWriter(ImageReader reader, ImageOutputStream out) {
@@ -215,23 +257,25 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	/**
 	 * Resize the given image with the specified manipulation parameters.
 	 *
-	 * @param image The image to process
-	 * @param parameters The parameters defining cropping and resizing requests
+	 * @param image
+	 *            The image to process
+	 * @param parameters
+	 *            The parameters defining cropping and resizing requests
 	 * @return The modified image
 	 */
-	private BufferedImage cropAndResize(BufferedImage image, ImageManipulationParameters parameters) {
+	protected BufferedImage cropAndResize(BufferedImage image, ImageManipulationParameters parameters) {
 		CropMode cropMode = parameters.getCropMode();
 		boolean omitResize = false;
 		if (cropMode != null) {
 			switch (cropMode) {
-				case RECT:
-					image = crop(image, parameters.getRect());
-					break;
-				case FOCALPOINT:
-					image = focalPointModifier.apply(image, parameters);
-					// We don't need to resize the image again. The dimensions already match up with the target dimension
-					omitResize = true;
-					break;
+			case RECT:
+				image = crop(image, parameters.getRect());
+				break;
+			case FOCALPOINT:
+				image = focalPointModifier.apply(image, parameters);
+				// We don't need to resize the image again. The dimensions already match up with the target dimension
+				omitResize = true;
+				break;
 			}
 		}
 
@@ -256,13 +300,13 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 					return Single.just(cacheFileInfo.path);
 				} else {
 					// TODO handle execution timeout
-					// Make sure to run that code in the dedicated thread pool it may be CPU intensive for larger images and we don't want to exhaust the regular worker
+					// Make sure to run that code in the dedicated thread pool it may be CPU intensive for larger images and we don't want to exhaust the
+					// regular worker
 					// pool
 					return workerPool.<String>rxExecuteBlocking(bh -> {
 						try (
 							InputStream is = stream.get();
-							ImageInputStream ins = ImageIO.createImageInputStream(is)
-						) {
+							ImageInputStream ins = ImageIO.createImageInputStream(is)) {
 							BufferedImage image;
 							ImageReader reader = getImageReader(ins);
 
