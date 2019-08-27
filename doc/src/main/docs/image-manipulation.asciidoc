@@ -7,29 +7,71 @@ include::content/docs/variables.adoc-include[]
 Images can be resized and/or cropped by appending the <<imagemanipulationparams,image manipulation query parameters>> on the relevant API endpoints.
 The following image formats are supported: `png`, `jpg`, `bmp` and `gif`
 
-== Fetch and Resize an Image with UUID
+== Resize
+
+=== Using UUID
 
 Endpoint: ```{apiLatest}/:projectName/nodes/:uuid/binary/:fieldname?w=220```
 
 .Try the example
 [TIP]
-https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=300
+https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=500
 
 .via UUID
 image::https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=300&version=1.0[Example Image,role="img-responsive"] 
 
-== Fetch and Crop an Image with WebRoot Path
+=== Using Path
 
-Images can be loaded similar to regular contents. It is also possible to load them using the path.
+Images can be loaded similar to regular contents. It is also possible to load them using the WebRoot path.
 
-TIP: By Path: https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500
+TIP: By Path: https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?h=300
 
 .via webroot path
 image::https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500[Image By Path]
 
+=== Resizing Options
+
+When loading an image with resizing parameters you can provide either the desired width by appending `w=:width` or the desired height by appending by appending `h=:height`. 
+
+==== Smart resizing and Cropping
+It also possible to provide both dimensions. Note that in this case Mesh potentially crops your image to fit the desired dimensions. This happens when the aspect ratio of the source image is different from the requested dimensions. In these cases Mesh will crop _either_ pixels at the top and bottom or left and right.
+
+NOTE: Providing no resize parameter yields the same result as providing `resize=smart`
+
+Should you not want to crop the image but still have Mesh transform the image to fit the requested width and height you also have other options:
+
+==== Proportional resizing
+To make sure the requested image fits inside the provided dimensions you can provide the paramater `resize=prop`. This scales the image _proportionally_ - but the resulting image can potentially hava a different aspect ratio than the requested dimensions. In practice the resulting image will often only have either the correct width or the correct height - but it will fit the provided 'bounding rectangle'.
+
+==== Forced resizing
+You can use the resizing option `resize=force` to request the source image with exactly the requested width and height and without cropping.
+Note that using the force-resizing mode can potentially lead to non-proportional resizing and thus potentially distort your image.
+
+.When providing width and height Mesh resizes and crops the image to the desired format. Cropping happens only if necessary and only in one dimension.
+image::https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500&h=200[Image with width and height]
+
+.When adding the resize parameter `prop` the image gets scaled proportionally to fit the dimensions.
+image::https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500&h=200&resize=prop[Image with width and height and forced resize]
+
+.When adding the resize parameter `force` the image gets distorted to fit the dimensions 
+image::https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500&h=200&resize=force[Image with width and height and forced resize]
+
+== Crop
+
+You can also selectively extract a certain portion of your image by providing a cropping rectangle with the paramater `rect=:startPositionXCoordinate,:startPositionYCoordinate,:WidthOfRectangle,:HeightOfRectangle&crop=rect`.
+
+NOTE: It is mandatory to specify all four crop parameters when cropping an image.
+
+.Let's say we want to highlight the motorcycle behind the car. We could do this by cropping everything else.
+image::https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?rect=520,70,280,160&crop=rect[Cropped image]
+
+TIP: Cropping can also be combined with resizing.
+
 == Placeholders
 
 NOTE: You can use the `dominantColor`, `width` and `height` properties of the image fields to generate colored placeholder areas for your images. The `dominantColor` of the image will  automatically be computed for each uploaded image.
+
+include::content/docs/examples/graphql/dominant-colors-query[]
 
 It is also possible to use the image manipulation in combination with the WebRoot endpoint.
 
@@ -39,9 +81,7 @@ Endpoint: ```{apiLatest}/:projectName/webroot/:path?rect=10,100,800,400&crop=rec
 [TIP]
 https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?rect=10,100,800,400&crop=rect
 
-NOTE: It is mandatory to specify all four crop parameters when cropping an image.
-
-== Focal Point Handling
+== Focal Point
 
 Responsive designs often suggest the usage of https://developer.mozilla.org/en-US/docs/Learn/HTML/Multimedia_and_embedding/Responsive_images[srcset images for responsive images].
 Sometimes those designs require image sizes which lead to cropped images. This could result in images which seem chopped off at the worst possible place or images which miss the important part.

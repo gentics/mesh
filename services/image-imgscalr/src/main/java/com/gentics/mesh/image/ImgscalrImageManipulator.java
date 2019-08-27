@@ -40,6 +40,7 @@ import com.gentics.mesh.image.focalpoint.FocalPointModifier;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageRect;
+import com.gentics.mesh.parameter.image.ResizeMode;
 import com.twelvemonkeys.image.ResampleOp;
 
 import io.reactivex.Single;
@@ -107,7 +108,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		// Resize if required and calculate missing parameters if needed
 		Integer pHeight = parameters.getHeight();
 		Integer pWidth = parameters.getWidth();
-
+		
 		// Resizing is only needed when one of the parameters has been specified
 		if (pHeight != null || pWidth != null) {
 
@@ -125,11 +126,50 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			if (pWidth != null && pWidth == originalWidth && pHeight != null && pHeight == originalHeight) {
 				return originalImage;
 			}
-
 			int width = pWidth == null ? (int) (pHeight * aspectRatio) : pWidth;
 			int height = pHeight == null ? (int) (width / aspectRatio) : pHeight;
+			
+			ResizeMode resizeMode = parameters.getResizeMode();
+			
+			// if we want to use smart resizing we need to crop the original image to the correct format before resizing to avoid distortion
+			if( pWidth != null && pHeight != null && resizeMode == ResizeMode.SMART) {
+				double pAspectRatio = (double) pWidth / (double) pHeight;
+				if(aspectRatio != pAspectRatio ) { 
+					if (aspectRatio < pAspectRatio) {
+						// crop height (top & bottom)
+						int resizeHeight = Math.max(1, (int) ( originalWidth / pAspectRatio ));
+						int startY = (int) ( originalHeight * 0.5 - resizeHeight * 0.5);
+						originalImage = crop(originalImage, new ImageRect(0, startY, resizeHeight, originalWidth));
+					} else {
+						// crop width (left & right)
+						int resizeWidth = Math.max(1, (int) ( originalHeight * pAspectRatio ));
+						int startX = (int) ( originalWidth * 0.5 - resizeWidth * 0.5);
+						originalImage = crop(originalImage, new ImageRect(startX, 0, originalHeight, resizeWidth));
+					}
+				}	
+			}
+			
+			// if we want to use proportional resizing we need to make sure the destination dimension fits inside the provided dimensions
+			if( pWidth != null && pHeight != null && resizeMode == ResizeMode.PROP) {
+				double pAspectRatio = (double) pWidth / (double) pHeight;
+				if (aspectRatio < pAspectRatio) { 
+					//scale to pHeight
+					width = Math.max(1, (int)(pHeight * aspectRatio));
+					height = Math.max(1, pHeight);
+				} else {  
+					// scale to pWidth
+					width = Math.max(1, pWidth);
+					height = Math.max(1, (int)(pWidth / aspectRatio));
+				}
+
+				// Should the resulting format be the same as the original image we do not need to resize
+				if (width == originalWidth && height == originalHeight) {
+					return originalImage;
+				}
+			}
+			
 			try {
-				BufferedImage image = Scalr.apply(originalImage, new ResampleOp(width, height, options.getResampleFilter().getFilter()));
+				BufferedImage image = Scalr.apply(originalImage, new ResampleOp(width, height, options.getResampleFilter().getFilter()));	
 				originalImage.flush();
 				return image;
 			} catch (IllegalArgumentException e) {
@@ -219,7 +259,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	 * @param parameters The parameters defining cropping and resizing requests
 	 * @return The modified image
 	 */
-	private BufferedImage cropAndResize(BufferedImage image, ImageManipulationParameters parameters) {
+	protected BufferedImage cropAndResize(BufferedImage image, ImageManipulationParameters parameters) {
 		CropMode cropMode = parameters.getCropMode();
 		boolean omitResize = false;
 		if (cropMode != null) {

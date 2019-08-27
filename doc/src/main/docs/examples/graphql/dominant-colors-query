@@ -1,0 +1,18 @@
+++++
+<div class="graphql-example" style="height: 25em">
+{
+  node(path: "images/ford-gt.jpg") {
+    ... on vehicleImage {
+      path
+      fields {
+        image {
+          width
+          height
+          dominantColor
+        }
+      }
+    }
+  }
+}
+</div>
+++++

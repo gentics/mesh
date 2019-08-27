@@ -1,7 +1,7 @@
 package com.gentics.mesh.image;
 
-import static com.gentics.mesh.image.ImageTestUtil.createMockedBinary;
 import static com.gentics.mesh.image.ImgscalrImageManipulatorTest.getReferenceFilename;
+import static com.gentics.mesh.test.util.ImageTestUtil.createMockedBinary;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;

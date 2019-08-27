@@ -35,6 +35,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
+import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.FileUtils;
@@ -116,9 +117,14 @@ public class BinaryTransformHandler extends AbstractHandler {
 		parameters.setWidth(transformation.getWidth());
 		parameters.setHeight(transformation.getHeight());
 		parameters.setRect(transformation.getCropRect());
+		parameters.setCropMode(transformation.getCropMode());
+		parameters.setResizeMode(transformation.getResizeMode());
 		parameters.setFocalPoint(transformation.getFocalPoint());
 		if (parameters.getRect() != null) {
 			parameters.setCropMode(CropMode.RECT);
+		}
+		if (parameters.getResizeMode() == null) {
+			parameters.setResizeMode(ResizeMode.SMART);
 		}
 		UploadContext context = new UploadContext();
 		// Lookup the binary and set the focal point parameters
