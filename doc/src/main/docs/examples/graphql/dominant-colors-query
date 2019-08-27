@@ -2,9 +2,9 @@
 <div class="graphql-example" style="height: 25em">
 {
   node(path: "images/ford-gt.jpg") {
-    ... on vehicleImage {
-      path
-      fields {
+    path
+    fields {
+      ... on vehicleImage {
         image {
           width
           height
