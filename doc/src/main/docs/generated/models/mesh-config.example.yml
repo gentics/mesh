@@ -52,6 +52,7 @@ search:
   retryLimit: 3
   waitForIdle: true
   includeBinaryFields: true
+  mappingMode: "DYNAMIC"
 upload:
   byteLimit: 262144000
   directory: "data/binaryFiles"

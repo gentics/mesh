@@ -39,6 +39,16 @@
         }
       }
     },
+    "cropMode" : {
+      "type" : "string",
+      "description" : "Crop mode. To be used in conjunction with cropRect",
+      "enum" : [ "RECT", "FOCALPOINT" ]
+    },
+    "resizeMode" : {
+      "type" : "string",
+      "description" : "Resize mode.",
+      "enum" : [ "FORCE", "SMART", "PROP" ]
+    },
     "focalPoint" : {
       "type" : "object",
       "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:FocalPoint",

@@ -7,6 +7,11 @@
 | Description
 
 
+| cropMode
+| false
+| string
+| Crop mode. To be used in conjunction with cropRect
+
 | cropRect
 | false
 | object
@@ -26,6 +31,11 @@
 | true
 | string
 | ISO 639-1 language tag of the node which provides the image which should be transformed.
+
+| resizeMode
+| false
+| string
+| Resize mode.
 
 | version
 | true

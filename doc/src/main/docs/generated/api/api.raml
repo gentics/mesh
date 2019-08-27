@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "0.39.2"
+version: "0.40.0"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -13113,7 +13113,7 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "0.39.2",
+                                  "meshVersion" : "0.40.0",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
@@ -16118,6 +16118,16 @@ mediaType: application/json
                     required: false
                     repeat: false
                     example: "720"
+                resize: 
+                    description: |
+                        Set the resize mode. Possible modes: 
+                        force : The force mode will resize the image to the specified dimensions. This can lead to a distorted image when the aspect ratio of the source image does not match the destination aspect ratio
+                        smart : The smart mode will resize the image proportionally so that the resulting destination format matches the source format in at least one dimension. No distortion of the image will occur.
+                        prop : The prop mode will resize the image proportionally so that the resulting destination format fits inside the provided dimensions. No distortion of the image will occur.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: smart
                 branch: 
                     description: Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
                     type: string
@@ -16213,6 +16223,16 @@ mediaType: application/json
                                   "type" : "integer"
                                 }
                               }
+                            },
+                            "cropMode" : {
+                              "type" : "string",
+                              "description" : "Crop mode. To be used in conjunction with cropRect",
+                              "enum" : [ "RECT", "FOCALPOINT" ]
+                            },
+                            "resizeMode" : {
+                              "type" : "string",
+                              "description" : "Resize mode.",
+                              "enum" : [ "FORCE", "SMART", "PROP" ]
                             },
                             "focalPoint" : {
                               "type" : "object",
@@ -22209,6 +22229,16 @@ mediaType: application/json
                     required: false
                     repeat: false
                     example: "720"
+                resize: 
+                    description: |
+                        Set the resize mode. Possible modes: 
+                        force : The force mode will resize the image to the specified dimensions. This can lead to a distorted image when the aspect ratio of the source image does not match the destination aspect ratio
+                        smart : The smart mode will resize the image proportionally so that the resulting destination format matches the source format in at least one dimension. No distortion of the image will occur.
+                        prop : The prop mode will resize the image proportionally so that the resulting destination format fits inside the provided dimensions. No distortion of the image will occur.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: smart
                 fpy: 
                     description: Set the focal point y factor between 0  and 1 where 0.5 is the middle of the image. You can use this parameter in combination with the crop=fp parameter in order to crop and resize the image in relation to the given point.
                     type: number

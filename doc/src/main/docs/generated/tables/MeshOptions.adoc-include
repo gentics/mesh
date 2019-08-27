@@ -237,6 +237,11 @@
 | boolean
 | If true, the content and metadata of binary fields will be included in the search index. Default: true
 
+| searchOptions.mappingMode
+| false
+| mappingmode
+| This setting controls the mapping mode of fields for Elasticsearch. When set to STRICT only fields which have a custom mapping will be added to Elasticsearch. Mode DYNAMIC will automatically use the Gentics Mesh default mappings which can be supplemented with custom mappings. Default: DYNAMIC
+
 | uploadOptions.byteLimit
 | false
 | long
