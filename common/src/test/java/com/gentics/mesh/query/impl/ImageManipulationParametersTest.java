@@ -153,6 +153,9 @@ public class ImageManipulationParametersTest {
 		
 		cacheKey = new ImageManipulationParametersImpl().setResizeMode(ResizeMode.FORCE).getCacheKey();
 		assertEquals("resizeFORCEfp0.5-0.5", cacheKey);
+		
+		cacheKey = new ImageManipulationParametersImpl().setResizeMode(ResizeMode.PROP).getCacheKey();
+		assertEquals("resizePROPfp0.5-0.5", cacheKey);
 
 		cacheKey = new ImageManipulationParametersImpl().setWidth(100).setHeight(200).getCacheKey();
 		assertEquals("resizeSMARTrw100rh200fp0.5-0.5", cacheKey);
