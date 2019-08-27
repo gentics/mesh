@@ -45,7 +45,7 @@ The new default image resize mode is `smart` which potentially crops an image wh
 
 The `?resize=prop` mode will resize the image proportionally so that the resulting destination format fits inside the provided dimensions (`width`, `height`). No distortion of the image will occur.
 
-For details on image manipulation and resizing opions read the link:{{< relref "plugin-types/image-manipulation.asciidoc" >}}[Image Manipulation documentation].
+For details on image manipulation and resizing opions read the link:{{< relref "image-manipulation.asciidoc" >}}[Image Manipulation documentation].
 
 This change might not automatically apply when an image is already in the cache. To make sure that the changes take effect, the cache in `data/binaryImageCache/` must be manually cleared.
 
