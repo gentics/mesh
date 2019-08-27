@@ -60,6 +60,10 @@ public class BinaryFieldImpl implements BinaryField {
 	@JsonPropertyDescription("Plain text content of the upload. This can be the text content of a word or PDF document.")
 	private String plainText;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Extra ID for storage providers.")
+	private String storageId;
+
 	@Override
 	public String getBinaryUuid() {
 		return binaryUuid;
@@ -182,8 +186,19 @@ public class BinaryFieldImpl implements BinaryField {
 	}
 
 	@Override
+	public String getStorageId() {
+		return storageId;
+	}
+
+	@Override
+	public BinaryField setStorageId(String id) {
+		this.storageId = id;
+		return this;
+	}
+
+	@Override
 	@JsonIgnore
 	public boolean hasValues() {
-		return getDominantColor() != null || getFileName() != null && getMimeType() != null || getFocalPoint() != null || getMetadata() != null || getSha512sum() != null;
+		return getDominantColor() != null || getFileName() != null && getMimeType() != null || getFocalPoint() != null || getMetadata() != null || getSha512sum() != null || getStorageId() != null;
 	}
 }

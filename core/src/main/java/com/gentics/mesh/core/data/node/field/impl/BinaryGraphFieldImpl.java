@@ -149,11 +149,16 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 				graphBinaryField.setLocation(loc);
 			}
 		}
-		
+
 		// Handle Update - Plain text
 		String text = binaryField.getPlainText();
 		if (text != null) {
 			graphBinaryField.setPlainText(text);
+		}
+
+		String storageId = binaryField.getStorageId();
+		if (storageId != null) {
+			graphBinaryField.setStorageId(storageId);
 		}
 
 		// Don't update image width, height, SHA checksum - those are immutable
@@ -319,7 +324,12 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 				BinaryMetadata restMetadata = binaryField.getMetadata();
 				matchingMetadata = Objects.equals(graphMetadata, restMetadata);
 			}
-			return matchingFilename && matchingMimetype && matchingFocalPoint && matchingDominantColor && matchingSha512sum && matchingMetadata;
+
+			boolean matchingStorageId = true;
+			if (binaryField.getStorageId() != null) {
+				matchingStorageId = Objects.equals(getStorageId(), binaryField.getStorageId());
+			}
+			return matchingFilename && matchingMimetype && matchingFocalPoint && matchingDominantColor && matchingSha512sum && matchingMetadata && matchingStorageId;
 		}
 		return false;
 	}
@@ -375,6 +385,16 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	@Override
 	public void setPlainText(String text) {
 		setProperty(PLAIN_TEXT_KEY, text);
+	}
+
+	@Override
+	public String getStorageId() {
+		return getProperty(STORAGE_ID_KEY);
+	}
+
+	@Override
+	public void setStorageId(String id) {
+		setProperty(STORAGE_ID_KEY, id);
 	}
 
 }

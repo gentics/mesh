@@ -36,7 +36,9 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	String BINARY_ALT_KEY = "metadata-alt";
 
-	String PLAIN_TEXT_KEY = "plainText"; 
+	String PLAIN_TEXT_KEY = "plainText";
+
+	String STORAGE_ID_KEY = "storageId";
 
 	/**
 	 * Return the binary filename.
@@ -295,5 +297,9 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return
 	 */
 	String getPlainText();
+
+	String getStorageId();
+
+	void setStorageId(String id);
 
 }

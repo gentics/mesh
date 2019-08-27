@@ -200,8 +200,12 @@ public interface BinaryField extends Field {
 	/**
 	 * Set the plain text from the binary document.
 	 *
-	 * @return
+	 * @return Fluent API
 	 */
 	BinaryField setPlainText(String text);
+
+	String getStorageId();
+
+	BinaryField setStorageId(String id);
 
 }

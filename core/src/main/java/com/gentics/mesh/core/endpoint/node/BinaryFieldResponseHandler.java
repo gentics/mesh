@@ -4,6 +4,8 @@ import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.util.MimeTypeUtils.DEFAULT_BINARY_MIME_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_MODIFIED;
 
+import java.util.Optional;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -16,6 +18,8 @@ import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.handler.RangeRequestHandler;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.plugin.binary.BinaryStoragePlugin;
+import com.gentics.mesh.plugin.registry.BinaryStoragePluginRegistry;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.EncodeUtil;
@@ -41,12 +45,16 @@ public class BinaryFieldResponseHandler {
 
 	private final RangeRequestHandler rangeRequestHandler;
 
+	private final BinaryStoragePluginRegistry pluginRegistry;
+
 	@Inject
-	public BinaryFieldResponseHandler(ImageManipulator imageManipulator, BinaryStorage storage, Vertx rxVertx, RangeRequestHandler rangeRequestHandler) {
+	public BinaryFieldResponseHandler(ImageManipulator imageManipulator, BinaryStorage storage, Vertx rxVertx,
+		RangeRequestHandler rangeRequestHandler, BinaryStoragePluginRegistry pluginRegistry) {
 		this.imageManipulator = imageManipulator;
 		this.storage = storage;
 		this.rxVertx = rxVertx;
 		this.rangeRequestHandler = rangeRequestHandler;
+		this.pluginRegistry = pluginRegistry;
 	}
 
 	/**
@@ -106,6 +114,17 @@ public class BinaryFieldResponseHandler {
 		// Set to IDENTITY to avoid gzip compression
 		response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
 
+		// Check if a plugin can handle this request
+		String storageId = binaryField.getStorageId();
+		if (storageId != null) {
+			Optional<BinaryStoragePlugin> matchingPlugin = pluginRegistry.getPlugins().stream().filter(p -> p.canHandle(storageId)).findFirst();
+			if (matchingPlugin.isPresent()) {
+				BinaryStoragePlugin plugin = matchingPlugin.get();
+				plugin.handle(rc, storageId, contentType);
+				return;
+			}
+		}
+
 		String localPath = storage.getLocalPath(binary.getUuid());
 		if (localPath != null) {
 			rangeRequestHandler.handle(rc, localPath, contentType);
@@ -133,19 +152,21 @@ public class BinaryFieldResponseHandler {
 		String fileName = binaryField.getFileName();
 		imageManipulator.handleResize(binaryField.getBinary(), imageParams)
 			.flatMap(cachedFilePath -> rxVertx.fileSystem().rxProps(cachedFilePath)
-			.doOnSuccess(props -> {
-				response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(props.size()));
-				response.putHeader(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.getMimeTypeForFilename(cachedFilePath).orElse(DEFAULT_BINARY_MIME_TYPE));
-				response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
-				response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
-				// Set to IDENTITY to avoid gzip compression
-				response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
+				.doOnSuccess(props -> {
+					response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(props.size()));
+					response.putHeader(HttpHeaders.CONTENT_TYPE,
+						MimeTypeUtils.getMimeTypeForFilename(cachedFilePath).orElse(DEFAULT_BINARY_MIME_TYPE));
+					response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
+					response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
+					// Set to IDENTITY to avoid gzip compression
+					response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
 
-				addContentDispositionHeader(response, fileName, "inline");
+					addContentDispositionHeader(response, fileName, "inline");
 
-				response.sendFile(cachedFilePath);
-			}))
-			.subscribe(ignore -> {}, rc::fail);
+					response.sendFile(cachedFilePath);
+				}))
+			.subscribe(ignore -> {
+			}, rc::fail);
 	}
 
 	private void addContentDispositionHeader(HttpServerResponse response, String fileName, String type) {
