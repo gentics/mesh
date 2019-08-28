@@ -684,13 +684,13 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<SchemaResponse> createSchema(SchemaCreateRequest request) {
-		return prepareRequest(POST, "/schemas", SchemaResponse.class, request);
+	public MeshRequest<SchemaResponse> createSchema(SchemaCreateRequest request, ParameterProvider... parameters) {
+		return prepareRequest(POST, "/schemas" + getQuery(parameters), SchemaResponse.class, request);
 	}
 
 	@Override
-	public MeshRequest<SchemaResponse> createSchema(String uuid, SchemaCreateRequest request) {
-		return prepareRequest(POST, "/schemas/" + uuid, SchemaResponse.class, request);
+	public MeshRequest<SchemaResponse> createSchema(String uuid, SchemaCreateRequest request, ParameterProvider... parameters) {
+		return prepareRequest(POST, "/schemas/" + uuid + getQuery(parameters), SchemaResponse.class, request);
 	}
 
 	@Override

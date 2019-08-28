@@ -17,25 +17,27 @@ public interface SchemaClientMethods {
 
 	/**
 	 * Create a new schema using the given request.
-	 * 
+	 *
 	 * @param request
+	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<SchemaResponse> createSchema(SchemaCreateRequest request);
+	MeshRequest<SchemaResponse> createSchema(SchemaCreateRequest request, ParameterProvider... parameters);
 
 	/**
 	 * Create a new schema using the given uuid and request.
-	 * 
+	 *
 	 * @param uuid
 	 *            Uuid of the schema
 	 * @param request
+	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<SchemaResponse> createSchema(String uuid, SchemaCreateRequest request);
+	MeshRequest<SchemaResponse> createSchema(String uuid, SchemaCreateRequest request, ParameterProvider... parameters);
 
 	/**
 	 * Load the schema with the given uuid.
-	 * 
+	 *
 	 * @param uuid
 	 *            Schema uuid
 	 * @param parameters
@@ -45,7 +47,7 @@ public interface SchemaClientMethods {
 
 	/**
 	 * Update the schema with the given request.
-	 * 
+	 *
 	 * @param uuid
 	 *            Schema uuid
 	 * @param request
@@ -57,7 +59,7 @@ public interface SchemaClientMethods {
 
 	/**
 	 * Compare the given schema with the currently stored one and return a list of schema changes.
-	 * 
+	 *
 	 * @param uuid
 	 *            Schema uuid
 	 * @param request
@@ -76,7 +78,7 @@ public interface SchemaClientMethods {
 
 	/**
 	 * Load multiple schemas.
-	 * 
+	 *
 	 * @param parameters
 	 * @return
 	 */
@@ -84,7 +86,7 @@ public interface SchemaClientMethods {
 
 	/**
 	 * Load multiple microschemas.
-	 * 
+	 *
 	 * @param parameters
 	 * @return
 	 */
@@ -92,7 +94,7 @@ public interface SchemaClientMethods {
 
 	/**
 	 * Apply the given list of changes to the schema which is identified by the given uuid.
-	 * 
+	 *
 	 * @param uuid
 	 *            Schema uuid
 	 * @param changes

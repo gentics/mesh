@@ -184,7 +184,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Inject
 	public Vertx vertx;
-	
+
 	@Inject
 	public MeshLocalClientImpl() {
 
@@ -194,7 +194,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	/**
 	 * Set the user which is used for authentication.
-	 * 
+	 *
 	 * @param user
 	 */
 	public void setUser(MeshAuthUser user) {
@@ -611,16 +611,16 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<SchemaResponse> createSchema(SchemaCreateRequest request) {
-		LocalActionContextImpl<SchemaResponse> ac = createContext(SchemaResponse.class);
+	public MeshRequest<SchemaResponse> createSchema(SchemaCreateRequest request, ParameterProvider... parameters) {
+		LocalActionContextImpl<SchemaResponse> ac = createContext(SchemaResponse.class, parameters);
 		ac.setPayloadObject(request);
 		schemaCrudHandler.handleCreate(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
-	public MeshRequest<SchemaResponse> createSchema(String uuid, SchemaCreateRequest request) {
-		LocalActionContextImpl<SchemaResponse> ac = createContext(SchemaResponse.class);
+	public MeshRequest<SchemaResponse> createSchema(String uuid, SchemaCreateRequest request, ParameterProvider... parameters) {
+		LocalActionContextImpl<SchemaResponse> ac = createContext(SchemaResponse.class, parameters);
 		ac.setPayloadObject(request);
 		schemaCrudHandler.handleUpdate(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
@@ -1239,7 +1239,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	/**
 	 * Create a new local action context using the provides parameters.
-	 * 
+	 *
 	 * @param responseType
 	 * @param parameters
 	 *            Parameters which will be transformed to query parameters
