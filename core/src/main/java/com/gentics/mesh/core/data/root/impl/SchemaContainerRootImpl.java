@@ -76,7 +76,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 	@Override
 	public SchemaContainer create(SchemaModel schema, User creator, String uuid) {
-		return create(schema, creator, uuid, true);
+		return create(schema, creator, uuid, false);
 	}
 
 	@Override
@@ -119,7 +119,9 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	public static void validateSchema(NodeIndexHandler indexHandler, SchemaModel schema) {
+		// TODO Maybe set the timeout to the configured search.timeout? But the default of 60 seconds is really long.
 		Throwable error = indexHandler.validate(schema).blockingGet(10, TimeUnit.SECONDS);
+
 		if (error != null) {
 			if (error instanceof GenericRestException) {
 				throw (GenericRestException) error;
@@ -127,6 +129,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 				throw new RuntimeException(error);
 			}
 		}
+
 	}
 
 	@Override
@@ -159,7 +162,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
-		SchemaContainer container = create(requestModel, requestUser, uuid);
+		SchemaContainer container = create(requestModel, requestUser, uuid, ac.getSchemaUpdateParameters().isStrictValidation());
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
 		batch.add(container.onCreated());
 		return container;
@@ -203,7 +206,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 	/**
 	 * Get the project
-	 * 
+	 *
 	 * @return project
 	 */
 	@Override

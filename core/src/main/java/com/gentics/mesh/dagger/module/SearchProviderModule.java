@@ -13,6 +13,7 @@ import com.gentics.elasticsearch.client.okhttp.ElasticsearchOkClient.Builder;
 import com.gentics.mesh.dagger.SearchProviderType;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
+import com.gentics.mesh.search.BrokenSearchProvider;
 import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
@@ -41,6 +42,8 @@ public class SearchProviderModule {
 			return new DevNullSearchProvider(options);
 		case TRACKING:
 			return new TrackingSearchProvider(options);
+		case BROKEN:
+			return new BrokenSearchProvider();
 		case ELASTICSEARCH:
 		default:
 			return elasticsearchProvider.get();

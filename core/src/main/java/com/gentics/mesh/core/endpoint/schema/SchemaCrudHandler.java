@@ -75,9 +75,9 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 		/**
 		 * The following code delegates the call to the handleUpdate method is very hacky at best.
-		 * It would be better to move the whole update code into the SchemaContainerImpl#update 
+		 * It would be better to move the whole update code into the SchemaContainerImpl#update
 		 * method and use the regular handlerUtilities. (similar to all other calls)
-		 * The current code however does not return a SchemaResponse for update requests. 
+		 * The current code however does not return a SchemaResponse for update requests.
 		 * Instead a message will be returned. Changing this behaviour would cause a breaking change. (Changed response model).
 		 */
 		boolean delegateToCreate = db.tx(() -> {
@@ -102,7 +102,9 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			SchemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			SchemaUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
 
-			SchemaContainerRootImpl.validateSchema(nodeIndexHandler, requestModel);
+			if (ac.getSchemaUpdateParameters().isStrictValidation()) {
+				SchemaContainerRootImpl.validateSchema(nodeIndexHandler, requestModel);
+			}
 
 			// 2. Diff the schema with the latest version
 			SchemaChangesListModel model = new SchemaChangesListModel();
@@ -187,7 +189,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 	/**
 	 * Handle a schema diff request.
-	 * 
+	 *
 	 * @param ac
 	 *            Context which contains the schema data to compare with
 	 * @param uuid
@@ -206,7 +208,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 	/**
 	 * Handle a read project list request.
-	 * 
+	 *
 	 * @param ac
 	 */
 	public void handleReadProjectList(InternalActionContext ac) {
@@ -215,7 +217,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 	/**
 	 * Handle a add schema to project request.
-	 * 
+	 *
 	 * @param ac
 	 *            Context which provides the project reference
 	 * @param schemaUuid
@@ -248,7 +250,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 	/**
 	 * Handle a remove schema from project request.
-	 * 
+	 *
 	 * @param ac
 	 * @param schemaUuid
 	 *            Uuid of the schema which should be removed from the project.
@@ -284,7 +286,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 	/**
 	 * Handle an apply changes to schema request.
-	 * 
+	 *
 	 * @param ac
 	 *            Context which contains the changes request data
 	 * @param schemaUuid

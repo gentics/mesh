@@ -27,7 +27,9 @@ public enum ElasticsearchTestMode {
 	/**
 	 * Run using a toxified ES docker container
 	 */
-	CONTAINER_TOXIC;
+	CONTAINER_TOXIC,
+
+	BROKEN;
 
 	public SearchProviderType toSearchProviderType() {
 		switch (this) {
@@ -35,6 +37,8 @@ public enum ElasticsearchTestMode {
 				return SearchProviderType.NULL;
 			case TRACKING:
 				return SearchProviderType.TRACKING;
+			case BROKEN:
+				return SearchProviderType.BROKEN;
 			default:
 				return SearchProviderType.ELASTICSEARCH;
 		}

@@ -263,7 +263,7 @@ public class MeshTestContext extends TestWatcher {
 
 	/**
 	 * Set Features according to the method annotations
-	 * 
+	 *
 	 * @param description
 	 */
 	protected MeshTestSetting getSettings(Description description) {
@@ -326,7 +326,7 @@ public class MeshTestContext extends TestWatcher {
 
 	/**
 	 * Setup the test data.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	private void setupData() throws Exception {
@@ -356,7 +356,7 @@ public class MeshTestContext extends TestWatcher {
 
 	/**
 	 * Clear the test data.
-	 * 
+	 *
 	 * @param settings
 	 * @throws Exception
 	 */
@@ -398,7 +398,7 @@ public class MeshTestContext extends TestWatcher {
 
 	/**
 	 * Initialise mesh options.
-	 * 
+	 *
 	 * @param settings
 	 * @throws Exception
 	 */
@@ -500,6 +500,7 @@ public class MeshTestContext extends TestWatcher {
 			break;
 		case TRACKING:
 			System.setProperty(TrackingSearchProvider.TEST_PROPERTY_KEY, "true");
+		case BROKEN: // fall-through
 			searchOptions.setStartEmbedded(false);
 			break;
 		default:
@@ -554,7 +555,7 @@ public class MeshTestContext extends TestWatcher {
 
 	/**
 	 * Create a new folder which will be automatically be deleted once the rule finishes.
-	 * 
+	 *
 	 * @param prefix
 	 * @return
 	 * @throws IOException
@@ -571,7 +572,7 @@ public class MeshTestContext extends TestWatcher {
 
 	/**
 	 * Initialise the mesh dagger context and inject the dependencies within the test.
-	 * 
+	 *
 	 * @param options
 	 *
 	 * @param settings
