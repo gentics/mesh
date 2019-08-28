@@ -20,14 +20,19 @@ public enum ElasticsearchTestMode {
 	EMBEDDED,
 
 	/**
-	 * Run using a ES docker container
+	 * Run using an ES docker container
 	 */
 	CONTAINER,
 
 	/**
 	 * Run using a toxified ES docker container
 	 */
-	CONTAINER_TOXIC;
+	CONTAINER_TOXIC,
+
+	/**
+	 * Run using an ES docker container which is unreachable (listening on port 1)
+	 */
+	UNREACHABLE;
 
 	public SearchProviderType toSearchProviderType() {
 		switch (this) {

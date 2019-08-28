@@ -23,6 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -55,7 +56,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("settingsTest");
 		request.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(new JsonObject().put("bogus", "value")));
-		call(() -> client().createSchema(request), BAD_REQUEST, "schema_error_index_validation",
+		call(() -> client().createSchema(request, new SchemaUpdateParametersImpl().setStrictValidation(true)), BAD_REQUEST, "schema_error_index_validation",
 			"Failed to parse mapping [default]: illegal field [bogus], only fields can be specified inside fields");
 	}
 
@@ -69,7 +70,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		SchemaUpdateRequest updateRequest = JsonUtil.readValue(request.toJson(), SchemaUpdateRequest.class);
 		updateRequest.removeField("text");
 		updateRequest.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(new JsonObject().put("bogus", "value")));
-		call(() -> client().updateSchema(response.getUuid(), updateRequest), BAD_REQUEST, "schema_error_index_validation",
+		call(() -> client().updateSchema(response.getUuid(), updateRequest, new SchemaUpdateParametersImpl().setStrictValidation(true)), BAD_REQUEST, "schema_error_index_validation",
 			"Failed to parse mapping [default]: illegal field [bogus], only fields can be specified inside fields");
 	}
 

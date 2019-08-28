@@ -23,6 +23,13 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.40.1]]
+== 0.40.1 (TBD)
+
+icon:plus[] Java Rest Client: The `createSchema()` methods now accept a `ParameterProvider` vararg parameter.
+
+icon:check[] Core: Schema validation will no longer fail by default, when Elasticsearch is not available. The previous behavior can be enforced by adding `?strictValidation=true`.
+
 [[v0.40.0]]
 == 0.40.0 (27.08.2019)
 
@@ -37,7 +44,7 @@ The `?resize=force` mode will resize the image to the specified dimensions. This
 
 **smart**
 
-When using `?resize=smart` the resizer will automatically crop the image to the desired dimensions instead of distorting it when providing `width` _and_ `height` parameters which would result in an aspect ratio that is different from the original images aspect ratio. 
+When using `?resize=smart` the resizer will automatically crop the image to the desired dimensions instead of distorting it when providing `width` _and_ `height` parameters which would result in an aspect ratio that is different from the original images aspect ratio.
 
 The new default image resize mode is `smart` which potentially crops an image when requested aspect ratio that diverge from the source images aspectratio. The old behaviour can now be achieved by using the `?resize=force` parameter.
 
@@ -999,7 +1006,7 @@ icon:check[] Config: Fixed handling of `MESH_VERTX_WORKER_POOL_SIZE` and `MESH_V
 
 icon:check[] REST: The node update response will now contain the updated node in the correct language. Any provided language parameter will be ignored.
 
-icon:plus[] REST: The amount of fields which will be returned can now be tuned using the `?fields` query parameter. The parameter can be used to improve the write performance by only including the `uuid` parameter in the response. 
+icon:plus[] REST: The amount of fields which will be returned can now be tuned using the `?fields` query parameter. The parameter can be used to improve the write performance by only including the `uuid` parameter in the response.
 
 icon:plus[] Core: The core Vert.x library was updated to version 3.5.3
 
@@ -1196,7 +1203,7 @@ icon:check[] UI: Restrict nodes to certain schema if allow is set in node list f
 [[v0.17.2]]
 == 0.17.2 (13.03.2018)
 
-icon:plus[] Docker: A new volume location for the `config` directory has been added. 
+icon:plus[] Docker: A new volume location for the `config` directory has been added.
             You can now use the `/config` folder to mount your configuration files.
 
 icon:plus[] Core: The Vert.x library has been downgraded to 3.5.0 due to a regression which could cause requests to not be handled by the HTTP Server.
@@ -1227,7 +1234,7 @@ icon:check[] REST: Fixed an error which led to inconsistent properties being sho
 icon:check[] Search: When calling reindex via the `POST {apiLatest}/search/reindex` endpoint the reindexing stopped after a certain amount of
   time because of a timeout in the database transaction. This has been fixed now.
 
-icon:check[] REST: In some cases parallel file uploads of multiple images could cause the upload process to never finish. This has been fixed now. 
+icon:check[] REST: In some cases parallel file uploads of multiple images could cause the upload process to never finish. This has been fixed now.
 
 [[v0.17.0]]
 == 0.17.0 (22.02.2018)
@@ -1238,7 +1245,7 @@ icon:plus[] Demo: The link:https://demo.getmesh.io/demo[demo application] was up
 
 icon:plus[] Core: Gentics Mesh can now be downgraded if the link:{{< relref "administration-guide.asciidoc" >}}#database-revisions[database revision] matches the needed revision of Gentics Mesh.
 
-icon:plus[] Clustering: Gentics Mesh is now able to form cluster between different server versions. 
+icon:plus[] Clustering: Gentics Mesh is now able to form cluster between different server versions.
 			A database revision hash will now be used to determine which versions of Gentics Mesh can form a cluster.
 			Only instances with the same database revision hash are allowed to form a cluster.
 			The current revision hash info is included in the `{apiLatest}` endpoint response.
@@ -1266,7 +1273,7 @@ icon:check[] Core: After resetting a job via rest (admin/jobs/::uuid::/error) th
 icon:check[] Core: When the migration for multiple nodes failed during a schema migration the error details could become very long.
 					This has been fixed now. Error details in the job list will be truncated after a certain amount of characters.
 
-icon:check[] Core: Image transformation calls previously did not copy the image properties of the binary field. 
+icon:check[] Core: Image transformation calls previously did not copy the image properties of the binary field.
                    Instead the filename and other properties were not copied to the new binary image field. This has been fixed now.
 
 icon:plus[] REST: It is now possible use custom `HttpClientOptions` upon instantiation of a `MeshRestHttpClient`.
@@ -1336,7 +1343,7 @@ Elasticsearch 6.1 compliant example for the commonly used raw field:
 
 CAUTION: The `unfilteredCount` GraphQL paging property has been removed. You can now use the `totalCount` property instead.
 
-CAUTION: Gentics Mesh will automatically extract and start an embedded Elasticsearch server into the `elasticsearch` folder. The old search index (e.g: `data/searchIndex`) can be removed. 
+CAUTION: Gentics Mesh will automatically extract and start an embedded Elasticsearch server into the `elasticsearch` folder. The old search index (e.g: `data/searchIndex`) can be removed.
 
 CAUTION: The user which is used to run the process within the docker image has been changed. You may need to update your data volume ownership to uid/gid 1000.
 
@@ -1386,7 +1393,7 @@ icon:plus[] Image: It is now possible to specify a focal point within the binary
 
 icon:plus[] UI: The admin UI has been updated to use the renamed image parameters.
 
-[[v0.13.3]] 
+[[v0.13.3]]
 == 0.13.3 (12.01.2018)
 
 icon:check[] Core: Optimized concurrency when handling binary data streams (e.g: downloading, image resizing)
@@ -1439,7 +1446,7 @@ icon:check[] Storage: Binary field deletion has been made more resilient and wil
 
 icon:plus[] REST: The `hostname` and `ssl` properties have been added to the project create request. This information will be directly added to the initial release of the project. The properties can thus be changed by updating the project.
 
-icon:plus[] REST: The link resolver mechanism was enhanced to also consider the `hostname` and `ssl` flag of the release of the node which is linked. 
+icon:plus[] REST: The link resolver mechanism was enhanced to also consider the `hostname` and `ssl` flag of the release of the node which is linked.
                   The link resolver will make use of these properties as soon as mesh links point to nodes of foreign projects.
                   You can read more on this topic in the link:{{< relref "features.asciidoc" >}}#crossdomainlinks[cross domain link section] of our documentation.
 
@@ -1494,7 +1501,7 @@ icon:check[] Core: A bug has been fixed which prevented node updates. The issue 
 
 icon:check[] Search: The search index will now automatically be recreated if the search index folder could not be found.
 
-icon:check[] Core: The values of number-fields where stored as strings in the database which caused issues when converting numbers to and from string. 
+icon:check[] Core: The values of number-fields where stored as strings in the database which caused issues when converting numbers to and from string.
                    This has been fixed: the values of number-fields will now be stored as numbers.
 
 icon:check[] Schema: The schema deletion process will now also include all schema versions, referenced changes and jobs.
@@ -1509,7 +1516,7 @@ icon:check[] Core: Fixed various errors which could occur when loading a node fo
 
 icon:plus[] Core: Various performance enhancements have been made to increase the concurrency handling and to lower the request times.
 
-icon:plus[] Websocket: It is now possible to register to a larger set of internal events. 
+icon:plus[] Websocket: It is now possible to register to a larger set of internal events.
             A full list of all events is documented within the link:{{< relref "features.asciidoc" >}}#_eventbus_bridge_websocket[eventbus bridge / websocket documentation].
 
 icon:plus[] Config: The eventloop and worker pool size can now be configured within the `mesh.yml` file.
@@ -1548,9 +1555,9 @@ icon:check[] Elasticsearch: A deadlock situation which could occur during schema
 
 CAUTION: GraphQL: The root field `releases` has been removed. The root field `release` now takes no parameters and loads the active release.
 
-CAUTION: Elasticsearch: Search queries will now automatically be wrapped in a boolean query in order to check permissions much more efficiently. 
+CAUTION: Elasticsearch: Search queries will now automatically be wrapped in a boolean query in order to check permissions much more efficiently.
 
-CAUTION: The schema field property `searchIndex` / `searchIndex.addRaw` has been removed. The property was replaced by a mapping definition which can be added to each field. 
+CAUTION: The schema field property `searchIndex` / `searchIndex.addRaw` has been removed. The property was replaced by a mapping definition which can be added to each field.
          All schemas will automatically be migrated to the new format. Please keep in mind to also update any existing schema files which you may have stored externally.
 
 ```json
@@ -1574,10 +1581,10 @@ CAUTION: The schema field property `searchIndex` / `searchIndex.addRaw` has been
 }
 ```
 
-icon:plus[] Schema: It is now possible to configure index settings and custom search index field mappings within the schema. 
+icon:plus[] Schema: It is now possible to configure index settings and custom search index field mappings within the schema.
 
 The index settings can be used to define new link:https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-analyzers.html[analyzers] and link:https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-tokenizers.html[tokenizer] or other additional link:https://www.elastic.co/guide/en/elasticsearch/guide/current/_index_settings.html[index settings].
-The specified settings will automatically be merged with a default set of settings. 
+The specified settings will automatically be merged with a default set of settings.
 
 Once a new analyzer has been defined it can be referenced by custom field mappings which can now be added to each field.
 The specified field mapping will be added to the generated fields property of the mapping. You can read more about this topic in the link:https://www.elastic.co/guide/en/elasticsearch/reference/current/multi-fields.html[fields mapping documentation] of Elasticsearch.
@@ -1693,7 +1700,7 @@ icon:plus[] The `{apiLatest}/admin/status/migrations` endpoint was removed.
             The status of a migration job can now be obtained via the `{apiLatest}/admin/jobs` endpoint. Successfully executed jobs will no longer be removed from the job list.
 
 icon:plus[] The `{apiLatest}/:projectName/release/:releaseUuid/schemas` and `{apiLatest}/:projectName/release/:releaseUuid/microschemas` endpoint has been reworked.
-            The response format has been updated. The status and uuid of the job which has been invoked when the migration was started will now also be included in this response. 
+            The response format has been updated. The status and uuid of the job which has been invoked when the migration was started will now also be included in this response.
 
 icon:check[] Java REST Client: A potential threading issue within the Java REST Client has been fixed. Vert.x http clients will no longer be shared across multiple threads.
 
@@ -1727,7 +1734,7 @@ icon:check[] Migration: Migrations will no longer fail if a required field was a
         "addRaw": true
     }
 }
----- 
+----
 
 icon:check[] Java REST Client: Various missing request parameter implementations have been added to the mesh-rest-client module.
 
@@ -1909,7 +1916,7 @@ icon:check[] GraphQL: Fixed loading tags for nodes.
 
 icon:check[] WebRoot: Bugs within the permission handling have been fixed. It is now possible to load nodes using only the *read_published* permission. This permission was previously ignored.
 
-icon:check[] GraphQL: An introspection bug which prevented graphiql browser auto completion from working correctly has been fixed. The bug did not occur on systems which already used microschemas. 
+icon:check[] GraphQL: An introspection bug which prevented graphiql browser auto completion from working correctly has been fixed. The bug did not occur on systems which already used microschemas.
 
 == 0.9.13 (08.06.2017)
 
@@ -2012,7 +2019,7 @@ icon:plus[] Auth: It is now possible to issue API tokens via the `GET {apiLatest
 
 icon:check[] GraphQL: An error was fixed which occurred when loading a node using a bogus uuid.
 
-icon:check[] Auth: An error which caused the keystore loading process to fail was fixed. 
+icon:check[] Auth: An error which caused the keystore loading process to fail was fixed.
 
 == 0.9.6 (14.04.2017)
 
@@ -2119,16 +2126,16 @@ icon:plus[] Names, string fields and html field values will now be indexed using
 icon:plus[] Binary Endpoint Overhaul
 
 The field API endpoint `{apiLatest}/:projectName/nodes/:nodeUuid/languages/:language/fields/:field` was removed and replaced by the binary `{apiLatest}/:projectName/nodes/:nodeUuid/binary` endpoint.
-The binary endpoints are now also versioning aware and handle conflict detection. It is thus required to add the `language` and `version` form data parameters to the upload request. 
+The binary endpoints are now also versioning aware and handle conflict detection. It is thus required to add the `language` and `version` form data parameters to the upload request.
 
 icon:plus[] Transform Endpoint Overhaul
 
 The endpoint `{apiLatest}/:projectName/nodes/:nodeUuid/languages/:language/fields/:field/transform` was renamed to `{apiLatest}/:projectName/nodes/:nodeUuid/binaryTransform`.
-The transform endpoint will now return the updated node.  
+The transform endpoint will now return the updated node.
 
 icon:plus[] The no longer needed schemaReference property was removed from node update requests.
 
-icon:plus[] The rootNodeUuid property within node project response was changed. 
+icon:plus[] The rootNodeUuid property within node project response was changed.
 
 [quote, Example]
 ____
@@ -2155,7 +2162,7 @@ New structure:
 ----
 ____
 
-icon:plus[] The parentNodeUuid property within node create requests was changed. 
+icon:plus[] The parentNodeUuid property within node create requests was changed.
 
 [quote, Example]
 ____
@@ -2184,7 +2191,7 @@ ____
 
 icon:plus[] JSON Schema information have been added to the RAML API documentation. This information can now be used to generate REST model types for various programming languages.
 
-icon:plus[] The navigation response JSON was restructured. The root element was removed. 
+icon:plus[] The navigation response JSON was restructured. The root element was removed.
 
 [quote, Example]
 ____
@@ -2385,7 +2392,7 @@ icon:plus[] The mesh-ui was updated.
 
 icon:check[] Various search index related bugs have been fixed.
 
-icon:plus[] The mesh-ui configuration file was renamed to mesh-ui.config.js 
+icon:plus[] The mesh-ui configuration file was renamed to mesh-ui.config.js
 
 == 0.6.4 (24.03.2016)
 
@@ -2400,14 +2407,14 @@ icon:plus[] The *published* flag can now be referenced within an elasticsearch q
 
 icon:check[] It was not possible to update the *allow* flag for schema lists (e.g. micronode lists). This has been fixed now.
 
-icon:check[] The schema migration process did not update the node search index correctly. 
+icon:check[] The schema migration process did not update the node search index correctly.
        In some cases duplicate nodes would be returned (the old node and the migrated one).
        This has been fixed. Only the latest version of nodes will be returned now.
 
 icon:check[] A NPE was fixed which occurred when updating or creating a node list which included elements which could not be found. (CL-358)
 
 icon:check[] A typo within the search model document for users was fixed.
-       The property `emailadress` was renamed to `emailaddress`. 
+       The property `emailadress` was renamed to `emailaddress`.
 
 == 0.6.2 (15.03.2016)
 
@@ -2425,7 +2432,7 @@ icon:plus[] Added image API endpoint
 icon:plus[] Added schema versioning
 
 icon:plus[] Added schema migration process
-  It is now possible to update schemas. Custom migration 
+  It is now possible to update schemas. Custom migration
   handlers can be defined in order to modify the node data.
 
 icon:plus[] Added Micronodes/Microschemas
@@ -2436,7 +2443,7 @@ icon:plus[] Webroot API
 
 icon:plus[] JWT Authentication support has been added
   It is now possible to select JWT in order to authenticate the user.
-  
+
 icon:plus[] Navigation Endpoint
   The navigation REST endpoint was added which allows retrieval of navigation tree data which can be used to render navigations.
 

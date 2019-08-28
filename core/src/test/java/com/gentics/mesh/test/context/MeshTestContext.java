@@ -2,6 +2,7 @@ package com.gentics.mesh.test.context;
 
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.UNREACHABLE;
 import static com.gentics.mesh.test.context.MeshTestHelper.noopConsumer;
 import static org.junit.Assert.assertTrue;
 
@@ -263,7 +264,7 @@ public class MeshTestContext extends TestWatcher {
 
 	/**
 	 * Set Features according to the method annotations
-	 * 
+	 *
 	 * @param description
 	 */
 	protected MeshTestSetting getSettings(Description description) {
@@ -326,7 +327,7 @@ public class MeshTestContext extends TestWatcher {
 
 	/**
 	 * Setup the test data.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	private void setupData() throws Exception {
@@ -356,7 +357,7 @@ public class MeshTestContext extends TestWatcher {
 
 	/**
 	 * Clear the test data.
-	 * 
+	 *
 	 * @param settings
 	 * @throws Exception
 	 */
@@ -398,7 +399,7 @@ public class MeshTestContext extends TestWatcher {
 
 	/**
 	 * Initialise mesh options.
-	 * 
+	 *
 	 * @param settings
 	 * @throws Exception
 	 */
@@ -463,6 +464,7 @@ public class MeshTestContext extends TestWatcher {
 
 		switch (settings.elasticsearch()) {
 		case CONTAINER:
+		case UNREACHABLE:
 			elasticsearch = new ElasticsearchContainer();
 			if (!elasticsearch.isRunning()) {
 				elasticsearch.start();
@@ -470,7 +472,11 @@ public class MeshTestContext extends TestWatcher {
 			elasticsearch.waitingFor(Wait.forHttp("/"));
 
 			searchOptions.setStartEmbedded(false);
-			searchOptions.setUrl("http://" + elasticsearch.getHost() + ":" + elasticsearch.getMappedPort(9200));
+			if (settings.elasticsearch() == UNREACHABLE) {
+				searchOptions.setUrl("http://localhost:1");
+			} else {
+				searchOptions.setUrl("http://" + elasticsearch.getHost() + ":" + elasticsearch.getMappedPort(9200));
+			}
 			break;
 		case CONTAINER_TOXIC:
 			network = Network.newNetwork();
@@ -554,7 +560,7 @@ public class MeshTestContext extends TestWatcher {
 
 	/**
 	 * Create a new folder which will be automatically be deleted once the rule finishes.
-	 * 
+	 *
 	 * @param prefix
 	 * @return
 	 * @throws IOException
@@ -571,7 +577,7 @@ public class MeshTestContext extends TestWatcher {
 
 	/**
 	 * Initialise the mesh dagger context and inject the dependencies within the test.
-	 * 
+	 *
 	 * @param options
 	 *
 	 * @param settings

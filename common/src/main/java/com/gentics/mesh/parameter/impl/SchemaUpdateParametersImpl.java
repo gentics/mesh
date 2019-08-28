@@ -38,7 +38,6 @@ public class SchemaUpdateParametersImpl extends AbstractParameters implements Sc
 		updateAssigned.setDescription("Update the schema version for all branches which already utilize the schema.");
 		updateAssigned.setDefaultValue("true");
 		updateAssigned.setType(ParamType.BOOLEAN);
-		updateAssigned.setDefaultValue("true");
 		parameters.put(UPDATE_ASSIGNED_BRANCHES_QUERY_PARAM_KEY, updateAssigned);
 
 		QueryParameter branchNames = new QueryParameter();
@@ -47,6 +46,12 @@ public class SchemaUpdateParametersImpl extends AbstractParameters implements Sc
 		branchNames.setType(ParamType.STRING);
 		branchNames.setExample("summerBranch,winterBranch");
 		parameters.put(UPDATE_BRANCH_NAMES_QUERY_PARAM_KEY, branchNames);
+
+		QueryParameter strictValidation = new QueryParameter();
+		strictValidation.setDescription("Validate the Elasticsearch settings in the schema. When this parameter is set, a schema update or creation will fail, when the respective Elasticsearch index cannot be created.");
+		strictValidation.setType(ParamType.BOOLEAN);
+		strictValidation.setDefaultValue("false");
+		parameters.put(STRICT_VALIDATION_KEY, strictValidation);
 
 		return parameters;
 	}
