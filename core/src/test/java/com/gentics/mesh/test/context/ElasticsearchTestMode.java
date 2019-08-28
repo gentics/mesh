@@ -20,7 +20,7 @@ public enum ElasticsearchTestMode {
 	EMBEDDED,
 
 	/**
-	 * Run using a ES docker container
+	 * Run using an ES docker container
 	 */
 	CONTAINER,
 
@@ -29,7 +29,10 @@ public enum ElasticsearchTestMode {
 	 */
 	CONTAINER_TOXIC,
 
-	BROKEN;
+	/**
+	 * Run using an ES docker container which is unreachable (listening on port 1)
+	 */
+	UNREACHABLE;
 
 	public SearchProviderType toSearchProviderType() {
 		switch (this) {
@@ -37,8 +40,6 @@ public enum ElasticsearchTestMode {
 				return SearchProviderType.NULL;
 			case TRACKING:
 				return SearchProviderType.TRACKING;
-			case BROKEN:
-				return SearchProviderType.BROKEN;
 			default:
 				return SearchProviderType.ELASTICSEARCH;
 		}

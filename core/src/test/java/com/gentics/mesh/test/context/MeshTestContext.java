@@ -2,6 +2,7 @@ package com.gentics.mesh.test.context;
 
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.UNREACHABLE;
 import static com.gentics.mesh.test.context.MeshTestHelper.noopConsumer;
 import static org.junit.Assert.assertTrue;
 
@@ -463,6 +464,7 @@ public class MeshTestContext extends TestWatcher {
 
 		switch (settings.elasticsearch()) {
 		case CONTAINER:
+		case UNREACHABLE:
 			elasticsearch = new ElasticsearchContainer();
 			if (!elasticsearch.isRunning()) {
 				elasticsearch.start();
@@ -470,7 +472,11 @@ public class MeshTestContext extends TestWatcher {
 			elasticsearch.waitingFor(Wait.forHttp("/"));
 
 			searchOptions.setStartEmbedded(false);
-			searchOptions.setUrl("http://" + elasticsearch.getHost() + ":" + elasticsearch.getMappedPort(9200));
+			if (settings.elasticsearch() == UNREACHABLE) {
+				searchOptions.setUrl("http://localhost:1");
+			} else {
+				searchOptions.setUrl("http://" + elasticsearch.getHost() + ":" + elasticsearch.getMappedPort(9200));
+			}
 			break;
 		case CONTAINER_TOXIC:
 			network = Network.newNetwork();
@@ -500,7 +506,6 @@ public class MeshTestContext extends TestWatcher {
 			break;
 		case TRACKING:
 			System.setProperty(TrackingSearchProvider.TEST_PROPERTY_KEY, "true");
-		case BROKEN: // fall-through
 			searchOptions.setStartEmbedded(false);
 			break;
 		default:
