@@ -26,7 +26,7 @@ include::content/docs/variables.adoc-include[]
 [[v0.40.1]]
 == 0.40.1 (TBD)
 
-icon:check[] Core: Schema validation will no longer fail by default, when Elasticsearch is not available. The previous behavior can be enforced by setting `SchemaUpdateParameters#setStrictValidation` to `true`.-
+icon:check[] Core: Schema validation will no longer fail by default, when Elasticsearch is not available. The previous behavior can be enforced by adding `?strictValidation=true`.
 
 [[v0.40.0]]
 == 0.40.0 (27.08.2019)
