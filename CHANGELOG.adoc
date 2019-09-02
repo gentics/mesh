@@ -30,6 +30,10 @@ icon:plus[] Java Rest Client: The `createSchema()` methods now accept a `Paramet
 
 icon:check[] Core: Schema validation will no longer fail by default, when Elasticsearch is not available. The previous behavior can be enforced by adding `?strictValidation=true`.
 
+icon:check[] GraphQL: Fixed a bug that prevented loading of permissions of an element.
+
+icon:plus[] GraphQL: Added the `rolePerms` field to mesh elements. This allows you to load permissions of a role, similar to the link:{{< relref "features.asciidoc" >}}#_querying_permissions[`?role` query parameter in REST].
+
 [[v0.40.0]]
 == 0.40.0 (27.08.2019)
 

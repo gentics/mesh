@@ -1,0 +1,106 @@
+{
+  users {
+    elements {
+      permissions {
+        create
+        read
+        update
+        delete
+        readPublished
+        publish
+      }
+    }
+  }
+
+  groups {
+    elements {
+      permissions {
+        create
+        read
+        update
+        delete
+        readPublished
+        publish
+      }
+    }
+  }
+
+  roles {
+    elements {
+      permissions {
+        create
+        read
+        update
+        delete
+        readPublished
+        publish
+      }
+    }
+  }
+
+  tagFamilies {
+    elements {
+      permissions {
+        create
+        read
+        update
+        delete
+        readPublished
+        publish
+      }
+    }
+  }
+
+  tags {
+    elements {
+      permissions {
+        create
+        read
+        update
+        delete
+        readPublished
+        publish
+      }
+    }
+  }
+
+  microschemas {
+    elements {
+      permissions {
+        create
+        read
+        update
+        delete
+        readPublished
+        publish
+      }
+    }
+  }
+
+  schemas {
+    elements {
+      permissions {
+        create
+        read
+        update
+        delete
+        readPublished
+        publish
+      }
+    }
+  }
+
+  nodes {
+    elements {
+      permissions {
+        create
+        read
+        update
+        delete
+        readPublished
+        publish
+      }
+    }
+  }
+}
+# [$.errors=<is-undefined>]

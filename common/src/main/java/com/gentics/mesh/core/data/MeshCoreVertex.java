@@ -4,6 +4,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
@@ -50,12 +51,11 @@ public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R,
 	void fillCommonRestFields(InternalActionContext ac, FieldsSet fields, GenericRestResponse model);
 
 	/**
-	 * Add role permissions to given rest model object.
+	 * Get the permissions of a role for this element.
 	 * 
-	 * @param ac
-	 * @param model
+	 * @param roleUuid
 	 */
-	void setRolePermissions(InternalActionContext ac, GenericRestResponse model);
+	PermissionInfo getRolePermissions(InternalActionContext ac, String roleUuid);
 
 	/**
 	 * Return a traversal result for all roles which grant the permission to the element.
