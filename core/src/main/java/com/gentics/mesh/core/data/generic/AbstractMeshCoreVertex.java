@@ -68,7 +68,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	}
 
 	public void setRolePermissions(InternalActionContext ac, GenericRestResponse model) {
-		model.setPermissions(getRolePermissions(ac, ac.getRolePermissionParameters().getRoleUuid()));
+		model.setRolePerms(getRolePermissions(ac, ac.getRolePermissionParameters().getRoleUuid()));
 	}
 
 	@Override
