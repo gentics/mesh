@@ -52,8 +52,10 @@ public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R,
 
 	/**
 	 * Get the permissions of a role for this element.
-	 * 
+	 *
+	 * @param ac
 	 * @param roleUuid
+	 * @return
 	 */
 	PermissionInfo getRolePermissions(InternalActionContext ac, String roleUuid);
 
