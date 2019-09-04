@@ -54,14 +54,6 @@
 				<role>Core Developer</role>
 			</roles>
 		</developer>
-		<developer>
-			<name>Michael Bromley</name>
-			<url>https://github.com/michaelbromley/</url>
-			<organization>Gentics Software</organization>
-			<roles>
-				<role>Core Developer</role>
-			</roles>
-		</developer>
 	</developers>
 
 	<organization>
@@ -88,6 +80,7 @@
 		<module>plugin-api</module>
 		<module>plugin-bom</module>
 		<module>plugin-dep</module>
+		<module>plugin-parent</module>
 		<module>common</module>
 		<module>test-common</module>
 		<module>elasticsearch</module>
