@@ -84,4 +84,4 @@ You can read more about the Vert.x router API in the link:https://vertx.io/docs/
 
 == Examples
 
-* link:https://github.com/gentics/mesh-plugin-examples/tree/master/hello-world[Hello World Plugin Example]
+* link:https://github.com/gentics/mesh-plugin-examples/tree/master/hello-world-plugin[Hello World Plugin Example]
