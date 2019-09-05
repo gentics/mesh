@@ -133,10 +133,13 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 				Set<GraphPermission> permissionsToRevoke = new HashSet<>();
 
 				for (GraphPermission permission : GraphPermission.values()) {
-					if (requestModel.getPermissions().get(permission.getRestPerm()) == true) {
-						permissionsToGrant.add(permission);
-					} else {
-						permissionsToRevoke.add(permission);
+					Boolean permValue = requestModel.getPermissions().getNullable(permission.getRestPerm());
+					if (permValue != null) {
+						if (permValue) {
+							permissionsToGrant.add(permission);
+						} else {
+							permissionsToRevoke.add(permission);
+						}
 					}
 				}
 				if (log.isDebugEnabled()) {
