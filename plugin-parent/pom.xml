@@ -61,6 +61,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>log4j-over-slf4j</artifactId>
+			<scope>provided</scope>
 		</dependency>
 
 
@@ -418,12 +419,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>${mesh.database.provider}</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>${mesh.database.provider}</artifactId>
+			<artifactId>mesh-orientdb</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -445,32 +441,8 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-common</artifactId>
-			<scope>provided</scope>
-			<type>test-jar</type>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-core</artifactId>
-			<scope>provided</scope>
-			<type>test-jar</type>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-rest-model</artifactId>
 			<scope>provided</scope>
-			<type>test-jar</type>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-test-common</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-api</artifactId>
-			<scope>provided</scope>
-			<type>test-jar</type>
 		</dependency>
 
 		<dependency>
