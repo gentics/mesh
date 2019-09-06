@@ -72,10 +72,25 @@ public interface FieldSchema {
 	/**
 	 * Set the required flag.
 	 * 
-	 * @param isRequired
+	 * @param flag
 	 * @return Fluent API
 	 */
-	FieldSchema setRequired(boolean isRequired);
+	FieldSchema setRequired(boolean flag);
+
+	/**
+	 * Return the translatable flag of the field.
+	 * @return
+	 */
+	boolean isTranslatable();
+
+	/**
+	 * Set the translatable flag.
+	 * 
+	 * @param flag
+	 * @return
+	 */
+	FieldSchema setTranslatable(boolean flag);
+
 
 	/**
 	 * Compare the field schema with the given field schema.

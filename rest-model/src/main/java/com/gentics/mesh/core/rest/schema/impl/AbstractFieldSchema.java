@@ -49,6 +49,10 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 	private boolean required = false;
 
 	@JsonProperty(required = false)
+	@JsonPropertyDescription("Flag which indicates whether the field is translatable or not. Non-i18n fields will automatically be kept in sync with other languages.")
+	private boolean translatable = true;
+
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Additional elasticsearch index field configuration. This can be used to add custom fields with custom analyzers to the search index.")
 	private JsonObject elasticsearch;
 
@@ -82,6 +86,17 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 	@Override
 	public AbstractFieldSchema setRequired(boolean flag) {
 		this.required = flag;
+		return this;
+	}
+
+	@Override
+	public boolean isTranslatable() {
+		return translatable;
+	}
+
+	@Override
+	public AbstractFieldSchema setTranslatable(boolean flag) {
+		this.translatable = flag;
 		return this;
 	}
 

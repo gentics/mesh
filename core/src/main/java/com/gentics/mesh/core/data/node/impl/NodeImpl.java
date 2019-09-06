@@ -104,6 +104,7 @@ import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -118,6 +119,7 @@ import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.webroot.PathPrefixUtil;
@@ -1593,8 +1595,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeParameters nodeParameters = ac.getNodeParameters();
 		VersioningParameters versioningParameters = ac.getVersioningParameters();
 
-		NodeGraphFieldContainer container = findVersion(nodeParameters.getLanguageList(options()), ac.getBranch(getProject()).getUuid(), versioningParameters
-			.getVersion());
+		NodeGraphFieldContainer container = findVersion(nodeParameters.getLanguageList(options()), ac.getBranch(getProject()).getUuid(),
+			versioningParameters
+				.getVersion());
 		if (container == null) {
 			if (log.isDebugEnabled()) {
 				log.debug("Could not find any matching i18n field container for node {" + getUuid() + "}.");
@@ -1661,6 +1664,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 		Branch branch = ac.getBranch(getProject());
 		NodeGraphFieldContainer latestDraftVersion = getGraphFieldContainer(languageTag, branch, DRAFT);
+
+		boolean changed = false;
 
 		// Check whether this is the first time that an update for the given language and branch occurs. In this case a new container must be created.
 		// This means that no conflict check can be performed. Conflict checks only occur for updates on existing contents.
@@ -1764,10 +1769,51 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 				latestDraftVersion = newDraftVersion;
 				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
-				return true;
+				changed = true;
 			}
 		}
-		return false;
+
+		// Synchronize the non-i18n fields with other language versions for the node in this branch.
+		SchemaContainerVersion schemaContainerVersion = latestDraftVersion.getSchemaContainerVersion();
+		SchemaModel schema = schemaContainerVersion.getSchema();
+		List<String> nonI18nFields = schema.getFields().stream()
+			.filter(s -> !s.isTranslatable())
+			.map(f -> f.getName()).collect(Collectors.toList());
+		if (!nonI18nFields.isEmpty()) {
+			NodeUpdateRequest model = ac.fromJson(NodeUpdateRequest.class);
+			FieldMap restFields = model.getFields();
+
+			// Remove all translatable fields
+			for (String fieldKey : restFields.keySet()) {
+				if (!nonI18nFields.contains(fieldKey)) {
+					restFields.remove(fieldKey);
+				}
+			}
+
+			// Find drafts for other versions which need to be synced
+			TraversalResult<? extends NodeGraphFieldContainer> draftContainers = getGraphFieldContainers(branch.getUuid(), DRAFT);
+			for (NodeGraphFieldContainer container : draftContainers) {
+				// We don't need to handle the currently updated container
+				if (container.equals(latestDraftVersion)) {
+					continue;
+				}
+				String currentLanguageTag = container.getLanguageTag();
+				log.info("Synchronizing non-i18n fields for draft container {" + currentLanguageTag + "}");
+
+				// Create new field container as clone of the existing
+				NodeGraphFieldContainer newDraftVersion = createGraphFieldContainer(currentLanguageTag, branch, ac.getUser(),
+					container, true);
+				newDraftVersion.updateFieldsFromRest(ac, restFields);
+
+				// Purge the old draft
+				if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
+					latestDraftVersion.purge();
+				}
+				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
+			}
+
+		}
+		return changed;
 	}
 
 	@Override
@@ -1996,8 +2042,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		ContainerType type = forVersion(versioiningParameters.getVersion());
 
 		Node parentNode = getParentNode(branch.getUuid());
-		NodeGraphFieldContainer container = findVersion(ac.getNodeParameters().getLanguageList(options()), branch.getUuid(), ac.getVersioningParameters()
-			.getVersion());
+		NodeGraphFieldContainer container = findVersion(ac.getNodeParameters().getLanguageList(options()), branch.getUuid(),
+			ac.getVersioningParameters()
+				.getVersion());
 
 		/**
 		 * branch uuid
