@@ -158,9 +158,9 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 			"Invokes a consistency check of the graph database without attempting to repairing the found issues. A list of found issues will be returned.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, adminExamples.createConsistencyCheckResponse(false), "Consistency check report");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			consistencyHandler.invokeCheck(wrap(rc));
-		});
+		}, false);
 
 		InternalEndpointRoute repairEndpoint = createRoute();
 		repairEndpoint.path("/consistency/repair");
@@ -170,9 +170,9 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		repairEndpoint.produces(APPLICATION_JSON);
 		repairEndpoint.exampleResponse(OK, adminExamples.createConsistencyCheckResponse(true), "Consistency check and repair report");
 		repairEndpoint.events(REPAIR_START, REPAIR_FINISHED);
-		repairEndpoint.handler(rc -> {
+		repairEndpoint.blockingHandler(rc -> {
 			consistencyHandler.invokeRepair(wrap(rc));
-		});
+		}, false);
 	}
 
 	private void addExportHandler() {
@@ -183,7 +183,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Export process was invoked.");
 		endpoint.events(GRAPH_EXPORT_START, GRAPH_EXPORT_FINISHED);
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			adminHandler.handleExport(wrap(rc));
 		});
 	}
@@ -197,7 +197,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Database import command was invoked.");
 		endpoint.events(GRAPH_IMPORT_START, GRAPH_IMPORT_FINISHED);
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			adminHandler.handleImport(wrap(rc));
 		});
 	}
@@ -211,7 +211,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Database restore command was invoked.");
 		endpoint.method(POST);
 		endpoint.events(GRAPH_RESTORE_START, GRAPH_RESTORE_FINISHED);
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			adminHandler.handleRestore(wrap(rc));
 		});
 	}
@@ -225,7 +225,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Incremental backup was invoked.");
 		endpoint.events(GRAPH_BACKUP_START, GRAPH_BACKUP_FINISHED);
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			adminHandler.handleBackup(wrap(rc));
 		});
 	}

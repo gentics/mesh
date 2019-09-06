@@ -158,6 +158,6 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("projectUuid");
 			crudHandler.handlePurge(ac, uuid);
-		});
+		}, false);
 	}
 }
