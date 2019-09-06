@@ -26,6 +26,8 @@ include::content/docs/variables.adoc-include[]
 [[v0.40.1]]
 == 0.40.1 (TBD)
 
+icon:check[] Core: Various handlers were blocking the event loop when run. This has been fixed now.
+
 icon:check[] Core: Fixed delayed initialization of `VersionPurgeJobImpl` vertices. Previously the type was not setup during start up and this resulted in a warning when the type was first used.
 
 icon:plus[] Java Rest Client: The `createSchema()` methods now accept a `ParameterProvider` vararg parameter.
