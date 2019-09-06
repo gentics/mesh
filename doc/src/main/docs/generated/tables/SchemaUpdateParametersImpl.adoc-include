@@ -7,6 +7,11 @@
 | Description
 
 
+| strictValidation
+| boolean  (default: false) 
+| false
+| Validate the Elasticsearch settings in the schema. When this parameter is set, a schema update or creation will fail, when the respective Elasticsearch index cannot be created.
+
 | updateAssignedBranches
 | boolean  (default: true) 
 | false
