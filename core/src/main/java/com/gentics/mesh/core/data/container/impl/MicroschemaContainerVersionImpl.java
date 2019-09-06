@@ -116,7 +116,7 @@ public class MicroschemaContainerVersionImpl extends
 
 		// Role permissions
 		MicroschemaContainer container = getSchemaContainer();
-		container.setRolePermissions(ac, microschema);
+		microschema.setRolePerms(container.getRolePermissions(ac, ac.getRolePermissionParameters().getRoleUuid()));
 		container.fillCommonRestFields(ac, fields, microschema);
 
 		return microschema;

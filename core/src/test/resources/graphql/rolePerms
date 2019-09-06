@@ -1,0 +1,106 @@
+query rolePermTest($roleUuid: String!) {
+  users {
+    elements {
+      rolePerms(role: $roleUuid) {
+        create
+        read
+        update
+        delete
+        readPublished
+        publish
+      }
+    }
+  }
+  
+  groups {
+    elements {
+      rolePerms(role: $roleUuid) {
+        create
+        read
+        update
+        delete
+        readPublished
+        publish
+      }
+    }
+  }
+  
+  roles {
+    elements {
+      rolePerms(role: $roleUuid) {
+        create
+        read
+        update
+        delete
+        readPublished
+        publish
+      }
+    }
+  }
+  
+  tagFamilies {
+    elements {
+      rolePerms(role: $roleUuid) {
+        create
+        read
+        update
+        delete
+        readPublished
+        publish
+      }
+    }
+  }
+  
+  tags {
+    elements {
+      rolePerms(role: $roleUuid) {
+        create
+        read
+        update
+        delete
+        readPublished
+        publish
+      }
+    }
+  }
+  
+  microschemas {
+    elements {
+      rolePerms(role: $roleUuid) {
+        create
+        read
+        update
+        delete
+        readPublished
+        publish
+      }
+    }
+  }
+  
+  schemas {
+    elements {
+      rolePerms(role: $roleUuid) {
+        create
+        read
+        update
+        delete
+        readPublished
+        publish
+      }
+    }
+  }
+  
+  nodes {
+    elements {
+      rolePerms(role: $roleUuid) {
+        create
+        read
+        update
+        delete
+        readPublished
+        publish
+      }
+    }
+  }
+}
+# [$.errors=<is-undefined>]

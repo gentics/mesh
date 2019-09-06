@@ -122,7 +122,7 @@ public class SchemaContainerVersionImpl extends
 		SchemaResponse restSchema = JsonUtil.readValue(getJson(), SchemaResponse.class);
 		SchemaContainer container = getSchemaContainer();
 		container.fillCommonRestFields(ac, fields, restSchema);
-		container.setRolePermissions(ac, restSchema);
+		restSchema.setRolePerms(container.getRolePermissions(ac, ac.getRolePermissionParameters().getRoleUuid()));
 		return restSchema;
 
 	}

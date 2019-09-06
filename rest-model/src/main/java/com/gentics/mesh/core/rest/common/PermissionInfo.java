@@ -16,6 +16,8 @@ import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 
+import org.apache.commons.lang.BooleanUtils;
+
 /**
  * Permission information
  */
@@ -257,21 +259,32 @@ public class PermissionInfo implements RestModel {
 	 */
 	@JsonIgnore
 	public boolean get(Permission perm) {
+		return BooleanUtils.isTrue(getNullable(perm));
+	}
+
+	/**
+	 * Return the boolean value for the given permission.
+	 *
+	 * @param perm
+	 * @return
+	 */
+	@JsonIgnore
+	public Boolean getNullable(Permission perm) {
 		switch (perm) {
-		case CREATE:
-			return create == null ? false : create;
-		case READ:
-			return read == null ? false : read;
-		case UPDATE:
-			return update == null ? false : update;
-		case DELETE:
-			return delete == null ? false : delete;
-		case PUBLISH:
-			return publish == null ? false : publish;
-		case READ_PUBLISHED:
-			return readPublished == null ? false : readPublished;
-		default:
-			throw new RuntimeException("Unknown permission type {" + perm.getName() + "}");
+			case CREATE:
+				return create;
+			case READ:
+				return read;
+			case UPDATE:
+				return update;
+			case DELETE:
+				return delete;
+			case PUBLISH:
+				return publish;
+			case READ_PUBLISHED:
+				return readPublished;
+			default:
+				throw new RuntimeException("Unknown permission type {" + perm.getName() + "}");
 		}
 	}
 

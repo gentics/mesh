@@ -176,7 +176,8 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Arrays.asList("filtering/groups", true, "draft"),
 			Arrays.asList("filtering/roles", true, "draft"),
 			Arrays.asList("node/breadcrumb-root", true, "draft"),
-			Arrays.asList("node/versionslist", true, "draft")
+			Arrays.asList("node/versionslist", true, "draft"),
+			Arrays.asList("permissions", true, "draft")
 		)
 		.flatMap(testCase -> IntStream.rangeClosed(1, CURRENT_API_VERSION).mapToObj(version -> {
 			// Make sure all testData entries have five parts.

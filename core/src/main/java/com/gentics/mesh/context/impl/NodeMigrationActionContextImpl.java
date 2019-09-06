@@ -701,7 +701,8 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void setRolePermissions(InternalActionContext ac, GenericRestResponse model) {
+			public PermissionInfo getRolePermissions(InternalActionContext ac, String roleUuid) {
+				return null;
 			}
 
 			@Override
