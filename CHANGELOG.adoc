@@ -28,6 +28,8 @@ include::content/docs/variables.adoc-include[]
 
 CAUTION: REST: When updating permissions to an element, unset permissions in the request will not change these permissions anymore. Previously, unset permission were set to false.
 
+icon:check[] Core: Fixed delayed initialization of `VersionPurgeJobImpl` vertices. Previously the type was not setup during start up and this resulted in a warning when the type was first used.
+
 icon:plus[] Java Rest Client: The `createSchema()` methods now accept a `ParameterProvider` vararg parameter.
 
 icon:check[] Core: Schema validation will no longer fail by default, when Elasticsearch is not available. The previous behavior can be enforced by adding `?strictValidation=true`.
