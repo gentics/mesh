@@ -74,6 +74,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 		RolePermissionRequest request = new RolePermissionRequest();
 		request.setRecursive(true);
+		request.getPermissions().setOthers(false);
 		GenericMessageResponse message = call(() -> client().updateRolePermissions(roleUuid(), "projects/" + projectUuid(), request));
 
 		awaitEvents();
@@ -104,6 +105,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(true);
+			request.getPermissions().setOthers(false);
 			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(), "projects/" + PROJECT_NAME, request));
 			assertThat(message).matches("role_updated_permission", role().getName());
 			assertFalse(role().hasPermission(GraphPermission.READ_PERM, tagFamily("colors")));
@@ -125,6 +127,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			request.getPermissions().add(READ);
 			request.getPermissions().add(UPDATE);
 			request.getPermissions().add(CREATE);
+			request.getPermissions().setOthers(false);
 			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(),
 				"projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid(), request));
 			assertThat(message).matches("role_updated_permission", role().getName());
@@ -173,6 +176,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		RolePermissionRequest request = new RolePermissionRequest();
 		request.setRecursive(true);
 		request.getPermissions().add(CREATE);
+		request.getPermissions().setOthers(false);
 
 		tx(() -> {
 			assertTrue("The role should have read permission on the group.", role().hasPermission(GraphPermission.READ_PERM, group()));
@@ -196,6 +200,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		request.getPermissions().add(READ);
 		request.getPermissions().add(UPDATE);
 		request.getPermissions().add(CREATE);
+		request.getPermissions().setOthers(false);
 
 		try (Tx tx = tx()) {
 			assertTrue("The role should have delete permission on the group.", role().hasPermission(DELETE_PERM, group()));
