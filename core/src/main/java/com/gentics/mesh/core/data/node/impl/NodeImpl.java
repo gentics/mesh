@@ -53,6 +53,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.xmlbeans.SchemaField;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.tx.Tx;
@@ -81,6 +82,7 @@ import com.gentics.mesh.core.data.impl.TagEdgeImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
@@ -1667,6 +1669,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		boolean changed = false;
 
+		// Pull non-i18n fields from other languages to this version
+
 		// Check whether this is the first time that an update for the given language and branch occurs. In this case a new container must be created.
 		// This means that no conflict check can be performed. Conflict checks only occur for updates on existing contents.
 		if (latestDraftVersion == null) {
@@ -1692,6 +1696,25 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			latestDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
+			// Add non-i18n fields to the version
+			SchemaModel schema = latestDraftVersion.getSchemaContainerVersion().getSchema();
+			List<FieldSchema> nonI18nFields = schema.getFields().stream()
+				.filter(s -> !s.isTranslatable())
+				.collect(Collectors.toList());
+			if (!nonI18nFields.isEmpty()) {
+				for (NodeGraphFieldContainer container : getGraphFieldContainers(branch, DRAFT)) {
+					if (container.equals(latestDraftVersion)) {
+						continue;
+					}
+					for (FieldSchema schemaField : nonI18nFields) {
+						GraphField field = container.getField(schemaField);
+						if (field != null) {
+							field.cloneTo(latestDraftVersion);
+						}
+					}
+				}
+			}
+
 			batch.add(latestDraftVersion.onCreated(branch.getUuid(), DRAFT));
 			return true;
 		} else {
@@ -1776,16 +1799,16 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// Synchronize the non-i18n fields with other language versions for the node in this branch.
 		SchemaContainerVersion schemaContainerVersion = latestDraftVersion.getSchemaContainerVersion();
 		SchemaModel schema = schemaContainerVersion.getSchema();
-		List<String> nonI18nFields = schema.getFields().stream()
+		List<String> nonI18nFieldKeys = schema.getFields().stream()
 			.filter(s -> !s.isTranslatable())
 			.map(f -> f.getName()).collect(Collectors.toList());
-		if (!nonI18nFields.isEmpty()) {
+		if (!nonI18nFieldKeys.isEmpty()) {
 			NodeUpdateRequest model = ac.fromJson(NodeUpdateRequest.class);
 			FieldMap restFields = model.getFields();
 
 			// Remove all translatable fields
 			for (String fieldKey : restFields.keySet()) {
-				if (!nonI18nFields.contains(fieldKey)) {
+				if (!nonI18nFieldKeys.contains(fieldKey)) {
 					restFields.remove(fieldKey);
 				}
 			}
@@ -1803,6 +1826,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// Create new field container as clone of the existing
 				NodeGraphFieldContainer newDraftVersion = createGraphFieldContainer(currentLanguageTag, branch, ac.getUser(),
 					container, true);
+
+				// Invoke a regular update of the draft with a request that only contains non-i18n fields
 				newDraftVersion.updateFieldsFromRest(ac, restFields);
 
 				// Purge the old draft
