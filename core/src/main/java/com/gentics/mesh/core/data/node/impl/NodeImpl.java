@@ -53,7 +53,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.xmlbeans.SchemaField;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.tx.Tx;
@@ -1696,24 +1695,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			latestDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
-			// Add non-i18n fields to the version
-			SchemaModel schema = latestDraftVersion.getSchemaContainerVersion().getSchema();
-			List<FieldSchema> nonI18nFields = schema.getFields().stream()
-				.filter(s -> !s.isTranslatable())
-				.collect(Collectors.toList());
-			if (!nonI18nFields.isEmpty()) {
-				for (NodeGraphFieldContainer container : getGraphFieldContainers(branch, DRAFT)) {
-					if (container.equals(latestDraftVersion)) {
-						continue;
-					}
-					for (FieldSchema schemaField : nonI18nFields) {
-						GraphField field = container.getField(schemaField);
-						if (field != null) {
-							field.cloneTo(latestDraftVersion);
-						}
-					}
-				}
-			}
+			pullNonI18nFields(latestDraftVersion, branch);
 
 			batch.add(latestDraftVersion.onCreated(branch.getUuid(), DRAFT));
 			return true;
@@ -1796,8 +1778,21 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 		}
 
+		pushNonI18nFields(ac, branch, batch, latestDraftVersion);
+		return changed;
+	}
+
+	/**
+	 * Push the non-i18n fields of the requests to other draft containers of this node.
+	 * 
+	 * @param ac
+	 * @param branch
+	 * @param batch
+	 * @param source
+	 */
+	private void pushNonI18nFields(InternalActionContext ac, Branch branch, EventQueueBatch batch, NodeGraphFieldContainer source) {
 		// Synchronize the non-i18n fields with other language versions for the node in this branch.
-		SchemaContainerVersion schemaContainerVersion = latestDraftVersion.getSchemaContainerVersion();
+		SchemaContainerVersion schemaContainerVersion = source.getSchemaContainerVersion();
 		SchemaModel schema = schemaContainerVersion.getSchema();
 		List<String> nonI18nFieldKeys = schema.getFields().stream()
 			.filter(s -> !s.isTranslatable())
@@ -1817,7 +1812,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			TraversalResult<? extends NodeGraphFieldContainer> draftContainers = getGraphFieldContainers(branch.getUuid(), DRAFT);
 			for (NodeGraphFieldContainer container : draftContainers) {
 				// We don't need to handle the currently updated container
-				if (container.equals(latestDraftVersion)) {
+				if (container.equals(source)) {
 					continue;
 				}
 				String currentLanguageTag = container.getLanguageTag();
@@ -1831,14 +1826,42 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				newDraftVersion.updateFieldsFromRest(ac, restFields);
 
 				// Purge the old draft
-				if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
-					latestDraftVersion.purge();
+				if (ac.isPurgeAllowed() && container.isAutoPurgeEnabled() && container.isPurgeable()) {
+					container.purge();
 				}
 				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
 			}
 
 		}
-		return changed;
+
+	}
+
+	/**
+	 * Add non-i18n fields to the version
+	 * 
+	 * @param target
+	 * @param branch
+	 */
+	private void pullNonI18nFields(NodeGraphFieldContainer target, Branch branch) {
+		SchemaModel schema = target.getSchemaContainerVersion().getSchema();
+		List<FieldSchema> nonI18nFields = schema.getFields().stream()
+			.filter(s -> !s.isTranslatable())
+			.collect(Collectors.toList());
+		if (!nonI18nFields.isEmpty()) {
+			for (NodeGraphFieldContainer container : getGraphFieldContainers(branch, DRAFT)) {
+				// Ignore the target container
+				if (container.equals(target)) {
+					continue;
+				}
+				for (FieldSchema schemaField : nonI18nFields) {
+					GraphField field = container.getField(schemaField);
+					if (field != null) {
+						field.cloneTo(target);
+					}
+				}
+			}
+		}
+
 	}
 
 	@Override
