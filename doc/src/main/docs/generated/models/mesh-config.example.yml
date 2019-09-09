@@ -29,7 +29,9 @@ storage:
   backupDirectory: "data/backup"
   exportDirectory: "data/export"
   startServer: false
-  synchronizeWrites: false
+  synchronizeWrites: true
+  txRetryDelay: 10
+  txRetryLimit: 10
   parameters: {}
 search:
   url: "http://localhost:9200"

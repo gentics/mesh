@@ -35,6 +35,16 @@
 | synchronizeWrites
 | true
 | boolean
-| Flag which controls whether writes to the graph database should be synchronized. Default: false
+| Flag which controls whether writes to the graph database should be synchronized. Default: true
+
+| txRetryDelay
+| false
+| integer
+| The delay in milliseconds when a transaction has to be retried.
+
+| txRetryLimit
+| false
+| integer
+| The limit for the tx retires.
 
 |======

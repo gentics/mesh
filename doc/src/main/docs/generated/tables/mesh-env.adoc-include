@@ -20,6 +20,9 @@
 | *MESH_HTTP_SSL_ENABLE*
 | Override the configured SSL enable flag.
 
+| *MESH_GRAPH_TX_RETRY_LIMIT*
+| Override the transaction retry limit. Default: 10
+
 | *MESH_PLUGIN_TIMEOUT*
 | Override the configured plugin timeout.
 
@@ -133,6 +136,9 @@
 
 | *MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS*
 | Override the search include binary fields flag.
+
+| *MESH_GRAPH_TX_RETRY_DELAY*
+| Override the transaction retry delay. Default: 10
 
 | *MESH_BINARY_DIR*
 | Override the configured binary data directory.

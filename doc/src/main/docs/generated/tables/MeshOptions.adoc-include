@@ -130,7 +130,17 @@
 | storageOptions.synchronizeWrites
 | true
 | boolean
-| Flag which controls whether writes to the graph database should be synchronized. Default: false
+| Flag which controls whether writes to the graph database should be synchronized. Default: true
+
+| storageOptions.txRetryDelay
+| false
+| int
+| The delay in milliseconds when a transaction has to be retried.
+
+| storageOptions.txRetryLimit
+| false
+| int
+| The limit for the tx retires.
 
 | storageOptions.parameters
 | false
