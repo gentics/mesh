@@ -1,12 +1,12 @@
 package com.gentics.mesh.etc.config.env;
 
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class OptionUtils {
 	static final Logger log = LoggerFactory.getLogger(Option.class);
@@ -41,6 +41,9 @@ public class OptionUtils {
 			} catch (Exception e) {
 				throw new RuntimeException("Could not parse credentials env string as JsonObject: " + value, e);
 			}
+		} else if (clazz.isEnum()) {
+			Object enumValue = Enum.valueOf((Class<Enum>)clazz, value);
+			return (T) enumValue;
 		} else {
 			throw new RuntimeException("Could no convert environment variable for type " + clazz.getName());
 		}

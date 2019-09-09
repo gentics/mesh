@@ -21,6 +21,7 @@ import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.etc.config.VertxOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
+import com.gentics.mesh.etc.config.search.MappingMode;
 
 public class OptionsLoaderTest {
 	
@@ -55,7 +56,8 @@ public class OptionsLoaderTest {
 		environmentVariables.set(MeshUploadOptions.MESH_BINARY_DIR_ENV, "/uploads");
 		environmentVariables.set(MonitoringConfig.MESH_MONITORING_HTTP_HOST_ENV, "0.0.0.0");
 		environmentVariables.set(ContentConfig.MESH_CONTENT_AUTO_PURGE_ENV, "true");
-		
+		environmentVariables.set(ElasticSearchOptions.MESH_ELASTICSEARCH_MAPPING_MODE_ENV, "STRICT");
+
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		assertEquals(8100, options.getHttpServerOptions().getPort());
 		assertEquals("ru", options.getDefaultLanguage());
@@ -70,6 +72,7 @@ public class OptionsLoaderTest {
 		assertEquals("/uploads", options.getUploadOptions().getDirectory());
 		assertEquals("0.0.0.0", options.getMonitoringOptions().getHost());
 		assertTrue(options.getContentOptions().isAutoPurge());
+		assertEquals(MappingMode.STRICT, options.getSearchOptions().getMappingMode());
 	}
 
 	@Test
