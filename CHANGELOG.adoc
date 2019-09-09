@@ -23,6 +23,11 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v0.40.2]]
+== 0.40.2 (TBD)
+
+icon:check[] Core: The default value for the OrientDB parameter `tx.retry.delay` has been increased to 10ms, and the constant delay will be used instead of growing linearily.
+
 [[v0.40.1]]
 == 0.40.1 (06.09.2019)
 
