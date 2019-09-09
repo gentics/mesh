@@ -57,7 +57,7 @@ public class GraphStorageOptions implements Option {
 
 	@JsonProperty(defaultValue = DEFAULT_TX_RETRY_DELAY + "ms")
 	@JsonPropertyDescription("The delay in milliseconds when a transaction has to be retried.")
-	@EnvironmentVariable(name = MESH_GRAPH_TX_RETRY_DELAY_ENV, description = "Override the transaction retry delay.")
+	@EnvironmentVariable(name = MESH_GRAPH_TX_RETRY_DELAY_ENV, description = "Override the transaction retry delay. Default: " + DEFAULT_TX_RETRY_DELAY)
 	private int txRetryDelay = DEFAULT_TX_RETRY_DELAY;
 
 	@JsonProperty(required = false)
