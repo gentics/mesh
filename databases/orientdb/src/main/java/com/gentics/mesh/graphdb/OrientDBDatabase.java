@@ -17,6 +17,7 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Timer;
 import com.gentics.madl.tx.Tx;
 import com.gentics.madl.tx.TxAction;
+import com.gentics.madl.tx.TxAction0;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -71,10 +72,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 	private static final Logger log = LoggerFactory.getLogger(OrientDBDatabase.class);
 
 	private static final String RIDBAG_PARAM_KEY = "ridBag.embeddedToSbtreeBonsaiThreshold";
-
-	private static final String TX_RETRY_DELAY_PARAM_KEY = "tx.retry.delay";
-
-	private static final int DEFAULT_TX_RETRY_DELAY_MS = 0;
 
 	private TypeResolver resolver;
 
@@ -167,7 +164,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	/**
 	 * Load the ridbag configuration setting.
-	 * 
+	 *
 	 * @param options
 	 * @return
 	 */
@@ -191,20 +188,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 		}
 		// Default instead of 40 to avoid sudden changes in sort order
 		return Integer.MAX_VALUE;
-	}
-
-	private int getTxRetryDelay() {
-		GraphStorageOptions storageOptions = options.getStorageOptions();
-		String val = storageOptions.getParameters().get(TX_RETRY_DELAY_PARAM_KEY);
-		if (val != null) {
-			try {
-				return Integer.parseInt(val);
-			} catch (Exception e) {
-				log.error("Could not parse value of storage parameter {" + TX_RETRY_DELAY_PARAM_KEY + "}");
-				throw new RuntimeException("Parameter {" + TX_RETRY_DELAY_PARAM_KEY + "} could not be parsed.");
-			}
-		}
-		return DEFAULT_TX_RETRY_DELAY_MS;
 	}
 
 	@Override
@@ -274,7 +257,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	/**
 	 * Unwrap the current thread local graph.
-	 * 
+	 *
 	 * @return
 	 */
 	public OrientBaseGraph unwrapCurrentGraph() {
@@ -329,7 +312,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	/**
-	 * @deprecated Don't use tx method directly. Use {@link #tx(com.syncleus.ferma.tx.TxAction0)} instead to avoid tx commit issues.
+	 * @deprecated Don't use tx method directly. Use {@link #tx(TxAction0)} instead to avoid tx commit issues.
 	 */
 	@Override
 	@Deprecated
@@ -360,12 +343,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}
-				int delay = getTxRetryDelay();
-				if (delay > 0) {
-					int rnd = (int) (Math.random() * delay);
+				int delay = options.getStorageOptions().getTxRetryDelay();
+				if (retry > 0 && delay > 0) {
 					try {
-						// Increase the delay for each retry by 25ms to give the other transaction a chance to finish
-						Thread.sleep(50 + (retry * 25) + rnd);
+						Thread.sleep(delay);
 					} catch (InterruptedException e1) {
 						e1.printStackTrace();
 					}

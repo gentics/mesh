@@ -21,12 +21,14 @@ public class GraphStorageOptions implements Option {
 	public static final String DEFAULT_EXPORT_DIRECTORY = "data" + File.separator + "export";
 	public static final boolean DEFAULT_START_SERVER = false;
 	public static final boolean DEFAULT_SYNC_WRITES = false;
+	public static final int DEFAULT_TX_RETRY_DELAY = 10;
 
 	public static final String MESH_GRAPH_DB_DIRECTORY_ENV = "MESH_GRAPH_DB_DIRECTORY";
 	public static final String MESH_GRAPH_BACKUP_DIRECTORY_ENV = "MESH_GRAPH_BACKUP_DIRECTORY";
 	public static final String MESH_GRAPH_EXPORT_DIRECTORY_ENV = "MESH_GRAPH_EXPORT_DIRECTORY";
 	public static final String MESH_GRAPH_STARTSERVER_ENV = "MESH_GRAPH_STARTSERVER";
 	public static final String MESH_GRAPH_SYNC_WRITES_ENV = "MESH_GRAPH_SYNC_WRITES";
+	public static final String MESH_GRAPH_TX_RETRY_DELAY_ENV = "MESH_GRAPH_TX_RETRY_DELAY";
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Path to the graph database data directory.")
@@ -53,13 +55,18 @@ public class GraphStorageOptions implements Option {
 	@EnvironmentVariable(name = MESH_GRAPH_SYNC_WRITES_ENV, description = "Override the graph database sync writes flag.")
 	private boolean synchronizeWrites = DEFAULT_SYNC_WRITES;
 
+	@JsonProperty(defaultValue = DEFAULT_TX_RETRY_DELAY + "ms")
+	@JsonPropertyDescription("The delay in milliseconds when a transaction has to be retried.")
+	@EnvironmentVariable(name = MESH_GRAPH_TX_RETRY_DELAY_ENV, description = "Override the transaction retry delay. Default: " + DEFAULT_TX_RETRY_DELAY)
+	private int txRetryDelay = DEFAULT_TX_RETRY_DELAY;
+
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Additional set of graph database parameters.")
 	private Map<String, String> parameters = new HashMap<>();
 
 	/**
 	 * Return the graph storage directory.
-	 * 
+	 *
 	 * @return Graph storage filesystem directory
 	 */
 	public String getDirectory() {
@@ -68,7 +75,7 @@ public class GraphStorageOptions implements Option {
 
 	/**
 	 * Set the graph storage directory.
-	 * 
+	 *
 	 * @param directory
 	 *            Graph storage filesystem directory
 	 * @return Fluent API
@@ -80,7 +87,7 @@ public class GraphStorageOptions implements Option {
 
 	/**
 	 * Return custom JSON parameters which can be used to add individual settings for the specific graph provider.
-	 * 
+	 *
 	 * @return Additional JSON parameters
 	 */
 	public Map<String, String> getParameters() {
@@ -89,7 +96,7 @@ public class GraphStorageOptions implements Option {
 
 	/**
 	 * Set the an additional custom parameters for the selected graph provider.
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 * @return Fluent API
@@ -101,7 +108,7 @@ public class GraphStorageOptions implements Option {
 
 	/**
 	 * Return the backup directory location.
-	 * 
+	 *
 	 * @return Backup directory
 	 */
 	public String getBackupDirectory() {
@@ -110,7 +117,7 @@ public class GraphStorageOptions implements Option {
 
 	/**
 	 * Set the backup directory location.
-	 * 
+	 *
 	 * @param backupDirectory
 	 *            Backup directory
 	 * @return Fluent API
@@ -122,7 +129,7 @@ public class GraphStorageOptions implements Option {
 
 	/**
 	 * Return the graph export directory.
-	 * 
+	 *
 	 * @return Export directory
 	 */
 	public String getExportDirectory() {
@@ -131,7 +138,7 @@ public class GraphStorageOptions implements Option {
 
 	/**
 	 * Set the export directory.
-	 * 
+	 *
 	 * @param exportDirectory
 	 *            Export directory
 	 * @return Fluent API
@@ -143,7 +150,7 @@ public class GraphStorageOptions implements Option {
 
 	/**
 	 * Return the start server flag.
-	 * 
+	 *
 	 * @return
 	 */
 	public Boolean getStartServer() {
@@ -152,7 +159,7 @@ public class GraphStorageOptions implements Option {
 
 	/**
 	 * Set the start server flag.
-	 * 
+	 *
 	 * @param startServer
 	 * @return Fluent API
 	 */
@@ -167,6 +174,22 @@ public class GraphStorageOptions implements Option {
 
 	public GraphStorageOptions setSynchronizeWrites(boolean synchronizeWrites) {
 		this.synchronizeWrites = synchronizeWrites;
+		return this;
+	}
+
+	public int getTxRetryDelay() {
+		return txRetryDelay;
+	}
+
+	/**
+	 * Set the transaction retry delay.
+	 *
+	 * @param txRetryDelay The delay in milliseconds
+	 * @return Fluent API
+	 */
+	public GraphStorageOptions setTxRetryDelay(int txRetryDelay) {
+		this.txRetryDelay = txRetryDelay;
+
 		return this;
 	}
 
