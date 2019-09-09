@@ -20,8 +20,9 @@ public class GraphStorageOptions implements Option {
 	public static final String DEFAULT_BACKUP_DIRECTORY = "data" + File.separator + "backup";
 	public static final String DEFAULT_EXPORT_DIRECTORY = "data" + File.separator + "export";
 	public static final boolean DEFAULT_START_SERVER = false;
-	public static final boolean DEFAULT_SYNC_WRITES = false;
+	public static final boolean DEFAULT_SYNC_WRITES = true;
 	public static final int DEFAULT_TX_RETRY_DELAY = 10;
+	public static final int DEFAULT_TX_RETRY_LIMIT = 10;
 
 	public static final String MESH_GRAPH_DB_DIRECTORY_ENV = "MESH_GRAPH_DB_DIRECTORY";
 	public static final String MESH_GRAPH_BACKUP_DIRECTORY_ENV = "MESH_GRAPH_BACKUP_DIRECTORY";
@@ -29,6 +30,7 @@ public class GraphStorageOptions implements Option {
 	public static final String MESH_GRAPH_STARTSERVER_ENV = "MESH_GRAPH_STARTSERVER";
 	public static final String MESH_GRAPH_SYNC_WRITES_ENV = "MESH_GRAPH_SYNC_WRITES";
 	public static final String MESH_GRAPH_TX_RETRY_DELAY_ENV = "MESH_GRAPH_TX_RETRY_DELAY";
+	public static final String MESH_GRAPH_TX_RETRY_LIMIT_ENV = "MESH_GRAPH_TX_RETRY_LIMIT";
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Path to the graph database data directory.")
@@ -57,8 +59,15 @@ public class GraphStorageOptions implements Option {
 
 	@JsonProperty(defaultValue = DEFAULT_TX_RETRY_DELAY + "ms")
 	@JsonPropertyDescription("The delay in milliseconds when a transaction has to be retried.")
-	@EnvironmentVariable(name = MESH_GRAPH_TX_RETRY_DELAY_ENV, description = "Override the transaction retry delay. Default: " + DEFAULT_TX_RETRY_DELAY)
+	@EnvironmentVariable(name = MESH_GRAPH_TX_RETRY_DELAY_ENV, description = "Override the transaction retry delay. Default: "
+		+ DEFAULT_TX_RETRY_DELAY)
 	private int txRetryDelay = DEFAULT_TX_RETRY_DELAY;
+
+	@JsonProperty(defaultValue = DEFAULT_TX_RETRY_LIMIT + " times")
+	@JsonPropertyDescription("The limit for the tx retires.")
+	@EnvironmentVariable(name = MESH_GRAPH_TX_RETRY_LIMIT_ENV, description = "Override the transaction retry limit. Default: "
+		+ DEFAULT_TX_RETRY_LIMIT)
+	private int txRetryLimit = DEFAULT_TX_RETRY_LIMIT;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Additional set of graph database parameters.")
@@ -184,12 +193,27 @@ public class GraphStorageOptions implements Option {
 	/**
 	 * Set the transaction retry delay.
 	 *
-	 * @param txRetryDelay The delay in milliseconds
+	 * @param txRetryDelay
+	 *            The delay in milliseconds
 	 * @return Fluent API
 	 */
 	public GraphStorageOptions setTxRetryDelay(int txRetryDelay) {
 		this.txRetryDelay = txRetryDelay;
 
+		return this;
+	}
+
+	public int getTxRetryLimit() {
+		return txRetryLimit;
+	}
+
+	/**
+	 * Set the retry limit for transactions. 
+	 * @param txRetryLimit
+	 * @return Fluent API
+	 */
+	public GraphStorageOptions setTxRetryLimit(int txRetryLimit) {
+		this.txRetryLimit = txRetryLimit;
 		return this;
 	}
 

@@ -26,6 +26,10 @@ include::content/docs/variables.adoc-include[]
 [[v0.40.2]]
 == 0.40.2 (09.09.2019)
 
+icon:plus[] Core: It is now possible to configure the transaction retry limit using the `MESH_GRAPH_TX_RETRY_LIMIT` environment variable or the `storage.txRetryLimit` parameter.
+
+icon:check[] Core: The default value for `storage.synchronizeWrites` has been changed to `true`.
+
 icon:check[] Core: The default value for the OrientDB parameter `tx.retry.delay` has been increased to 10ms, and the constant delay will be used instead of growing linearly. It is now possible to configure the delay via the `MESH_GRAPH_TX_RETRY_DELAY` environment variable.
 
 icon:check[] Config: It is now possible to override the mapping mode with the `MESH_ELASTICSEARCH_MAPPING_MODE` environment variable. link:https://github.com/gentics/mesh/issues/878[#878]

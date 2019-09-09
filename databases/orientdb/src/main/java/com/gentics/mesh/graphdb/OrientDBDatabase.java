@@ -75,8 +75,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private TypeResolver resolver;
 
-	private int maxRetry = 10;
-
 	private OrientStorage txProvider;
 
 	private MetricsService metrics;
@@ -156,10 +154,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 		// resolver = new OrientDBTypeResolver(basePaths);
 		resolver = new MeshTypeResolver(basePaths);
-		if (options != null && storageOptions.getParameters() != null && storageOptions.getParameters().get("maxTransactionRetry") != null) {
-			this.maxRetry = Integer.valueOf(storageOptions.getParameters().get("maxTransactionRetry"));
-			log.info("Using {" + this.maxRetry + "} transaction retries before failing");
-		}
 	}
 
 	/**
@@ -328,6 +322,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		 */
 		T handlerResult = null;
 		boolean handlerFinished = false;
+		int maxRetry = options.getStorageOptions().getTxRetryLimit();
 		for (int retry = 0; retry < maxRetry; retry++) {
 			final Timer.Context context = txTimer.time();
 			try (Tx tx = tx()) {
