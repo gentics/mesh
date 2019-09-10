@@ -30,17 +30,23 @@ import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
+import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.NodeUtil;
@@ -357,9 +363,65 @@ public class BinaryUploadHandler extends AbstractHandler {
 				}
 
 				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
+				pushNonI18nFields(ac, batch, node, branch, field, newDraftVersion);
 			});
 			return node.transformToRestSync(ac, 0);
 		});
+	}
+
+	/**
+	 * Push the non-i18n fields of the requests to other draft containers of this node.
+	 * 
+	 * @param ac
+	 * @param branch
+	 * @param batch
+	 * @param source
+	 */
+	private void pushNonI18nFields(InternalActionContext ac, EventQueueBatch batch, Node node, Branch branch, BinaryGraphField field,
+		NodeGraphFieldContainer source) {
+		// Synchronize the non-i18n fields with other language versions for the node in this branch.
+		SchemaContainerVersion schemaContainerVersion = source.getSchemaContainerVersion();
+		SchemaModel schema = schemaContainerVersion.getSchema();
+		List<String> nonI18nFieldKeys = schema.getFields().stream()
+			.filter(s -> !s.isTranslatable())
+			.map(f -> f.getName()).collect(Collectors.toList());
+		if (!nonI18nFieldKeys.isEmpty()) {
+			FieldMap restFields = new FieldMapImpl();
+			restFields.put(field.getFieldKey(), field.transformToRest(ac));
+
+			// Remove all translatable fields
+			for (String fieldKey : restFields.keySet()) {
+				if (!nonI18nFieldKeys.contains(fieldKey)) {
+					restFields.remove(fieldKey);
+				}
+			}
+
+			// Find drafts for other versions which need to be synced
+			TraversalResult<? extends NodeGraphFieldContainer> draftContainers = node.getGraphFieldContainers(branch.getUuid(), DRAFT);
+			for (NodeGraphFieldContainer container : draftContainers) {
+				// We don't need to handle the currently updated container
+				if (container.equals(source)) {
+					continue;
+				}
+				String currentLanguageTag = container.getLanguageTag();
+				log.info("Synchronizing non-i18n fields for draft container {" + currentLanguageTag + "}");
+
+				// Create new field container as clone of the existing
+				NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(currentLanguageTag, branch, ac.getUser(),
+					container, true);
+
+				// Invoke a regular update of the draft with a request that only contains non-i18n fields
+				newDraftVersion.updateFieldsFromRest(ac, restFields);
+
+				// Purge the old draft
+				if (ac.isPurgeAllowed() && container.isAutoPurgeEnabled() && container.isPurgeable()) {
+					container.purge();
+				}
+				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
+			}
+
+		}
+
 	}
 
 	/**
