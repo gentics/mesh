@@ -433,11 +433,6 @@
 			<artifactId>mesh-common</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-rest-model</artifactId>
-			<scope>provided</scope>
-		</dependency>
 
 		<dependency>
 			<groupId>com.github.stefanbirkner</groupId>
