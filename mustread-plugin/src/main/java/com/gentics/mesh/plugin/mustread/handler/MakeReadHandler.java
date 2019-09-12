@@ -38,7 +38,7 @@ public class MakeReadHandler extends BaseHandler {
             return;
         }
 
-        getBodyAsJson().getJsonArray("nodes").forEach((item -> {
+        getBodyAsJson().getJsonArray(getConfig().getNodeListParameterName()).forEach((item -> {
             String uuid = (String) item;
 
             completables.add(getNodeController().createReadNodeForProjectAndUser(getProjectName(), getUser(), uuid));

@@ -17,7 +17,13 @@ The config file allows you to customize the behaviour of the must read
 plugin. The projects array allows you to define several project for 
 which the must read plugin is active.
 
-### projects
+### NodeListParameterName
+
+With this parameter you define the name for the field containing the
+uuids that are read for the unread endpoint. If you leave it blank the
+default value `uuids` is used
+
+### Projects
 
 You can define the following parameters for each project:
 
