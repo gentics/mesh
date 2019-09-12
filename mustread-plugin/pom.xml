@@ -16,7 +16,7 @@
 		<plugin.id>mustread</plugin.id>
 		<plugin.name>Must Read Plugin</plugin.name>
 		<plugin.description>Plugin to handle reading of must-read nodes</plugin.description>
-		<plugin.class>com.gentics.mesh.plugin.mustReadPlugin</plugin.class>
+		<plugin.class>com.gentics.mesh.plugin.mustread.MustReadPlugin</plugin.class>
 		<plugin.version>${project.version}</plugin.version>
 		<plugin.inception>2019-08-30</plugin.inception>
 	</properties>
