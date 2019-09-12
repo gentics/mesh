@@ -1,0 +1,16 @@
+query ($uuids: [String])
+{
+    nodes (
+        uuids: $uuids
+    ) {
+        elements {
+            uuid
+            ... on must_read_test_page {
+                fields {
+                    name
+                    must_read
+                }
+            }
+        }
+    }
+}

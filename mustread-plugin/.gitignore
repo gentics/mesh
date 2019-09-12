@@ -1,0 +1,9 @@
+/.idea
+# Mesh files
+/config
+/mesh.lock
+# IntelliJ GraphQL Extension files
+.graphqlconfig
+schema.graphql
+# Build folders/files
+/target

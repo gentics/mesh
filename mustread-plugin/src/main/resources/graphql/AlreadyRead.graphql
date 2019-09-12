@@ -1,0 +1,16 @@
+query ($path: String)
+{
+    node (
+        path: $path
+    ) {
+        children {
+            elements {
+                ... on must_read_node {
+                    fields {
+                        node_id
+                    }
+                }
+            }
+        }
+    }
+}

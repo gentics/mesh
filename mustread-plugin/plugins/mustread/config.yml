@@ -1,0 +1,6 @@
+projects:
+  - name: "Test"
+    folderName: "Must-Read"
+    mustReadGraphQlFile: "Test/MustRead.graphql"
+    dataGraphQlFile: "Test/Data.graphql"
+    uuidFieldName: "testUuid"
