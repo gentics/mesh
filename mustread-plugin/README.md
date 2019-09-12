@@ -6,8 +6,8 @@ and to set specific nodes to be already read.
 # Setup
 
 Copy the jar file and the `config` directory into the plugin directory 
-of your mesh Installation. Modify the config.yml and graphql/* files
-for your needs.
+of your mesh Installation. Modify the `config.yml` and `storage/graphql/*`
+files to your liking.
 
 # Configuration
 
@@ -42,3 +42,25 @@ nodes
 **The must read plugin only activates for projects which are defined in
 the config.yml and have `FolderName`, `MustReadGraphQLFile` and 
 `DataGraphQLFile` set**
+
+# Endpoints
+
+## Read
+
+* **Method**: Post
+* **Data**: Key (named like [NodeListParameterName](#NodeListParameterName))
+containing the uuids that should be marked as read
+
+This endpoints sets the provided uuids as read so that the unread 
+endpoint ignores them for the currently logged in user
+
+## Unread
+
+* **Method**: Get
+* **Data**: Provides a json with the data for all the unread nodes for 
+the currently logged in user. The structure is defined by the [DataGraphQLFile][#DataGraphQLFile)
+configuration option of the project
+
+Returns the data for the nodes that are unread by the currently logged in 
+user.
+ 
