@@ -1,2 +1,8 @@
-/.idea
-/*.iml
+.idea
+*.iml
+target
+mesh.lock
+.project
+.settings
+.classpath
+.factorypath

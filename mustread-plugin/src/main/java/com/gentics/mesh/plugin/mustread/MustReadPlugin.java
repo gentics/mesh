@@ -116,7 +116,7 @@ public class MustReadPlugin extends AbstractPlugin implements RestPlugin {
     }
 
     public String getGraphQlDir() {
-        return getPluginBaseDir().toString() + File.separator + "graphQl" + File.separator;
+        return new File(getStorageDir(), "graphql").getAbsolutePath();
     }
 
     protected LogHelper getLogHelper() {

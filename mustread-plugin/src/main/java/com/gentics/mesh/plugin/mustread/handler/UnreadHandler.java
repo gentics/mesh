@@ -21,91 +21,90 @@ import java.io.FileInputStream;
 
 public class UnreadHandler extends BaseHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(UnreadHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(UnreadHandler.class);
 
-    private NodeController nodeController;
+	private NodeController nodeController;
 
-    public UnreadHandler(MustReadPlugin plugin, MustReadConfig config, LogHelper logHelper, NodeController nodeController) {
-        super(plugin, config, logHelper);
+	public UnreadHandler(MustReadPlugin plugin, MustReadConfig config, LogHelper logHelper, NodeController nodeController) {
+		super(plugin, config, logHelper);
 
-        this.nodeController = nodeController;
-    }
+		this.nodeController = nodeController;
+	}
 
-    @Override
-    public void handle(RoutingContext routingContext) {
-        initialize(routingContext);
+	@Override
+	public void handle(RoutingContext routingContext) {
+		initialize(routingContext);
 
-        if (!checkProjectConfiguration()) {
-            doHttpCode(HttpResponseStatus.NOT_IMPLEMENTED);
-            return;
-        }
+		if (!checkProjectConfiguration()) {
+			doHttpCode(HttpResponseStatus.NOT_IMPLEMENTED);
+			return;
+		}
 
-        String mustReadQuery = "";
-        String tmpDataQuery = "";
-        String alreadyReadQuery;
+		String mustReadQuery = "";
+		String tmpDataQuery = "";
+		String alreadyReadQuery;
 
-        try {
-            String mustReadFile = getPlugin().getGraphQlDir() + File.separator + getProjectConfig().getMustReadGraphQlFile();
-            String dataFile = getPlugin().getGraphQlDir() + File.separator + getProjectConfig().getDataGraphQlFile();
+		try {
+			String mustReadFile = getPlugin().getGraphQlDir() + File.separator + getProjectConfig().getMustReadGraphQlFile();
+			String dataFile = getPlugin().getGraphQlDir() + File.separator + getProjectConfig().getDataGraphQlFile();
 
-            mustReadQuery = IOUtils.toString(new FileInputStream(mustReadFile));
-            tmpDataQuery = IOUtils.toString(new FileInputStream(dataFile));
-            alreadyReadQuery = IOUtils.toString(getPlugin().getClass().getResourceAsStream("/graphql/AlreadyRead.graphql"));
-        } catch (Exception e) {
-            e.printStackTrace();
-            doHttpCode(HttpResponseStatus.INTERNAL_SERVER_ERROR);
-            return;
-        }
-        MeshRestClient client = getAdminClient();
-        UUIDs mustReadUuids = new UUIDs();
-        final String dataQuery = tmpDataQuery;
+			mustReadQuery = IOUtils.toString(new FileInputStream(mustReadFile));
+			tmpDataQuery = IOUtils.toString(new FileInputStream(dataFile));
+			alreadyReadQuery = IOUtils.toString(getPlugin().getClass().getResourceAsStream("/graphql/AlreadyRead.graphql"));
+		} catch (Exception e) {
+			log.error("Error while reading gql files", e);
+			doHttpCode(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+			return;
+		}
+		MeshRestClient client = getAdminClient();
+		UUIDs mustReadUuids = new UUIDs();
+		final String dataQuery = tmpDataQuery;
 
-        client.graphqlQuery(getProjectName(), mustReadQuery).toSingle()
-                .flatMap(mustReadResponse -> {
-                    GraphQLRequest request = new GraphQLRequest();
-                    JsonObject variables = new JsonObject();
+		client.graphqlQuery(getProjectName(), mustReadQuery).toSingle()
+			.flatMap(mustReadResponse -> {
+				GraphQLRequest request = new GraphQLRequest();
+				JsonObject variables = new JsonObject();
 
-                    JsonHelper.fetchKeys(mustReadResponse, getProjectConfig().getUuidFieldName(), mustReadUuids::addUuid);
+				JsonHelper.fetchKeys(mustReadResponse, getProjectConfig().getUuidFieldName(), mustReadUuids::addUuid);
 
-                    variables.put("path", getNodeController().generateUserReadFolder(getProjectName(), getUser()));
+				variables.put("path", getNodeController().generateUserReadFolder(getProjectName(), getUser()));
 
-                    request.setQuery(alreadyReadQuery);
-                    request.setVariables(variables);
+				request.setQuery(alreadyReadQuery);
+				request.setVariables(variables);
 
-                    return client.graphql(getProjectName(), request).toSingle();
-                })
-                .flatMap(alreadyReadResponse -> {
-                    UUIDs alreadyReadUuids = new UUIDs();
+				return client.graphql(getProjectName(), request).toSingle();
+			})
+			.flatMap(alreadyReadResponse -> {
+				UUIDs alreadyReadUuids = new UUIDs();
 
-                    JsonHelper.fetchKeys(alreadyReadResponse, "node_id", alreadyReadUuids::addUuid);
+				JsonHelper.fetchKeys(alreadyReadResponse, "node_id", alreadyReadUuids::addUuid);
 
-                    mustReadUuids.removeAll(alreadyReadUuids);
+				mustReadUuids.removeAll(alreadyReadUuids);
 
-                    GraphQLRequest request = new GraphQLRequest();
-                    JsonObject variables = new JsonObject();
+				GraphQLRequest request = new GraphQLRequest();
+				JsonObject variables = new JsonObject();
 
-                    variables.put("uuids", new JsonArray(mustReadUuids.getUUIDs()));
+				variables.put("uuids", new JsonArray(mustReadUuids.getUUIDs()));
 
-                    request.setQuery(dataQuery);
-                    request.setVariables(variables);
+				request.setQuery(dataQuery);
+				request.setVariables(variables);
 
-                    return client.graphql(getProjectName(), request).toSingle();
-                })
-                .subscribe(dataResponse -> {
-                    doJsonResponse(dataResponse.getData());
-                }, error -> {
-                    error.printStackTrace();
-                    doHttpCode(HttpResponseStatus.INTERNAL_SERVER_ERROR);
-                });
-    }
+				return client.graphql(getProjectName(), request).toSingle();
+			})
+			.subscribe(dataResponse -> {
+				doJsonResponse(dataResponse.getData());
+			}, error -> {
+				error.printStackTrace();
+				doHttpCode(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+			});
+	}
 
+	@Override
+	protected Logger getLogger() {
+		return log;
+	}
 
-    @Override
-    protected Logger getLogger() {
-        return log;
-    }
-
-    private NodeController getNodeController() {
-        return nodeController;
-    }
+	private NodeController getNodeController() {
+		return nodeController;
+	}
 }

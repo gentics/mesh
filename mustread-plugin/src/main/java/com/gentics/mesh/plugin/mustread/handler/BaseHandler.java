@@ -20,144 +20,143 @@ import java.io.File;
 
 abstract class BaseHandler implements Handler<RoutingContext> {
 
-    private static final Logger log = LoggerFactory.getLogger(BaseHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(BaseHandler.class);
 
-    private MustReadPlugin plugin;
-    private MustReadConfig config;
-    private LogHelper logHelper;
+	private MustReadPlugin plugin;
+	private MustReadConfig config;
+	private LogHelper logHelper;
 
-    private RoutingContext routingContext;
+	private RoutingContext routingContext;
 
+	BaseHandler(MustReadPlugin plugin, MustReadConfig config, LogHelper logHelper) {
+		this.plugin = plugin;
+		this.config = config;
+		this.logHelper = logHelper;
+	}
 
-    BaseHandler(MustReadPlugin plugin, MustReadConfig config, LogHelper logHelper) {
-        this.plugin = plugin;
-        this.config = config;
-        this.logHelper = logHelper;
-    }
+	void initialize(RoutingContext routingContext) {
+		this.routingContext = routingContext;
+	}
 
-    void initialize(RoutingContext routingContext) {
-        this.routingContext = routingContext;
-    }
+	boolean checkProjectConfiguration() {
+		ProjectConfig config = getProjectConfig();
+		if (config == null) {
+			getLogger().warn(getLogHelper().generateLogMessage(getProjectName(), "no configuration found!"));
+			return false;
+		}
 
-    boolean checkProjectConfiguration() {
-        ProjectConfig config = getProjectConfig();
-        if (config == null) {
-            getLogger().warn(getLogHelper().generateLogMessage(getProjectName(), "no configuration found!"));
-            return false;
-        }
+		if (StringUtils.isBlank(config.getFolderName())) {
+			getLogger().warn(getLogHelper().generateLogMessage(getProjectName(), "Folder to store read articles not configured"));
+			return false;
+		}
 
-        if (StringUtils.isBlank(config.getFolderName())) {
-            getLogger().warn(getLogHelper().generateLogMessage(getProjectName(), "Folder to store read articles not configured"));
-            return false;
-        }
+		String mustReadFileName = getProjectConfig().getMustReadGraphQlFile();
+		String dataFileName = getProjectConfig().getDataGraphQlFile();
 
-        String mustReadFileName = getProjectConfig().getMustReadGraphQlFile();
-        String dataFileName = getProjectConfig().getDataGraphQlFile();
+		if (!checkFilename(mustReadFileName, "must read query") || !checkFile(mustReadFileName)) {
+			return false;
+		}
 
-        if (!checkFilename(mustReadFileName, "must read query") || !checkFile(mustReadFileName)) {
-            return false;
-        }
+		if (!checkFilename(dataFileName, "data query") || !checkFile(dataFileName)) {
+			return false;
+		}
 
-        if (!checkFilename(dataFileName, "data query") || !checkFile(dataFileName)) {
-            return false;
-        }
+		return true;
+	}
 
-        return true;
-    }
+	private boolean checkFilename(String fileName, String name) {
+		if (StringUtils.isBlank(fileName)) {
+			getLogger()
+				.warn(getLogHelper().generateLogMessage(getProjectName(), String.format("the file containing the %s is not configured.", name)));
+			return false;
+		}
 
-    private boolean checkFilename(String fileName, String name) {
-        if (StringUtils.isBlank(fileName)) {
-            getLogger().warn(getLogHelper().generateLogMessage(getProjectName(), String.format("the file containing the %s is not configured.", name)));
-            return false;
-        }
+		return true;
+	}
 
-        return true;
-    }
+	private boolean checkFile(String fileName) {
 
-    private boolean checkFile(String fileName) {
+		File file = new File(getPlugin().getGraphQlDir(), fileName);
 
-        File file = new File(getPlugin().getGraphQlDir() + File.separator + fileName);
+		if (!file.exists()) {
+			log.warn(getLogHelper().generateLogMessage(getProjectName(), String.format("the file '%s' does not exist.", fileName)));
+			return false;
+		}
 
-        if (!file.exists()) {
-            log.warn(getLogHelper().generateLogMessage(getProjectName(), String.format("the file '%s' does not exist.", fileName)));
-            return false;
-        }
+		if (!file.canRead()) {
+			log.warn(getLogHelper().generateLogMessage(getProjectName(), String.format("the file '%s' is not readable.", fileName)));
+			return false;
+		}
 
-        if (!file.canRead()) {
-            log.warn(getLogHelper().generateLogMessage(getProjectName(), String.format("the file '%s' is not readable.", fileName)));
-            return false;
-        }
+		return true;
+	}
 
-        return true;
-    }
+	void doHttpCode(HttpResponseStatus status) {
+		getRoutingContext().response()
+			.setStatusCode(status.code()).end(status.reasonPhrase());
+	}
 
+	void doJsonResponse(Object object) {
+		getRoutingContext().response()
+			.putHeader("content-type", "application/json; charset=utf-8")
+			.end(Json.encode(object));
+	}
 
-    void doHttpCode(HttpResponseStatus status) {
-        getRoutingContext().response()
-                .setStatusCode(status.code()).end(status.reasonPhrase());
-    }
+	void doResponse(String response) {
+		getRoutingContext().response()
+			.setStatusCode(HttpResponseStatus.OK.code())
+			.end(response);
+	}
 
-    void doJsonResponse(Object object) {
-        getRoutingContext().response()
-                .putHeader("content-type", "application/json; charset=utf-8")
-                .end(Json.encode(object));
-    }
+	MustReadPlugin getPlugin() {
+		return plugin;
+	}
 
-    void doResponse(String response) {
-        getRoutingContext().response()
-                .setStatusCode(HttpResponseStatus.OK.code())
-                .end(response);
-    }
+	MeshRestClient getAdminClient() {
+		return getPlugin().adminClient();
+	}
 
-    MustReadPlugin getPlugin() {
-        return plugin;
-    }
+	MustReadConfig getConfig() {
+		return config;
+	}
 
-    MeshRestClient getAdminClient() {
-        return getPlugin().adminClient();
-    }
+	ProjectConfig getProjectConfig() {
+		return getConfig().getProjectConfiguration(getPluginContext().projectName());
+	}
 
-    MustReadConfig getConfig() {
-        return config;
-    }
+	String getProjectName() {
+		if (getProjectConfig() == null) {
+			if (getPluginContext().project() == null) {
+				return "";
+			} else {
+				return getPluginContext().projectName();
+			}
+		}
 
-    ProjectConfig getProjectConfig() {
-        return getConfig().getProjectConfiguration(getPluginContext().projectName());
-    }
+		return getProjectConfig().getName();
+	}
 
-    String getProjectName() {
-        if (getProjectConfig() == null) {
-            if (getPluginContext().project() == null) {
-                return "";
-            } else {
-                return getPluginContext().projectName();
-            }
-        }
+	LogHelper getLogHelper() {
+		return logHelper;
+	}
 
-        return getProjectConfig().getName();
-    }
+	private PluginContext getPluginContext() {
+		return getPlugin().wrap(getRoutingContext());
+	}
 
-    LogHelper getLogHelper() {
-        return logHelper;
-    }
+	protected Logger getLogger() {
+		return log;
+	}
 
-    private PluginContext getPluginContext() {
-        return getPlugin().wrap(getRoutingContext());
-    }
+	User getUser() {
+		return User.parse(getRoutingContext());
+	}
 
-    protected Logger getLogger() {
-        return log;
-    }
+	RoutingContext getRoutingContext() {
+		return routingContext;
+	}
 
-    User getUser() {
-        return User.parse(getRoutingContext());
-    }
-
-    RoutingContext getRoutingContext() {
-        return routingContext;
-    }
-
-    JsonObject getBodyAsJson() {
-        return new JsonObject(getRoutingContext().getBodyAsString());
-    }
+	JsonObject getBodyAsJson() {
+		return new JsonObject(getRoutingContext().getBodyAsString());
+	}
 }

@@ -1,0 +1,75 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.gentics.mesh.plugin</groupId>
+	<artifactId>mesh-commercial-plugins</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<parent>
+		<artifactId>mesh-plugin-parent</artifactId>
+		<groupId>com.gentics.mesh</groupId>
+		<version>0.40.2</version>
+	</parent>
+
+	<properties>
+		<mesh.version>0.40.2</mesh.version>
+		<plugin.license>Commercial</plugin.license>
+		<plugin.author>Gentics</plugin.author>
+	</properties>
+
+	<modules>
+		<module>mustread-plugin</module>
+	</modules>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-bom</artifactId>
+				<version>${mesh.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<skip>${skip.unit.tests}</skip>
+					<jvm>${java.home}/bin/java</jvm>
+					<argLine>-Xms128m -Xmx256m -XX:MaxDirectMemorySize=128m -Dstorage.diskCache.bufferSize=128 ${jacoco.env}</argLine>
+					<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
+					<rerunFailingTestsCount>0</rerunFailingTestsCount>
+					<reuseForks>false</reuseForks>
+					<forkCount>${surefire.forkcount}</forkCount>
+					<trimStackTrace>false</trimStackTrace>
+					<useSystemClassLoader>false</useSystemClassLoader>
+					<excludes>
+						<include>**/*AbstractTest.java</include>
+						<include>**/*Abstract*Test.java</include>
+						<exclude>**/*Abstract*.java</exclude>
+						<exclude>**/Abstract*.java</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>maven.gentics.com</id>
+			<name>Gentics Maven Repository</name>
+			<url>https://maven.gentics.com/maven2</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
+	</repositories>
+
+</project>
