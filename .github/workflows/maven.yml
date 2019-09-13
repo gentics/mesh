@@ -20,6 +20,7 @@ jobs:
     - name: Build with Maven
       env:
         JAVA_1_11_HOME: ${JAVA_HOME_11.0.0_x86}
-      run: java
-      run: set
-      run: mvn clean --file pom.xml
+      run: |
+        java
+        set
+        mvn clean --file pom.xml
