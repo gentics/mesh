@@ -52,12 +52,13 @@ public class UnreadHandler extends BaseHandler {
 			tmpDataQuery = IOUtils.toString(new FileInputStream(dataFile));
 			alreadyReadQuery = IOUtils.toString(getPlugin().getClass().getResourceAsStream("/graphql/AlreadyRead.graphql"));
 		} catch (Exception e) {
-			log.error("Error while reading gql files", e);
+			log.error("Error while reading graphQL files", e);
 			doHttpCode(HttpResponseStatus.INTERNAL_SERVER_ERROR);
 			return;
 		}
 		MeshRestClient client = getAdminClient();
-		UUIDs mustReadUuids = new UUIDs();
+		final UUIDs mustReadUuids = new UUIDs();
+		// dataQuery must be final so we can use it inside of lambdas
 		final String dataQuery = tmpDataQuery;
 
 		client.graphqlQuery(getProjectName(), mustReadQuery).toSingle()
@@ -65,6 +66,7 @@ public class UnreadHandler extends BaseHandler {
 				GraphQLRequest request = new GraphQLRequest();
 				JsonObject variables = new JsonObject();
 
+				// We fetch all uuids regardless of where they are inside of the returned grapql
 				JsonHelper.fetchKeys(mustReadResponse, getProjectConfig().getUuidFieldName(), mustReadUuids::addUuid);
 
 				variables.put("path", getNodeController().generateUserReadFolder(getProjectName(), getUser()));
@@ -79,6 +81,7 @@ public class UnreadHandler extends BaseHandler {
 
 				JsonHelper.fetchKeys(alreadyReadResponse, "node_id", alreadyReadUuids::addUuid);
 
+				// We remove all that are already read
 				mustReadUuids.removeAll(alreadyReadUuids);
 
 				GraphQLRequest request = new GraphQLRequest();

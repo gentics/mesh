@@ -40,10 +40,12 @@ public class ProjectCreateConsumer extends BaseConsumer {
 
         if (project != null) {
             List<Completable> current_completables = new ArrayList<>();
+            // First we assign the schemas to the project
             for (SchemaResponse schema : schemaController.getCreatedSchemas()) {
                 current_completables.add(schemaController.assignSchemaToProject(project.getName(), schema));
             }
 
+            // then we create the plugin main folder inside of the project
             completables.add(Completable
                     .merge(current_completables)
                     .andThen(nodeController.createPluginFolderForProject(project.getName(), project.getFolderName()))

@@ -41,7 +41,6 @@ public class MakeReadHandler extends BaseHandler {
         JsonArray providedData = getBodyAsJson().getJsonArray(getConfig().getNodeListParameterName());
 
         if (providedData == null || providedData.size() < 1) {
-            //Nothing to update
             doJsonResponse("Noting updated, because no uuids provided", HttpResponseStatus.BAD_REQUEST);
             return;
         }
@@ -52,6 +51,7 @@ public class MakeReadHandler extends BaseHandler {
             completables.add(getNodeController().createReadNodeForProjectAndUser(getProjectName(), getUser(), uuid));
         }));
 
+        // First we create the user folder then we do the creation of the read nodes
         getNodeController().createUserFolderForProject(getProjectName(), getUser())
                 .andThen(Completable.merge(completables))
                 .subscribe(() -> {

@@ -40,6 +40,13 @@ public class NodeController extends BaseController {
         this.schemaController = schemaController;
     }
 
+    /**
+     * Creates the main plugin folder in the project if it is configured and doesn't exist
+     *
+     * @param projectName      Name of the project
+     * @param pluginFolderName folder plugin folder inside of the project
+     * @return
+     */
     public Completable createPluginFolderForProject(String projectName, String pluginFolderName) {
         return Completable.defer(() -> {
             NodeCreateRequest request = new NodeCreateRequest();
@@ -64,6 +71,13 @@ public class NodeController extends BaseController {
         });
     }
 
+    /**
+     * Creates the folder which stores the read uuids, for the provides user if it doesn't exist already
+     *
+     * @param projectName
+     * @param user
+     * @return
+     */
     public Completable createUserFolderForProject(String projectName, User user) {
         return Completable.defer(() -> {
             NodeCreateRequest request = new NodeCreateRequest();
@@ -82,6 +96,15 @@ public class NodeController extends BaseController {
         });
     }
 
+    /**
+     * Creates the node identifying that the nodeId has already been read by the user
+     *
+     * @param projectName
+     * @param user
+     * @param nodeId
+     *
+     * @return
+     */
     public Completable createReadNodeForProjectAndUser(String projectName, User user, String nodeId) {
         return Completable.defer(() -> {
             NodeCreateRequest request = new NodeCreateRequest();
@@ -101,6 +124,15 @@ public class NodeController extends BaseController {
         });
     }
 
+    /**
+     * Creates a path inside of the project
+     *
+     * @param projectName
+     * @param path
+     * @param request
+     *
+     * @return
+     */
     private Single<NodeResponse> createPathInProject(String projectName, String path, NodeCreateRequest request) {
         // We first check if the path already exists and we only react to 404 error which means that the path
         // doesn't exist. Everything else is either an error or fine (folder exists)
@@ -128,6 +160,12 @@ public class NodeController extends BaseController {
                 });
     }
 
+    /**
+     * Converts a List of Nodereference into a useable path string
+     *
+     * @param breadcrumbs
+     * @return
+     */
     private String convertBreadcrumbToPath(List<NodeReference> breadcrumbs) {
         List<String> parts = new ArrayList<>();
         for (NodeReference reference : breadcrumbs) {
@@ -137,6 +175,14 @@ public class NodeController extends BaseController {
         return StringUtils.join(parts, "/");
     }
 
+    /**
+     * Generates the name for the folder containing the read nodes for the provided user
+     *
+     * @param projectName
+     * @param user
+     * @return
+     * @throws PluginPathNotFoundException
+     */
     public String generateUserReadFolder(String projectName, User user) throws PluginPathNotFoundException {
         NodeResponse pluginFolder = pluginFolders.get(projectName);
 

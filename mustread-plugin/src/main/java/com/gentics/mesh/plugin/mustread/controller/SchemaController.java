@@ -121,6 +121,14 @@ public class SchemaController extends BaseController {
         return createOrUpdateSchema(nodeSchemaName, getNodeSchemaCreateRequest());
     }
 
+    /**
+     * Filters out if the provided SchemaName is inside of the SchemaListResponse and
+     * returns the SchemaResponse for it
+     *
+     * @param list
+     * @param schemaName
+     * @return
+     */
     private SchemaResponse extractSchema(SchemaListResponse list, String schemaName) {
         Optional<SchemaResponse> schemas = list.getData().stream().filter(s -> s.getName().equals(schemaName)).findFirst();
 
@@ -144,19 +152,24 @@ public class SchemaController extends BaseController {
                 });
     }
 
+    /**
+     * Returns a list of all created schemas by this controller
+     *
+     * @return
+     */
     public Collection<SchemaResponse> getCreatedSchemas() {
         return createdSchemas.values();
     }
 
-    public SchemaReference getFolderSchemaReference() {
+    SchemaReference getFolderSchemaReference() {
         return createdSchemas.get(folderSchemaName).toReference();
     }
 
-    public SchemaReference getUserSchemaReference() {
+    SchemaReference getUserSchemaReference() {
         return createdSchemas.get(userSchemaName).toReference();
     }
 
-    public SchemaReference getNodeSchemaReference() {
+    SchemaReference getNodeSchemaReference() {
         return createdSchemas.get(nodeSchemaName).toReference();
     }
 }

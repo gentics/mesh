@@ -151,9 +151,10 @@ public class MustReadPlugin extends AbstractPlugin implements RestPlugin {
         return projectCreateConsumer;
     }
 
+    // We override these function because we need to use a special adminClient to be able to access v2 api
     @Override
     protected void createAdminClient() {
-        super.createAdminClient();
+
         int port = environment().options().getHttpServerOptions().getPort();
         String host = "127.0.0.1";
 

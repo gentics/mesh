@@ -5,7 +5,6 @@ import io.reactivex.functions.Consumer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-
 abstract public class JsonHelper {
 
     public static void fetchKeys(JsonObject jsonObject, String searchKey, Consumer<String> call) {

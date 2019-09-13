@@ -38,6 +38,11 @@ abstract class BaseHandler implements Handler<RoutingContext> {
 		this.routingContext = routingContext;
 	}
 
+	/**
+	 * Checks if all necessary configuration options for the current project have been made
+	 *
+	 * @return
+	 */
 	boolean checkProjectConfiguration() {
 		ProjectConfig config = getProjectConfig();
 		if (config == null) {
@@ -136,6 +141,11 @@ abstract class BaseHandler implements Handler<RoutingContext> {
 		return getConfig().getProjectConfiguration(getPluginContext().projectName());
 	}
 
+	/**
+	 * Provides the projectname if none could be found and empty string is returned
+	 *
+	 * @return
+	 */
 	String getProjectName() {
 		if (getProjectConfig() == null) {
 			if (getPluginContext().project() == null) {

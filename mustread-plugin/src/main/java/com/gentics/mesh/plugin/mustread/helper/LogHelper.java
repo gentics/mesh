@@ -10,6 +10,13 @@ public class LogHelper {
         this.plugin = plugin;
     }
 
+    /**
+     * Generate our default Heading for messages from this plugin and returns the full error message
+     *
+     * @param projectName
+     * @param msg
+     * @return
+     */
     public String generateLogMessage(String projectName, String msg) {
         String builtMessage = String.format("%s ", getPluginName());
         if (!projectName.equals("")) {
