@@ -1,9 +1,13 @@
 package com.gentics.mesh.plugin.mustread.config;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.util.List;
 
 public class MustReadConfig {
     private List<ProjectConfig> projects;
+
+    private String nodeListParameterName;
 
     public List<ProjectConfig> getProjects() {
         return projects;
@@ -25,4 +29,16 @@ public class MustReadConfig {
         return null;
     }
 
+    public String getNodeListParameterName() {
+        if (StringUtils.isBlank(nodeListParameterName)) {
+            return "uuids";
+        }
+        return nodeListParameterName;
+    }
+
+    public MustReadConfig setNodeListParameterName(String nodeListParameterName) {
+        this.nodeListParameterName = nodeListParameterName;
+
+        return this;
+    }
 }
