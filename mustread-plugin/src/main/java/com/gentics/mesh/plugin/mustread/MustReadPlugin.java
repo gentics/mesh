@@ -1,6 +1,7 @@
 package com.gentics.mesh.plugin.mustread;
 
 import com.gentics.mesh.plugin.AbstractPlugin;
+import com.gentics.mesh.plugin.PluginConfigUtil;
 import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.mustread.config.MustReadConfig;
@@ -58,7 +59,7 @@ public class MustReadPlugin extends AbstractPlugin implements RestPlugin {
 
     private void initializeConfig() throws IOException {
         File config = getConfigFile();
-        log.debug(logHelper.generateLogMessage("", String.format("Configuration file is in %s", config.getAbsolutePath())));
+        log.info(logHelper.generateLogMessage("", String.format("Configuration file is in %s", config.getAbsolutePath())));
 
         if (config.exists()) {
             log.info(logHelper.generateLogMessage(" ", "Configuration file exists, loading configuration!"));
@@ -94,8 +95,8 @@ public class MustReadPlugin extends AbstractPlugin implements RestPlugin {
                 new ProjectConfig()
                         .setName("")
                         .setFolderName("")
-                        .setMustReadGraphQlFile("")
-                        .setDataGraphQlFile("")
+                        .setUuidQueryFile("")
+                        .setDataQueryFile("")
         );
 
         config.setProjects(projects);

@@ -1,5 +1,22 @@
 package com.gentics.mesh.plugin.mustread;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.apache.commons.io.FileUtils;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.testcontainers.shaded.org.apache.commons.lang.StringUtils;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
@@ -20,35 +37,20 @@ import com.gentics.mesh.plugin.mustread.controller.SchemaController;
 import com.gentics.mesh.plugin.mustread.helper.JsonHelper;
 import com.gentics.mesh.plugin.mustread.object.User;
 import com.gentics.mesh.plugin.mustread.plugin.MustReadTestPlugin;
+import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.local.MeshLocalServer;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.json.JsonObject;
-import okhttp3.*;
-import okhttp3.OkHttpClient.Builder;
-import org.apache.commons.io.FileUtils;
-import org.junit.*;
-import org.testcontainers.shaded.org.apache.commons.lang.StringUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-public class MustReadPluginTest {
-
-	private static final String apiName = "must-read";
+public class MustReadPluginTest extends AbstractPluginTest {
 
 	private static final String testDir = "target/test-must-read-plugin";
 
 	@ClassRule
 	public static final MeshLocalServer server = new MeshLocalServer()
 		.withInMemoryMode()
-		.withPlugin(MustReadTestPlugin.class, apiName)
+		.withPlugin(MustReadTestPlugin.class, API_NAME)
 		.withOptions(createMeshOptions())
 		.withNodeName("test-mesh")
 		.waitForStartup();
@@ -132,7 +134,7 @@ public class MustReadPluginTest {
 	public void testConfiguration() throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
 
-		String jsonString = getResponseTextGetRequest("/api/v2/plugins/" + apiName + "/configuration");
+		String jsonString = getResponseTextGetRequest("/api/v2/plugins/" + API_NAME + "/configuration");
 
 		assertEquals(mapper.writeValueAsString(MustReadTestPlugin.generateTestConfiguration()), jsonString);
 	}
@@ -185,20 +187,20 @@ public class MustReadPluginTest {
 		JsonObject emptyData = new JsonObject()
 			.put("nodes", new ArrayList<String>());
 		JsonObject normalData = new JsonObject()
-				.put("nodes", nodes);
+			.put("nodes", nodes);
 
 		assertEquals("Empty GraphQl didn't return 501", HttpResponseStatus.NOT_IMPLEMENTED.code(),
-				getResponseCodePostRequest("/api/v2/EmptyGraphQl/plugins/" + apiName + "/read", normalData));
+			getResponseCodePostRequest("/api/v2/EmptyGraphQl/plugins/" + API_NAME + "/read", normalData));
 		assertEquals("Empty folder name didn't return 501", HttpResponseStatus.NOT_IMPLEMENTED.code(),
-				getResponseCodePostRequest("/api/v2/EmptyFolderName/plugins/" + apiName + "/read", normalData));
+			getResponseCodePostRequest("/api/v2/EmptyFolderName/plugins/" + API_NAME + "/read", normalData));
 		assertEquals("Non Existing Must Read didn't return 501", HttpResponseStatus.NOT_IMPLEMENTED.code(),
-				getResponseCodePostRequest("/api/v2/NonExistingMustRead/plugins/" + apiName + "/read", normalData));
+			getResponseCodePostRequest("/api/v2/NonExistingMustRead/plugins/" + API_NAME + "/read", normalData));
 		assertEquals("Non Existing Data didn't return 501", HttpResponseStatus.NOT_IMPLEMENTED.code(),
-				getResponseCodePostRequest("/api/v2/NonExistingData/plugins/" + apiName + "/read", normalData));
+			getResponseCodePostRequest("/api/v2/NonExistingData/plugins/" + API_NAME + "/read", normalData));
 		assertEquals("Test with no data didn't return 400", HttpResponseStatus.BAD_REQUEST.code(),
-				getResponseCodePostRequest("/api/v2/Test/plugins/" + apiName + "/read", emptyData));
+			getResponseCodePostRequest("/api/v2/Test/plugins/" + API_NAME + "/read", emptyData));
 		assertEquals("No UUID set didn't return 200", HttpResponseStatus.OK.code(),
-				getResponseCodePostRequest("/api/v2/NoSetUUIDFieldName/plugins/" + apiName + "/read", normalData));
+			getResponseCodePostRequest("/api/v2/NoSetUUIDFieldName/plugins/" + API_NAME + "/read", normalData));
 
 		testRead(readFirstPageName, readSecondPageName);
 	}
@@ -213,7 +215,7 @@ public class MustReadPluginTest {
 
 		ProjectConfig project = MustReadTestPlugin.generateTestConfiguration().getProjectConfiguration("Test");
 
-		assertEquals("Test didn't return 200", 200, getResponseCodePostRequest("/api/v2/Test/plugins/" + apiName + "/read", testData));
+		assertEquals("Test didn't return 200", 200, getResponseCodePostRequest("/api/v2/Test/plugins/" + API_NAME + "/read", testData));
 
 		String firstUrl = String.format("/api/v2/%s/webroot/%s/%s/%s", project.getName(), project.getFolderName(), user.getUUID(), firstId);
 		String secondUrl = String.format("/api/v2/%s/webroot/%s/%s/%s", project.getName(), project.getFolderName(), user.getUUID(), secondId);
@@ -234,11 +236,11 @@ public class MustReadPluginTest {
 		expected.add(unreadFirstPageName);
 		expected.add(unreadSecondPageName);
 
-		assertEquals(HttpResponseStatus.NOT_IMPLEMENTED.code(), getResponseCodeGetRequest("/api/v2/EmptyGraphQl/plugins/" + apiName + "/unread"));
+		assertEquals(HttpResponseStatus.NOT_IMPLEMENTED.code(), getResponseCodeGetRequest("/api/v2/EmptyGraphQl/plugins/" + API_NAME + "/unread"));
 		assertEquals(HttpResponseStatus.NOT_IMPLEMENTED.code(),
-			getResponseCodeGetRequest("/api/v2/NonExistingMustRead/plugins/" + apiName + "/unread"));
-		assertEquals(HttpResponseStatus.NOT_IMPLEMENTED.code(), getResponseCodeGetRequest("/api/v2/NonExistingData/plugins/" + apiName + "/unread"));
-		JsonObject response = getResponseJsonGetRequest("/api/v2/Test/plugins/" + apiName + "/unread");
+			getResponseCodeGetRequest("/api/v2/NonExistingMustRead/plugins/" + API_NAME + "/unread"));
+		assertEquals(HttpResponseStatus.NOT_IMPLEMENTED.code(), getResponseCodeGetRequest("/api/v2/NonExistingData/plugins/" + API_NAME + "/unread"));
+		JsonObject response = getResponseJsonGetRequest("/api/v2/Test/plugins/" + API_NAME + "/unread");
 		List<String> allFound = new ArrayList<>();
 
 		JsonHelper.fetchKeys(response, "name", allFound::add);
@@ -246,8 +248,8 @@ public class MustReadPluginTest {
 		assertEquals("There were not exactly 2 entries found", 2, allFound.size());
 		assertTrue("Not all expected unread entries were found", allFound.containsAll(expected));
 
-		assertEquals(HttpResponseStatus.NOT_IMPLEMENTED.code(), getResponseCodeGetRequest("/api/v2/NoConfig/plugins/" + apiName + "/unread"));
-		assertEquals(HttpResponseStatus.OK.code(), getResponseCodeGetRequest("/api/v2/NoSetUUIDFieldName/plugins/" + apiName + "/unread"));
+		assertEquals(HttpResponseStatus.NOT_IMPLEMENTED.code(), getResponseCodeGetRequest("/api/v2/NoConfig/plugins/" + API_NAME + "/unread"));
+		assertEquals(HttpResponseStatus.OK.code(), getResponseCodeGetRequest("/api/v2/NoSetUUIDFieldName/plugins/" + API_NAME + "/unread"));
 	}
 
 	private List<String> prepareMeshDataForUnreadTest() {
@@ -342,75 +344,13 @@ public class MustReadPluginTest {
 		return request;
 	}
 
-	private OkHttpClient client() {
-		Builder builder = new Builder();
-		CookieJar cookieJar = new CookieJar() {
-			private final HashMap<String, List<Cookie>> cookieStore = new HashMap<>();
-
-			@Override
-			public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
-
-			}
-
-			@Override
-			public List<Cookie> loadForRequest(HttpUrl url) {
-				ArrayList<Cookie> cookies = new ArrayList<>();
-				cookies.add(new Cookie.Builder()
-					.domain(url.host())
-					.path("/")
-					.name("mesh.token")
-					.value(server.client().getAuthentication().getToken())
-					.httpOnly()
-					.secure()
-					.build());
-				return cookies;
-
-			}
-		};
-		builder.cookieJar(cookieJar);
-		return builder.build();
+	@Override
+	protected MeshRestClient meshClient() {
+		return server.client();
 	}
 
-	private String getResponseTextGetRequest(String path) throws IOException {
-		return getResponseGetRequest(path).body().string();
-	}
-
-	private int getResponseCodeGetRequest(String path) throws IOException {
-		return getResponseGetRequest(path).code();
-	}
-
-	private Response getResponseGetRequest(String path) throws IOException {
-		Request request = new Request.Builder()
-			.header("Accept", "application/json")
-			.url("http://" + server.getHostname() + ":" + server.getPort() + path)
-			.build();
-		OkHttpClient client;
-
-		Response response = client().newCall(request).execute();
-		return response;
-	}
-
-	private String getResponseTextPostRequest(String path, JsonObject body) throws IOException {
-		return getResponsePostRequest(path, body).body().string();
-	}
-
-	private int getResponseCodePostRequest(String path, JsonObject body) throws IOException {
-		return getResponsePostRequest(path, body).code();
-	}
-
-	private Response getResponsePostRequest(String path, JsonObject body) throws IOException {
-		Request request = new Request.Builder()
-			.header("Accept", "application/json")
-			.url("http://" + server.getHostname() + ":" + server.getPort() + path)
-			.post(RequestBody.create(MediaType.get("application/json"), body.toString()))
-			.build();
-
-		Response response = client().newCall(request).execute();
-		return response;
-	}
-
-	private JsonObject getResponseJsonGetRequest(String path) throws IOException {
-		String jsonString = getResponseTextGetRequest(path);
-		return new JsonObject(jsonString);
+	@Override
+	protected String serverURL() {
+		return "http://" + server.getHostname() + ":" + server.getPort();
 	}
 }
