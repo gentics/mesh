@@ -94,7 +94,7 @@ public class UnreadHandler extends BaseHandler {
 			.subscribe(dataResponse -> {
 				doJsonResponse(dataResponse.getData());
 			}, error -> {
-				error.printStackTrace();
+				log.error(getLogHelper().generateLogMessage(getProjectName(), "Error during data fetch"), error);
 				doHttpCode(HttpResponseStatus.INTERNAL_SERVER_ERROR);
 			});
 	}

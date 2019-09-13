@@ -120,8 +120,7 @@ public class NodeController extends BaseController {
                                 .doOnSuccess(response -> {
                                     log.info(getLogHelper().generateLogMessage(projectName, String.format("Created path '%s'", convertBreadcrumbToPath(response.getBreadcrumb()))));
                                 }).doOnError(error2 -> {
-                                    log.error(getLogHelper().generateLogMessage(projectName, String.format("Failed creating path '%s'", path)));
-                                    error2.printStackTrace();
+                                    log.error(getLogHelper().generateLogMessage(projectName, String.format("Failed creating path '%s'", path)), error2);
                                 });
                     } else {
                         return Single.error(error1);
