@@ -51,8 +51,8 @@ public class NodeController extends BaseController {
             request.setFields(fields);
             request.setLanguage("en");
 
-            if (pluginFolderName.isEmpty()) {
-                log.info(getLogHelper().generateLogMessage(projectName, String.format("Folder '%s' empty therefor nothing is created.", pluginFolderName)));
+            if (StringUtils.isBlank(pluginFolderName)) {
+                log.info(getLogHelper().generateLogMessage(projectName, String.format("Configured Folder '%s' is blank, therefor none will be created", pluginFolderName)));
 
                 return Completable.complete();
             }
@@ -118,7 +118,7 @@ public class NodeController extends BaseController {
                                 .webrootCreate(projectName, "/" + path, request)
                                 .toSingle()
                                 .doOnSuccess(response -> {
-                                    log.info(getLogHelper().generateLogMessage(projectName, String.format("Created path '%s'", convertBreadcrumbToPath(response.getBreadcrumb()))));
+                                    log.info(getLogHelper().generateLogMessage(projectName, String.format("Created path '%s' successfully", convertBreadcrumbToPath(response.getBreadcrumb()))));
                                 }).doOnError(error2 -> {
                                     log.error(getLogHelper().generateLogMessage(projectName, String.format("Failed creating path '%s'", path)), error2);
                                 });

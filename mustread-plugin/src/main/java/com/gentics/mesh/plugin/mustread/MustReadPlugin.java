@@ -1,7 +1,6 @@
 package com.gentics.mesh.plugin.mustread;
 
 import com.gentics.mesh.plugin.AbstractPlugin;
-import com.gentics.mesh.plugin.PluginConfigUtil;
 import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.mustread.config.MustReadConfig;
@@ -62,7 +61,7 @@ public class MustReadPlugin extends AbstractPlugin implements RestPlugin {
         log.info(logHelper.generateLogMessage("", String.format("Configuration file is in %s", config.getAbsolutePath())));
 
         if (config.exists()) {
-            log.info(logHelper.generateLogMessage(" ", "Configuration file exists, loading configuration!"));
+            log.info(logHelper.generateLogMessage("", "Configuration file exists, loading configuration!"));
             configuration = readConfig(MustReadConfig.class);
         } else {
             log.info(logHelper.generateLogMessage("", "Configuration file doesn't exists, creating configuration"));
@@ -77,6 +76,7 @@ public class MustReadPlugin extends AbstractPlugin implements RestPlugin {
     public Router createProjectRouter() {
         Router router = Router.router(vertx());
 
+        log.info(logHelper.generateLogMessage("", "Registering Endpoints for projects"));
         router.get("/unread").handler(new UnreadHandler(this, getConfiguration(), getLogHelper(), getNodeController()));
         router.post("/read").handler(new MakeReadHandler(this, getConfiguration(), getLogHelper(), getNodeController()));
 
@@ -84,7 +84,7 @@ public class MustReadPlugin extends AbstractPlugin implements RestPlugin {
     }
 
     /**
-     * Generates the default configuration if none was found
+     * Generates the default configuration
      *
      * @return
      */
