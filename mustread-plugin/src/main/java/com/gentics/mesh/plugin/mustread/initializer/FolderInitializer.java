@@ -27,29 +27,32 @@ public class FolderInitializer extends BaseInitializer {
     }
 
     public Completable initialize() {
-        Set<Completable> completables = new HashSet<>();
+        return Completable.defer(() -> {
+            Set<Completable> completables = new HashSet<>();
 
-        // We run through our projects
-        for (ProjectConfig project : getConfig().getProjects()) {
-            String folderName = project.getFolderName();
-            String projectName = project.getName();
+            // We run through our projects
+            for (ProjectConfig project : getConfig().getProjects()) {
+                String folderName = project.getFolderName();
+                String projectName = project.getName();
 
-            completables.add(getClient()
-                    .findProjects()
-                    .toSingle()
-                    .map(list -> {
-                        Optional<ProjectResponse> projects = list.getData().stream().filter(s -> s.getName().equals(project.getName())).findFirst();
+                completables.add(getClient()
+                        .findProjects()
+                        .toSingle()
+                        .flatMapCompletable(list -> {
+                            Optional<ProjectResponse> projects = list.getData().stream().filter(s -> s.getName().equals(project.getName())).findFirst();
 
-                        if (projects.isPresent()) { // If the project exists we directly assign the schema
-                            log.info(getLogHelper().generateLogMessage(projectName, String.format("Initializing folder '%s'.", folderName)));
-                            return nodeController.createPluginFolderForProject(projectName, folderName);
-                        }
+                            if (projects.isPresent()) { // If the project exists we directly assign the schema
+                                log.info(getLogHelper().generateLogMessage(projectName, String.format("Initializing folder '%s'.", folderName)));
+                                return nodeController.createPluginFolderForProject(projectName, folderName);
+                            }
 
-                        return list;
-                    }).ignoreElement());
+                            return Completable.complete();
+                        })
+                );
 
-        }
+            }
 
-        return Completable.merge(completables);
+            return Completable.merge(completables);
+        });
     }
 }
