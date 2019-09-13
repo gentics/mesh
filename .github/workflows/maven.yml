@@ -18,10 +18,6 @@ jobs:
       with:
         java-version: 1.8
     - name: Build with Maven
-      env:
-        JAVA_1_11_HOME: ${{JAVA_HOME_11_X64}}
       run: |
-        java -version
-        set
         JAVA_1_11_HOME=$JAVA_HOME_11_X64 mvn package -DskipTests -Dskip.unit.tests -Dskip.performance.tests -Dskip.cluster.tests
  --file pom.xml
