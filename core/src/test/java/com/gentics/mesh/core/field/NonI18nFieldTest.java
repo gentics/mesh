@@ -8,6 +8,7 @@ import java.io.InputStream;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -20,7 +21,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.buffer.Buffer;
 
-@MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(testSize = TestSize.FULL, startServer = true)
 public class NonI18nFieldTest extends AbstractMeshTest {
 
 	@Test
@@ -40,6 +41,47 @@ public class NonI18nFieldTest extends AbstractMeshTest {
 		nodeRequest.setLanguage("en");
 		nodeRequest.getFields().put("i18n-name", FieldUtil.createStringField("i18n en name"));
 		nodeRequest.getFields().put("non-i18n-name", FieldUtil.createStringField("non-i18n en name"));
+		nodeRequest.setParentNodeUuid(parentFolderUuid);
+		NodeResponse nodeResponse = call(() -> client().createNode(projectName(), nodeRequest));
+		String uuid = nodeResponse.getUuid();
+
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setLanguage("de");
+		nodeUpdateRequest.getFields().put("i18n-name", FieldUtil.createStringField("i18n de name"));
+		call(() -> client().updateNode(projectName(), uuid, nodeUpdateRequest));
+
+		printFields(uuid);
+
+		// Now update one language
+		nodeUpdateRequest.getFields().put("non-i18n-name", FieldUtil.createStringField("non-i18n de name new!"));
+		call(() -> client().updateNode(projectName(), uuid, nodeUpdateRequest));
+
+		printFields(uuid);
+
+	}
+
+	@Test
+	public void testNonI18nMicronode() {
+		String parentFolderUuid = tx(() -> project().getBaseNode().getUuid());
+
+		SchemaCreateRequest schemaRequest = new SchemaCreateRequest();
+		schemaRequest.setName("testing");
+		schemaRequest.addField(FieldUtil.createStringFieldSchema("i18n-name").setTranslatable(true));
+		schemaRequest.addField(FieldUtil.createStringFieldSchema("non-i18n-name").setTranslatable(false));
+		schemaRequest.addField(FieldUtil.createMicronodeFieldSchema("vcard").setAllowedMicroSchemas("vcard").setTranslatable(false));
+		SchemaResponse schemaResponse = call(() -> client().createSchema(schemaRequest));
+		call(() -> client().assignSchemaToProject(projectName(), schemaResponse.getUuid()));
+
+		MicronodeResponse vcard = new MicronodeResponse();
+		vcard.getFields().put("firstName", FieldUtil.createStringField("Joe"));
+		vcard.getFields().put("lastName", FieldUtil.createStringField("Doe"));
+		vcard.setMicroschemaName("vcard");
+
+		NodeCreateRequest nodeRequest = new NodeCreateRequest();
+		nodeRequest.setSchemaName("testing");
+		nodeRequest.setLanguage("en");
+		nodeRequest.getFields().put("i18n-name", FieldUtil.createStringField("i18n en name"));
+		nodeRequest.getFields().put("vcard", vcard);
 		nodeRequest.setParentNodeUuid(parentFolderUuid);
 		NodeResponse nodeResponse = call(() -> client().createNode(projectName(), nodeRequest));
 		String uuid = nodeResponse.getUuid();

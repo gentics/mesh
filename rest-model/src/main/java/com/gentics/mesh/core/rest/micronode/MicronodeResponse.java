@@ -47,6 +47,19 @@ public class MicronodeResponse extends AbstractResponse implements MicronodeFiel
 		return this;
 	}
 
+	/**
+	 * Shortcut to set the schema reference by microschemaName.
+	 * 
+	 * @param microschemaName
+	 * @return
+	 */
+	public MicronodeResponse setMicroschemaName(String microschemaName) {
+		MicroschemaReference microschemaReference = new MicroschemaReferenceImpl();
+		microschemaReference.setName(microschemaName);
+		setMicroschema(microschemaReference);
+		return this;
+	}
+
 	@Override
 	public FieldMap getFields() {
 		return fields;
