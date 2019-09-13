@@ -27,21 +27,21 @@ default value `uuids` is used
 
 You can define the following parameters for each project:
 
-* Name: Name of the Mesh Project the plugin is active
-* FolderName: Name of the folder where the plugin stores it's informations
-* MustReadGraphQLFile: GraphQL file that fetches the ids of the nodes 
+* name: Name of the Mesh Project the plugin is active
+* folderName: Name of the folder where the plugin stores it's informations
+* uuidQueryFile: GraphQL file that fetches the ids of the nodes 
 that mus be read
-* UUIDFieldName: Name of the field in the MustReadGrapQLFile that stores
+* uuidFieldName: Name of the field in the MustReadGrapQLFile that stores
 the uuid. If you don't specify it or specify it as empty the plugin assumes
 you meant `uuid` 
-* DataGraphQLFile: GraphQL file that fetches the data you want to receive
+* dataQueryFile: GraphQL file that fetches the data you want to receive
 when accessing the /unread endpoint. This GraphQL file gets the 
 variable $uuids provides by the module to fetch the data for the unread
 nodes
 
 **The must read plugin only activates for projects which are defined in
-the config.yml and have `FolderName`, `MustReadGraphQLFile` and 
-`DataGraphQLFile` set**
+the config.yml and have `FolderName`, `uuidQueryFile` and 
+`dataQueryFile` set**
 
 # Endpoints
 
@@ -58,7 +58,7 @@ endpoint ignores them for the currently logged in user
 
 * **Method**: Get
 * **Data**: Provides a json with the data for all the unread nodes for 
-the currently logged in user. The structure is defined by the [DataGraphQLFile][#DataGraphQLFile)
+the currently logged in user. The structure is defined by the [dataQueryFile][#dataQueryFile)
 configuration option of the project
 
 Returns the data for the nodes that are unread by the currently logged in 
