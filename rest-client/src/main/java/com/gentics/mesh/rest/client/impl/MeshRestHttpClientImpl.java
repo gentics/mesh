@@ -4,6 +4,7 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_YAML_UTF8;
 import static com.gentics.mesh.rest.client.impl.HttpMethod.DELETE;
 import static com.gentics.mesh.rest.client.impl.HttpMethod.GET;
 import static com.gentics.mesh.rest.client.impl.HttpMethod.POST;
+import static com.gentics.mesh.rest.client.impl.HttpMethod.PUT;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 import java.io.ByteArrayInputStream;
@@ -28,6 +29,7 @@ import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
@@ -99,6 +101,8 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.util.URIUtils;
+
+import io.vertx.core.json.JsonObject;
 
 /**
  * HTTP based REST client implementation.
@@ -1449,4 +1453,83 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 		Objects.requireNonNull(id, "id must not be null");
 		return prepareRequest(GET, "/admin/plugins/" + id, PluginResponse.class);
 	}
+
+	@Override
+	public MeshRequest<JsonObject> get(String path) {
+		Objects.requireNonNull(path, "path must not be null");
+		return prepareRequest(GET, path, JsonObject.class);
+	}
+
+	@Override
+	public <R extends RestModel> MeshRequest<R> get(String path, Class<R> responseClass) {
+		return prepareRequest(GET, path, responseClass);
+	}
+
+	@Override
+	public MeshRequest<JsonObject> put(String path) {
+		Objects.requireNonNull(path, "path must not be null");
+		return prepareRequest(PUT, path, JsonObject.class);
+	}
+
+	@Override
+	public MeshRequest<JsonObject> put(String path, JsonObject body) {
+		Objects.requireNonNull(path, "path must not be null");
+		Objects.requireNonNull(body, "body must not be null");
+		return handleRequest(PUT, path, JsonObject.class, body.encodePrettily());
+	}
+
+	@Override
+	public <R extends RestModel> MeshRequest<R> put(String path, Class<R> responseClass) {
+		return prepareRequest(PUT, path, responseClass);
+	}
+
+	@Override
+	public <R extends RestModel, T extends RestModel> MeshRequest<R> put(String path, T request, Class<R> responseClass) {
+		Objects.requireNonNull(path, "path must not be null");
+		Objects.requireNonNull(request, "request must not be null");
+		return prepareRequest(PUT, path, responseClass, request);
+	}
+
+	@Override
+	public MeshRequest<JsonObject> post(String path) {
+		Objects.requireNonNull(path, "path must not be null");
+		return prepareRequest(POST, path, JsonObject.class);
+	}
+
+	@Override
+	public MeshRequest<JsonObject> post(String path, JsonObject body) {
+		Objects.requireNonNull(path, "path must not be null");
+		Objects.requireNonNull(body, "body must not be null");
+		return handleRequest(POST, path, JsonObject.class, body.encodePrettily());
+	}
+
+	@Override
+	public <R extends RestModel> MeshRequest<R> post(String path, Class<R> responseClass) {
+		return prepareRequest(POST, path, responseClass);
+	}
+
+	@Override
+	public <R extends RestModel, T extends RestModel> MeshRequest<R> post(String path, T request, Class<R> responseClass) {
+		Objects.requireNonNull(request, "The request must not be null");
+		return prepareRequest(POST, path, responseClass, request);
+	}
+
+	@Override
+	public MeshRequest<JsonObject> delete(String path) {
+		Objects.requireNonNull(path, "path must not be null");
+		return prepareRequest(DELETE, path, JsonObject.class);
+	}
+
+	@Override
+	public MeshRequest<EmptyResponse> deleteEmpty(String path) {
+		Objects.requireNonNull(path, "path must not be null");
+		return prepareRequest(DELETE, path, EmptyResponse.class);
+	}
+
+	@Override
+	public <R extends RestModel> MeshRequest<R> delete(String path, Class<R> responseClass) {
+		Objects.requireNonNull(path, "path must not be null");
+		return prepareRequest(DELETE, path, responseClass);
+	}
+
 }

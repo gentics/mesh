@@ -9,6 +9,7 @@ import com.gentics.mesh.rest.client.method.ApiInfoClientMethods;
 import com.gentics.mesh.rest.client.method.AuthClientMethods;
 import com.gentics.mesh.rest.client.method.BranchClientMethods;
 import com.gentics.mesh.rest.client.method.EventbusClientMethods;
+import com.gentics.mesh.rest.client.method.GenericHttpMethods;
 import com.gentics.mesh.rest.client.method.GraphQLClientMethods;
 import com.gentics.mesh.rest.client.method.GroupClientMethods;
 import com.gentics.mesh.rest.client.method.JobClientMethods;
@@ -32,7 +33,8 @@ import okhttp3.OkHttpClient;
 public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods,
 	SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods,
 	AdminPluginClientMethods, MicroschemaClientMethods, NodeBinaryFieldClientMethods, UtilityClientMethods, NavigationClientMethods,
-	NavRootClientMethods, EventbusClientMethods, BranchClientMethods, ApiInfoClientMethods, GraphQLClientMethods, JobClientMethods {
+	NavRootClientMethods, EventbusClientMethods, BranchClientMethods, ApiInfoClientMethods, GraphQLClientMethods, JobClientMethods,
+	GenericHttpMethods {
 
 	/**
 	 * Create a new mesh rest client.
@@ -50,8 +52,7 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 			.setHost(host)
 			.setPort(port)
 			.setSsl(ssl)
-			.build()
-		);
+			.build());
 	}
 
 	/**
@@ -67,7 +68,9 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 
 	/**
 	 * Create a new mesh rest client.
-	 * @param config Client configuration
+	 * 
+	 * @param config
+	 *            Client configuration
 	 * @return
 	 */
 	static MeshRestClient create(MeshRestClientConfig config) {
@@ -76,8 +79,11 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 
 	/**
 	 * Create a new mesh rest client.
-	 * @param config Client configuration
-	 * @param client Ok http client to be used
+	 * 
+	 * @param config
+	 *            Client configuration
+	 * @param client
+	 *            Ok http client to be used
 	 * @return
 	 */
 	static MeshRestClient create(MeshRestClientConfig config, OkHttpClient client) {
@@ -94,8 +100,8 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	MeshRestClient setLogin(String username, String password);
 
 	/**
-	 * Set the login that is used to authenticate the requests. This will also set a new password when {@link #login()}
-	 * is called. Should be used when the user has to change the password.
+	 * Set the login that is used to authenticate the requests. This will also set a new password when {@link #login()} is called. Should be used when the user
+	 * has to change the password.
 	 *
 	 * @param username
 	 * @param password

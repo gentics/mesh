@@ -26,6 +26,8 @@ include::content/docs/variables.adoc-include[]
 [[v0.40.3]]
 == 0.40.3 (TBD)
 
+icon:plus[] Java Rest Client: Various new methods have been added to handle endpoint agnostic requests (`get(), post(), delete(), put()`). These methods can be used to handle plugin requests. 
+
 icon:check[] Migration: It is now possible to apply schema / microschema changes that include the `name` property. Previously the name property was not utilized.
 
 [[v0.40.2]]

@@ -42,6 +42,7 @@ import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
@@ -120,6 +121,7 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.CaseInsensitiveHeaders;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
 
 /**
@@ -1621,4 +1623,81 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		return null;
 	}
 
+	@Override
+	public MeshRequest<JsonObject> delete(String path) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<JsonObject> get(String path) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<JsonObject> post(String path) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<JsonObject> post(String path, JsonObject body) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public <R extends RestModel, T extends RestModel> MeshRequest<R> post(String path, T request, Class<R> requestClass) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<JsonObject> put(String path) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<JsonObject> put(String path, JsonObject body) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public <R extends RestModel> MeshRequest<R> delete(String path, Class<R> responseClass) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<EmptyResponse> deleteEmpty(String path) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public <R extends RestModel> MeshRequest<R> get(String path, Class<R> responseClass) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public <R extends RestModel> MeshRequest<R> post(String path, Class<R> responseClass) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public <R extends RestModel, T extends RestModel> MeshRequest<R> put(String path, T request, Class<R> responseClass) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public <R extends RestModel> MeshRequest<R> put(String path, Class<R> responseClass) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

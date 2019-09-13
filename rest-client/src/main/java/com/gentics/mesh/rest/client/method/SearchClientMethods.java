@@ -263,4 +263,5 @@ public interface SearchClientMethods {
 	 * @return
 	 */
 	MeshRequest<SearchStatusResponse> searchStatus();
+
 }

@@ -1,16 +1,17 @@
 package com.gentics.mesh.rest.client.impl;
 
+import java.io.InputStream;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.client.MeshWebsocket;
-import okhttp3.OkHttpClient;
 
-import java.io.InputStream;
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
+import okhttp3.OkHttpClient;
 
 /**
  * Uses OkHttp client whenever possible.
@@ -31,8 +32,8 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 	}
 
 	/**
-	 * We need a long timeout per default since some requests take a long time. For all tests a 1 minute timeout
-	 * works fine.
+	 * We need a long timeout per default since some requests take a long time. For all tests a 1 minute timeout works fine.
+	 * 
 	 * @return
 	 */
 	private static OkHttpClient defaultClient() {
@@ -48,7 +49,8 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 	}
 
 	@Override
-	public <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, InputStream bodyData, long fileSize, String contentType) {
+	public <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, InputStream bodyData, long fileSize,
+		String contentType) {
 		return MeshOkHttpRequestImpl.BinaryRequest(client, method.name(), getUrl(path), createHeaders(), classOfT, bodyData, fileSize, contentType);
 	}
 
