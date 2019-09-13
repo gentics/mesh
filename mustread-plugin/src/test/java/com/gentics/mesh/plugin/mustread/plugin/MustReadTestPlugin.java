@@ -77,6 +77,7 @@ public class MustReadTestPlugin extends MustReadPlugin {
                         .setUuidFieldName("")
         );
 
+        config.setNodeListParameterName("nodes");
         config.setProjects(projects);
 
         return config;

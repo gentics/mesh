@@ -105,8 +105,7 @@ public class SchemaController extends BaseController {
                     createdSchemas.put(schema.getName(), schema);
                     log.info(getLogHelper().generateLogMessage("", String.format("Schema %s found", schema.getName())));
                 }).doOnError(error -> {
-                    log.info(getLogHelper().generateLogMessage("", String.format("Error finding schema %s", schemaName)));
-                    error.printStackTrace();
+                    log.info(getLogHelper().generateLogMessage("", String.format("Error finding schema %s", schemaName)), error);
                 }).ignoreElement();
     }
 
@@ -141,8 +140,7 @@ public class SchemaController extends BaseController {
                 .doOnComplete(() -> {
                     log.info(getLogHelper().generateLogMessage(projectName, String.format("Assigned Schema '%s'", schema.getName())));
                 }).doOnError((error) -> {
-                    log.error(getLogHelper().generateLogMessage(projectName, String.format("Failed to assign '%s'", schema.getName())));
-                    error.printStackTrace();
+                    log.error(getLogHelper().generateLogMessage(projectName, String.format("Failed to assign '%s'", schema.getName())), error);
                 });
     }
 
