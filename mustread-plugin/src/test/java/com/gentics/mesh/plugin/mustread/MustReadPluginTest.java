@@ -1,22 +1,5 @@
 package com.gentics.mesh.plugin.mustread;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.apache.commons.io.FileUtils;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.testcontainers.shaded.org.apache.commons.lang.StringUtils;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
@@ -39,9 +22,20 @@ import com.gentics.mesh.plugin.mustread.object.User;
 import com.gentics.mesh.plugin.mustread.plugin.MustReadTestPlugin;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.local.MeshLocalServer;
-
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.json.JsonObject;
+import org.apache.commons.io.FileUtils;
+import org.junit.*;
+import org.testcontainers.shaded.org.apache.commons.lang.StringUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class MustReadPluginTest extends AbstractPluginTest {
 
@@ -230,8 +224,6 @@ public class MustReadPluginTest extends AbstractPluginTest {
 		List<String> ids = prepareMeshDataForUnreadTest();
 
 		testRead(ids.get(0), ids.get(1));
-
-		debugOutput();
 
 		expected.add(unreadFirstPageName);
 		expected.add(unreadSecondPageName);
