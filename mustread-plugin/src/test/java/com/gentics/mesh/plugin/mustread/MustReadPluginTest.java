@@ -179,19 +179,26 @@ public class MustReadPluginTest {
 
 	@Test
 	public void testRead() throws IOException {
-		JsonObject testData = new JsonObject()
-			.put("nodes", new ArrayList<String>());
+		List<String> nodes = new ArrayList<>();
+		nodes.add("test");
 
-		assertEquals("Empty GraphQl didn't return 501", 501,
-			getResponseCodePostRequest("/api/v2/EmptyGraphQl/plugins/" + apiName + "/read", testData));
-		assertEquals("Empty folder name didn't return 501", 501,
-			getResponseCodePostRequest("/api/v2/EmptyFolderName/plugins/" + apiName + "/read", testData));
-		assertEquals("Non Existing Must Read didn't return 501", 501,
-			getResponseCodePostRequest("/api/v2/NonExistingMustRead/plugins/" + apiName + "/read", testData));
-		assertEquals("Non Existing Data didn't return 501", 501,
-			getResponseCodePostRequest("/api/v2/NonExistingData/plugins/" + apiName + "/read", testData));
-		assertEquals("Non Existing Data didn't return 200", 200,
-			getResponseCodePostRequest("/api/v2/NoSetUUIDFieldName/plugins/" + apiName + "/read", testData));
+		JsonObject emptyData = new JsonObject()
+			.put("nodes", new ArrayList<String>());
+		JsonObject normalData = new JsonObject()
+				.put("nodes", nodes);
+
+		assertEquals("Empty GraphQl didn't return 501", HttpResponseStatus.NOT_IMPLEMENTED.code(),
+				getResponseCodePostRequest("/api/v2/EmptyGraphQl/plugins/" + apiName + "/read", normalData));
+		assertEquals("Empty folder name didn't return 501", HttpResponseStatus.NOT_IMPLEMENTED.code(),
+				getResponseCodePostRequest("/api/v2/EmptyFolderName/plugins/" + apiName + "/read", normalData));
+		assertEquals("Non Existing Must Read didn't return 501", HttpResponseStatus.NOT_IMPLEMENTED.code(),
+				getResponseCodePostRequest("/api/v2/NonExistingMustRead/plugins/" + apiName + "/read", normalData));
+		assertEquals("Non Existing Data didn't return 501", HttpResponseStatus.NOT_IMPLEMENTED.code(),
+				getResponseCodePostRequest("/api/v2/NonExistingData/plugins/" + apiName + "/read", normalData));
+		assertEquals("Test with no data didn't return 400", HttpResponseStatus.BAD_REQUEST.code(),
+				getResponseCodePostRequest("/api/v2/Test/plugins/" + apiName + "/read", emptyData));
+		assertEquals("No UUID set didn't return 200", HttpResponseStatus.OK.code(),
+				getResponseCodePostRequest("/api/v2/NoSetUUIDFieldName/plugins/" + apiName + "/read", normalData));
 
 		testRead(readFirstPageName, readSecondPageName);
 	}
@@ -203,14 +210,10 @@ public class MustReadPluginTest {
 		nodes.add(secondId);
 		JsonObject testData = new JsonObject()
 			.put("nodes", nodes);
-		JsonObject expectedResult = new JsonObject()
-			.put("message", "successfull");
 
 		ProjectConfig project = MustReadTestPlugin.generateTestConfiguration().getProjectConfiguration("Test");
 
-		Response response = getResponsePostRequest("/api/v2/Test/plugins/" + apiName + "/read", testData);
-		assertEquals("Test didn't return 200", 200, response.code());
-		assertEquals("Test didn't return expected message", expectedResult.toString(), response.body().string());
+		assertEquals("Test didn't return 200", 200, getResponseCodePostRequest("/api/v2/Test/plugins/" + apiName + "/read", testData));
 
 		String firstUrl = String.format("/api/v2/%s/webroot/%s/%s/%s", project.getName(), project.getFolderName(), user.getUUID(), firstId);
 		String secondUrl = String.format("/api/v2/%s/webroot/%s/%s/%s", project.getName(), project.getFolderName(), user.getUUID(), secondId);
