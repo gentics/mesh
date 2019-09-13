@@ -32,7 +32,7 @@ public class FolderInitializer extends BaseInitializer {
             String projectName = project.getName();
 
             log.info(getLogHelper().generateLogMessage(projectName, String.format("Initializing folder '%s'.", folderName)));
-            nodeController.createPluginFolderForProject(projectName, folderName);
+            results.add(nodeController.createPluginFolderForProject(projectName, folderName));
         }
 
         return Completable.merge(results);
