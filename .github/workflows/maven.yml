@@ -18,6 +18,8 @@ jobs:
       with:
         java-version: 1.8
     - name: Build with Maven
+      env:
+        JAVA_1_11_HOME: "/usr/lib/jvm/zulu-11-azure-amd64"
+        JAVA_1_8_HOME: "/usr/lib/jvm/zulu-8-azure-amd64"
       run: |
-        JAVA_1_11_HOME=$JAVA_HOME_11_X64 mvn package -DskipTests -Dskip.unit.tests -Dskip.performance.tests -Dskip.cluster.tests
- --file pom.xml
+        mvn package -DskipTests -Dskip.unit.tests -Dskip.performance.tests -Dskip.cluster.tests --file pom.xml
