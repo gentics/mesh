@@ -10,13 +10,13 @@
 	<parent>
 		<artifactId>mesh-plugin-parent</artifactId>
 		<groupId>com.gentics.mesh</groupId>
-		<version>0.40.2</version>
+		<version>0.40.3</version>
 	</parent>
 
 	<properties>
-		<mesh.version>0.40.2</mesh.version>
 		<plugin.license>Commercial</plugin.license>
 		<plugin.author>Gentics</plugin.author>
+		<mesh.version>0.40.3</mesh.version>
 	</properties>
 
 	<modules>
@@ -34,6 +34,7 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
 
 	<build>
 		<plugins>
