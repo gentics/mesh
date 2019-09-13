@@ -7,7 +7,7 @@ import com.gentics.mesh.plugin.mustread.exception.PluginPathNotFoundException;
 import com.gentics.mesh.plugin.mustread.helper.LogHelper;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
-import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
@@ -38,7 +38,15 @@ public class MakeReadHandler extends BaseHandler {
             return;
         }
 
-        getBodyAsJson().getJsonArray(getConfig().getNodeListParameterName()).forEach((item -> {
+        JsonArray providedData = getBodyAsJson().getJsonArray(getConfig().getNodeListParameterName());
+
+        if (providedData == null || providedData.size() < 1) {
+            //Nothing to update
+            doJsonResponse("Noting updated, because no uuids provided", HttpResponseStatus.BAD_REQUEST);
+            return;
+        }
+
+        providedData.forEach((item -> {
             String uuid = (String) item;
 
             completables.add(getNodeController().createReadNodeForProjectAndUser(getProjectName(), getUser(), uuid));
@@ -47,11 +55,7 @@ public class MakeReadHandler extends BaseHandler {
         getNodeController().createUserFolderForProject(getProjectName(), getUser())
                 .andThen(Completable.merge(completables))
                 .subscribe(() -> {
-                    JsonObject jsonResponse = new JsonObject();
-
-                    jsonResponse.put("message", "successfull");
-
-                    doJsonResponse(jsonResponse);
+                    doJsonResponse("successful");
                 }, error -> {
                     if (error instanceof PluginPathNotFoundException) {
                         doHttpCode(HttpResponseStatus.NOT_FOUND);

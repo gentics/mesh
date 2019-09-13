@@ -96,17 +96,29 @@ abstract class BaseHandler implements Handler<RoutingContext> {
 			.setStatusCode(status.code()).end(status.reasonPhrase());
 	}
 
-	void doJsonResponse(Object object) {
+	void doJsonResponse(Object object, HttpResponseStatus status) {
 		getRoutingContext().response()
+				.setStatusCode(status.code())
 			.putHeader("content-type", "application/json; charset=utf-8")
 			.end(Json.encode(object));
 	}
 
-	void doResponse(String response) {
-		getRoutingContext().response()
-			.setStatusCode(HttpResponseStatus.OK.code())
-			.end(response);
+	void doJsonResponse(String text, HttpResponseStatus status) {
+		JsonObject jsonResponse = new JsonObject();
+
+		jsonResponse.put("message", text);
+
+		doJsonResponse(jsonResponse, status);
 	}
+
+	void doJsonResponse(String text) {
+		doJsonResponse(text, HttpResponseStatus.OK);
+	}
+
+	void doJsonResponse(Object object) {
+		doJsonResponse(object, HttpResponseStatus.OK);
+	}
+
 
 	MustReadPlugin getPlugin() {
 		return plugin;
