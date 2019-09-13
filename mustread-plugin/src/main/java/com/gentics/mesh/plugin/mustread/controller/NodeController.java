@@ -65,9 +65,9 @@ public class NodeController extends BaseController {
             }
 
             return createPathInProject(projectName, pluginFolderName, request)
-                    .doOnSuccess((response -> {
+                    .doOnSuccess(response -> {
                         pluginFolders.put(projectName, response);
-                    })).ignoreElement();
+                    }).ignoreElement();
         });
     }
 

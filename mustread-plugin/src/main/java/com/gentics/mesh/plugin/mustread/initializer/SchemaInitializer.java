@@ -28,28 +28,33 @@ public class SchemaInitializer extends BaseInitializer {
 
 
     private Completable assignSchemasToProjects() {
-        List<Completable> completables = new ArrayList<>();
+        return Completable.defer(() -> {
+            List<Completable> completables = new ArrayList<>();
+            // We run through our projects
+            for (ProjectConfig project : getConfig().getProjects()) {
+                for (SchemaResponse schema : schemaController.getCreatedSchemas()) {
+                    completables.add(getClient()
+                            .findProjects()
+                            .toSingle()
+                            .flatMapCompletable(list -> {
+                                Optional<ProjectResponse> projects = list.getData().stream().filter(s -> s.getName().equals(project.getName())).findFirst();
 
-        // We run through our projects
-        for (ProjectConfig project : getConfig().getProjects()) {
-            for (SchemaResponse schema : schemaController.getCreatedSchemas()) {
-                completables.add(getClient()
-                        .findProjects()
-                        .toSingle()
-                        .map(list -> {
-                            Optional<ProjectResponse> projects = list.getData().stream().filter(s -> s.getName().equals(project.getName())).findFirst();
 
-                            if (projects.isPresent()) { // If the project exists we directly assign the schema
-                                log.info(getLogHelper().generateLogMessage(project.getName(), String.format("Initializing schema '%s'.", schema.getName())));
-                                return schemaController.assignSchemaToProject(project.getName(), schema);
-                            }
+                                if (projects.isPresent()) { // If the project exists we directly assign the schema
+                                    log.info(getLogHelper().generateLogMessage(project.getName(), String.format("Start assigning schema '%s'.", schema.getName())));
+                                    return schemaController.assignSchemaToProject(project.getName(), schema);
+                                }
 
-                            return list;
-                        }).ignoreElement());
+                                log.info(getLogHelper().generateLogMessage(project.getName(), String.format("Ignoring '%s'.", schema.getName())));
+                                return Completable.complete();
+                            })
+                    );
+                }
             }
-        }
+            return Completable.merge(completables);
+        });
 
-        return Completable.merge(completables);
+
     }
 
     @Override
