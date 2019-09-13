@@ -37,7 +37,7 @@ public class FolderInitializer extends BaseInitializer {
             completables.add(getClient()
                     .findProjects()
                     .toSingle()
-                    .map(list -> {
+                    .flatMapCompletable(list -> {
                         Optional<ProjectResponse> projects = list.getData().stream().filter(s -> s.getName().equals(project.getName())).findFirst();
 
                         if (projects.isPresent()) { // If the project exists we directly assign the schema
@@ -45,8 +45,8 @@ public class FolderInitializer extends BaseInitializer {
                             return nodeController.createPluginFolderForProject(projectName, folderName);
                         }
 
-                        return list;
-                    }).ignoreElement());
+                        return Completable.complete();
+                    }));
 
         }
 
