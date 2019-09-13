@@ -24,11 +24,11 @@ include::content/docs/variables.adoc-include[]
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 [[v0.40.3]]
-== 0.40.3 (TBD)
+== 0.40.3 (13.09.2019)
 
-icon:plus[] Java Rest Client: Various new methods have been added to handle endpoint agnostic requests (`get(), post(), delete(), put()`). These methods can be used to handle plugin requests. 
+icon:plus[] Java Rest Client: Various new methods have been added to handle endpoint agnostic requests (`get(), post(), delete(), put()`). These methods can be used to handle plugin requests.
 
-icon:check[] Migration: It is now possible to apply schema / microschema changes that include the `name` property. Previously the name property was not utilized.
+icon:check[] Migration: It is now possible to apply schema / microschema changes that include the `name` property via the `changes` endpoint. Previously the name property was not utilized.
 
 [[v0.40.2]]
 == 0.40.2 (09.09.2019)
