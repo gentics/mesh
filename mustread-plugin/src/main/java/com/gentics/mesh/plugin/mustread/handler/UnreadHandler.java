@@ -45,8 +45,8 @@ public class UnreadHandler extends BaseHandler {
 		String alreadyReadQuery;
 
 		try {
-			String mustReadFile = getPlugin().getGraphQlDir() + File.separator + getProjectConfig().getMustReadGraphQlFile();
-			String dataFile = getPlugin().getGraphQlDir() + File.separator + getProjectConfig().getDataGraphQlFile();
+			String mustReadFile = getPlugin().getGraphQlDir() + File.separator + getProjectConfig().getUuidQueryFile();
+			String dataFile = getPlugin().getGraphQlDir() + File.separator + getProjectConfig().getDataQueryFile();
 
 			mustReadQuery = IOUtils.toString(new FileInputStream(mustReadFile));
 			tmpDataQuery = IOUtils.toString(new FileInputStream(dataFile));

@@ -58,10 +58,10 @@ public class MustReadPlugin extends AbstractPlugin implements RestPlugin {
 
     private void initializeConfig() throws IOException {
         File config = getConfigFile();
-        log.debug(logHelper.generateLogMessage("", String.format("Configuration file is in %s", config.getAbsolutePath())));
+        log.info(logHelper.generateLogMessage("", String.format("Configuration file is in %s", config.getAbsolutePath())));
 
         if (config.exists()) {
-            log.info(logHelper.generateLogMessage(" ", "Configuration file exists, loading configuration!"));
+            log.info(logHelper.generateLogMessage("", "Configuration file exists, loading configuration!"));
             configuration = readConfig(MustReadConfig.class);
         } else {
             log.info(logHelper.generateLogMessage("", "Configuration file doesn't exists, creating configuration"));
@@ -76,6 +76,7 @@ public class MustReadPlugin extends AbstractPlugin implements RestPlugin {
     public Router createProjectRouter() {
         Router router = Router.router(vertx());
 
+        log.info(logHelper.generateLogMessage("", "Registering Endpoints for projects"));
         router.get("/unread").handler(new UnreadHandler(this, getConfiguration(), getLogHelper(), getNodeController()));
         router.post("/read").handler(new MakeReadHandler(this, getConfiguration(), getLogHelper(), getNodeController()));
 
@@ -83,7 +84,7 @@ public class MustReadPlugin extends AbstractPlugin implements RestPlugin {
     }
 
     /**
-     * Generates the default configuration if none was found
+     * Generates the default configuration
      *
      * @return
      */
@@ -94,8 +95,8 @@ public class MustReadPlugin extends AbstractPlugin implements RestPlugin {
                 new ProjectConfig()
                         .setName("")
                         .setFolderName("")
-                        .setMustReadGraphQlFile("")
-                        .setDataGraphQlFile("")
+                        .setUuidQueryFile("")
+                        .setDataQueryFile("")
         );
 
         config.setProjects(projects);

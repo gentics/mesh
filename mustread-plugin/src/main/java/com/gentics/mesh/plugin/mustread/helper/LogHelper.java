@@ -19,7 +19,7 @@ public class LogHelper {
      */
     public String generateLogMessage(String projectName, String msg) {
         String builtMessage = String.format("%s ", getPluginName());
-        if (!projectName.equals("")) {
+        if (!StringUtils.isBlank(projectName)) {
             builtMessage += String.format("(%s)", projectName);
         }
 

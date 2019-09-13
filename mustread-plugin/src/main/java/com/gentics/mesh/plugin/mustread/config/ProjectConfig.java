@@ -4,67 +4,65 @@ import org.apache.commons.lang.StringUtils;
 
 public class ProjectConfig {
 
-    private String name;
-    private String folderName;
-    private String mustReadGraphQlFile;
-    private String dataGraphQlFile;
-    private String uuidFieldName;
+	private String name;
+	private String folderName;
+	private String uuidQueryFile;
+	private String dataQueryFile;
+	private String uuidFieldName;
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public ProjectConfig setName(String name) {
-        this.name = name;
+	public ProjectConfig setName(String name) {
+		this.name = name;
 
-        return this;
-    }
+		return this;
+	}
 
-    public boolean isConfigurationForProject(String name) {
-        return (this.name.equals(name));
-    }
+	public boolean isConfigurationForProject(String name) {
+		return this.name.equals(name);
+	}
 
-    public String getFolderName() {
-        return folderName;
-    }
+	public String getFolderName() {
+		return folderName;
+	}
 
-    public ProjectConfig setFolderName(String folderName) {
-        this.folderName = folderName;
+	public ProjectConfig setFolderName(String folderName) {
+		this.folderName = folderName;
 
-        return this;
-    }
+		return this;
+	}
 
-    public String getMustReadGraphQlFile() {
-        return mustReadGraphQlFile;
-    }
+	public String getDataQueryFile() {
+		return dataQueryFile;
+	}
 
-    public ProjectConfig setMustReadGraphQlFile(String mustReadGraphQlFile) {
-        this.mustReadGraphQlFile = mustReadGraphQlFile;
+	public ProjectConfig setDataQueryFile(String dataQueryFile) {
+		this.dataQueryFile = dataQueryFile;
+		return this;
+	}
 
-        return this;
-    }
+	public String getUuidQueryFile() {
+		return uuidQueryFile;
+	}
 
-    public String getDataGraphQlFile() {
-        return dataGraphQlFile;
-    }
+	public ProjectConfig setUuidQueryFile(String uuidQueryFile) {
+		this.uuidQueryFile = uuidQueryFile;
+		return this;
+	}
 
-    public ProjectConfig setDataGraphQlFile(String dataGraphQlFile) {
-        this.dataGraphQlFile = dataGraphQlFile;
+	public String getUuidFieldName() {
+		if (StringUtils.isBlank(uuidFieldName)) {
+			return "uuid";
+		}
 
-        return this;
-    }
+		return uuidFieldName;
+	}
 
-    public String getUuidFieldName() {
-        if (StringUtils.isBlank(uuidFieldName)) {
-            return "uuid";
-        }
+	public ProjectConfig setUuidFieldName(String uuidFieldName) {
+		this.uuidFieldName = uuidFieldName;
 
-        return uuidFieldName;
-    }
-
-    public ProjectConfig setUuidFieldName(String uuidFieldName) {
-        this.uuidFieldName = uuidFieldName;
-
-        return this;
-    }
+		return this;
+	}
 }

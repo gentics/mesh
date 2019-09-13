@@ -31,6 +31,7 @@ public class FolderInitializer extends BaseInitializer {
             String folderName = project.getFolderName();
             String projectName = project.getName();
 
+            log.info(getLogHelper().generateLogMessage(projectName, String.format("Initializing folder '%s'.", folderName)));
             nodeController.createPluginFolderForProject(projectName, folderName);
         }
 

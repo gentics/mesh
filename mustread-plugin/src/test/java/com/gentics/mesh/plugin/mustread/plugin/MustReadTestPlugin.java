@@ -27,8 +27,8 @@ public class MustReadTestPlugin extends MustReadPlugin {
                 new ProjectConfig()
                         .setName("EmptyGraphQl")
                         .setFolderName("must-read")
-                        .setMustReadGraphQlFile("")
-                        .setDataGraphQlFile("")
+                        .setUuidQueryFile("")
+                        .setDataQueryFile("")
                         .setUuidFieldName("uuid")
         );
 
@@ -36,8 +36,8 @@ public class MustReadTestPlugin extends MustReadPlugin {
                 new ProjectConfig()
                         .setName("EmptyFolderName")
                         .setFolderName("")
-                        .setMustReadGraphQlFile("Test/MustRead.graphql")
-                        .setDataGraphQlFile("Test/Data.graphql")
+                        .setUuidQueryFile("Test/MustRead.graphql")
+                        .setDataQueryFile("Test/Data.graphql")
                         .setUuidFieldName("uuid")
         );
 
@@ -45,8 +45,8 @@ public class MustReadTestPlugin extends MustReadPlugin {
                 new ProjectConfig()
                         .setName("NonExistingMustRead")
                         .setFolderName("must-read")
-                        .setMustReadGraphQlFile("Test2/MustRead.graphql")
-                        .setDataGraphQlFile("Test/Data.graphql")
+                        .setUuidQueryFile("Test2/MustRead.graphql")
+                        .setDataQueryFile("Test/Data.graphql")
                         .setUuidFieldName("uuid")
         );
 
@@ -54,8 +54,8 @@ public class MustReadTestPlugin extends MustReadPlugin {
                 new ProjectConfig()
                         .setName("NonExistingData")
                         .setFolderName("must-read")
-                        .setMustReadGraphQlFile("Test/MustRead.graphql")
-                        .setDataGraphQlFile("Test2/Data.graphql")
+                        .setUuidQueryFile("Test/MustRead.graphql")
+                        .setDataQueryFile("Test2/Data.graphql")
                         .setUuidFieldName("uuid")
         );
 
@@ -63,8 +63,8 @@ public class MustReadTestPlugin extends MustReadPlugin {
                 new ProjectConfig()
                         .setName("Test")
                         .setFolderName("Must-Read")
-                        .setMustReadGraphQlFile("Test/MustRead.graphql")
-                        .setDataGraphQlFile("Test/Data.graphql")
+                        .setUuidQueryFile("Test/MustRead.graphql")
+                        .setDataQueryFile("Test/Data.graphql")
                         .setUuidFieldName("testUuid")
         );
 
@@ -72,8 +72,8 @@ public class MustReadTestPlugin extends MustReadPlugin {
                 new ProjectConfig()
                         .setName("NoSetUUIDFieldName")
                         .setFolderName("Must-Read")
-                        .setMustReadGraphQlFile("Test/MustRead.graphql")
-                        .setDataGraphQlFile("Test/Data.graphql")
+                        .setUuidQueryFile("Test/MustRead.graphql")
+                        .setDataQueryFile("Test/Data.graphql")
                         .setUuidFieldName("")
         );
 

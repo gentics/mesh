@@ -1,7 +1,7 @@
 nodeListParameterName: "uuids"
 projects:
-  - Name: "Test"
-    FolderName: "Must-Read"
-    MustReadGraphQLFile: "Test/MustRead.graphql"
-    DataGraphQlFile: "Test/Data.graphql"
-    UUIDFieldName: "testUuid"
+  - name: "Test"
+    folderName: "Must-Read"
+    uuidQueryFile: "Test/MustRead.graphql"
+    dataQueryFile: "Test/Data.graphql"
+    uuidFieldName: "testUuid"

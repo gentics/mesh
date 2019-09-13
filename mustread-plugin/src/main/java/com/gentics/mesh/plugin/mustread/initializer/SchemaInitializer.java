@@ -40,6 +40,7 @@ public class SchemaInitializer extends BaseInitializer {
                             Optional<ProjectResponse> projects = list.getData().stream().filter(s -> s.getName().equals(project.getName())).findFirst();
 
                             if (projects.isPresent()) { // If the project exists we directly assign the schema
+                                log.info(getLogHelper().generateLogMessage(project.getName(), String.format("Initializing schema '%s'.", schema.getName())));
                                 return schemaController.assignSchemaToProject(project.getName(), schema);
                             }
 
