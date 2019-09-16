@@ -6,7 +6,9 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.ParameterProvider;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.plugin.mustread.exception.PluginPathNotFoundException;
 import com.gentics.mesh.plugin.mustread.helper.LogHelper;
 import com.gentics.mesh.plugin.mustread.object.User;
@@ -20,9 +22,7 @@ import org.apache.commons.lang.StringUtils;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class NodeController extends BaseController {
@@ -136,8 +136,9 @@ public class NodeController extends BaseController {
     private Single<NodeResponse> createPathInProject(String projectName, String path, NodeCreateRequest request) {
         // We first check if the path already exists and we only react to 404 error which means that the path
         // doesn't exist. Everything else is either an error or fine (folder exists)
+        ParameterProvider parameters = new NodeParametersImpl().setResolveLinks(LinkType.SHORT);
         return getClient()
-                .webroot(projectName, "/" + path)
+                .webroot(projectName, "/" + path, parameters)
                 .toSingle()
                 .map(response -> {
                     log.info(getLogHelper().generateLogMessage(projectName, String.format("Path '%s' already exists.", path)));
@@ -147,10 +148,10 @@ public class NodeController extends BaseController {
                     if (error1 instanceof MeshRestClientMessageException && ((MeshRestClientMessageException) error1).getStatusCode() == 404) {
                         // We create the folder because it doesn't exist
                         return getClient()
-                                .webrootCreate(projectName, "/" + path, request)
+                                .webrootCreate(projectName, "/" + path, request, parameters)
                                 .toSingle()
                                 .doOnSuccess(response -> {
-                                    log.info(getLogHelper().generateLogMessage(projectName, String.format("Created path '%s' successfully", convertBreadcrumbToPath(response.getBreadcrumb()))));
+                                    log.info(getLogHelper().generateLogMessage(projectName, String.format("Created path '%s' successfully", response.getPath())));
                                 }).doOnError(error2 -> {
                                     log.error(getLogHelper().generateLogMessage(projectName, String.format("Failed creating path '%s'", path)), error2);
                                 });
@@ -158,21 +159,6 @@ public class NodeController extends BaseController {
                         return Single.error(error1);
                     }
                 });
-    }
-
-    /**
-     * Converts a List of Nodereference into a useable path string
-     *
-     * @param breadcrumbs
-     * @return
-     */
-    private String convertBreadcrumbToPath(List<NodeReference> breadcrumbs) {
-        List<String> parts = new ArrayList<>();
-        for (NodeReference reference : breadcrumbs) {
-            parts.add(reference.getDisplayName());
-        }
-
-        return StringUtils.join(parts, "/");
     }
 
     /**
@@ -189,9 +175,7 @@ public class NodeController extends BaseController {
         if (pluginFolder == null) {
             throw new PluginPathNotFoundException(getLogHelper().generateLogMessage(projectName, "Plugin folder not found stopping creation of UserFolder"));
         } else {
-            String path = convertBreadcrumbToPath(pluginFolder.getBreadcrumb());
-
-            return String.format("%s/%s", path, user.getUUID());
+            return String.format("%s/%s", pluginFolder.getPath(), user.getUUID());
         }
     }
 }
