@@ -22,7 +22,9 @@ import org.apache.commons.lang.StringUtils;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class NodeController extends BaseController {
@@ -136,12 +138,12 @@ public class NodeController extends BaseController {
     private Single<NodeResponse> createPathInProject(String projectName, String path, NodeCreateRequest request) {
         // We first check if the path already exists and we only react to 404 error which means that the path
         // doesn't exist. Everything else is either an error or fine (folder exists)
-        ParameterProvider parameters = new NodeParametersImpl().setResolveLinks(LinkType.SHORT);
+        ParameterProvider parameters = new NodeParametersImpl().setResolveLinks(LinkType.MEDIUM);
         return getClient()
                 .webroot(projectName, "/" + path, parameters)
                 .toSingle()
                 .map(response -> {
-                    log.info(getLogHelper().generateLogMessage(projectName, String.format("Path '%s' already exists.", path)));
+                    log.info(getLogHelper().generateLogMessage(projectName, String.format("Path '%s' already exists.", stringProjectName(response.getNodeResponse().getPath()))));
                     return response.getNodeResponse();
                 })
                 .onErrorResumeNext(error1 -> {
@@ -151,7 +153,7 @@ public class NodeController extends BaseController {
                                 .webrootCreate(projectName, "/" + path, request, parameters)
                                 .toSingle()
                                 .doOnSuccess(response -> {
-                                    log.info(getLogHelper().generateLogMessage(projectName, String.format("Created path '%s' successfully", response.getPath())));
+                                    log.info(getLogHelper().generateLogMessage(projectName, String.format("Created path '%s' successfully", stringProjectName(response.getPath()))));
                                 }).doOnError(error2 -> {
                                     log.error(getLogHelper().generateLogMessage(projectName, String.format("Failed creating path '%s'", path)), error2);
                                 });
@@ -175,7 +177,19 @@ public class NodeController extends BaseController {
         if (pluginFolder == null) {
             throw new PluginPathNotFoundException(getLogHelper().generateLogMessage(projectName, "Plugin folder not found stopping creation of UserFolder"));
         } else {
-            return String.format("%s/%s", pluginFolder.getPath(), user.getUUID());
+            return String.format("%s/%s", stringProjectName(pluginFolder.getPath()), user.getUUID());
         }
+    }
+
+    /**
+     * Strips out the projectname of the url so that we can use the provided url in a webroot request
+     *
+     * @param url
+     * @return
+     */
+    private String stringProjectName(String url) {
+        List<String> workurl = Arrays.asList(url.split("/"));
+
+        return String.join("/", workurl.subList(2, workurl.size()));
     }
 }
