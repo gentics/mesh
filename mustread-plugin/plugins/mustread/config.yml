@@ -8,3 +8,4 @@ projects:
     fieldNames:
       uuid: "testUuid"
       published: "published"
+    publishedOnly: false

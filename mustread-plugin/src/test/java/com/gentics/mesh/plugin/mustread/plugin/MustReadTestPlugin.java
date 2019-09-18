@@ -39,6 +39,7 @@ public class MustReadTestPlugin extends MustReadPlugin {
                         .setFolderName("must-read")
                         .setQueryFiles(emptyQueryFiles)
                         .setFieldNames(testFieldNames)
+                        .setPublishedOnly(false)
         );
 
         projects.add(
@@ -47,6 +48,7 @@ public class MustReadTestPlugin extends MustReadPlugin {
                         .setFolderName("")
                         .setQueryFiles(testQueryFiles)
                         .setFieldNames(testFieldNames)
+                        .setPublishedOnly(false)
         );
 
         projects.add(
@@ -55,6 +57,7 @@ public class MustReadTestPlugin extends MustReadPlugin {
                         .setFolderName("must-read")
                         .setQueryFiles(nonExistingUUIDQueryFiles)
                         .setFieldNames(testFieldNames)
+                        .setPublishedOnly(false)
         );
 
         projects.add(
@@ -63,6 +66,7 @@ public class MustReadTestPlugin extends MustReadPlugin {
                         .setFolderName("must-read")
                         .setQueryFiles(nonExistingDataQueryFiles)
                         .setFieldNames(testFieldNames)
+                        .setPublishedOnly(false)
         );
 
         projects.add(
@@ -71,6 +75,7 @@ public class MustReadTestPlugin extends MustReadPlugin {
                         .setFolderName("Must-Read")
                         .setQueryFiles(testQueryFiles)
                         .setFieldNames(testFieldNames)
+                        .setPublishedOnly(false)
         );
 
         projects.add(
@@ -79,6 +84,7 @@ public class MustReadTestPlugin extends MustReadPlugin {
                         .setFolderName("Must-Read")
                         .setQueryFiles(testQueryFiles)
                         .setFieldNames(emptyFieldNames)
+                        .setPublishedOnly(false)
         );
 
         config.setNodeListParameterName("nodes");
