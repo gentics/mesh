@@ -67,7 +67,7 @@ public class UnreadHandler extends BaseHandler {
 				JsonObject variables = new JsonObject();
 
 				// We fetch all uuids regardless of where they are inside of the returned grapql
-				JsonHelper.fetchKeys(mustReadResponse, getProjectConfig().getFieldNames().getUuid(), mustReadUuids::addUuid);
+				JsonHelper.fetchKeys(mustReadResponse, getProjectConfig().getFieldNames().getUuid(), getProjectConfig().isPublishedOnly(), getProjectConfig().getFieldNames().getPublished(), mustReadUuids::addUuid);
 
 				variables.put("path", getNodeController().generateUserReadFolder(getProjectName(), getUser()));
 
@@ -79,7 +79,7 @@ public class UnreadHandler extends BaseHandler {
 			.flatMap(alreadyReadResponse -> {
 				UUIDs alreadyReadUuids = new UUIDs();
 
-				JsonHelper.fetchKeys(alreadyReadResponse, "node_id", alreadyReadUuids::addUuid);
+				JsonHelper.fetchKeys(alreadyReadResponse, "node_id", false, "", alreadyReadUuids::addUuid);
 
 				// We remove all that are already read
 				mustReadUuids.removeAll(alreadyReadUuids);

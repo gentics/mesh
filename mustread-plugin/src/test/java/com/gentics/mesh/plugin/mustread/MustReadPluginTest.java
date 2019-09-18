@@ -235,7 +235,7 @@ public class MustReadPluginTest extends AbstractPluginTest {
 		JsonObject response = getResponseJsonGetRequest("/api/v2/Test/plugins/" + API_NAME + "/unread");
 		List<String> allFound = new ArrayList<>();
 
-		JsonHelper.fetchKeys(response, "name", allFound::add);
+		JsonHelper.fetchKeys(response, "name", false, "", allFound::add);
 
 		assertEquals("There were not exactly 2 entries found", 2, allFound.size());
 		assertTrue("Not all expected unread entries were found", allFound.containsAll(expected));
