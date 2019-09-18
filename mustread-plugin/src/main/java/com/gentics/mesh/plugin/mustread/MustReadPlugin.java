@@ -3,8 +3,10 @@ package com.gentics.mesh.plugin.mustread;
 import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
+import com.gentics.mesh.plugin.mustread.config.FieldNamesConfig;
 import com.gentics.mesh.plugin.mustread.config.MustReadConfig;
 import com.gentics.mesh.plugin.mustread.config.ProjectConfig;
+import com.gentics.mesh.plugin.mustread.config.QueryFilesConfig;
 import com.gentics.mesh.plugin.mustread.consumer.ProjectCreateConsumer;
 import com.gentics.mesh.plugin.mustread.controller.NodeController;
 import com.gentics.mesh.plugin.mustread.controller.SchemaController;
@@ -91,12 +93,13 @@ public class MustReadPlugin extends AbstractPlugin implements RestPlugin {
     protected MustReadConfig generateDefaultConfiguration() {
         MustReadConfig config = new MustReadConfig();
         ArrayList<ProjectConfig> projects = new ArrayList<>();
+
         projects.add(
                 new ProjectConfig()
                         .setName("")
                         .setFolderName("")
-                        .setUuidQueryFile("")
-                        .setDataQueryFile("")
+                        .setQueryFiles(new QueryFilesConfig().setData("").setUuid(""))
+                        .setFieldNames(new FieldNamesConfig().setUuid("").setPublished(""))
         );
 
         config.setProjects(projects);

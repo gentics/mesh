@@ -55,8 +55,8 @@ abstract class BaseHandler implements Handler<RoutingContext> {
 			return false;
 		}
 
-		String mustReadFileName = getProjectConfig().getUuidQueryFile();
-		String dataFileName = getProjectConfig().getDataQueryFile();
+		String mustReadFileName = getProjectConfig().getQueryFiles().getUuid();
+		String dataFileName = getProjectConfig().getQueryFiles().getData();
 
 		if (!checkFilename(mustReadFileName, "must read query") || !checkFile(mustReadFileName)) {
 			return false;

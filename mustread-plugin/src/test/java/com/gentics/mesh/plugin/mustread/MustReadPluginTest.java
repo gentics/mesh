@@ -187,10 +187,10 @@ public class MustReadPluginTest extends AbstractPluginTest {
 			getResponseCodePostRequest("/api/v2/EmptyGraphQl/plugins/" + API_NAME + "/read", normalData));
 		assertEquals("Empty folder name didn't return 501", HttpResponseStatus.NOT_IMPLEMENTED.code(),
 			getResponseCodePostRequest("/api/v2/EmptyFolderName/plugins/" + API_NAME + "/read", normalData));
-		assertEquals("Non Existing Must Read didn't return 501", HttpResponseStatus.NOT_IMPLEMENTED.code(),
-			getResponseCodePostRequest("/api/v2/NonExistingMustRead/plugins/" + API_NAME + "/read", normalData));
-		assertEquals("Non Existing Data didn't return 501", HttpResponseStatus.NOT_IMPLEMENTED.code(),
-			getResponseCodePostRequest("/api/v2/NonExistingData/plugins/" + API_NAME + "/read", normalData));
+		assertEquals("Non Existing UUID Query File didn't return 501", HttpResponseStatus.NOT_IMPLEMENTED.code(),
+				getResponseCodePostRequest("/api/v2/NonExistingUUIDQueryFile/plugins/" + API_NAME + "/read", normalData));
+		assertEquals("Non Existing Data Query File didn't return 501", HttpResponseStatus.NOT_IMPLEMENTED.code(),
+				getResponseCodePostRequest("/api/v2/NonExistingDataQueryFile/plugins/" + API_NAME + "/read", normalData));
 		assertEquals("Test with no data didn't return 400", HttpResponseStatus.BAD_REQUEST.code(),
 			getResponseCodePostRequest("/api/v2/Test/plugins/" + API_NAME + "/read", emptyData));
 		assertEquals("No UUID set didn't return 200", HttpResponseStatus.OK.code(),
@@ -230,8 +230,8 @@ public class MustReadPluginTest extends AbstractPluginTest {
 
 		assertEquals(HttpResponseStatus.NOT_IMPLEMENTED.code(), getResponseCodeGetRequest("/api/v2/EmptyGraphQl/plugins/" + API_NAME + "/unread"));
 		assertEquals(HttpResponseStatus.NOT_IMPLEMENTED.code(),
-			getResponseCodeGetRequest("/api/v2/NonExistingMustRead/plugins/" + API_NAME + "/unread"));
-		assertEquals(HttpResponseStatus.NOT_IMPLEMENTED.code(), getResponseCodeGetRequest("/api/v2/NonExistingData/plugins/" + API_NAME + "/unread"));
+				getResponseCodeGetRequest("/api/v2/NonExistingUUIDQueryFile/plugins/" + API_NAME + "/unread"));
+		assertEquals(HttpResponseStatus.NOT_IMPLEMENTED.code(), getResponseCodeGetRequest("/api/v2/NonExistingDataQueryFile/plugins/" + API_NAME + "/unread"));
 		JsonObject response = getResponseJsonGetRequest("/api/v2/Test/plugins/" + API_NAME + "/unread");
 		List<String> allFound = new ArrayList<>();
 

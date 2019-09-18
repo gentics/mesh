@@ -3,8 +3,10 @@ package com.gentics.mesh.plugin.mustread.plugin;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.mustread.MustReadPlugin;
 import com.gentics.mesh.plugin.mustread.MustReadPluginTest;
+import com.gentics.mesh.plugin.mustread.config.FieldNamesConfig;
 import com.gentics.mesh.plugin.mustread.config.MustReadConfig;
 import com.gentics.mesh.plugin.mustread.config.ProjectConfig;
+import com.gentics.mesh.plugin.mustread.config.QueryFilesConfig;
 import com.gentics.mesh.plugin.mustread.handler.ConfigurationHandler;
 import io.vertx.ext.web.Router;
 import org.pf4j.PluginWrapper;
@@ -23,58 +25,60 @@ public class MustReadTestPlugin extends MustReadPlugin {
         MustReadConfig config = new MustReadConfig();
         ArrayList<ProjectConfig> projects = new ArrayList<>();
 
+        QueryFilesConfig emptyQueryFiles = new QueryFilesConfig().setData("").setUuid("");
+        QueryFilesConfig testQueryFiles = new QueryFilesConfig().setData("Test/data.graphql").setUuid("Test/MustRead.graphql");
+        QueryFilesConfig nonExistingDataQueryFiles = new QueryFilesConfig().setData("Test2/data.graphql").setUuid("Test/MustRead.graphql");
+        QueryFilesConfig nonExistingUUIDQueryFiles = new QueryFilesConfig().setData("Test/data.graphql").setUuid("Test2/MustRead.graphql");
+
+        FieldNamesConfig emptyFieldNames = new FieldNamesConfig().setUuid("").setPublished("");
+        FieldNamesConfig testFieldNames = new FieldNamesConfig().setUuid("testUuid").setPublished("testPublished");
+
         projects.add(
                 new ProjectConfig()
                         .setName("EmptyGraphQl")
                         .setFolderName("must-read")
-                        .setUuidQueryFile("")
-                        .setDataQueryFile("")
-                        .setUuidFieldName("uuid")
+                        .setQueryFiles(emptyQueryFiles)
+                        .setFieldNames(testFieldNames)
         );
 
         projects.add(
                 new ProjectConfig()
                         .setName("EmptyFolderName")
                         .setFolderName("")
-                        .setUuidQueryFile("Test/MustRead.graphql")
-                        .setDataQueryFile("Test/Data.graphql")
-                        .setUuidFieldName("uuid")
+                        .setQueryFiles(testQueryFiles)
+                        .setFieldNames(testFieldNames)
         );
 
         projects.add(
                 new ProjectConfig()
-                        .setName("NonExistingMustRead")
+                        .setName("NonExistingUUIDQueryFile")
                         .setFolderName("must-read")
-                        .setUuidQueryFile("Test2/MustRead.graphql")
-                        .setDataQueryFile("Test/Data.graphql")
-                        .setUuidFieldName("uuid")
+                        .setQueryFiles(nonExistingUUIDQueryFiles)
+                        .setFieldNames(testFieldNames)
         );
 
         projects.add(
                 new ProjectConfig()
-                        .setName("NonExistingData")
+                        .setName("NonExistingDataQueryFile")
                         .setFolderName("must-read")
-                        .setUuidQueryFile("Test/MustRead.graphql")
-                        .setDataQueryFile("Test2/Data.graphql")
-                        .setUuidFieldName("uuid")
+                        .setQueryFiles(nonExistingDataQueryFiles)
+                        .setFieldNames(testFieldNames)
         );
 
         projects.add(
                 new ProjectConfig()
                         .setName("Test")
                         .setFolderName("Must-Read")
-                        .setUuidQueryFile("Test/MustRead.graphql")
-                        .setDataQueryFile("Test/Data.graphql")
-                        .setUuidFieldName("testUuid")
+                        .setQueryFiles(testQueryFiles)
+                        .setFieldNames(testFieldNames)
         );
 
         projects.add(
                 new ProjectConfig()
                         .setName("NoSetUUIDFieldName")
                         .setFolderName("Must-Read")
-                        .setUuidQueryFile("Test/MustRead.graphql")
-                        .setDataQueryFile("Test/Data.graphql")
-                        .setUuidFieldName("")
+                        .setQueryFiles(testQueryFiles)
+                        .setFieldNames(emptyFieldNames)
         );
 
         config.setNodeListParameterName("nodes");

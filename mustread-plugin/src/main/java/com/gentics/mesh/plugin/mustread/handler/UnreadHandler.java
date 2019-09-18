@@ -40,15 +40,15 @@ public class UnreadHandler extends BaseHandler {
 			return;
 		}
 
-		String mustReadQuery = "";
+		String uuidQuery = "";
 		String tmpDataQuery = "";
 		String alreadyReadQuery;
 
 		try {
-			String mustReadFile = getPlugin().getGraphQlDir() + File.separator + getProjectConfig().getUuidQueryFile();
-			String dataFile = getPlugin().getGraphQlDir() + File.separator + getProjectConfig().getDataQueryFile();
+			String uuidFile = getPlugin().getGraphQlDir() + File.separator + getProjectConfig().getQueryFiles().getUuid();
+			String dataFile = getPlugin().getGraphQlDir() + File.separator + getProjectConfig().getQueryFiles().getData();
 
-			mustReadQuery = IOUtils.toString(new FileInputStream(mustReadFile));
+			uuidQuery = IOUtils.toString(new FileInputStream(uuidFile));
 			tmpDataQuery = IOUtils.toString(new FileInputStream(dataFile));
 			alreadyReadQuery = IOUtils.toString(getPlugin().getClass().getResourceAsStream("/graphql/AlreadyRead.graphql"));
 		} catch (Exception e) {
@@ -61,13 +61,13 @@ public class UnreadHandler extends BaseHandler {
 		// dataQuery must be final so we can use it inside of lambdas
 		final String dataQuery = tmpDataQuery;
 
-		client.graphqlQuery(getProjectName(), mustReadQuery).toSingle()
+		client.graphqlQuery(getProjectName(), uuidQuery).toSingle()
 			.flatMap(mustReadResponse -> {
 				GraphQLRequest request = new GraphQLRequest();
 				JsonObject variables = new JsonObject();
 
 				// We fetch all uuids regardless of where they are inside of the returned grapql
-				JsonHelper.fetchKeys(mustReadResponse, getProjectConfig().getUuidFieldName(), mustReadUuids::addUuid);
+				JsonHelper.fetchKeys(mustReadResponse, getProjectConfig().getFieldNames().getUuid(), mustReadUuids::addUuid);
 
 				variables.put("path", getNodeController().generateUserReadFolder(getProjectName(), getUser()));
 
