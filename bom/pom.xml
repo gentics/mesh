@@ -394,7 +394,7 @@
 			<!-- OAuthHandler -->
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
-				<artifactId>mesh-service-keycloak-auth</artifactId>
+				<artifactId>mesh-service-jwt-auth</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 

@@ -3,9 +3,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>mesh-service-keycloak-auth</artifactId>
+	<artifactId>mesh-service-jwt-auth</artifactId>
 	<packaging>jar</packaging>
-	<name>Mesh - Services - Keycloak Auth</name>
+	<name>Mesh - Services - JWT Auth</name>
 
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
@@ -25,10 +25,6 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-common</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-auth-oauth2</artifactId>
 		</dependency>
 
 		<!-- Test dependencies -->

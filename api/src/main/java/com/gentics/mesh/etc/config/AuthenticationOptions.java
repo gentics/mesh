@@ -2,6 +2,9 @@ package com.gentics.mesh.etc.config;
 
 import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -54,8 +57,22 @@ public class AuthenticationOptions implements Option {
 	private boolean enableAnonymousAccess = true;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("OAuth2 related configuration options.")
-	private OAuth2Options oauth2 = new OAuth2Options();
+	@JsonPropertyDescription("A list of additional X509 formatted public keys to be used to verify JWTs.")
+	private List<String> publicKeys = new ArrayList<>();
+
+	/**
+	 * Return the list of configured public keys.
+	 * 
+	 * @return
+	 */
+	public List<String> getPublicKeys() {
+		return publicKeys;
+	}
+
+	public AuthenticationOptions setPublicKey(String publicKey) {
+		this.publicKeys = Arrays.asList(publicKey);
+		return this;
+	}
 
 	/**
 	 * Gets the time after which an authentication token should expire.
@@ -146,15 +163,6 @@ public class AuthenticationOptions implements Option {
 
 	public AuthenticationOptions setEnableAnonymousAccess(boolean enableAnonymousAccess) {
 		this.enableAnonymousAccess = enableAnonymousAccess;
-		return this;
-	}
-
-	public OAuth2Options getOauth2() {
-		return oauth2;
-	}
-
-	public AuthenticationOptions setOauth2(OAuth2Options oauth2) {
-		this.oauth2 = oauth2;
 		return this;
 	}
 

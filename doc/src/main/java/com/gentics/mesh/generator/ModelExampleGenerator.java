@@ -21,8 +21,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OAuth2ServerConfig;
 
 public class ModelExampleGenerator extends AbstractGenerator {
 
@@ -82,15 +82,8 @@ public class ModelExampleGenerator extends AbstractGenerator {
 		conf.setTempDirectory("/opt/mesh/data/tmp");
 		conf.getUploadOptions().setTempDirectory("/opt/mesh/data/tmp/temp-uploads");
 		conf.getAuthenticationOptions().setKeystorePassword("<Your Password>");
-
-		OAuth2ServerConfig realmConfig = new OAuth2ServerConfig();
-		realmConfig.setAuthServerUrl("http://localhost:3000/auth");
-		realmConfig.setRealm("master");
-		realmConfig.setSslRequired("external");
-		realmConfig.setResource("mesh");
-		realmConfig.setConfidentialPort(0);
-		realmConfig.addCredential("secret", "9b65c378-5b4c-4e25-b5a1-a53a381b5fb4");
-		conf.getAuthenticationOptions().getOauth2().setConfig(realmConfig);
+		AuthenticationOptions authOptions = conf.getAuthenticationOptions();
+		authOptions.setPublicKey("YOUR_EXTRA_X509_PUBLIC_KEY");
 		writeYml(conf, "mesh-config.example.yml");
 	}
 

@@ -5,8 +5,8 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.auth.handler.MeshAnonymousAuthHandler;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
+import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OAuth2Options;
 
 import io.vertx.ext.web.Route;
 
@@ -40,19 +40,19 @@ public class MeshAuthChain {
 	 */
 	public void secure(Route route) {
 
-		OAuth2Options oauthOptions = options.getAuthenticationOptions().getOauth2();
-		if (oauthOptions != null && oauthOptions.isEnabled()) {
-			// First try to authenticate the key using JWT
-			route.handler(rc -> {
-				jwtAuthHandler.handle(rc, true);
-			});
-			// Now use the Oauth handler which may be able to authenticate the request - The jwt auth handler may have failed
-			oauthService.secure(route);
-		} else {
-			route.handler(rc -> {
-				jwtAuthHandler.handle(rc);
-			});
-		}
+		AuthenticationOptions authOptions = options.getAuthenticationOptions();
+
+		// First try to authenticate the key using JWT
+		route.handler(rc -> {
+			jwtAuthHandler.handle(rc, true);
+		});
+		// Now use the Oauth handler which may be able to authenticate the request - The jwt auth handler may have failed
+		oauthService.secure(route);
+		// } else {
+		// route.handler(rc -> {
+		// jwtAuthHandler.handle(rc);
+		// });
+		// }
 		// Finally pass the request through the anonymous handler to fallback to anonymous when enabled
 		route.handler(rc -> {
 			anonHandler.handle(rc);

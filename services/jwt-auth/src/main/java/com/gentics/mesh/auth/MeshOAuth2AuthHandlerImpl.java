@@ -1,7 +1,6 @@
 package com.gentics.mesh.auth;
 
 import static io.vertx.core.http.HttpHeaders.AUTHORIZATION;
-import static io.vertx.ext.auth.oauth2.OAuth2FlowType.AUTH_CODE;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -13,7 +12,7 @@ import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.AuthProvider;
-import io.vertx.ext.auth.oauth2.OAuth2Auth;
+import io.vertx.ext.auth.jwt.impl.JWTAuthProviderImpl;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.AuthHandler;
 import io.vertx.ext.web.handler.impl.AuthHandlerImpl;
@@ -90,12 +89,6 @@ public class MeshOAuth2AuthHandlerImpl extends AuthHandlerImpl {
 	 * @return the provider if valid
 	 */
 	private static AuthProvider verifyProvider(AuthProvider provider) {
-		if (provider instanceof OAuth2Auth) {
-			if (((OAuth2Auth) provider).getFlowType() != AUTH_CODE) {
-				throw new IllegalArgumentException("OAuth2Auth + Bearer Auth requires OAuth2 AUTH_CODE flow");
-			}
-		}
-
 		return provider;
 	}
 
@@ -145,17 +138,17 @@ public class MeshOAuth2AuthHandlerImpl extends AuthHandlerImpl {
 			if (token == null) {
 				context.next();
 			} else {
-				// attempt to decode the token and handle it as a user
-				((OAuth2Auth) authProvider).decodeToken(token, decodeToken -> {
-					if (decodeToken.failed()) {
-						handler.handle(Future.failedFuture(new HttpStatusException(401, decodeToken.cause().getMessage())));
-						return;
-					}
-
-					context.setUser(decodeToken.result());
-					// continue
-					handler.handle(Future.succeededFuture());
-				});
+//				// attempt to decode the token and handle it as a user
+//				((JWTAuthProviderImpl) authProvider).decodeToken(token, decodeToken -> {
+//					if (decodeToken.failed()) {
+//						handler.handle(Future.failedFuture(new HttpStatusException(401, decodeToken.cause().getMessage())));
+//						return;
+//					}
+//
+//					context.setUser(decodeToken.result());
+//					// continue
+//					handler.handle(Future.succeededFuture());
+//				});
 			}
 		});
 	}

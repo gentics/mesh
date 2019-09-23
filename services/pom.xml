@@ -22,7 +22,7 @@
 		<module>aws-s3-storage</module>
 		<module>local-storage</module>
 		<module>metrics-prometheus</module>
-		<module>keycloak-auth</module>
+		<module>jwt-auth</module>
 	</modules>
 
 	<dependencyManagement>

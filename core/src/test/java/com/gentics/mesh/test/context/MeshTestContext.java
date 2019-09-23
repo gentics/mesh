@@ -37,6 +37,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.auth.KeycloakUtils;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.search.IndexHandler;
@@ -44,12 +45,11 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.DaggerMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
+import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
-import com.gentics.mesh.etc.config.OAuth2Options;
-import com.gentics.mesh.etc.config.OAuth2ServerConfig;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -426,8 +426,9 @@ public class MeshTestContext extends TestWatcher {
 		if (!keystoreFile.exists()) {
 			KeyStoreHelper.gen(keystoreFile.getAbsolutePath(), keystorePassword);
 		}
-		meshOptions.getAuthenticationOptions().setKeystorePassword(keystorePassword);
-		meshOptions.getAuthenticationOptions().setKeystorePath(keystoreFile.getAbsolutePath());
+		AuthenticationOptions authOptions = meshOptions.getAuthenticationOptions();
+		authOptions.setKeystorePassword(keystorePassword);
+		authOptions.setKeystorePath(keystoreFile.getAbsolutePath());
 		meshOptions.setNodeName("testNode");
 
 		initFolders(meshOptions);
@@ -517,18 +518,10 @@ public class MeshTestContext extends TestWatcher {
 			if (!keycloak.isRunning()) {
 				keycloak.start();
 			}
-			OAuth2Options oauth2Options = meshOptions.getAuthenticationOptions().getOauth2();
-			oauth2Options.setEnabled(true);
-
-			OAuth2ServerConfig realmConfig = new OAuth2ServerConfig();
-			realmConfig.setAuthServerUrl("http://" + keycloak.getHost() + ":" + keycloak.getMappedPort(8080) + "/auth");
-			realmConfig.setRealm("master-test");
-			realmConfig.setSslRequired("external");
-			realmConfig.setResource("mesh");
-			realmConfig.setConfidentialPort(0);
-			realmConfig.addCredential("secret", "9b65c378-5b4c-4e25-b5a1-a53a381b5fb4");
-
-			oauth2Options.setConfig(realmConfig);
+			String authUrl = "http://" + keycloak.getHost() + ":" + keycloak.getMappedPort(8080) + "/auth";
+			String realmName = "master-test";
+			String key = KeycloakUtils.loadPublicKey(realmName, authUrl);
+			authOptions.setPublicKey(key);
 		}
 		settings.optionChanger().changer.accept(meshOptions);
 		optionChanger.accept(meshOptions);

@@ -1,12 +1,9 @@
 package com.gentics.mesh.auth;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -31,7 +28,6 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OAuth2Options;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.auth.AuthServicePlugin;
@@ -41,24 +37,20 @@ import com.gentics.mesh.plugin.auth.RoleFilter;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.User;
-import io.vertx.ext.auth.oauth2.AccessToken;
-import io.vertx.ext.auth.oauth2.OAuth2Auth;
-import io.vertx.ext.auth.oauth2.OAuth2FlowType;
-import io.vertx.ext.auth.oauth2.providers.KeycloakAuth;
+import io.vertx.ext.auth.jwt.JWTAuth;
+import io.vertx.ext.auth.jwt.JWTAuthOptions;
+import io.vertx.ext.auth.jwt.impl.JWTUser;
+import io.vertx.ext.jwt.JWT;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
-import jdk.nashorn.api.scripting.ClassFilter;
+import io.vertx.ext.web.handler.JWTAuthHandler;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
-import okhttp3.OkHttpClient;
-import okhttp3.OkHttpClient.Builder;
-import okhttp3.Request;
-import okhttp3.Response;
 
 @Singleton
 @SuppressWarnings("restriction")
@@ -66,18 +58,18 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshOAuth2ServiceImpl.class);
 
+	private final JWT jwt = new JWT();
+
 	/**
 	 * Cache the token id which was last used by an user.
 	 */
 	public static final Cache<String, String> TOKEN_ID_LOG = Caffeine.newBuilder().maximumSize(20_000).expireAfterWrite(24, TimeUnit.HOURS).build();
 
 	protected AuthServicePluginRegistry authPluginRegistry;
-	protected MeshOAuth2AuthHandlerImpl oauth2Handler;
 	protected NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
-	protected OAuth2Options options;
-	protected OAuth2Auth oauth2Provider;
 	protected Database db;
 	protected BootstrapInitializer boot;
+	protected JWTAuthHandler handler;
 
 	private final Provider<EventQueueBatch> batchProvider;
 
@@ -88,41 +80,50 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		this.boot = boot;
 		this.batchProvider = batchProvider;
 		this.authPluginRegistry = authPluginRegistry;
-		this.options = meshOptions.getAuthenticationOptions().getOauth2();
-		if (options == null || !options.isEnabled()) {
+		AuthenticationOptions options = meshOptions.getAuthenticationOptions();
+
+		// TODO check this during runtime and not during inject to handle new deployments as well
+		JWTAuthOptions jwtOptions = new JWTAuthOptions();
+		authPluginRegistry.getPlugins().forEach(plugin -> {
+			options.getPublicKeys().addAll(plugin.loadPublicKeys());
+		});
+
+		if (options.getPublicKeys().isEmpty()) {
 			return;
 		}
 
-		JsonObject config = loadRealmInfo(vertx, meshOptions);
+		for (String publicKey : options.getPublicKeys()) {
+			//TODO handle algo of key?
+			jwtOptions.addPubSecKey(new PubSecKeyOptions().setAlgorithm("RS256").setPublicKey(publicKey));
+		}
 
-		this.oauth2Provider = KeycloakAuth.create(vertx, OAuth2FlowType.AUTH_CODE, config);
-		this.oauth2Handler = new MeshOAuth2AuthHandlerImpl(oauth2Provider);
+		JWTAuth authProvider = JWTAuth.create(vertx, jwtOptions);
+		handler = JWTAuthHandler.create(authProvider);
 
 	}
 
 	@Override
 	public void secure(Route route) {
-		route.handler(oauth2Handler);
+		route.handler(handler);
 
 		// Check whether the oauth handler was successful and convert the user to a mesh user.
 		route.handler(rc -> {
 			User user = rc.user();
-			if (user instanceof AccessToken) {
-				// FIXME - Workaround for Vert.x bug - https://github.com/vert-x3/vertx-auth/issues/216
-				AccessToken token = (AccessToken) user;
-				if (token.accessToken() == null) {
-					rc.fail(401);
-					return;
-				} else {
-					List<AuthServicePlugin> plugins = authPluginRegistry.getPlugins();
-					for (AuthServicePlugin plugin : plugins) {
-						if (!plugin.acceptToken(rc.request(), token.accessToken())) {
-							rc.fail(401);
-							return;
-						}
+			if (user instanceof JWTUser) {
+				JWTUser token = (JWTUser) user;
+
+				List<AuthServicePlugin> plugins = authPluginRegistry.getPlugins();
+				for (AuthServicePlugin plugin : plugins) {
+					if (!plugin.acceptToken(rc.request(), token.principal())) {
+						rc.fail(401);
+						return;
 					}
-					rc.setUser(syncUser(rc, token.accessToken()));
 				}
+				rc.setUser(syncUser(rc, token.principal()));
+
+			} else {
+				rc.fail(401);
+				return;
 			}
 			rc.next();
 		});
@@ -136,6 +137,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	 * @return
 	 */
 	protected MeshAuthUser syncUser(RoutingContext rc, JsonObject token) {
+		System.out.println(token.encodePrettily());
 		String username = token.getString("preferred_username");
 		Objects.requireNonNull(username, "The preferred_username property could not be found in the principle user info.");
 		String currentTokenId = token.getString("jti");
@@ -376,81 +378,4 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 	}
 
-	public OAuth2Auth getOauth2Provider() {
-		return oauth2Provider;
-	}
-
-	/**
-	 * Sandbox classfilter that filters all classes
-	 */
-	protected static class Sandbox implements ClassFilter {
-		@Override
-		public boolean exposeToScripts(String className) {
-			return false;
-		}
-	}
-
-	/**
-	 * Load the settings and enhance them with the public realm information from the auth server.
-	 * 
-	 * @return
-	 */
-	public JsonObject loadRealmInfo(Vertx vertx, MeshOptions options) {
-		if (options == null) {
-			log.debug("Mesh options not specified. Can't setup OAuth2.");
-			return null;
-		}
-		AuthenticationOptions authOptions = options.getAuthenticationOptions();
-		if (authOptions == null) {
-			log.debug("Mesh auth options not specified. Can't setup OAuth2.");
-			return null;
-		}
-		JsonObject config = options.getAuthenticationOptions().getOauth2().getConfig().toJson();
-		if (config == null) {
-			log.debug("OAuth config not specified. Can't setup OAuth2.");
-			return null;
-		}
-
-		String realmName = config.getString("realm");
-		Objects.requireNonNull(realmName, "The realm property was not found in the oauth2 config");
-		String url = config.getString("auth-server-url");
-		Objects.requireNonNull(realmName, "The auth-server-url property was not found in the oauth2 config");
-
-		try {
-			URL authServerUrl = new URL(url);
-			String authServerHost = authServerUrl.getHost();
-			config.put("auth-server-host", authServerHost);
-			int authServerPort = authServerUrl.getPort();
-			config.put("auth-server-port", authServerPort);
-			String authServerProtocol = authServerUrl.getProtocol();
-			config.put("auth-server-protocol", authServerProtocol);
-
-			JsonObject json = fetchPublicRealmInfo(authServerProtocol, authServerHost, authServerPort, realmName);
-			config.put("auth-server-url", authServerProtocol + "://" + authServerHost + ":" + authServerPort + "/auth");
-			config.put("realm-public-key", json.getString("public_key"));
-			return config;
-		} catch (Exception e) {
-			throw error(HttpResponseStatus.INTERNAL_SERVER_ERROR, "oauth_config_error", e);
-		}
-
-	}
-
-	protected JsonObject fetchPublicRealmInfo(String protocol, String host, int port, String realmName) throws IOException {
-		Builder builder = new OkHttpClient.Builder();
-		OkHttpClient client = builder.build();
-
-		Request request = new Request.Builder()
-			.header("Accept", "application/json")
-			.url(protocol + "://" + host + ":" + port + "" + "/auth/realms/" + realmName)
-			.build();
-
-		try (Response response = client.newCall(request).execute()) {
-			if (!response.isSuccessful()) {
-				log.error(response.body().toString());
-
-				throw new RuntimeException("Error while loading realm info. Got code {" + response.code() + "}");
-			}
-			return new JsonObject(response.body().string());
-		}
-	}
 }

@@ -48,4 +48,16 @@ public class AuthServicePluginRegistry implements PluginRegistry {
 		return plugins.values().stream().collect(Collectors.toList());
 	}
 
+	/**
+	 * Returns a list of public keys which the currently registered plugins provide.
+	 * 
+	 * @return
+	 */
+	public List<String> getActivePublicKeys() {
+		return plugins.values().stream()
+			.map(p -> p.loadPublicKeys())
+			.flatMap(List::stream)
+			.collect(Collectors.toList());
+	}
+
 }
