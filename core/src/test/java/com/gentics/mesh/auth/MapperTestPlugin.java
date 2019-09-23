@@ -42,8 +42,15 @@ public class MapperTestPlugin extends AbstractPlugin implements AuthServicePlugi
 
 	public static List<GroupResponse> groupList;
 
+	public static List<String> publicKeys = new ArrayList<>();
+
 	public MapperTestPlugin(PluginWrapper wrapper, PluginEnvironment env) {
 		super(wrapper, env);
+	}
+
+	@Override
+	public List<String> getPublicKeys() {
+		return publicKeys;
 	}
 
 	@Override
@@ -80,6 +87,7 @@ public class MapperTestPlugin extends AbstractPlugin implements AuthServicePlugi
 
 	public static void reset() {
 		MapperTestPlugin.acceptToken = true;
+		MapperTestPlugin.publicKeys = new ArrayList<>();
 
 		roleFilter = (groupName, roleName) -> {
 			log.info("Handling removal of role {" + roleName + "} from group {" + groupName + "}");

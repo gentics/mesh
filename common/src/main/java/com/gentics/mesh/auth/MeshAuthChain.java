@@ -5,7 +5,6 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.auth.handler.MeshAnonymousAuthHandler;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
-import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.ext.web.Route;
@@ -22,15 +21,12 @@ public class MeshAuthChain {
 
 	private final MeshAnonymousAuthHandler anonHandler;
 
-	private final MeshOptions options;
-
 	@Inject
 	public MeshAuthChain(MeshOAuthService oauthService, MeshJWTAuthHandler jwtAuthHandler,
 		MeshAnonymousAuthHandler anonHandler, MeshOptions options) {
 		this.oauthService = oauthService;
 		this.jwtAuthHandler = jwtAuthHandler;
 		this.anonHandler = anonHandler;
-		this.options = options;
 	}
 
 	/**
@@ -39,9 +35,6 @@ public class MeshAuthChain {
 	 * @param route
 	 */
 	public void secure(Route route) {
-
-		AuthenticationOptions authOptions = options.getAuthenticationOptions();
-
 		// First try to authenticate the key using JWT
 		route.handler(rc -> {
 			jwtAuthHandler.handle(rc, true);

@@ -37,7 +37,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.auth.KeycloakUtils;
+import com.gentics.mesh.auth.util.KeycloakUtils;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.search.IndexHandler;

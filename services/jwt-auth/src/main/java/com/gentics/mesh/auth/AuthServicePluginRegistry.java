@@ -55,7 +55,7 @@ public class AuthServicePluginRegistry implements PluginRegistry {
 	 */
 	public List<String> getActivePublicKeys() {
 		return plugins.values().stream()
-			.map(p -> p.loadPublicKeys())
+			.map(p -> p.getPublicKeys())
 			.flatMap(List::stream)
 			.collect(Collectors.toList());
 	}

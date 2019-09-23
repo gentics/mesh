@@ -13,6 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.auth.util.KeycloakUtils;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -26,6 +27,7 @@ import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.plugin.auth.AuthServicePluginUtils;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
+import com.gentics.mesh.test.context.MeshTestContext;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
@@ -36,7 +38,17 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 	@Before
 	public void deployPlugin() {
 		MapperTestPlugin.reset();
+		addPublicKey();
 		deployPlugin(MapperTestPlugin.class, "myMapper");
+	}
+
+	private void addPublicKey() {
+		String realmName = "master-test";
+		int port = MeshTestContext.getKeycloak().getFirstMappedPort();
+		String authServerUrl = "http://localhost:" + port;
+		String key = KeycloakUtils.loadPublicKey(realmName, authServerUrl);
+		System.out.println("Loaded key: " + key);
+		MapperTestPlugin.publicKeys.add(key);
 	}
 
 	@Test

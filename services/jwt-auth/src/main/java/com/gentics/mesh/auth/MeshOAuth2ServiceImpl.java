@@ -30,6 +30,7 @@ import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.plugin.auth.AuthServicePlugin;
 import com.gentics.mesh.plugin.auth.GroupFilter;
 import com.gentics.mesh.plugin.auth.MappingResult;
@@ -38,15 +39,14 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.User;
-import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.ext.auth.jwt.impl.JWTUser;
-import io.vertx.ext.jwt.JWT;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.JWTAuthHandler;
@@ -58,8 +58,9 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshOAuth2ServiceImpl.class);
 
-	private final JWT jwt = new JWT();
+	// private final JWT jwt = new JWT();
 
+	private final DynamicJWTAuth authProvider;
 	/**
 	 * Cache the token id which was last used by an user.
 	 */
@@ -70,6 +71,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	protected Database db;
 	protected BootstrapInitializer boot;
 	protected JWTAuthHandler handler;
+	private final AuthenticationOptions authOptions;
 
 	private final Provider<EventQueueBatch> batchProvider;
 
@@ -80,35 +82,59 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		this.boot = boot;
 		this.batchProvider = batchProvider;
 		this.authPluginRegistry = authPluginRegistry;
-		AuthenticationOptions options = meshOptions.getAuthenticationOptions();
+		this.authOptions = meshOptions.getAuthenticationOptions();
 
-		// TODO check this during runtime and not during inject to handle new deployments as well
+		// Add the already configured public keys to the config.
 		JWTAuthOptions jwtOptions = new JWTAuthOptions();
-		authPluginRegistry.getPlugins().forEach(plugin -> {
-			options.getPublicKeys().addAll(plugin.loadPublicKeys());
-		});
-
-		if (options.getPublicKeys().isEmpty()) {
-			return;
-		}
-
-		for (String publicKey : options.getPublicKeys()) {
-			//TODO handle algo of key?
+		for (String publicKey : authOptions.getPublicKeys()) {
+			// TODO handle algo of key?
 			jwtOptions.addPubSecKey(new PubSecKeyOptions().setAlgorithm("RS256").setPublicKey(publicKey));
 		}
 
-		JWTAuth authProvider = JWTAuth.create(vertx, jwtOptions);
+		authProvider = new DynamicJWTAuthProviderImpl(vertx, jwtOptions);
 		handler = JWTAuthHandler.create(authProvider);
 
 	}
 
 	@Override
 	public void secure(Route route) {
-		route.handler(handler);
+		route.handler(rc -> {
+			if (rc.user() != null) {
+				rc.next();
+				return;
+			}
+			final String authorization = rc.request().headers().get(HttpHeaders.AUTHORIZATION);
+
+			// No need to handle checks. The auth handler will fail
+			if (authorization == null) {
+				rc.next();
+				return;
+			}
+			// TODO check this during runtime and not during inject to handle new deployments as well
+			List<String> keys = authPluginRegistry.getActivePublicKeys();
+
+			keys.addAll(authOptions.getPublicKeys());
+
+			// No need to handle the token since we have no keys setup.
+			if (keys.isEmpty()) {
+				rc.next();
+				return;
+			}
+			// Now add all keys
+			for (String key : keys) {
+				authProvider.getJwt().addPublicKey("RS256", key);
+			}
+
+			handler.handle(rc);
+		});
 
 		// Check whether the oauth handler was successful and convert the user to a mesh user.
 		route.handler(rc -> {
 			User user = rc.user();
+			if (user instanceof MeshAuthUser) {
+				rc.next();
+				return;
+			}
 			if (user instanceof JWTUser) {
 				JWTUser token = (JWTUser) user;
 

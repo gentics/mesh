@@ -1,4 +1,4 @@
-package com.gentics.mesh.auth;
+package com.gentics.mesh.auth.util;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 

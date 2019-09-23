@@ -20,7 +20,7 @@ public interface AuthServicePlugin extends MeshPlugin {
 	 * 
 	 * @return List of public keys
 	 */
-	default List<String> loadPublicKeys() {
+	default List<String> getPublicKeys() {
 		return Collections.emptyList();
 	}
 
