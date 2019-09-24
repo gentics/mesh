@@ -204,6 +204,16 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 	}
 
 	@Test
+	public void testAuthWithMultiplePublicKeys() throws IOException {
+		JsonObject jwk = loadJson("/jwk/dummy-jwk.json");
+		MapperTestPlugin.publicKeys.add(JsonWebKey.create(jwk));
+		MapperTestPlugin.userResult = null;
+		setClientTokenFromKeycloak();
+		UserResponse me = call(() -> client().me());
+		assertEquals("dummy@dummy.dummy", me.getEmailAddress());
+	}
+
+	@Test
 	public void testWebroot() throws IOException {
 		// Upload test image
 		String parentUuid = tx(() -> folder("2015").getUuid());

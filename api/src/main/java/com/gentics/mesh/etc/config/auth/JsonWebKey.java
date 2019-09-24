@@ -1,5 +1,6 @@
 package com.gentics.mesh.etc.config.auth;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -9,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.EncodeException;
 import io.vertx.core.json.JsonObject;
 
@@ -170,6 +172,14 @@ public class JsonWebKey {
 	 * The "k" (key value) parameter contains the value of the symmetric (or other single-valued) key.
 	 */
 	private String k;
+
+	public static JsonWebKey create(JsonObject json) {
+		try {
+			return mapper.readValue(json.encode(), JsonWebKey.class);
+		} catch (IOException e) {
+			throw new DecodeException("Failed to encode as JSON: " + e.getMessage());
+		}
+	}
 
 	public String getAlgorithm() {
 		return algorithm;
