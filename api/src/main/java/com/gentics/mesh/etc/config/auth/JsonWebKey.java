@@ -173,12 +173,27 @@ public class JsonWebKey {
 	 */
 	private String k;
 
+	/**
+	 * Create a new JWK.
+	 * 
+	 * @param json
+	 * @return
+	 */
 	public static JsonWebKey create(JsonObject json) {
 		try {
 			return mapper.readValue(json.encode(), JsonWebKey.class);
 		} catch (IOException e) {
 			throw new DecodeException("Failed to encode as JSON: " + e.getMessage());
 		}
+	}
+
+	/**
+	 * Validate the json.
+	 * 
+	 * @param json
+	 */
+	public static void validate(JsonObject json) {
+		create(json).validate();
 	}
 
 	public String getAlgorithm() {

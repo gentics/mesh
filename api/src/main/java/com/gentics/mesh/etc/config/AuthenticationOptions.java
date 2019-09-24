@@ -14,6 +14,8 @@ import com.gentics.mesh.etc.config.auth.JsonWebKey;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
 
+import io.vertx.core.json.JsonObject;
+
 /**
  * Authentication options POJO.
  */
@@ -58,20 +60,20 @@ public class AuthenticationOptions implements Option {
 	private boolean enableAnonymousAccess = true;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("A list of additional X509 formatted public keys to be used to verify JWTs.")
-	private List<JsonWebKey> publicKeys = new ArrayList<>();
+	@JsonPropertyDescription("A list of additional JWK formatted public keys which will be used to verify JWTs.")
+	private List<String> publicKeys = new ArrayList<>();
 
 	/**
 	 * Return the list of configured public keys.
 	 * 
 	 * @return
 	 */
-	public List<JsonWebKey> getPublicKeys() {
+	public List<String> getPublicKeys() {
 		return publicKeys;
 	}
 
 	public AuthenticationOptions setPublicKey(JsonWebKey publicKey) {
-		this.publicKeys = Arrays.asList(publicKey);
+		this.publicKeys = Arrays.asList(publicKey.toJson().encodePrettily());
 		return this;
 	}
 
@@ -175,8 +177,8 @@ public class AuthenticationOptions implements Option {
 		}
 		// Validate the JWK's
 		if (publicKeys != null) {
-			for (JsonWebKey key : publicKeys) {
-				key.validate();
+			for (String key : publicKeys) {
+				JsonWebKey.validate(new JsonObject(key));
 			}
 		}
 	}

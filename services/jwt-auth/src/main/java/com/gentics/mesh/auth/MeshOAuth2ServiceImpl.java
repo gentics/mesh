@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -87,7 +88,10 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		Set<JsonWebKey> keys = new HashSet<>();
 
 		// 1. Add keys from config
-		keys.addAll(authOptions.getPublicKeys());
+		keys.addAll(authOptions.getPublicKeys().stream()
+			.map(JsonObject::new)
+			.map(JsonWebKey::create)
+			.collect(Collectors.toSet()));
 
 		// 2. Add keys from plugins
 		keys.addAll(authPluginRegistry.getActivePublicKeys());
@@ -96,6 +100,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		if (keys.isEmpty()) {
 			return null;
 		}
+
 		System.out.println("Keys: " + keys.size());
 		if (log.isDebugEnabled()) {
 			for (JsonWebKey key : keys) {
