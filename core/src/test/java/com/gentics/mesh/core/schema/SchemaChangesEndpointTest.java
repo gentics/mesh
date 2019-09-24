@@ -597,45 +597,46 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		}
 	}
 
-    @Test
-    public void testUpdateFieldName() throws Exception {
-        // 1. Verify test data
-        Node node = content();
-        SchemaContainer schemaContainer = schemaContainer("content");
-        String schemaUuid = tx(() -> schemaContainer.getUuid());
-        String contentFieldValue;
-        try (Tx tx = tx()) {
-            assertNotNull("The node should have a html graph field", node.getGraphFieldContainer("en").getHtml("content"));
-            contentFieldValue = node.getGraphFieldContainer("en").getHtml("content").getHTML();
-        }
+	@Test
+	public void testUpdateFieldName() throws Exception {
+		// 1. Verify test data
+		Node node = content();
+		SchemaContainer schemaContainer = schemaContainer("content");
+		String schemaUuid = tx(() -> schemaContainer.getUuid());
+		String contentFieldValue;
+		try (Tx tx = tx()) {
+			assertNotNull("The node should have a html graph field", node.getGraphFieldContainer("en").getHtml("content"));
+			contentFieldValue = node.getGraphFieldContainer("en").getHtml("content").getHTML();
+		}
+		assertEquals("1.0", tx(() -> node.getGraphFieldContainer("en").getVersion().toString()));
 
+		// 2. Create changes
+		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
+		SchemaChangeModel change = SchemaChangeModel.createRenameFieldChange("content", "newcontent");
+		listOfChanges.getChanges().add(change);
 
-        // 2. Create changes
-        SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-        SchemaChangeModel change = SchemaChangeModel.createUpdateFieldChange("content", "newcontent", "new content label");
-        listOfChanges.getChanges().add(change);
+		// 3. Invoke migration
+		try (Tx tx = tx()) {
+			assertNull("The schema should not yet have any changes", schemaContainer.getLatestVersion().getNextChange());
+		}
+		call(() -> client().applyChangesToSchema(schemaUuid, listOfChanges));
 
-        // 3. Invoke migration
-        try (Tx tx = tx()) {
-            assertNull("The schema should not yet have any changes", schemaContainer.getLatestVersion().getNextChange());
-        }
-        call(() -> client().applyChangesToSchema(schemaUuid, listOfChanges));
+		// 4. Assign new schema version to branch
+		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
+		waitForJob(() -> {
+			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
+				new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
+		});
 
-        SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
-        waitForJobs(() -> {
-            call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
-                    new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
-        }, COMPLETED, 1);
+		// Note : testing against content() directly (orientdb model) doesnt work since old field is not deleted
+		assertEquals("2.0", tx(() -> node.getGraphFieldContainer("en").getVersion().toString()));
+		assertNull("We would expect the new version to not include the old field value.",tx(() -> node.getGraphFieldContainer("en").getHtml("content")));
 
-
-        // Note : testing against content() directly (orientdb model) doesnt work since old field is not deleted
-
-        // Read node and check that content field has been migrated to newcontent
-        NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new VersioningParametersImpl().draft()));
-        assertNotNull(response);
-        assertTrue(response.getFields().hasField("newcontent"));
-        assertFalse(response.getFields().hasField("content"));
-        assertEquals(contentFieldValue, response.getFields().getHtmlField("newcontent").getHTML());
-    }
+		// Read node and check that content field has been migrated to newcontent
+		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new VersioningParametersImpl().draft()));
+		assertTrue(response.getFields().hasField("newcontent"));
+		assertFalse(response.getFields().hasField("content"));
+		assertEquals("The field value was not preserved.", contentFieldValue, response.getFields().getHtmlField("newcontent").getHTML());
+	}
 
 }

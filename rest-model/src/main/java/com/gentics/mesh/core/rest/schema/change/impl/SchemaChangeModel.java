@@ -3,6 +3,7 @@ package com.gentics.mesh.core.rest.schema.change.impl;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.ADDFIELD;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.CHANGEFIELDTYPE;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEMICROSCHEMA;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
 
@@ -30,7 +31,7 @@ public class SchemaChangeModel implements RestModel {
 	public static final String URLFIELDS_KEY = "urlFieldsname";
 
 	public static final String DISPLAY_FIELD_NAME_KEY = "displayFieldname";
-	
+
 	public static final String AUTO_PURGE_FLAG_KEY = "autoPurge";
 
 	public static final String FIELD_ORDER_KEY = "order";
@@ -174,6 +175,19 @@ public class SchemaChangeModel implements RestModel {
 	public static SchemaChangeModel createChangeFieldTypeChange(String fieldName, String type) {
 		SchemaChangeModel change = new SchemaChangeModel(CHANGEFIELDTYPE, fieldName);
 		change.getProperties().put(SchemaChangeModel.TYPE_KEY, type);
+		return change;
+	}
+
+	/**
+	 * Create an update field change to rename a field.
+	 * 
+	 * @param fieldName
+	 * @param newFieldName
+	 * @return
+	 */
+	public static SchemaChangeModel createRenameFieldChange(String fieldName, String newFieldName) {
+		SchemaChangeModel change = new SchemaChangeModel(UPDATEFIELD, fieldName);
+		change.getProperties().put(SchemaChangeModel.NAME_KEY, newFieldName);
 		return change;
 	}
 
