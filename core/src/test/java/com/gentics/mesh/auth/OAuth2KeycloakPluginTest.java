@@ -110,7 +110,7 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 	}
 
 	@Test
-	public void testRoleFilter() throws IOException {
+	public void testRoleFilter() throws Exception {
 		// Test that the role filter will filter role1 of group3
 		MapperTestPlugin.roleFilter = (groupName, roleName) -> {
 			System.out.println("Filtering {" + groupName + "} / {" + roleName + "}");
@@ -147,6 +147,7 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 
 		// Reset the fields and set the filter. This should remove the admin role
 		MapperTestPlugin.reset();
+		addPublicKey();
 		MapperTestPlugin.roleFilter = AuthServicePluginUtils.createRoleFilter(MapperTestPlugin.roleList, MapperTestPlugin.groupList);
 
 		setClientTokenFromKeycloak();
@@ -160,7 +161,7 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 	}
 
 	@Test
-	public void testGroupFilter() throws IOException {
+	public void testGroupFilter() throws Exception {
 		// Test that the group filter will filter the group1
 		MapperTestPlugin.groupFilter = (groupName) -> {
 			System.out.println("Filtering {" + groupName + "}");
@@ -184,6 +185,7 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 
 		// Reset and add a group filter. The admin group should now be removed.
 		MapperTestPlugin.reset();
+		addPublicKey();
 		MapperTestPlugin.groupFilter = AuthServicePluginUtils.createGroupFilter(MapperTestPlugin.groupList);
 		setClientTokenFromKeycloak();
 		call(() -> client().me());
