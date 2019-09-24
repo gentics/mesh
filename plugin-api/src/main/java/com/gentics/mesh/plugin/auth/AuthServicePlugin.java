@@ -1,8 +1,9 @@
 package com.gentics.mesh.plugin.auth;
 
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 
+import com.gentics.mesh.etc.config.auth.JsonWebKey;
 import com.gentics.mesh.plugin.MeshPlugin;
 
 import io.vertx.core.http.HttpServerRequest;
@@ -14,14 +15,14 @@ import io.vertx.core.json.JsonObject;
 public interface AuthServicePlugin extends MeshPlugin {
 
 	/**
-	 * Return a list of X509 formatted public keys which will be used to validate JWT's that are included in API requests. You can use this method to provide
-	 * public keys from your identity provider server (e.g. keycloak). Adding the needed public key will enable Gentics Mesh to accept keys which have been
-	 * issued by those servers. Gentics Mesh will be able to validate the tokens in terms of OAuth2 code flow (acting as resource server).
+	 * Return a list JWK public keys which will be used to validate JWT's that are included in API requests. You can use this method to provide public keys from
+	 * your identity provider server (e.g. keycloak). Adding the needed public key will enable Gentics Mesh to accept keys which have been issued by those
+	 * servers. Gentics Mesh will be able to validate the tokens in terms of OAuth2 code flow (acting as resource server).
 	 * 
-	 * @return List of public keys
+	 * @return Set of JWK's
 	 */
-	default List<String> getPublicKeys() {
-		return Collections.emptyList();
+	default Set<JsonWebKey> getPublicKeys() {
+		return Collections.emptySet();
 	}
 
 	/**

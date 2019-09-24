@@ -50,6 +50,7 @@ import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
+import com.gentics.mesh.etc.config.auth.JsonWebKey;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -520,8 +521,11 @@ public class MeshTestContext extends TestWatcher {
 			}
 			String authUrl = "http://" + keycloak.getHost() + ":" + keycloak.getMappedPort(8080) + "/auth";
 			String realmName = "master-test";
-			String key = KeycloakUtils.loadPublicKey(realmName, authUrl);
-			authOptions.setPublicKey(key);
+//			String key = KeycloakUtils.loadPublicKey(realmName, authUrl);
+//			JsonWebKey jwk = new JsonWebKey(); 
+//			jwk.setAlgorithm("RS256");
+//			jwk.setPublicKeyUse("sig");
+//			authOptions.setPublicKey(jwk);
 		}
 		settings.optionChanger().changer.accept(meshOptions);
 		optionChanger.accept(meshOptions);

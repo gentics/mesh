@@ -4,8 +4,14 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
+
+import com.gentics.mesh.etc.config.auth.JsonWebKey;
+import com.gentics.mesh.json.JsonUtil;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -30,12 +36,40 @@ public final class KeycloakUtils {
 			JsonObject json = fetchPublicRealmInfo(authServerProtocol, authServerHost, authServerPort, realmName);
 			return json.getString("public_key");
 		} catch (Exception e) {
+			// TODO i18n
 			throw error(HttpResponseStatus.INTERNAL_SERVER_ERROR, "oauth_config_error", e);
 		}
 
 	}
 
-	protected static JsonObject fetchPublicRealmInfo(String protocol, String host, int port, String realmName) throws IOException {
+	public static Set<JsonWebKey> fetchCerts(String protocol, String host, int port, String realmName) throws IOException {
+		Builder builder = new OkHttpClient.Builder();
+		OkHttpClient client = builder.build();
+
+		Request request = new Request.Builder()
+			.header("Accept", "application/json")
+			.url(protocol + "://" + host + ":" + port + "" + "/auth/realms/" + realmName + "/protocol/openid-connect/certs")
+			.build();
+
+		try (Response response = client.newCall(request).execute()) {
+			if (!response.isSuccessful()) {
+				log.error(response.body().toString());
+				throw new RuntimeException("Error while loading certs. Got code {" + response.code() + "}");
+			}
+			JsonObject json = new JsonObject(response.body().string());
+			JsonArray keys = json.getJsonArray("keys");
+			Set<JsonWebKey> jwks = new HashSet<>();
+			for (int i = 0; i < keys.size(); i++) {
+				JsonObject key = keys.getJsonObject(i);
+				System.out.println(key.encodePrettily());
+				jwks.add(JsonUtil.readValue(key.encode(), JsonWebKey.class));
+			}
+			return jwks;
+		}
+
+	}
+
+	public static JsonObject fetchPublicRealmInfo(String protocol, String host, int port, String realmName) throws IOException {
 		Builder builder = new OkHttpClient.Builder();
 		OkHttpClient client = builder.build();
 

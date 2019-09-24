@@ -4,8 +4,10 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -28,9 +30,9 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.auth.JsonWebKey;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.plugin.auth.AuthServicePlugin;
 import com.gentics.mesh.plugin.auth.GroupFilter;
 import com.gentics.mesh.plugin.auth.MappingResult;
@@ -38,14 +40,11 @@ import com.gentics.mesh.plugin.auth.RoleFilter;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.User;
-import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.ext.auth.jwt.impl.JWTUser;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
@@ -58,9 +57,6 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshOAuth2ServiceImpl.class);
 
-	// private final JWT jwt = new JWT();
-
-	private final DynamicJWTAuth authProvider;
 	/**
 	 * Cache the token id which was last used by an user.
 	 */
@@ -70,30 +66,48 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	protected NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
 	protected Database db;
 	protected BootstrapInitializer boot;
-	protected JWTAuthHandler handler;
 	private final AuthenticationOptions authOptions;
-
 	private final Provider<EventQueueBatch> batchProvider;
 
+	private final AuthHandlerContainer authHandlerContainer;
+
 	@Inject
-	public MeshOAuth2ServiceImpl(Database db, BootstrapInitializer boot, MeshOptions meshOptions, Vertx vertx,
-		Provider<EventQueueBatch> batchProvider, AuthServicePluginRegistry authPluginRegistry) {
+	public MeshOAuth2ServiceImpl(Database db, BootstrapInitializer boot, MeshOptions meshOptions,
+		Provider<EventQueueBatch> batchProvider, AuthServicePluginRegistry authPluginRegistry, AuthHandlerContainer authHandlerContainer) {
 		this.db = db;
 		this.boot = boot;
 		this.batchProvider = batchProvider;
 		this.authPluginRegistry = authPluginRegistry;
 		this.authOptions = meshOptions.getAuthenticationOptions();
+		this.authHandlerContainer = authHandlerContainer;
+	}
 
+	private JWTAuthHandler createJWTHandler() {
 		// Add the already configured public keys to the config.
-		JWTAuthOptions jwtOptions = new JWTAuthOptions();
-		for (String publicKey : authOptions.getPublicKeys()) {
-			// TODO handle algo of key?
-			jwtOptions.addPubSecKey(new PubSecKeyOptions().setAlgorithm("RS256").setPublicKey(publicKey));
+		Set<JsonWebKey> keys = new HashSet<>();
+
+		// 1. Add keys from config
+		keys.addAll(authOptions.getPublicKeys());
+
+		// 2. Add keys from plugins
+		keys.addAll(authPluginRegistry.getActivePublicKeys());
+
+		// No need to handle the token since we have no keys setup.
+		if (keys.isEmpty()) {
+			return null;
+		}
+		System.out.println("Keys: " + keys.size());
+		if (log.isDebugEnabled()) {
+			for (JsonWebKey key : keys) {
+				if (key != null) {
+					log.debug(key.toJson().encodePrettily());
+				} else {
+					log.debug("Key is null");
+				}
+			}
 		}
 
-		authProvider = new DynamicJWTAuthProviderImpl(vertx, jwtOptions);
-		handler = JWTAuthHandler.create(authProvider);
-
+		return authHandlerContainer.create(keys);
 	}
 
 	@Override
@@ -110,27 +124,21 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				rc.next();
 				return;
 			}
-			// TODO check this during runtime and not during inject to handle new deployments as well
-			List<String> keys = authPluginRegistry.getActivePublicKeys();
-
-			keys.addAll(authOptions.getPublicKeys());
-
-			// No need to handle the token since we have no keys setup.
-			if (keys.isEmpty()) {
+			JWTAuthHandler keyHandler = createJWTHandler();
+			if (keyHandler != null) {
+				keyHandler.handle(rc);
+			} else {
 				rc.next();
-				return;
 			}
-			// Now add all keys
-			for (String key : keys) {
-				authProvider.getJwt().addPublicKey("RS256", key);
-			}
-
-			handler.handle(rc);
 		});
 
 		// Check whether the oauth handler was successful and convert the user to a mesh user.
 		route.handler(rc -> {
 			User user = rc.user();
+			if (user == null) {
+				rc.next();
+				return;
+			}
 			if (user instanceof MeshAuthUser) {
 				rc.next();
 				return;

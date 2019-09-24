@@ -10,6 +10,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
+import com.gentics.mesh.etc.config.auth.JsonWebKey;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
 
@@ -58,18 +59,18 @@ public class AuthenticationOptions implements Option {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("A list of additional X509 formatted public keys to be used to verify JWTs.")
-	private List<String> publicKeys = new ArrayList<>();
+	private List<JsonWebKey> publicKeys = new ArrayList<>();
 
 	/**
 	 * Return the list of configured public keys.
 	 * 
 	 * @return
 	 */
-	public List<String> getPublicKeys() {
+	public List<JsonWebKey> getPublicKeys() {
 		return publicKeys;
 	}
 
-	public AuthenticationOptions setPublicKey(String publicKey) {
+	public AuthenticationOptions setPublicKey(JsonWebKey publicKey) {
 		this.publicKeys = Arrays.asList(publicKey);
 		return this;
 	}
@@ -171,6 +172,12 @@ public class AuthenticationOptions implements Option {
 		Objects.requireNonNull(keystorePath, "The keystore path cannot be null.");
 		if (keystorePath.trim().isEmpty()) {
 			throw new IllegalArgumentException("The keystore path cannot be empty");
+		}
+		// Validate the JWK's
+		if (publicKeys != null) {
+			for (JsonWebKey key : publicKeys) {
+				key.validate();
+			}
 		}
 	}
 }

@@ -8,6 +8,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -22,6 +23,7 @@ import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.etc.config.auth.JsonWebKey;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -36,19 +38,17 @@ import io.vertx.core.json.JsonObject;
 public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 
 	@Before
-	public void deployPlugin() {
+	public void deployPlugin() throws Exception {
 		MapperTestPlugin.reset();
 		addPublicKey();
 		deployPlugin(MapperTestPlugin.class, "myMapper");
 	}
 
-	private void addPublicKey() {
+	private void addPublicKey() throws Exception {
 		String realmName = "master-test";
 		int port = MeshTestContext.getKeycloak().getFirstMappedPort();
-		String authServerUrl = "http://localhost:" + port;
-		String key = KeycloakUtils.loadPublicKey(realmName, authServerUrl);
-		System.out.println("Loaded key: " + key);
-		MapperTestPlugin.publicKeys.add(key);
+		Set<JsonWebKey> keys = KeycloakUtils.fetchCerts("http", "localhost", port, realmName);
+		MapperTestPlugin.publicKeys.addAll(keys);
 	}
 
 	@Test

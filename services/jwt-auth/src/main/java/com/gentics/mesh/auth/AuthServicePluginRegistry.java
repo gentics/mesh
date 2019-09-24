@@ -3,11 +3,13 @@ package com.gentics.mesh.auth;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.etc.config.auth.JsonWebKey;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.auth.AuthServicePlugin;
 import com.gentics.mesh.plugin.registry.PluginRegistry;
@@ -49,15 +51,15 @@ public class AuthServicePluginRegistry implements PluginRegistry {
 	}
 
 	/**
-	 * Returns a list of public keys which the currently registered plugins provide.
+	 * Returns a set of public keys which the currently registered plugins provide.
 	 * 
 	 * @return
 	 */
-	public List<String> getActivePublicKeys() {
+	public Set<JsonWebKey> getActivePublicKeys() {
 		return plugins.values().stream()
 			.map(p -> p.getPublicKeys())
-			.flatMap(List::stream)
-			.collect(Collectors.toList());
+			.flatMap(Set::stream)
+			.collect(Collectors.toSet());
 	}
 
 }

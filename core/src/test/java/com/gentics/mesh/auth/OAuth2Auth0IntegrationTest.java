@@ -10,6 +10,7 @@ import org.junit.Test;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.auth.JsonWebKey;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 @Ignore
@@ -26,7 +27,8 @@ public class OAuth2Auth0IntegrationTest {
 		AuthenticationOptions auth = options.getAuthenticationOptions();
 		options.setNodeName("mesh");
 		auth.setKeystorePassword("ABC");
-		auth.setPublicKey("PUBLIC_KEY");
+		JsonWebKey jwk = new JsonWebKey();
+		auth.setPublicKey(jwk);
 		options.getSearchOptions().disable();
 		options.getStorageOptions().setDirectory(null);
 

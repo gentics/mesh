@@ -1,7 +1,9 @@
 package com.gentics.mesh.auth;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.pf4j.PluginWrapper;
 
@@ -10,6 +12,7 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.etc.config.auth.JsonWebKey;
 import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.auth.AuthServicePlugin;
 import com.gentics.mesh.plugin.auth.GroupFilter;
@@ -42,14 +45,14 @@ public class MapperTestPlugin extends AbstractPlugin implements AuthServicePlugi
 
 	public static List<GroupResponse> groupList;
 
-	public static List<String> publicKeys = new ArrayList<>();
+	public static Set<JsonWebKey> publicKeys = new HashSet<>();
 
 	public MapperTestPlugin(PluginWrapper wrapper, PluginEnvironment env) {
 		super(wrapper, env);
 	}
 
 	@Override
-	public List<String> getPublicKeys() {
+	public Set<JsonWebKey> getPublicKeys() {
 		return publicKeys;
 	}
 
@@ -87,7 +90,7 @@ public class MapperTestPlugin extends AbstractPlugin implements AuthServicePlugi
 
 	public static void reset() {
 		MapperTestPlugin.acceptToken = true;
-		MapperTestPlugin.publicKeys = new ArrayList<>();
+		MapperTestPlugin.publicKeys = new HashSet<>();
 
 		roleFilter = (groupName, roleName) -> {
 			log.info("Handling removal of role {" + roleName + "} from group {" + groupName + "}");

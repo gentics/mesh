@@ -23,6 +23,7 @@ import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.auth.JsonWebKey;
 
 public class ModelExampleGenerator extends AbstractGenerator {
 
@@ -83,7 +84,8 @@ public class ModelExampleGenerator extends AbstractGenerator {
 		conf.getUploadOptions().setTempDirectory("/opt/mesh/data/tmp/temp-uploads");
 		conf.getAuthenticationOptions().setKeystorePassword("<Your Password>");
 		AuthenticationOptions authOptions = conf.getAuthenticationOptions();
-		authOptions.setPublicKey("YOUR_EXTRA_X509_PUBLIC_KEY");
+		JsonWebKey jwk = new JsonWebKey();
+		authOptions.setPublicKey(jwk);
 		writeYml(conf, "mesh-config.example.yml");
 	}
 
