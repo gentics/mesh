@@ -77,7 +77,11 @@ public class UpdateFieldChangeImpl extends AbstractSchemaFieldChange implements 
 
 	@Override
 	public Map<String, Field> createFields(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
-		return Collections.emptyMap();
+        String oldFieldName = getFieldName();
+        String newFieldName = getRestProperty(SchemaChangeModel.NAME_KEY);
+        FieldSchema fieldSchema = oldSchema.getField(oldFieldName);
+        Field field = oldContent.getFields().getField(oldFieldName, fieldSchema);
+        return Collections.singletonMap(newFieldName, field);
 	}
 
 	@Override

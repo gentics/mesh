@@ -11,11 +11,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -600,4 +596,46 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 				.isOf(schemaContainer.getLatestVersion().getPreviousVersion());
 		}
 	}
+
+    @Test
+    public void testUpdateFieldName() throws Exception {
+        // 1. Verify test data
+        Node node = content();
+        SchemaContainer schemaContainer = schemaContainer("content");
+        String schemaUuid = tx(() -> schemaContainer.getUuid());
+        String contentFieldValue;
+        try (Tx tx = tx()) {
+            assertNotNull("The node should have a html graph field", node.getGraphFieldContainer("en").getHtml("content"));
+            contentFieldValue = node.getGraphFieldContainer("en").getHtml("content").getHTML();
+        }
+
+
+        // 2. Create changes
+        SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
+        SchemaChangeModel change = SchemaChangeModel.createUpdateFieldChange("content", "newcontent", "new content label");
+        listOfChanges.getChanges().add(change);
+
+        // 3. Invoke migration
+        try (Tx tx = tx()) {
+            assertNull("The schema should not yet have any changes", schemaContainer.getLatestVersion().getNextChange());
+        }
+        call(() -> client().applyChangesToSchema(schemaUuid, listOfChanges));
+
+        SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
+        waitForJobs(() -> {
+            call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
+                    new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
+        }, COMPLETED, 1);
+
+
+        // Note : testing against content() directly (orientdb model) doesnt work since old field is not deleted
+
+        // Read node and check that content field has been migrated to newcontent
+        NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new VersioningParametersImpl().draft()));
+        assertNotNull(response);
+        assertTrue(response.getFields().hasField("newcontent"));
+        assertFalse(response.getFields().hasField("content"));
+        assertEquals(contentFieldValue, response.getFields().getHtmlField("newcontent").getHTML());
+    }
+
 }
