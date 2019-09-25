@@ -197,41 +197,25 @@ To do so, link:/docs/api#users__post[create] or link:/docs/api#users__userUuid__
 Now, when the user tries to login in regularly they will receive an error message with status code `400` telling them to provide a new password in the login request.
 The user has to additionally set the `newPassword` property when sending the link:/docs/api#auth_login_post[login request]. Then the password is changed and the user is logged in.
 
-== OAuth2
+== OAuth2 / OIDC
 
-Since Gentics Mesh `0.20.0` it is also possible to use OAuth2 authentication. 
+Gentics Mesh supports OAuth2 / OIDC. Authorized users can pass their JWT to the API. Gentics Mesh will act as a *resource server* and process the provided access token. The token will be validated and the user request processed.
 
-The OAuth2 authentication can be enabled via the `security.oauth2.enabled` flag.
+image::../images/oauth2-flow.svg[OAuth 2.0 Flow,role="img-responsive", width=800]
 
 NOTE: Gentics Mesh will just utilize provided access tokens. The needed OAuth2 sign-in and token refresh handling *must* be done by the client.
 
-The provided OAuth2 user information will automatically be kept in sync with the user that is present in Gentics Mesh.
+The provided OAuth2 user information will automatically be kept in-sync with the user that is present in Gentics Mesh.
 The synchronization process will also take care of creating new users and even roles and groups.
+
+=== Limitations
 
 WARNING: The Gentics Mesh UI is currently not Keycloak aware. The UI will thus not redirect you to the Keycloak login page. This functionality will be part of a future release of the Gentics Mesh UI.
 
 === Configuration
 
-The authentication provider server must be configured within the `security.oauth2.config` section.
+The list of public keys which will be used to validate and accept JWT's can be added to the `mesh.yml` file in the `security.publicKeys` list.
 
-You can use the Keycloak OIDC JSON as a source for the needed properties. You can get the JSON via:
-
-* `Clients` → `Installation` → `Format: Keycloak OIDC JSON`
-
-[source,yaml]
-----
-security:
-  oauth2:
-    enabled: false
-    config:
-      realm: "master"
-      authServerUrl: "http://localhost:3000/auth"
-      sslRequired: "external"
-      resource: "mesh"
-      credentials:
-        secret: "9b65c378-5b4c-4e25-b5a1-a53a381b5fb4"
-      confidentialPort: 0
-----
 
 === Mapping
 
@@ -257,11 +241,52 @@ NOTE: If the `preferred_username` changes a new user will be created in Gentics 
 
 === Authentication Service Plugin API
 
-By default groups and roles will not be handled by the synchronization process. It is however possible to provide a custom authentication plugin which can extract role and group information from the access token infromation.
+By default groups and roles will not be handled by the synchronization process. It is however possible to provide a custom authentication plugin which can extract role and group information from the access token information.
 This way groups and roles can be directly created.
+
+It is also possible to write or use plugins which provide JWK's to Gentics Mesh.
+The `AuthServicePlugin` API provides methods which can be used to supply JWK's to Gentics Mesh.
 
 You can read more on this topic in the link:{{< relref "plugin-types/auth-service-plugin.asciidoc" >}}[Authentication Service Plugin API] section.
 
-=== Supported Providers
+== OAuth2 Providers
 
-Currently only the https://www.keycloak.org/[Keycloak Authentication Server] is tested and supported.
+=== Keycloak
+
+The public keys can be loaded from keycloak via the certs endpoint:
+
+[source,bash]
+----
+https://localhost:8443/auth/realms/realmName/protocol/openid-connect/certs
+----
+
+=== Auth0
+
+* Applications -> Settings -> Show Advanced Settings -> Endpoints -> JSON Web Key Set
+
+[source,bash]
+----
+https://yourName.auth0.com/.well-known/jwks.json
+----
+
+Example Json Web Key (JWK):
+[source,json]
+----
+{
+  "alg": "RS256",
+  "kty": "RSA",
+  "use": "sig",
+  "x5c": [
+    "MIIC/TCCAeWgAwIBAgIJA3kWNismjx1FMA0GCSqGSIb3DQEBCwUAMBwxGjAYBgNVBAMTEWpvdHNjaGkuYXV0aDAuY29tMB4XDTE5MDgyMDE4MTA0OVoXDTMzMDQyODE4MTA0OVowHDEaMBgGA1UEAxMRam90c2NoaS5hdXRoMC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDKs/QbFvLs43ZRT4LzbrMVWgHfmJ/gOtkVZxCdznHXFa9b8B4JNKLHvAZiK9L5JXA2D0jDYDHTbEYQiisZb52zpqWFRaHD8vt9fxDbqIFZDljseEJT9/FXlKFBjl2XwVLqnmBBhRo5k0iu5PPSYY6zfzSmg5IY4Tw9FA81zO3ZeJPxazyIsFhldcCauCiK87N+ifocjL139NwJCtrWBoExnAVsMD4wrp++N36iplsZTSlzBd9Fqo4OZtHThJk2CHMv506l/dlHfl1KSK+8By97DXBmPk4DWSCqEThfDD+So3DFBhn/B5pofN3zL0YaCiD6oBB+Y+wFc3nInv+cjTFnAgMBAAGjQjBAMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFCZuptNeNaVwG8cEYHv2ApQyqFEeMA4GA1UdDwEB/wQEAwIChDANBgkqhkiG9w0BAQsFAAOCAQEAPoh8yvw8nPKzhFWR2JnEmuLU8vK1azn822dIY4ZulHpoS8ATQod8Z+jB8ejszezOr3/JeMYRsvrwisQgbXJQTahwg6Xudx4NDJvEFZowOJ4nvRLRp0ZZGVFeKZFI/dxdcNntk+nCkcLCiO78Wq2mdjSnMp83ueO2X/YtRczjNsbUXGyeUoXkZMRydaqkAJDuSrGDLr12iOKw4hk/162AiUs4n6v2Wbfdh7PtE+PPutHWBSvKCMkSCh8exQ9h0MllgsBj6YzdOnhicv0g5BjM3qlp+1PlwNQmunVy5qcPu1ZNqbmrMnf7d6KjKw1iW0v3TnHaC09if4qFnj82J46m/g=="
+  ],
+  "n": "yrP0Gxby7ON2UU-C826zFVoB35if4DrZFWcQnc5x1xWvW_AeCTSix7wGYivS-SVwNg9Iw2Ax02xGEIorGW-ds6alhUWhw_L7fX8Q26iBWQ5Y7HhCU_fxV5ShQY5dl8FS6p5gQYUaOZNIruTz0mGOs380poOSGOE8PRQPNczt2XiT8Ws8iLBYZXXAmrgoivOzfon6HIy9d_TcCQra1gaBMZwFbDA-MK6fvjd-oqZbGU0pcwXfRaqODmbR04SZNghzL-dOpf3ZR35dSkivvAcvew1wZj5OA1kgqhE4Xww_kqNwxQYZ_weaaHzd8y9GGgog-qAQfmPsBXN5yJ7_nI0xZw",
+  "e": "AQAB",
+  "kid": "MDFCQ0E3RDM4QzIyNkIwNTNEQUQ4QzcxMDQ4NjM5NkFCOUMxNzY3Nw",
+  "x5t": "MDFCQ0E3RDM4QzIyNkIwNTNEQUQ4QzcxMDQ4NjM5NkFCOUMxNzY3Nw"
+} 
+----
+
+=== Other
+
+For other providers it is required to find the matching JWK and add it to the list of accepted public keys. Public keys which are provided in PEM format can be converted to the JWK format using third party tools.
+

@@ -58,6 +58,8 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshOAuth2ServiceImpl.class);
 
+	private static final String JWT_USERNAME_PROP = "preferred_username";
+
 	/**
 	 * Cache the token id which was last used by an user.
 	 */
@@ -177,8 +179,8 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	 */
 	protected MeshAuthUser syncUser(RoutingContext rc, JsonObject token) {
 		System.out.println(token.encodePrettily());
-		String username = token.getString("preferred_username");
-		Objects.requireNonNull(username, "The preferred_username property could not be found in the principle user info.");
+		String username = token.getString(JWT_USERNAME_PROP);
+		Objects.requireNonNull(username, "The " + JWT_USERNAME_PROP + " property could not be found in the principle user info.");
 		String currentTokenId = token.getString("jti");
 
 		EventQueueBatch batch = batchProvider.get();
@@ -193,7 +195,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 				user = root.findMeshAuthUserByUsername(username);
 				String uuid = user.getUuid();
-				// Not setting uuid since the user has not yet been comitted.
+				// Not setting uuid since the user has not yet been committed.
 				runPlugins(rc, batch, admin, user, null, token);
 				TOKEN_ID_LOG.put(uuid, currentTokenId);
 			} else {
