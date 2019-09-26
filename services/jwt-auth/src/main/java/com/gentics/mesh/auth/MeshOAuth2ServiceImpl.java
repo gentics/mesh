@@ -173,10 +173,13 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	 * @return
 	 */
 	protected MeshAuthUser syncUser(RoutingContext rc, JsonObject token) {
-		String username = extractUsername(token);
-		Objects.requireNonNull(username,
-			"The username could not be determined. Maybe no plugin was able to return a match or the token did not contain the "
-				+ DEFAULT_JWT_USERNAME_PROP + " property.");
+		Optional<String> usernameOpt = extractUsername(token);
+		if (!usernameOpt.isPresent()) {
+			throw new RuntimeException(
+				"The username could not be determined. Maybe no plugin was able to return a match or the token did not contain the "
+					+ DEFAULT_JWT_USERNAME_PROP + " property.");
+		}
+		String username = usernameOpt.get();
 		String currentTokenId = token.getString("jti");
 		// The JTI is optional - We use the username + iat if it is missing
 		if (currentTokenId == null) {
@@ -221,17 +224,16 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 	}
 
-	private String extractUsername(JsonObject token) {
+	private Optional<String> extractUsername(JsonObject token) {
 		List<AuthServicePlugin> plugins = authPluginRegistry.getPlugins();
-		String username = null;
 		for (AuthServicePlugin plugin : plugins) {
 			Optional<String> optionalUsername = plugin.extractUsername(token);
+			if (optionalUsername.isPresent()) {
+				return optionalUsername;
+			}
 		}
 		// Finally lets try the default
-		if (username == null) {
-			username = token.getString(DEFAULT_JWT_USERNAME_PROP);
-		}
-		return username;
+		return Optional.ofNullable(token.getString(DEFAULT_JWT_USERNAME_PROP));
 	}
 
 	private void defaultUserMapper(EventQueueBatch batch, MeshAuthUser user, JsonObject token) {
