@@ -339,6 +339,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 */
 	private MeshOptions prepareMeshOptions(MeshOptions options) {
 		loadExtraPublicKeys(options);
+		options.validate();
 		return options;
 	}
 
@@ -352,18 +353,22 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		String keyPath = auth.getPublicKeysPath();
 		if (StringUtils.isNotEmpty(keyPath)) {
 			File keyFile = new File(keyPath);
-			try {
-				String json = FileUtils.readFileToString(keyFile);
-				JsonObject jwks = new JsonObject(json);
-				JsonArray keys = jwks.getJsonArray("keys");
-				if (keys == null) {
-					throw new RuntimeException("The file {" + keyFile + "} did not contain an array with the name keys.");
+			if (keyFile.exists()) {
+				try {
+					String json = FileUtils.readFileToString(keyFile);
+					JsonObject jwks = new JsonObject(json);
+					JsonArray keys = jwks.getJsonArray("keys");
+					if (keys == null) {
+						throw new RuntimeException("The file {" + keyFile + "} did not contain an array with the name keys.");
+					}
+					for (int i = 0; i < keys.size(); i++) {
+						auth.getPublicKeys().add(keys.getJsonObject(i));
+					}
+				} catch (IOException e) {
+					throw new RuntimeException("Could not read {" + keyFile + "}");
 				}
-				for (int i = 0; i < keys.size(); i++) {
-					auth.getPublicKeys().add(keys.getString(i));
-				}
-			} catch (IOException e) {
-				throw new RuntimeException("Could not read {" + keyFile + "}");
+			} else {
+				log.warn("Keyfile {" + keyFile + "} not found. Not loading keys..");
 			}
 		}
 	}

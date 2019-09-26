@@ -517,13 +517,8 @@ public class MeshTestContext extends TestWatcher {
 			if (!keycloak.isRunning()) {
 				keycloak.start();
 			}
-			String authUrl = "http://" + keycloak.getHost() + ":" + keycloak.getMappedPort(8080) + "/auth";
-			String realmName = "master-test";
-//			String key = KeycloakUtils.loadPublicKey(realmName, authUrl);
-//			JsonWebKey jwk = new JsonWebKey(); 
-//			jwk.setAlgorithm("RS256");
-//			jwk.setPublicKeyUse("sig");
-//			authOptions.setPublicKey(jwk);
+			// String authUrl = "http://" + keycloak.getHost() + ":" + keycloak.getMappedPort(8080) + "/auth";
+			// String realmName = "master-test";
 		}
 		settings.optionChanger().changer.accept(meshOptions);
 		optionChanger.accept(meshOptions);

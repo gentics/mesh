@@ -1,6 +1,7 @@
 package com.gentics.mesh.plugin.auth;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 import com.gentics.mesh.plugin.MeshPlugin;
@@ -37,13 +38,13 @@ public interface AuthServicePlugin extends MeshPlugin {
 	}
 
 	/**
-	 * Process the token before it is getting mapped to a mesh user. This step can be used to augment the token with additional properties.
+	 * Process the token and extract the username that will be used to lookup the Mesh user.
 	 * 
 	 * @param token
-	 * @return
+	 * @return Optional which may contain the found username.
 	 */
-	default JsonObject preProcessToken(JsonObject token) {
-		return token;
+	default Optional<String> extractUsername(JsonObject token) {
+		return Optional.empty();
 	}
 
 	/**
@@ -60,7 +61,5 @@ public interface AuthServicePlugin extends MeshPlugin {
 	default MappingResult mapToken(HttpServerRequest req, String userUuid, JsonObject token) {
 		return null;
 	}
-
-
 
 }

@@ -3,6 +3,7 @@ package com.gentics.mesh.auth;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -47,7 +48,7 @@ public class MapperTestPlugin extends AbstractPlugin implements AuthServicePlugi
 
 	public static Set<JsonObject> publicKeys = new HashSet<>();
 
-	public static Function<JsonObject, JsonObject> preProcessor;
+	public static Function<JsonObject, Optional<String>> usernameExtractor;
 
 	public MapperTestPlugin(PluginWrapper wrapper, PluginEnvironment env) {
 		super(wrapper, env);
@@ -64,11 +65,11 @@ public class MapperTestPlugin extends AbstractPlugin implements AuthServicePlugi
 	}
 
 	@Override
-	public JsonObject preProcessToken(JsonObject token) {
-		if (preProcessor != null) {
-			return preProcessor.apply(token);
+	public Optional<String> extractUsername(JsonObject token) {
+		if (usernameExtractor != null) {
+			return usernameExtractor.apply(token);
 		} else {
-			return token;
+			return Optional.empty();
 		}
 	}
 

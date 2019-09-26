@@ -7,6 +7,7 @@ import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -49,23 +50,20 @@ import io.vertx.ext.auth.jwt.impl.JWTUser;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.JWTAuthHandler;
-import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 @Singleton
-@SuppressWarnings("restriction")
 public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshOAuth2ServiceImpl.class);
 
-	private static final String JWT_USERNAME_PROP = "preferred_username";
+	private static final String DEFAULT_JWT_USERNAME_PROP = "preferred_username";
 
 	/**
 	 * Cache the token id which was last used by an user.
 	 */
-	public static final Cache<String, String> TOKEN_ID_LOG = Caffeine.newBuilder().maximumSize(20_000).expireAfterWrite(24, TimeUnit.HOURS).build();
+	public final Cache<String, String> TOKEN_ID_LOG = Caffeine.newBuilder().maximumSize(20_000).expireAfterWrite(24, TimeUnit.HOURS).build();
 
 	protected AuthServicePluginRegistry authPluginRegistry;
-	protected NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
 	protected Database db;
 	protected BootstrapInitializer boot;
 	private final AuthenticationOptions authOptions;
@@ -90,7 +88,6 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 		// 1. Add keys from config
 		keys.addAll(authOptions.getPublicKeys().stream()
-			.map(JsonObject::new)
 			.collect(Collectors.toSet()));
 
 		// 2. Add keys from plugins
@@ -157,7 +154,6 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						rc.fail(401);
 						return;
 					}
-					decodedToken = plugin.preProcessToken(decodedToken);
 				}
 				rc.setUser(syncUser(rc, token.principal()));
 
@@ -177,8 +173,10 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	 * @return
 	 */
 	protected MeshAuthUser syncUser(RoutingContext rc, JsonObject token) {
-		String username = token.getString(JWT_USERNAME_PROP);
-		Objects.requireNonNull(username, "The " + JWT_USERNAME_PROP + " property could not be found in the principle user info.");
+		String username = extractUsername(token);
+		Objects.requireNonNull(username,
+			"The username could not be determined. Maybe no plugin was able to return a match or the token did not contain the "
+				+ DEFAULT_JWT_USERNAME_PROP + " property.");
 		String currentTokenId = token.getString("jti");
 		// The JTI is optional - We use the username + iat if it is missing
 		if (currentTokenId == null) {
@@ -221,6 +219,19 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		batch.dispatch();
 		return authUser;
 
+	}
+
+	private String extractUsername(JsonObject token) {
+		List<AuthServicePlugin> plugins = authPluginRegistry.getPlugins();
+		String username = null;
+		for (AuthServicePlugin plugin : plugins) {
+			Optional<String> optionalUsername = plugin.extractUsername(token);
+		}
+		// Finally lets try the default
+		if (username == null) {
+			username = token.getString(DEFAULT_JWT_USERNAME_PROP);
+		}
+		return username;
 	}
 
 	private void defaultUserMapper(EventQueueBatch batch, MeshAuthUser user, JsonObject token) {

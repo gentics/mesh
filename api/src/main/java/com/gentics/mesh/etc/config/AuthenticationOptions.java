@@ -70,33 +70,49 @@ public class AuthenticationOptions implements Option {
 	private String publicKeysPath = DEFAULT_PUBLIC_KEYS_PATH;
 
 	@JsonIgnore
-	private List<String> publicKeys = new ArrayList<>();
+	private List<JsonObject> publicKeys = new ArrayList<>();
 
 	/**
 	 * Return the list of configured public keys.
 	 * 
 	 * @return
 	 */
-	public List<String> getPublicKeys() {
+	public List<JsonObject> getPublicKeys() {
 		return publicKeys;
 	}
 
 	public AuthenticationOptions setPublicKeys(Collection<JsonObject> keys) {
 		this.publicKeys = keys.stream()
-			.map(JsonObject::encode)
 			.collect(Collectors.toList());
 		return this;
 	}
 
+	/**
+	 * Set a single JWK public key.
+	 * 
+	 * @param jwk
+	 * @return
+	 */
 	public AuthenticationOptions setPublicKey(JsonObject jwk) {
-		this.publicKeys = Arrays.asList(jwk.encodePrettily());
+		this.publicKeys = Arrays.asList(jwk);
 		return this;
 	}
 
+	/**
+	 * Return the path to the public keys JSON file which contains JWK's.
+	 * 
+	 * @return
+	 */
 	public String getPublicKeysPath() {
 		return publicKeysPath;
 	}
 
+	/**
+	 * Set the JWK public keys file.
+	 * 
+	 * @param publicKeysPath
+	 * @return
+	 */
 	public AuthenticationOptions setPublicKeysPath(String publicKeysPath) {
 		this.publicKeysPath = publicKeysPath;
 		return this;
@@ -202,9 +218,8 @@ public class AuthenticationOptions implements Option {
 		}
 		// Validate the JWK's
 		if (publicKeys != null) {
-			for (String key : publicKeys) {
-				JsonObject jwk = new JsonObject(key);
-				Objects.requireNonNull(jwk.getString("kty"), "The provided JWK has no kty (type).");
+			for (JsonObject key : publicKeys) {
+				Objects.requireNonNull(key.getString("kty"), "The provided JWK has no kty (type).");
 				// TODO check whether we should also check the use property
 			}
 		}

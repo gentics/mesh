@@ -4,6 +4,7 @@ import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Before;
@@ -29,11 +30,11 @@ public class OAuth2Auth0IntegrationTest extends AbstractOAuthTest {
 	private void setupPlugin() throws Exception {
 		Set<JsonObject> keys = Auth0Utils.loadJWKs("jotschi");
 		MapperTestPlugin.publicKeys.addAll(keys);
-		MapperTestPlugin.preProcessor = (token) -> {
+		MapperTestPlugin.usernameExtractor = (token) -> {
 			if (!token.containsKey("preferred_username")) {
-				token.put("preferred_username", token.getString("nickname"));
+				return Optional.of(token.getString("nickname"));
 			}
-			return token;
+			return Optional.empty();
 		};
 	}
 
