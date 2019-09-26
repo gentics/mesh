@@ -37,6 +37,16 @@ public interface AuthServicePlugin extends MeshPlugin {
 	}
 
 	/**
+	 * Process the token before it is getting mapped to a mesh user. This step can be used to augment the token with additional properties.
+	 * 
+	 * @param token
+	 * @return
+	 */
+	default JsonObject preProcessToken(JsonObject token) {
+		return token;
+	}
+
+	/**
 	 * Map the token information to mesh elements. You can use this method to extract information from the token and sync roles, groups in Gentics Mesh.
 	 * 
 	 * @param req
@@ -50,5 +60,7 @@ public interface AuthServicePlugin extends MeshPlugin {
 	default MappingResult mapToken(HttpServerRequest req, String userUuid, JsonObject token) {
 		return null;
 	}
+
+
 
 }

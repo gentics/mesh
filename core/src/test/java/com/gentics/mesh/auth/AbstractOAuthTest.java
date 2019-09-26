@@ -10,15 +10,14 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 
+import com.gentics.mesh.auth.util.KeycloakUtils;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestContext;
 
 import io.vertx.core.json.JsonObject;
-import okhttp3.MediaType;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public abstract class AbstractOAuthTest extends AbstractMeshTest {
@@ -33,6 +32,12 @@ public abstract class AbstractOAuthTest extends AbstractMeshTest {
 		JsonObject authInfo = loginKeycloak();
 		String token = authInfo.getString("access_token");
 		client().setAPIKey(token);
+	}
+
+	private JsonObject loginKeycloak() throws IOException {
+		String secret = "9b65c378-5b4c-4e25-b5a1-a53a381b5fb4";
+		int port = MeshTestContext.getKeycloak().getFirstMappedPort();
+		return KeycloakUtils.loginKeycloak("http", "localhost", port, "master-test", "mesh", "dummyuser", "finger", secret);
 	}
 
 	protected JsonObject get(String path, String token) throws IOException {
@@ -59,28 +64,6 @@ public abstract class AbstractOAuthTest extends AbstractMeshTest {
 
 	protected JsonObject loadJson(String path) throws IOException {
 		return new JsonObject(IOUtils.toString(getClass().getResource(path), StandardCharsets.UTF_8));
-	}
-
-	protected JsonObject loginKeycloak() throws IOException {
-		String secret = "9b65c378-5b4c-4e25-b5a1-a53a381b5fb4";
-
-		int port = MeshTestContext.getKeycloak().getFirstMappedPort();
-
-		StringBuilder content = new StringBuilder();
-		content.append("client_id=mesh&");
-		content.append("username=dummyuser&");
-		content.append("password=finger&");
-		content.append("grant_type=password&");
-		content.append("client_secret=" + secret);
-		RequestBody body = RequestBody.create(MediaType.parse("application/x-www-form-urlencoded"), content.toString());
-		// .header("Content-Type", "application/x-www-form-urlencoded")
-		Request request = new Request.Builder()
-			.post(body)
-			.url("http://localhost:" + port + "/auth/realms/master-test/protocol/openid-connect/token")
-			.build();
-
-		Response response = httpClient().newCall(request).execute();
-		return new JsonObject(response.body().string());
 	}
 
 	protected void assertGroupsOfUser(String userName, String... expectedGroupNames) {

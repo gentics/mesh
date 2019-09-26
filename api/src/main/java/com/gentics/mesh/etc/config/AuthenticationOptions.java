@@ -4,8 +4,10 @@ import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -69,6 +71,13 @@ public class AuthenticationOptions implements Option {
 	 */
 	public List<String> getPublicKeys() {
 		return publicKeys;
+	}
+
+	public AuthenticationOptions setPublicKeys(Collection<JsonObject> keys) {
+		this.publicKeys = keys.stream()
+			.map(JsonObject::encode)
+			.collect(Collectors.toList());
+		return this;
 	}
 
 	public AuthenticationOptions setPublicKey(JsonObject jwk) {
@@ -179,8 +188,9 @@ public class AuthenticationOptions implements Option {
 			for (String key : publicKeys) {
 				JsonObject jwk = new JsonObject(key);
 				Objects.requireNonNull(jwk.getString("kty"), "The provided JWK has no kty (type).");
-				//TODO check whether we should also check the use property
+				// TODO check whether we should also check the use property
 			}
 		}
 	}
+
 }

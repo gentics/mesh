@@ -12,9 +12,11 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public final class KeycloakUtils {
@@ -36,19 +38,15 @@ public final class KeycloakUtils {
 			// TODO i18n
 			throw error(HttpResponseStatus.INTERNAL_SERVER_ERROR, "oauth_config_error", e);
 		}
-
 	}
 
-	public static Set<JsonObject> fetchCerts(String protocol, String host, int port, String realmName) throws IOException {
-		Builder builder = new OkHttpClient.Builder();
-		OkHttpClient client = builder.build();
-
+	public static Set<JsonObject> loadJWKs(String protocol, String host, int port, String realmName) throws IOException {
 		Request request = new Request.Builder()
 			.header("Accept", "application/json")
 			.url(protocol + "://" + host + ":" + port + "" + "/auth/realms/" + realmName + "/protocol/openid-connect/certs")
 			.build();
 
-		try (Response response = client.newCall(request).execute()) {
+		try (Response response = httpClient().newCall(request).execute()) {
 			if (!response.isSuccessful()) {
 				log.error(response.body().toString());
 				throw new RuntimeException("Error while loading certs. Got code {" + response.code() + "}");
@@ -66,15 +64,13 @@ public final class KeycloakUtils {
 	}
 
 	public static JsonObject fetchPublicRealmInfo(String protocol, String host, int port, String realmName) throws IOException {
-		Builder builder = new OkHttpClient.Builder();
-		OkHttpClient client = builder.build();
 
 		Request request = new Request.Builder()
 			.header("Accept", "application/json")
 			.url(protocol + "://" + host + ":" + port + "" + "/auth/realms/" + realmName)
 			.build();
 
-		try (Response response = client.newCall(request).execute()) {
+		try (Response response = httpClient().newCall(request).execute()) {
 			if (!response.isSuccessful()) {
 				log.error(response.body().toString());
 
@@ -82,6 +78,31 @@ public final class KeycloakUtils {
 			}
 			return new JsonObject(response.body().string());
 		}
+	}
+
+	public static JsonObject loginKeycloak(String protocol, String host, int port, String realmName, String clientId, String username,
+		String password, String secret) throws IOException {
+
+		StringBuilder content = new StringBuilder();
+		content.append("client_id=" + clientId + "&");
+		content.append("username=" + username + "&");
+		content.append("password=" + password + "&");
+		content.append("grant_type=password&");
+		content.append("client_secret=" + secret);
+		RequestBody body = RequestBody.create(MediaType.parse("application/x-www-form-urlencoded"), content.toString());
+		Request request = new Request.Builder()
+			.post(body)
+			.url(protocol + "://" + host + ":" + port + "/auth/realms/" + realmName + "/protocol/openid-connect/token")
+			.build();
+
+		Response response = httpClient().newCall(request).execute();
+		return new JsonObject(response.body().string());
+	}
+
+	private static OkHttpClient httpClient() {
+		Builder builder = new OkHttpClient.Builder();
+		OkHttpClient client = builder.build();
+		return client;
 	}
 
 }

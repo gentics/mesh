@@ -46,7 +46,7 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 	private void addPublicKey() throws Exception {
 		String realmName = "master-test";
 		int port = MeshTestContext.getKeycloak().getFirstMappedPort();
-		Set<JsonObject> keys = KeycloakUtils.fetchCerts("http", "localhost", port, realmName);
+		Set<JsonObject> keys = KeycloakUtils.loadJWKs("http", "localhost", port, realmName);
 		MapperTestPlugin.publicKeys.addAll(keys);
 	}
 

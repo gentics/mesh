@@ -151,11 +151,13 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				JWTUser token = (JWTUser) user;
 
 				List<AuthServicePlugin> plugins = authPluginRegistry.getPlugins();
+				JsonObject decodedToken = token.principal();
 				for (AuthServicePlugin plugin : plugins) {
-					if (!plugin.acceptToken(rc.request(), token.principal())) {
+					if (!plugin.acceptToken(rc.request(), decodedToken)) {
 						rc.fail(401);
 						return;
 					}
+					decodedToken = plugin.preProcessToken(decodedToken);
 				}
 				rc.setUser(syncUser(rc, token.principal()));
 
@@ -175,10 +177,18 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	 * @return
 	 */
 	protected MeshAuthUser syncUser(RoutingContext rc, JsonObject token) {
-		System.out.println(token.encodePrettily());
 		String username = token.getString(JWT_USERNAME_PROP);
 		Objects.requireNonNull(username, "The " + JWT_USERNAME_PROP + " property could not be found in the principle user info.");
 		String currentTokenId = token.getString("jti");
+		// The JTI is optional - We use the username + iat if it is missing
+		if (currentTokenId == null) {
+			Integer iat = token.getInteger("iat");
+			if (iat == null) {
+				throw new RuntimeException("The token does not contain an iat or jti property. One of those values is required.");
+			}
+			currentTokenId = username + "-" + String.valueOf(iat);
+		}
+		String cachingId = currentTokenId;
 
 		EventQueueBatch batch = batchProvider.get();
 		MeshAuthUser authUser = db.tx(() -> {
@@ -194,16 +204,16 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				String uuid = user.getUuid();
 				// Not setting uuid since the user has not yet been committed.
 				runPlugins(rc, batch, admin, user, null, token);
-				TOKEN_ID_LOG.put(uuid, currentTokenId);
+				TOKEN_ID_LOG.put(uuid, cachingId);
 			} else {
 				// Compare the stored and current token id to see whether the current token is different.
 				// In that case a sync must be invoked.
 				String uuid = user.getUuid();
 				String lastSeenTokenId = TOKEN_ID_LOG.getIfPresent(user.getUuid());
-				if (lastSeenTokenId == null || !lastSeenTokenId.equals(currentTokenId)) {
+				if (lastSeenTokenId == null || !lastSeenTokenId.equals(cachingId)) {
 					com.gentics.mesh.core.data.User admin = root.findByUsername("admin");
 					runPlugins(rc, batch, admin, user, uuid, token);
-					TOKEN_ID_LOG.put(uuid, currentTokenId);
+					TOKEN_ID_LOG.put(uuid, cachingId);
 				}
 			}
 			return user;

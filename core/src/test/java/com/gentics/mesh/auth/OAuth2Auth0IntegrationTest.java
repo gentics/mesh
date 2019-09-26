@@ -1,51 +1,53 @@
 package com.gentics.mesh.auth;
 
-import java.io.File;
-import java.io.IOException;
+import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
 
-import org.apache.commons.io.FileUtils;
+import java.io.IOException;
+import java.util.Set;
+
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.Mesh;
-import com.gentics.mesh.etc.config.AuthenticationOptions;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.auth.util.Auth0Utils;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
 
 @Ignore
-public class OAuth2Auth0IntegrationTest {
+@MeshTestSetting(elasticsearch = NONE, testSize = PROJECT_AND_NODE, startServer = true, useKeycloak = false)
+public class OAuth2Auth0IntegrationTest extends AbstractOAuthTest {
 
-	public static void clean() throws IOException {
-		deleteDir(new File("config"));
-		deleteDir(new File("data"));
+	@Before
+	public void deployPlugin() throws Exception {
+		MapperTestPlugin.reset();
+		setupPlugin();
+		deployPlugin(MapperTestPlugin.class, "myMapper");
+	}
+
+	private void setupPlugin() throws Exception {
+		Set<JsonObject> keys = Auth0Utils.loadJWKs("jotschi");
+		MapperTestPlugin.publicKeys.addAll(keys);
+		MapperTestPlugin.preProcessor = (token) -> {
+			if (!token.containsKey("preferred_username")) {
+				token.put("preferred_username", token.getString("nickname"));
+			}
+			return token;
+		};
 	}
 
 	@Test
 	public void testAuth0() throws IOException {
-		MeshOptions options = new MeshOptions();
-		AuthenticationOptions auth = options.getAuthenticationOptions();
-		options.setNodeName("mesh");
-		auth.setKeystorePassword("ABC");
-		JsonObject jwk = new JsonObject();
-		auth.setPublicKey(jwk);
-		options.getSearchOptions().disable();
-		options.getStorageOptions().setDirectory(null);
-
-		Mesh mesh = Mesh.create(options);
-		mesh.rxRun().blockingAwait();
-
-		MeshRestClient client = MeshRestClient.create("localhost", 8080, false);
-		client.setAPIKey("TOKEN");
-
-		System.out.println(client.me().blockingGet().toJson());
-
-	}
-
-	private static void deleteDir(File file) throws IOException {
-		if (file.exists()) {
-			FileUtils.forceDelete(file);
-		}
+		String clientId = "MWGBzxK1DgoU3Sqfk3NzltiS71o3OmQm";
+		String username = "spam@jotschi.de";
+		String password = "geheim";
+		String clientSecret = "geheim";
+		JsonObject token = Auth0Utils.loginAuth0("jotschi", clientId, username, password,
+			clientSecret);
+		System.out.println(token.encodePrettily());
+		String accessToken = token.getString("id_token");
+		client().setAPIKey(accessToken);
+		System.out.println(client().me().blockingGet().toJson());
 	}
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.pf4j.PluginWrapper;
 
@@ -46,6 +47,8 @@ public class MapperTestPlugin extends AbstractPlugin implements AuthServicePlugi
 
 	public static Set<JsonObject> publicKeys = new HashSet<>();
 
+	public static Function<JsonObject, JsonObject> preProcessor;
+
 	public MapperTestPlugin(PluginWrapper wrapper, PluginEnvironment env) {
 		super(wrapper, env);
 	}
@@ -58,6 +61,15 @@ public class MapperTestPlugin extends AbstractPlugin implements AuthServicePlugi
 	@Override
 	public boolean acceptToken(HttpServerRequest httpServerRequest, JsonObject token) {
 		return acceptToken;
+	}
+
+	@Override
+	public JsonObject preProcessToken(JsonObject token) {
+		if (preProcessor != null) {
+			return preProcessor.apply(token);
+		} else {
+			return token;
+		}
 	}
 
 	@Override

@@ -39,13 +39,10 @@ public class MeshAuthChain {
 		route.handler(rc -> {
 			jwtAuthHandler.handle(rc, true);
 		});
-		// Now use the Oauth handler which may be able to authenticate the request - The jwt auth handler may have failed
+
+		// Now use the OAuth handler which may be able to authenticate the request - The jwt auth handler may have failed
 		oauthService.secure(route);
-		// } else {
-		// route.handler(rc -> {
-		// jwtAuthHandler.handle(rc);
-		// });
-		// }
+
 		// Finally pass the request through the anonymous handler to fallback to anonymous when enabled
 		route.handler(rc -> {
 			anonHandler.handle(rc);
