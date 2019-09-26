@@ -10,7 +10,6 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
-import com.gentics.mesh.etc.config.auth.JsonWebKey;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
 
@@ -72,8 +71,8 @@ public class AuthenticationOptions implements Option {
 		return publicKeys;
 	}
 
-	public AuthenticationOptions setPublicKey(JsonWebKey publicKey) {
-		this.publicKeys = Arrays.asList(publicKey.toJson().encodePrettily());
+	public AuthenticationOptions setPublicKey(JsonObject jwk) {
+		this.publicKeys = Arrays.asList(jwk.encodePrettily());
 		return this;
 	}
 
@@ -178,7 +177,9 @@ public class AuthenticationOptions implements Option {
 		// Validate the JWK's
 		if (publicKeys != null) {
 			for (String key : publicKeys) {
-				JsonWebKey.validate(new JsonObject(key));
+				JsonObject jwk = new JsonObject(key);
+				Objects.requireNonNull(jwk.getString("kty"), "The provided JWK has no kty (type).");
+				//TODO check whether we should also check the use property
 			}
 		}
 	}

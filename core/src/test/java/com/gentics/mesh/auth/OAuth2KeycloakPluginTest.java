@@ -23,7 +23,6 @@ import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.etc.config.auth.JsonWebKey;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -47,7 +46,7 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 	private void addPublicKey() throws Exception {
 		String realmName = "master-test";
 		int port = MeshTestContext.getKeycloak().getFirstMappedPort();
-		Set<JsonWebKey> keys = KeycloakUtils.fetchCerts("http", "localhost", port, realmName);
+		Set<JsonObject> keys = KeycloakUtils.fetchCerts("http", "localhost", port, realmName);
 		MapperTestPlugin.publicKeys.addAll(keys);
 	}
 
@@ -206,7 +205,7 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 	@Test
 	public void testAuthWithMultiplePublicKeys() throws IOException {
 		JsonObject jwk = loadJson("/jwk/dummy-jwk.json");
-		MapperTestPlugin.publicKeys.add(JsonWebKey.create(jwk));
+		MapperTestPlugin.publicKeys.add(jwk);
 		MapperTestPlugin.userResult = null;
 		setClientTokenFromKeycloak();
 		UserResponse me = call(() -> client().me());

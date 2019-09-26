@@ -12,7 +12,6 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.etc.config.auth.JsonWebKey;
 import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.auth.AuthServicePlugin;
 import com.gentics.mesh.plugin.auth.GroupFilter;
@@ -45,14 +44,14 @@ public class MapperTestPlugin extends AbstractPlugin implements AuthServicePlugi
 
 	public static List<GroupResponse> groupList;
 
-	public static Set<JsonWebKey> publicKeys = new HashSet<>();
+	public static Set<JsonObject> publicKeys = new HashSet<>();
 
 	public MapperTestPlugin(PluginWrapper wrapper, PluginEnvironment env) {
 		super(wrapper, env);
 	}
 
 	@Override
-	public Set<JsonWebKey> getPublicKeys() {
+	public Set<JsonObject> getPublicKeys() {
 		return publicKeys;
 	}
 

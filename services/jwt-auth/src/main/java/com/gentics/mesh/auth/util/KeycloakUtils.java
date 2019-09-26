@@ -7,9 +7,6 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.gentics.mesh.etc.config.auth.JsonWebKey;
-import com.gentics.mesh.json.JsonUtil;
-
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -42,7 +39,7 @@ public final class KeycloakUtils {
 
 	}
 
-	public static Set<JsonWebKey> fetchCerts(String protocol, String host, int port, String realmName) throws IOException {
+	public static Set<JsonObject> fetchCerts(String protocol, String host, int port, String realmName) throws IOException {
 		Builder builder = new OkHttpClient.Builder();
 		OkHttpClient client = builder.build();
 
@@ -58,11 +55,10 @@ public final class KeycloakUtils {
 			}
 			JsonObject json = new JsonObject(response.body().string());
 			JsonArray keys = json.getJsonArray("keys");
-			Set<JsonWebKey> jwks = new HashSet<>();
+			Set<JsonObject> jwks = new HashSet<>();
 			for (int i = 0; i < keys.size(); i++) {
 				JsonObject key = keys.getJsonObject(i);
-				System.out.println(key.encodePrettily());
-				jwks.add(JsonUtil.readValue(key.encode(), JsonWebKey.class));
+				jwks.add(key);
 			}
 			return jwks;
 		}

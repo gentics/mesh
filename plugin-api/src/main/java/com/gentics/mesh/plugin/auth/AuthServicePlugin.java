@@ -3,7 +3,6 @@ package com.gentics.mesh.plugin.auth;
 import java.util.Collections;
 import java.util.Set;
 
-import com.gentics.mesh.etc.config.auth.JsonWebKey;
 import com.gentics.mesh.plugin.MeshPlugin;
 
 import io.vertx.core.http.HttpServerRequest;
@@ -21,7 +20,7 @@ public interface AuthServicePlugin extends MeshPlugin {
 	 * 
 	 * @return Set of JWK's
 	 */
-	default Set<JsonWebKey> getPublicKeys() {
+	default Set<JsonObject> getPublicKeys() {
 		return Collections.emptySet();
 	}
 

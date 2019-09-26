@@ -9,12 +9,12 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.etc.config.auth.JsonWebKey;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.auth.AuthServicePlugin;
 import com.gentics.mesh.plugin.registry.PluginRegistry;
 
 import io.reactivex.Completable;
+import io.vertx.core.json.JsonObject;
 
 @Singleton
 public class AuthServicePluginRegistry implements PluginRegistry {
@@ -51,11 +51,11 @@ public class AuthServicePluginRegistry implements PluginRegistry {
 	}
 
 	/**
-	 * Returns a set of public keys which the currently registered plugins provide.
+	 * Returns a set of JWK public keys which the currently registered plugins provide.
 	 * 
 	 * @return
 	 */
-	public Set<JsonWebKey> getActivePublicKeys() {
+	public Set<JsonObject> getActivePublicKeys() {
 		return plugins.values().stream()
 			.map(p -> p.getPublicKeys())
 			.flatMap(Set::stream)

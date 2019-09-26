@@ -37,7 +37,6 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.auth.util.KeycloakUtils;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.search.IndexHandler;
@@ -50,7 +49,6 @@ import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
-import com.gentics.mesh.etc.config.auth.JsonWebKey;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.rest.client.MeshRestClient;

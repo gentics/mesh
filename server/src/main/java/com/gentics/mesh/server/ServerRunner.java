@@ -42,11 +42,10 @@ public class ServerRunner {
 		// options.getHttpServerOptions().setPort(9999);
 		// options.getMonitoringOptions().setPort(9991);
 		// options.getMonitoringOptions().setHost("0.0.0.0");
-		options.getSearchOptions().setUrl(null);
-		 options.getSearchOptions().setStartEmbedded(false);
+		// options.getSearchOptions().setUrl(null);
+		// options.getSearchOptions().setStartEmbedded(false);
 		// options.getSearchOptions().setMappingMode(MappingMode.STRICT);
 
-		 System.out.println(OptionsLoader.getYAMLMapper().writeValueAsString(options));
 		Mesh mesh = Mesh.create(options);
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();

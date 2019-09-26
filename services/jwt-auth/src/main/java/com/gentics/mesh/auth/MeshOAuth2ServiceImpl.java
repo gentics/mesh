@@ -31,7 +31,6 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.auth.JsonWebKey;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.auth.AuthServicePlugin;
@@ -87,12 +86,11 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 	private JWTAuthHandler createJWTHandler() {
 		// Add the already configured public keys to the config.
-		Set<JsonWebKey> keys = new HashSet<>();
+		Set<JsonObject> keys = new HashSet<>();
 
 		// 1. Add keys from config
 		keys.addAll(authOptions.getPublicKeys().stream()
 			.map(JsonObject::new)
-			.map(JsonWebKey::create)
 			.collect(Collectors.toSet()));
 
 		// 2. Add keys from plugins
@@ -103,11 +101,10 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			return null;
 		}
 
-		System.out.println("Keys: " + keys.size());
 		if (log.isDebugEnabled()) {
-			for (JsonWebKey key : keys) {
+			for (JsonObject key : keys) {
 				if (key != null) {
-					log.debug(key.toJson().encodePrettily());
+					log.debug(key.encodePrettily());
 				} else {
 					log.debug("Key is null");
 				}
