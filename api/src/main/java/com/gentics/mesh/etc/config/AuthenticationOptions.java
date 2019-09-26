@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
@@ -29,11 +30,14 @@ public class AuthenticationOptions implements Option {
 
 	public static final String DEFAULT_KEYSTORE_PATH = CONFIG_FOLDERNAME + "/keystore.jceks";
 
+	public static final String DEFAULT_PUBLIC_KEYS_PATH = CONFIG_FOLDERNAME + "/public-keys.json";
+
 	public static final String MESH_AUTH_TOKEN_EXP_ENV = "MESH_AUTH_TOKEN_EXP";
 	public static final String MESH_AUTH_KEYSTORE_PASS_ENV = "MESH_AUTH_KEYSTORE_PASS";
 	public static final String MESH_AUTH_KEYSTORE_PATH_ENV = "MESH_AUTH_KEYSTORE_PATH";
 	public static final String MESH_AUTH_JWT_ALGO_ENV = "MESH_AUTH_JWT_ALGO";
 	public static final String MESH_AUTH_ANONYMOUS_ENABLED_ENV = "MESH_AUTH_ANONYMOUS_ENABLED";
+	public static final String MESH_AUTH_PUBLIC_KEYS_PATH_ENV = "MESH_AUTH_PUBLIC_KEYS_PATH";
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Time in minutes which an issued token stays valid.")
@@ -61,7 +65,11 @@ public class AuthenticationOptions implements Option {
 	private boolean enableAnonymousAccess = true;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("A list of additional JWK formatted public keys which will be used to verify JWTs.")
+	@JsonPropertyDescription("Path to the public keys file which contains a list of additional JWK formatted public keys which will be used to verify JWTs.")
+	@EnvironmentVariable(name = MESH_AUTH_PUBLIC_KEYS_PATH_ENV, description = "Override the configured public keys file path.")
+	private String publicKeysPath = DEFAULT_PUBLIC_KEYS_PATH;
+
+	@JsonIgnore
 	private List<String> publicKeys = new ArrayList<>();
 
 	/**
@@ -82,6 +90,15 @@ public class AuthenticationOptions implements Option {
 
 	public AuthenticationOptions setPublicKey(JsonObject jwk) {
 		this.publicKeys = Arrays.asList(jwk.encodePrettily());
+		return this;
+	}
+
+	public String getPublicKeysPath() {
+		return publicKeysPath;
+	}
+
+	public AuthenticationOptions setPublicKeysPath(String publicKeysPath) {
+		this.publicKeysPath = publicKeysPath;
 		return this;
 	}
 

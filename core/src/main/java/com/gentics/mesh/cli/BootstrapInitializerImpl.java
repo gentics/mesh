@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -79,6 +80,7 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
+import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -101,6 +103,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.EventBusOptions;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.dropwizard.DropwizardMetricsOptions;
@@ -235,6 +239,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		boolean isInitMode = options.isInitClusterMode();
 		boolean startOrientServer = storageOptions != null && storageOptions.getStartServer();
 
+		options = prepareMeshOptions(options);
+
 		try {
 			db.init(mesh.getOptions(), MeshVersion.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
 		} catch (Exception e) {
@@ -323,6 +329,43 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			vertx.eventBus().publish(STARTUP.address, true);
 		}, log::error);
 
+	}
+
+	/**
+	 * Prepare the mesh options.
+	 * 
+	 * @param options
+	 * @return
+	 */
+	private MeshOptions prepareMeshOptions(MeshOptions options) {
+		loadExtraPublicKeys(options);
+		return options;
+	}
+
+	/**
+	 * Load the list of JWK's that may have been added to the public keys file.
+	 * 
+	 * @param options
+	 */
+	private void loadExtraPublicKeys(MeshOptions options) {
+		AuthenticationOptions auth = options.getAuthenticationOptions();
+		String keyPath = auth.getPublicKeysPath();
+		if (StringUtils.isNotEmpty(keyPath)) {
+			File keyFile = new File(keyPath);
+			try {
+				String json = FileUtils.readFileToString(keyFile);
+				JsonObject jwks = new JsonObject(json);
+				JsonArray keys = jwks.getJsonArray("keys");
+				if (keys == null) {
+					throw new RuntimeException("The file {" + keyFile + "} did not contain an array with the name keys.");
+				}
+				for (int i = 0; i < keys.size(); i++) {
+					auth.getPublicKeys().add(keys.getString(i));
+				}
+			} catch (IOException e) {
+				throw new RuntimeException("Could not read {" + keyFile + "}");
+			}
+		}
 	}
 
 	@Override
