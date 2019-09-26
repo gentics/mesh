@@ -214,8 +214,28 @@ WARNING: The Gentics Mesh UI is currently not Keycloak aware. The UI will thus n
 
 === Configuration
 
-The list of public keys which will be used to validate and accept JWT's can be added to the `mesh.yml` file in the `security.publicKeys` list.
+The list of public keys which will be used to validate and accept JWT's can be added to the `config/public-keys.json` file. The path to this file can be configured via the `security.publicKeysPath` setting in the `mesh.yml` file or via the `MESH_AUTH_PUBLIC_KEYS_PATH` environment variable.
 
+.public-keys.json
+[source,json]
+----
+{
+    "keys": [
+        {
+            "alg": "RS256",
+            "kty": "RSA",
+            "use": "sig",
+            "x5c": [
+                "MIIC/TCCAeWgAwIBAgIJA3kWNismjx1FMA0GCSqGSIb3DQEBCwUAMBwxGjAYBgNVBAMTEWpvdHNjaGkuYXV0aDAuY29tMB4XDTE5MDgyMDE4MTA0OVoXDTMzMDQyODE4MTA0OVowHDEaMBgGA1UEAxMRam90c2NoaS5hdXRoMC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDKs/QbFvLs43ZRT4LzbrMVWgHfmJ/gOtkVZxCdznHXFa9b8B4JNKLHvAZiK9L5JXA2D0jDYDHTbEYQiisZb52zpqWFRaHD8vt9fxDbqIFZDljseEJT9/FXlKFBjl2XwVLqnmBBhRo5k0iu5PPSYY6zfzSmg5IY4Tw9FA81zO3ZeJPxazyIsFhldcCauCiK87N+ifocjL139NwJCtrWBoExnAVsMD4wrp++N36iplsZTSlzBd9Fqo4OZtHThJk2CHMv506l/dlHfl1KSK+8By97DXBmPk4DWSCqEThfDD+So3DFBhn/B5pofN3zL0YaCiD6oBB+Y+wFc3nInv+cjTFnAgMBAAGjQjBAMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFCZuptNeNaVwG8cEYHv2ApQyqFEeMA4GA1UdDwEB/wQEAwIChDANBgkqhkiG9w0BAQsFAAOCAQEAPoh8yvw8nPKzhFWR2JnEmuLU8vK1azn822dIY4ZulHpoS8ATQod8Z+jB8ejszezOr3/JeMYRsvrwisQgbXJQTahwg6Xudx4NDJvEFZowOJ4nvRLRp0ZZGVFeKZFI/dxdcNntk+nCkcLCiO78Wq2mdjSnMp83ueO2X/YtRczjNsbUXGyeUoXkZMRydaqkAJDuSrGDLr12iOKw4hk/162AiUs4n6v2Wbfdh7PtE+PPutHWBSvKCMkSCh8exQ9h0MllgsBj6YzdOnhicv0g5BjM3qlp+1PlwNQmunVy5qcPu1ZNqbmrMnf7d6KjKw1iW0v3TnHaC09if4qFnj82J46m/g=="
+            ],
+            "n": "yrP0Gxby7ON2UU-C826zFVoB35if4DrZFWcQnc5x1xWvW_AeCTSix7wGYivS-SVwNg9Iw2Ax02xGEIorGW-ds6alhUWhw_L7fX8Q26iBWQ5Y7HhCU_fxV5ShQY5dl8FS6p5gQYUaOZNIruTz0mGOs380poOSGOE8PRQPNczt2XiT8Ws8iLBYZXXAmrgoivOzfon6HIy9d_TcCQra1gaBMZwFbDA-MK6fvjd-oqZbGU0pcwXfRaqODmbR04SZNghzL-dOpf3ZR35dSkivvAcvew1wZj5OA1kgqhE4Xww_kqNwxQYZ_weaaHzd8y9GGgog-qAQfmPsBXN5yJ7_nI0xZw",
+            "e": "AQAB",
+            "kid": "MDFCQ0E3RDM4QzIyNkIwNTNEQUQ4QzcxMDQ4NjM5NkFCOUMxNzY3Nw",
+            "x5t": "MDFCQ0E3RDM4QzIyNkIwNTNEQUQ4QzcxMDQ4NjM5NkFCOUMxNzY3Nw"
+        }
+    ]
+}
+----
 
 === Mapping
 
@@ -237,7 +257,7 @@ Currently the following fields will be kept in sync with Gentics Mesh:
 
 The `preferred_username` field is the main id property which will be used to locate a user.
 
-NOTE: If the `preferred_username` changes a new user will be created in Gentics Mesh.
+NOTE: If the username changes a new user will be created in Gentics Mesh.
 
 === Authentication Service Plugin API
 
@@ -269,22 +289,6 @@ https://localhost:8443/auth/realms/realmName/protocol/openid-connect/certs
 https://yourName.auth0.com/.well-known/jwks.json
 ----
 
-Example Json Web Key (JWK):
-[source,json]
-----
-{
-  "alg": "RS256",
-  "kty": "RSA",
-  "use": "sig",
-  "x5c": [
-    "MIIC/TCCAeWgAwIBAgIJA3kWNismjx1FMA0GCSqGSIb3DQEBCwUAMBwxGjAYBgNVBAMTEWpvdHNjaGkuYXV0aDAuY29tMB4XDTE5MDgyMDE4MTA0OVoXDTMzMDQyODE4MTA0OVowHDEaMBgGA1UEAxMRam90c2NoaS5hdXRoMC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDKs/QbFvLs43ZRT4LzbrMVWgHfmJ/gOtkVZxCdznHXFa9b8B4JNKLHvAZiK9L5JXA2D0jDYDHTbEYQiisZb52zpqWFRaHD8vt9fxDbqIFZDljseEJT9/FXlKFBjl2XwVLqnmBBhRo5k0iu5PPSYY6zfzSmg5IY4Tw9FA81zO3ZeJPxazyIsFhldcCauCiK87N+ifocjL139NwJCtrWBoExnAVsMD4wrp++N36iplsZTSlzBd9Fqo4OZtHThJk2CHMv506l/dlHfl1KSK+8By97DXBmPk4DWSCqEThfDD+So3DFBhn/B5pofN3zL0YaCiD6oBB+Y+wFc3nInv+cjTFnAgMBAAGjQjBAMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFCZuptNeNaVwG8cEYHv2ApQyqFEeMA4GA1UdDwEB/wQEAwIChDANBgkqhkiG9w0BAQsFAAOCAQEAPoh8yvw8nPKzhFWR2JnEmuLU8vK1azn822dIY4ZulHpoS8ATQod8Z+jB8ejszezOr3/JeMYRsvrwisQgbXJQTahwg6Xudx4NDJvEFZowOJ4nvRLRp0ZZGVFeKZFI/dxdcNntk+nCkcLCiO78Wq2mdjSnMp83ueO2X/YtRczjNsbUXGyeUoXkZMRydaqkAJDuSrGDLr12iOKw4hk/162AiUs4n6v2Wbfdh7PtE+PPutHWBSvKCMkSCh8exQ9h0MllgsBj6YzdOnhicv0g5BjM3qlp+1PlwNQmunVy5qcPu1ZNqbmrMnf7d6KjKw1iW0v3TnHaC09if4qFnj82J46m/g=="
-  ],
-  "n": "yrP0Gxby7ON2UU-C826zFVoB35if4DrZFWcQnc5x1xWvW_AeCTSix7wGYivS-SVwNg9Iw2Ax02xGEIorGW-ds6alhUWhw_L7fX8Q26iBWQ5Y7HhCU_fxV5ShQY5dl8FS6p5gQYUaOZNIruTz0mGOs380poOSGOE8PRQPNczt2XiT8Ws8iLBYZXXAmrgoivOzfon6HIy9d_TcCQra1gaBMZwFbDA-MK6fvjd-oqZbGU0pcwXfRaqODmbR04SZNghzL-dOpf3ZR35dSkivvAcvew1wZj5OA1kgqhE4Xww_kqNwxQYZ_weaaHzd8y9GGgog-qAQfmPsBXN5yJ7_nI0xZw",
-  "e": "AQAB",
-  "kid": "MDFCQ0E3RDM4QzIyNkIwNTNEQUQ4QzcxMDQ4NjM5NkFCOUMxNzY3Nw",
-  "x5t": "MDFCQ0E3RDM4QzIyNkIwNTNEQUQ4QzcxMDQ4NjM5NkFCOUMxNzY3Nw"
-} 
-----
 
 === Other
 

@@ -19,6 +19,8 @@ public interface AuthServicePlugin extends MeshPlugin {
 	 * your identity provider server (e.g. keycloak). Adding the needed public key will enable Gentics Mesh to accept keys which have been issued by those
 	 * servers. Gentics Mesh will be able to validate the tokens in terms of OAuth2 code flow (acting as resource server).
 	 * 
+	 * It is recommended to load the public keys during the {@link #initialize()} of the plugin and return just the loaded data in this method.
+	 * 
 	 * @return Set of JWK's
 	 */
 	default Set<JsonObject> getPublicKeys() {
