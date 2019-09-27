@@ -1,7 +1,9 @@
 package com.gentics.mesh.core.endpoint.node;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.util.MimeTypeUtils.DEFAULT_BINARY_MIME_TYPE;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_MODIFIED;
 
 import javax.inject.Inject;
@@ -21,11 +23,6 @@ import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.EncodeUtil;
 import com.gentics.mesh.util.MimeTypeUtils;
 
-import io.reactivex.Flowable;
-import io.vertx.core.buffer.Buffer;
-import io.reactivex.Flowable;
-import io.reactivex.Single;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.impl.MimeMapping;

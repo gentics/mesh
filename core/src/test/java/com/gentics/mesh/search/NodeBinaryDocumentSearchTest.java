@@ -75,7 +75,7 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 			// file
 			Binary binaryB = mesh().binaries().create("someHashB", 200L).runInExistingTx(tx);
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
-			mesh().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binaryB.getUuid()).blockingAwait();
+			mesh().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), bytes.length, binaryB.getUuid()).blockingAwait();
 
 			nodeB.getLatestDraftFieldContainer(english()).createBinary("binary", binaryB).setFileName("somefile.dat")
 				.setMimeType("text/plain");
@@ -134,7 +134,8 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 			BinaryGraphField binary = nodeB.getLatestDraftFieldContainer(english()).createBinary("binary", binaryB).setFileName("somefile.dat")
 				.setMimeType("text/plain");
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
-			mesh().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)),  data.length(), binary.getBinary().getUuid()).blockingAwait();
+			Buffer buffer = Buffer.buffer(bytes);
+			mesh().binaryStorage().store(Flowable.fromArray(buffer), buffer.length(), binary.getBinary().getUuid()).blockingAwait();
 			tx.success();
 		}
 
