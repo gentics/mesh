@@ -4,6 +4,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.ROLE_PERMISSIONS_CHANGED;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -27,6 +29,7 @@ import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
 import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
 import io.vertx.core.logging.Logger;
@@ -167,6 +170,32 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		keyBuilder.append(getUuid());
 		keyBuilder.append("-");
 		keyBuilder.append(ac.getUser().getPermissionInfo(this).getHash());
+
+		keyBuilder.append("fields:");
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+		fields.forEach(keyBuilder::append);
+
+		/**
+		 * permissions (&roleUuid query parameter aware)
+		 * 
+		 * Permissions can change and thus must be included in the etag computation in order to invalidate the etag once the permissions change.
+		 */
+		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
+		if (!isEmpty(roleUuid)) {
+			Role role = mesh().boot().meshRoot().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+			if (role != null) {
+				Set<GraphPermission> permSet = role.getPermissions(this);
+				Set<String> humanNames = new HashSet<>();
+				for (GraphPermission permission : permSet) {
+					humanNames.add(permission.getRestPerm().getName());
+				}
+				String[] names = humanNames.toArray(new String[humanNames.size()]);
+				keyBuilder.append(Arrays.toString(names));
+			}
+
+		}
+
 		return keyBuilder.toString();
 	}
 

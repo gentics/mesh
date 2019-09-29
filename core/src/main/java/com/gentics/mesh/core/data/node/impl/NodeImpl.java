@@ -2127,26 +2127,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		}
 
-		/**
-		 * permissions (&roleUuid query parameter aware)
-		 * 
-		 * Permissions can change and thus must be included in the etag computation in order to invalidate the etag once the permissions change.
-		 */
-		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
-		if (!isEmpty(roleUuid)) {
-			Role role = mesh().boot().meshRoot().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
-			if (role != null) {
-				Set<GraphPermission> permSet = role.getPermissions(this);
-				Set<String> humanNames = new HashSet<>();
-				for (GraphPermission permission : permSet) {
-					humanNames.add(permission.getRestPerm().getName());
-				}
-				String[] names = humanNames.toArray(new String[humanNames.size()]);
-				keyBuilder.append(Arrays.toString(names));
-			}
-
-		}
-
 		if (log.isDebugEnabled()) {
 			log.debug("Creating etag from key {" + keyBuilder.toString() + "}");
 		}

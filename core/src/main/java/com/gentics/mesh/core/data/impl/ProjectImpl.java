@@ -295,7 +295,10 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public String getETag(InternalActionContext ac) {
-		return ETag.hash(getUuid() + "-" + getLastEditedTimestamp());
+		StringBuilder keyBuilder = new StringBuilder();
+		keyBuilder.append(super.getETag(ac));
+		keyBuilder.append(getLastEditedTimestamp());
+		return ETag.hash(keyBuilder);
 	}
 
 	@Override
