@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.github.jknack.handlebars.Context;
@@ -29,18 +28,19 @@ import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 
-public class AdminGUIEndpoint extends AbstractInternalEndpoint {
+public class AdminGUI2Endpoint extends AbstractInternalEndpoint {
 
-	private static final Logger log = LoggerFactory.getLogger(AdminGUIEndpoint.class);
+	private static final Logger log = LoggerFactory.getLogger(AdminGUI2Endpoint.class);
 
 	public static final String CONF_FILE = "mesh-ui-config.js";
+	public static final String FS_CONF_FILE = "mesh-ui2-config.js";
 
-	private static String meshAdminUiVersion = readBuildProperties().getProperty("mesh.admin-ui.version");
+	private static String meshAdminUi2Version = readBuildProperties().getProperty("mesh.admin-ui2.version");
 
 	private final MeshOptions options;
 
-	public AdminGUIEndpoint(MeshOptions options) {
-		super("mesh-ui", null);
+	public AdminGUI2Endpoint(MeshOptions options) {
+		super("ui", null);
 		this.options = options;
 	}
 
@@ -60,7 +60,7 @@ public class AdminGUIEndpoint extends AbstractInternalEndpoint {
 	private static Properties readBuildProperties() {
 		try {
 			Properties buildProperties = new Properties();
-			buildProperties.load(AdminGUIEndpoint.class.getResourceAsStream("/mesh-admin-gui.properties"));
+			buildProperties.load(AdminGUI2Endpoint.class.getResourceAsStream("/mesh-admin-gui.properties"));
 			return buildProperties;
 		} catch (Exception e) {
 			log.error("Error while loading build properties", e);
@@ -69,13 +69,8 @@ public class AdminGUIEndpoint extends AbstractInternalEndpoint {
 	}
 
 	private void addRedirectionHandler() {
-		routerStorage.root().getRouter().route("/").method(GET).handler(rc -> {
-			rc.response().setStatusCode(302);
-			rc.response().headers().set("Location", "/" + basePath + "/");
-			rc.response().end();
-		});
 		route().method(GET).handler(rc -> {
-			if ("/mesh-ui".equals(rc.request().path())) {
+			if ("/ui".equals(rc.request().path())) {
 				rc.response().setStatusCode(302);
 				rc.response().headers().set("Location", "/" + basePath + "/");
 				rc.response().end();
@@ -85,17 +80,17 @@ public class AdminGUIEndpoint extends AbstractInternalEndpoint {
 		});
 	}
 
-	private void addMeshUiStaticHandler() {
-		StaticHandler handler = StaticHandler.create("META-INF/resources/webjars/mesh-ui/" + meshAdminUiVersion);
+	private void addMeshUi2StaticHandler() {
+		StaticHandler handler = StaticHandler.create("META-INF/resources/webjars/mesh-ui/" + meshAdminUi2Version);
 		handler.setDefaultContentEncoding("UTF-8");
 		handler.setIndexPage("index.html");
 		route("/*").method(GET).blockingHandler(handler);
 	}
-
+	
 	private void addMeshConfigHandler() {
-		route("/" + CONF_FILE).method(GET).handler(rc -> {
+		route("/assets/config/" + CONF_FILE).method(GET).handler(rc -> {
 			rc.response().putHeader("Content-Type", "application/javascript");
-			rc.response().sendFile(CONFIG_FOLDERNAME + "/" + CONF_FILE);
+			rc.response().sendFile(CONFIG_FOLDERNAME + "/" + FS_CONF_FILE);
 		});
 	}
 
@@ -104,7 +99,7 @@ public class AdminGUIEndpoint extends AbstractInternalEndpoint {
 		addMeshConfigHandler();
 		addRedirectionHandler();
 		saveMeshUiConfig();
-		addMeshUiStaticHandler();
+		addMeshUi2StaticHandler();
 	}
 
 	private void saveMeshUiConfig() {
@@ -112,9 +107,9 @@ public class AdminGUIEndpoint extends AbstractInternalEndpoint {
 		if (!parentFolder.exists() && !parentFolder.mkdirs()) {
 			throw error(INTERNAL_SERVER_ERROR, "Could not create configuration folder {" + parentFolder.getAbsolutePath() + "}");
 		}
-		File outputFile = new File(parentFolder, CONF_FILE);
+		File outputFile = new File(parentFolder, FS_CONF_FILE);
 		if (!outputFile.exists()) {
-			InputStream ins = getClass().getResourceAsStream("/meshui-templates/mesh-ui-config.hbs");
+			InputStream ins = getClass().getResourceAsStream("/meshui-templates/mesh-ui2-config.hbs");
 			if (ins == null) {
 				throw error(INTERNAL_SERVER_ERROR, "Could not find mesh-ui config template within classpath.");
 			}
@@ -125,7 +120,6 @@ public class AdminGUIEndpoint extends AbstractInternalEndpoint {
 				Map<String, Object> model = new HashMap<>();
 				int httpPort = options.getHttpServerOptions().getPort();
 				model.put("mesh_http_port", httpPort);
-				model.put("apiPath", VersionHandler.CURRENT_API_BASE_PATH + "/");
 
 				// Prepare render context
 				Context context = Context.newBuilder(model).resolver(MapValueResolver.INSTANCE).build();
