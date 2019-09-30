@@ -14,7 +14,6 @@ import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.util.ETag;
 
 import io.reactivex.Single;
 
@@ -85,8 +84,8 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	}
 
 	@Override
-	public String getETag(InternalActionContext ac) {
-		return ETag.hash(getUuid());
+	public String getSubETag(InternalActionContext ac) {
+		return "";
 	}
 
 	@Override

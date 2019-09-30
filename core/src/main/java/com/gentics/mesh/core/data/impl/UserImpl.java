@@ -649,9 +649,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public String getETag(InternalActionContext ac) {
+	public String getSubETag(InternalActionContext ac) {
 		StringBuilder keyBuilder = new StringBuilder();
-		keyBuilder.append(super.getETag(ac));
 		keyBuilder.append(getLastEditedTimestamp());
 
 		Node referencedNode = getReferencedNode();
@@ -670,7 +669,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			keyBuilder.append(group.getUuid());
 		}
 
-		return ETag.hash(keyBuilder);
+		return keyBuilder.toString();
 	}
 
 	@Override

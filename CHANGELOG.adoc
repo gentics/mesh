@@ -26,6 +26,8 @@ include::content/docs/variables.adoc-include[]
 [[v0.41.0]]
 == 0.41.0 (TBD)
 
+icon:check[] REST: Fixed ETag generation when `fields` or `rolePerms` was used. Previously these parameters did not affect the ETag. link:https://github.com/gentics/mesh/issues/881[#881]
+
 CAUTION: Reworked OAuth2 / OIDC support
 
 [quote]

@@ -63,7 +63,6 @@ import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
-import com.gentics.mesh.util.ETag;
 
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
@@ -294,8 +293,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public String getETag(InternalActionContext ac) {
-		return ETag.hash(getUuid() + "-" + getLastEditedTimestamp());
+	public String getSubETag(InternalActionContext ac) {
+		return String.valueOf(getLastEditedTimestamp());
 	}
 
 	@Override

@@ -28,12 +28,11 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
-import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.util.ETag;
 
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
@@ -138,8 +137,8 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	}
 
 	@Override
-	public String getETag(InternalActionContext ac) {
-		return ETag.hash(getUuid() + getErrorMessage() + getErrorDetail());
+	public String getSubETag(InternalActionContext ac) {
+		return getErrorMessage() + getErrorDetail();
 	}
 
 	@Override

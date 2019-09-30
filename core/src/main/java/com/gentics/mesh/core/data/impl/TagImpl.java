@@ -53,7 +53,6 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
-import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
@@ -262,12 +261,11 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	}
 
 	@Override
-	public String getETag(InternalActionContext ac) {
+	public String getSubETag(InternalActionContext ac) {
 		StringBuilder keyBuilder = new StringBuilder();
-		keyBuilder.append(super.getETag(ac));
 		keyBuilder.append(getLastEditedTimestamp());
 		keyBuilder.append(ac.getBranch(getProject()).getUuid());
-		return ETag.hash(keyBuilder);
+		return keyBuilder.toString();
 	}
 
 	@Override

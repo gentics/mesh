@@ -46,7 +46,6 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
-import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.reactivex.Single;
@@ -235,11 +234,8 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public String getETag(InternalActionContext ac) {
-		StringBuilder keyBuilder = new StringBuilder();
-		keyBuilder.append(super.getETag(ac));
-		keyBuilder.append(getLastEditedTimestamp());
-		return ETag.hash(keyBuilder);
+	public String getSubETag(InternalActionContext ac) {
+		return String.valueOf(getLastEditedTimestamp());
 	}
 
 	@Override
