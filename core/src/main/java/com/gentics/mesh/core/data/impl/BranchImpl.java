@@ -524,8 +524,8 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public String getETag(InternalActionContext ac) {
-		return ETag.hash(getUuid() + "-" + getLastEditedTimestamp());
+	public String getSubETag(InternalActionContext ac) {
+		return ETag.hash(String.valueOf(getLastEditedTimestamp()));
 	}
 
 	@Override

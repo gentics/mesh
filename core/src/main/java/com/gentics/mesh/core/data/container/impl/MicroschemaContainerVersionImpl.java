@@ -133,8 +133,8 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	public String getETag(InternalActionContext ac) {
-		return ETag.hash(getUuid());
+	public String getSubETag(InternalActionContext ac) {
+		return "";
 	}
 
 	@Override

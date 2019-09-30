@@ -31,6 +31,7 @@ import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEven
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
+import com.gentics.mesh.util.ETag;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -165,7 +166,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	}
 
 	@Override
-	public String getETag(InternalActionContext ac) {
+	public final String getETag(InternalActionContext ac) {
 		StringBuilder keyBuilder = new StringBuilder();
 		keyBuilder.append(getUuid());
 		keyBuilder.append("-");
@@ -196,8 +197,18 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 		}
 
-		return keyBuilder.toString();
+		// Add the type specific etag part
+		keyBuilder.append(getSubETag(ac));
+		return ETag.hash(keyBuilder.toString());
 	}
+
+	/**
+	 * This method provides the element specific etag. It needs to be individually implemented for all core element classes.
+	 *   
+	 * @param ac
+	 * @return
+	 */
+	public abstract String getSubETag(InternalActionContext ac);
 
 	@Override
 	public PermissionChangedEventModelImpl onPermissionChanged(Role role) {

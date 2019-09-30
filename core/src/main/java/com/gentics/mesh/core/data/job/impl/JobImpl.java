@@ -138,8 +138,8 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	}
 
 	@Override
-	public String getETag(InternalActionContext ac) {
-		return ETag.hash(getUuid() + getErrorMessage() + getErrorDetail());
+	public String getSubETag(InternalActionContext ac) {
+		return ETag.hash(getErrorMessage() + getErrorDetail());
 	}
 
 	@Override

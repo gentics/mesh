@@ -2001,8 +2001,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * </ul>
 	 */
 	@Override
-	public String getETag(InternalActionContext ac) {
-		String superkey = super.getETag(ac);
+	public String getSubETag(InternalActionContext ac) {
+		StringBuilder keyBuilder = new StringBuilder();
 
 		// Parameters
 		Branch branch = ac.getBranch(getProject());
@@ -2012,9 +2012,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Node parentNode = getParentNode(branch.getUuid());
 		NodeGraphFieldContainer container = findVersion(ac.getNodeParameters().getLanguageList(options()), branch.getUuid(), ac.getVersioningParameters()
 			.getVersion());
-
-		StringBuilder keyBuilder = new StringBuilder();
-		keyBuilder.append(superkey);
 
 		/**
 		 * branch uuid

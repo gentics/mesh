@@ -205,9 +205,8 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public String getETag(InternalActionContext ac) {
+	public String getSubETag(InternalActionContext ac) {
 		StringBuilder keyBuilder = new StringBuilder();
-		keyBuilder.append(super.getETag(ac));
 		keyBuilder.append(getLastEditedTimestamp());
 		return ETag.hash(keyBuilder);
 	}

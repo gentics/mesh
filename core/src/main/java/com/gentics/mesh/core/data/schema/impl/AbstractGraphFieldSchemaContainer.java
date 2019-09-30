@@ -136,7 +136,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	}
 
 	@Override
-	public String getETag(InternalActionContext ac) {
+	public String getSubETag(InternalActionContext ac) {
 		return ETag.hash(getLatestVersion().getETag(ac));
 	}
 
