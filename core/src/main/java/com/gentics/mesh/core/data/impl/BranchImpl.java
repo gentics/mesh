@@ -80,7 +80,6 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
-import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.VersionUtil;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
@@ -525,7 +524,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public String getSubETag(InternalActionContext ac) {
-		return ETag.hash(String.valueOf(getLastEditedTimestamp()));
+		return String.valueOf(getLastEditedTimestamp());
 	}
 
 	@Override

@@ -2127,7 +2127,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (log.isDebugEnabled()) {
 			log.debug("Creating etag from key {" + keyBuilder.toString() + "}");
 		}
-		return ETag.hash(keyBuilder.toString());
+		return keyBuilder.toString();
 	}
 
 	@Override

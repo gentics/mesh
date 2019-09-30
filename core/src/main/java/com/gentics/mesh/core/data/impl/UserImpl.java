@@ -669,7 +669,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			keyBuilder.append(group.getUuid());
 		}
 
-		return ETag.hash(keyBuilder);
+		return keyBuilder.toString();
 	}
 
 	@Override

@@ -47,7 +47,6 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
-import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.reactivex.Single;
@@ -230,7 +229,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	public String getSubETag(InternalActionContext ac) {
 		StringBuilder keyBuilder = new StringBuilder();
 		keyBuilder.append(getLastEditedTimestamp());
-		return ETag.hash(keyBuilder);
+		return keyBuilder.toString();
 	}
 
 	@Override
