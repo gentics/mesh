@@ -294,9 +294,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public String getSubETag(InternalActionContext ac) {
-		StringBuilder keyBuilder = new StringBuilder();
-		keyBuilder.append(getLastEditedTimestamp());
-		return keyBuilder.toString();
+		return String.valueOf(getLastEditedTimestamp());
 	}
 
 	@Override

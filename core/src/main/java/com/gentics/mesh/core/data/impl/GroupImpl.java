@@ -235,9 +235,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public String getSubETag(InternalActionContext ac) {
-		StringBuilder keyBuilder = new StringBuilder();
-		keyBuilder.append(getLastEditedTimestamp());
-		return keyBuilder.toString();
+		return String.valueOf(getLastEditedTimestamp());
 	}
 
 	@Override
