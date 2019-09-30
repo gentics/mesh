@@ -16,7 +16,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.Mesh;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.github.jknack.handlebars.Context;
@@ -24,6 +24,7 @@ import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
 import com.github.jknack.handlebars.context.MapValueResolver;
 
+import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 
@@ -36,8 +37,11 @@ public class AdminGUI2Endpoint extends AbstractInternalEndpoint {
 
 	private static String meshAdminUi2Version = readBuildProperties().getProperty("mesh.admin-ui2.version");
 
-	public AdminGUI2Endpoint() {
+	private final MeshOptions options;
+
+	public AdminGUI2Endpoint(MeshOptions options) {
 		super("ui", null);
+		this.options = options;
 	}
 
 	@Override
@@ -46,8 +50,8 @@ public class AdminGUI2Endpoint extends AbstractInternalEndpoint {
 	}
 
 	@Override
-	public void init(RouterStorage rs) {
-		Router router = Router.router(Mesh.vertx());
+	public void init(Vertx vertx, RouterStorage rs) {
+		Router router = Router.router(vertx);
 		rs.root().getRouter().mountSubRouter("/" + basePath, router);
 		this.routerStorage = rs;
 		this.localRouter = router;
@@ -114,7 +118,7 @@ public class AdminGUI2Endpoint extends AbstractInternalEndpoint {
 				Template template = handlebars.compileInline(IOUtils.toString(ins));
 
 				Map<String, Object> model = new HashMap<>();
-				int httpPort = Mesh.mesh().getOptions().getHttpServerOptions().getPort();
+				int httpPort = options.getHttpServerOptions().getPort();
 				model.put("mesh_http_port", httpPort);
 
 				// Prepare render context

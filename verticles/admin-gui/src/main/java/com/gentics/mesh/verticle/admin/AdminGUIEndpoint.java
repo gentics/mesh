@@ -35,7 +35,6 @@ public class AdminGUIEndpoint extends AbstractInternalEndpoint {
 
 	public static final String CONF_FILE = "mesh-ui-config.js";
 
-	// TODO handle NPEs
 	private static String meshAdminUiVersion = readBuildProperties().getProperty("mesh.admin-ui.version");
 
 	private final MeshOptions options;
