@@ -259,13 +259,15 @@ The `preferred_username` field is the main id property which will be used to loc
 
 NOTE: If the username changes a new user will be created in Gentics Mesh.
 
+NOTE: Authentication plugins can override this field via the `extractUsername()` methods.
+
 === Authentication Service Plugin API
 
 By default groups and roles will not be handled by the synchronization process. It is however possible to provide a custom authentication plugin which can extract role and group information from the access token information.
 This way groups and roles can be directly created.
 
 It is also possible to write or use plugins which provide JWK's to Gentics Mesh.
-The `AuthServicePlugin` API provides methods which can be used to supply JWK's to Gentics Mesh.
+The `AuthServicePlugin` API provides methods which can be used to supply JWKs to Gentics Mesh.
 
 You can read more on this topic in the link:{{< relref "plugin-types/auth-service-plugin.asciidoc" >}}[Authentication Service Plugin API] section.
 

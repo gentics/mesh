@@ -31,10 +31,7 @@ public class OAuth2Auth0IntegrationTest extends AbstractOAuthTest {
 		Set<JsonObject> keys = Auth0Utils.loadJWKs("jotschi");
 		MapperTestPlugin.publicKeys.addAll(keys);
 		MapperTestPlugin.usernameExtractor = (token) -> {
-			if (!token.containsKey("preferred_username")) {
-				return Optional.of(token.getString("nickname"));
-			}
-			return Optional.empty();
+			return Optional.of(token.getString("nickname"));
 		};
 	}
 
