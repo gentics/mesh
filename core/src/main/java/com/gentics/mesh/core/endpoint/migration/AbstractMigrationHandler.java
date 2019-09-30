@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
+import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.rest.common.FieldContainer;
@@ -63,7 +64,9 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 		while (change != null) {
 			// if either the type changes or the field is removed, the field is
 			// "touched"
-			if (change instanceof FieldTypeChangeImpl) {
+			if (change instanceof UpdateFieldChangeImpl) {
+				touchedFields.add(((UpdateFieldChangeImpl) change).getFieldName());
+			} else if (change instanceof FieldTypeChangeImpl) {
 				touchedFields.add(((FieldTypeChangeImpl) change).getFieldName());
 			} else if (change instanceof RemoveFieldChange) {
 				touchedFields.add(((RemoveFieldChange) change).getFieldName());
