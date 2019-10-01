@@ -1,0 +1,15 @@
+{
+	"name": "testcontent",
+	"container": false,
+	"fields": [
+		{
+			"name": "name",
+			"type": "string",
+			"required": true
+		},
+		{
+			"name": "likes",
+			"type": "string"
+		}
+	]
+}

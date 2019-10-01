@@ -1,0 +1,10 @@
+/target
+/.config
+/.classpath
+/.settings
+/*.iml
+/.project
+/elasticsearch
+/orientdb-plugins
+/.factorypath
+/dependency-reduced-pom.xml

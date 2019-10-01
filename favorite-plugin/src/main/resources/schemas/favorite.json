@@ -1,0 +1,28 @@
+{
+	"name": "favorite",
+	"description": "FavoritePlugin: Favorites",
+	"container": false,
+	"segmentField": "userUuid",
+	"displayField": "userUuid",
+	"fields": [
+		{
+			"name": "userUuid",
+			"type": "string",
+			"required": true,
+			"label": "UUID of the user who saved favorites"
+		},
+		{
+			"name": "value",
+			"type": "list",
+			"listType": "string",
+			"required": false,
+			"label": "value"
+		},
+		{
+			"name": "plusminus",
+			"type": "boolean",
+			"required": false,
+			"label": "Plus Minus"
+		}
+	]
+}
