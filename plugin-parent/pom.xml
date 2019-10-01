@@ -140,13 +140,6 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- RAML -->
-		<dependency>
-			<groupId>org.raml</groupId>
-			<artifactId>raml-parser</artifactId>
-			<scope>provided</scope>
-		</dependency>
-
 		<!-- Json -->
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
