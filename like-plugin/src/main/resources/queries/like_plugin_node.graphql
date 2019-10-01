@@ -1,0 +1,9 @@
+{
+  schema(name: "like_plugin") {
+    nodes {
+      elements {
+        uuid
+      }
+    }
+  }
+}

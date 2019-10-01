@@ -1,0 +1,40 @@
+:icons: font
+
+////
+* Write changelog entries in present tense
+* Include GitHub issue or PR if possible using link:http://...[#123] format
+* Review your changelog entries
+* Don't include security sensitive information in the changelog
+* Include links to documentation if possible
+////
+
+= Mesh Like Plugin
+
+[[v5.0.0]]
+== 5.0.0 (TBD)
+
+CAUTION: This version of the plugin requires Mesh 0.37.0 or newer due to the changes in the plugin system.
+
+icon:check[] Updated Mesh dependency to 0.40.2.
+
+[[v4.1]]
+== 4.1 (TBD)
+
+icon:plus[] Add `content-type` header for JSON responses.
+
+[[v4.0]]
+== 4.0 (2019-06-06)
+
+icon:plus[] Updated Mesh dependency to 0.34.0
+
+[[v2.0]]
+== 2.0 (2019-01-17)
+
+CAUTION: This plugin needs at least Mesh 0.27.0 to work.
+
+icon:plus[] Updated Mesh dependency to 0.29.1
+
+[[v1.0]]
+== 1.0 (2018-05-28)
+
+icon:plus[] Initial release

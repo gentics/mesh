@@ -21,6 +21,7 @@
 
 	<modules>
 		<module>mustread-plugin</module>
+		<module>like-plugin</module>
 	</modules>
 
 	<dependencyManagement>

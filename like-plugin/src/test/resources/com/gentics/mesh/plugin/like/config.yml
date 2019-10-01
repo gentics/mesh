@@ -1,0 +1,3 @@
+projects:
+  - "testproject"
+templatesPath: "target/test-classes/com/gentics/mesh/plugin/like/templates"

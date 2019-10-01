@@ -81,7 +81,6 @@
 										<Plugin-Description>${plugin.description}</Plugin-Description>
 										<Plugin-License>${plugin.license}</Plugin-License>
 										<Plugin-Inception>${plugin.inception}</Plugin-Inception>
-										<Main-Verticle>service:com.gentics.mesh.plugin.plugin-service</Main-Verticle>
 									</manifestEntries>
 								</transformer>
 							</transformers>
@@ -102,5 +101,4 @@
 			</releases>
 		</repository>
 	</repositories>
-
 </project>

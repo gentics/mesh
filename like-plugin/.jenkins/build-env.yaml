@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Pod
+spec:
+  nodeSelector:
+    jenkins_worker: "true"
+
+  volumes:
+  - name: cache
+    hostPath:
+      path: /opt/kubernetes/cache
+
+  containers:
+  - name: jnlp
+    terminationGracePeriodSeconds: 0
+
+  - name: build
+    image: gtx-docker-jenkinsbuilds.docker.apa-it.at/gentics/jenkinsbuilds/java-worker:latest
+    workingDir: '/home/jenkins'
+    imagePullPolicy: Always
+    terminationGracePeriodSeconds: 0
+    command:
+      - cat
+    tty: true
+    resources:
+      requests:
+        cpu: 1
+        memory: 1Gi
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - mountPath: /home/jenkins/.m2/repository
+      name: cache
+      subPath: maven
+    env:
+      - name: DOCKER_HOST
+        value: tcp://127.0.0.1:2375
+
+  - name: docker
+    image: docker:18.09.4-dind
+    imagePullPolicy: Always
+    terminationGracePeriodSeconds: 0
+    args: ["--storage-driver=overlay2"]
+    securityContext:
+      privileged: true
+    tty: true
+  imagePullSecrets:
+  - name: docker-jenkinsbuilds-apa-it
