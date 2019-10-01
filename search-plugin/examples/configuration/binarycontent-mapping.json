@@ -1,0 +1,18 @@
+{
+  "file.content": {
+    "german_search": {
+      "type": "text",
+      "analyzer": "german_text",
+      "search_analyzer": "german_search"
+    },
+    "german_suggest": {
+      "type": "text",
+      "analyzer": "german_suggest"
+    },
+    "german_autocomplete": {
+      "type": "text",
+      "analyzer": "german_autocomplete_index",
+      "search_analyzer": "german_autocomplete_search"
+    }
+  }
+}

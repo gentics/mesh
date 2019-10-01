@@ -24,6 +24,7 @@
 		<module>like-plugin</module>
 		<module>favorite-plugin</module>
 		<module>comment-plugin</module>
+		<module>search-plugin</module>
 	</modules>
 
 	<dependencyManagement>

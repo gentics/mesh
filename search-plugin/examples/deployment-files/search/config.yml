@@ -1,0 +1,28 @@
+# Number of results returned per page
+pageSize: 8
+
+# GraphQL query to load details about search hits. Leave blank to disable additional GraphQL requests.
+resultQuery: searchResults
+
+# Filenames (without extension) of custom queries. The entry "foo" will add an additional route
+# /search/foo which uses the query "foo.es". When only a single string is specified, it is interpreted
+# as the name and the type defaults to SEARCH.
+customQueries:
+  - custom_search
+  - name: custom_auto
+    type: AUTOCOMPLETE
+
+# Mapping from project names to a list of projects which should be searched by that project
+# specific endpoint. Each project will always search itself.
+projects:
+  reference:
+    - reference
+
+# The minimum number of search hits, for which no Did-You-Mean query should be performed.
+didYouMeanThreshold: 10
+
+# Whether search queries are cached.
+caching: true
+
+# The time in seconds after which cached search queries expire.
+expireTime: 300

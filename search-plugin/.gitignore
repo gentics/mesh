@@ -1,0 +1,7 @@
+dependency-reduced-pom.xml
+target
+.settings
+.classpath
+.factorypath
+.project
+pom.xml.versionsBackup

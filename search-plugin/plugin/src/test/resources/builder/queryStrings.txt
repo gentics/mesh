@@ -1,0 +1,5 @@
+# Test case key						Projects	Query string
+# ----------------------------------------------------------
+single-project-all-params			dummy		q=foo&l=bar&t=foo,bar&t=doo
+all-projects-query-only-page-two	*			q=foo&p=2
+two-projects-injection				one,two		q=%7B%0A%09%22this%20is%20bad%22%3A%20%22foo%20%3Cdiv%3Ebar%3C%2Fdiv%3E%20%3Cscript%3Ealert%28%27Muhahaha%21%27%29%3C%2Fscript%3E%22%0A%7D
