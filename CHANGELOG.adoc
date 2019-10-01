@@ -24,6 +24,28 @@ include::content/docs/variables.adoc-include[]
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 
+[[1.0.0]]
+== 1.0.0  (TBD)
+
+icon:bullhorn[] New UI
+
+[quote]
+____
+
+This version of Gentics Mesh contains the a new UI which is accessible via `/ui`. The old UI is still part of this release and can be accessed via `/mesh-ui`.
+____
+
+icon:bullhorn[] New defaults
+
+[quote]
+____
+
+For new server installations (`mesh-server`) the Elasticsearch embedded server will no longer be enabled by default. The demo server (`mesh-demo`) will still start the embedded Elasticsearch server for ease of use.
+It is still possible to enable the embedded server via the `search.startEmbedded: true` and `search.url: http://localhost:9200` settings in the `mesh.yml` file.
+____
+
+
+
 [[v0.41.0]]
 == 0.41.0 (01.10.2019)
 
