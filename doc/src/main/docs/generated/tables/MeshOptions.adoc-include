@@ -302,10 +302,10 @@
 | boolean
 | Flag which indicates whether anonymous access should be enabled.
 
-| authenticationOptions.oauth2
+| authenticationOptions.publicKeysPath
 | false
-| oauth2options
-| OAuth2 related configuration options.
+| string
+| Path to the public keys file which contains a list of additional JWK formatted public keys which will be used to verify JWTs.
 
 | imageOptions.maxWidth
 | false

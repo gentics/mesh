@@ -67,16 +67,7 @@ security:
   keystorePath: "config/keystore.jceks"
   algorithm: "HS256"
   enableAnonymousAccess: true
-  oauth2:
-    enabled: false
-    config:
-      realm: "master"
-      authServerUrl: "http://localhost:3000/auth"
-      sslRequired: "external"
-      resource: "mesh"
-      credentials:
-        secret: "9b65c378-5b4c-4e25-b5a1-a53a381b5fb4"
-      confidentialPort: 0
+  publicKeysPath: "config/public-keys.json"
 image:
   imageCacheDirectory: "data/binaryImageCache"
   maxWidth: 2048

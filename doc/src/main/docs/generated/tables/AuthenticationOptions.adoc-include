@@ -27,10 +27,10 @@
 | string
 | Path to the java keystore file which will be used to store cryptographic keys.
 
-| oauth2
+| publicKeysPath
 | false
-| object
-| OAuth2 related configuration options.
+| string
+| Path to the public keys file which contains a list of additional JWK formatted public keys which will be used to verify JWTs.
 
 | tokenExpirationTime
 | true
