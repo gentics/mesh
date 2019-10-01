@@ -493,7 +493,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 * 
 	 * @param forceIndexSync
 	 * @param configuration
-	 * @param commandLine
 	 * @param verticleLoader
 	 * @throws Exception
 	 */
@@ -509,8 +508,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		// Invoke reindex as requested
-		if (forceIndexSync && configuration.getSearchOptions().getUrl() != null) {
-			syncIndex();
+		if (forceIndexSync) {
+			SyncEventHandler.invokeSync(vertx);
 		}
 
 		// Handle admin password reset

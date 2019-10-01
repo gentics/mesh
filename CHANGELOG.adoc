@@ -48,6 +48,10 @@ Plugins can now implement the `extractUsername()` method to return the username 
 Please note that installations which already use an authentication plugin can either update the plugin and provide the public keys or manually add the public key to the `public-keys.json` configuration file.
 ____
 
+[[vTBD]]
+== TBD (TBD)
+
+icon:check[] Search: Synchronizing the search index when starting after Gentics Mesh has not been stopped properly will not block the startup routine anymore. link:https://github.com/gentics/mesh/issues/862[#862]
 
 [[v0.40.3]]
 == 0.40.3 (13.09.2019)
