@@ -44,6 +44,10 @@ It is now also possible for Authentication Service Plugins to provide Json Web K
 Plugins can now implement the `extractUsername()` method to return the username that should be used to handle mappings between Mesh and JWT.
 ____
 
+[[vTBD]]
+== TBD (TBD)
+
+icon:check[] Search: Synchronizing the search index when starting after Gentics Mesh has not been stopped properly will not block the startup routine anymore. link:https://github.com/gentics/mesh/issues/862[#862]
 
 [[v0.40.3]]
 == 0.40.3 (13.09.2019)

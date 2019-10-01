@@ -185,9 +185,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			return;
 		}
 		// Ensure indices are setup and sync the documents
-		log.info("Invoking index sync. This may take some time..");
 		SyncEventHandler.invokeSyncCompletable(mesh()).blockingAwait();
-		log.info("Index sync completed.");
 	});
 
 	@Inject
@@ -493,7 +491,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 * 
 	 * @param forceIndexSync
 	 * @param configuration
-	 * @param commandLine
 	 * @param verticleLoader
 	 * @throws Exception
 	 */
@@ -509,8 +506,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		// Invoke reindex as requested
-		if (forceIndexSync && configuration.getSearchOptions().getUrl() != null) {
-			syncIndex();
+		if (forceIndexSync) {
+			SyncEventHandler.invokeSync(vertx);
 		}
 
 		// Handle admin password reset
