@@ -48,7 +48,7 @@ public class ServerRunner {
 		// options.getSearchOptions().setUrl(null);
 		// options.getSearchOptions().setStartEmbedded(false);
 		// options.getSearchOptions().setMappingMode(MappingMode.STRICT);
-		// options.getSearchOptions().disable();
+		options.getSearchOptions().disable();
 
 		Mesh mesh = Mesh.create(options);
 		mesh.setCustomLoader((vertx) -> {

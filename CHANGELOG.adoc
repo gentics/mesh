@@ -32,7 +32,7 @@ icon:bullhorn[] New UI
 [quote]
 ____
 
-This version of Gentics Mesh contains the a new UI which is accessible via `/ui`. The old UI is still part of this release and can be accessed via `/mesh-ui`.
+This version of Gentics Mesh contains the a new UI which is accessible via `/mesh-ui`. The old UI is still part of this release and can be accessed via `/mesh-ui-v1`.
 ____
 
 icon:bullhorn[] New defaults

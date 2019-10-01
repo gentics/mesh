@@ -40,7 +40,7 @@ public class AdminGUI2Endpoint extends AbstractInternalEndpoint {
 	private final MeshOptions options;
 
 	public AdminGUI2Endpoint(MeshOptions options) {
-		super("ui", null);
+		super("mesh-ui", null);
 		this.options = options;
 	}
 
@@ -75,7 +75,7 @@ public class AdminGUI2Endpoint extends AbstractInternalEndpoint {
 			rc.response().end();
 		});
 		route().method(GET).handler(rc -> {
-			if ("/ui".equals(rc.request().path())) {
+			if ("/mesh-ui".equals(rc.request().path())) {
 				rc.response().setStatusCode(302);
 				rc.response().headers().set("Location", "/" + basePath + "/");
 				rc.response().end();
