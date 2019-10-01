@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class RequiresFieldsTest extends AbstractIntegrationTest {
+public class RequiresFieldsTest extends AbstractLocalIntegrationTest {
 	@BeforeClass
 	public static void createProject() throws Exception {
 		initMesh("requiresFields");

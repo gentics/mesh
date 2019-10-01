@@ -10,7 +10,8 @@ import java.util.stream.Stream;
 
 import static org.junit.Assert.assertThat;
 
-public class CommentOrderTest extends AbstractIntegrationTest {
+public class CommentOrderTest extends AbstractLocalIntegrationTest {
+
 	@BeforeClass
 	public static void createProject() throws Exception {
 		initMesh("anonymousNoApproval");

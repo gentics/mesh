@@ -11,7 +11,7 @@ import static com.gentics.mesh.plugin.comment.TestUtil.loadResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class NodeConfigFieldTest extends AbstractIntegrationTest {
+public class NodeConfigFieldTest extends AbstractLocalIntegrationTest {
 	@BeforeClass
 	public static void createProject() throws Exception {
 		// There are separate tests for sending mails, so this configuration contains no moderator email addresses.

@@ -44,7 +44,7 @@ import io.reactivex.Observable;
 import io.vertx.core.json.JsonObject;
 import okhttp3.Response;
 
-public abstract class AbstractIntegrationTest {
+public abstract class AbstractLocalIntegrationTest {
 
 	@ClassRule
 	public static final MeshLocalServer server = new MeshLocalServer()
@@ -121,7 +121,7 @@ public abstract class AbstractIntegrationTest {
 			.flatMapObservable(schemas -> Observable.fromIterable(schemas.getData()))
 			.filter(schema -> schema.getName().equals("folder"))
 			.singleOrError()
-			.flatMapCompletable(AbstractIntegrationTest::doFolderUpdate)
+			.flatMapCompletable(AbstractLocalIntegrationTest::doFolderUpdate)
 			.blockingAwait();
 	}
 

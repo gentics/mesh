@@ -21,7 +21,7 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-public class AnonymousTest extends AbstractIntegrationTest {
+public class AnonymousTest extends AbstractLocalIntegrationTest {
 	@BeforeClass
 	public static void createProject() throws Exception {
 		initMesh("anonymousNoApproval");
