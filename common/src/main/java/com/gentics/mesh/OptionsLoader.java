@@ -38,13 +38,19 @@ public final class OptionsLoader {
 
 	}
 
+	public static MeshOptions createOrloadOptions(String... args) {
+		return createOrloadOptions(null, args);
+	}
+
 	/**
 	 * Load the main mesh configuration file.
 	 * 
+	 * @param defaultOption
+	 * 
 	 * @param args
 	 */
-	public static MeshOptions createOrloadOptions(String... args) {
-		MeshOptions options = loadMeshOptions();
+	public static MeshOptions createOrloadOptions(MeshOptions defaultOption, String... args) {
+		MeshOptions options = loadMeshOptions(defaultOption);
 		applyEnvironmentVariables(options);
 		applyCommandLineArgs(options, args);
 		options.validate();
@@ -127,9 +133,11 @@ public final class OptionsLoader {
 	/**
 	 * Try to load the mesh options from different locations (classpath, config folder). Otherwise a default configuration will be generated.
 	 * 
+	 * @param defaultOption
+	 * 
 	 * @return
 	 */
-	private static MeshOptions loadMeshOptions() {
+	private static MeshOptions loadMeshOptions(MeshOptions defaultOption) {
 
 		File confFile = new File(CONFIG_FOLDERNAME, MESH_CONF_FILENAME);
 		MeshOptions options = null;
@@ -163,7 +171,7 @@ public final class OptionsLoader {
 			ObjectMapper mapper = getYAMLMapper();
 			try {
 				// Generate default config
-				options = generateDefaultConfig();
+				options = generateDefaultConfig(defaultOption);
 				FileUtils.writeStringToFile(confFile, mapper.writeValueAsString(options), StandardCharsets.UTF_8, false);
 				log.info("Saved default configuration to file {" + confFile.getAbsolutePath() + "}.");
 			} catch (IOException e) {
@@ -179,10 +187,15 @@ public final class OptionsLoader {
 	/**
 	 * Generate a default configuration with meaningful default settings. The keystore password will be randomly generated and set.
 	 * 
+	 * @param defaultOption
 	 * @return
 	 */
-	public static MeshOptions generateDefaultConfig() {
-		MeshOptions options = new MeshOptions();
+	public static MeshOptions generateDefaultConfig(MeshOptions defaultOption) {
+		MeshOptions options = defaultOption;
+		if (options == null) {
+			options = new MeshOptions();
+		}
+
 		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
 		options.setNodeName(MeshNameProvider.getInstance().getRandomName());
 		return options;
@@ -197,7 +210,7 @@ public final class OptionsLoader {
 		YAMLFactory factory = new YAMLFactory();
 		ObjectMapper mapper = new ObjectMapper(factory);
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		mapper.setSerializationInclusion(Include.NON_NULL);
+		mapper.setSerializationInclusion(Include.ALWAYS);
 		return mapper;
 	}
 

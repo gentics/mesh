@@ -25,7 +25,10 @@ public class ServerRunner {
 
 	public static void main(String[] args) throws Exception {
 		LoggingConfigurator.init();
-		MeshOptions options = OptionsLoader.createOrloadOptions(args);
+		MeshOptions defaultOption = new MeshOptions();
+		defaultOption.getSearchOptions().setStartEmbedded(false);
+		defaultOption.getSearchOptions().setUrl(null);
+		MeshOptions options = OptionsLoader.createOrloadOptions(defaultOption, args);
 
 		// options.setAdminPassword("admin");
 		// options.getStorageOptions().setStartServer(true);
