@@ -69,11 +69,6 @@ public class AdminGUIEndpoint extends AbstractInternalEndpoint {
 	}
 
 	private void addRedirectionHandler() {
-		routerStorage.root().getRouter().route("/").method(GET).handler(rc -> {
-			rc.response().setStatusCode(302);
-			rc.response().headers().set("Location", "/" + basePath + "/");
-			rc.response().end();
-		});
 		route().method(GET).handler(rc -> {
 			if ("/mesh-ui".equals(rc.request().path())) {
 				rc.response().setStatusCode(302);
