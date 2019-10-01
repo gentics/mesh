@@ -31,6 +31,7 @@
 	</dependencyManagement>
 
 	<dependencies>
+		<!-- Mesh Modules -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-plugin-dep</artifactId>
@@ -39,6 +40,11 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-plugin-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-service-jwt-auth</artifactId>
 			<scope>provided</scope>
 		</dependency>
 
