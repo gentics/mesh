@@ -1,0 +1,10 @@
+query($uuid: String) {
+	node(uuid: $uuid) {
+		breadcrumb {
+			uuid
+			schema {
+				name
+			}
+		}
+	}
+}

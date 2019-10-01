@@ -1,0 +1,27 @@
+{
+  "uuid": "5fb9654c0b734e87b9654c0b736e8701",
+  "creator": {
+    "uuid": "5fb9654c0b734e87b9654c0b736e8701"
+  },
+  "created": "2018-03-15T09:28:54Z",
+  "editor": {
+    "uuid": "5fb9654c0b734e87b9654c0b736e8701"
+  },
+  "edited": "2018-03-15T09:28:54Z",
+  "username": "anonymous",
+  "enabled": true,
+  "groups": [
+    {
+      "name": "anonymous",
+      "uuid": "265629b256c54ae99629b256c5eae968"
+    }
+  ],
+  "permissions": {
+    "create": false,
+    "read": true,
+    "update": false,
+    "delete": false,
+    "publish": false,
+    "readPublished": true
+  }
+}

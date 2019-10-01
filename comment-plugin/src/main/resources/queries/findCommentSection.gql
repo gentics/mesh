@@ -1,0 +1,22 @@
+query findCommentSection($language: String) {
+  schema(name: "comment_section") {
+    nodes(filter: {
+      fields: {
+        comment_section: {
+          language: { equals: $language }
+        }
+      }
+    }) {
+      elements {
+        uuid
+        fields {
+          ... on comment_section {
+            node {
+              uuid
+            }
+          }
+        }
+      }
+    }
+  }
+}

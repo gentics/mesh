@@ -1,0 +1,4 @@
+commentRoot: "/comments"
+projectNames:
+  - test
+requiredForAnonymous: []

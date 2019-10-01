@@ -1,0 +1,11 @@
+/target
+/.config
+/.classpath
+/.settings
+/*.iml
+/.project
+/.idea
+/.factorypath
+/mesh.lock
+/dependency-reduced-pom.xml
+

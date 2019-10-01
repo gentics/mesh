@@ -23,6 +23,7 @@
 		<module>mustread-plugin</module>
 		<module>like-plugin</module>
 		<module>favorite-plugin</module>
+		<module>comment-plugin</module>
 	</modules>
 
 	<dependencyManagement>

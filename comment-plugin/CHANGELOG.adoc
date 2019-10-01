@@ -1,0 +1,51 @@
+:icons: font
+
+////
+* Write changelog entries in present tense
+* Include GitHub issue or PR if possible using link:http://...[#123] format
+* Review your changelog entries
+* Don't include security sensitive information in the changelog
+* Include links to documentation if possible
+////
+
+= Mesh Comment Plugin
+
+[[v5.1.0]]
+== 5.1.0 (TBD)
+
+icon:plus[] Comments and comment sections now contain permission information link:https://jira.gentics.com/browse/SUP-8437[SUP-8437]
+
+icon:check[] Compiling template to JS will not be done in an event loop thread anymore. link:https://jira.gentics.com/browse/SUP-8403[SUP-8403]
+
+icon:check[] Fixed a bug that caused an exception when loading a comment section with deeply nested comments. link:https://jira.gentics.com/browse/SUP-8449[SUP-8449]
+
+[[v5.0.0]]
+== 5.0.0 (2019-08-26)
+
+icon:plus[] Update Mesh dependency to 0.39.2
+
+icon:plus[] Update Plugin to new Mesh plugin system
+
+[[v4.0.0]]
+== 4.0.0 (2019-07-31)
+
+icon:plus[] Update Mesh dependency to 0.36.7
+
+[[v3.0.0]]
+== 3.0.0 (2019-05-03)
+
+icon:plus[] Update Mesh dependency to 0.31.4
+
+icon:check[] Fix permission check for reading comments
+
+[[v2.0]]
+== 2.0 (2019-01-17)
+
+CAUTION: This plugin needs at least Mesh 0.27.0 to work.
+
+icon:plus[] Updated Mesh dependency to 0.29.1
+
+[[v1.0]]
+== 1.0 (2018-05-28)
+
+icon:plus[] Initial release

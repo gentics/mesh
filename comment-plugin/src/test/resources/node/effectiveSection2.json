@@ -1,0 +1,10 @@
+{
+  "uuid": "eca36a04fc5049289be59baa0fc9b34f",
+  "fields": {
+    "node": "fb882c9252694ca782cb465242286cec",
+    "allowAnonymous": false,
+    "moderatorEmails": [],
+    "requiresApproval": false,
+    "requiredForAnonymous": []
+  }
+}
