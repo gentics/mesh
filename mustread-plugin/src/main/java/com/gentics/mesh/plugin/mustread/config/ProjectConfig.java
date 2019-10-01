@@ -1,14 +1,12 @@
 package com.gentics.mesh.plugin.mustread.config;
 
-import org.apache.commons.lang.StringUtils;
-
 public class ProjectConfig {
 
 	private String name;
 	private String folderName;
-	private String uuidQueryFile;
-	private String dataQueryFile;
-	private String uuidFieldName;
+    private QueryFilesConfig queryFiles;
+    private FieldNamesConfig fieldNames;
+    private boolean publishedOnly;
 
 	public String getName() {
 		return name;
@@ -34,34 +32,33 @@ public class ProjectConfig {
 		return this;
 	}
 
-	public String getDataQueryFile() {
-		return dataQueryFile;
-	}
+    public FieldNamesConfig getFieldNames() {
+        return fieldNames;
+    }
 
-	public ProjectConfig setDataQueryFile(String dataQueryFile) {
-		this.dataQueryFile = dataQueryFile;
+    public ProjectConfig setFieldNames(FieldNamesConfig fieldNames) {
+        this.fieldNames = fieldNames;
+
 		return this;
 	}
 
-	public String getUuidQueryFile() {
-		return uuidQueryFile;
-	}
+    public QueryFilesConfig getQueryFiles() {
+        return queryFiles;
+    }
 
-	public ProjectConfig setUuidQueryFile(String uuidQueryFile) {
-		this.uuidQueryFile = uuidQueryFile;
+    public ProjectConfig setQueryFiles(QueryFilesConfig queryFiles) {
+        this.queryFiles = queryFiles;
+
 		return this;
 	}
 
-	public String getUuidFieldName() {
-		if (StringUtils.isBlank(uuidFieldName)) {
-			return "uuid";
-		}
+    public boolean isPublishedOnly() {
 
-		return uuidFieldName;
-	}
+        return publishedOnly;
+    }
 
-	public ProjectConfig setUuidFieldName(String uuidFieldName) {
-		this.uuidFieldName = uuidFieldName;
+    public ProjectConfig setPublishedOnly(boolean publishedOnly) {
+        this.publishedOnly = publishedOnly;
 
 		return this;
 	}

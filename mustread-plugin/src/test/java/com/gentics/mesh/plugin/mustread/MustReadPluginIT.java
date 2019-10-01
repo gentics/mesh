@@ -1,7 +1,26 @@
 package com.gentics.mesh.plugin.mustread;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.plugin.PluginConfigUtil;
+import com.gentics.mesh.plugin.mustread.config.FieldNamesConfig;
+import com.gentics.mesh.plugin.mustread.config.MustReadConfig;
+import com.gentics.mesh.plugin.mustread.config.ProjectConfig;
+import com.gentics.mesh.plugin.mustread.config.QueryFilesConfig;
+import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.test.docker.MeshDockerServer;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.logging.SLF4JLogDelegateFactory;
+import org.apache.commons.io.FileUtils;
+import org.junit.AfterClass;
+import org.junit.ClassRule;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,27 +29,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.AfterClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-
-import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
-import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.plugin.PluginConfigUtil;
-import com.gentics.mesh.plugin.mustread.config.MustReadConfig;
-import com.gentics.mesh.plugin.mustread.config.ProjectConfig;
-import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.test.docker.MeshDockerServer;
-
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.logging.SLF4JLogDelegateFactory;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class MustReadPluginIT extends AbstractPluginTest {
 
@@ -59,9 +59,8 @@ public class MustReadPluginIT extends AbstractPluginTest {
 		ProjectConfig projectConfig = new ProjectConfig();
 		projectConfig.setName("Test");
 		projectConfig.setFolderName("Must-Read");
-		projectConfig.setUuidQueryFile("MustRead.graphql");
-		projectConfig.setDataQueryFile("Data.graphql");
-		projectConfig.setUuidFieldName("testUuid");
+		projectConfig.setQueryFiles(new QueryFilesConfig().setUuid("MustRead.graphql").setData("Data.graphql"));
+		projectConfig.setFieldNames(new FieldNamesConfig().setUuid("testUuid").setPublished("testPublished"));
 		pluginConfig.setProjects(Arrays.asList(projectConfig));
 		PluginConfigUtil.writeConfig(new File(mustReadDir, "config.yml"), pluginConfig);
 		File storageDir = new File(mustReadDir, "storage");

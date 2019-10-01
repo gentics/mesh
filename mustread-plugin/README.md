@@ -29,19 +29,24 @@ You can define the following parameters for each project:
 
 * name: Name of the Mesh Project the plugin is active
 * folderName: Name of the folder where the plugin stores it's informations
-* uuidQueryFile: GraphQL file that fetches the ids of the nodes 
+* queryFiles: Configuration for the used queryfiles
+  * uuid: GraphQL file that fetches the ids of the nodes 
 that mus be read
-* uuidFieldName: Name of the field in the MustReadGrapQLFile that stores
-the uuid. If you don't specify it or specify it as empty the plugin assumes
-you meant `uuid` 
-* dataQueryFile: GraphQL file that fetches the data you want to receive
+  * data: GraphQL file that fetches the data you want to receive
 when accessing the /unread endpoint. This GraphQL file gets the 
 variable $uuids provides by the module to fetch the data for the unread
 nodes
+* FieldNames: Names for the specific fields the module should use
+  * uuid: Name of the field in the MustReadGrapQLFile that stores
+the uuid. If you don't specify it or specify it empty the plugin assumes
+you meant `uuid`
+   * published: Name of the fields in the MustReadGraphQLFile that stores 
+if the current entry is published or not. If you don't specify it or 
+specify it empty, the plugin assumes you meant `isPublished`
 
 **The must read plugin only activates for projects which are defined in
-the config.yml and have `FolderName`, `uuidQueryFile` and 
-`dataQueryFile` set**
+the config.yml and have `FolderName`, `queryFiles/uuid` and 
+`queryFiles/data` set**
 
 # Endpoints
 
