@@ -58,11 +58,11 @@ public class UpdateFieldChangeImpl extends AbstractSchemaFieldChange implements 
 			key = key.replace(REST_PROPERTY_PREFIX_KEY, "");
 			properties.put(key, value);
 		}
-	
+
 		fieldSchema.apply(properties);
 		return container;
 	}
-	
+
 	@Override
 	public void updateFromRest(SchemaChangeModel restChange) {
 		/***
@@ -77,7 +77,15 @@ public class UpdateFieldChangeImpl extends AbstractSchemaFieldChange implements 
 
 	@Override
 	public Map<String, Field> createFields(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
-		return Collections.emptyMap();
+		String oldFieldName = getFieldName();
+		String newFieldName = getRestProperty(SchemaChangeModel.NAME_KEY);
+		if (oldFieldName != null && newFieldName != null) {
+			FieldSchema fieldSchema = oldSchema.getField(oldFieldName);
+			Field field = oldContent.getFields().getField(oldFieldName, fieldSchema);
+			return Collections.singletonMap(newFieldName, field);
+		} else {
+			return Collections.emptyMap();
+		}
 	}
 
 	@Override
