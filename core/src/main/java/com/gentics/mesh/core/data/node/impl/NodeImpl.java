@@ -184,7 +184,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public String getPathSegment(String branchUuid, ContainerType type, String... languageTag) {
+	public String getPathSegment(String branchUuid, ContainerType type, boolean anyLanguage, String... languageTag) {
 
 		// Check whether this node is the base node.
 		if (getParentNode(branchUuid) == null) {
@@ -198,6 +198,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				break;
 			}
 		}
+
+		if (container == null && anyLanguage) {
+			TraversalResult<? extends GraphFieldContainerEdgeImpl> traversal = getGraphFieldContainerEdges(branchUuid, type);
+
+			if (traversal.hasNext()) {
+				container = traversal.next().getNodeContainer();
+			}
+		}
+
 		if (container != null) {
 			return container.getSegmentFieldValue();
 		}
@@ -235,12 +244,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// For the path segments of the container, we add all (additional)
 			// project languages to the list of languages for the fallback.
-			List<String> langList = new ArrayList<>();
-			langList.addAll(Arrays.asList(languageTag));
-
-			// TODO maybe we only want to get the project languages?
-			langList.addAll(mesh().boot().getAllLanguageTags());
-			String[] projectLanguages = langList.toArray(new String[langList.size()]);
 			Node current = this;
 			while (current != null) {
 				current = current.getParentNode(branchUuid);
@@ -248,7 +251,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					break;
 				}
 				// For the path segments of the container, we allow ANY language (of the project)
-				segment = current.getPathSegment(branchUuid, type, projectLanguages);
+				segment = current.getPathSegment(branchUuid, type, true, languageTag);
 
 				// Abort early if one of the path segments could not be resolved. We
 				// need to return a 404 in those cases.
@@ -467,7 +470,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	/**
 	 * Get all graph field edges.
-	 * 
+	 *
 	 * @param branchUuid
 	 * @param type
 	 * @return
@@ -666,7 +669,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	/**
 	 * Set the project reference to the node response model.
-	 * 
+	 *
 	 * @param ac
 	 * @param restNode
 	 */
@@ -676,7 +679,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	/**
 	 * Set the parent node reference to the rest model.
-	 * 
+	 *
 	 * @param ac
 	 * @param branch
 	 *            Use the given branch to identify the branch specific parent node
@@ -697,16 +700,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	/**
 	 * Set the node fields to the given rest model.
-	 * 
+	 *
 	 * @param ac
 	 * @param branch
 	 *            Branch which will be used to locate the correct field container
 	 * @param restNode
 	 *            Rest model which will be updated
-	 * @param fields
-	 *            Field whitelist for the response
 	 * @param level
 	 *            Current level of transformation
+	 * @param fieldsSet
 	 * @param languageTags
 	 * @return
 	 */
@@ -831,7 +833,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	/**
 	 * Set the children info to the rest model.
-	 * 
+	 *
 	 * @param ac
 	 * @param branch
 	 *            Branch which will be used to identify the branch specific child nodes
@@ -860,7 +862,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	/**
 	 * Set the tag information to the rest model.
-	 * 
+	 *
 	 * @param ac
 	 * @param restNode
 	 *            Rest model which will be updated
@@ -877,7 +879,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	/**
 	 * Add the branch specific webroot and language paths to the given rest node.
-	 * 
+	 *
 	 * @param ac
 	 * @param restNode
 	 *            Rest model which will be updated
@@ -921,7 +923,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	/**
 	 * Set the breadcrumb information to the given rest node.
-	 * 
+	 *
 	 * @param ac
 	 * @param restNode
 	 */
@@ -991,7 +993,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	/**
 	 * Generate the etag key for the requested navigation.
-	 * 
+	 *
 	 * @param ac
 	 * @param node
 	 *            Current node to start building the navigation
@@ -1028,7 +1030,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	/**
 	 * Recursively build the navigation response.
-	 * 
+	 *
 	 * @param ac
 	 *            Action context
 	 * @param node
@@ -1449,7 +1451,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	/**
 	 * Adds reference update events to the context for all draft and published contents that reference this node.
-	 * 
+	 *
 	 * @param bac
 	 */
 	private void addReferenceUpdates(BulkActionContext bac) {
@@ -1624,28 +1626,28 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	/**
 	 * Update the node language or create a new draft for the specific language. This method will also apply conflict detection and take care of deduplication.
-	 * 
-	 * 
+	 *
+	 *
 	 * <p>
 	 * Conflict detection: Conflict detection only occurs during update requests. Two diffs are created. The update request will be compared against base
 	 * version graph field container (version which is referenced by the request). The second diff is being created in-between the base version graph field
 	 * container and the latest version of the graph field container. This diff identifies previous changes in between those version. These both diffs are
 	 * compared in order to determine their intersection. The intersection identifies those fields which have been altered in between both versions and which
 	 * would now also be touched by the current request. This situation causes a conflict and the update would abort.
-	 * 
+	 *
 	 * <p>
 	 * Conflict cases
 	 * <ul>
 	 * <li>Initial creates - No conflict handling needs to be performed</li>
 	 * <li>Migration check - Nodes which have not yet migrated can't be updated</li>
 	 * </ul>
-	 * 
-	 * 
+	 *
+	 *
 	 * <p>
 	 * Deduplication: Field values that have not been changed in between the request data and the last version will not cause new fields to be created in new
 	 * version graph field containers. The new version graph field container will instead reference those fields from the previous graph field container
 	 * version. Please note that this deduplication only applies to complex fields (e.g.: Lists, Micronode)
-	 * 
+	 *
 	 * @param ac
 	 * @param batch
 	 *            Batch which will be used to update the search index
@@ -2030,7 +2032,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		/**
 		 * Parent node
-		 * 
+		 *
 		 * The node can be moved and this would also affect the response. The etag must also be changed when the node is moved.
 		 */
 		if (parentNode != null) {
@@ -2046,7 +2048,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		/**
 		 * Expansion (all)
-		 * 
+		 *
 		 * The expandAll parameter changes the json response and thus must be included in the etag computation.
 		 */
 		if (ac.getNodeParameters().getExpandAll()) {
@@ -2104,7 +2106,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		/**
 		 * webroot path & language paths
-		 * 
+		 *
 		 * The webroot and language paths must be included in the etag computation in order to invalidate the etag once a node language gets updated or once the
 		 * display name of any parent node changes.
 		 */
