@@ -44,6 +44,8 @@ You can read more about how to setup OAuth2 / OIDC in the link:{{< relref "authe
 It is now also possible for Authentication Service Plugins to provide Json Web Keys (JWK) to Gentics Mesh. Plugins can load the accepted JWK's from the authentication provider server and return it to Gentics Mesh. A plugin has to implement the `getPublicKeys()` method to support this.
 
 Plugins can now implement the `extractUsername()` method to return the username that should be used to handle mappings between Mesh and JWT.
+
+Please note that installations which already use an authentication plugin can either update the plugin and provide the public keys or manually add the public key to the `public-keys.json` configuration file.
 ____
 
 
