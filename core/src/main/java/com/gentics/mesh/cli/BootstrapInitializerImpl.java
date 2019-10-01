@@ -185,7 +185,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			return;
 		}
 		// Ensure indices are setup and sync the documents
+		log.info("Invoking index sync. This may take some time..");
 		SyncEventHandler.invokeSyncCompletable(mesh()).blockingAwait();
+		log.info("Index sync completed.");
 	});
 
 	@Inject
