@@ -33,6 +33,16 @@ icon:bullhorn[] New UI
 ____
 
 This version of Gentics Mesh contains the a new UI which is accessible via `/mesh-ui`. The old UI is still part of this release and can be accessed via `/mesh-ui-v1`.
+
+The following noteworthy aspects of the UI have been updated / altered:
+
+* The permission management has been reworked
+* The new schema editor which features autocompletion
+* The usability of the edit view has been enhanced
+* The editor for HTML fields has been replaced
+* A new image editor has been added which now supports focal point handling
+* Language handling has been improved
+* The UI no longer depends on Elasticsearch
 ____
 
 icon:bullhorn[] New defaults
