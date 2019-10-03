@@ -18,8 +18,8 @@ import static com.gentics.mesh.example.ExampleUuids.UUID_2;
 import static com.gentics.mesh.example.ExampleUuids.UUID_3;
 import static com.gentics.mesh.example.ExampleUuids.UUID_4;
 import static com.gentics.mesh.example.ExampleUuids.UUID_5;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -29,7 +29,6 @@ import java.util.List;
 
 import org.mockito.Mockito;
 
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -299,7 +298,7 @@ public final class TestMocks {
 		when(node.getProject()).thenReturn(project);
 
 		TraversalResult<? extends Tag> tagResult = new TraversalResult<>(Arrays.asList(tagA, tagB));
-		Mockito.<TraversalResult<? extends Tag>>when(node.getTags(any(Branch.class))).thenReturn(tagResult);
+		Mockito.<TraversalResult<? extends Tag>>when(node.getTags(Mockito.any())).thenReturn(tagResult);
 
 		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
 		SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();

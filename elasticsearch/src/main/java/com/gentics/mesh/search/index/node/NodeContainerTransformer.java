@@ -52,6 +52,7 @@ import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
 
@@ -501,7 +502,8 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		document.put("created", toISO8601(node.getCreationTimestamp()));
 
 		addProject(document, node.getProject());
-		addTags(document, node.getTags(node.getProject().getLatestBranch()));
+		TraversalResult<? extends Tag> tags = node.getTags(node.getProject().getLatestBranch());
+		addTags(document, tags);
 		addTagFamilies(document, node.getTags(node.getProject().getLatestBranch()));
 		addPermissionInfo(document, node, type);
 
