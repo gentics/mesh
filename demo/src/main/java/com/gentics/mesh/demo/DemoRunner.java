@@ -44,20 +44,6 @@ public class DemoRunner {
 
 		MeshOptions options = OptionsLoader.createOrloadOptions(args);
 
-		// For Mesh UI Dev
-		// options.getHttpServerOptions().setEnableCors(true);
-		// options.getHttpServerOptions().setCorsAllowCredentials(true);
-		// options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
-
-		// options.getSearchOptions().setHttpEnabled(true);
-		// options.getStorageOptions().setStartServer(true);
-		// options.getSearchOptions().setHttpEnabled(true);
-		// options.getStorageOptions().setDirectory(null);
-		// options.setClusterMode(true);
-		// Disable ES
-		// options.getSearchOptions().setStartEmbedded(false);
-		// options.getSearchOptions().setUrl(null);
-
 		Mesh mesh = Mesh.create(options);
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
