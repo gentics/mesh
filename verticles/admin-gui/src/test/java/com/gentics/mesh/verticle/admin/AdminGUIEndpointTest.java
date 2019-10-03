@@ -29,11 +29,13 @@ public class AdminGUIEndpointTest extends AbstractMeshTest {
 	public void setupVerticle() throws Exception {
 		EndpointRegistry registry = mesh().endpointRegistry();
 		registry.register(AdminGUIEndpoint.class);
+		registry.register(AdminGUI2Endpoint.class);
 	}
 
 	@BeforeClass
 	public static void cleanupConfig() {
 		new File(AdminGUIEndpoint.CONF_FILE).delete();
+		new File(AdminGUI2Endpoint.CONF_FILE).delete();
 	}
 
 	@Test
@@ -41,7 +43,7 @@ public class AdminGUIEndpointTest extends AbstractMeshTest {
 
 		HttpClient client = createHttpClient();
 		CompletableFuture<String> future = new CompletableFuture<>();
-		HttpClientRequest request = client.request(GET, "/mesh-ui/mesh-ui-config.js", rh -> {
+		HttpClientRequest request = client.request(GET, "/mesh-ui-v1/mesh-ui-config.js", rh -> {
 			rh.bodyHandler(bh -> {
 				if (rh.statusCode() == 200) {
 					future.complete(bh.toString());
