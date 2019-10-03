@@ -25,7 +25,7 @@ include::content/docs/variables.adoc-include[]
 
 
 [[1.0.0]]
-== 1.0.0  (TBD)
+== 1.0.0  (03.10.2019)
 
 icon:bullhorn[] New UI
 
@@ -45,6 +45,9 @@ It is still possible to enable the embedded server via the `search.startEmbedded
 ____
 
 
+icon:check[] Search: Synchronizing the search index when starting after Gentics Mesh has not been stopped properly will not block the startup routine anymore. link:https://github.com/gentics/mesh/issues/862[#862]
+
+icon:check[] Core: Path resolving performance has been increased.
 
 [[v0.41.0]]
 == 0.41.0 (01.10.2019)
