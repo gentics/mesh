@@ -1,0 +1,645 @@
+package com.gentics.mesh.plugin.formgenerator.service;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
+import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.parameter.client.DeleteParametersImpl;
+import com.gentics.mesh.parameter.client.VersioningParametersImpl;
+import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.formgenerator.FormGeneratorError;
+import com.gentics.mesh.plugin.formgenerator.FormGeneratorPlugin;
+import com.gentics.mesh.plugin.formgenerator.config.FormGeneratorConfig;
+import com.gentics.mesh.plugin.formgenerator.dagger.AdminClient;
+import com.gentics.mesh.plugin.formgenerator.export.Exporter;
+import com.gentics.mesh.plugin.formgenerator.model.Form;
+import com.gentics.mesh.plugin.formgenerator.model.FormElement;
+import com.gentics.mesh.plugin.formgenerator.model.FormpageElement;
+import com.gentics.mesh.plugin.formgenerator.model.PostDataResponse;
+import com.gentics.mesh.plugin.formgenerator.model.ValidationError;
+import com.gentics.mesh.rest.client.MeshBinaryResponse;
+import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.rest.client.impl.EmptyResponse;
+import com.github.jknack.handlebars.Context;
+import com.github.jknack.handlebars.Handlebars;
+
+import io.reactivex.Single;
+import io.vertx.core.MultiMap;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.Cookie;
+import io.vertx.ext.web.FileUpload;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.reactivex.core.buffer.Buffer;
+import io.vertx.reactivex.ext.web.templ.handlebars.HandlebarsTemplateEngine;
+
+@Singleton
+public class FormDataService {
+	/**
+	 * Name of the cookie, the user will get when a form is partially filled (the cookie value is the uuid of the form data node)
+	 */
+	public final static String COOKIE_NAME = "fg-data";
+
+	private static final Logger log = LoggerFactory.getLogger(FormDataService.class);
+
+	private final MeshRestClient adminClient;
+
+	private final Vertx vertx;
+
+	private final FormGeneratorConfig configuration;
+
+	private final ObjectMapper objectMapper;
+
+	private final FormService formService;
+
+	private final PagingService pagingService;
+
+	private final MailService mailService;
+
+	private final HandlebarsTemplateEngine templateEngine;
+
+	@Inject
+	public FormDataService(@AdminClient MeshRestClient adminClient, Vertx vertx, FormGeneratorConfig configuration, ObjectMapper objectMapper,
+		FormService formService, PagingService pagingService, MailService mailService, HandlebarsTemplateEngine templateEngine) {
+		this.adminClient = adminClient;
+		this.vertx = vertx;
+		this.configuration = configuration;
+		this.objectMapper = objectMapper;
+		this.formService = formService;
+		this.pagingService = pagingService;
+		this.mailService = mailService;
+		this.templateEngine = templateEngine;
+	}
+
+	/**
+	 * Save data posted by a user for the form
+	 *
+	 * @param projectName
+	 *            project name
+	 * @param uuid
+	 *            form uuid
+	 * @param postedData
+	 *            posted data
+	 * @param fileUploads
+	 *            set of fileuploads
+	 * @param referer
+	 *            refererer
+	 * @param meshContext
+	 *            context
+	 * @param handleCookies
+	 *            true if cookies should be handled
+	 * @return single of the post data response
+	 */
+	public Single<PostDataResponse> create(String projectName, String uuid, MultiMap postedData, Set<FileUpload> fileUploads, String referer,
+		PluginContext meshContext, boolean handleCookies) {
+		return formService.load(projectName, uuid).flatMap(formNode -> {
+			Form form = formService.toForm(formNode).blockingGet();
+			return savePostedData(projectName, formNode, null, form, postedData, fileUploads, referer, meshContext, handleCookies);
+		});
+	}
+
+	/**
+	 * Update already posted data
+	 * 
+	 * @param projectName
+	 *            project name
+	 * @param formUuid
+	 *            form uuid
+	 * @param formDataUuid
+	 *            form data uuid
+	 * @param postedData
+	 *            posted data
+	 * @param fileUploads
+	 *            fileuploads
+	 * @param referer
+	 *            referer
+	 * @param meshContext
+	 *            context
+	 * @param handleCookies
+	 *            true if cookies should be handled
+	 * @return single of the post data response
+	 */
+	public Single<PostDataResponse> update(String projectName, String formUuid, String formDataUuid, MultiMap postedData, Set<FileUpload> fileUploads,
+		String referer,
+		PluginContext meshContext, boolean handleCookies) {
+		return Single.zip(formService.load(projectName, formUuid), load(projectName, formUuid, formDataUuid), (formNode, formDataNode) -> {
+			Form form = formService.toForm(formNode).blockingGet();
+			return savePostedData(projectName, formNode, formDataNode, form, postedData, fileUploads, referer, meshContext, handleCookies);
+		}).flatMap(x -> x);
+	}
+
+	/**
+	 * Load the form data by uuid
+	 * 
+	 * @param projectName
+	 *            project name
+	 * @param formUuid
+	 *            form uuid
+	 * @param formDataUuid
+	 *            form data uuid
+	 * @return single noderesponse
+	 */
+	public Single<NodeResponse> load(String projectName, String formUuid, String formDataUuid) {
+		return adminClient.findNodeByUuid(projectName, formDataUuid).toSingle().flatMap(formDataNode -> {
+			if (isFormDataNode(formDataNode) && formUuid.equals(formDataNode.getParentNode().getUuid())) {
+				return Single.just(formDataNode);
+			} else {
+				String message = String.format("Object with uuid \"%s\" could not be found.", formDataUuid);
+				return Single.error(new FormGeneratorError(404, message));
+			}
+		});
+	}
+
+	/**
+	 * Export the data for the form with the specified UUID.
+	 *
+	 * The export format is determined via query parameters in the request, and the default format is CSV.
+	 *
+	 * @param projectName
+	 *            project name
+	 * @param formUuid
+	 *            The UUID of the form to export
+	 * @param context
+	 *            The current routing context
+	 * @return single export data
+	 */
+	public Single<String> export(String projectName, String formUuid, PluginContext context) {
+		Exporter exporter = Exporter.create(configuration, adminClient, context, formUuid, SchemaService.getSchemaName(formUuid));
+
+		return formService.load(projectName, formUuid)
+			.flatMap(formNode -> formService.toForm(formNode))
+			.flatMap(form -> exporter.export(form));
+	}
+
+	/**
+	 * Searches the data nodes of the specified form and sends the results to the meshClient.
+	 * 
+	 * @param projectName
+	 *            project name
+	 * @param formUuid
+	 *            the UUID of the form node
+	 * @param query
+	 *            search query
+	 * @param pagingParams
+	 *            paging parameters
+	 * @return single search response
+	 */
+	public Single<JsonObject> find(String projectName, String formUuid, String query, JsonObject pagingParams) {
+		try {
+			Single<GraphQLRequest> request = loadFormAndAssembleFindFormGraphQLRequest(projectName, formUuid, query, pagingParams);
+
+			Single<GraphQLResponse> response = request
+				.flatMap(graphQLRequest -> adminClient.graphql(projectName, graphQLRequest, new VersioningParametersImpl().published()).toSingle());
+
+			return response.flatMap(graphQLResponse -> {
+				JsonObject clientResponse = new JsonObject();
+				JsonObject nodes = graphQLResponse.getData().getJsonObject("nodes");
+				if (nodes != null) {
+					pagingService.addPagingInfoToResponse(clientResponse, nodes);
+					clientResponse.put("entries", nodes.getJsonArray("elements"));
+					return Single.just(clientResponse);
+				} else {
+					return Single.error(new FormGeneratorError(500, "Unexpected NULL search response."));
+				}
+			});
+		} catch (IOException ex) {
+			return Single.error(ex);
+		}
+	}
+
+	/**
+	 * Gets the binary field for the specified form data node and sends it to the meshClient.
+	 * 
+	 * @param formUuid
+	 *            the UUID of the form node
+	 * @param formDataUuid
+	 *            the UUID of the data node
+	 * @param binaryFieldName
+	 *            the name of the binary field in the form data node
+	 * @param rc
+	 *            the RoutingContext
+	 */
+	public Single<MeshResponse<MeshBinaryResponse>> loadBinary(String projectName, String formUuid, String formDataUuid, String binaryFieldName) {
+		return load(projectName, formUuid, formDataUuid).flatMap(formDataNode -> {
+			return adminClient.downloadBinaryField(projectName, formDataUuid, formDataNode.getLanguage(), binaryFieldName).getResponse();
+		});
+	}
+
+	/**
+	 * Deletes the form data with the specified formDataUuid.
+	 *
+	 * @param projectName
+	 *            project name
+	 * @param formUuid
+	 *            the UUID of the form node to be deleted
+	 * @param formDataUuid
+	 *            the UUID of the data node
+	 * @return single void
+	 */
+	public Single<EmptyResponse> delete(String projectName, String formUuid, String formDataUuid) {
+		return load(projectName, formUuid, formDataUuid).flatMap(formDataNode -> {
+			// loadFormDataByUuid() already checks if formDataUuid is a subnode of formUuid and if formUuid is actually a form.
+			DeleteParametersImpl deleteParams = new DeleteParametersImpl();
+			deleteParams.setRecursive(true);
+			return adminClient.deleteNode(projectName, formDataUuid, deleteParams).toSingle();
+		});
+	}
+
+	/**
+	 * Render the form with data
+	 * 
+	 * @param projectName
+	 *            project name
+	 * @param formUuid
+	 *            form UUID
+	 * @param formDataUuid
+	 *            form data UUID
+	 * @param rc
+	 *            routing context
+	 * @return single buffer of rendered form
+	 */
+	public Single<Buffer> render(String projectName, String formUuid, String formDataUuid, RoutingContext rc) {
+		return Single.zip(formService.load(projectName, formUuid), load(projectName, formUuid, formDataUuid).onErrorReturn(t -> null),
+			(formNode, formDataNode) -> {
+				JsonObject formJson = new JsonObject(formNode.getFields().getStringField("json").getString());
+
+				formService.removeInactiveElements(formJson);
+
+				// add id
+				formJson.put("id", formUuid);
+
+				// add options
+				formJson.put("options", JsonObject.mapFrom(configuration));
+
+				Set<String> completed = Collections.emptySet();
+				if (formDataNode != null) {
+					Form form = formService.toForm(formNode).blockingGet();
+
+					// only fill in data, if form is not completed
+					if (!form.isCompleted(formDataNode)) {
+						// get completed formpages
+						completed = form.flattened().filter(elem -> elem instanceof FormpageElement)
+							.filter(elem -> elem.isCompleted(formDataNode))
+							.map(FormElement::getName).collect(Collectors.toSet());
+						JsonObject formDataJson = form.getFormDataJson(formDataNode);
+						formJson.put("dataid", formDataUuid);
+						mergeData(formJson, formDataJson);
+					}
+				}
+
+				formService.markFormpages(formJson, completed);
+
+				rc.put("form", formJson);
+
+				return templateEngine.rxRender(rc.data(), "form");
+			}).flatMap(s -> s);
+	}
+
+	/**
+	 * Validate and save the data to mesh. publish form, if completed. Redirect to success url or referer
+	 * 
+	 * @param projectName
+	 *            project name
+	 * @param formNode
+	 *            form node
+	 * @param formDataNode
+	 *            form data node
+	 * @param form
+	 *            form
+	 * @param postedData
+	 *            posted data
+	 * @param fileUploads
+	 *            set of file uploads
+	 * @param referer
+	 *            referer
+	 * @param meshContext
+	 *            mesh context
+	 * @param handleCookies
+	 *            true if cookies shall be handled, false if not
+	 * @return single redirect URL
+	 */
+	private Single<PostDataResponse> savePostedData(String projectName, NodeResponse formNode, NodeResponse formDataNode, Form form,
+		MultiMap postedData,
+		Set<FileUpload> fileUploads, String referer, PluginContext meshContext, boolean handleCookies) {
+		Map<String, ValidationError> errors = form.validate(postedData, fileUploads, formDataNode);
+		String cookiePath = getPath(referer);
+
+		return saveFormData(projectName, formNode, formDataNode, form, postedData, errors)
+			.flatMap(savedFormDataNode -> saveFileUploads(projectName, savedFormDataNode, fileUploads))
+			.flatMap(savedFileUploads -> {
+				if (errors.isEmpty() && form.isCompleted(savedFileUploads)) {
+					return publishFormData(projectName, savedFileUploads).flatMap(publishStatus -> {
+						// send mails to admin and user
+						mailService.sendMails(projectName, form, savedFileUploads, meshContext);
+
+						// remove the data cookie
+						if (handleCookies) {
+							meshContext.removeCookie(COOKIE_NAME);
+							Cookie cookie = Cookie.cookie(COOKIE_NAME, "");
+							cookie.setPath(cookiePath);
+							cookie.setHttpOnly(true);
+							cookie.setMaxAge(0);
+							meshContext.addCookie(cookie);
+						}
+
+						PostDataResponse response = new PostDataResponse();
+						response.setDataUuid(savedFileUploads.getUuid());
+						response.setErrors(errors);
+						response.setFinished(true);
+						if (form.getSuccessurl() != null) {
+							response.setRedirectUrl(form.getSuccessurl());
+						} else {
+							response.setRedirectUrl("");
+						}
+
+						return Single.just(response);
+					});
+				} else {
+					// set the data cookie
+					if (handleCookies) {
+						Cookie cookie = Cookie.cookie(COOKIE_NAME, savedFileUploads.getUuid());
+						cookie.setPath(cookiePath);
+						cookie.setHttpOnly(true);
+						meshContext.addCookie(cookie);
+					}
+
+					PostDataResponse response = new PostDataResponse();
+					response.setDataUuid(savedFileUploads.getUuid());
+					response.setErrors(errors);
+					response.setFinished(true);
+					if (referer != null) {
+						response.setRedirectUrl(referer);
+					} else {
+						response.setRedirectUrl("");
+					}
+
+					return Single.just(response);
+				}
+			});
+	}
+
+	/**
+	 * Save the form data to mesh
+	 * 
+	 * @param projectName
+	 *            project name
+	 * @param formNode
+	 *            form node
+	 * @param formDataNode
+	 *            optional form data node (for updating)
+	 * @param form
+	 *            form object
+	 * @param postedData
+	 *            posted data
+	 * @param errors
+	 *            map containing validation errors
+	 * @return single of the node response
+	 */
+	private Single<NodeResponse> saveFormData(String projectName, NodeResponse formNode, NodeResponse formDataNode, Form form, MultiMap postedData,
+		Map<String, ValidationError> errors) {
+		FieldContainer container = null;
+		NodeCreateRequest createRequest = null;
+		NodeUpdateRequest updateRequest = null;
+
+		if (formDataNode == null) {
+			createRequest = new NodeCreateRequest().setSchemaName(SchemaService.getSchemaName(formNode.getUuid()))
+				.setParentNodeUuid(formNode.getUuid())
+				.setLanguage("en");
+			container = createRequest;
+		} else {
+			updateRequest = new NodeUpdateRequest();
+			updateRequest.setVersion(formDataNode.getVersion());
+			updateRequest.setLanguage("en");
+			container = updateRequest;
+		}
+
+		form.addFields(container, postedData, !errors.isEmpty());
+		if (!errors.isEmpty()) {
+			try {
+				container.getFields().put(Form.ERRORS_FIELD_NAME, new StringFieldImpl().setString(objectMapper.writeValueAsString(errors)));
+			} catch (JsonProcessingException e) {
+				return Single.error(e);
+			}
+		} else {
+			container.getFields().put(Form.ERRORS_FIELD_NAME, new StringFieldImpl().setString(""));
+		}
+
+		if (formDataNode == null) {
+			return adminClient.createNode(projectName, createRequest).toSingle();
+		} else {
+			return adminClient.updateNode(projectName, formDataNode.getUuid(), updateRequest).toSingle();
+		}
+	}
+
+	/**
+	 * Save fileuploads to mesh
+	 *
+	 * @param projectName
+	 *            project name
+	 * @param formDataNode
+	 *            form data node
+	 * @param fileUploads
+	 *            validated file uploads
+	 * @return single of the form data node
+	 */
+	private Single<NodeResponse> saveFileUploads(String projectName, NodeResponse formDataNode, Set<FileUpload> fileUploads) {
+		if (fileUploads.isEmpty()) {
+			return Single.just(formDataNode);
+		}
+
+		// upload binaries one after the other
+		List<Single<NodeResponse>> singleList = fileUploads.stream().map(fileUpload -> {
+			return Single.defer(() -> {
+				long size = fileUpload.size();
+				InputStream ins = new FileInputStream(new File(fileUpload.uploadedFileName()));
+				return adminClient
+					.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), formDataNode.getVersion(),
+						fileUpload.name(),
+						ins, size, fileUpload.fileName(), fileUpload.contentType())
+					.toSingle().doFinally(() -> {
+						ins.close();
+					});
+
+			});
+		}).collect(Collectors.toList());
+
+		return Single.concat(singleList).lastOrError();
+
+		// this would upload binaries asynchronously
+		// return Observable.fromIterable(fileUploads).flatMapSingle(fileUpload -> {
+		// return meshClient.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), formDataNode.getVersion(),
+		// fileUpload.name(),
+		// vertx.fileSystem().readFileBlocking(fileUpload.uploadedFileName()), fileUpload.fileName(), fileUpload.contentType()).toSingle();
+		// }).lastOrError();
+	}
+
+	/**
+	 * Publish the form data
+	 *
+	 * @param projectName
+	 *            project name
+	 * @param formData
+	 *            form data node
+	 * @return single
+	 */
+	private Single<PublishStatusResponse> publishFormData(String projectName, NodeResponse formData) {
+		return adminClient.publishNode(projectName, formData.getUuid()).toSingle();
+	}
+
+	/**
+	 * Get the path from the given URL
+	 * 
+	 * @param url
+	 *            URL
+	 * @return path
+	 */
+	private String getPath(String url) {
+		if (!StringUtils.isBlank(url)) {
+			try {
+				URL refererUrl = new URL(url);
+				return refererUrl.getPath();
+			} catch (MalformedURLException e) {
+			}
+		}
+
+		return url;
+	}
+
+	/**
+	 * Check whether the node is a form data node (parent node uses the form schema)
+	 * 
+	 * @param node
+	 *            node to check
+	 * @return true for form data nodes
+	 */
+	private boolean isFormDataNode(NodeResponse node) {
+		return SchemaService.SCHEMA_NAME.equals(node.getParentNode().getSchema().getName());
+	}
+
+	/**
+	 * Loads the specified form and creates a GraphQLRequest with a query to find the form data nodes (and the page) indicated by the HTTP query string.
+	 * 
+	 * @param formUuid
+	 *            the UUID of the form
+	 * 
+	 * @return a GraphQLRequest
+	 * @throws IOException
+	 *             if loading the ElasticSearch or GraphQL query fails
+	 */
+	private Single<GraphQLRequest> loadFormAndAssembleFindFormGraphQLRequest(String projectName, String formUuid, String query,
+		JsonObject pagingParams) throws IOException {
+		String rawGraphQLQuery = IOUtils.toString(FormGeneratorPlugin.class.getResource("findFormData.graphql"), "UTF-8");
+		JsonObject esQuery = assembleFindFormDataESQuery(formUuid, query);
+		JsonObject graphQLParams = new JsonObject(pagingParams.toBuffer());
+		graphQLParams.put("query", esQuery.toString());
+
+		return formService.load(projectName, formUuid).flatMap(formService::toForm).flatMap(form -> {
+			Map<String, String> context = new HashMap<>();
+			context.put("schemaName", SchemaService.getSchemaName(formUuid));
+			context.put("fieldNames", String.join("\n", form.getReportableElementNamesForGraphQL()));
+			String graphQLQuery = new Handlebars().compileInline(rawGraphQLQuery).apply(Context.newContext(context));
+			GraphQLRequest graphQLRequest = new GraphQLRequest();
+			graphQLRequest.setQuery(graphQLQuery).setVariables(graphQLParams);
+			return Single.just(graphQLRequest);
+		});
+	}
+
+	/**
+	 * Creates an ElasticSearch query to find data nodes for the specified form with the search string (if any) that is contained in the HTTP query string.
+	 * 
+	 * @param formUuid
+	 *            the UUID of the form
+	 * @param userQuery
+	 *            the value of the 'q' parameter from the HTTP query string (may be null)
+	 * @return the ElasticSearch query as a JsonObject
+	 * @throws IOException
+	 *             if loading the ElasticSearch query fails
+	 */
+	private JsonObject assembleFindFormDataESQuery(String formUuid, String userQuery) throws IOException {
+		String esQueryStr = IOUtils.toString(FormGeneratorPlugin.class.getResource("findFormDataES.json"), "UTF-8");
+		JsonObject esQuery = new JsonObject(esQueryStr);
+		String formSchema = SchemaService.getSchemaName(formUuid);
+
+		JsonArray mustQuery = esQuery.getJsonObject("query").getJsonObject("bool").getJsonArray("must");
+		mustQuery.getJsonObject(0).getJsonObject("term").put("schema.name.raw", formSchema);
+		if (userQuery != null && !userQuery.isEmpty()) {
+			mustQuery.getJsonObject(1).getJsonObject("multi_match").put("query", userQuery);
+		} else {
+			mustQuery.remove(1);
+		}
+		return esQuery;
+	}
+
+	/**
+	 * Find the json object representing the element with given name
+	 * 
+	 * @param form
+	 *            form to search
+	 * @param name
+	 *            element name
+	 * @return json object or null if not found
+	 */
+	private JsonObject findElement(JsonObject form, String name) {
+		JsonArray elements = form.getJsonArray("elements");
+		if (elements != null) {
+			for (int i = 0; i < elements.size(); i++) {
+				JsonObject element = elements.getJsonObject(i);
+				if (name.equals(element.getString("name"))) {
+					return element;
+				} else {
+					JsonObject subElement = findElement(element, name);
+					if (subElement != null) {
+						return subElement;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Merge the form data into the form
+	 * 
+	 * @param form
+	 *            form
+	 * @param formData
+	 *            form data
+	 */
+	private void mergeData(JsonObject form, JsonObject formData) {
+		for (String elementName : formData.fieldNames()) {
+			JsonObject element = findElement(form, elementName);
+			if (element != null) {
+				element.put("data", formData.getJsonObject(elementName));
+			}
+		}
+	}
+}

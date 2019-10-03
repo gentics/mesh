@@ -1,0 +1,9 @@
+{
+  schema(name: "formgenerator_plugin") {
+    nodes {
+      elements {
+        uuid
+      }
+    }
+  }
+}

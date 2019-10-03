@@ -1,0 +1,12 @@
+<div data-mdc-auto-init="Textfield"
+	class="element-input mdc-textfield mdc-textfield--box floating-label"
+	element-name="{{ name }}">
+	<div class="content form-group">
+		<input type="email" id="{{ name }}" class="mdc-textfield__input"
+			{{#if maxCharCount }}maxlength="{{ maxCharCount }}" maxcharcount="{{ maxCharCount }}"{{/if}}
+			name="{{ name }}" placeholdername=""
+			value="{{#if data.value }}{{ data.value }}{{else}}{{ value }}{{/if}}"
+			{{#if mandatory}}required="required"{{/if}}>
+		<label for="{{ name }}" class="control-label mdc-textfield__label">{{{ label }}}</label>
+	</div>
+</div>

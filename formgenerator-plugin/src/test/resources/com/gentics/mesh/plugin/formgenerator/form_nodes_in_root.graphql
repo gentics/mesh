@@ -1,0 +1,14 @@
+{
+  rootNode {
+    children (filter: {
+      schema: {
+        or: [
+        	{is: formgenerator}
+          {is: formgenerator_template}
+      	]
+      }
+    }) {
+      totalCount
+    }
+  }
+}

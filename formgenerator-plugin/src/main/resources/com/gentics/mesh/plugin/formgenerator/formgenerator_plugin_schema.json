@@ -1,0 +1,13 @@
+{
+	"name": "formgenerator_plugin",
+	"displayField": "name",
+	"container": true,
+	"fields": [
+		{
+			"name": "name",
+			"label": "Name",
+			"type": "string",
+			"required": false
+		}
+	]
+}

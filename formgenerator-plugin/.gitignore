@@ -1,0 +1,10 @@
+/target
+*.orig
+/.config
+/.classpath
+/.settings
+/*.iml
+/.project
+/.idea
+/.factorypath
+dependency-reduced-pom.xml

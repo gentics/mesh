@@ -1,0 +1,18 @@
+{
+    "query": {
+        "bool": {
+            "must": [
+                {
+                    "term": { "schema.name.raw": "formgenerator_schemaID" }
+                },
+                {
+                    "multi_match": {
+                        "query": "The query string",
+                        "fields": "fields.*",
+                        "lenient": true
+                    }
+                }
+            ]
+        }
+    }
+}

@@ -25,6 +25,7 @@
 		<module>favorite-plugin</module>
 		<module>comment-plugin</module>
 		<module>search-plugin</module>
+		<module>formgenerator-plugin</module>
 	</modules>
 
 	<dependencyManagement>
