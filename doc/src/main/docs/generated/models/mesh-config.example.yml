@@ -1,6 +1,7 @@
 ---
 defaultMaxDepth: 10
 defaultLanguage: "en"
+languagesFilePath: null
 updateCheck: true
 vertxOptions:
   workerPoolSize: 20
@@ -8,6 +9,7 @@ vertxOptions:
 tempDirectory: "/opt/mesh/data/tmp"
 pluginDirectory: "plugins"
 pluginTimeout: 15
+nodeName: null
 httpServer:
   port: 8080
   host: "0.0.0.0"
@@ -22,7 +24,9 @@ monitoring:
   port: 8081
   host: "127.0.0.1"
 cluster:
+  networkHost: null
   enabled: false
+  clusterName: null
   vertxPort: 0
 storage:
   directory: "data/graphdb"
@@ -35,6 +39,10 @@ storage:
   parameters: {}
 search:
   url: "http://localhost:9200"
+  username: null
+  password: null
+  certPath: null
+  caPath: null
   hostnameVerification: true
   timeout: 60000
   startupTimeout: 45
