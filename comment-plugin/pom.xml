@@ -16,7 +16,6 @@
 		<plugin.name>Comment Plugin</plugin.name>
 		<plugin.description>Add comments to any node</plugin.description>
 		<plugin.class>com.gentics.mesh.plugin.comment.CommentPlugin</plugin.class>
-		<plugin.version>${project.version}</plugin.version>
 		<plugin.inception>2018-04-30</plugin.inception>
 	</properties>
 
@@ -152,7 +151,7 @@
 									<manifestEntries>
 										<Plugin-Id>${plugin.id}</Plugin-Id>
 										<Plugin-Name>${plugin.name}</Plugin-Name>
-										<Plugin-Version>${plugin.version}</Plugin-Version>
+										<Plugin-Version>${project.version}</Plugin-Version>
 										<Plugin-Author>${plugin.author}</Plugin-Author>
 										<Plugin-Class>${plugin.class}</Plugin-Class>
 										<Plugin-Description>${plugin.description}</Plugin-Description>

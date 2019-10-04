@@ -18,7 +18,6 @@
 		<plugin.name>Favorite Plugin</plugin.name>
 		<plugin.description>Plugin for managing</plugin.description>
 		<plugin.class>com.gentics.mesh.plugin.favorite.FavoritePlugin</plugin.class>
-		<plugin.version>3.0.0</plugin.version>
 		<plugin.inception>2018-07-25</plugin.inception>
 	</properties>
 
@@ -90,7 +89,7 @@
 									<manifestEntries>
 										<Plugin-Id>${plugin.id}</Plugin-Id>
 										<Plugin-Name>${plugin.name}</Plugin-Name>
-										<Plugin-Version>${plugin.version}</Plugin-Version>
+										<Plugin-Version>${project.version}</Plugin-Version>
 										<Plugin-Author>${plugin.author}</Plugin-Author>
 										<Plugin-Class>${plugin.class}</Plugin-Class>
 										<Plugin-Description>${plugin.description}</Plugin-Description>

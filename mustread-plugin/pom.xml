@@ -16,7 +16,6 @@
 		<plugin.name>Must Read Plugin</plugin.name>
 		<plugin.description>Plugin to handle reading of must-read nodes</plugin.description>
 		<plugin.class>com.gentics.mesh.plugin.mustread.MustReadPlugin</plugin.class>
-		<plugin.version>${project.version}</plugin.version>
 		<plugin.inception>2019-08-30</plugin.inception>
 	</properties>
 
@@ -74,7 +73,7 @@
 									<manifestEntries>
 										<Plugin-Id>${plugin.id}</Plugin-Id>
 										<Plugin-Name>${plugin.name}</Plugin-Name>
-										<Plugin-Version>${plugin.version}</Plugin-Version>
+										<Plugin-Version>${project.version}</Plugin-Version>
 										<Plugin-Author>${plugin.author}</Plugin-Author>
 										<Plugin-Class>${plugin.class}</Plugin-Class>
 										<Plugin-Description>${plugin.description}</Plugin-Description>

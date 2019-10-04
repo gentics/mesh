@@ -12,10 +12,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<argLine></argLine>
 		<plugin.id>search</plugin.id>
 		<plugin.name>Search Plugin</plugin.name>
-		<plugin.version>${project.version}</plugin.version>
 		<plugin.class>com.gentics.mesh.plugin.search.SearchPlugin</plugin.class>
 		<plugin.description>Search Mesh Content Repository</plugin.description>
 		<plugin.inception>2019-06-06</plugin.inception>
@@ -114,7 +112,7 @@
 									<manifestEntries>
 										<Plugin-Id>${plugin.id}</Plugin-Id>
 										<Plugin-Name>${plugin.name}</Plugin-Name>
-										<Plugin-Version>${plugin.version}</Plugin-Version>
+										<Plugin-Version>${project.version}</Plugin-Version>
 										<Plugin-Author>${plugin.author}</Plugin-Author>
 										<Plugin-Class>${plugin.class}</Plugin-Class>
 										<Plugin-Description>${plugin.description}</Plugin-Description>
