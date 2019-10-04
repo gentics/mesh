@@ -946,16 +946,29 @@ The ```?resolveLinks``` query parameter can be applied to all API endpoints retu
 [[crossdomainlinks]]
 === Cross Domain/Project Links
 
-In some cases it may be desireable to be able to create links which point to nodes within different projects. 
+In some cases it may be desirable to be able to create links which point to nodes within different projects.
 In these situations the link should no longer be relative but instead contain the domain and protocol which is used by the project of the referenced node.
 
-You can specifiy the `hostname` and `ssl` flag when creating a project. This will in turn store this information within the created branch of the project. Gentics Mesh will make use of this information once you render a foreign node's link using the *short* type.
+You can specify the `hostname` and `ssl` flag when creating a project. This will in turn store this information within the created branch of the project. Gentics Mesh will make use of this information once you render a foreign node's link using the *short* type.
 The links will automatically start with `https://` if the ssl flag of the branch has been set to true. You can update the hostname/ssl flag at any time by updating the branch of the project.
 
 NOTE: Foreign links can only be rendered using the *?resolveLinks=short* type. Other resolver types do not support this mechanism.
 
 NOTE: Foreign links currently don't contain any branch reference thus it is not possible to render links to a foreign node within a specific branch. 
       Instead the foreign link resolving mechanism will automatically use the latest branch of the node's project to render the links.
+
+[[linkresolvingbranches]]
+=== Specifying Branches
+
+It is also possible to specify a branch as a third parameter of the mesh link.
+Both the UUID and branch name can be used to resolve the branch.
+If the uuid or branch name cannot be found for the linked node, the latest branch will be used instead.
+
+Examples:
+
+* {{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en", "winter")}}
+
+* {{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en", "e007a9f6f6c8404fbd81f96489764401")}}
 
 === API endpoints
 
