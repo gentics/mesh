@@ -21,6 +21,8 @@ import com.gentics.mesh.plugin.auth.MappingResult;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.keycloak.config.KeycloakPluginConfig;
 
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.http.HttpServerRequest;
@@ -59,6 +61,16 @@ public class KeycloakPlugin extends AbstractPlugin implements AuthServicePlugin 
 		});
 
 		return rxConfig.ignoreElement();
+	}
+	
+	public void evaluateMapper() {
+		// call groovy expressions from Java code
+		Binding binding = new Binding();
+		binding.setVariable("foo", new Integer(2));
+		GroovyShell shell = new GroovyShell(binding);
+
+		String groovyScript = "";
+		Object value = shell.evaluate(groovyScript);
 	}
 
 	@Override
