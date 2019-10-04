@@ -169,6 +169,8 @@ public class BranchLinkRendererTest extends AbstractMeshTest {
 		assertEquals("Check rendered content", "/changedDeals", replacedContent);
 		replacedContent = replaceContent(String.format("{{mesh.link('%s', 'en', '72da59204f994856ab97520d3a571f6f')}}", updatedUuid));
 		assertEquals("Check rendered content", "/changedDeals", replacedContent);
+		replacedContent = replaceContent(String.format("{{mesh.link('%s', 'en', '%s')}}", updatedUuid, call(() -> client().me()).getUuid()));
+		assertEquals("Check rendered content", "/changedDeals", replacedContent);
 	}
 
 	private String replaceContent(String content) {
