@@ -966,9 +966,9 @@ If the uuid or branch name cannot be found for the linked node, the latest branc
 
 Examples:
 
-* {{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en", "winter")}}
+* `{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en", "winter")}}`
 
-* {{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en", "e007a9f6f6c8404fbd81f96489764401")}}
+* `{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en", "e007a9f6f6c8404fbd81f96489764401")}}`
 
 === API endpoints
 
