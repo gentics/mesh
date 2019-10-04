@@ -149,7 +149,6 @@ public class BranchLinkRendererTest extends AbstractMeshTest {
 		String replacedContent;
 
 		// New Branch:
-
 		replacedContent = replaceContent(String.format("{{mesh.link('%s', 'en', '%s')}}", updatedUuid, branchUuid));
 		assertEquals("Check rendered content", getPrefix() + "/Deals", replacedContent);
 		replacedContent = replaceContent(String.format("{{mesh.link('%s', 'en', '%s')}}", updatedUuid, branchName));
@@ -160,6 +159,15 @@ public class BranchLinkRendererTest extends AbstractMeshTest {
 		replacedContent = replaceContent(String.format("{{mesh.link('%s', 'en', '%s')}}", updatedUuid, latestBranchUuid));
 		assertEquals("Check rendered content", "/changedDeals", replacedContent);
 		replacedContent = replaceContent(String.format("{{mesh.link('%s', 'en', '%s')}}", updatedUuid, PROJECT_NAME));
+		assertEquals("Check rendered content", "/changedDeals", replacedContent);
+
+		// Invalid Branches (should fall back to latest):
+
+		replacedContent = replaceContent(String.format("{{mesh.link('%s', 'en', '')}}", updatedUuid));
+		assertEquals("Check rendered content", "/changedDeals", replacedContent);
+		replacedContent = replaceContent(String.format("{{mesh.link('%s', 'en', 'abcdefghijklmnop')}}", updatedUuid));
+		assertEquals("Check rendered content", "/changedDeals", replacedContent);
+		replacedContent = replaceContent(String.format("{{mesh.link('%s', 'en', '72da59204f994856ab97520d3a571f6f')}}", updatedUuid));
 		assertEquals("Check rendered content", "/changedDeals", replacedContent);
 	}
 
