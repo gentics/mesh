@@ -31,7 +31,7 @@ public class CreateDocumentRequest implements Bulkable {
 		this.onComplete = onComplete;
 		this.bulkPreamble = new JsonObject().put("index", new JsonObject()
 			.put("_index", transformedIndex)
-			.put("_type", SearchProvider.DEFAULT_TYPE)
+			//.put("_type", SearchProvider.DEFAULT_TYPE)
 			.put("_id", id)).encode();
 	}
 

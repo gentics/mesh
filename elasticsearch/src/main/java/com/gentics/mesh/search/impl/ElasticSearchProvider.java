@@ -284,7 +284,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				if (log.isDebugEnabled()) {
 					log.debug("Deleted object {" + uuid + "} from index {" + fullIndex + "}");
 				}
-			}).toCompletable()
+			}).ignoreElement()
 			.onErrorResumeNext(ignore404)
 			.compose(withTimeoutAndLog("Deleting document {" + fullIndex + "} / {" + uuid + "}", true));
 	}
@@ -294,16 +294,16 @@ public class ElasticSearchProvider implements SearchProvider {
 		String fullIndex = installationPrefix() + index;
 		long start = System.currentTimeMillis();
 		if (log.isDebugEnabled()) {
-			log.debug("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index.");
+			log.debug("Updating object {" + uuid + "} to index.");
 		}
 
 		return client.updateDocument(fullIndex, DEFAULT_TYPE, uuid, new JsonObject().put("doc", document)).async()
 			.doOnSuccess(response -> {
 				if (log.isDebugEnabled()) {
 					log.debug(
-						"Update object {" + uuid + ":" + DEFAULT_TYPE + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+						"Update object {" + uuid + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
-			}).toCompletable().onErrorResumeNext(error -> {
+			}).ignoreElement().onErrorResumeNext(error -> {
 				if (ignoreMissingDocumentError && isNotFoundError(error)) {
 					return Completable.complete();
 				}
@@ -338,7 +338,7 @@ public class ElasticSearchProvider implements SearchProvider {
 					log.debug("Finished bulk request. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
 				return Single.just(response);
-			}).toCompletable()
+			}).ignoreElement()
 			.compose(withTimeoutAndLog("Storing document batch.", false));
 	}
 
@@ -383,15 +383,15 @@ public class ElasticSearchProvider implements SearchProvider {
 		String fullIndex = installationPrefix() + index;
 		long start = System.currentTimeMillis();
 		if (log.isDebugEnabled()) {
-			log.debug("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + fullIndex + "}");
+			log.debug("Adding object {" + uuid + "} to index {" + fullIndex + "}");
 		}
 		return client.storeDocument(fullIndex, DEFAULT_TYPE, uuid, document).async()
 			.doOnSuccess(response -> {
 				if (log.isDebugEnabled()) {
-					log.debug("Added object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + fullIndex + "}. Duration " + (System.currentTimeMillis()
+					log.debug("Added object {" + uuid + "} to index {" + fullIndex + "}. Duration " + (System.currentTimeMillis()
 						- start) + "[ms]");
 				}
-			}).toCompletable().compose(withTimeoutAndLog("Storing document {" + fullIndex + "} / {" + uuid + "}", true));
+			}).ignoreElement().compose(withTimeoutAndLog("Storing document {" + fullIndex + "} / {" + uuid + "}", true));
 	}
 
 	@Override
@@ -407,7 +407,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				if (log.isDebugEnabled()) {
 					log.debug("Deleted index {" + indices + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
-			}).toCompletable()
+			}).ignoreElement()
 			.onErrorResumeNext(ignore404)
 			.compose(withTimeoutAndLog("Deletion of indices " + indices, true));
 
@@ -422,7 +422,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				if (log.isDebugEnabled()) {
 					log.debug("Deregistered pipeline {" + fullname + "} response: {" + response.toString() + "}");
 				}
-			}).toCompletable()
+			}).ignoreElement()
 			.onErrorResumeNext(ignore404)
 			.compose(withTimeoutAndLog("Removed pipeline {" + fullname + "}", true));
 	}

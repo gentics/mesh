@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.search.bulk;
 
-import com.gentics.mesh.search.SearchProvider;
-
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -51,7 +49,7 @@ public class UpdateBulkEntry extends AbstractBulkEntry {
 		JsonObject metaData = new JsonObject();
 		JsonObject settings = new JsonObject()
 			.put("_index", installationPrefix + getIndexName())
-			.put("_type", SearchProvider.DEFAULT_TYPE)
+			//.put("_type", SearchProvider.DEFAULT_TYPE)
 			.put("_id", getDocumentId());
 		JsonObject doc = new JsonObject()
 			.put("doc", payload);

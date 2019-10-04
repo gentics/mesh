@@ -29,7 +29,7 @@ public class DeleteBulkEntry extends AbstractBulkEntry {
 		JsonObject metaData = new JsonObject();
 		JsonObject doc = new JsonObject()
 			.put("_index", installationPrefix + getIndexName())
-			.put("_type", SearchProvider.DEFAULT_TYPE)
+			//.put("_type", SearchProvider.DEFAULT_TYPE)
 			.put("_id", getDocumentId());
 		metaData.put(getBulkAction().id(), doc);
 		return metaData.encode();

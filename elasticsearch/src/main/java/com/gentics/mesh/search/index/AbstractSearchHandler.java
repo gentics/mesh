@@ -270,7 +270,11 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 						log.warn("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.get().getRootLabel()
 							+ "}. The element will be omitted.");
 						// Reduce the total count
-						hitsInfo.put("total", hitsInfo.getLong("total") - 1);
+						JsonObject totalInfo = hitsInfo.getJsonObject("total");
+						long total = totalInfo.getLong("value");
+//						System.out.println(hitsInfo.encodePrettily());
+//						long total = hitsInfo.getLong("total");
+						hitsInfo.put("total", total - 1);
 					} else {
 						// TODO maybe it would be better to directly transform the element here.
 						list.add(Tuple.tuple(element, language));
@@ -342,7 +346,18 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	 */
 	protected PagingMetaInfo extractMetaInfo(JsonObject info, PagingParameters pagingInfo) {
 		PagingMetaInfo metaInfo = new PagingMetaInfo();
-		long total = info.getLong("total");
+		Object totalValue = info.getValue("total");
+		long total = -1;
+		if (totalValue instanceof Number) {
+			total = ((Number) totalValue).longValue();
+		} else if (totalValue instanceof JsonObject) {
+			JsonObject totalJson = (JsonObject) totalValue;
+			total = totalJson.getLong("value");
+		} else {
+			throw new RuntimeException("Could not parse total value {" + info.encodePrettily() + "}");
+		}
+
+		// long total = info.getLong("total");
 		metaInfo.setTotalCount(total);
 		int totalPages = 0;
 		Long perPage = Optional.ofNullable(pagingInfo.getPerPage()).orElse(DEFAULT_SEARCH_PER_PAGE);

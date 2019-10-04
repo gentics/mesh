@@ -21,7 +21,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
 	private static final Charset UTF8 = Charset.forName("UTF-8");
 
-	public static final String VERSION = "6.8.1";
+	public static final String VERSION = "7.0.0";
 
 	public ElasticsearchContainer() {
 		super("docker.apa-it.at/elasticsearch/elasticsearch-oss:" + VERSION);

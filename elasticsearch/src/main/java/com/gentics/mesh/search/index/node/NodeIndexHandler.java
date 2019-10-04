@@ -613,7 +613,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String uuid = entry.getElementUuid();
 		Node node = getRootVertex().findByUuid(uuid);
 		if (node == null) {
-			throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, DEFAULT_TYPE);
+			// Not found
+			throw error(INTERNAL_SERVER_ERROR, "error_element_not_found", uuid);
 		} else {
 			Project project = node.getProject();
 

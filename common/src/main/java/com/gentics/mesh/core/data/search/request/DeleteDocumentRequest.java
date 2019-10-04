@@ -30,7 +30,7 @@ public class DeleteDocumentRequest implements Bulkable {
 		this.bulkString = new JsonObject()
 			.put("delete", new JsonObject()
 				.put("_index", transformedIndex)
-				.put("_type", SearchProvider.DEFAULT_TYPE)
+				//.put("_type", SearchProvider.DEFAULT_TYPE)
 				.put("_id", id)
 			).encode();
 	}

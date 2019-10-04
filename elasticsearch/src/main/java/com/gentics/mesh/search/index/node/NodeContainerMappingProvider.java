@@ -84,10 +84,9 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	 */
 	public JsonObject getMapping(Schema schema, Branch branch) {
 		// 1. Get the common type specific mapping
-		JsonObject mapping = getMapping();
+		JsonObject typeMapping = getMapping();
 
 		// 2. Enhance the type specific mapping
-		JsonObject typeMapping = mapping.getJsonObject(DEFAULT_TYPE);
 		typeMapping.put("dynamic", "strict");
 		JsonObject typeProperties = typeMapping.getJsonObject("properties");
 
@@ -153,7 +152,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		JsonObject fieldJson = new JsonObject();
 		fieldJson.put("properties", fieldProps);
 		typeProperties.put("fields", fieldJson);
-		mapping.put(DEFAULT_TYPE, typeMapping);
+		
 
 		for (FieldSchema field : schema.getFields()) {
 			Optional<JsonObject> mappingInfo = getFieldMapping(field, branch);
@@ -161,7 +160,9 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 				fieldProps.put(field.getName(), info);
 			});
 		}
-		return mapping;
+		
+		//mapping.put(DEFAULT_TYPE, typeMapping);
+		return typeMapping;
 	}
 
 	/**

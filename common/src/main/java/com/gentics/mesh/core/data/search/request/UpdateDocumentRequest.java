@@ -23,7 +23,7 @@ public class UpdateDocumentRequest implements Bulkable {
 		this.bulkPreamble = new JsonObject()
 			.put("update", new JsonObject()
 				.put("_index", transformedIndex)
-				.put("_type", SearchProvider.DEFAULT_TYPE)
+				//.put("_type", SearchProvider.DEFAULT_TYPE)
 				.put("_id", id)
 			).encode();
 	}

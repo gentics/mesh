@@ -15,7 +15,7 @@ public abstract class AbstractMappingProvider implements MappingProvider {
 
 	@Override
 	public JsonObject getMapping() {
-		JsonObject mapping = new JsonObject();
+		
 
 		// Enhance mappings with generic/common field types
 		JsonObject mappingProperties = getMappingProperties();
@@ -35,8 +35,10 @@ public abstract class AbstractMappingProvider implements MappingProvider {
 		typeMapping.put("date_detection", false);
 		typeMapping.put("numeric_detection", false);
 
-		mapping.put(DEFAULT_TYPE, typeMapping);
-		return mapping;
+		//JsonObject mapping = new JsonObject();
+		//mapping.put(DEFAULT_TYPE, typeMapping);
+		//return mapping;
+		return typeMapping;
 	}
 
 	/**

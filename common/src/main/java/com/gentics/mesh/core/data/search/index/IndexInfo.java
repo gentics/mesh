@@ -10,7 +10,6 @@ public class IndexInfo {
 	private JsonObject indexSettings;
 	private JsonObject indexMappings;
 	private String sourceInfo;
-	private JsonObject ingestPipelineSettings;
 
 	/**
 	 * Create a new index info which contains the information that is needed to create an index.

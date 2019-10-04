@@ -45,7 +45,7 @@ public class IndexBulkEntry extends AbstractBulkEntry {
 		JsonObject metaData = new JsonObject();
 		JsonObject settings = new JsonObject()
 			.put("_index", installationPrefix + getIndexName())
-			.put("_type", SearchProvider.DEFAULT_TYPE)
+			//.put("_type", SearchProvider.DEFAULT_TYPE)
 			.put("_id", getDocumentId());
 
 		if (usePipeline) {

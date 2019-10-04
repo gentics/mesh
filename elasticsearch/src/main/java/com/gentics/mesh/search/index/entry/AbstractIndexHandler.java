@@ -134,7 +134,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		String uuid = entry.getElementUuid();
 		T element = getRootVertex().findByUuid(uuid);
 		if (element == null) {
-			throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, DEFAULT_TYPE);
+			//TODO i18n
+			throw error(INTERNAL_SERVER_ERROR, "error_element_not_found", uuid);
 		} else {
 			String indexName = composeIndexNameFromEntry(entry);
 			String documentId = composeDocumentIdFromEntry(entry);
