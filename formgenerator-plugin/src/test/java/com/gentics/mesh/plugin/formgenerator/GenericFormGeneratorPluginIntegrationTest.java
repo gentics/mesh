@@ -1,5 +1,37 @@
 package com.gentics.mesh.plugin.formgenerator;
 
+import static com.gentics.mesh.test.ClientHelper.call;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import javax.mail.BodyPart;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -18,6 +50,7 @@ import com.gentics.mesh.plugin.formgenerator.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.google.common.net.HttpHeaders;
 import com.jayway.jsonpath.JsonPath;
+
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.vertx.core.buffer.Buffer;
@@ -27,35 +60,6 @@ import okhttp3.MultipartBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import javax.mail.BodyPart;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
-import static com.gentics.mesh.test.ClientHelper.call;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class GenericFormGeneratorPluginIntegrationTest extends AbstractFormGeneratorPluginIntegrationTest {
 
@@ -218,33 +222,54 @@ public class GenericFormGeneratorPluginIntegrationTest extends AbstractFormGener
 
 	/**
 	 * Test posting data to a form
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void testPostMultilineData() throws IOException {
+		runCaseForValue("\nsome\nValue\n");
+	}
+
+	/**
+	 * Test posting data to a form
+	 * 
 	 * @throws IOException
 	 */
 	@Test
 	public void testPostData() throws IOException {
+		runCaseForValue("someValue");
+	}
+
+	private void runCaseForValue(String value) throws GenericRestException, IOException {
 		Response createResponse = createForm("inputfield.json");
 		NodeResponse createdNode = JsonUtil.readValue(createResponse.body().string(), NodeResponse.class);
 
 		RequestBody requestBody = new MultipartBody.Builder()
-				.setType(MultipartBody.FORM)
-				.addFormDataPart("input1", "someValue")
-				.build();
+			.setType(MultipartBody.FORM)
+			.addFormDataPart("input1", value)
+			.build();
+		okio.Buffer buffer = new okio.Buffer();
+		requestBody.writeTo(buffer);
+		System.out.println(buffer.readUtf8());
 
-		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + createdNode.getUuid() + "/data")).header("Referer", "ref").post(requestBody).build();
+		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + createdNode.getUuid() + "/data")).header("Referer", "ref")
+			.post(requestBody).build();
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 		assertThat(response.code()).as("Response code").isEqualTo(205);
-		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream().filter(c -> FormDataService.COOKIE_NAME.equals(c.name()))
-				.findFirst();
+		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream()
+			.filter(c -> FormDataService.COOKIE_NAME.equals(c.name()))
+			.findFirst();
 
 		assertThat(cookie).as("Cookie").isPresent();
-		assertThat(cookie.get()).as("Cookie").matches(c -> "".equals(c.value()), "Value is empty").matches(c -> c.expiresAt() < System.currentTimeMillis(),
-				"is expired");
+		assertThat(cookie.get()).as("Cookie").matches(c -> "".equals(c.value()), "Value is empty").matches(
+			c -> c.expiresAt() < System.currentTimeMillis(),
+			"is expired");
 
 		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, createdNode.getUuid()));
 		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
 		NodeResponse dataNode = dataNodes.getData().get(0);
-		assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
+		assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo(value);
 		assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
 	}
 
