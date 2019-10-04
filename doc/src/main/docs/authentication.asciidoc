@@ -291,6 +291,14 @@ https://localhost:8443/auth/realms/realmName/protocol/openid-connect/certs
 https://yourName.auth0.com/.well-known/jwks.json
 ----
 
+=== Okta
+
+The keys can be downloaded via:
+
+```
+https://yourName.okta.com/oauth2/v1/keys
+```
+
 
 === Other
 
