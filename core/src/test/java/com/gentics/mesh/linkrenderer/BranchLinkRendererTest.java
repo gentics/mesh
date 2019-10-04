@@ -30,6 +30,7 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -56,6 +57,12 @@ public class BranchLinkRendererTest extends AbstractMeshTest {
 
 	public String localNodeUuid;
 
+	public String updatedUuid;
+
+	public String branchName;
+
+	private String latestBranchUuid;
+
 	/**
 	 * Get the test parameters
 	 * 
@@ -76,6 +83,8 @@ public class BranchLinkRendererTest extends AbstractMeshTest {
 
 	@Before
 	public void setupDeps() {
+		latestBranchUuid = call(() -> client().findBranches(PROJECT_NAME)).getData().get(0).getUuid();
+
 		// Grant admin perms. Otherwise we can't check the jobs
 		tx(() -> group().addRole(roles().get("admin")));
 
@@ -83,7 +92,7 @@ public class BranchLinkRendererTest extends AbstractMeshTest {
 
 		replacer = meshDagger().webRootLinkReplacer();
 
-		String branchName = String.format("%s_%b", hostname, ssl);
+		branchName = String.format("%s_%b", hostname, ssl);
 
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName(branchName);
@@ -112,19 +121,53 @@ public class BranchLinkRendererTest extends AbstractMeshTest {
 		nodeCreateRequest.setFields(fields);
 		localNodeUuid = call(() -> client().createNode(projectName(), nodeCreateRequest, new VersioningParametersImpl().setBranch(branchName)))
 			.getUuid();
+
+		updatedUuid = updateExistingNode();
+	}
+
+	/**
+	 * Update existing node in default branch only
+	 * @return
+	 */
+	private String updateExistingNode() {
+		NodeResponse node = call(() -> client().webroot(PROJECT_NAME, "/Deals")).getNodeResponse();
+		NodeUpdateRequest updateRequest = node.toRequest();
+		node.getFields().putString("slug", "changedDeals");
+		call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), updateRequest));
+
+		return node.getUuid();
 	}
 
 	@Test
 	public void testResolve() {
-		String prefix = getPrefix();
+		String replacedContent = replaceContent("{{mesh.link('" + contentUuid + "')}}");
+		assertEquals("Check rendered content", getPrefix() + "/News/News%20Overview.en.html", replacedContent);
+	}
+
+	@Test
+	public void testResolveWithBranchParameter() {
+		String replacedContent;
+
+		// New Branch:
+
+		replacedContent = replaceContent(String.format("{{mesh.link('%s', 'en', '%s')}}", updatedUuid, branchUuid));
+		assertEquals("Check rendered content", getPrefix() + "/Deals", replacedContent);
+		replacedContent = replaceContent(String.format("{{mesh.link('%s', 'en', '%s')}}", updatedUuid, branchName));
+		assertEquals("Check rendered content", getPrefix() + "/Deals", replacedContent);
+
+		// Latest Branch:
+
+		replacedContent = replaceContent(String.format("{{mesh.link('%s', 'en', '%s')}}", updatedUuid, latestBranchUuid));
+		assertEquals("Check rendered content", "/changedDeals", replacedContent);
+		replacedContent = replaceContent(String.format("{{mesh.link('%s', 'en', '%s')}}", updatedUuid, PROJECT_NAME));
+		assertEquals("Check rendered content", "/changedDeals", replacedContent);
+	}
+
+	private String replaceContent(String content) {
 		try (Tx tx = tx()) {
-
-			final String content = "{{mesh.link('" + contentUuid + "')}}";
 			InternalActionContext ac = mockActionContext();
-			String replacedContent = replacer.replace(ac, branchUuid, ContainerType.DRAFT, content, LinkType.SHORT, null,
+			return replacer.replace(ac, branchUuid, ContainerType.DRAFT, content, LinkType.SHORT, null,
 				null);
-
-			assertEquals("Check rendered content", prefix + "/News/News%20Overview.en.html", replacedContent);
 		}
 	}
 

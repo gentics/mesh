@@ -183,4 +183,5 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 */
 	Branch findBranch(String branchNameOrUuid);
 
+	Branch findBranchOrLatest(String branchNameOrUuid);
 }

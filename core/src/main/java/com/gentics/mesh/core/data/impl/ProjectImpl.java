@@ -19,6 +19,7 @@ import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.Optional;
 import java.util.Set;
 
 import javax.naming.InvalidNameException;
@@ -365,7 +366,17 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public Branch findBranch(String branchNameOrUuid) {
-		return mesh().branchCache().get(id() + "-" + branchNameOrUuid, key -> {
+		return findBranchOpt(branchNameOrUuid)
+			.orElseThrow(() -> error(BAD_REQUEST, "branch_error_not_found", branchNameOrUuid));
+	}
+
+	@Override
+	public Branch findBranchOrLatest(String branchNameOrUuid) {
+		return findBranchOpt(branchNameOrUuid).orElseGet(this::getLatestBranch);
+	}
+
+	private Optional<Branch> findBranchOpt(String branchNameOrUuid) {
+		return Optional.ofNullable(mesh().branchCache().get(id() + "-" + branchNameOrUuid, key -> {
 			Branch branch = null;
 
 			if (!isEmpty(branchNameOrUuid)) {
@@ -374,15 +385,13 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 					branch = getBranchRoot().findByName(branchNameOrUuid);
 				}
 				if (branch == null) {
-					throw error(BAD_REQUEST, "branch_error_not_found", branchNameOrUuid);
+					return null;
 				}
 			} else {
 				branch = getLatestBranch();
 			}
 
 			return branch;
-		});
-
+		}));
 	}
-
 }
