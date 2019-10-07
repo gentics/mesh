@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.search.bulk;
 
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.json.JsonObject;
@@ -12,11 +13,6 @@ public class IndexBulkEntry extends AbstractBulkEntry {
 	private final JsonObject payload;
 
 	/**
-	 * Flag which indicates whether the bulk entry should make use of a pipeline.
-	 */
-	private boolean usePipeline = false;
-
-	/**
 	 * Construct a new entry.
 	 * 
 	 * @param indexName
@@ -25,9 +21,11 @@ public class IndexBulkEntry extends AbstractBulkEntry {
 	 *            Id of the document
 	 * @param payload
 	 *            Document payload
+	 * @param mode
+	 *            Compliance mode that affects JSON format
 	 */
-	public IndexBulkEntry(String indexName, String documentId, JsonObject payload) {
-		super(indexName, documentId);
+	public IndexBulkEntry(String indexName, String documentId, JsonObject payload, ComplianceMode mode) {
+		super(indexName, documentId, mode);
 		this.payload = payload;
 	}
 
@@ -45,11 +43,13 @@ public class IndexBulkEntry extends AbstractBulkEntry {
 		JsonObject metaData = new JsonObject();
 		JsonObject settings = new JsonObject()
 			.put("_index", installationPrefix + getIndexName())
-			//.put("_type", SearchProvider.DEFAULT_TYPE)
 			.put("_id", getDocumentId());
 
-		if (usePipeline) {
-			settings.put("pipeline", installationPrefix + getIndexName());
+		switch (getMode()) {
+		case PRE_ES_7:
+			settings.put("_type", SearchProvider.DEFAULT_TYPE);
+			break;
+		default:
 		}
 
 		metaData.put(getBulkAction().id(), settings);

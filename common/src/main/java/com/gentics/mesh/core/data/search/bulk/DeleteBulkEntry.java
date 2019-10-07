@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.search.bulk;
 
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.json.JsonObject;
@@ -15,8 +16,8 @@ public class DeleteBulkEntry extends AbstractBulkEntry {
 	 * @param indexName
 	 * @param documentId
 	 */
-	public DeleteBulkEntry(String indexName, String documentId) {
-		super(indexName, documentId);
+	public DeleteBulkEntry(String indexName, String documentId, ComplianceMode mode) {
+		super(indexName, documentId, mode);
 	}
 
 	@Override
@@ -29,8 +30,15 @@ public class DeleteBulkEntry extends AbstractBulkEntry {
 		JsonObject metaData = new JsonObject();
 		JsonObject doc = new JsonObject()
 			.put("_index", installationPrefix + getIndexName())
-			//.put("_type", SearchProvider.DEFAULT_TYPE)
 			.put("_id", getDocumentId());
+
+		switch (getMode()) {
+		case PRE_ES_7:
+			doc.put("_type", SearchProvider.DEFAULT_TYPE);
+			break;
+		default:
+		}
+
 		metaData.put(getBulkAction().id(), doc);
 		return metaData.encode();
 	}
