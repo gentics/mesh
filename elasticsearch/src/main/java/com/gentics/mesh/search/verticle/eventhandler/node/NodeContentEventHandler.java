@@ -28,6 +28,8 @@ import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
 import com.gentics.mesh.search.verticle.eventhandler.EventCauseHelper;
@@ -41,12 +43,14 @@ public class NodeContentEventHandler implements EventHandler {
 	private final MeshHelper helper;
 	private final MeshEntities entities;
 	private final BootstrapInitializer boot;
+	private final ComplianceMode complianceMode;
 
 	@Inject
-	public NodeContentEventHandler(MeshHelper helper, MeshEntities entities, BootstrapInitializer boot) {
+	public NodeContentEventHandler(MeshHelper helper, MeshEntities entities, BootstrapInitializer boot, MeshOptions options) {
 		this.helper = helper;
 		this.entities = entities;
 		this.boot = boot;
+		this.complianceMode = options.getSearchOptions().getComplianceMode();
 	}
 
 	@Override
@@ -99,12 +103,13 @@ public class NodeContentEventHandler implements EventHandler {
 			.map(doc -> helper.createDocumentRequest(
 				getIndexName(message, getSchemaVersionUuid(message)),
 				NodeGraphFieldContainer.composeDocumentId(message.getUuid(), message.getLanguageTag()),
-				doc));
+				doc, complianceMode));
 	}
 
 	private DeleteDocumentRequest deleteNodes(NodeMeshEventModel message, String schemaVersionUuid) {
 		return helper.deleteDocumentRequest(
-			getIndexName(message, schemaVersionUuid), NodeGraphFieldContainer.composeDocumentId(message.getUuid(), message.getLanguageTag()));
+			getIndexName(message, schemaVersionUuid), NodeGraphFieldContainer.composeDocumentId(message.getUuid(), message.getLanguageTag()),
+			complianceMode);
 	}
 
 	private String getIndexName(NodeMeshEventModel message, String schemaVersionUuid) {

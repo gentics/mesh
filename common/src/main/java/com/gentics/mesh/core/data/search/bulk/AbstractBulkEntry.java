@@ -8,7 +8,7 @@ public abstract class AbstractBulkEntry implements BulkEntry {
 
 	private final String documentId;
 
-	private ComplianceMode mode;
+	private final ComplianceMode mode;
 
 	public AbstractBulkEntry(String indexName, String documentId, ComplianceMode mode) {
 		this.indexName = indexName;

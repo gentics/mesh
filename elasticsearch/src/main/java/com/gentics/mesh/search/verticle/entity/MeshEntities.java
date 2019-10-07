@@ -1,5 +1,19 @@
 package com.gentics.mesh.search.verticle.entity;
 
+import static com.gentics.mesh.search.verticle.eventhandler.Util.latestVersionTypes;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.warningOptional;
+import static com.gentics.mesh.util.StreamUtil.toStream;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Branch;
@@ -20,6 +34,8 @@ import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.ProjectEvent;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagElementEventModel;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.index.group.GroupTransformer;
 import com.gentics.mesh.search.index.microschema.MicroschemaTransformer;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
@@ -32,21 +48,9 @@ import com.gentics.mesh.search.index.user.UserTransformer;
 import com.gentics.mesh.search.verticle.eventhandler.EventVertexMapper;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import com.gentics.mesh.search.verticle.eventhandler.Util;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static com.gentics.mesh.search.verticle.eventhandler.Util.latestVersionTypes;
-import static com.gentics.mesh.util.StreamUtil.toStream;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.warningOptional;
 
 /**
  * A helper class that abstracts the common functionality shared across mesh elements
@@ -58,6 +62,8 @@ public class MeshEntities {
 
 	private final MeshHelper helper;
 	private final BootstrapInitializer boot;
+	private final MeshOptions options;
+	private final ComplianceMode complianceMode;
 
 	public final MeshEntity<User> user;
 	public final MeshEntity<Group> group;
@@ -71,9 +77,21 @@ public class MeshEntities {
 	private final Map<ElementType, MeshEntity<?>> entities;
 
 	@Inject
-	public MeshEntities(MeshHelper helper, BootstrapInitializer boot, UserTransformer userTransformer, RoleTransformer roleTransformer, TagTransformer tagTransformer, ProjectTransformer projectTransformer, GroupTransformer groupTransformer, TagFamilyTransformer tagFamilyTransformer, SchemaTransformer schemaTransformer, MicroschemaTransformer microschemaTransformer, NodeContainerTransformer nodeTransformer) {
+	public MeshEntities(MeshHelper helper, BootstrapInitializer boot, 
+		MeshOptions options, 
+		UserTransformer userTransformer, 
+		RoleTransformer roleTransformer, 
+		TagTransformer tagTransformer, 
+		ProjectTransformer projectTransformer, 
+		GroupTransformer groupTransformer, 
+		TagFamilyTransformer tagFamilyTransformer, 
+		SchemaTransformer schemaTransformer, 
+		MicroschemaTransformer microschemaTransformer, 
+		NodeContainerTransformer nodeTransformer) {
 		this.helper = helper;
 		this.boot = boot;
+		this.options = options;
+		this.complianceMode = options.getSearchOptions().getComplianceMode();
 
 		schema = new SimpleMeshEntity<>(schemaTransformer, SchemaContainer.TYPE_INFO, byUuid(boot::schemaContainerRoot));
 		microschema = new SimpleMeshEntity<>(microschemaTransformer, MicroschemaContainer.TYPE_INFO, byUuid(boot::microschemaContainerRoot));
@@ -225,7 +243,7 @@ public class MeshEntities {
 	 * @return
 	 */
 	public CreateDocumentRequest createRequest(Group element) {
-		return helper.createDocumentRequest(Group.composeIndexName(), element.getUuid(), group.transform(element));
+		return helper.createDocumentRequest(Group.composeIndexName(), element.getUuid(), group.transform(element), complianceMode);
 	}
 
 	/**
@@ -234,7 +252,7 @@ public class MeshEntities {
 	 * @return
 	 */
 	public CreateDocumentRequest createRequest(User element) {
-		return helper.createDocumentRequest(User.composeIndexName(), element.getUuid(), user.transform(element));
+		return helper.createDocumentRequest(User.composeIndexName(), element.getUuid(), user.transform(element), complianceMode);
 	}
 
 	/**
@@ -243,7 +261,7 @@ public class MeshEntities {
 	 * @return
 	 */
 	public CreateDocumentRequest createRequest(TagFamily element, String projectUuid) {
-		return helper.createDocumentRequest(TagFamily.composeIndexName(projectUuid), element.getUuid(), tagFamily.transform(element));
+		return helper.createDocumentRequest(TagFamily.composeIndexName(projectUuid), element.getUuid(), tagFamily.transform(element), complianceMode);
 	}
 
 	/**
@@ -252,7 +270,7 @@ public class MeshEntities {
 	 * @return
 	 */
 	public CreateDocumentRequest createRequest(Tag element, String projectUuid) {
-		return helper.createDocumentRequest(Tag.composeIndexName(projectUuid), element.getUuid(), tag.transform(element));
+		return helper.createDocumentRequest(Tag.composeIndexName(projectUuid), element.getUuid(), tag.transform(element), complianceMode);
 	}
 
 	/**
@@ -277,7 +295,7 @@ public class MeshEntities {
 				type
 			),
 			NodeGraphFieldContainer.composeDocumentId(nodeUuid, container.getLanguageTag()),
-			transformer.toDocument(container, branch.getUuid(), type)
+			transformer.toDocument(container, branch.getUuid(), type), complianceMode
 		))));
 	}
 }

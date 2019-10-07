@@ -217,7 +217,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 				Function<Action, Function<String, CreateDocumentRequest>> toCreateRequest = action -> uuid -> {
 					JsonObject doc = db.tx(() -> getTransformer().toDocument(getElement(uuid)));
-					return helper.createDocumentRequest(indexName, uuid, doc, action);
+					return helper.createDocumentRequest(indexName, uuid, doc, complianceMode, action);
 				};
 
 				Flowable<SearchRequest> toInsert = Flowable.fromIterable(needInsertionInES)
@@ -227,7 +227,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 					.map(toCreateRequest.apply(metric::decUpdate));
 
 				Flowable<SearchRequest> toDelete = Flowable.fromIterable(needRemovalInES)
-					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, metric::decDelete));
+					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, complianceMode, metric::decDelete));
 
 				return Flowable.merge(toInsert, toUpdate, toDelete);
 			}).flatMapPublisher(x -> x);
