@@ -73,8 +73,8 @@ public class MeshHelper {
 	 * @param doc
 	 * @return
 	 */
-	public UpdateDocumentRequest updateDocumentRequest(String index, String id, JsonObject doc) {
-		return new UpdateDocumentRequest(index, prefixIndexName(index), id, doc);
+	public UpdateDocumentRequest updateDocumentRequest(String index, String id, JsonObject doc, ComplianceMode mode) {
+		return new UpdateDocumentRequest(index, prefixIndexName(index), id, doc, mode);
 	}
 
 	/**

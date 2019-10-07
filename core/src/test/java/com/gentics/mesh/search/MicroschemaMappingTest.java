@@ -220,7 +220,7 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 			JsonObject schemaMapping = provider.getMapping(this.schema, branch);
 			assertNotNull(schemaMapping);
 			JsonObject fieldsMapping = schemaMapping
-//					.getJsonObject(DEFAULT_TYPE)
+					.getJsonObject(DEFAULT_TYPE)
 					.getJsonObject("properties")
 					.getJsonObject("fields");
 			assertNotNull(fieldsMapping);

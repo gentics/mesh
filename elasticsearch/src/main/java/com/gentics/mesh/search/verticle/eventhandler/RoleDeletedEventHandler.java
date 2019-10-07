@@ -16,6 +16,8 @@ import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.verticle.MessageEvent;
 
@@ -33,10 +35,12 @@ public class RoleDeletedEventHandler implements EventHandler {
 	private static final int ELASTIC_SEARCH_PAGE_SIZE = 100;
 
 	private final SearchProvider searchProvider;
+	private final ComplianceMode complianceMode;
 
 	@Inject
-	public RoleDeletedEventHandler(SearchProvider searchProvider) {
+	public RoleDeletedEventHandler(SearchProvider searchProvider, MeshOptions options) {
 		this.searchProvider = searchProvider;
+		this.complianceMode = options.getSearchOptions().getComplianceMode();
 	}
 
 	@Override
@@ -62,7 +66,8 @@ public class RoleDeletedEventHandler implements EventHandler {
 			null,
 			doc.index,
 			doc.id,
-			partial);
+			partial,
+			complianceMode);
 	}
 
 	private Flowable<DocRoles> getDocuments(MeshElementEventModelImpl model) {

@@ -34,6 +34,8 @@ import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.error.MeshConfigurationException;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.event.MeshEventSender;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.SearchProvider;
@@ -57,8 +59,8 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 
 	@Inject
 	public NodeSearchHandler(SearchProvider searchProvider, Database db, NodeIndexHandler nodeIndexHandler, HandlerUtilities utils,
-		BootstrapInitializer boot) {
-		super(db, searchProvider, nodeIndexHandler);
+		BootstrapInitializer boot, MeshEventSender meshEventSender, MeshOptions options) {
+		super(db, searchProvider, options, nodeIndexHandler, meshEventSender);
 		this.boot = boot;
 	}
 

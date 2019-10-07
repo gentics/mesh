@@ -39,6 +39,7 @@ public class DeleteDocumentRequest implements Bulkable {
 			break;
 		default:
 		}
+
 		this.bulkString = new JsonObject().put("delete", settings).encode();
 	}
 

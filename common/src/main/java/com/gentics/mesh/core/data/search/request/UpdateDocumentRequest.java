@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.search.request;
 
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.SearchProvider;
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -15,17 +16,25 @@ public class UpdateDocumentRequest implements Bulkable {
 	private final String bulkPreamble;
 	private final CachedJsonObjectProxy doc;
 
-	public UpdateDocumentRequest(String index, String transformedIndex, String id, JsonObject doc) {
+	public UpdateDocumentRequest(String index, String transformedIndex, String id, JsonObject doc, ComplianceMode mode) {
 		this.index = index;
 		this.transformedIndex = transformedIndex;
 		this.id = id;
 		this.doc = new CachedJsonObjectProxy(doc);
+
+		JsonObject settings = new JsonObject()
+			.put("_index", transformedIndex)
+			.put("_id", id);
+
+		switch (mode) {
+		case PRE_ES_7:
+			settings.put("_type", SearchProvider.DEFAULT_TYPE);
+			break;
+		default:
+		}
+
 		this.bulkPreamble = new JsonObject()
-			.put("update", new JsonObject()
-				.put("_index", transformedIndex)
-				//.put("_type", SearchProvider.DEFAULT_TYPE)
-				.put("_id", id)
-			).encode();
+			.put("update", settings).encode();
 	}
 
 	@Override
@@ -43,8 +52,7 @@ public class UpdateDocumentRequest implements Bulkable {
 		return Single.just(Arrays.asList(
 			bulkPreamble,
 			new JsonObject()
-				.put("doc", doc.getProxyTarget()).encode()
-		));
+				.put("doc", doc.getProxyTarget()).encode()));
 	}
 
 	public String getIndex() {

@@ -47,13 +47,11 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeContainerMappingProvider.class);
 
-	private final MeshOptions options;
-
 	private final boolean isStrictMode;
 
 	@Inject
 	public NodeContainerMappingProvider(MeshOptions options) {
-		this.options = options;
+		super(options);
 		this.isStrictMode = MappingMode.STRICT == options.getSearchOptions().getMappingMode();
 	}
 
@@ -84,11 +82,11 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	 */
 	public JsonObject getMapping(Schema schema, Branch branch) {
 		// 1. Get the common type specific mapping
-		JsonObject typeMapping = getMapping();
+		JsonObject mapping = getMapping();
 
 		// 2. Enhance the type specific mapping
-		typeMapping.put("dynamic", "strict");
-		JsonObject typeProperties = typeMapping.getJsonObject("properties");
+		mapping.put("dynamic", "strict");
+		JsonObject typeProperties = mapping.getJsonObject("properties");
 
 		// .project
 		JsonObject projectMapping = new JsonObject();
@@ -111,7 +109,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		// .tagFamilies
 		typeProperties.put("tagFamilies", new JsonObject().put("type", "object").put("dynamic", true));
 
-		typeMapping.put("dynamic_templates", new JsonArray().add(new JsonObject().put("tagFamilyUuid", new JsonObject().put("path_match",
+		mapping.put("dynamic_templates", new JsonArray().add(new JsonObject().put("tagFamilyUuid", new JsonObject().put("path_match",
 			"tagFamilies.*.uuid").put("match_mapping_type", "*").put("mapping", notAnalyzedType(KEYWORD)))).add(new JsonObject().put(
 				"tagFamilyTags", new JsonObject().put("path_match", "tagFamilies.*.tags").put("match_mapping_type", "*").put("mapping",
 					new JsonObject().put("type", "nested").put("properties", new JsonObject().put("name", trigramTextType()).put("uuid",
@@ -160,9 +158,17 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 				fieldProps.put(field.getName(), info);
 			});
 		}
-		
-		//mapping.put(DEFAULT_TYPE, typeMapping);
-		return typeMapping;
+
+		switch (complianceMode) {
+		case ES_7:
+			return mapping;
+		case PRE_ES_7:
+			JsonObject typeMapping = mapping.getJsonObject(DEFAULT_TYPE); 
+			mapping.put(DEFAULT_TYPE, typeMapping);
+			return mapping;
+		default:
+			throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");
+		}
 	}
 
 	/**

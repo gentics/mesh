@@ -6,6 +6,7 @@ import static com.gentics.mesh.search.index.MappingHelper.trigramTextType;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.index.AbstractMappingProvider;
 
 import io.vertx.core.json.JsonObject;
@@ -14,7 +15,8 @@ import io.vertx.core.json.JsonObject;
 public class RoleMappingProvider extends AbstractMappingProvider {
 
 	@Inject
-	public RoleMappingProvider() {
+	public RoleMappingProvider(MeshOptions options) {
+		super(options);
 	}
 
 	/**
