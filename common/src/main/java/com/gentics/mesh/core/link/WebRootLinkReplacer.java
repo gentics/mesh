@@ -53,8 +53,8 @@ public class WebRootLinkReplacer {
 	 * Replace the links in the content.
 	 * 
 	 * @param ac
-	 * @param branchUuid
-	 *            branch Uuid
+	 * @param branch
+	 *            branch Uuid or name
 	 * @param edgeType
 	 *            edge type
 	 * @param content
@@ -67,7 +67,7 @@ public class WebRootLinkReplacer {
 	 *            optional language tags
 	 * @return content with links (probably) replaced
 	 */
-	public String replace(InternalActionContext ac, String branchUuid, ContainerType edgeType, String content, LinkType type, String projectName,
+	public String replace(InternalActionContext ac, String branch, ContainerType edgeType, String content, LinkType type, String projectName,
 		List<String> languageTags) {
 		if (isEmpty(content) || type == LinkType.OFF || type == null) {
 			return content;
@@ -110,13 +110,17 @@ public class WebRootLinkReplacer {
 			link = link.replaceAll("'", "");
 			link = link.replaceAll("\"", "");
 			String[] linkArguments = link.split(",");
+			if (linkArguments.length == 3) {
+				// Branch in link argument always comes first
+				branch = linkArguments[2].trim();
+			}
 			if (linkArguments.length == 2) {
-				segments.add(resolve(ac, branchUuid, edgeType, linkArguments[0], type, projectName, linkArguments[1].trim()));
+				segments.add(resolve(ac, branch, edgeType, linkArguments[0], type, projectName, linkArguments[1].trim()));
 			} else if (languageTags != null) {
-				segments.add(resolve(ac, branchUuid, edgeType, linkArguments[0], type, projectName,
+				segments.add(resolve(ac, branch, edgeType, linkArguments[0], type, projectName,
 					languageTags.toArray(new String[languageTags.size()])));
 			} else {
-				segments.add(resolve(ac, branchUuid, edgeType, linkArguments[0], type, projectName));
+				segments.add(resolve(ac, branch, edgeType, linkArguments[0], type, projectName));
 			}
 
 			lastPos = endPos + END_TAG.length();
@@ -133,8 +137,8 @@ public class WebRootLinkReplacer {
 	 * Resolve the link to the node with uuid (in the given language) into an observable
 	 * 
 	 * @param ac
-	 * @param branchUuid
-	 *            branch Uuid
+	 * @param branch
+	 *            branch Uuid or name
 	 * @param edgeType
 	 *            edge type
 	 * @param uuid
@@ -147,7 +151,7 @@ public class WebRootLinkReplacer {
 	 *            optional language tags
 	 * @return observable of the rendered link
 	 */
-	public String resolve(InternalActionContext ac, String branchUuid, ContainerType edgeType, String uuid, LinkType type, String projectName,
+	public String resolve(InternalActionContext ac, String branch, ContainerType edgeType, String uuid, LinkType type, String projectName,
 		String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
@@ -169,16 +173,16 @@ public class WebRootLinkReplacer {
 				throw error(BAD_REQUEST, "Cannot render link with type " + type);
 			}
 		}
-		return resolve(ac, branchUuid, edgeType, node, type, languageTags);
+		return resolve(ac, branch, edgeType, node, type, languageTags);
 	}
 
 	/**
 	 * Resolve the link to the given node.
 	 * 
 	 * @param ac
-	 * @param branchUuid
-	 *            Branch UUID which will be used to render the path to the linked node. This uuid will only be used when rendering nodes of the same project.
-	 *            Otherwise the latest branch of the node's project will be used.
+	 * @param branchNameOrUuid
+	 *            Branch UUID or name which will be used to render the path to the linked node.
+	 *            If this is invalid, the default branch of the target node will be used.
 	 * @param edgeType
 	 *            edge type
 	 * @param node
@@ -189,7 +193,7 @@ public class WebRootLinkReplacer {
 	 *            target language
 	 * @return observable of the rendered link
 	 */
-	public String resolve(InternalActionContext ac, String branchUuid, ContainerType edgeType, Node node, LinkType type, String... languageTags) {
+	public String resolve(InternalActionContext ac, String branchNameOrUuid, ContainerType edgeType, Node node, LinkType type, String... languageTags) {
 		String defaultLanguage = options.getDefaultLanguage();
 		if (languageTags == null || languageTags.length == 0) {
 			languageTags = new String[] { defaultLanguage };
@@ -204,17 +208,10 @@ public class WebRootLinkReplacer {
 			languageTags = languageTagList.toArray(new String[languageTagList.size()]);
 		}
 
-		// We need to reset the given branchUuid if the node is not part of the currently active project.
-		// In that case the latest branch of the foreign node project will be used.
-		Project ourProject = ac.getProject();
 		Project theirProject = node.getProject();
-		if (ourProject != null && !ourProject.equals(theirProject)) {
-			branchUuid = null;
-		}
-		// if no branch given, take the latest branch of the project
-		if (branchUuid == null) {
-			branchUuid = theirProject.getLatestBranch().getUuid();
-		}
+
+		Branch branch = theirProject.findBranchOrLatest(branchNameOrUuid);
+
 		// edge type defaults to DRAFT
 		if (edgeType == null) {
 			edgeType = ContainerType.DRAFT;
@@ -223,7 +220,7 @@ public class WebRootLinkReplacer {
 			log.debug("Resolving link to " + node.getUuid() + " in language " + Arrays.toString(languageTags) + " with type " + type.name());
 		}
 
-		String path = node.getPath(ac, branchUuid, edgeType, languageTags);
+		String path = node.getPath(ac, branch.getUuid(), edgeType, languageTags);
 		if (path == null) {
 			path = "/error/404";
 		}
@@ -231,11 +228,11 @@ public class WebRootLinkReplacer {
 		case SHORT:
 			// We also try to append the scheme and authority part of the uri for foreign nodes.
 			// Otherwise that part will be empty and thus the link relative.
-			return generateSchemeAuthorityForNode(node, theirProject.getBranchRoot().findByUuid(branchUuid)) + path;
+			return generateSchemeAuthorityForNode(node, branch) + path;
 		case MEDIUM:
 			return "/" + node.getProject().getName() + path;
 		case FULL:
-			return VersionHandler.baseRoute(ac.getApiVersion()) + "/" + node.getProject().getName() + "/webroot" + path + branchQueryParameter(theirProject.getBranchRoot().findByUuid(branchUuid));
+			return VersionHandler.baseRoute(ac.getApiVersion()) + "/" + node.getProject().getName() + "/webroot" + path + branchQueryParameter(branch);
 		default:
 			throw error(BAD_REQUEST, "Cannot render link with type " + type);
 		}

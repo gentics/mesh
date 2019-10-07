@@ -23,6 +23,10 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[Unreleased]]
+== Unreleased
+
+icon:plus[] Core: Link resolving now supports branches. Take a look at the link:{{< relref "features.asciidoc" >}}#linkresolvingbranches[documentation] for more information. link:https://github.com/gentics/mesh-incubator/issues/38[#38]
 
 [[v1.0.0]]
 == 1.0.0 (03.10.2019)

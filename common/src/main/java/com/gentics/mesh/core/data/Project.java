@@ -183,4 +183,12 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 */
 	Branch findBranch(String branchNameOrUuid);
 
+	/**
+	 * Find the branch via name or uuid that belongs to the project.
+	 * Returns the latest branch if the branch could not be found.
+	 *
+	 * @param branchNameOrUuid
+	 * @return
+	 */
+	Branch findBranchOrLatest(String branchNameOrUuid);
 }
