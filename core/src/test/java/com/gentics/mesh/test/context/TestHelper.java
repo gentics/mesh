@@ -16,6 +16,7 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.pdfbox.pdmodel.interactive.action.OpenMode;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.madl.tx.TxAction;
@@ -80,6 +81,7 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.LinkType;
@@ -144,6 +146,10 @@ public interface TestHelper {
 
 	default MeshOptions options() {
 		return mesh().options();
+	}
+
+	default ComplianceMode complianceMode() {
+		return options().getSearchOptions().getComplianceMode();
 	}
 
 	default MeshPluginManager pluginManager() {

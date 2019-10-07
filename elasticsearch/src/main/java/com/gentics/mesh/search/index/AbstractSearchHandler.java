@@ -360,7 +360,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		return metaInfo;
 	}
 
-	private long extractTotalCount(JsonObject info) {
+	protected long extractTotalCount(JsonObject info) {
 		switch (complianceMode) {
 		case ES_7:
 			return info.getJsonObject("total").getLong("value");
