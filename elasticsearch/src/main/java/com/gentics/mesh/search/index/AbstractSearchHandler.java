@@ -271,7 +271,16 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 							+ "}. The element will be omitted.");
 						// Reduce the total count
 						long total = extractTotalCount(hitsInfo);
-						hitsInfo.put("total", total - 1);
+						switch (complianceMode) {
+						case ES_6:
+							hitsInfo.put("total", total - 1);
+							break;
+						case ES_7:
+							hitsInfo.put("total", new JsonObject().put("value", total - 1));
+							break;
+						default:
+							throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");
+						}
 					} else {
 						// TODO maybe it would be better to directly transform the element here.
 						list.add(Tuple.tuple(element, language));
