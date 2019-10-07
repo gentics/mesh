@@ -33,6 +33,7 @@ import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.etc.config.search.MappingMode;
 import com.gentics.mesh.search.index.AbstractMappingProvider;
 import com.google.common.collect.Sets;
@@ -85,8 +86,14 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		JsonObject mapping = getMapping();
 
 		// 2. Enhance the type specific mapping
-		mapping.put("dynamic", "strict");
-		JsonObject typeProperties = mapping.getJsonObject("properties");
+		JsonObject typeMapping = mapping;
+
+		// In ES 6.x the mapping is typed
+		if (complianceMode == ComplianceMode.ES_6) {
+			typeMapping = mapping.getJsonObject(DEFAULT_TYPE);
+		}
+		typeMapping.put("dynamic", "strict");
+		JsonObject typeProperties = typeMapping.getJsonObject("properties");
 
 		// .project
 		JsonObject projectMapping = new JsonObject();
@@ -109,7 +116,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		// .tagFamilies
 		typeProperties.put("tagFamilies", new JsonObject().put("type", "object").put("dynamic", true));
 
-		mapping.put("dynamic_templates", new JsonArray().add(new JsonObject().put("tagFamilyUuid", new JsonObject().put("path_match",
+		typeMapping.put("dynamic_templates", new JsonArray().add(new JsonObject().put("tagFamilyUuid", new JsonObject().put("path_match",
 			"tagFamilies.*.uuid").put("match_mapping_type", "*").put("mapping", notAnalyzedType(KEYWORD)))).add(new JsonObject().put(
 				"tagFamilyTags", new JsonObject().put("path_match", "tagFamilies.*.tags").put("match_mapping_type", "*").put("mapping",
 					new JsonObject().put("type", "nested").put("properties", new JsonObject().put("name", trigramTextType()).put("uuid",
@@ -161,10 +168,9 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 
 		switch (complianceMode) {
 		case ES_7:
-			return mapping;
-		case PRE_ES_7:
-			JsonObject typeMapping = mapping.getJsonObject(DEFAULT_TYPE); 
-			mapping.put(DEFAULT_TYPE, typeMapping);
+			return typeMapping;
+		case ES_6:
+			mapping.put(DEFAULT_TYPE, typeMapping); 
 			return mapping;
 		default:
 			throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");

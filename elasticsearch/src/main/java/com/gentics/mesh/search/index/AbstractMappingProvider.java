@@ -47,7 +47,7 @@ public abstract class AbstractMappingProvider implements MappingProvider {
 		typeMapping.put("numeric_detection", false);
 
 		switch (complianceMode) {
-		case PRE_ES_7:
+		case ES_6:
 			JsonObject mapping = new JsonObject();
 			mapping.put(DEFAULT_TYPE, typeMapping);
 			return mapping;

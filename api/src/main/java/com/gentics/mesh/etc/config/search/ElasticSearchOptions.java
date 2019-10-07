@@ -33,7 +33,7 @@ public class ElasticSearchOptions implements Option {
 	public static final boolean DEFAULT_WAIT_FOR_IDLE = true;
 	public static final boolean DEFAULT_INCLUDE_BINARY_FIELDS = true;
 	public static final MappingMode DEFAULT_MAPPING_MODE = MappingMode.DYNAMIC;
-	public static final ComplianceMode DEFAULT_COMPLIANCE_MODE = ComplianceMode.PRE_ES_7;
+	public static final ComplianceMode DEFAULT_COMPLIANCE_MODE = ComplianceMode.ES_6;
 
 	public static final String DEFAULT_PREFIX = "mesh-";
 

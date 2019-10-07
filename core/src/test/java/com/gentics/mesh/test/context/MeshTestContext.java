@@ -49,6 +49,7 @@ import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -459,6 +460,7 @@ public class MeshTestContext extends TestWatcher {
 		// Increase timeout to high load during testing
 		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
 		searchOptions.setTimeout(10_000L);
+		searchOptions.setComplianceMode(ComplianceMode.ES_7);
 		storageOptions.setDirectory(graphPath);
 		storageOptions.setSynchronizeWrites(true);
 

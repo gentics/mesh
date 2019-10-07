@@ -42,10 +42,13 @@ public class UpdateBulkEntry extends AbstractBulkEntry {
 			.put("_id", getDocumentId());
 
 		switch (getMode()) {
-		case PRE_ES_7:
+		case ES_7:
+			break;
+		case ES_6:
 			settings.put("_type", SearchProvider.DEFAULT_TYPE);
 			break;
 		default:
+			throw new RuntimeException("Unknown compliance mode {" + getMode() + "}");
 		}
 
 		JsonObject doc = new JsonObject()

@@ -1,19 +1,17 @@
 package com.gentics.mesh.core.data.search.request;
 
-import com.gentics.mesh.search.SearchProvider;
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.Single;
-import io.reactivex.functions.Action;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import com.gentics.mesh.search.SearchProvider;
+
+import io.reactivex.Completable;
+import io.reactivex.Flowable;
+import io.reactivex.Single;
+import io.reactivex.functions.Action;
+
 public class BulkRequest implements Bulkable {
-	private static final Logger log = LoggerFactory.getLogger(BulkRequest.class);
 
 	private final List<Bulkable> requests;
 	private final Action onComplete;

@@ -27,10 +27,13 @@ public class UpdateDocumentRequest implements Bulkable {
 			.put("_id", id);
 
 		switch (mode) {
-		case PRE_ES_7:
+		case ES_7:
+			break;
+		case ES_6:
 			settings.put("_type", SearchProvider.DEFAULT_TYPE);
 			break;
 		default:
+			throw new RuntimeException("Unknown compliance mode {" + mode + "}");
 		}
 
 		this.bulkPreamble = new JsonObject()

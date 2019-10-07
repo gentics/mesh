@@ -270,18 +270,8 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 						log.warn("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.get().getRootLabel()
 							+ "}. The element will be omitted.");
 						// Reduce the total count
-						switch (complianceMode) {
-						case ES_7:
-							JsonObject totalInfo = hitsInfo.getJsonObject("total");
-							long total = totalInfo.getLong("value");
-							hitsInfo.put("total", total - 1);
-							break;
-						case PRE_ES_7:
-							hitsInfo.put("total", hitsInfo.getLong("total") - 1);
-							break;
-						default:
-							throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");
-						}
+						long total = extractTotalCount(hitsInfo);
+						hitsInfo.put("total", total - 1);
 					} else {
 						// TODO maybe it would be better to directly transform the element here.
 						list.add(Tuple.tuple(element, language));
@@ -374,7 +364,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		switch (complianceMode) {
 		case ES_7:
 			return info.getJsonObject("total").getLong("value");
-		case PRE_ES_7:
+		case ES_6:
 			return info.getLong("total");
 		default:
 			throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");
