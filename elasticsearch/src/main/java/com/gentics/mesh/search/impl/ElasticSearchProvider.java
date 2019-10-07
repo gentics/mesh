@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.Bulkable;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.search.ElasticsearchProcessManager;
 import com.gentics.mesh.search.SearchProvider;
@@ -67,11 +68,14 @@ public class ElasticSearchProvider implements SearchProvider {
 	private Function<Throwable, CompletableSource> ignore404 = error -> isNotFoundError(error) ? Completable.complete()
 		: Completable.error(error);
 
+	private final ComplianceMode complianceMode;
+
 	@Inject
-	public ElasticSearchProvider(Lazy<Vertx> vertx, MeshOptions options, ElasticsearchClient<JsonObject>  client) {
+	public ElasticSearchProvider(Lazy<Vertx> vertx, MeshOptions options, ElasticsearchClient<JsonObject> client) {
 		this.vertx = vertx;
 		this.options = options;
 		this.client = client;
+		this.complianceMode = options.getSearchOptions().getComplianceMode();
 	}
 
 	/**
@@ -210,7 +214,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				.doOnError(error -> {
 					log.error("Refreshing of all indices failed.", error);
 					throw error(INTERNAL_SERVER_ERROR, "search_error_refresh_failed", error);
-				}).toCompletable()
+				}).ignoreElement()
 				.compose(withTimeoutAndLog("Refreshing all indices", true));
 		}
 
@@ -220,7 +224,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				.doOnError(error -> {
 					log.error("Refreshing of indices {" + fullIndex + "} failed.", error);
 					throw error(INTERNAL_SERVER_ERROR, "search_error_refresh_failed", error);
-				}).toCompletable()
+				}).ignoreElement()
 				.compose(withTimeoutAndLog("Refreshing indices {" + fullIndex + "}", true));
 		});
 	}
@@ -252,7 +256,7 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (log.isDebugEnabled()) {
 						log.debug("Create index {" + indexName + "} - {" + info.getSourceInfo() + "} response: {" + response.toString() + "}");
 					}
-				}).toCompletable()
+				}).ignoreElement()
 				.onErrorResumeNext(error -> isResourceAlreadyExistsError(error) ? Completable.complete() : Completable.error(error));
 
 			return indexCreation;
@@ -262,7 +266,8 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public Single<JsonObject> getDocument(String index, String uuid) {
 		String fullIndex = installationPrefix() + index;
-		return client.getDocument(fullIndex, DEFAULT_TYPE, uuid).async()
+
+		return client.getDocument(fullIndex, getType(), uuid).async()
 			.map(response -> {
 				if (log.isDebugEnabled()) {
 					log.debug("Get object {" + uuid + "} from index {" + fullIndex + "}");
@@ -279,7 +284,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting document {" + uuid + "} from index {" + fullIndex + "}.");
 		}
-		return client.deleteDocument(fullIndex, DEFAULT_TYPE, uuid).async()
+		return client.deleteDocument(fullIndex, getType(), uuid).async()
 			.doOnSuccess(response -> {
 				if (log.isDebugEnabled()) {
 					log.debug("Deleted object {" + uuid + "} from index {" + fullIndex + "}");
@@ -297,7 +302,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			log.debug("Updating object {" + uuid + "} to index.");
 		}
 
-		return client.updateDocument(fullIndex, DEFAULT_TYPE, uuid, new JsonObject().put("doc", document)).async()
+		return client.updateDocument(fullIndex, getType(), uuid, new JsonObject().put("doc", document)).async()
 			.doOnSuccess(response -> {
 				if (log.isDebugEnabled()) {
 					log.debug(
@@ -385,7 +390,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding object {" + uuid + "} to index {" + fullIndex + "}");
 		}
-		return client.storeDocument(fullIndex, DEFAULT_TYPE, uuid, document).async()
+		return client.storeDocument(fullIndex, getType(), uuid, document).async()
 			.doOnSuccess(response -> {
 				if (log.isDebugEnabled()) {
 					log.debug("Added object {" + uuid + "} to index {" + fullIndex + "}. Duration " + (System.currentTimeMillis()
@@ -452,8 +457,8 @@ public class ElasticSearchProvider implements SearchProvider {
 				} else {
 					return Single.error(error(BAD_REQUEST, "schema_error_index_validation", error.getMessage()));
 				}
-			}).toCompletable()
-			.andThen(client.deleteIndexTemplate(templateName).async().toCompletable())
+			}).ignoreElement()
+			.andThen(client.deleteIndexTemplate(templateName).async().ignoreElement())
 			.compose(withTimeoutAndLog("Template validation", false));
 	}
 
@@ -551,5 +556,16 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public boolean isActive() {
 		return client != null;
+	}
+
+	private String getType() {
+		switch (complianceMode) {
+		case ES_6:
+			return DEFAULT_TYPE;
+		case ES_7:
+			return null;
+		default:
+			throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");
+		}
 	}
 }
