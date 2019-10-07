@@ -33,6 +33,7 @@ public class ElasticSearchOptions implements Option {
 	public static final boolean DEFAULT_WAIT_FOR_IDLE = true;
 	public static final boolean DEFAULT_INCLUDE_BINARY_FIELDS = true;
 	public static final MappingMode DEFAULT_MAPPING_MODE = MappingMode.DYNAMIC;
+	public static final ComplianceMode DEFAULT_COMPLIANCE_MODE = ComplianceMode.PRE_ES_7;
 
 	public static final String DEFAULT_PREFIX = "mesh-";
 
@@ -59,6 +60,7 @@ public class ElasticSearchOptions implements Option {
 	public static final String MESH_ELASTICSEARCH_RETRY_LIMIT_ENV = "MESH_ELASTICSEARCH_RETRY_LIMIT";
 	public static final String MESH_ELASTICSEARCH_WAIT_FOR_IDLE_ENV = "MESH_ELASTICSEARCH_WAIT_FOR_IDLE";
 	public static final String MESH_ELASTICSEARCH_MAPPING_MODE_ENV = "MESH_ELASTICSEARCH_MAPPING_MODE";
+	public static final String MESH_ELASTICSEARCH_COMPLIANCE_MODE_ENV = "MESH_ELASTICSEARCH_COMPLIANCE_MODE";
 	public static final String MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION_ENV = "MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION";
 	public static final String MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS_ENV = "MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS";
 
@@ -174,6 +176,11 @@ public class ElasticSearchOptions implements Option {
 	@JsonPropertyDescription("This setting controls the mapping mode of fields for Elasticsearch. When set to STRICT only fields which have a custom mapping will be added to Elasticsearch. Mode DYNAMIC will automatically use the Gentics Mesh default mappings which can be supplemented with custom mappings. Default: DYNAMIC")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_MAPPING_MODE_ENV, description = "Override the search mapping mode.")
 	private MappingMode mappingMode = DEFAULT_MAPPING_MODE;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("This setting controls the compliance mode for Elasticsearch. When set to ES_7 it will support Elasticsearch 7.x - In PRE_ES_7 mode it will support Elasticsearch 6.x - Default: PRE_ES_7")
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_COMPLIANCE_MODE_ENV, description = "Override the search compliance mode.")
+	private ComplianceMode complianceMode = DEFAULT_COMPLIANCE_MODE;
 
 	public ElasticSearchOptions() {
 
@@ -389,6 +396,15 @@ public class ElasticSearchOptions implements Option {
 
 	public ElasticSearchOptions setMappingMode(MappingMode mode) {
 		this.mappingMode = mode;
+		return this;
+	}
+
+	public ComplianceMode getComplianceMode() {
+		return complianceMode;
+	}
+
+	public ElasticSearchOptions setComplianceMode(ComplianceMode complianceMode) {
+		this.complianceMode = complianceMode;
 		return this;
 	}
 
