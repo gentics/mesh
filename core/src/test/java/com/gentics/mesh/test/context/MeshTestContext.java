@@ -500,6 +500,7 @@ public class MeshTestContext extends TestWatcher {
 			searchOptions.setUrl("http://" + ipAddressViaToxiproxy + ":" + portViaToxiproxy);
 			break;
 		case EMBEDDED:
+			searchOptions.setComplianceMode(ComplianceMode.ES_6);
 			searchOptions.setStartEmbedded(true);
 			break;
 		case NONE:
