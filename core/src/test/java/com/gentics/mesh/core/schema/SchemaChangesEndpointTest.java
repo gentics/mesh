@@ -8,7 +8,6 @@ import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.junit.Assert.assertEquals;
@@ -61,7 +60,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
 
 @RunWith(Parameterized.class)
-@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 	public SchemaChangesEndpointTest(ElasticsearchTestMode elasticsearch) throws Exception {

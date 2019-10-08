@@ -10,6 +10,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -27,6 +29,8 @@ import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 
+
+@RunWith(Parameterized.class)
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 	public static final String SCHEMA_NAME = "content";
@@ -34,7 +38,7 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 	public MultipleActionsTest(ElasticsearchTestMode elasticsearch) throws Exception {
 		super(elasticsearch);
 	}
-	
+
 	/**
 	 * This test does the following:
 	 * <ol>

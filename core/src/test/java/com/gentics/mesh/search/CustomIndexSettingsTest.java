@@ -35,6 +35,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
 import com.gentics.mesh.core.rest.validation.ValidationStatus;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.test.context.ElasticsearchTestMode;
@@ -66,7 +67,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		request.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(new JsonObject().put("bogus", "value")));
 		call(() -> client().createSchema(request, new SchemaUpdateParametersImpl().setStrictValidation(true)), BAD_REQUEST,
 			"schema_error_index_validation",
-			"Failed to parse mapping [default]: illegal field [bogus], only fields can be specified inside fields");
+			"Failed to parse mapping [" + typeName() + "]: illegal field [bogus], only fields can be specified inside fields");
 	}
 
 	@Test
@@ -81,7 +82,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		updateRequest.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(new JsonObject().put("bogus", "value")));
 		call(() -> client().updateSchema(response.getUuid(), updateRequest, new SchemaUpdateParametersImpl().setStrictValidation(true)), BAD_REQUEST,
 			"schema_error_index_validation",
-			"Failed to parse mapping [default]: illegal field [bogus], only fields can be specified inside fields");
+			"Failed to parse mapping [" + typeName() + "]: illegal field [bogus], only fields can be specified inside fields");
 	}
 
 	@Test
@@ -168,7 +169,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		assertEquals(ValidationStatus.INVALID, response.getStatus());
 
 		String message = I18NUtil.get(Locale.ENGLISH, "schema_error_index_validation",
-			"Failed to parse mapping [default]: illegal field [bogus], only fields can be specified inside fields");
+			"Failed to parse mapping [" + typeName() + "]: illegal field [bogus], only fields can be specified inside fields");
 		assertEquals(message, response.getMessage().getMessage());
 		assertEquals("schema_error_index_validation", response.getMessage().getInternalMessage());
 
@@ -333,5 +334,13 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		MicroschemaCreateRequest microschema = new MicroschemaCreateRequest();
 		microschema.setName("someName");
 		call(() -> client().validateMicroschema(microschema));
+	}
+
+	private String typeName() {
+		String name = "default";
+		if (complianceMode() == ComplianceMode.ES_7) {
+			name = "_doc";
+		}
+		return name;
 	}
 }
