@@ -4,7 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 import static org.junit.Assert.assertEquals;
 
@@ -24,7 +24,7 @@ import com.gentics.mesh.test.performance.StopWatchLogger;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = FULL, startServer = true)
 public class NodeSearchPerformanceTest extends AbstractMeshTest {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeSearchPerformanceTest.class);

@@ -143,7 +143,8 @@ public class MeshTestContext extends TestWatcher {
 				setupData();
 				listenToSearchIdleEvent();
 				switch (settings.elasticsearch()) {
-				case CONTAINER:
+				case CONTAINER_ES6:
+				case CONTAINER_ES7:
 					setupIndexHandlers();
 					break;
 				default:
@@ -232,8 +233,9 @@ public class MeshTestContext extends TestWatcher {
 				}
 				idleConsumer.unregister();
 				switch (settings.elasticsearch()) {
-				case CONTAINER:
-				case CONTAINER_TOXIC:
+				case CONTAINER_ES7:
+				case CONTAINER_ES6:
+				case CONTAINER_ES6_TOXIC:
 				case EMBEDDED:
 					meshDagger.searchProvider().clear().blockingAwait();
 					break;
@@ -460,14 +462,17 @@ public class MeshTestContext extends TestWatcher {
 		// Increase timeout to high load during testing
 		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
 		searchOptions.setTimeout(10_000L);
-		searchOptions.setComplianceMode(ComplianceMode.ES_7);
 		storageOptions.setDirectory(graphPath);
 		storageOptions.setSynchronizeWrites(true);
 
+		String version = ElasticsearchContainer.VERSION_ES6;
 		switch (settings.elasticsearch()) {
-		case CONTAINER:
+		case CONTAINER_ES7:
+			searchOptions.setComplianceMode(ComplianceMode.ES_7);
+			version = ElasticsearchContainer.VERSION_ES7;
+		case CONTAINER_ES6:
 		case UNREACHABLE:
-			elasticsearch = new ElasticsearchContainer();
+			elasticsearch = new ElasticsearchContainer(version);
 			if (!elasticsearch.isRunning()) {
 				elasticsearch.start();
 			}
@@ -480,9 +485,9 @@ public class MeshTestContext extends TestWatcher {
 				searchOptions.setUrl("http://" + elasticsearch.getHost() + ":" + elasticsearch.getMappedPort(9200));
 			}
 			break;
-		case CONTAINER_TOXIC:
+		case CONTAINER_ES6_TOXIC:
 			network = Network.newNetwork();
-			elasticsearch = new ElasticsearchContainer().withNetwork(network);
+			elasticsearch = new ElasticsearchContainer(version).withNetwork(network);
 			elasticsearch.waitingFor(Wait.forHttp(("/")));
 			toxiproxy = new ToxiproxyContainer().withNetwork(network);
 			if (!toxiproxy.isRunning()) {

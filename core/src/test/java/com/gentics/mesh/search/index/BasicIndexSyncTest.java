@@ -3,7 +3,7 @@ package com.gentics.mesh.search.index;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_FINISHED;
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 import static org.junit.Assert.assertEquals;
@@ -41,7 +41,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 /**
  * Test differential sync of elasticsearch.
  */
-@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.FULL, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = TestSize.FULL, startServer = true)
 public class BasicIndexSyncTest extends AbstractMeshTest {
 
 	@Before

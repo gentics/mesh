@@ -2,7 +2,7 @@ package com.gentics.mesh.search.migration;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,7 +17,7 @@ import com.gentics.mesh.search.AbstractNodeSearchEndpointTest;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = FULL, startServer = true)
 public class NodeMigrationDuringSyncTest extends AbstractNodeSearchEndpointTest {
 
 	@Test

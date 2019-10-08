@@ -17,8 +17,8 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
-@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.FULL, startServer = true)
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
+@MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = TestSize.FULL, startServer = true)
 public class NodeIndexSyncTest extends AbstractMeshTest {
 
 	@Test

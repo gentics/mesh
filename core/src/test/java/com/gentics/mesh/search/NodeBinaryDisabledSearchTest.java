@@ -3,7 +3,7 @@ package com.gentics.mesh.search;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 import static com.gentics.mesh.test.context.MeshOptionChanger.EXCLUDE_BINARY_SEARCH;
 import static com.gentics.mesh.test.context.MeshTestHelper.getRangeQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
@@ -37,7 +37,7 @@ import io.vertx.core.json.JsonObject;
 /**
  * Test search index handling with disabled include binary fields option.
  */
-@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true, optionChanger = EXCLUDE_BINARY_SEARCH)
+@MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = FULL, startServer = true, optionChanger = EXCLUDE_BINARY_SEARCH)
 public class NodeBinaryDisabledSearchTest extends AbstractNodeSearchEndpointTest {
 
 	@Test

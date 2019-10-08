@@ -15,9 +15,9 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 
-@MeshTestSetting(elasticsearch = CONTAINER, startServer = true, testSize = FULL)
+@MeshTestSetting(elasticsearch = CONTAINER_ES6, startServer = true, testSize = FULL)
 public class TagSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
 
 	@Test

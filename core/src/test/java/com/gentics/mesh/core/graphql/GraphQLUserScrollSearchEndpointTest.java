@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.graphql;
 
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ import org.junit.runners.Parameterized.Parameters;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
-@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.FULL, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = TestSize.FULL, startServer = true)
 @RunWith(Parameterized.class)
 public class GraphQLUserScrollSearchEndpointTest extends AbstractGraphQLSearchEndpointTest {
 

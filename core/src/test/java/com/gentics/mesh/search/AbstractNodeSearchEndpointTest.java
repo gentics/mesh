@@ -13,10 +13,13 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.util.IndexOptionHelper;
 import com.gentics.mesh.util.Tuple;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -162,4 +165,19 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMeshTest {
 		must.getJsonObject(1).getJsonObject("match").put("fields.vcardlist.fields-vcard.lastName", lastName);
 		return request.toString();
 	}
+
+	protected void addRawToSchemaField() {
+		// Update the schema and enable the addRaw field
+		String schemaUuid = tx(() -> content().getSchemaContainer().getUuid());
+		SchemaUpdateRequest request = tx(() -> JsonUtil.readValue(content().getSchemaContainer().getLatestVersion().getJson(),
+			SchemaUpdateRequest.class));
+		request.getField("teaser").setElasticsearch(IndexOptionHelper.getRawFieldOption());
+
+		grantAdminRole();
+		waitForJob(() -> {
+			call(() -> client().updateSchema(schemaUuid, request));
+		});
+		revokeAdminRole();
+	}
+
 }
