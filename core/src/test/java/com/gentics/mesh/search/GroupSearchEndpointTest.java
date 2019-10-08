@@ -1,7 +1,6 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -9,15 +8,23 @@ import static org.junit.Assert.assertEquals;
 
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.test.TestSize;
-import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
-@MeshTestSetting(elasticsearch = CONTAINER_ES6, startServer = true, testSize = TestSize.PROJECT)
-public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
+
+@RunWith(Parameterized.class)
+@MeshTestSetting(startServer = true, testSize = TestSize.PROJECT)
+public class GroupSearchEndpointTest extends AbstractMultiESTest implements BasicSearchCrudTestcases {
+
+	public GroupSearchEndpointTest(ElasticsearchTestMode elasticsearch) throws Exception {
+		super(elasticsearch);
+	}
 
 	@Test
 	@Override
@@ -31,7 +38,7 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 
 		GroupListResponse response = call(() -> client().searchGroups(getSimpleTermQuery("name.raw", groupName + 8)));
 		assertEquals(1, response.getData()
-				.size());
+			.size());
 	}
 
 	@Test
@@ -48,8 +55,8 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("uuid", uuid)));
 		assertThat(result.getData()).hasSize(1);
 		assertEquals(uuid, result.getData()
-				.get(0)
-				.getUuid());
+			.get(0)
+			.getUuid());
 	}
 
 	@Test
@@ -62,8 +69,8 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("uuid", uuid)));
 		assertThat(result.getData()).hasSize(1);
 		assertEquals(uuid, result.getData()
-				.get(0)
-				.getUuid());
+			.get(0)
+			.getUuid());
 	}
 
 	@Test
@@ -76,8 +83,8 @@ public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSe
 		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("name.raw", groupName)));
 		assertThat(result.getData()).hasSize(1);
 		assertEquals(uuid, result.getData()
-				.get(0)
-				.getUuid());
+			.get(0)
+			.getUuid());
 	}
 
 	@Test

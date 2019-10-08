@@ -3,7 +3,6 @@ package com.gentics.mesh.search;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -23,8 +22,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.i18n.I18NUtil;
@@ -36,6 +36,8 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
 import com.gentics.mesh.core.rest.validation.ValidationStatus;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
+import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
 
@@ -43,10 +45,16 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-@MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = FULL, startServer = true)
+
+@RunWith(Parameterized.class)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 
 	private static final Logger log = LoggerFactory.getLogger(CustomIndexSettingsTest.class);
+
+	public CustomIndexSettingsTest(ElasticsearchTestMode elasticsearch) throws Exception {
+		super(elasticsearch);
+	}
 
 	/**
 	 * Test the validation behaviour. Schema updates which include bogus json should fail early with a meaningful message.
@@ -56,7 +64,8 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("settingsTest");
 		request.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(new JsonObject().put("bogus", "value")));
-		call(() -> client().createSchema(request, new SchemaUpdateParametersImpl().setStrictValidation(true)), BAD_REQUEST, "schema_error_index_validation",
+		call(() -> client().createSchema(request, new SchemaUpdateParametersImpl().setStrictValidation(true)), BAD_REQUEST,
+			"schema_error_index_validation",
 			"Failed to parse mapping [default]: illegal field [bogus], only fields can be specified inside fields");
 	}
 
@@ -70,7 +79,8 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		SchemaUpdateRequest updateRequest = JsonUtil.readValue(request.toJson(), SchemaUpdateRequest.class);
 		updateRequest.removeField("text");
 		updateRequest.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(new JsonObject().put("bogus", "value")));
-		call(() -> client().updateSchema(response.getUuid(), updateRequest, new SchemaUpdateParametersImpl().setStrictValidation(true)), BAD_REQUEST, "schema_error_index_validation",
+		call(() -> client().updateSchema(response.getUuid(), updateRequest, new SchemaUpdateParametersImpl().setStrictValidation(true)), BAD_REQUEST,
+			"schema_error_index_validation",
 			"Failed to parse mapping [default]: illegal field [bogus], only fields can be specified inside fields");
 	}
 
@@ -211,7 +221,8 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		String query = "Content t";
 		JsonObject autocompleteQuery = new JsonObject(getText("/elasticsearch/custom/autocompleteQuery.es"));
 		autocompleteQuery.getJsonObject("query").getJsonObject("match").getJsonObject("fields.content.auto").put("query", query);
-		JsonObject autocompleteResult = new JsonObject(call(() -> client().searchNodesRaw(PROJECT_NAME, autocompleteQuery.encodePrettily())).toString());
+		JsonObject autocompleteResult = new JsonObject(
+			call(() -> client().searchNodesRaw(PROJECT_NAME, autocompleteQuery.encodePrettily())).toString());
 		System.out.println(autocompleteResult.encodePrettily());
 		System.out.println("------------------------------");
 		System.out.println(new JsonObject(parseResult(autocompleteResult, query)).encodePrettily());

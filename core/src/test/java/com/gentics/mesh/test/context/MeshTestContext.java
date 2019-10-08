@@ -124,40 +124,49 @@ public class MeshTestContext extends TestWatcher {
 			MeshTestSetting settings = getSettings(description);
 			// Setup the dagger context and orientdb,es once
 			if (description.isSuite()) {
-				port = TestUtils.getRandomPort();
-				monitoringPort = TestUtils.getRandomPort();
-				removeConfigDirectory();
-				MeshOptions options = init(settings);
-				try {
-					initDagger(options, settings);
-				} catch (Exception e) {
-					e.printStackTrace();
-					throw new RuntimeException("Error while creating dagger dependency graph", e);
-				}
-				meshDagger.boot().registerEventHandlers();
+				setupOnce(settings);
 			} else {
-				if (!settings.inMemoryDB()) {
-					DatabaseHelper.init(meshDagger.database());
-				}
-				initFolders(mesh.getOptions());
-				setupData();
-				listenToSearchIdleEvent();
-				switch (settings.elasticsearch()) {
-				case CONTAINER_ES6:
-				case CONTAINER_ES7:
-					setupIndexHandlers();
-					break;
-				default:
-					break;
-				}
-				if (settings.startServer()) {
-					setupRestEndpoints(settings);
-				}
+				setup(settings);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
+	}
+
+	public void setup(MeshTestSetting settings) throws Exception {
+		if (!settings.inMemoryDB()) {
+			DatabaseHelper.init(meshDagger.database());
+		}
+		initFolders(mesh.getOptions());
+		setupData();
+		listenToSearchIdleEvent();
+		switch (settings.elasticsearch()) {
+		case CONTAINER_ES6:
+		case CONTAINER_ES7:
+			setupIndexHandlers();
+			break;
+		default:
+			break;
+		}
+		if (settings.startServer()) {
+			setupRestEndpoints(settings);
+		}
+	}
+
+	public void setupOnce(MeshTestSetting settings) throws Exception {
+		port = TestUtils.getRandomPort();
+		monitoringPort = TestUtils.getRandomPort();
+		removeConfigDirectory();
+		MeshOptions options = init(settings);
+		try {
+			initDagger(options, settings);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("Error while creating dagger dependency graph", e);
+		}
+		meshDagger.boot().registerEventHandlers();
+
 	}
 
 	private static OkHttpClient createTestClient() {
@@ -211,45 +220,55 @@ public class MeshTestContext extends TestWatcher {
 		try {
 			MeshTestSetting settings = getSettings(description);
 			if (description.isSuite()) {
-				// TODO CI does not like this, reactivate later:
-				// mesh.shutdown();
-				removeConfigDirectory();
-				if (elasticsearch != null && elasticsearch.isRunning()) {
-					elasticsearch.stop();
-				}
-				if (keycloak != null && keycloak.isRunning()) {
-					keycloak.stop();
-				}
-				if (toxiproxy != null) {
-					toxiproxy.stop();
-					network.close();
-				}
-				optionChanger = noopConsumer();
+				tearDownOnce(settings);
 			} else {
-				cleanupFolders();
-				if (settings.startServer()) {
-					undeployAndReset();
-					closeClient();
-				}
-				idleConsumer.unregister();
-				switch (settings.elasticsearch()) {
-				case CONTAINER_ES7:
-				case CONTAINER_ES6:
-				case CONTAINER_ES6_TOXIC:
-				case EMBEDDED:
-					meshDagger.searchProvider().clear().blockingAwait();
-					break;
-				case TRACKING:
-					meshDagger.trackingSearchProvider().reset();
-					break;
-				default:
-					break;
-				}
-				resetDatabase(settings);
+				tearDown(settings);
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public void tearDown(MeshTestSetting settings) throws Exception {
+		cleanupFolders();
+		if (settings.startServer()) {
+			undeployAndReset();
+			closeClient();
+		}
+		idleConsumer.unregister();
+		switch (settings.elasticsearch()) {
+		case CONTAINER_ES7:
+		case CONTAINER_ES6:
+		case CONTAINER_ES6_TOXIC:
+		case EMBEDDED:
+			meshDagger.searchProvider().clear().blockingAwait();
+			break;
+		case TRACKING:
+			meshDagger.trackingSearchProvider().reset();
+			break;
+		default:
+			break;
+		}
+		resetDatabase(settings);
+
+	}
+
+	public void tearDownOnce(MeshTestSetting settings) throws Exception {
+		// TODO CI does not like this, reactivate later:
+		// mesh.shutdown();
+		removeConfigDirectory();
+		if (elasticsearch != null && elasticsearch.isRunning()) {
+			elasticsearch.stop();
+		}
+		if (keycloak != null && keycloak.isRunning()) {
+			keycloak.stop();
+		}
+		if (toxiproxy != null) {
+			toxiproxy.stop();
+			network.close();
+		}
+		optionChanger = noopConsumer();
+
 	}
 
 	private void removeConfigDirectory() throws IOException {

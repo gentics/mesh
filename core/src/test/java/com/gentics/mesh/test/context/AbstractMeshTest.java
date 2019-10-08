@@ -6,30 +6,20 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -45,43 +35,21 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
-import com.gentics.mesh.core.rest.common.ListResponse;
-import com.gentics.mesh.core.rest.job.JobListResponse;
-import com.gentics.mesh.core.rest.job.JobResponse;
-import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
-import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.parameter.client.PagingParametersImpl;
-import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.router.ProjectsRouter;
-import com.gentics.mesh.search.impl.ElasticSearchProvider;
-import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
-import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.context.event.EventAsserter;
-import com.gentics.mesh.test.context.event.EventAsserterChain;
 import com.gentics.mesh.test.docker.ElasticsearchContainer;
 import com.gentics.mesh.test.util.MeshAssert;
-import com.gentics.mesh.test.util.TestUtils;
-import com.gentics.mesh.util.VersionNumber;
 
 import eu.rekawek.toxiproxy.model.ToxicList;
 import io.reactivex.Completable;
-import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.functions.Action;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.eventbus.MessageConsumer;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import io.vertx.ext.web.RoutingContext;
@@ -107,17 +75,9 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		return testContext;
 	}
 
-	public MeshComponent mesh() {
-		return getTestContext().getMeshComponent();
-	}
-
-	public Database db() {
-		return mesh().database();
-	}
-
 	@After
 	public void clearLatches() {
-		eventAsserter.clear();
+		eventAsserter().clear();
 	}
 
 	@After
@@ -153,26 +113,6 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 			}
 		}
 		return this.httpClient;
-	}
-
-	/**
-	 * Drop all indices and create a new index using the current data.
-	 *
-	 * @throws Exception
-	 */
-	protected void recreateIndices() throws Exception {
-		// We potentially modified existing data thus we need to drop all indices and create them and reindex all data
-		SyncEventHandler.invokeClearCompletable(meshApi()).blockingAwait(10, TimeUnit.SECONDS);
-		SyncEventHandler.invokeSyncCompletable(meshApi()).blockingAwait(30, TimeUnit.SECONDS);
-		refreshIndices();
-	}
-
-	protected void refreshIndices() {
-		getSearchVerticle().refresh().blockingAwait(15, TimeUnit.SECONDS);
-	}
-
-	private ElasticsearchProcessVerticle getSearchVerticle() {
-		return ((BootstrapInitializerImpl) boot()).loader.get().getSearchVerticle();
 	}
 
 	public String getJson(Node node) throws Exception {
@@ -211,258 +151,6 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 			assertFalse("The user {" + getRequestUser().getUsername() + "} still got {" + perm.getRestPerm().getName() + "} permission on node {"
 				+ element.getUuid() + "/" + element.getClass().getSimpleName() + "} although we revoked it.", hasPerm);
 		}
-	}
-
-	/**
-	 * Return the graphql query for the given name.
-	 *
-	 * @param name
-	 * @return
-	 * @throws IOException
-	 */
-	protected String getGraphQLQuery(String name) throws IOException {
-		return IOUtils.toString(getClass().getResourceAsStream("/graphql/" + name));
-	}
-
-	/**
-	 * Return the graphql query for the given name and version.
-	 *
-	 * @param name
-	 * @return
-	 * @throws IOException
-	 */
-	protected String getGraphQLQuery(String name, String version) throws IOException {
-		InputStream stream = Optional.ofNullable(getClass().getResourceAsStream("/graphql/" + name + "." + version))
-			.orElseGet(() -> getClass().getResourceAsStream("/graphql/" + name));
-		return IOUtils.toString(stream);
-	}
-
-	/**
-	 * Return the es text for the given name.
-	 *
-	 * @param name
-	 * @return
-	 * @throws IOException
-	 */
-	protected String getESText(String name) throws IOException {
-		return IOUtils.toString(getClass().getResourceAsStream("/elasticsearch/" + name));
-	}
-
-	/**
-	 * Returns the text string of the resource with the given path.
-	 *
-	 * @param path
-	 * @return
-	 * @throws IOException
-	 */
-	protected String getText(String path) throws IOException {
-		return IOUtils.toString(getClass().getResourceAsStream(path));
-	}
-
-	/**
-	 * Returns the json for the given path.
-	 *
-	 * @param path
-	 * @return
-	 * @throws IOException
-	 */
-	protected JsonObject getJson(String path) throws IOException {
-		return new JsonObject(IOUtils.toString(getClass().getResourceAsStream(path)));
-	}
-
-	/**
-	 * Load the resource and return the buffer with the data.
-	 * 
-	 * @param path
-	 * @return
-	 * @throws IOException
-	 */
-	protected Buffer getBuffer(String path) throws IOException {
-		InputStream ins = getClass().getResourceAsStream(path);
-		assertNotNull("The resource for path {" + path + "} could not be found", ins);
-		byte[] bytes = IOUtils.toByteArray(ins);
-		return Buffer.buffer(bytes);
-	}
-
-	protected JobListResponse waitForJob(Runnable action) {
-		return waitForJobs(action, COMPLETED, 1);
-	}
-
-	/**
-	 * Execute the action and check that the jobs are executed and yields the given status.
-	 *
-	 * @param action
-	 *            Action to be invoked. This action should trigger the migrations
-	 * @param status
-	 *            Expected job status for all migrations. No assertion will be performed when the status is null
-	 * @param expectedJobs
-	 *            Amount of expected jobs
-	 * @return Migration status
-	 */
-	protected JobListResponse waitForJobs(Runnable action, JobStatus status, int expectedJobs) {
-		// Load a status just before the action
-		JobListResponse before = call(() -> client().findJobs());
-
-		// Invoke the action
-		action.run();
-
-		// Now poll the migration status and check the response
-		final int MAX_WAIT = 120;
-		for (int i = 0; i < MAX_WAIT; i++) {
-			JobListResponse response = call(() -> client().findJobs());
-			if (response.getMetainfo().getTotalCount() == before.getMetainfo().getTotalCount() + expectedJobs) {
-				if (status != null) {
-					boolean allMatching = true;
-					for (JobResponse info : response.getData()) {
-						if (!status.equals(info.getStatus())) {
-							allMatching = false;
-						}
-					}
-					if (allMatching) {
-						return response;
-					}
-				}
-			}
-			if (i > 30) {
-				System.out.println(response.toJson());
-			}
-			if (i == MAX_WAIT - 1) {
-				throw new RuntimeException("Migration did not complete within " + MAX_WAIT + " seconds");
-			}
-			sleep(1000);
-		}
-		return null;
-	}
-
-	protected void waitForLatestJob(Runnable action) {
-		waitForLatestJob(action, JobStatus.COMPLETED);
-	}
-
-	protected void waitForLatestJob(Runnable action, JobStatus status) {
-		// Load a status just before the action
-		JobListResponse before = call(() -> client().findJobs());
-
-		// Invoke the action
-		action.run();
-
-		// Now poll the migration status and check the response
-		final int MAX_WAIT = 120;
-		for (int i = 0; i < MAX_WAIT; i++) {
-			JobListResponse response = call(() -> client().findJobs());
-			List<JobResponse> diff = TestUtils.difference(response.getData(), before.getData(), JobResponse::getUuid);
-			if (diff.size() > 1) {
-				System.out.println(response.toJson());
-				throw new RuntimeException("More jobs than expected");
-			}
-			if (diff.size() == 1) {
-				JobResponse newJob = diff.get(0);
-				if (newJob.getStatus().equals(status)) {
-					return;
-				}
-			}
-
-			if (i > 2) {
-				System.out.println(response.toJson());
-			}
-
-			if (i == MAX_WAIT - 1) {
-				throw new RuntimeException("Migration did not complete within " + MAX_WAIT + " seconds");
-			}
-			sleep(1000);
-		}
-	}
-
-	/**
-	 * Execute the action and check that the migration is executed and yields the given status.
-	 *
-	 * @param action
-	 *            Action to be invoked. This action should trigger the jobs
-	 * @param status
-	 *            Expected job status
-	 * @return Job status
-	 */
-	protected JobResponse waitForJob(Runnable action, String jobUuid, JobStatus status) {
-		// Invoke the action
-		action.run();
-
-		// Now poll the migration status and check the response
-		final int MAX_WAIT = 120;
-		for (int i = 0; i < MAX_WAIT; i++) {
-			JobResponse response = call(() -> client().findJobByUuid(jobUuid));
-
-			if (response.getStatus().equals(status)) {
-				return response;
-			}
-
-			if (i > 30) {
-				System.out.println(response.toJson());
-			}
-
-			if (i == MAX_WAIT - 1) {
-				throw new RuntimeException("Job did not complete within " + MAX_WAIT + " seconds");
-			}
-			sleep(1000);
-		}
-
-		return null;
-
-	}
-
-	/**
-	 * Inform the job worker that new jobs have been enqueued and block until all jobs complete or the timeout has been reached.
-	 *
-	 * @param jobUuid
-	 *            Uuid of the job we should wait for
-	 *
-	 */
-	protected JobListResponse triggerAndWaitForJob(String jobUuid) {
-		return triggerAndWaitForJob(jobUuid, COMPLETED);
-	}
-
-	/**
-	 * Inform the job worker that new jobs are enqueued and check the migration status. This method will block until the migration finishes or a timeout has
-	 * been reached.
-	 *
-	 * @param jobUuid
-	 *            Uuid of the job we should wait for
-	 * @param status
-	 *            Expected status for all jobs
-	 */
-	protected JobListResponse triggerAndWaitForJob(String jobUuid, JobStatus status) {
-		waitForJob(() -> {
-			MeshEvent.triggerJobWorker(meshApi());
-		}, jobUuid, status);
-		return call(() -> client().findJobs());
-	}
-
-	protected void triggerAndWaitForAllJobs(JobStatus expectedStatus) {
-		MeshEvent.triggerJobWorker(meshApi());
-
-		// Now poll the migration status and check the response
-		final int MAX_WAIT = 120;
-		for (int i = 0; i < MAX_WAIT; i++) {
-			JobListResponse response = call(() -> client().findJobs(new PagingParametersImpl().setPerPage(200L)));
-
-			boolean allDone = true;
-			for (JobResponse info : response.getData()) {
-				if (!info.getStatus().equals(expectedStatus)) {
-					allDone = false;
-				}
-			}
-			if (allDone) {
-				break;
-			}
-
-			if (i > 30) {
-				System.out.println(response.toJson());
-			}
-
-			if (i == MAX_WAIT - 1) {
-				throw new RuntimeException("Job did not complete within " + MAX_WAIT + " seconds");
-			}
-			sleep(1000);
-		}
-
 	}
 
 	/**
@@ -516,151 +204,6 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		}
 	}
 
-	protected int uploadImage(Node node, String languageTag, String fieldname, String filename, String contentType) throws IOException {
-		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
-		byte[] bytes = IOUtils.toByteArray(ins);
-		Buffer buffer = Buffer.buffer(bytes);
-		return upload(node, buffer, languageTag, fieldname, filename, contentType);
-	}
-
-	protected int upload(Node node, Buffer buffer, String languageTag, String fieldname, String filename, String contentType) throws IOException {
-		String uuid = tx(() -> node.getUuid());
-		VersionNumber version = tx(() -> node.getGraphFieldContainer(languageTag).getVersion());
-		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldname,
-			new ByteArrayInputStream(buffer.getBytes()), buffer.length(),
-			filename, contentType));
-		assertNotNull(response);
-		return buffer.length();
-	}
-
-	/**
-	 * Wait until the given event has been received.
-	 * 
-	 * @param address
-	 * @param code
-	 * @throws TimeoutException
-	 */
-	protected void waitForEvent(String address, Action code) {
-		CountDownLatch latch = new CountDownLatch(1);
-		MessageConsumer<Object> consumer = vertx().eventBus().consumer(address);
-		consumer.handler(msg -> latch.countDown());
-		// The completion handler will be invoked once the consumer has been registered
-		consumer.completionHandler(res -> {
-			if (res.failed()) {
-				throw new RuntimeException("Could not listen to event", res.cause());
-			}
-			try {
-				code.run();
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		});
-		try {
-			latch.await(10, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
-		consumer.unregister();
-	}
-
-	/**
-	 * Wait until the given event has been received.
-	 *
-	 * @param event
-	 * @param code
-	 * @throws TimeoutException
-	 */
-	protected void waitForEvent(MeshEvent event, Action code) {
-		waitForEvent(event.address, code);
-	}
-
-	/**
-	 * Wait until the given event has been received.
-	 *
-	 * @param event
-	 * @throws TimeoutException
-	 */
-	protected void waitForEvent(MeshEvent event) {
-		waitForEvent(event.address, () -> {
-		});
-	}
-
-	public ElasticSearchProvider getProvider() {
-		return ((ElasticSearchProvider) searchProvider());
-	}
-
-	/**
-	 * Create a new branch
-	 * 
-	 * @param name
-	 *            branch name
-	 * @param latest
-	 *            true to make branch the latest
-	 * @return new branch
-	 */
-	protected Branch createBranch(String name, boolean latest) {
-		BranchCreateRequest request = new BranchCreateRequest();
-		request.setName(name);
-
-		if (latest) {
-			request.setLatest(latest);
-		}
-
-		return createBranch(request);
-	}
-
-	/**
-	 * Create a branch with the given request
-	 * 
-	 * @param request
-	 *            request
-	 * @return new branch
-	 */
-	protected Branch createBranch(BranchCreateRequest request) {
-		StringBuilder uuid = new StringBuilder();
-		waitForJobs(() -> {
-			BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
-			assertThat(response).as("Created branch").hasName(request.getName());
-			if (request.isLatest()) {
-				assertThat(response).as("Created branch").isLatest();
-			} else {
-				assertThat(response).as("Created branch").isNotLatest();
-			}
-			uuid.append(response.getUuid());
-		}, COMPLETED, 1);
-
-		// return new branch
-		return tx(() -> project().getBranchRoot().findByUuid(uuid.toString()));
-	}
-	
-	protected NodeResponse createBinaryNode(String parentNodeUuid) {
-		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-		nodeCreateRequest.setLanguage("en");
-		nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
-		nodeCreateRequest.setSchemaName("binary_content");
-		return call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
-	}
-
-	protected Single<NodeResponse> createBinaryContent() {
-		String parentUuid = client().findProjects().blockingGet().getData().get(0).getRootNode().getUuid();
-		NodeCreateRequest request = new NodeCreateRequest();
-		request.setLanguage("en");
-		request.setParentNodeUuid("uuid");
-		request.setSchemaName("binary_content");
-		request.setParentNodeUuid(parentUuid);
-		return client().createNode(PROJECT_NAME, request).toSingle();
-	}
-
-	protected Single<NodeResponse> createBinaryContent(String uuid) {
-		String parentUuid = client().findProjects().blockingGet().getData().get(0).getRootNode().getUuid();
-		NodeCreateRequest request = new NodeCreateRequest();
-		request.setLanguage("en");
-		request.setParentNodeUuid("uuid");
-		request.setSchemaName("binary_content");
-		request.setParentNodeUuid(parentUuid);
-		return client().createNode(uuid, PROJECT_NAME, request).toSingle();
-	}
-
 	protected Completable stopRestVerticle() {
 		return ((BootstrapInitializerImpl) boot()).loader.get().unloadVerticles();
 	}
@@ -674,102 +217,6 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	protected Completable restartRestVerticle() {
 		return stopRestVerticle().andThen(startRestVerticle());
-	}
-
-	protected void waitForSearchIdleEvent() {
-		testContext.waitForSearchIdleEvent();
-	}
-
-	protected void waitForSearchIdleEvent(Completable completable) {
-		waitForEvent(MeshEvent.SEARCH_IDLE, () -> {
-			completable.subscribe(() -> vertx().eventBus().publish(MeshEvent.SEARCH_FLUSH_REQUEST.address, null));
-		});
-		refreshIndices();
-	}
-
-	protected void waitForSearchIdleEvent(Action action) {
-		waitForSearchIdleEvent(() -> {
-			action.run();
-			return null;
-		});
-	}
-
-	protected <T> T waitForSearchIdleEvent(Callable<T> action) {
-		try {
-			AtomicReference<T> ref = new AtomicReference<>();
-			waitForEvent(MeshEvent.SEARCH_IDLE, () -> {
-				ref.set(action.call());
-				vertx().eventBus().publish(MeshEvent.SEARCH_FLUSH_REQUEST.address, null);
-			});
-			refreshIndices();
-			return ref.get();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	protected Observable<NodeResponse> findNodesBySchema(String schemaName) {
-		return client().findNodes(PROJECT_NAME).toObservable()
-			.flatMap(nodes -> Observable.fromIterable(nodes.getData()))
-			.filter(node -> node.getSchema().getName().equals(schemaName));
-	}
-
-	protected Completable migrateSchema(String schemaName) {
-		return migrateSchema(schemaName, true);
-	}
-
-	protected Completable migrateSchema(String schemaName, boolean wait) {
-		return findSchemaByName(schemaName)
-			.flatMapCompletable(schema -> client().updateSchema(schema.getUuid(), addRandomField(schema)).toCompletable())
-			.andThen(wait
-				? MeshEvent.waitForEvent(meshApi(), MeshEvent.SCHEMA_MIGRATION_FINISHED)
-				: Completable.complete());
-	}
-
-	private SchemaUpdateRequest addRandomField(SchemaResponse schemaResponse) {
-		SchemaUpdateRequest request = schemaResponse.toUpdateRequest();
-		request.getFields().add(new StringFieldSchemaImpl().setName(RandomStringUtils.randomAlphabetic(10)));
-		return request;
-	}
-
-	private Single<SchemaResponse> findSchemaByName(String schemaName) {
-		return fetchList(client().findSchemas())
-			.filter(schema -> schema.getName().equals(schemaName))
-			.singleOrError();
-	}
-
-	private <T> Observable<T> fetchList(MeshRequest<? extends ListResponse<T>> request) {
-		return request.toObservable().flatMap(response -> Observable.fromIterable(response.getData()));
-	}
-
-	/**
-	 * Call the given handler, latch for the future and assert success. Waits for search to be idle, then returns the result.
-	 *
-	 * @param handler
-	 *            handler
-	 * @param <T>
-	 *            type of the returned object
-	 * @return result of the future
-	 */
-	public <T> T callAndWait(ClientHandler<T> handler) {
-		try {
-			return waitForSearchIdleEvent(() -> handler.handle().blockingGet());
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	/**
-	 * Return the event asserter.
-	 *
-	 * @return
-	 */
-	public EventAsserterChain expect(MeshEvent event) {
-		return eventAsserter.expect(event);
-	}
-
-	public void awaitEvents() {
-		eventAsserter.await();
 	}
 
 	/**
@@ -788,5 +235,10 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	 */
 	public ElasticsearchContainer elasticsearch() {
 		return MeshTestContext.elasticsearchContainer();
+	}
+
+	@Override
+	public EventAsserter eventAsserter() {
+		return eventAsserter;
 	}
 }

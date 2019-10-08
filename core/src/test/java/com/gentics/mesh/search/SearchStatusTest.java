@@ -4,13 +4,21 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static junit.framework.TestCase.assertTrue;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
-import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
-@MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = FULL, startServer = true)
-public class SearchStatusTest extends AbstractMeshTest {
+
+@RunWith(Parameterized.class)
+@MeshTestSetting(testSize = FULL, startServer = true)
+public class SearchStatusTest extends AbstractMultiESTest {
+
+	public SearchStatusTest(ElasticsearchTestMode elasticsearch) throws Exception {
+		super(elasticsearch);
+	}
+
 	@Test
 	public void testAvailable() {
 		Boolean available = client().searchStatus().toSingle()

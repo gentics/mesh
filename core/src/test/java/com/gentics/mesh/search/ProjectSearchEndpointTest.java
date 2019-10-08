@@ -2,25 +2,31 @@ package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.junit.Assert.assertEquals;
 
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 import com.gentics.mesh.test.util.MeshAssert;
 
-@MeshTestSetting(elasticsearch = CONTAINER_ES6, startServer = true, testSize = FULL)
-public class ProjectSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
+@RunWith(Parameterized.class)
+@MeshTestSetting(startServer = true, testSize = FULL)
+public class ProjectSearchEndpointTest extends AbstractMultiESTest implements BasicSearchCrudTestcases {
+
+	public ProjectSearchEndpointTest(ElasticsearchTestMode elasticsearch) throws Exception {
+		super(elasticsearch);
+	}
 
 	@Test
 	public void testSearchProject() throws Exception {
@@ -37,7 +43,8 @@ public class ProjectSearchEndpointTest extends AbstractMeshTest implements Basic
 		response = client().searchProjects(getSimpleQuery("name", "blub"), new PagingParametersImpl().setPage(1).setPerPage(2L)).blockingGet();
 		assertEquals(0, response.getData().size());
 
-		response = client().searchProjects(getSimpleTermQuery("name.raw", "dummy"), new PagingParametersImpl().setPage(1).setPerPage(2L)).blockingGet();
+		response = client().searchProjects(getSimpleTermQuery("name.raw", "dummy"), new PagingParametersImpl().setPage(1).setPerPage(2L))
+			.blockingGet();
 		assertEquals(1, response.getData().size());
 	}
 
@@ -69,7 +76,8 @@ public class ProjectSearchEndpointTest extends AbstractMeshTest implements Basic
 
 		deleteProject(project.getUuid());
 		waitForSearchIdleEvent();
-		response = client().searchProjects(getSimpleTermQuery("name.raw", projectName), new PagingParametersImpl().setPage(1).setPerPage(2L)).blockingGet();
+		response = client().searchProjects(getSimpleTermQuery("name.raw", projectName), new PagingParametersImpl().setPage(1).setPerPage(2L))
+			.blockingGet();
 		assertEquals(0, response.getData().size());
 	}
 

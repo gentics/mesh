@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_FINISHED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 import static com.gentics.mesh.test.context.MeshTestHelper.getRangeQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
@@ -14,6 +13,8 @@ import static org.junit.Assert.assertNotNull;
 
 import org.jsoup.Jsoup;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.FieldUtil;
@@ -25,10 +26,16 @@ import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = FULL, startServer = true)
+@RunWith(Parameterized.class)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
+
+	public NodeSearchEndpointCTest(ElasticsearchTestMode elasticsearch) throws Exception {
+		super(elasticsearch);
+	}
 
 	@Test
 	public void testSearchNumberRange() throws Exception {
@@ -125,7 +132,6 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 			new PagingParametersImpl().setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));
 		assertEquals("Check hits for 'supersonic' before update", 1, response.getData().size());
 	}
-
 
 	@Test
 	public void testSearchHtml() throws Exception {

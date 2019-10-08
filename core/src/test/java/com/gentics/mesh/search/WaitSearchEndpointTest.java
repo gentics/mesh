@@ -7,17 +7,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.parameter.impl.SearchParametersImpl;
-import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
+@RunWith(Parameterized.class)
 @MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = FULL, startServer = true)
-public class WaitSearchEndpointTest extends AbstractMeshTest {
+public class WaitSearchEndpointTest extends AbstractMultiESTest {
+
+	public WaitSearchEndpointTest(ElasticsearchTestMode elasticsearch) throws Exception {
+		super(elasticsearch);
+	}
 
 	@Before
 	public void setUp() throws Exception {

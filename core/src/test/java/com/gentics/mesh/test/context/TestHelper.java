@@ -13,25 +13,18 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.pdfbox.pdmodel.interactive.action.OpenMode;
 
 import com.gentics.madl.tx.Tx;
-import com.gentics.madl.tx.TxAction;
-import com.gentics.madl.tx.TxAction0;
-import com.gentics.madl.tx.TxAction1;
-import com.gentics.madl.tx.TxAction2;
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -79,94 +72,24 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.plugin.env.PluginEnvironment;
-import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.rest.client.MeshRequest;
-import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
-import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.TrackingSearchProvider;
-import com.gentics.mesh.storage.LocalBinaryStorage;
-import com.gentics.mesh.test.TestDataProvider;
+import com.gentics.mesh.test.context.helper.ClientHelper;
+import com.gentics.mesh.test.context.helper.EventHelper;
 import com.gentics.mesh.util.VersionNumber;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.test.core.TestUtils;
 
-public interface TestHelper {
-
-	MeshTestContext getTestContext();
-
-	default Database db() {
-		return mesh().database();
-	}
-
-	/**
-	 * Create a new transaction.
-	 * 
-	 * @see Database#tx()
-	 * @return
-	 */
-	default Tx tx() {
-		return db().tx();
-	}
-
-	default void tx(TxAction0 handler) {
-		db().tx(handler);
-	}
-
-	default <T> T tx(TxAction1<T> handler) {
-		return db().tx(handler);
-	}
-
-	default void tx(TxAction2 handler) {
-		db().tx(handler);
-	}
-
-	default <T> T tx(TxAction<T> handler) {
-		return db().tx(handler);
-	}
-
-	default BootstrapInitializer boot() {
-		return mesh().boot();
-	}
-
-	default MeshOptions options() {
-		return mesh().options();
-	}
-
-	default ComplianceMode complianceMode() {
-		return options().getSearchOptions().getComplianceMode();
-	}
-
-	default MeshPluginManager pluginManager() {
-		return mesh().pluginManager();
-	}
-
-	default PluginEnvironment pluginEnv() {
-		return mesh().pluginEnv();
-	}
-
-	default TestDataProvider data() {
-		return getTestContext().getData();
-	}
-
-	default LocalBinaryStorage localBinaryStorage() {
-		return mesh().localBinaryStorage();
-	}
+public interface TestHelper extends EventHelper, ClientHelper {
 
 	default Role role() {
 		return data().role();
@@ -234,31 +157,6 @@ public interface TestHelper {
 
 	default String contentUuid() {
 		return data().getContentUuid();
-	}
-
-	default MonitoringRestClient monClient() {
-		return getTestContext().getMonitoringClient();
-	}
-
-	default MeshRestClient client() {
-		return getTestContext().getClient();
-	}
-
-	default MeshRestClient client(String version) {
-		return getTestContext().getClient(version);
-	}
-
-	default TrackingSearchProvider trackingSearchProvider() {
-		return getTestContext().getTrackingSearchProvider();
-	}
-
-	/**
-	 * Return the test project.
-	 * 
-	 * @return
-	 */
-	default Project project() {
-		return data().getProject();
 	}
 
 	/**
@@ -473,6 +371,23 @@ public interface TestHelper {
 			assertNotNull("The field was not included in the response.", response.getFields().hasField(fieldKey));
 		}
 		return response;
+	}
+
+	default int uploadImage(Node node, String languageTag, String fieldname, String filename, String contentType) throws IOException {
+		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
+		byte[] bytes = IOUtils.toByteArray(ins);
+		Buffer buffer = Buffer.buffer(bytes);
+		return upload(node, buffer, languageTag, fieldname, filename, contentType);
+	}
+
+	default int upload(Node node, Buffer buffer, String languageTag, String fieldname, String filename, String contentType) throws IOException {
+		String uuid = tx(() -> node.getUuid());
+		VersionNumber version = tx(() -> node.getGraphFieldContainer(languageTag).getVersion());
+		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldname,
+			new ByteArrayInputStream(buffer.getBytes()), buffer.length(),
+			filename, contentType));
+		assertNotNull(response);
+		return buffer.length();
 	}
 
 	default void publishNode(NodeResponse node) {
@@ -690,14 +605,6 @@ public interface TestHelper {
 		return new Rug(user, group, role);
 	}
 
-	default MeshComponent meshDagger() {
-		return mesh();
-	}
-
-	default SearchProvider searchProvider() {
-		return meshDagger().searchProvider();
-	}
-
 	default public int getNodeCount() {
 		return data().getNodeCount();
 	}
@@ -713,10 +620,6 @@ public interface TestHelper {
 	default public SchemaContainer getSchemaContainer() {
 		SchemaContainer container = data().getSchemaContainer("content");
 		return container;
-	}
-
-	default public Vertx vertx() {
-		return getTestContext().getVertx();
 	}
 
 	default public BulkActionContext createBulkContext() {
@@ -773,22 +676,79 @@ public interface TestHelper {
 		meshApi().setStatus(status);
 	}
 
-	MeshComponent mesh();
-
-	default Mesh meshApi() {
-		return boot().mesh();
-	}
-
 	default EventQueueBatch createBatch() {
 		return mesh().batchProvider().get();
 	}
 
-	default void sleep(long timeMs) {
-		try {
-			Thread.sleep(timeMs);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+	/**
+	 * Return the es text for the given name.
+	 *
+	 * @param name
+	 * @return
+	 * @throws IOException
+	 */
+	default String getESText(String name) throws IOException {
+		return IOUtils.toString(getClass().getResourceAsStream("/elasticsearch/" + name));
+	}
+
+	/**
+	 * Returns the text string of the resource with the given path.
+	 *
+	 * @param path
+	 * @return
+	 * @throws IOException
+	 */
+	default String getText(String path) throws IOException {
+		return IOUtils.toString(getClass().getResourceAsStream(path));
+	}
+
+	/**
+	 * Returns the json for the given path.
+	 *
+	 * @param path
+	 * @return
+	 * @throws IOException
+	 */
+	default JsonObject getJson(String path) throws IOException {
+		return new JsonObject(IOUtils.toString(getClass().getResourceAsStream(path)));
+	}
+
+	/**
+	 * Return the graphql query for the given name.
+	 *
+	 * @param name
+	 * @return
+	 * @throws IOException
+	 */
+	default String getGraphQLQuery(String name) throws IOException {
+		return IOUtils.toString(getClass().getResourceAsStream("/graphql/" + name));
+	}
+
+	/**
+	 * Return the graphql query for the given name and version.
+	 *
+	 * @param name
+	 * @return
+	 * @throws IOException
+	 */
+	default String getGraphQLQuery(String name, String version) throws IOException {
+		InputStream stream = Optional.ofNullable(getClass().getResourceAsStream("/graphql/" + name + "." + version))
+			.orElseGet(() -> getClass().getResourceAsStream("/graphql/" + name));
+		return IOUtils.toString(stream);
+	}
+
+	/**
+	 * Load the resource and return the buffer with the data.
+	 * 
+	 * @param path
+	 * @return
+	 * @throws IOException
+	 */
+	default Buffer getBuffer(String path) throws IOException {
+		InputStream ins = getClass().getResourceAsStream(path);
+		assertNotNull("The resource for path {" + path + "} could not be found", ins);
+		byte[] bytes = IOUtils.toByteArray(ins);
+		return Buffer.buffer(bytes);
 	}
 
 }

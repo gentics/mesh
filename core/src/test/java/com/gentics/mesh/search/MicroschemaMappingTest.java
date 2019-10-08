@@ -39,8 +39,8 @@ import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 @RunWith(Parameterized.class)
+@MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class MicroschemaMappingTest extends AbstractMeshTest {
 
 	private static final String SCHEMA_NAME = "test_schema";
