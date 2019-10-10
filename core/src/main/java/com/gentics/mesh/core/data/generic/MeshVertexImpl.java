@@ -27,6 +27,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.FramedGraph;
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Vertx;
@@ -44,6 +45,11 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		index.createIndex(vertexIndex(MeshVertexImpl.class)
 			.withField("uuid", FieldType.STRING)
 			.unique());
+	}
+
+	@Override
+	protected void init(FramedGraph graph, Element element, Object id) {
+		super.init(graph, null, id);
 	}
 
 	@Override
