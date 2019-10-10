@@ -29,7 +29,6 @@
 
 	<modules>
 		<module>api</module>
-		<module>ferma-legacy</module>
 		<module>core</module>
 		<module>madl-ferma</module>
 		<module>neo4j</module>
