@@ -25,9 +25,9 @@ package com.syncleus.ferma;
 
 import java.util.Set;
 
+import com.gentics.madl.tx.Tx;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
-import com.tinkerpop.blueprints.Element;
 
 /**
  * The base of all framed elements.
@@ -36,18 +36,13 @@ public abstract class AbstractElementFrame implements ElementFrame {
 
 	protected Object id;
 
-	protected FramedGraph graph;
-
 	/**
 	 * This method is called anytime an element is instantiated. If the element is a new element or an existing element this method will be called.
 	 *
-	 * @param graph
-	 *            The graph this element exists in.
 	 * @param id
 	 *            The id of the element
 	 */
-	protected void init(final FramedGraph graph, final Object id) {
-		this.graph = graph;
+	protected void init(final Object id) {
 		this.id = id;
 	}
 
@@ -91,12 +86,12 @@ public abstract class AbstractElementFrame implements ElementFrame {
 
 	@Override
 	public FramedGraph getGraph() {
-		return graph;
+		return Tx.get().getGraph();
 	}
 
 	@Override
 	public <T> T getGraphAttribute(String key) {
-		return graph.getAttribute(key);
+		return getGraph().getAttribute(key);
 	}
 
 	@Override

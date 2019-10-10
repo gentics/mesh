@@ -30,8 +30,8 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	}
 
 	@Override
-	protected void init(FramedGraph graph, Object id) {
-		super.init(graph, id);
+	protected void init(Object id) {
+		super.init(id);
 	}
 
 	public String getFermaType() {
