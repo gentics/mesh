@@ -19,16 +19,6 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>madl-core</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>ferma</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>net.bytebuddy</groupId>
-					<artifactId>byte-buddy</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 	</dependencies>
 
 </project>

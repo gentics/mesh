@@ -36,8 +36,6 @@ public abstract class AbstractElementFrame implements ElementFrame {
 
 	protected Object id;
 
-	protected Element element;
-
 	protected FramedGraph graph;
 
 	/**
@@ -45,14 +43,11 @@ public abstract class AbstractElementFrame implements ElementFrame {
 	 *
 	 * @param graph
 	 *            The graph this element exists in.
-	 * @param element
-	 *            The graph element (optional)
 	 * @param id
 	 *            The id of the element
 	 */
-	protected void init(final FramedGraph graph, final Element element, final Object id) {
+	protected void init(final FramedGraph graph, final Object id) {
 		this.graph = graph;
-		this.element = element;
 		this.id = id;
 	}
 
@@ -67,11 +62,6 @@ public abstract class AbstractElementFrame implements ElementFrame {
 	@SuppressWarnings("unchecked")
 	public Object getId() {
 		return id;
-	}
-
-	@Override
-	public Element getElement() {
-		return element;
 	}
 
 	@Override

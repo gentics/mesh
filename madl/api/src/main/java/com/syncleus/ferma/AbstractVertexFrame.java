@@ -30,9 +30,7 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.SimpleTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
 
 /**
  * The base class that all vertex frames must extend.
@@ -41,12 +39,7 @@ public abstract class AbstractVertexFrame extends AbstractElementFrame implement
 
 	@Override
 	public Vertex getElement() {
-		Element e = super.getElement();
-		if (e instanceof WrappedElement) {
-			return (Vertex) ((WrappedElement) e).getBaseElement();
-		} else {
-			return (Vertex) e;
-		}
+		return null;
 	}
 
 	@Override

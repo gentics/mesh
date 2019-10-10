@@ -30,6 +30,7 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.SimpleTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
 
 /**
  * The base class that all edge frames must extend.
@@ -38,7 +39,7 @@ public abstract class AbstractEdgeFrame extends AbstractElementFrame implements 
 
 	@Override
 	public Edge getElement() {
-		return (Edge) super.getElement();
+		return null;
 	}
 
 	@Override

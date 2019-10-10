@@ -357,11 +357,6 @@
 		<!-- Graph Database Support -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>ferma</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
 			<artifactId>madl-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
