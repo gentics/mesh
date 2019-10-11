@@ -23,6 +23,11 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v1.0.2]]
+== 1.0.2 (11.10.2019)
+
+icon:check[] Core: The internal memory usage has been reduced.
+
 [[v1.0.1]]
 == 1.0.1 (08.10.2019)
 
