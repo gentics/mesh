@@ -10,6 +10,7 @@ import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.AbstractRestException;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -83,29 +84,20 @@ public class UtilityHandler extends AbstractHandler {
 	 */
 	public void validateSchema(InternalActionContext ac) {
 		db.asyncTx(() -> {
-			Schema schema = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
+			Schema schema;
+			try {
+				schema = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
+				schema.validate();
+			} catch (GenericRestException error) {
+				return Single.just(toValidationResponse(ac, error));
+			}
 			JsonObject fullSettings = nodeIndexHandler.createIndexSettings(schema);
 			SchemaValidationResponse response = new SchemaValidationResponse();
 			response.setElasticsearch(fullSettings);
 			response.setStatus(ValidationStatus.VALID);
-			return nodeIndexHandler.validate(schema).onErrorComplete(error -> {
-				log.error("Validation of schema {" + schema.getName() + "} failed with error", error);
-				response.setStatus(ValidationStatus.INVALID);
-
-				GenericMessageResponse msg = new GenericMessageResponse();
-				if (error instanceof AbstractRestException) {
-					AbstractRestException gre = ((AbstractRestException) error);
-					String i18nMsg = I18NUtil.get(ac, gre.getI18nKey(), gre.getI18nParameters());
-					msg.setInternalMessage(gre.getI18nKey());
-					msg.setMessage(i18nMsg);
-				} else {
-					msg.setInternalMessage(error.getMessage());
-					String i18nMsg = I18NUtil.get(ac, "schema_error_index_validation", error.getMessage());
-					msg.setMessage(i18nMsg);
-				}
-				response.setMessage(msg);
-				return true;
-			}).andThen(Single.just(response));
+			return nodeIndexHandler.validate(schema)
+				.andThen(Single.just(response))
+				.onErrorReturn(error -> toValidationResponse(ac, error, fullSettings));
 		}).subscribe(msg -> ac.send(msg, OK), ac::fail);
 	}
 
@@ -116,11 +108,39 @@ public class UtilityHandler extends AbstractHandler {
 	 */
 	public void validateMicroschema(InternalActionContext ac) {
 		db.asyncTx(() -> {
-			Microschema model = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
-			model.validate();
-			SchemaValidationResponse report = new SchemaValidationResponse();
-			return Single.just(report);
+			try {
+				Microschema model = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
+				model.validate();
+				return Single.just(new SchemaValidationResponse()
+					.setStatus(ValidationStatus.VALID));
+			} catch (Throwable error) {
+
+				return Single.just(toValidationResponse(ac, error));
+			}
 		}).subscribe(msg -> ac.send(msg, OK), ac::fail);
 	}
 
+	public SchemaValidationResponse toValidationResponse(InternalActionContext ac, Throwable error) {
+		return toValidationResponse(ac, error, null);
+	}
+
+	public SchemaValidationResponse toValidationResponse(InternalActionContext ac, Throwable error, JsonObject elasticSearchSettings) {
+		SchemaValidationResponse response = new SchemaValidationResponse();
+		response.setStatus(ValidationStatus.INVALID);
+		response.setElasticsearch(elasticSearchSettings);
+
+		GenericMessageResponse msg = new GenericMessageResponse();
+		if (error instanceof AbstractRestException) {
+			AbstractRestException gre = ((AbstractRestException) error);
+			String i18nMsg = I18NUtil.get(ac, gre.getI18nKey(), gre.getI18nParameters());
+			msg.setInternalMessage(gre.getI18nKey());
+			msg.setMessage(i18nMsg);
+		} else {
+			msg.setInternalMessage(error.getMessage());
+			String i18nMsg = I18NUtil.get(ac, "schema_error_index_validation", error.getMessage());
+			msg.setMessage(i18nMsg);
+		}
+		response.setMessage(msg);
+		return response;
+	}
 }

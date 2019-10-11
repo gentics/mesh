@@ -185,6 +185,10 @@ public interface FieldSchemaContainer extends RestModel {
 			throw error(BAD_REQUEST, "schema_error_invalid_name", getName());
 		}
 
+		if (getFields() == null || getFields().isEmpty()) {
+			throw error(BAD_REQUEST, "schema_error_no_fields");
+		}
+
 		Set<String> fieldNames = new HashSet<>();
 		for (FieldSchema field : getFields()) {
 			if (field.getName() != null) {

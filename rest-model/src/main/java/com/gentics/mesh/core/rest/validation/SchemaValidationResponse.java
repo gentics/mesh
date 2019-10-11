@@ -16,7 +16,7 @@ public class SchemaValidationResponse implements RestModel {
 	@JsonPropertyDescription("Status of the validation.")
 	ValidationStatus status;
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Detailed validation message.")
 	GenericMessageResponse message;
 

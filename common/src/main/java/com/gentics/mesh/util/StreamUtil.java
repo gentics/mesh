@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -97,5 +98,15 @@ public final class StreamUtil {
 
 	public static <T> Predicate<T> not(Predicate<T> predicate) {
 		return predicate.negate();
+	}
+
+	/**
+	 * Merges streams into a single stream.
+	 * @param streams
+	 * @param <T>
+	 * @return
+	 */
+	public static <T> Stream<T> mergeStreams(Stream<T>... streams) {
+		return Stream.of(streams).flatMap(Function.identity());
 	}
 }
