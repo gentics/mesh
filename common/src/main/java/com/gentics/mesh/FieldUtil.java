@@ -1,5 +1,7 @@
 package com.gentics.mesh;
 
+import java.util.Arrays;
+
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -82,6 +84,9 @@ public final class FieldUtil {
 	public static SchemaCreateRequest createSchemaCreateRequest() {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("test");
+		request.setFields(Arrays.asList(
+			new StringFieldSchemaImpl().setName("name")
+		));
 		request.validate();
 		return request;
 	}
