@@ -1,18 +1,24 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
-import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 
-@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
-public class MicroschemaSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
+@RunWith(Parameterized.class)
+@MeshTestSetting(testSize = FULL, startServer = true)
+public class MicroschemaSearchEndpointTest extends AbstractMultiESTest implements BasicSearchCrudTestcases {
+
+	public MicroschemaSearchEndpointTest(ElasticsearchTestMode elasticsearch) throws Exception {
+		super(elasticsearch);
+	}
 
 	@Test
 	@Override

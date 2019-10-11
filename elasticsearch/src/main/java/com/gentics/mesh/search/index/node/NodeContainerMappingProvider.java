@@ -33,6 +33,7 @@ import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.etc.config.search.MappingMode;
 import com.gentics.mesh.search.index.AbstractMappingProvider;
 import com.google.common.collect.Sets;
@@ -47,13 +48,11 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeContainerMappingProvider.class);
 
-	private final MeshOptions options;
-
 	private final boolean isStrictMode;
 
 	@Inject
 	public NodeContainerMappingProvider(MeshOptions options) {
-		this.options = options;
+		super(options);
 		this.isStrictMode = MappingMode.STRICT == options.getSearchOptions().getMappingMode();
 	}
 
@@ -87,7 +86,12 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		JsonObject mapping = getMapping();
 
 		// 2. Enhance the type specific mapping
-		JsonObject typeMapping = mapping.getJsonObject(DEFAULT_TYPE);
+		JsonObject typeMapping = mapping;
+
+		// In ES 6.x the mapping is typed
+		if (complianceMode == ComplianceMode.ES_6) {
+			typeMapping = mapping.getJsonObject(DEFAULT_TYPE);
+		}
 		typeMapping.put("dynamic", "strict");
 		JsonObject typeProperties = typeMapping.getJsonObject("properties");
 
@@ -153,7 +157,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		JsonObject fieldJson = new JsonObject();
 		fieldJson.put("properties", fieldProps);
 		typeProperties.put("fields", fieldJson);
-		mapping.put(DEFAULT_TYPE, typeMapping);
+		
 
 		for (FieldSchema field : schema.getFields()) {
 			Optional<JsonObject> mappingInfo = getFieldMapping(field, branch);
@@ -161,7 +165,16 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 				fieldProps.put(field.getName(), info);
 			});
 		}
-		return mapping;
+
+		switch (complianceMode) {
+		case ES_7:
+			return typeMapping;
+		case ES_6:
+			mapping.put(DEFAULT_TYPE, typeMapping); 
+			return mapping;
+		default:
+			throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");
+		}
 	}
 
 	/**

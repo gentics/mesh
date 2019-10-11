@@ -4,7 +4,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,13 +20,15 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
-@MeshTestSetting(elasticsearch = CONTAINER, startServer = true, testSize = FULL)
+
+@MeshTestSetting(elasticsearch = CONTAINER_ES6, startServer = true, testSize = FULL)
 public class NodeRawSearchEndpointTest extends AbstractMeshTest {
 
 	/**
@@ -68,9 +70,15 @@ public class NodeRawSearchEndpointTest extends AbstractMeshTest {
 
 		// search in old project
 		JsonObject response = new JsonObject(call(() -> client().searchNodesRaw(getSimpleQuery("fields.content", contentFieldValue))).toString());
-		assertThat(response).has("responses[0].hits.total", "2", "Not exactly two item was found.");
-		String uuid1 = response.getJsonArray("responses").getJsonObject(0).getJsonObject("hits").getJsonArray("hits").getJsonObject(0).getString("_id");
-		String uuid2 = response.getJsonArray("responses").getJsonObject(0).getJsonObject("hits").getJsonArray("hits").getJsonObject(1).getString("_id");
+		String path = "responses[0].hits.total";
+		if (complianceMode() == ComplianceMode.ES_7) {
+			path = "responses[0].hits.total.value";
+		}
+		assertThat(response).has(path, "2", "Not exactly two item was found.");
+		String uuid1 = response.getJsonArray("responses").getJsonObject(0).getJsonObject("hits").getJsonArray("hits").getJsonObject(0)
+			.getString("_id");
+		String uuid2 = response.getJsonArray("responses").getJsonObject(0).getJsonObject("hits").getJsonArray("hits").getJsonObject(1)
+			.getString("_id");
 		assertThat(Arrays.asList(uuid1, uuid2)).containsExactlyInAnyOrder(nodeA.getUuid() + "-en", nodeB.getUuid() + "-en");
 
 	}

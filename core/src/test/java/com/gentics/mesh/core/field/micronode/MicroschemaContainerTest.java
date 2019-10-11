@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.field.micronode;
 
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -45,7 +45,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.ext.web.RoutingContext;
-@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = FULL, startServer = true)
 public class MicroschemaContainerTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test

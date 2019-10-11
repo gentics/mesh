@@ -4,12 +4,13 @@ import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
@@ -27,9 +28,16 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
-@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
+
+@RunWith(Parameterized.class)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
+
+	public NodeSearchEndpointGTest(ElasticsearchTestMode elasticsearch) throws Exception {
+		super(elasticsearch);
+	}
 
 	@Test
 	public void testSearchDraftNodes() throws Exception {
@@ -41,11 +49,11 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent),
-				new VersioningParametersImpl().draft()));
+			new VersioningParametersImpl().draft()));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", newContent), new VersioningParametersImpl()
-				.draft()));
+			.draft()));
 		assertThat(response.getData()).as("Search result").isEmpty();
 
 		// change draft version of content
@@ -58,11 +66,11 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		waitForSearchIdleEvent();
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent), new VersioningParametersImpl()
-				.draft()));
+			.draft()));
 		assertThat(response.getData()).as("Search result").isEmpty();
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", newContent), new VersioningParametersImpl()
-				.draft()));
+			.draft()));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 
@@ -77,14 +85,14 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 
 		// Assert initial condition
 		NodeListResponse response1 = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),
-				new VersioningParametersImpl().draft()));
+			new VersioningParametersImpl().draft()));
 		assertThat(response1.getData()).as("Search result").isNotEmpty();
 
 		String contentUuid = db().tx(() -> content().getUuid());
 		String folderUuid = db().tx(() -> folder("2015").getUuid());
 		String schemaUuid = db().tx(() -> schemaContainer("content").getUuid());
 		SchemaUpdateRequest schemaUpdate = db().tx(() -> JsonUtil.readValue(schemaContainer("content").getLatestVersion().getJson(),
-				SchemaUpdateRequest.class));
+			SchemaUpdateRequest.class));
 
 		// 1. Create the microschema
 		MicroschemaCreateRequest microschemaRequest = new MicroschemaCreateRequest();
@@ -110,7 +118,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 
 		// Assert that the nodes were migrated and added to the new index. The data should be searchable
 		NodeListResponse response2 = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),
-				new VersioningParametersImpl().draft()));
+			new VersioningParametersImpl().draft()));
 		assertThat(response2.getData()).as("Search result").isNotEmpty();
 
 		// Lets create a new node that has a micronode
@@ -160,7 +168,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		assertEquals("someNewText", nodeResponse2.getFields().getMicronodeField("micro").getFields().getStringField("textNew").getString());
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),
-				new VersioningParametersImpl().draft()));
+			new VersioningParametersImpl().draft()));
 		assertThat(response.getData()).as("Search result").isNotEmpty();
 
 	}
@@ -184,7 +192,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 
 		// Assert that the node can be found within the publish index within the new branch
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),
-				new VersioningParametersImpl().setBranch(branchName).setVersion("published")));
+			new VersioningParametersImpl().setBranch(branchName).setVersion("published")));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 

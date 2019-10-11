@@ -1,10 +1,8 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.ClientHelper.call;
-
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,6 +13,8 @@ import java.util.Arrays;
 
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
@@ -24,10 +24,16 @@ import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
+@RunWith(Parameterized.class)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
+
+	public NodeSearchEndpointBTest(ElasticsearchTestMode elasticsearch) throws Exception {
+		super(elasticsearch);
+	}
 
 	/**
 	 * Search in only english language versions of nodes
@@ -69,8 +75,8 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 		recreateIndices();
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.vcard.fields-vcard.firstName", "Mickey"),
-				new PagingParametersImpl().setPage(1).setPerPage(2L), new NodeParametersImpl().setResolveLinks(LinkType.FULL),
-				new VersioningParametersImpl().draft()));
+			new PagingParametersImpl().setPage(1).setPerPage(2L), new NodeParametersImpl().setResolveLinks(LinkType.FULL),
+			new VersioningParametersImpl().draft()));
 
 		assertEquals("Check returned search results", 1, response.getData().size());
 		assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
@@ -94,7 +100,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 				boolean expectResult = firstName.substring(0, 1).equals(lastName.substring(0, 1));
 
 				NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getNestedVCardListSearch(firstName, lastName),
-						new PagingParametersImpl().setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));
+					new PagingParametersImpl().setPage(1).setPerPage(2L), new VersioningParametersImpl().draft()));
 
 				if (expectResult) {
 					assertEquals("Check returned search results", 1, response.getData().size());
@@ -121,7 +127,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 		String query = getSimpleTermQuery("fields.nodelist", nodeUuid);
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, query));
 		assertEquals("We expected to find the node itself since it contains a node list which includes a item which points to the same node.",
-				nodeUuid, response.getData().get(0).getUuid());
+			nodeUuid, response.getData().get(0).getUuid());
 	}
 
 	@Test
@@ -130,7 +136,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 		recreateIndices();
 
 		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, db().tx(() -> content("concorde").getUuid()),
-				new VersioningParametersImpl().draft()));
+			new VersioningParametersImpl().draft()));
 
 		// 1. Create a new branch
 		BranchCreateRequest createBranch = new BranchCreateRequest();
@@ -141,13 +147,13 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 		// 2. Search within the newly create branch
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"),
-				new VersioningParametersImpl().draft()));
+			new VersioningParametersImpl().draft()));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
 		// 3. Search within the initial branch
 		String branchName = db().tx(() -> project().getInitialBranch().getName());
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", "supersonic"), new VersioningParametersImpl()
-				.setBranch(branchName).draft()));
+			.setBranch(branchName).draft()));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 

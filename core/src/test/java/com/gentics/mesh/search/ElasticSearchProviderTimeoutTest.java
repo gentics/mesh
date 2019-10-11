@@ -1,7 +1,7 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 import static com.gentics.mesh.test.context.MeshOptionChanger.RANDOM_ES_PORT;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
@@ -25,7 +25,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.http.HttpServer;
 
-@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.PROJECT_AND_NODE, startServer = true, optionChanger = RANDOM_ES_PORT)
+@MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = TestSize.PROJECT_AND_NODE, startServer = true, optionChanger = RANDOM_ES_PORT)
 public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 
 	private static final Logger log = LoggerFactory.getLogger(ElasticSearchProviderTimeoutTest.class);

@@ -8,16 +8,22 @@ import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Objects;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.testcontainers.shaded.com.google.common.collect.Iterators;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -49,11 +55,17 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.search.AbstractNodeSearchEndpointTest;
+import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
 
-@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
+@RunWith(Parameterized.class)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
+
+	public SchemaChangesEndpointTest(ElasticsearchTestMode elasticsearch) throws Exception {
+		super(elasticsearch);
+	}
 
 	@Before
 	public void addAdminPerms() {
@@ -630,7 +642,8 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		// Note : testing against content() directly (orientdb model) doesnt work since old field is not deleted
 		assertEquals("2.0", tx(() -> node.getGraphFieldContainer("en").getVersion().toString()));
-		assertNull("We would expect the new version to not include the old field value.",tx(() -> node.getGraphFieldContainer("en").getHtml("content")));
+		assertNull("We would expect the new version to not include the old field value.",
+			tx(() -> node.getGraphFieldContainer("en").getHtml("content")));
 
 		// Read node and check that content field has been migrated to newcontent
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new VersioningParametersImpl().draft()));

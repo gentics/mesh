@@ -22,12 +22,17 @@ public enum ElasticsearchTestMode {
 	/**
 	 * Run using an ES docker container
 	 */
-	CONTAINER,
+	CONTAINER_ES6,
+
+	/**
+	 * Run using an ES 7 docker container
+	 */
+	CONTAINER_ES7,
 
 	/**
 	 * Run using a toxified ES docker container
 	 */
-	CONTAINER_TOXIC,
+	CONTAINER_ES6_TOXIC,
 
 	/**
 	 * Run using an ES docker container which is unreachable (listening on port 1)

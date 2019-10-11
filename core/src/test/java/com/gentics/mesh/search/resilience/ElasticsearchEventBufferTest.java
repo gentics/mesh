@@ -12,11 +12,11 @@ import java.io.IOException;
 
 import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_REQUEST;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_TOXIC;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6_TOXIC;
 import static com.gentics.mesh.test.context.MeshOptionChanger.SMALL_EVENT_BUFFER;
 import static org.junit.Assert.assertEquals;
 
-@MeshTestSetting(elasticsearch = CONTAINER_TOXIC, startServer = true, testSize = FULL, optionChanger = SMALL_EVENT_BUFFER)
+@MeshTestSetting(elasticsearch = CONTAINER_ES6_TOXIC, startServer = true, testSize = FULL, optionChanger = SMALL_EVENT_BUFFER)
 public class ElasticsearchEventBufferTest extends AbstractMeshTest {
 	private static final Logger log = LoggerFactory.getLogger(ElasticsearchEventBufferTest.class);
 

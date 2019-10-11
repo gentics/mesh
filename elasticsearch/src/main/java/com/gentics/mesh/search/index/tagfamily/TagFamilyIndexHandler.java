@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -40,8 +41,8 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	TagFamilyMappingProvider mappingProvider;
 
 	@Inject
-	public TagFamilyIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper) {
-		super(searchProvider, db, boot, helper);
+	public TagFamilyIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options) {
+		super(searchProvider, db, boot, helper, options);
 	}
 
 	@Override

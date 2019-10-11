@@ -67,6 +67,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
@@ -349,7 +350,6 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		SchemaUpdateRequest request = JsonUtil.readValue(schemaModel.toJson(), SchemaUpdateRequest.class);
 		waitForJobs(() -> {
 			request.setElasticsearch(new JsonObject());
-			System.out.println(request.toJson());
 			call(() -> client().updateSchema(schemaUuid, request));
 		}, COMPLETED, 1);
 
@@ -503,9 +503,13 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		int createIndex = 2;
 		assertThat(trackingSearchProvider()).hasEvents(store, update, delete, dropIndex, createIndex);
 		for (JsonObject mapping : trackingSearchProvider().getCreateIndexEvents().values()) {
-			assertThat(mapping).has("$.mapping.default.properties.fields.properties.teaser.fields.raw.type", "keyword",
+			String basePath = "$.mapping.default";
+			if (complianceMode() == ComplianceMode.ES_7) {
+				basePath = "$.mapping";
+			}
+			assertThat(mapping).has(basePath + ".properties.fields.properties.teaser.fields.raw.type", "keyword",
 				"The mapping should include a raw field for the teaser field");
-			assertThat(mapping).hasNot("$.mapping.default.properties.fields.properties.title.fields.raw",
+			assertThat(mapping).hasNot(basePath + ".properties.fields.properties.title.fields.raw",
 				"The mapping should not include a raw field for the title field");
 		}
 
@@ -514,8 +518,6 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		assertThat(searchDocumentsOfContent).isNotEmpty();
 		// Assert that the documents are correct. The teaser must have been truncated.
 		for (JsonObject doc : searchDocumentsOfContent) {
-
-			System.out.println(doc.encodePrettily());
 			String teaser = doc.getJsonObject("fields").getString("teaser");
 			assertThat(teaser).hasSize(32_700);
 			String content = doc.getJsonObject("fields").getString("title");

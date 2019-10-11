@@ -3,24 +3,31 @@ package com.gentics.mesh.search;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshOptionChanger;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true, optionChanger = MeshOptionChanger.ES_STRICT_MODE)
+@RunWith(Parameterized.class)
+@MeshTestSetting(testSize = FULL, startServer = true, optionChanger = MeshOptionChanger.ES_STRICT_MODE)
 public class NodeSearchEndpointStrictModeTest extends AbstractNodeSearchEndpointTest {
+
+	public NodeSearchEndpointStrictModeTest(ElasticsearchTestMode elasticsearch) throws Exception {
+		super(elasticsearch);
+	}
 
 	@Test
 	public void testSearchStringFieldRaw() throws Exception {

@@ -2,7 +2,6 @@ package com.gentics.mesh.search;
 
 import static com.gentics.mesh.search.index.AbstractSearchHandler.DEFAULT_SEARCH_PER_PAGE;
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleWildCardQuery;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -15,6 +14,8 @@ import java.io.IOException;
 
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
@@ -23,12 +24,17 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.TestSize;
-import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 
-@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
-public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
+@RunWith(Parameterized.class)
+@MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+public class UserSearchEndpointTest extends AbstractMultiESTest implements BasicSearchCrudTestcases {
+
+	public UserSearchEndpointTest(ElasticsearchTestMode elasticsearch) throws Exception {
+		super(elasticsearch);
+	}
 
 	@Test
 	public void testSimpleQuerySearch() throws IOException {

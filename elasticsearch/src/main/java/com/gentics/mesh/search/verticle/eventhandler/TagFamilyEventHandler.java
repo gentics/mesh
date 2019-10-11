@@ -20,6 +20,8 @@ import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
 import com.gentics.mesh.core.rest.event.ProjectEvent;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
 
@@ -29,11 +31,13 @@ import io.reactivex.Flowable;
 public class TagFamilyEventHandler implements EventHandler {
 	private final MeshHelper helper;
 	private final MeshEntities entities;
+	private final ComplianceMode complianceMode;
 
 	@Inject
-	public TagFamilyEventHandler(MeshHelper helper, MeshEntities entities) {
+	public TagFamilyEventHandler(MeshHelper helper, MeshEntities entities, MeshOptions options) {
 		this.helper = helper;
 		this.entities = entities;
+		this.complianceMode = options.getSearchOptions().getComplianceMode();
 	}
 
 	@Override
@@ -71,7 +75,7 @@ public class TagFamilyEventHandler implements EventHandler {
 				} else {
 					// TODO Update related elements.
 					// At the moment we cannot look up related elements, because the element was already deleted.
-					return Flowable.just(helper.deleteDocumentRequest(TagFamily.composeIndexName(projectUuid), model.getUuid()));
+					return Flowable.just(helper.deleteDocumentRequest(TagFamily.composeIndexName(projectUuid), model.getUuid(), complianceMode));
 				}
 			} else {
 				throw new RuntimeException("Unexpected event " + event.address);

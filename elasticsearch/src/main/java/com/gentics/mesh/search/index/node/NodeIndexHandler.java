@@ -3,7 +3,6 @@ package com.gentics.mesh.search.index.node;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.ArrayList;
@@ -33,7 +32,6 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.MoveDocumentEntry;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
-import com.gentics.mesh.core.data.search.bulk.DeleteBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
@@ -45,6 +43,7 @@ import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.Transactional;
 import com.gentics.mesh.search.SearchProvider;
@@ -86,8 +85,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public NodeContainerMappingProvider mappingProvider;
 
 	@Inject
-	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper) {
-		super(searchProvider, db, boot, helper);
+	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options) {
+		super(searchProvider, db, boot, helper, options);
 	}
 
 	@Override
@@ -286,7 +285,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					io.reactivex.functions.Function<String, CreateDocumentRequest>
 					> toCreateRequest = action -> uuid -> {
 					JsonObject doc = db.tx(() -> getTransformer().toDocument(sourceNodes.get(uuid), branchUuid, type));
-					return helper.createDocumentRequest(indexName, uuid, doc, action);
+					return helper.createDocumentRequest(indexName, uuid, doc, complianceMode, action);
 				};
 
 				Flowable<SearchRequest> toInsert = Flowable.fromIterable(needInsertionInES)
@@ -296,7 +295,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					.map(toCreateRequest.apply(metric::decUpdate));
 
 				Flowable<SearchRequest> toDelete = Flowable.fromIterable(needRemovalInES)
-					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, metric::decDelete));
+					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, complianceMode, metric::decDelete));
 
 				return Flowable.merge(toInsert, toUpdate, toDelete);
 		}).flatMapPublisher(x -> x);
@@ -520,15 +519,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		ContainerType type = context.getContainerType();
 		String releaseUuid = context.getBranchUuid();
 
-		NodeGraphFieldContainer oldContainer = context.getOldContainer();
-		String oldProjectUuid = oldContainer.getParentNode().getProject().getUuid();
-		String oldIndexName = NodeGraphFieldContainer.composeIndexName(oldProjectUuid, releaseUuid,
-			oldContainer.getSchemaContainerVersion().getUuid(),
-			type);
-		String oldLanguageTag = oldContainer.getLanguageTag();
-		String oldDocumentId = NodeGraphFieldContainer.composeDocumentId(oldContainer.getParentNode().getUuid(), oldLanguageTag);
-		Observable<DeleteBulkEntry> deleteEntry = Observable.just(new DeleteBulkEntry(oldIndexName, oldDocumentId));
-
 		NodeGraphFieldContainer newContainer = context.getNewContainer();
 		String newProjectUuid = newContainer.getParentNode().getProject().getUuid();
 		String newIndexName = NodeGraphFieldContainer.composeIndexName(newProjectUuid, releaseUuid,
@@ -537,7 +527,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String newLanguageTag = newContainer.getLanguageTag();
 		String newDocumentId = NodeGraphFieldContainer.composeDocumentId(newContainer.getParentNode().getUuid(), newLanguageTag);
 		JsonObject doc = transformer.toDocument(newContainer, releaseUuid, type);
-		return 	Observable.just(new IndexBulkEntry(newIndexName, newDocumentId, doc));
+		return 	Observable.just(new IndexBulkEntry(newIndexName, newDocumentId, doc, complianceMode));
 
 	}
 
@@ -592,7 +582,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String languageTag = container.getLanguageTag();
 		String documentId = NodeGraphFieldContainer.composeDocumentId(container.getParentNode().getUuid(), languageTag);
 
-		return Single.just(new IndexBulkEntry(indexName, documentId, doc));
+		return Single.just(new IndexBulkEntry(indexName, documentId, doc, complianceMode));
 	}
 
 	@Override
@@ -613,7 +603,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String uuid = entry.getElementUuid();
 		Node node = getRootVertex().findByUuid(uuid);
 		if (node == null) {
-			throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, DEFAULT_TYPE);
+			// Not found
+			throw error(INTERNAL_SERVER_ERROR, "error_element_not_found", uuid);
 		} else {
 			Project project = node.getProject();
 
@@ -626,7 +617,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					for (NodeGraphFieldContainer container : node.getGraphFieldContainers(branch, type)) {
 						String indexName = container.getIndexName(project.getUuid(), branch.getUuid(), type);
 						String documentId = container.getDocumentId();
-						entries.add(new UpdateBulkEntry(indexName, documentId, json, true));
+						entries.add(new UpdateBulkEntry(indexName, documentId, json, complianceMode));
 					}
 				}
 			}

@@ -3,7 +3,6 @@ package com.gentics.mesh.search;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.junit.Assert.assertEquals;
 
@@ -11,6 +10,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -21,15 +22,22 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 
-@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
+
+@RunWith(Parameterized.class)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 	public static final String SCHEMA_NAME = "content";
+
+	public MultipleActionsTest(ElasticsearchTestMode elasticsearch) throws Exception {
+		super(elasticsearch);
+	}
 
 	/**
 	 * This test does the following:

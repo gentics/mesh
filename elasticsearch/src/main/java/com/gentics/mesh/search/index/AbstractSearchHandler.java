@@ -17,8 +17,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.elasticsearch.client.ElasticsearchClient;
@@ -41,6 +39,7 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.event.MeshEventSender;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.MeshJsonException;
@@ -69,17 +68,12 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractSearchHandler.class);
 
-	@Inject
-	public MeshEventSender meshEventSender;
-
-	@Inject
-	public MeshOptions options;
-
-	protected Database db;
-
-	protected SearchProvider searchProvider;
-
-	protected IndexHandler<T> indexHandler;
+	protected final Database db;
+	protected final SearchProvider searchProvider;
+	protected final MeshOptions options;
+	protected final IndexHandler<T> indexHandler;
+	protected final MeshEventSender meshEventSender;
+	protected final ComplianceMode complianceMode;
 
 	public static final long DEFAULT_SEARCH_PER_PAGE = 10;
 
@@ -88,12 +82,18 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	 * 
 	 * @param db
 	 * @param searchProvider
+	 * @param options
 	 * @param indexHandler
+	 * @param meshEventSender
 	 */
-	public AbstractSearchHandler(Database db, SearchProvider searchProvider, IndexHandler<T> indexHandler) {
+	public AbstractSearchHandler(Database db, SearchProvider searchProvider, MeshOptions options, IndexHandler<T> indexHandler,
+		MeshEventSender meshEventSender) {
 		this.db = db;
 		this.searchProvider = searchProvider;
+		this.options = options;
 		this.indexHandler = indexHandler;
+		this.meshEventSender = meshEventSender;
+		this.complianceMode = options.getSearchOptions().getComplianceMode();
 	}
 
 	/**
@@ -270,7 +270,17 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 						log.warn("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.get().getRootLabel()
 							+ "}. The element will be omitted.");
 						// Reduce the total count
-						hitsInfo.put("total", hitsInfo.getLong("total") - 1);
+						long total = extractTotalCount(hitsInfo);
+						switch (complianceMode) {
+						case ES_6:
+							hitsInfo.put("total", total - 1);
+							break;
+						case ES_7:
+							hitsInfo.put("total", new JsonObject().put("value", total - 1));
+							break;
+						default:
+							throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");
+						}
 					} else {
 						// TODO maybe it would be better to directly transform the element here.
 						list.add(Tuple.tuple(element, language));
@@ -342,7 +352,8 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	 */
 	protected PagingMetaInfo extractMetaInfo(JsonObject info, PagingParameters pagingInfo) {
 		PagingMetaInfo metaInfo = new PagingMetaInfo();
-		long total = info.getLong("total");
+
+		long total = extractTotalCount(info);
 		metaInfo.setTotalCount(total);
 		int totalPages = 0;
 		Long perPage = Optional.ofNullable(pagingInfo.getPerPage()).orElse(DEFAULT_SEARCH_PER_PAGE);
@@ -356,6 +367,17 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		metaInfo.setPageCount(totalPages);
 		metaInfo.setPerPage(perPage);
 		return metaInfo;
+	}
+
+	protected long extractTotalCount(JsonObject info) {
+		switch (complianceMode) {
+		case ES_7:
+			return info.getJsonObject("total").getLong("value");
+		case ES_6:
+			return info.getLong("total");
+		default:
+			throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");
+		}
 	}
 
 	@Override

@@ -24,6 +24,8 @@ import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
@@ -41,11 +43,13 @@ public class ProjectUpdateEventHandler implements EventHandler {
 
 	private final MeshHelper helper;
 	private final MeshEntities entities;
+	private final ComplianceMode complianceMode;
 
 	@Inject
-	public ProjectUpdateEventHandler(MeshHelper helper, MeshEntities entities) {
+	public ProjectUpdateEventHandler(MeshHelper helper, MeshEntities entities, MeshOptions options) {
 		this.helper = helper;
 		this.entities = entities;
+		this.complianceMode = options.getSearchOptions().getComplianceMode();
 	}
 
 	@Override
@@ -83,7 +87,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 						container,
 						branch.getUuid(),
 						type
-					)
+					), complianceMode
 				))
 			)));})
 			.collect(toFlowable()))
@@ -114,7 +118,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 		.map(tag -> helper.createDocumentRequest(
 			Tag.composeIndexName(project.getUuid()),
 			tag.getUuid(),
-			entities.tag.transform(tag)
+			entities.tag.transform(tag), complianceMode
 		));
 	}
 
@@ -122,7 +126,8 @@ public class ProjectUpdateEventHandler implements EventHandler {
 		return helper.createDocumentRequest(
 			TagFamily.composeIndexName(project.getUuid()),
 			family.getUuid(),
-			entities.tagFamily.transform(family)
+			entities.tagFamily.transform(family),
+			complianceMode
 		);
 	}
 

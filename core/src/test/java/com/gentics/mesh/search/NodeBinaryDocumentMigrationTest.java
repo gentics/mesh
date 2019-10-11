@@ -2,11 +2,12 @@ package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 
 import java.io.ByteArrayInputStream;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -14,12 +15,18 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.buffer.Buffer;
-@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
-public class NodeBinaryDocumentMigrationTest extends AbstractMeshTest {
+
+@RunWith(Parameterized.class)
+@MeshTestSetting(testSize = FULL, startServer = true)
+public class NodeBinaryDocumentMigrationTest extends AbstractMultiESTest {
+
+	public NodeBinaryDocumentMigrationTest(ElasticsearchTestMode elasticsearch) throws Exception {
+		super(elasticsearch);
+	}
 
 	@Test
 	public void schemaMigrationWithDocumentBinary() {
@@ -46,6 +53,5 @@ public class NodeBinaryDocumentMigrationTest extends AbstractMeshTest {
 
 		client().updateSchema(schema.getUuid(), request).blockingAwait();
 	}
-
 
 }

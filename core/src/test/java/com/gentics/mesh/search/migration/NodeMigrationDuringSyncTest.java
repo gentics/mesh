@@ -1,24 +1,31 @@
 package com.gentics.mesh.search.migration;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.rest.client.MeshWebsocket;
 import com.gentics.mesh.search.AbstractNodeSearchEndpointTest;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
+import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true)
+@RunWith(Parameterized.class)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class NodeMigrationDuringSyncTest extends AbstractNodeSearchEndpointTest {
+
+	public NodeMigrationDuringSyncTest(ElasticsearchTestMode elasticsearch) throws Exception {
+		super(elasticsearch);
+	}
 
 	@Test
 	public void testSyncDuringMigration() throws Exception {

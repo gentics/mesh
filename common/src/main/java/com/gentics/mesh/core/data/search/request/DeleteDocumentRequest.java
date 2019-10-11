@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.search.request;
 
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.SearchProvider;
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -18,23 +19,32 @@ public class DeleteDocumentRequest implements Bulkable {
 	private final Action onComplete;
 	private final String bulkString;
 
-	public DeleteDocumentRequest(String index, String transformedIndex, String id) {
-		this(index, transformedIndex, id, NOOP);
+	public DeleteDocumentRequest(String index, String transformedIndex, String id, ComplianceMode mode) {
+		this(index, transformedIndex, id, mode, NOOP);
 	}
 
-	public DeleteDocumentRequest(String index, String transformedIndex, String id, Action onComplete) {
+	public DeleteDocumentRequest(String index, String transformedIndex, String id, ComplianceMode mode, Action onComplete) {
 		this.index = index;
 		this.transformedIndex = transformedIndex;
 		this.id = id;
 		this.onComplete = onComplete;
-		this.bulkString = new JsonObject()
-			.put("delete", new JsonObject()
-				.put("_index", transformedIndex)
-				.put("_type", SearchProvider.DEFAULT_TYPE)
-				.put("_id", id)
-			).encode();
-	}
 
+		JsonObject settings = new JsonObject()
+			.put("_index", transformedIndex)
+			.put("_id", id);
+
+		switch (mode) {
+		case ES_7:
+			break;
+		case ES_6:
+			settings.put("_type", SearchProvider.DEFAULT_TYPE);
+			break;
+		default:
+			throw new RuntimeException("Unknown compliance mode {" + mode + "}");
+		}
+
+		this.bulkString = new JsonObject().put("delete", settings).encode();
+	}
 
 	@Override
 	public int requestCount() {

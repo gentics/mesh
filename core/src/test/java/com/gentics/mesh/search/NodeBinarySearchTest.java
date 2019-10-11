@@ -3,7 +3,6 @@ package com.gentics.mesh.search;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
 import static com.gentics.mesh.test.context.MeshTestHelper.getRangeQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
@@ -21,6 +20,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -34,14 +35,20 @@ import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(elasticsearch = CONTAINER, testSize = FULL, startServer = true )
+@RunWith(Parameterized.class)
+@MeshTestSetting(testSize = FULL, startServer = true)
 public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
+
+	public NodeBinarySearchTest(ElasticsearchTestMode elasticsearch) throws Exception {
+		super(elasticsearch);
+	}
 
 	@Test
 	public void testBinarySearchMapping() throws Exception {

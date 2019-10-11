@@ -3,7 +3,7 @@ package com.gentics.mesh.search;
 import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -29,6 +29,7 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.index.node.NodeContainerMappingProvider;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.test.TestSize;
@@ -37,8 +38,9 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.json.JsonObject;
-@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+
 @RunWith(Parameterized.class)
+@MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class MicroschemaMappingTest extends AbstractMeshTest {
 
 	private static final String SCHEMA_NAME = "test_schema";
@@ -60,112 +62,88 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 				new JsonObject()
 					.put("test", new JsonObject()
 						.put("type", "keyword")
-						.put("index", true)
-					),
+						.put("index", true)),
 				FieldUtil.createStringField("aaa-aaa"),
 				(Function<String, JsonObject>) ((path) -> new JsonObject()
 					.put("term", new JsonObject()
-						.put(path + ".test", "aaa-aaa")
-					)
-				)
+						.put(path + ".test", "aaa-aaa")))
 			},
 			{
 				FieldUtil.createStringFieldSchema(DYNAMIC_FIELD_NAME),
 				new JsonObject()
 					.put("test", new JsonObject()
 						.put("type", "text")
-						.put("index", true)
-					),
+						.put("index", true)),
 				FieldUtil.createStringField("a very cool test string"),
 				(Function<String, JsonObject>) ((path) -> new JsonObject()
 					.put("match", new JsonObject()
-						.put(path + ".test", "cool")
-					)
-				)
+						.put(path + ".test", "cool")))
 			},
 			{
 				FieldUtil.createHtmlFieldSchema(DYNAMIC_FIELD_NAME),
 				new JsonObject()
 					.put("test", new JsonObject()
 						.put("type", "keyword")
-						.put("index", true)
-					),
+						.put("index", true)),
 				FieldUtil.createHtmlField("aaa-aaa"),
 				(Function<String, JsonObject>) ((path) -> new JsonObject()
 					.put("term", new JsonObject()
-						.put(path + ".test", "aaa-aaa")
-					)
-				)
+						.put(path + ".test", "aaa-aaa")))
 			},
 			{
 				FieldUtil.createHtmlFieldSchema(DYNAMIC_FIELD_NAME),
 				new JsonObject()
 					.put("test", new JsonObject()
 						.put("type", "text")
-						.put("index", true)
-					),
+						.put("index", true)),
 				FieldUtil.createHtmlField("a very cool test string"),
 				(Function<String, JsonObject>) ((path) -> new JsonObject()
 					.put("match", new JsonObject()
-						.put(path + ".test", "cool")
-					)
-				)
+						.put(path + ".test", "cool")))
 			},
 			{
 				FieldUtil.createListFieldSchema(DYNAMIC_FIELD_NAME, "string"),
 				new JsonObject()
 					.put("test", new JsonObject()
 						.put("type", "keyword")
-						.put("index", true)
-					),
+						.put("index", true)),
 				FieldUtil.createStringListField("aaa-aaa"),
 				(Function<String, JsonObject>) ((path) -> new JsonObject()
 					.put("term", new JsonObject()
-						.put(path + ".test", "aaa-aaa")
-					)
-				)
+						.put(path + ".test", "aaa-aaa")))
 			},
 			{
 				FieldUtil.createListFieldSchema(DYNAMIC_FIELD_NAME, "string"),
 				new JsonObject()
 					.put("test", new JsonObject()
 						.put("type", "text")
-						.put("index", true)
-					),
+						.put("index", true)),
 				FieldUtil.createStringListField("a very cool test string"),
 				(Function<String, JsonObject>) ((path) -> new JsonObject()
 					.put("match", new JsonObject()
-						.put(path + ".test", "cool")
-					)
-				)
+						.put(path + ".test", "cool")))
 			},
 			{
 				FieldUtil.createListFieldSchema(DYNAMIC_FIELD_NAME, "html"),
 				new JsonObject()
 					.put("test", new JsonObject()
 						.put("type", "keyword")
-						.put("index", true)
-					),
+						.put("index", true)),
 				FieldUtil.createHtmlListField("aaa-aaa"),
 				(Function<String, JsonObject>) ((path) -> new JsonObject()
 					.put("term", new JsonObject()
-						.put(path + ".test", "aaa-aaa")
-					)
-				)
+						.put(path + ".test", "aaa-aaa")))
 			},
 			{
 				FieldUtil.createListFieldSchema(DYNAMIC_FIELD_NAME, "html"),
 				new JsonObject()
 					.put("test", new JsonObject()
 						.put("type", "text")
-						.put("index", true)
-					),
+						.put("index", true)),
 				FieldUtil.createHtmlListField("a very cool test string"),
 				(Function<String, JsonObject>) ((path) -> new JsonObject()
 					.put("match", new JsonObject()
-						.put(path + ".test", "cool")
-					)
-				)
+						.put(path + ".test", "cool")))
 			},
 		});
 		// @formatter:on
@@ -214,21 +192,24 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 	public void testMicroschemaCustomMappingJson() {
 		NodeIndexHandler handler = mesh().indexHandlerRegistry().nodeIndexHandler;
 		NodeContainerMappingProvider provider = handler.getMappingProvider();
+		ComplianceMode mode = options().getSearchOptions().getComplianceMode();
 
 		tx(() -> {
 			Branch branch = latestBranch();
 			JsonObject schemaMapping = provider.getMapping(this.schema, branch);
+			if (mode == ComplianceMode.ES_6) {
+				schemaMapping = schemaMapping.getJsonObject(DEFAULT_TYPE);
+			}
 			assertNotNull(schemaMapping);
 			JsonObject fieldsMapping = schemaMapping
-					.getJsonObject(DEFAULT_TYPE)
-					.getJsonObject("properties")
-					.getJsonObject("fields");
+				.getJsonObject("properties")
+				.getJsonObject("fields");
 			assertNotNull(fieldsMapping);
 			JsonObject microschemaMapping = fieldsMapping
-					.getJsonObject("properties")
-					.getJsonObject(MICRONODE_FIELD_NAME)
-					.getJsonObject("properties")
-					.getJsonObject("fields-" + MICROSCHEMA_NAME);
+				.getJsonObject("properties")
+				.getJsonObject(MICRONODE_FIELD_NAME)
+				.getJsonObject("properties")
+				.getJsonObject("fields-" + MICROSCHEMA_NAME);
 			assertNotNull(microschemaMapping);
 			JsonObject fieldMapping = microschemaMapping.getJsonObject("properties").getJsonObject(DYNAMIC_FIELD_NAME);
 
@@ -269,7 +250,7 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 	@Test
 	public void testNestedMicroschemaCustomMappingSearch() {
 		String searchPath = "fields." + MICRONODE_LIST_FIELD_NAME + ".fields-" + MICROSCHEMA_NAME + "."
-				+ DYNAMIC_FIELD_NAME;
+			+ DYNAMIC_FIELD_NAME;
 
 		tx(() -> {
 			// Create a node with the newly created (Micro-)Schema
@@ -282,14 +263,12 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 			NodeResponse node = call(() -> client().createNode(PROJECT_NAME, createNode));
 
 			JsonObject query = new JsonObject().put(
-					"query",
-					new JsonObject().put(
-							"nested",
-							new JsonObject()
-									.put("path", "fields." + MICRONODE_LIST_FIELD_NAME)
-									.put("query", this.searchQuery.apply(searchPath))
-					)
-			);
+				"query",
+				new JsonObject().put(
+					"nested",
+					new JsonObject()
+						.put("path", "fields." + MICRONODE_LIST_FIELD_NAME)
+						.put("query", this.searchQuery.apply(searchPath))));
 
 			waitForSearchIdleEvent();
 			// Search for the node

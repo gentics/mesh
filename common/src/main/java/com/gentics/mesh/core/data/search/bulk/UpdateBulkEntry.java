@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.search.bulk;
 
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.json.JsonObject;
@@ -10,7 +11,6 @@ import io.vertx.core.json.JsonObject;
 public class UpdateBulkEntry extends AbstractBulkEntry {
 
 	private final JsonObject payload;
-	private boolean usePipeline = false;
 
 	/**
 	 * Construct a new entry.
@@ -18,23 +18,11 @@ public class UpdateBulkEntry extends AbstractBulkEntry {
 	 * @param indexName
 	 * @param documentId
 	 * @param payload
+	 * @param mode
 	 */
-	public UpdateBulkEntry(String indexName, String documentId, JsonObject payload) {
-		super(indexName, documentId);
+	public UpdateBulkEntry(String indexName, String documentId, JsonObject payload, ComplianceMode mode) {
+		super(indexName, documentId, mode);
 		this.payload = payload;
-	}
-
-	/**
-	 * Construct a new entry.
-	 * 
-	 * @param indexName
-	 * @param documentId
-	 * @param payload
-	 * @param usePipeline
-	 */
-	public UpdateBulkEntry(String indexName, String documentId, JsonObject payload, boolean usePipeline) {
-		this(indexName, documentId, payload);
-		this.usePipeline = usePipeline;
 	}
 
 	public JsonObject getPayload() {
@@ -51,14 +39,21 @@ public class UpdateBulkEntry extends AbstractBulkEntry {
 		JsonObject metaData = new JsonObject();
 		JsonObject settings = new JsonObject()
 			.put("_index", installationPrefix + getIndexName())
-			.put("_type", SearchProvider.DEFAULT_TYPE)
 			.put("_id", getDocumentId());
+
+		switch (getMode()) {
+		case ES_7:
+			break;
+		case ES_6:
+			settings.put("_type", SearchProvider.DEFAULT_TYPE);
+			break;
+		default:
+			throw new RuntimeException("Unknown compliance mode {" + getMode() + "}");
+		}
+
 		JsonObject doc = new JsonObject()
 			.put("doc", payload);
 
-		if (usePipeline) {
-			settings.put("pipeline", installationPrefix + getIndexName());
-		}
 		metaData.put(getBulkAction().id(), settings);
 		return new StringBuilder().append(metaData.encode()).append("\n").append(doc.encode()).toString();
 	}

@@ -9,31 +9,26 @@ import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.SearchProvider;
 
 import io.reactivex.functions.Action;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 /**
  * A helper that provides various methods for event handlers.
  */
 public class MeshHelper {
-	private static final Logger log = LoggerFactory.getLogger(MeshHelper.class);
 
 	private final Database db;
 	private final MeshOptions options;
 	private final BootstrapInitializer boot;
-	private final SearchProvider searchProvider;
 
 	@Inject
-	public MeshHelper(Database db, MeshOptions options, BootstrapInitializer boot, SearchProvider searchProvider) {
+	public MeshHelper(Database db, MeshOptions options, BootstrapInitializer boot) {
 		this.db = db;
 		this.options = options;
 		this.boot = boot;
-		this.searchProvider = searchProvider;
 	}
 
 	private String prefixIndexName(String index) {
@@ -45,57 +40,66 @@ public class MeshHelper {
 
 	/**
 	 * Creates a {@link CreateDocumentRequest} and prefixes the index with the configured prefix.
+	 * 
 	 * @param index
 	 * @param id
 	 * @param doc
+	 * @param mode
 	 * @return
 	 */
-	public CreateDocumentRequest createDocumentRequest(String index, String id, JsonObject doc) {
-		return new CreateDocumentRequest(index, prefixIndexName(index), id, doc, NOOP);
+	public CreateDocumentRequest createDocumentRequest(String index, String id, JsonObject doc, ComplianceMode mode) {
+		return new CreateDocumentRequest(index, prefixIndexName(index), id, doc, mode, NOOP);
 	}
 
 	/**
 	 * Creates a {@link CreateDocumentRequest} and prefixes the index with the configured prefix.
+	 * 
 	 * @param index
 	 * @param id
 	 * @param doc
+	 * @param mode
 	 * @param onComplete
 	 * @return
 	 */
-	public CreateDocumentRequest createDocumentRequest(String index, String id, JsonObject doc, Action onComplete) {
-		return new CreateDocumentRequest(index, prefixIndexName(index), id, doc, onComplete);
+	public CreateDocumentRequest createDocumentRequest(String index, String id, JsonObject doc, ComplianceMode mode, Action onComplete) {
+		return new CreateDocumentRequest(index, prefixIndexName(index), id, doc, mode, onComplete);
 	}
 
 	/**
 	 * Creates a {@link UpdateDocumentRequest} and prefixes the index with the configured prefix.
+	 * 
 	 * @param index
 	 * @param id
 	 * @param doc
 	 * @return
 	 */
-	public UpdateDocumentRequest updateDocumentRequest(String index, String id, JsonObject doc) {
-		return new UpdateDocumentRequest(index, prefixIndexName(index), id, doc);
+	public UpdateDocumentRequest updateDocumentRequest(String index, String id, JsonObject doc, ComplianceMode mode) {
+		return new UpdateDocumentRequest(index, prefixIndexName(index), id, doc, mode);
 	}
 
 	/**
 	 * Creates a {@link DeleteDocumentRequest} and prefixes the index with the configured prefix.
+	 * 
 	 * @param index
 	 * @param id
+	 * @param mode
 	 * @return
 	 */
-	public DeleteDocumentRequest deleteDocumentRequest(String index, String id) {
-		return new DeleteDocumentRequest(index, prefixIndexName(index), id);
+	public DeleteDocumentRequest deleteDocumentRequest(String index, String id, ComplianceMode mode) {
+		return new DeleteDocumentRequest(index, prefixIndexName(index), id, mode);
 	}
 
 	/**
 	 * Creates a {@link DeleteDocumentRequest} and prefixes the index with the configured prefix.
+	 * 
 	 * @param index
 	 * @param id
+	 * @param mode
 	 * @param onComplete
 	 * @return
 	 */
-	public DeleteDocumentRequest deleteDocumentRequest(String index, String id, Action onComplete) {
-		return new DeleteDocumentRequest(index, prefixIndexName(index), id, onComplete);
+	public DeleteDocumentRequest deleteDocumentRequest(String index, String id, ComplianceMode mode, Action onComplete) {
+		return new DeleteDocumentRequest(index, prefixIndexName(index), id, mode, onComplete);
 	}
 
 	public Database getDb() {

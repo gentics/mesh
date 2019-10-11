@@ -25,6 +25,8 @@ import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
 import com.gentics.mesh.search.verticle.MessageEvent;
@@ -40,11 +42,13 @@ public class PermissionChangedEventHandler implements EventHandler {
 
 	private final MeshEntities meshEntities;
 	private final MeshHelper meshHelper;
+	private final ComplianceMode complianceMode;
 
 	@Inject
-	public PermissionChangedEventHandler(MeshEntities meshEntities, MeshHelper meshHelper) {
+	public PermissionChangedEventHandler(MeshEntities meshEntities, MeshHelper meshHelper, MeshOptions options) {
 		this.meshEntities = meshEntities;
 		this.meshHelper = meshHelper;
+		this.complianceMode = options.getSearchOptions().getComplianceMode();
 	}
 
 	@Override
@@ -85,7 +89,7 @@ public class PermissionChangedEventHandler implements EventHandler {
 									container.getSchemaContainerVersion().getUuid(),
 									type),
 								NodeGraphFieldContainer.composeDocumentId(model.getUuid(), container.getLanguageTag()),
-								tf.toPermissionPartial(node, type)))))))
+								tf.toPermissionPartial(node, type), complianceMode))))))
 			.collect(toFlowable()));
 	}
 
@@ -95,7 +99,7 @@ public class PermissionChangedEventHandler implements EventHandler {
 			.map(doc -> Flowable.just(meshHelper.updateDocumentRequest(
 				getIndex(model),
 				model.getUuid(),
-				doc)))
+				doc, complianceMode)))
 			.orElse(Flowable.empty());
 	}
 

@@ -4,6 +4,8 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
 import io.reactivex.Flowable;
@@ -25,11 +27,13 @@ import static com.gentics.mesh.util.StreamUtil.toStream;
 public class GroupEventHandler implements EventHandler {
 	private final MeshHelper helper;
 	private final MeshEntities entities;
+	private final ComplianceMode complianceMode;
 
 	@Inject
-	public GroupEventHandler(MeshHelper helper, MeshEntities entities) {
+	public GroupEventHandler(MeshHelper helper, MeshEntities entities, MeshOptions options) {
 		this.helper = helper;
 		this.entities = entities;
+		this.complianceMode  = options.getSearchOptions().getComplianceMode();
 	}
 
 	@Override
@@ -55,7 +59,7 @@ public class GroupEventHandler implements EventHandler {
 			} else if (event == GROUP_DELETED) {
 				// TODO Update users that were part of that group.
 				// At the moment we cannot look up users that were in the group if the group is already deleted.
-				return Flowable.just(helper.deleteDocumentRequest(Group.composeIndexName(), model.getUuid()));
+				return Flowable.just(helper.deleteDocumentRequest(Group.composeIndexName(), model.getUuid(), complianceMode));
 			} else {
 				throw new RuntimeException("Unexpected event " + event.address);
 			}

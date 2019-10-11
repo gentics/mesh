@@ -8,17 +8,22 @@ import static org.junit.Assert.assertEquals;
 
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
-import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+@RunWith(Parameterized.class)
+@MeshTestSetting(startServer = true, testSize = FULL)
+public class TagSearchEndpointTest extends AbstractMultiESTest implements BasicSearchCrudTestcases {
 
-@MeshTestSetting(elasticsearch = CONTAINER, startServer = true, testSize = FULL)
-public class TagSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
+	public TagSearchEndpointTest(ElasticsearchTestMode elasticsearch) throws Exception {
+		super(elasticsearch);
+	}
 
 	@Test
 	@Override

@@ -1,5 +1,18 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.codehaus.jettison.json.JSONException;
+
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
@@ -13,27 +26,23 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.ElasticsearchTestMode;
+import com.gentics.mesh.util.IndexOptionHelper;
 import com.gentics.mesh.util.Tuple;
+
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.codehaus.jettison.json.JSONException;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest {
 
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-public abstract class AbstractNodeSearchEndpointTest extends AbstractMeshTest {
+	public AbstractNodeSearchEndpointTest(ElasticsearchTestMode elasticsearch) throws Exception {
+		super(elasticsearch);
+	}
 
 	/**
 	 * Do the search with the given set of expected languages and assert correctness of the result.
@@ -162,4 +171,19 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMeshTest {
 		must.getJsonObject(1).getJsonObject("match").put("fields.vcardlist.fields-vcard.lastName", lastName);
 		return request.toString();
 	}
+
+	protected void addRawToSchemaField() {
+		// Update the schema and enable the addRaw field
+		String schemaUuid = tx(() -> content().getSchemaContainer().getUuid());
+		SchemaUpdateRequest request = tx(() -> JsonUtil.readValue(content().getSchemaContainer().getLatestVersion().getJson(),
+			SchemaUpdateRequest.class));
+		request.getField("teaser").setElasticsearch(IndexOptionHelper.getRawFieldOption());
+
+		grantAdminRole();
+		waitForJob(() -> {
+			call(() -> client().updateSchema(schemaUuid, request));
+		});
+		revokeAdminRole();
+	}
+
 }

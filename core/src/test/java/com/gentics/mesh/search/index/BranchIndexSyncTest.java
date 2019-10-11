@@ -2,7 +2,7 @@ package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_FINISHED;
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 
 import org.junit.Test;
 
@@ -18,7 +18,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 /**
  * Test which will check how branch migrations and index sync work together.
  */
-@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.FULL, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = TestSize.FULL, startServer = true)
 public class BranchIndexSyncTest extends AbstractMeshTest {
 
 	@Test

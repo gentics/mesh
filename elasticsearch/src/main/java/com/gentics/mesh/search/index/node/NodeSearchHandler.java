@@ -34,6 +34,8 @@ import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.error.MeshConfigurationException;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.event.MeshEventSender;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.SearchProvider;
@@ -57,8 +59,8 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 
 	@Inject
 	public NodeSearchHandler(SearchProvider searchProvider, Database db, NodeIndexHandler nodeIndexHandler, HandlerUtilities utils,
-		BootstrapInitializer boot) {
-		super(db, searchProvider, nodeIndexHandler);
+		BootstrapInitializer boot, MeshEventSender meshEventSender, MeshOptions options) {
+		super(db, searchProvider, options, nodeIndexHandler, meshEventSender);
 		this.boot = boot;
 	}
 
@@ -120,7 +122,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 
 			// The scrolling iterator will wrap the current response and query ES for more data if needed.
 			Page<? extends NodeContent> page = db.tx(() -> {
-				long totalCount = hitsInfo.getLong("total");
+				long totalCount = extractTotalCount(hitsInfo);
 				List<NodeContent> elementList = new ArrayList<>();
 				JsonArray hits = hitsInfo.getJsonArray("hits");
 				for (int i = 0; i < hits.size(); i++) {
@@ -159,7 +161,17 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 
 				}
 				// Update the total count
-				hitsInfo.put("total", totalCount);
+				switch (complianceMode) {
+				case ES_6:
+					hitsInfo.put("total", totalCount);
+					break;
+				case ES_7:
+					hitsInfo.put("total", new JsonObject().put("value", totalCount));
+					break;
+				default:
+					throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");
+
+				}
 
 				PagingMetaInfo info = extractMetaInfo(hitsInfo, pagingInfo);
 				return new PageImpl<>(elementList, info.getTotalCount(), pagingInfo.getPage(), info.getPageCount(), pagingInfo.getPerPage());

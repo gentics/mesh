@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.MappingProvider;
@@ -36,8 +37,8 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	SchemaMappingProvider mappingProvider;
 
 	@Inject
-	public SchemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper) {
-		super(searchProvider, db, boot, helper);
+	public SchemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options) {
+		super(searchProvider, db, boot, helper, options);
 	}
 
 	@Override

@@ -6,6 +6,8 @@ import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
 import io.reactivex.Flowable;
@@ -26,13 +28,16 @@ import static com.gentics.mesh.util.StreamUtil.toStream;
 
 @Singleton
 public class TagEventHandler implements EventHandler {
+	
 	private final MeshHelper helper;
 	private final MeshEntities entities;
+	private final ComplianceMode complianceMode;
 
 	@Inject
-	public TagEventHandler(MeshHelper helper, MeshEntities entities) {
+	public TagEventHandler(MeshHelper helper, MeshEntities entities, MeshOptions options) {
 		this.helper = helper;
 		this.entities = entities;
+		this.complianceMode = options.getSearchOptions().getComplianceMode();
 	}
 
 	@Override
@@ -66,7 +71,7 @@ public class TagEventHandler implements EventHandler {
 				if (EventCauseHelper.isProjectDeleteCause(model)) {
 					return Flowable.empty();
 				} else {
-					return Flowable.just(helper.deleteDocumentRequest(Tag.composeIndexName(projectUuid), model.getUuid()));
+					return Flowable.just(helper.deleteDocumentRequest(Tag.composeIndexName(projectUuid), model.getUuid(), complianceMode));
 				}
 
 			} else {

@@ -1,7 +1,7 @@
 package com.gentics.mesh.search.permission;
 
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -16,7 +16,7 @@ import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-@MeshTestSetting(elasticsearch = CONTAINER, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class GroupPermissionSearchTest extends AbstractMeshTest {
 
 	@Test

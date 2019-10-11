@@ -1,7 +1,6 @@
 package com.gentics.mesh.search.index.entry;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.HashMap;
@@ -24,6 +23,8 @@ import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -59,19 +60,25 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	public static final int ES_SYNC_FETCH_BATCH_SIZE = 1000;
 
-	protected SearchProvider searchProvider;
+	protected final SearchProvider searchProvider;
 
-	protected Database db;
+	protected final Database db;
 
-	protected BootstrapInitializer boot;
+	protected final BootstrapInitializer boot;
 
 	protected final MeshHelper helper;
 
-	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper) {
+	protected final MeshOptions options;
+
+	protected final ComplianceMode complianceMode;
+
+	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options) {
 		this.searchProvider = searchProvider;
 		this.db = db;
 		this.boot = boot;
 		this.helper = helper;
+		this.options = options;
+		this.complianceMode = options.getSearchOptions().getComplianceMode();
 	}
 
 	/**
@@ -126,7 +133,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		String indexName = composeIndexNameFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
 		return Observable
-			.just(new IndexBulkEntry(indexName, documentId, getTransformer().toDocument(element)));
+			.just(new IndexBulkEntry(indexName, documentId, getTransformer().toDocument(element), complianceMode));
 	}
 
 	@Override
@@ -134,12 +141,12 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		String uuid = entry.getElementUuid();
 		T element = getRootVertex().findByUuid(uuid);
 		if (element == null) {
-			throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, DEFAULT_TYPE);
+			throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, getType());
 		} else {
 			String indexName = composeIndexNameFromEntry(entry);
 			String documentId = composeDocumentIdFromEntry(entry);
 			return Observable.just(
-				new UpdateBulkEntry(indexName, documentId, getTransformer().toPermissionPartial(element)));
+				new UpdateBulkEntry(indexName, documentId, getTransformer().toPermissionPartial(element), complianceMode));
 		}
 	}
 
@@ -147,7 +154,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	public Observable<DeleteBulkEntry> deleteForBulk(UpdateDocumentEntry entry) {
 		String indexName = composeIndexNameFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
-		return Observable.just(new DeleteBulkEntry(indexName, documentId));
+		return Observable.just(new DeleteBulkEntry(indexName, documentId, complianceMode));
 	}
 
 	@Override
@@ -209,7 +216,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 				Function<Action, Function<String, CreateDocumentRequest>> toCreateRequest = action -> uuid -> {
 					JsonObject doc = db.tx(() -> getTransformer().toDocument(getElement(uuid)));
-					return helper.createDocumentRequest(indexName, uuid, doc, action);
+					return helper.createDocumentRequest(indexName, uuid, doc, complianceMode, action);
 				};
 
 				Flowable<SearchRequest> toInsert = Flowable.fromIterable(needInsertionInES)
@@ -219,7 +226,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 					.map(toCreateRequest.apply(metric::decUpdate));
 
 				Flowable<SearchRequest> toDelete = Flowable.fromIterable(needRemovalInES)
-					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, metric::decDelete));
+					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, complianceMode, metric::decDelete));
 
 				return Flowable.merge(toInsert, toUpdate, toDelete);
 			}).flatMapPublisher(x -> x);
