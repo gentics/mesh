@@ -27,6 +27,8 @@ include::content/docs/variables.adoc-include[]
 
 icon:check[] Core: Fixed the `/utilities/validate...` endpoints for many different cases. link:https://github.com/gentics/mesh/issues/277[#277]
 
+icon:check[] Rest: When sending JSON to Gentics Mesh, link:https://fasterxml.github.io/jackson-databind/javadoc/2.9/com/fasterxml/jackson/databind/MapperFeature.html#ALLOW_COERCION_OF_SCALARS[values will not be coerced into scalar values (number, boolean) anymore]. Instead, an error will be returned.
+
 [[v1.0.2]]
 == 1.0.2 (11.10.2019)
 
