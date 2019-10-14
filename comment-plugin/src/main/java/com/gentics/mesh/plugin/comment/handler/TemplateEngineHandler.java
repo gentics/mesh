@@ -18,6 +18,6 @@ public class TemplateEngineHandler extends AbstractCommentHandler {
 	public Completable handle(PluginContext context) {
 		return templateService.getJavascript()
 			.doOnEvent(stringHandler(context))
-			.toCompletable();
+			.ignoreElement();
 	}
 }

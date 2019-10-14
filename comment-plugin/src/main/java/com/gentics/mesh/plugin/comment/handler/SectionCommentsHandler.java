@@ -24,6 +24,6 @@ public class SectionCommentsHandler extends AbstractCommentHandler {
 		SectionCommentsParameters params = SectionCommentsParameters.fromContext(context);
 		return sectionService.fetchComments(uuid, params.getLanguage(), params.getOrder())
 			.doOnEvent(jsonHandler(context))
-			.toCompletable();
+			.ignoreElement();
 	}
 }

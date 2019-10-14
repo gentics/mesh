@@ -345,7 +345,7 @@ public class CommentService {
 				requireAnonymousFieldsPresent(section, request);
 			}
 			request.getEmail().ifPresent(this::validateEmail);
-		}).toCompletable();
+		}).ignoreElement();
 	}
 
 	/**

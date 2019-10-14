@@ -79,7 +79,7 @@ public class MailService {
 				message.setHtml(messageBody.toString());
 				message.setSubject(config.getMailSubjects().get(template));
 				return mailClient.rxSendMail(message);
-			}).toCompletable();
+			}).ignoreElement();
 	}
 
 	public enum Template {

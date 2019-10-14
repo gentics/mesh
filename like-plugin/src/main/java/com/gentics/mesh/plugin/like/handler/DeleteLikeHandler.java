@@ -25,7 +25,7 @@ public class DeleteLikeHandler extends AbstractLikeHandler {
 
 		return likeService.deleteLike(projectName, uuid, lang).doOnSuccess(response -> {
 			context.response().setStatusCode(204).end();
-		}).toCompletable();
+		}).ignoreElement();
 	}
 
 }

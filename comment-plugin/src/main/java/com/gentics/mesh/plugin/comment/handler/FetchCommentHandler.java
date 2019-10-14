@@ -22,7 +22,7 @@ public class FetchCommentHandler extends AbstractCommentHandler {
 		String uuid = context.pathParam("uuid");
 		return commentService.fetchComment(uuid, true)
 			.doOnEvent(jsonHandler(context))
-			.toCompletable();
+			.ignoreElement();
 	}
 
 }

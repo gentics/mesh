@@ -31,7 +31,7 @@ public class StoreFavoriteHandler extends AbstractFavoriteHandler{
 			if (t == null) {
 				context.response().setStatusCode(HttpResponseStatus.CREATED.code()).end();
 			}
-		}).toCompletable();
+		}).ignoreElement();
 	}
 
 }

@@ -6,8 +6,8 @@ import org.mockito.AdditionalAnswers;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -30,7 +30,7 @@ public class TestRoutingContext {
 	public RoutingContext asContext() {
 		RoutingContext context = mock(RoutingContext.class);
 		when(context.get(anyString())).then(AdditionalAnswers.delegatesTo(data));
-		when(context.put(anyString(), anyObject())).then(inv -> {
+		when(context.put(anyString(), any())).then(inv -> {
 			String key = inv.getArgument(0);
 			Object value = inv.getArgument(1);
 			put(key, value);
