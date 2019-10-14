@@ -2,6 +2,7 @@ package com.gentics.mesh.plugin.comment.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.plugin.comment.model.AnonymousCommentField;
 import com.gentics.mesh.plugin.comment.service.MailService;
 import io.vertx.ext.mail.MailConfig;
@@ -31,6 +32,7 @@ public class Configuration {
 	public static final String DEFAULT_MAIL_SENDER = "Admin <admin@example.com>";
 	public static final Map<MailService.Template, String> DEFAULT_MAIL_SUBJECTS = defaultMailSubjects();
 	public static final String DEFAULT_NODE_CONFIG_FIELD = null;
+	public static final LinkType DEFAULT_MAIL_RESOLVE_LINKS = LinkType.SHORT;
 
 	private static Map<MailService.Template, String> defaultMailSubjects() {
 		HashMap<MailService.Template, String> map = new HashMap<>();
@@ -59,6 +61,7 @@ public class Configuration {
 	private String mailTemplateFolder = DEFAULT_MAIL_TEMPLATE_FOLDER;
 	private String mailSender = DEFAULT_MAIL_SENDER;
 	private Map<MailService.Template, String> mailSubjects = DEFAULT_MAIL_SUBJECTS;
+	private LinkType mailResolveLinks = DEFAULT_MAIL_RESOLVE_LINKS;
 
 	public Configuration() {
 	}
@@ -186,6 +189,15 @@ public class Configuration {
 
 	public Configuration setNodeConfigField(String nodeConfigField) {
 		this.nodeConfigField = nodeConfigField;
+		return this;
+	}
+
+	public LinkType getMailResolveLinks() {
+		return mailResolveLinks;
+	}
+
+	public Configuration setMailResolveLinks(LinkType mailResolveLinks) {
+		this.mailResolveLinks = mailResolveLinks;
 		return this;
 	}
 }

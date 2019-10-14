@@ -102,6 +102,10 @@ public class TestCommentClient {
 		return addComment(comment, null);
 	}
 
+	public Comment addComment(CreateCommentRequest request) {
+		return toComment(post("/comments", request));
+	}
+
 	public Response addCommentResponse(String comment) {
 		return addCommentResponse(null, new CreateCommentRequest().setComment(comment));
 	}

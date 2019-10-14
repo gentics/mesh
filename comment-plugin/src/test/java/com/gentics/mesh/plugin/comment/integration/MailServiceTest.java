@@ -1,6 +1,9 @@
 package com.gentics.mesh.plugin.comment.integration;
 
 import co.unruly.matchers.StreamMatchers;
+
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.plugin.comment.model.request.CreateCommentRequest;
 import com.icegreen.greenmail.junit.GreenMailRule;
 import com.icegreen.greenmail.util.ServerSetupTest;
 import org.junit.BeforeClass;
@@ -45,5 +48,30 @@ public class MailServiceTest extends AbstractLocalIntegrationTest {
 		assertThat(recipients, StreamMatchers.contains("moderator@example.com", "admin@example.com"));
 		// Something converts LF to CRLF when receiving mails. We convert them back here
 		assertEquals(loadResource("/expectedMails/commentCreated1.html"), message.getContent().toString().replaceAll("\r\n", "\n"));
+	}
+
+	@Test
+	public void testLinkRendering() throws Exception {
+		NodeResponse folder = createFolder(playground, String.format("{{mesh.link(\"%s\", \"en\")}}", playground.getUuid()));
+		client.addComment(new CreateCommentRequest()
+			.setComment("This is a link rendering test!")
+			.setNode(folder.getUuid())
+			.setLanguage("en")
+		);
+
+		boolean inTime = greenMail.waitForIncomingEmail(Duration.ofSeconds(10).toMillis(), 2);
+		assertTrue("Mails were not received in time", inTime);
+
+		MimeMessage[] messages = greenMail.getReceivedMessages();
+		assertEquals(2, messages.length);
+		MimeMessage message = messages[0];
+		Stream<String> recipients = Stream.of(message.getAllRecipients())
+			.map(Address::toString);
+
+		assertEquals("A test comment has been created", message.getSubject());
+		assertEquals("Testmailer <test@mailer.com>", message.getFrom()[0].toString());
+		assertThat(recipients, StreamMatchers.contains("moderator@example.com", "admin@example.com"));
+		// Something converts LF to CRLF when receiving mails. We convert them back here
+		assertEquals(loadResource("/expectedMails/linkRendering.html"), message.getContent().toString().replaceAll("\r\n", "\n"));
 	}
 }
