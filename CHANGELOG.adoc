@@ -47,6 +47,7 @@ icon:check[] GraphQL: Fixed fetching node references from users. link:https://gi
 icon:check[] Java Rest Client: Fixed a bug that some generic methods would not allow response objects of any class.
 
 
+
 [[v1.2.0]]
 == 1.2.0 (20.11.2019)
 
