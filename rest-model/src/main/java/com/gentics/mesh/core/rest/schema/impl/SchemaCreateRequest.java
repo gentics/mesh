@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 
 import io.vertx.core.json.JsonObject;
 
@@ -147,4 +151,12 @@ public class SchemaCreateRequest implements Schema {
 		return this;
 	}
 
+	@Override
+	public void validate() {
+		Schema.super.validate();
+
+		if (getFields() == null || getFields().isEmpty()) {
+			throw error(BAD_REQUEST, "schema_error_no_fields");
+		}
+	}
 }

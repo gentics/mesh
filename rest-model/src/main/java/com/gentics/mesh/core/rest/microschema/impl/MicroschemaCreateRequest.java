@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.microschema.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -78,4 +81,11 @@ public class MicroschemaCreateRequest implements Microschema {
 		return getName() + " fields: {" + fields + "}";
 	}
 
+	@Override
+	public void validate() {
+		Microschema.super.validate();
+		if (getFields() == null || getFields().isEmpty()) {
+			throw error(BAD_REQUEST, "schema_error_no_fields");
+		}
+	}
 }

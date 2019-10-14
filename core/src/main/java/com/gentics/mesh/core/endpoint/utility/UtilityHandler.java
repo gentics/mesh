@@ -11,9 +11,11 @@ import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.AbstractRestException;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
 import com.gentics.mesh.core.rest.validation.ValidationStatus;
@@ -86,7 +88,7 @@ public class UtilityHandler extends AbstractHandler {
 		db.asyncTx(() -> {
 			Schema schema;
 			try {
-				schema = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
+				schema = JsonUtil.readValue(ac.getBodyAsString(), SchemaCreateRequest.class);
 				schema.validate();
 			} catch (GenericRestException error) {
 				return Single.just(toValidationResponse(ac, error));
@@ -109,7 +111,7 @@ public class UtilityHandler extends AbstractHandler {
 	public void validateMicroschema(InternalActionContext ac) {
 		db.asyncTx(() -> {
 			try {
-				Microschema model = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
+				Microschema model = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaCreateRequest.class);
 				model.validate();
 				return Single.just(new SchemaValidationResponse()
 					.setStatus(ValidationStatus.VALID));
