@@ -50,6 +50,7 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetric;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
+import com.gentics.mesh.util.UUIDUtil;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 
@@ -58,6 +59,7 @@ import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.functions.Action;
+import io.reactivex.subjects.Subject;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -174,7 +176,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		});
 	}
 
-
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
 		Set<String> activeIndices = new HashSet<>();
@@ -183,12 +184,13 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				for (Branch branch : currentProject.getBranchRoot().findAll()) {
 					for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
 						if (log.isDebugEnabled()) {
-							log.debug("Found active schema version {}-{} in branch {}", version.getSchema().getName(), version.getVersion(), branch.getName());
+							log.debug("Found active schema version {}-{} in branch {}", version.getSchema().getName(), version.getVersion(),
+								branch.getName());
 						}
 						Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
 							activeIndices
 								.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(), branch.getUuid(), version.getUuid(),
-										type));
+									type));
 						});
 					}
 				}
@@ -198,10 +200,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		if (log.isDebugEnabled()) {
 			log.debug(
 				"All indices:\n" +
-				String.join("\n", indices) + "\n" +
-				"Active indices: \n" +
-				String.join("\n", activeIndices)
-			);
+					String.join("\n", indices) + "\n" +
+					"Active indices: \n" +
+					String.join("\n", activeIndices));
 		}
 		return indices.stream()
 			// Only handle indices of the handler's type
@@ -217,9 +218,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			SyncMetric metric = new SyncMetric(getType());
 			return boot.meshRoot().getProjectRoot().findAll().stream()
 				.flatMap(project -> project.getBranchRoot().findAll().stream()
-				.flatMap(branch -> branch.findActiveSchemaVersions().stream()
-				.flatMap(version -> Stream.of(DRAFT, PUBLISHED)
-				.map(type -> diffAndSync(project, branch, version, type, metric)))))
+					.flatMap(branch -> branch.findActiveSchemaVersions().stream()
+						.flatMap(version -> Stream.of(DRAFT, PUBLISHED)
+							.map(type -> diffAndSync(project, branch, version, type, metric)))))
 				.collect(Collectors.collectingAndThen(Collectors.toList(), Flowable::merge));
 		}));
 	}
@@ -249,56 +250,87 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		}
 	}
 
-	private Flowable<SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type, SyncMetric metric) {
+	private Flowable<SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type,
+		SyncMetric metric) {
 		String indexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(),
 			version.getUuid(), type);
 
-		return Single.zip(
-			loadVersionsFromIndex(indexName),
-			Single.fromCallable(() -> loadVersionsFromGraph(branch, version, type)),
-			(sinkVersions, sourceNodes) -> {
-				log.info("Handling index sync on handler {" + getClass().getName() + "}");
+		String syncId = UUIDUtil.randomUUID();
+
+		Flowable<String> fromGraph= Flowable.generate(s -> {
+			db.tx(tx -> {
 				String branchUuid = branch.getUuid();
+				version.getFieldContainers(branchUuid)
+					.filter(c -> c.getSchemaContainerVersion().equals(version))
+					.filter(c -> c.isType(type, branchUuid)).forEach(n -> {
+						String uuid = n.getParentNode().getUuid();
+						String lang = n.getLanguageTag();
+						s.onNext(uuid + "-" + lang);
+					});
+				s.onComplete();
+			});
+		});
+		
+		
+		Flowable<List<String>> buffered = fromGraph.buffer(200);
 
-				Map<String, String> sourceVersions = db.tx(() -> sourceNodes.entrySet().stream()
-					.collect(Collectors.toMap(Map.Entry::getKey, x -> generateVersion(x.getValue(), branchUuid, type))));
+		Flowable<String> inDbCheck = buffered.map( entries -> {
+			return entries.get(0);
+			toSearchRequest(entries);
+		});
+		
+		
+//		return Single.zip(
+//			loadVersionsFromIndex(indexName),
+//			Single.fromCallable(() -> loadVersionsFromGraph(branch, version, type)),
+//			(sinkVersions, sourceNodes) -> {
+//				log.info("Handling index sync on handler {" + getClass().getName() + "}");
+//				String branchUuid = branch.getUuid();
+//
+//				Map<String, String> sourceVersions = db.tx(() -> sourceNodes.entrySet().stream()
+//					.collect(Collectors.toMap(Map.Entry::getKey, x -> generateVersion(x.getValue(), branchUuid, type))));
+//
+//				// 3. Diff the maps
+//				MapDifference<String, String> diff = Maps.difference(sourceVersions, sinkVersions);
+//				if (diff.areEqual()) {
+//					return Flowable.<SearchRequest>empty();
+//				}
+//				Set<String> needInsertionInES = diff.entriesOnlyOnLeft().keySet();
+//				Set<String> needRemovalInES = diff.entriesOnlyOnRight().keySet();
+//				Set<String> needUpdateInEs = diff.entriesDiffering().keySet();
+//
+//				log.info("Pending insertions on {" + indexName + "}:" + needInsertionInES.size());
+//				log.info("Pending removals on {" + indexName + "}:" + needRemovalInES.size());
+//				log.info("Pending updates on {" + indexName + "}:" + needUpdateInEs.size());
+//
+//				metric.incInsert(needInsertionInES.size());
+//				metric.incDelete(needRemovalInES.size());
+//				metric.incUpdate(needUpdateInEs.size());
+//
+//				io.reactivex.functions.Function<Action, io.reactivex.functions.Function<String, CreateDocumentRequest>> toCreateRequest = action -> uuid -> {
+//					JsonObject doc = db.tx(() -> getTransformer().toDocument(sourceNodes.get(uuid), branchUuid, type));
+//					return helper.createDocumentRequest(indexName, uuid, doc, complianceMode, action);
+//				};
+//
+//				Flowable<SearchRequest> toInsert = Flowable.fromIterable(needInsertionInES)
+//					.map(toCreateRequest.apply(metric::decInsert));
+//
+//				Flowable<SearchRequest> toUpdate = Flowable.fromIterable(needUpdateInEs)
+//					.map(toCreateRequest.apply(metric::decUpdate));
+//
+//				Flowable<SearchRequest> toDelete = Flowable.fromIterable(needRemovalInES)
+//					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, complianceMode, metric::decDelete));
+//
+//				return Flowable.merge(toInsert, toUpdate, toDelete);
+//			}).flatMapPublisher(x -> x);
+	}
 
-				// 3. Diff the maps
-				MapDifference<String, String> diff = Maps.difference(sourceVersions, sinkVersions);
-				if (diff.areEqual()) {
-					return Flowable.<SearchRequest>empty();
-				}
-				Set<String> needInsertionInES = diff.entriesOnlyOnLeft().keySet();
-				Set<String> needRemovalInES = diff.entriesOnlyOnRight().keySet();
-				Set<String> needUpdateInEs = diff.entriesDiffering().keySet();
-
-				log.info("Pending insertions on {" + indexName + "}:" + needInsertionInES.size());
-				log.info("Pending removals on {" + indexName + "}:" + needRemovalInES.size());
-				log.info("Pending updates on {" + indexName + "}:" + needUpdateInEs.size());
-
-				metric.incInsert(needInsertionInES.size());
-				metric.incDelete(needRemovalInES.size());
-				metric.incUpdate(needUpdateInEs.size());
-
-				io.reactivex.functions.Function<
-					Action,
-					io.reactivex.functions.Function<String, CreateDocumentRequest>
-					> toCreateRequest = action -> uuid -> {
-					JsonObject doc = db.tx(() -> getTransformer().toDocument(sourceNodes.get(uuid), branchUuid, type));
-					return helper.createDocumentRequest(indexName, uuid, doc, complianceMode, action);
-				};
-
-				Flowable<SearchRequest> toInsert = Flowable.fromIterable(needInsertionInES)
-					.map(toCreateRequest.apply(metric::decInsert));
-
-				Flowable<SearchRequest> toUpdate = Flowable.fromIterable(needUpdateInEs)
-					.map(toCreateRequest.apply(metric::decUpdate));
-
-				Flowable<SearchRequest> toDelete = Flowable.fromIterable(needRemovalInES)
-					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, complianceMode, metric::decDelete));
-
-				return Flowable.merge(toInsert, toUpdate, toDelete);
-		}).flatMapPublisher(x -> x);
+	/**
+	 * Generate a search request from the list of documents ids.
+	 * @param entries
+	 */
+	private Single<JsonObject> toSearchRequest(List<String> entries) {
+		return searchProvider.loadDocuments(entries);
 	}
 
 	@Override
@@ -527,7 +559,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String newLanguageTag = newContainer.getLanguageTag();
 		String newDocumentId = NodeGraphFieldContainer.composeDocumentId(newContainer.getParentNode().getUuid(), newLanguageTag);
 		JsonObject doc = transformer.toDocument(newContainer, releaseUuid, type);
-		return 	Observable.just(new IndexBulkEntry(newIndexName, newDocumentId, doc, complianceMode));
+		return Observable.just(new IndexBulkEntry(newIndexName, newDocumentId, doc, complianceMode));
 
 	}
 

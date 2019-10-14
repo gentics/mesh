@@ -1,5 +1,14 @@
 package com.gentics.mesh.search;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
@@ -17,15 +26,6 @@ import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 /**
  * Search provider which just logs interacts with the search provider. This is useful when debugging or writing tests.
@@ -265,5 +265,10 @@ public class TrackingSearchProvider implements SearchProvider {
 	@Override
 	public boolean isActive() {
 		return true;
+	}
+
+	@Override
+	public Single<JsonObject> loadDocuments(List<String> entries) {
+		return Single.just(new JsonObject());
 	}
 }

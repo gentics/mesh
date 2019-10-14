@@ -152,5 +152,10 @@ public class DevNullSearchProvider implements SearchProvider {
 		// This provider is always inactive
 		return false;
 	}
+	
+	@Override
+	public Single<JsonObject> loadDocuments(List<String> entries) {
+		return Single.just(new JsonObject());
+	}
 
 }

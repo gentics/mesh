@@ -568,4 +568,14 @@ public class ElasticSearchProvider implements SearchProvider {
 			throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");
 		}
 	}
+
+	@Override
+	public Single<JsonObject> loadDocuments(List<String> entries) {
+		JsonArray ids = new JsonArray();
+		entries.forEach(e -> ids.add(e));
+		JsonObject request = new JsonObject();
+		request.put("ids", ids);
+		return client.multiGet(request).async()
+			.timeout(10, TimeUnit.SECONDS);
+	}
 }
