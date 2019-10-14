@@ -30,7 +30,7 @@ public class SchemaEndpointNoEsTest extends AbstractMeshTest {
 
 	@Test
 	public void testCreate() {
-		SchemaCreateRequest createRequest = FieldUtil.createMinimalValidSchemaCreateRequest();
+		SchemaCreateRequest createRequest = FieldUtil.createSchemaCreateRequest();
 
 		expect(SCHEMA_CREATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(createRequest.getName()).uuidNotNull();

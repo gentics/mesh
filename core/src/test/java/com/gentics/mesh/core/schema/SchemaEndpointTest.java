@@ -100,7 +100,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	@Override
 	public void testCreate() throws GenericRestException, Exception {
-		SchemaCreateRequest createRequest = FieldUtil.createMinimalValidSchemaCreateRequest();
+		SchemaCreateRequest createRequest = FieldUtil.createSchemaCreateRequest();
 
 		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0, 0);
 
@@ -128,7 +128,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testCreateWithoutContainerFlag() {
-		SchemaCreateRequest createRequest = FieldUtil.createMinimalValidSchemaCreateRequest();
+		SchemaCreateRequest createRequest = FieldUtil.createSchemaCreateRequest();
 		createRequest.setContainer(null);
 		SchemaResponse schema = call(() -> client().createSchema(createRequest));
 		assertFalse("The flag should be set to false", schema.getContainer());
@@ -137,7 +137,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	public void testUpdateWithoutContainerFlag() {
 		// 1. Create schema
-		SchemaCreateRequest createRequest = FieldUtil.createMinimalValidSchemaCreateRequest();
+		SchemaCreateRequest createRequest = FieldUtil.createSchemaCreateRequest();
 		createRequest.setContainer(true);
 		SchemaResponse schema = call(() -> client().createSchema(createRequest));
 		assertTrue("The flag should be set to true", schema.getContainer());
@@ -154,7 +154,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	@Override
 	public void testCreateWithNoPerm() throws Exception {
-		SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
+		SchemaCreateRequest schema = FieldUtil.createSchemaCreateRequest();
 		String schemaRootUuid = db().tx(() -> meshRoot().getSchemaContainerRoot().getUuid());
 		try (Tx tx = tx()) {
 			role().revokePermissions(meshRoot().getSchemaContainerRoot(), CREATE_PERM);
@@ -166,7 +166,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	@Override
 	public void testCreateWithUuid() throws Exception {
-		SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
+		SchemaCreateRequest schema = FieldUtil.createSchemaCreateRequest();
 		String uuid = UUIDUtil.randomUUID();
 		SchemaResponse resp = call(() -> client().createSchema(uuid, schema));
 		assertEquals("The created schema did not contain the expected uuid.", uuid, resp.getUuid());
@@ -184,7 +184,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		try (Tx tx = tx()) {
 			assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0, 0);
-			SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
+			SchemaCreateRequest schema = FieldUtil.createSchemaCreateRequest();
 
 			SchemaResponse restSchema = call(() -> client().createSchema(schema));
 			waitForSearchIdleEvent();

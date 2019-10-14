@@ -363,7 +363,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		String baseUuid = tx(() -> project().getBaseNode().getUuid());
 
 		// 1. Create a new schema which uses the vcard microschema
-		SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
+		SchemaCreateRequest schema = FieldUtil.createSchemaCreateRequest();
 		schema.addField(FieldUtil.createMicronodeFieldSchema("vcardtest").setAllowedMicroSchemas("vcard"));
 		SchemaResponse response = call(() -> client().createSchema(schema));
 
@@ -401,7 +401,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		String baseUuid = tx(() -> project().getBaseNode().getUuid());
 
 		// 1. Create a new schema which uses the vcard microschema
-		SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
+		SchemaCreateRequest schema = FieldUtil.createSchemaCreateRequest();
 		ListFieldSchema fieldSchema = FieldUtil.createListFieldSchema("vcardslist", "micronode").setAllowedSchemas("vcard");
 		schema.addField(fieldSchema);
 		SchemaResponse response = call(() -> client().createSchema(schema));

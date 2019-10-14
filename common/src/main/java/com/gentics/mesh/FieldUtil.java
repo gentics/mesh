@@ -1,5 +1,6 @@
 package com.gentics.mesh;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
@@ -57,18 +58,6 @@ import com.gentics.mesh.util.Tuple;
  */
 public final class FieldUtil {
 
-	/**
-	 * Create a minimal valid test schema..
-	 * 
-	 * @return
-	 */
-	public static SchemaCreateRequest createMinimalValidSchemaCreateRequest() {
-		SchemaCreateRequest request = new SchemaCreateRequest();
-		request.setName("test");
-		request.validate();
-		return request;
-	}
-
 	public static SchemaModel createMinimalValidSchema() {
 		SchemaModel request = new SchemaModelImpl();
 		request.setName("test");
@@ -84,9 +73,9 @@ public final class FieldUtil {
 	public static SchemaCreateRequest createSchemaCreateRequest() {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("test");
-		request.setFields(Arrays.asList(
+		request.setFields(new ArrayList<>(Arrays.asList(
 			new StringFieldSchemaImpl().setName("name")
-		));
+		)));
 		request.validate();
 		return request;
 	}
@@ -123,6 +112,9 @@ public final class FieldUtil {
 	public static MicroschemaCreateRequest createMinimalValidMicroschemaCreateRequest() {
 		MicroschemaCreateRequest schema = new MicroschemaCreateRequest();
 		schema.setName("test");
+		schema.setFields(Arrays.asList(
+			new StringFieldSchemaImpl().setName("name")
+		));
 		schema.validate();
 		return schema;
 	}
