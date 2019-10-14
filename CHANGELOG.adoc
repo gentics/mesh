@@ -29,7 +29,7 @@ icon:check[] Core: Mesh now uses a different parser for processing `*.docx` and 
 
 icon:check[] GraphQL: Fixed fetching node references from users. link:https://github.com/gentics/mesh/issues/393[#393] link:https://github.com/gentics/mesh/issues/934[#934]
 
-icon:plus[] Core: The core Vert.x library was updated to version `3.8.2`.
+icon:check[] Core: The core Vert.x library was updated to version `3.8.2`.
 
 icon:plus[] Core: The core plugin framework library was updated to version `2.1.0`.
 
