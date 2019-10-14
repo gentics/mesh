@@ -385,4 +385,13 @@ public class PluginContext implements RoutingContext {
 		rc.fail(statusCode, throwable);
 	}
 
+	@Override
+	public RoutingContext addCookie(io.vertx.core.http.Cookie cookie) {
+		return rc.addCookie(cookie);
+	}
+
+	@Override
+	public Map<String, io.vertx.core.http.Cookie> cookieMap() {
+		return rc.cookieMap();
+	}
 }

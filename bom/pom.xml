@@ -18,7 +18,7 @@
 
 		<!-- when updating version, don't forget to update administration-guide.asciidoc -->
 		<graphql.version>10.0</graphql.version>
-		<pf4j.version>3.0.1</pf4j.version>
+		<pf4j.version>3.1.0</pf4j.version>
 		<asm.version>3.3.1</asm.version>
 		<spring.security.version>4.2.13.RELEASE</spring.security.version>
 		<ferma.version>${project.version}</ferma.version>
