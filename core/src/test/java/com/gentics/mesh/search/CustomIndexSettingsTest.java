@@ -304,8 +304,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSchemaValidationSuccess() {
-		SchemaCreateRequest schema = new SchemaCreateRequest();
-		schema.setName("settingsTest");
+		SchemaCreateRequest schema = FieldUtil.createSchemaCreateRequest();
 		SchemaValidationResponse response = call(() -> client().validateSchema(schema));
 		assertNotNull(response.getElasticsearch());
 		assertEquals(ValidationStatus.VALID, response.getStatus());
@@ -314,7 +313,8 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testMicroschemaValidationError() {
 		MicroschemaCreateRequest microschema = new MicroschemaCreateRequest();
-		call(() -> client().validateMicroschema(microschema), BAD_REQUEST, "schema_error_no_name");
+		SchemaValidationResponse response = call(() -> client().validateMicroschema(microschema));
+		assertEquals(ValidationStatus.INVALID, response.getStatus());
 	}
 
 	@Test
