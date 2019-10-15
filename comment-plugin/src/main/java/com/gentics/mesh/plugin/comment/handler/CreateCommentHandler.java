@@ -24,6 +24,6 @@ public class CreateCommentHandler extends AbstractCommentHandler {
 		CreateCommentRequest request = JsonUtil.readValue(event.getBodyAsString(), CreateCommentRequest.class);
 		return commentService.createComment(request)
 			.doOnEvent(jsonHandler(event))
-			.toCompletable();
+			.ignoreElement();
 	}
 }

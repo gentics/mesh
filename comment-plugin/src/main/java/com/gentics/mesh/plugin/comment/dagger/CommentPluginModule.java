@@ -2,6 +2,8 @@ package com.gentics.mesh.plugin.comment.dagger;
 
 import com.gentics.mesh.plugin.comment.config.Configuration;
 import com.gentics.mesh.plugin.comment.config.ProjectConfiguration;
+import com.gentics.mesh.plugin.comment.util.DateHelper;
+
 import dagger.Module;
 import dagger.Provides;
 import io.vertx.core.json.JsonObject;
@@ -44,6 +46,8 @@ public class CommentPluginModule {
 	@Singleton
 	@Provides
 	static TemplateEngine provideTemplateEngine(Vertx vertx) {
-		return HandlebarsTemplateEngine.create(vertx);
+		HandlebarsTemplateEngine handlebarsTemplateEngine = HandlebarsTemplateEngine.create(vertx);
+		handlebarsTemplateEngine.getDelegate().getHandlebars().registerHelper("date", new DateHelper());
+		return handlebarsTemplateEngine;
 	}
 }

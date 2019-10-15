@@ -65,7 +65,7 @@ public class SchemaInitializer {
 	 */
 	private Completable initSchemas() {
 		return Observable.fromIterable(schemaService.getSchemaNames())
-				.flatMapCompletable(name -> checkSchema(name).flatMap(schema -> assignToProjects(schema)).toCompletable());
+				.flatMapCompletable(name -> checkSchema(name).flatMap(schema -> assignToProjects(schema)).ignoreElement());
 	}
 
 	/**

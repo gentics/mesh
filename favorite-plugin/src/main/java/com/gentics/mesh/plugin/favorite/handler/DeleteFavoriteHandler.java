@@ -29,7 +29,7 @@ public class DeleteFavoriteHandler extends AbstractFavoriteHandler {
 		
 		return favoriteService.deleteFavorite(projectName, type, value).doOnSuccess(response -> {
 			context.response().setStatusCode(204).end();
-		}).toCompletable();
+		}).ignoreElement();
 	}
 
 }

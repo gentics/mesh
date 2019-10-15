@@ -28,11 +28,11 @@ public class GetLikeHandler extends AbstractLikeHandler {
 		String uuid = context.pathParam("nodeUuid");
 		String lang = context.pathParam("lang");
 
-		return likeService.getLike(projectName, uuid, lang).doOnSuccess(model-> {
+		return likeService.getLike(projectName, uuid, lang).doOnSuccess(model -> {
 			HttpServerResponse resp = context.response();
 			resp.putHeader(CONTENT_TYPE, APPLICATION_JSON);
 			resp.end(JsonUtil.toJson(model));
-		}).toCompletable();
+		}).ignoreElement();
 	}
 
 }

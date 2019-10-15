@@ -25,6 +25,6 @@ public class UpdateCommentHandler extends AbstractCommentHandler {
 		UpdateCommentRequest request = JsonUtil.readValue(context.getBodyAsString(), UpdateCommentRequest.class);
 		return commentService.updateComment(commentUuid, request)
 			.doOnEvent(jsonHandler(context))
-			.toCompletable();
+			.ignoreElement();
 	}
 }

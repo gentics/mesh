@@ -52,12 +52,13 @@ public abstract class AbstractLocalIntegrationTest {
 		.withInMemoryMode()
 		.waitForStartup();
 
-	private static final String PROJECT_NAME = "test";
+	protected static final String PROJECT_NAME = "test";
 	protected static TestCommentClient client;
-	private static ProjectResponse project;
+	protected static ProjectResponse project;
 
-	private static NodeResponse commentFolder;
-	private static NodeResponse publicNode;
+	protected static NodeResponse commentFolder;
+	protected static NodeResponse publicNode;
+	protected NodeResponse playground;
 
 	protected static UserResponse anonymousUser;
 	protected static UserResponse editorUser;
@@ -169,6 +170,16 @@ public abstract class AbstractLocalIntegrationTest {
 		return call(() -> server.client().createNode(project.getName(), request));
 	}
 
+	protected NodeResponse createFolder(NodeResponse parent, String name) {
+		NodeCreateRequest request = new NodeCreateRequest()
+			.setLanguage("en")
+			.setParentNodeUuid(parent.getUuid())
+			.setSchemaName("folder");
+		request.getFields().put("name", new StringFieldImpl().setString(name));
+		request.getFields().put("slug", new StringFieldImpl().setString(name));
+		return call(() -> server.client().createNode(project.getName(), request));
+	}
+
 	private static void setEditorPermissions(ProjectResponse project, UserResponse user) {
 		RoleResponse role = createRole();
 		createAndAssignGroup(role, user);
@@ -208,6 +219,7 @@ public abstract class AbstractLocalIntegrationTest {
 	@Before
 	public void setUp() {
 		client.setUser(ANONYMOUS);
+		playground = createFolder("playground");
 	}
 
 	@After
@@ -220,6 +232,12 @@ public abstract class AbstractLocalIntegrationTest {
 				project.getName(), node.getUuid(),
 				new DeleteParametersImpl().setRecursive(true)
 			).toCompletable()).blockingAwait();
+
+		server.client().deleteNode(
+			project.getName(),
+			playground.getUuid(),
+			new DeleteParametersImpl().setRecursive(true)
+		).blockingAwait();
 	}
 
 	protected String stringResponse(Response response) {

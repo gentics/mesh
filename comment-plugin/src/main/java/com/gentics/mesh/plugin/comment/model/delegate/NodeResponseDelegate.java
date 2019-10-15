@@ -62,7 +62,7 @@ public class NodeResponseDelegate implements JsonSerializable {
 	}
 
 	public boolean isContainer() {
-		return delegate.isContainer();
+		return delegate.getContainer();
 	}
 
 	public void setContainer(boolean isContainer) {

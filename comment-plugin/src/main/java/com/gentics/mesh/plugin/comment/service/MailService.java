@@ -1,6 +1,7 @@
 package com.gentics.mesh.plugin.comment.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.plugin.comment.config.Configuration;
 import com.gentics.mesh.plugin.comment.dagger.AdminClient;
 import com.gentics.mesh.plugin.comment.model.Comment;
@@ -55,11 +56,14 @@ public class MailService {
 
 	public Completable notifyCommentCreated(Comment comment, EffectiveCommentSection section) {
 		context.put("comment", new JsonObject(comment.getDelegate().toJson()));
-		return adminClient.findNodeByUuid(projectName, section.getNode().getUuid()).toSingle()
-			.flatMapCompletable(referencedNode -> {
-				context.put("reference", new JsonObject(referencedNode.toJson()));
-				return sendMail(COMMENT_CREATED, section);
-			});
+		return adminClient.findNodeByUuid(
+			projectName,
+			section.getNode().getUuid(),
+			new NodeParametersImpl().setResolveLinks(this.config.getMailResolveLinks())
+		).toSingle().flatMapCompletable(referencedNode -> {
+			context.put("reference", new JsonObject(referencedNode.toJson()));
+			return sendMail(COMMENT_CREATED, section);
+		});
 	}
 
 	private Completable sendMail(Template template, EffectiveCommentSection section) {
@@ -79,7 +83,7 @@ public class MailService {
 				message.setHtml(messageBody.toString());
 				message.setSubject(config.getMailSubjects().get(template));
 				return mailClient.rxSendMail(message);
-			}).toCompletable();
+			}).ignoreElement();
 	}
 
 	public enum Template {

@@ -66,7 +66,7 @@ public class MeshService {
 	public Completable requirePermission(String nodeUuid, Permission permission) {
 		return getUserPermissions(nodeUuid)
 			.doOnSuccess(nodePerm -> requirePermission(nodePerm, permission))
-			.toCompletable();
+			.ignoreElement();
 	}
 
 	/**

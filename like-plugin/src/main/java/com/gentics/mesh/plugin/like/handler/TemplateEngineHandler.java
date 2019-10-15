@@ -19,6 +19,6 @@ public class TemplateEngineHandler extends AbstractLikeHandler {
 
 	@Override
 	public Completable handle(PluginContext context) {
-		return templateService.getJavascript().doOnSuccess(out -> context.response().end(out)).toCompletable();
+		return templateService.getJavascript().doOnSuccess(out -> context.response().end(out)).ignoreElement();
 	}
 }

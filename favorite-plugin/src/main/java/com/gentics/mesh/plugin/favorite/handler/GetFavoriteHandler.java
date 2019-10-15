@@ -30,7 +30,7 @@ public class GetFavoriteHandler extends AbstractFavoriteHandler {
 
 		return favoriteService.getFavorite(projectName, type).doOnSuccess(response -> {
 			context.response().end(JsonUtil.toJson(response));
-		}).toCompletable();
+		}).ignoreElement();
 	}
 
 }

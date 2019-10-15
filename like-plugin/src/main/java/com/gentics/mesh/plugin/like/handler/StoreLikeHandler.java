@@ -27,7 +27,7 @@ public class StoreLikeHandler extends AbstractLikeHandler {
 			if (t == null) {
 				context.response().setStatusCode(HttpResponseStatus.CREATED.code()).end();
 			}
-		}).toCompletable();
+		}).ignoreElement();
 	}
 
 }

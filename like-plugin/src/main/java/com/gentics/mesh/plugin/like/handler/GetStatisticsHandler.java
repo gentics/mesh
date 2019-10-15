@@ -32,7 +32,7 @@ public class GetStatisticsHandler extends AbstractLikeHandler {
 			HttpServerResponse resp = context.response();
 			resp.putHeader(CONTENT_TYPE, APPLICATION_JSON);
 			resp.end(JsonUtil.toJson(model));
-		}).toCompletable();
+		}).ignoreElement();
 	}
 
 }
