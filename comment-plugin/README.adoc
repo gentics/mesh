@@ -74,6 +74,11 @@ adresses. Leave empty to deactivate emails |`+[]+`
 
 |`+mailSubjects+` |map |See example below |See section
 `+Mail templates+`
+
+|`+mailResolveLinks+`|One of `+OFF+`, `+SHORT+`, `+MEDIUM+`, `+FULL+`
+| Resolves links for the referenced node in email templates
+| `+SHORT+`
+
 |===
 
 ==== Example File
@@ -142,3 +147,17 @@ created |`+A comment has been created+` |`+comment+`, `+reference+`
 |`+reference+` |Referenced node of the comment section |Mesh node
 response
 |===
+
+==== Helpers
+===== Date
+Formats a date.
+
+Usage: `+{{date <date> <dateFormat>}}+`
+
+Parameters:
+
+* date - A date in link:https://en.wikipedia.org/wiki/ISO_8601[ISO 8601] format
+* dateFormat - A date format string. See link:https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns[here] for more information.
+
+Example:
+`+{{date reference.fields.somedate "dd.MM.yyyy"}}+`

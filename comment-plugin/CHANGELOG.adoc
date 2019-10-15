@@ -10,8 +10,12 @@
 
 = Mesh Comment Plugin
 
-[[v5.1.0]]
-== 5.1.0 (TBD)
+[[Unreleased]]
+== Unreleased
+
+icon:plus[] Mesh links in referenced nodes will now be resolved for email notifications. The type of link resolving can be chosen in the configuration. link:https://jira.gentics.com/browse/SUP-8611[SUP-8611]
+
+icon:plus[] Mail templates can now use the new date helper for formatting dates. See the link:README.adoc[Readme] for more details. link:https://jira.gentics.com/browse/SUP-8611[SUP-8611]
 
 icon:plus[] Comments and comment sections now contain permission information link:https://jira.gentics.com/browse/SUP-8437[SUP-8437]
 

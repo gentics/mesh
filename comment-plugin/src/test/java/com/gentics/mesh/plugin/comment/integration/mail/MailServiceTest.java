@@ -1,8 +1,9 @@
-package com.gentics.mesh.plugin.comment.integration;
+package com.gentics.mesh.plugin.comment.integration.mail;
 
 import co.unruly.matchers.StreamMatchers;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.plugin.comment.integration.AbstractLocalIntegrationTest;
 import com.gentics.mesh.plugin.comment.model.request.CreateCommentRequest;
 import com.icegreen.greenmail.junit.GreenMailRule;
 import com.icegreen.greenmail.util.ServerSetupTest;

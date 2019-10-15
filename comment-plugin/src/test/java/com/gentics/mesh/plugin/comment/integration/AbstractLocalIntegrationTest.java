@@ -52,9 +52,9 @@ public abstract class AbstractLocalIntegrationTest {
 		.withInMemoryMode()
 		.waitForStartup();
 
-	private static final String PROJECT_NAME = "test";
+	protected static final String PROJECT_NAME = "test";
 	protected static TestCommentClient client;
-	private static ProjectResponse project;
+	protected static ProjectResponse project;
 
 	protected static NodeResponse commentFolder;
 	protected static NodeResponse publicNode;
