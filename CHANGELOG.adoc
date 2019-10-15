@@ -29,6 +29,8 @@ include::content/docs/variables.adoc-include[]
 icon:plus[] Search: A new setting has been added which can be used to enable Elasticsearch 7 support. The `search.complianceMode` setting in the `mesh.yml` file can be used to control the compliance mode for Elasticsearch support. The setting can also be controlled via the `MESH_ELASTICSEARCH_COMPLIANCE_MODE` environment variable. Currently there are two modes: `ES_7` for Elasticsearch 7.x and `ES_6` for Elasticsearch 6.x.
 By default `ES_6` will be used thus no changes are required for existing installations.
 
+icon:check[] OrientDB: The included OrientDB version has been updated to version 3.0.24
+
 [[v1.0.2]]
 == 1.0.2 (11.10.2019)
 
