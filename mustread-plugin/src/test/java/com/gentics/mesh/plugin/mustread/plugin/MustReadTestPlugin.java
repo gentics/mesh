@@ -26,9 +26,9 @@ public class MustReadTestPlugin extends MustReadPlugin {
         ArrayList<ProjectConfig> projects = new ArrayList<>();
 
         QueryFilesConfig emptyQueryFiles = new QueryFilesConfig().setData("").setUuid("");
-        QueryFilesConfig testQueryFiles = new QueryFilesConfig().setData("Test/data.graphql").setUuid("Test/MustRead.graphql");
-        QueryFilesConfig nonExistingDataQueryFiles = new QueryFilesConfig().setData("Test2/data.graphql").setUuid("Test/MustRead.graphql");
-        QueryFilesConfig nonExistingUUIDQueryFiles = new QueryFilesConfig().setData("Test/data.graphql").setUuid("Test2/MustRead.graphql");
+        QueryFilesConfig testQueryFiles = new QueryFilesConfig().setData("Test/Data.graphql").setUuid("Test/MustRead.graphql");
+        QueryFilesConfig nonExistingDataQueryFiles = new QueryFilesConfig().setData("Test2/Data.graphql").setUuid("Test/MustRead.graphql");
+        QueryFilesConfig nonExistingUUIDQueryFiles = new QueryFilesConfig().setData("Test/Data.graphql").setUuid("Test2/MustRead.graphql");
 
         FieldNamesConfig emptyFieldNames = new FieldNamesConfig().setUuid("").setPublished("");
         FieldNamesConfig testFieldNames = new FieldNamesConfig().setUuid("testUuid").setPublished("testPublished");
