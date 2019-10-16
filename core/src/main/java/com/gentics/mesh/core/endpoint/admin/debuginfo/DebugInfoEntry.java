@@ -15,6 +15,10 @@ public class DebugInfoEntry {
 		this.data = data;
 	}
 
+	public static DebugInfoEntry fromBuffer(String filename, Buffer data) {
+		return new DebugInfoEntry(filename, data);
+	}
+
 	public static DebugInfoEntry fromString(String filename, String data) {
 		return new DebugInfoEntry(
 			filename,
