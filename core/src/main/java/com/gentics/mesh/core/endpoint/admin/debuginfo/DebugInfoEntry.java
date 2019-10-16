@@ -2,6 +2,8 @@ package com.gentics.mesh.core.endpoint.admin.debuginfo;
 
 import java.util.zip.ZipEntry;
 
+import com.gentics.mesh.json.JsonUtil;
+
 import io.vertx.core.buffer.Buffer;
 
 public class DebugInfoEntry {
@@ -18,6 +20,10 @@ public class DebugInfoEntry {
 			filename,
 			Buffer.buffer(data)
 		);
+	}
+
+	public static DebugInfoEntry asJson(String fileName, Object data) {
+		return fromString(fileName, JsonUtil.toJson(data));
 	}
 
 	public ZipEntry createZipEntry() {
