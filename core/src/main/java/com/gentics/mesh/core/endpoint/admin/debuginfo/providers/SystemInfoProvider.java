@@ -7,6 +7,7 @@ import java.lang.management.MemoryUsage;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.json.JsonUtil;
@@ -29,7 +30,7 @@ public class SystemInfoProvider implements DebugInfoProvider {
 	}
 
 	@Override
-	public Flowable<DebugInfoEntry> debugInfoEntries() {
+	public Flowable<DebugInfoEntry> debugInfoEntries(InternalActionContext ac) {
 		SystemInfo info = new SystemInfo();
 		MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
 

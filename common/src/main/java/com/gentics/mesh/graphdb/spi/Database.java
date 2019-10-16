@@ -156,6 +156,16 @@ public interface Database extends TxFactory {
 		});
 	}
 
+	default <T> Single<T> singleTx(Supplier<T> handler) {
+		return new io.vertx.reactivex.core.Vertx(vertx()).<T>rxExecuteBlocking(promise -> {
+			try (Tx tx = tx()) {
+				promise.complete(handler.get());
+			} catch (Throwable e) {
+				promise.fail(e);
+			}
+		}).toSingle();
+	}
+
 	/**
 	 * Asynchronously execute the trxHandler within the scope of a non transaction.
 	 * 

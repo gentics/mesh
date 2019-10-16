@@ -10,6 +10,8 @@ import java.util.zip.ZipOutputStream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
+
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.vertx.ext.web.RoutingContext;
@@ -24,10 +26,11 @@ public class DebugInfoHandler {
 	}
 
 	public void handle(RoutingContext ac) {
+		InternalRoutingActionContextImpl iac = new InternalRoutingActionContextImpl(ac);
 		setHeaders(ac);
 		ZipOutputStream zipOutputStream = new ZipOutputStream(WrappedWriteStream.fromWriteStream(ac.response()));
 		Flowable.fromIterable(debugInfoProviders)
-			.flatMap(DebugInfoProvider::debugInfoEntries)
+			.flatMap(provider -> provider.debugInfoEntries(iac))
 			.flatMapCompletable(entry -> {
 				System.out.println("start " + entry.getFileName());
 				zipOutputStream.putNextEntry(entry.createZipEntry());
