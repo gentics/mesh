@@ -24,6 +24,7 @@ import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.dagger.module.BindModule;
+import com.gentics.mesh.dagger.module.DebugInfoProviderModule;
 import com.gentics.mesh.dagger.module.MeshModule;
 import com.gentics.mesh.dagger.module.SearchProviderModule;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -60,7 +61,7 @@ import io.vertx.core.Vertx;
  * Central dagger mesh component which will expose dependencies.
  */
 @Singleton
-@Component(modules = { MeshModule.class, SearchProviderModule.class, BindModule.class })
+@Component(modules = { MeshModule.class, SearchProviderModule.class, BindModule.class, DebugInfoProviderModule.class })
 public interface MeshComponent {
 
 	BootstrapInitializer boot();

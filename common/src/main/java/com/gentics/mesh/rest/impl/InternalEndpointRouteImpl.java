@@ -150,7 +150,7 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 
 	@Override
 	public InternalEndpointRoute validate() {
-		if (!produces.isEmpty() && exampleResponses.isEmpty()) {
+		if (!produces.isEmpty() && produces.contains(APPLICATION_JSON) && exampleResponses.isEmpty()) {
 			log.error("Endpoint {" + getRamlPath() + "} has no example response.");
 			throw new RuntimeException("Endpoint {" + getRamlPath() + "} has no example responses.");
 		}
