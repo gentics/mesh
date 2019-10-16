@@ -29,10 +29,12 @@ public class DebugInfoHandler {
 		Flowable.fromIterable(debugInfoProviders)
 			.flatMap(DebugInfoProvider::debugInfoEntries)
 			.flatMapCompletable(entry -> {
+				System.out.println("start " + entry.getFileName());
 				zipOutputStream.putNextEntry(entry.createZipEntry());
 				zipOutputStream.write(entry.getData().getBytes());
+				System.out.println("end " + entry.getFileName());
 				return Completable.complete();
-			}, false, 1)
+			})
 			.subscribe(() -> {
 				zipOutputStream.close();
 				ac.response().end();
