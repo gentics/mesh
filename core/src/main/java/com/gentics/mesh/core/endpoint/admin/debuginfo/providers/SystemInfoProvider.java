@@ -1,0 +1,71 @@
+package com.gentics.mesh.core.endpoint.admin.debuginfo.providers;
+
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
+import com.gentics.mesh.json.JsonUtil;
+
+import io.reactivex.Flowable;
+import io.vertx.reactivex.core.Vertx;
+
+@Singleton
+public class SystemInfoProvider implements DebugInfoProvider {
+	private final Vertx vertx;
+
+	@Inject
+	public SystemInfoProvider(Vertx vertx) {
+		this.vertx = vertx;
+	}
+
+	@Override
+	public String name() {
+		return "systemInfo";
+	}
+
+	@Override
+	public Flowable<DebugInfoEntry> debugInfoEntries() {
+		SystemInfo info = new SystemInfo();
+		MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
+
+		info.systemLoadAverage = ManagementFactory.getOperatingSystemMXBean().getSystemLoadAverage();
+		info.heapMemoryUsage = memoryMXBean.getHeapMemoryUsage();
+		info.nonHeapMemoryUsage = memoryMXBean.getNonHeapMemoryUsage();
+
+		return vertx.fileSystem().rxFsProps(".")
+			.map(fs -> {
+				DiskSpace diskSpace = new DiskSpace();
+				diskSpace.totalSpace = fs.totalSpace();
+				diskSpace.unallocatedSpace = fs.unallocatedSpace();
+				diskSpace.usableSpace = fs.usableSpace();
+				info.diskSpace = diskSpace;
+
+				return DebugInfoEntry.fromString("systemInfo.json", JsonUtil.toJson(info));
+			})
+			.toFlowable();
+	}
+
+	public static class SystemInfo {
+		public double systemLoadAverage;
+		public MemoryUsage heapMemoryUsage;
+		public MemoryUsage nonHeapMemoryUsage;
+		public DiskSpace diskSpace;
+	}
+
+	private static class DiskSpace {
+		public long totalSpace;
+		public long unallocatedSpace;
+		public long usableSpace;
+
+		public float getPercentUsedSpace() {
+			return 100f * usableSpace / totalSpace;
+		}
+	}
+
+}
+

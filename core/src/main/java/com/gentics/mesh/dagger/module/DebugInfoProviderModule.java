@@ -2,6 +2,7 @@ package com.gentics.mesh.dagger.module;
 
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.ActiveConfigProvider;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.SystemInfoProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.ThreadDumpProvider;
 
 import dagger.Module;
@@ -18,6 +19,11 @@ public class DebugInfoProviderModule {
 
 	@Provides @IntoSet
 	public static DebugInfoProvider threadDumpProvider(ThreadDumpProvider provider) {
+		return provider;
+	}
+
+	@Provides @IntoSet
+	public static DebugInfoProvider systemInfoProvider(SystemInfoProvider provider) {
 		return provider;
 	}
 }
