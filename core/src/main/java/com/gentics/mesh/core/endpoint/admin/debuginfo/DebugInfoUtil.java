@@ -31,7 +31,7 @@ public class DebugInfoUtil {
 
 	public Flowable<DebugInfoEntry> readDebugInfoEntryOrEmpty(String path) {
 		return readFileOrEmpty(path)
-			.map(buf -> DebugInfoEntry.fromBuffer(path, buf));
+			.map(buf -> DebugInfoBufferEntry.fromBuffer(path, buf));
 	}
 
 	public static String humanReadableByteCount(long bytes) {

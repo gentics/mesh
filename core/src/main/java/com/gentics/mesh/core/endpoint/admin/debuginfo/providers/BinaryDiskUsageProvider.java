@@ -5,10 +5,9 @@ import static com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoUtil.human
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.commons.io.FileUtils;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.LoadLevel;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -45,7 +44,7 @@ public class BinaryDiskUsageProvider implements DebugInfoProvider {
 			getTotalDiskUsage(options.getUploadOptions().getDirectory()),
 			getTotalDiskUsage(options.getImageOptions().getImageCacheDirectory()),
 			BinaryDiskUsage::new
-		).map(usage -> DebugInfoEntry.asJson("binaryDiskUsage.json", usage))
+		).map(usage -> DebugInfoBufferEntry.asJson("binaryDiskUsage.json", usage))
 		.toFlowable();
 	}
 

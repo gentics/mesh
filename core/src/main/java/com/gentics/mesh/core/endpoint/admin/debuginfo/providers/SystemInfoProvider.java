@@ -13,6 +13,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.LoadLevel;
 import com.gentics.mesh.json.JsonUtil;
@@ -58,7 +59,7 @@ public class SystemInfoProvider implements DebugInfoProvider {
 				diskSpace.usableSpace = humanReadableByteCount(fs.usableSpace());
 				info.diskSpace = diskSpace;
 
-				return DebugInfoEntry.fromString("systemInfo.json", JsonUtil.toJson(info));
+				return DebugInfoBufferEntry.fromString("systemInfo.json", JsonUtil.toJson(info));
 			})
 			.toFlowable();
 	}

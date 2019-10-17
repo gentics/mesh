@@ -5,6 +5,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.LoadLevel;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -43,13 +44,13 @@ public class StatusProvider implements DebugInfoProvider {
 
 	private Flowable<DebugInfoEntry> getClusterStatus() {
 		return db.singleTx(() -> db.clusterManager().getClusterStatus())
-			.map(status -> DebugInfoEntry.fromString("clusterStatus.json", status.toJson()))
+			.map(status -> DebugInfoBufferEntry.fromString("clusterStatus.json", status.toJson()))
 			.toFlowable();
 	}
 
 	private Flowable<DebugInfoEntry> getElasticSearchStatus() {
 		return adminIndexHandler.getSearchStatus()
-			.map(status -> DebugInfoEntry.fromString("searchStatus.json", status.toJson()))
+			.map(status -> DebugInfoBufferEntry.fromString("searchStatus.json", status.toJson()))
 			.toFlowable();
 	}
 }

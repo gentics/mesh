@@ -16,8 +16,8 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.time.StopWatch;
 
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
+import com.gentics.mesh.graphdb.spi.Database;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
@@ -27,16 +27,18 @@ import io.vertx.ext.web.RoutingContext;
 @Singleton
 public class DebugInfoHandler {
 	private final Set<DebugInfoProvider> debugInfoProviders;
+	private final Database db;
 	private static final Logger log = LoggerFactory.getLogger(DebugInfoHandler.class);
 
 	@Inject
-	public DebugInfoHandler(Set<DebugInfoProvider> debugInfoProviders) {
+	public DebugInfoHandler(Set<DebugInfoProvider> debugInfoProviders, Database db) {
 		this.debugInfoProviders = debugInfoProviders;
+		this.db = db;
 	}
 
 	public void handle(RoutingContext ac) {
 		InternalRoutingActionContextImpl iac = new InternalRoutingActionContextImpl(ac);
-//		if (!iac.getUser().hasAdminRole()) {
+//		if (db.tx(() -> !iac.getUser().hasAdminRole())) {
 //			throw error(FORBIDDEN, "error_admin_permission_required");
 //		}
 		setHeaders(ac);

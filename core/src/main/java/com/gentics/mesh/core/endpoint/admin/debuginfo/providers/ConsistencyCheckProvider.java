@@ -6,6 +6,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.LoadLevel;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -37,7 +38,7 @@ public class ConsistencyCheckProvider implements DebugInfoProvider {
 	public Flowable<DebugInfoEntry> debugInfoEntries(InternalActionContext ac) {
 		return db.singleTx(tx -> consistencyCheckHandler.checkConsistency(false)
 			.runInExistingTx(tx))
-			.map(response -> DebugInfoEntry.fromString("consistencyCheck.json", response.toJson()))
+			.map(response -> DebugInfoBufferEntry.fromString("consistencyCheck.json", response.toJson()))
 			.toFlowable();
 	}
 }

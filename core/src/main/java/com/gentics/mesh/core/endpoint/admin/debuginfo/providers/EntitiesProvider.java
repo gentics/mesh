@@ -11,6 +11,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.LoadLevel;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -53,7 +54,7 @@ public class EntitiesProvider implements DebugInfoProvider {
 
 	private Flowable<DebugInfoEntry> branches(InternalActionContext ac) {
 		return db.singleTx(() -> boot.projectRoot().findAll().stream()
-			.map(project -> DebugInfoEntry.fromString(
+			.map(project -> DebugInfoBufferEntry.fromString(
 				String.format("entities/branches/%s.json", project.getName()),
 				rootToString(ac, project.getBranchRoot())
 			)).collect(Collectors.toList()))
@@ -62,7 +63,7 @@ public class EntitiesProvider implements DebugInfoProvider {
 
 	private <T extends MeshCoreVertex<? extends RestModel, T>> Flowable<DebugInfoEntry> rootElements(InternalActionContext ac, Supplier<RootVertex<T>> root, String filename) {
 		return db.singleTx(() -> rootToString(ac, root.get()))
-			.map(elementList -> DebugInfoEntry.fromString(filename, elementList))
+			.map(elementList -> DebugInfoBufferEntry.fromString(filename, elementList))
 			.toFlowable();
 	}
 

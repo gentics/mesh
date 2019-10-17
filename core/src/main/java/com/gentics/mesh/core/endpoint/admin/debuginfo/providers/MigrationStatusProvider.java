@@ -9,6 +9,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.LoadLevel;
 import com.gentics.mesh.core.endpoint.branch.BranchCrudHandler;
@@ -50,7 +51,7 @@ public class MigrationStatusProvider implements DebugInfoProvider {
 	}
 
 	private DebugInfoEntry toDebugInfoEntry(String json, ProjectBranch projectBranch, String filename) {
-		return DebugInfoEntry.fromString(
+		return DebugInfoBufferEntry.fromString(
 			String.format("migrationStatus/%s/%s/%s", projectBranch.projectName, projectBranch.branchName, filename),
 			json
 		);

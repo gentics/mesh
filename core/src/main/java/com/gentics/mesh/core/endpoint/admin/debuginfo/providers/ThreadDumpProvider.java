@@ -13,6 +13,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.LoadLevel;
 
@@ -36,7 +37,7 @@ public class ThreadDumpProvider implements DebugInfoProvider {
 
 	@Override
 	public Flowable<DebugInfoEntry> debugInfoEntries(InternalActionContext ac) {
-		return Flowable.just(DebugInfoEntry.fromString("threaddump.txt", createThreadDump()));
+		return Flowable.just(DebugInfoBufferEntry.fromString("threaddump.txt", createThreadDump()));
 	}
 
 	private String createThreadDump() {

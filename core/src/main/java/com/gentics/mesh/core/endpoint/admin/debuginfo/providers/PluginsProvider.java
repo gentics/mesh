@@ -8,6 +8,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.LoadLevel;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
@@ -41,6 +42,6 @@ public class PluginsProvider implements DebugInfoProvider {
 			.map(MeshPlugin::toResponse)
 			.collect(Collectors.toList());
 
-		return Flowable.just(DebugInfoEntry.asJson("plugins.json", plugins));
+		return Flowable.just(DebugInfoBufferEntry.asJson("plugins.json", plugins));
 	}
 }
