@@ -382,8 +382,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void backupGraph(String backupDirectory) throws IOException {
-		txProvider.backup(backupDirectory);
+	public String backupGraph(String backupDirectory) throws IOException {
+		return txProvider.backup(backupDirectory);
 	}
 
 	@Override

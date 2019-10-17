@@ -5,7 +5,7 @@ import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.ActiveConfigProv
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.BinaryDiskUsageProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.ConfigProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.ConsistencyCheckProvider;
-import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.DatabaseDumpProvider;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.DatabaseDumpProvider2;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.EntitiesProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.LogProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.MigrationStatusProvider;
@@ -55,5 +55,5 @@ public abstract class DebugInfoProviderModule {
 	public abstract DebugInfoProvider binaryDiskUsageProvider(BinaryDiskUsageProvider provider);
 
 	@Binds @IntoSet
-	public abstract DebugInfoProvider databaseDumpProvider(DatabaseDumpProvider provider);
+	public abstract DebugInfoProvider databaseDumpProvider(DatabaseDumpProvider2 provider);
 }

@@ -288,8 +288,9 @@ public interface Database extends TxFactory {
 	 * 
 	 * @param backupDirectory
 	 * @throws IOException
+	 * @return The path of the created backup file.
 	 */
-	void backupGraph(String backupDirectory) throws IOException;
+	String backupGraph(String backupDirectory) throws IOException;
 
 	/**
 	 * Restore a previously created database backup.

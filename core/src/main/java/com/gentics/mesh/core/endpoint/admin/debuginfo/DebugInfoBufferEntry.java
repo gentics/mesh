@@ -16,6 +16,7 @@ public class DebugInfoBufferEntry implements DebugInfoEntry {
 	}
 
 	public static DebugInfoEntry fromBuffer(String filename, Buffer data) {
+		System.out.println("Buffer size: " + DebugInfoUtil.humanReadableByteCount(data.length()));
 		return new DebugInfoBufferEntry(filename, data);
 	}
 

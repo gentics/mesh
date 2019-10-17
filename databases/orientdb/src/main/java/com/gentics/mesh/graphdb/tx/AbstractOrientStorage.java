@@ -72,7 +72,7 @@ public abstract class AbstractOrientStorage implements OrientStorage {
 	}
 
 	@Override
-	public void backup(String backupDirectory) throws FileNotFoundException, IOException {
+	public String backup(String backupDirectory) throws FileNotFoundException, IOException {
 		if (log.isDebugEnabled()) {
 			log.debug("Running backup to backup directory {" + backupDirectory + "}.");
 		}
@@ -91,9 +91,11 @@ public abstract class AbstractOrientStorage implements OrientStorage {
 			String dateString = formatter.format(new Date());
 			String backupFile = "backup_" + dateString + ".zip";
 			new File(backupDirectory).mkdirs();
-			try (OutputStream out = new FileOutputStream(new File(backupDirectory, backupFile).getAbsolutePath())) {
+			String absolutePath = new File(backupDirectory, backupFile).getAbsolutePath();
+			try (OutputStream out = new FileOutputStream(absolutePath)) {
 				db.backup(out, null, null, listener, 9, 2048);
 			}
+			return absolutePath;
 		} finally {
 			db.close();
 		}

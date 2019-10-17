@@ -29,6 +29,10 @@ public class DebugInfoFileEntry implements DebugInfoEntry {
 		return new DebugInfoFileEntry(vertx, sourcePath, target);
 	}
 
+	public static DebugInfoEntry fromFile(FileSystem vertx, String source, String target) {
+		return new DebugInfoFileEntry(vertx, source, target);
+	}
+
 	@Override
 	public ZipEntry createZipEntry() {
 		return new ZipEntry(target);

@@ -43,7 +43,7 @@ public interface OrientStorage extends GraphStorage {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	void backup(String backupDirectory) throws FileNotFoundException, IOException;
+	String backup(String backupDirectory) throws FileNotFoundException, IOException;
 
 	/**
 	 * Invoke the restore process.
