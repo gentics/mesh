@@ -5,11 +5,14 @@ import javax.inject.Singleton;
 
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 
 @Singleton
 public class DebugInfoUtil {
 	private final Vertx vertx;
+	private static final Logger log = LoggerFactory.getLogger(DebugInfoUtil.class);
 
 	@Inject
 	public DebugInfoUtil(Vertx vertx) {
@@ -20,7 +23,10 @@ public class DebugInfoUtil {
 		return vertx.fileSystem().rxReadFile(path)
 			.map(io.vertx.reactivex.core.buffer.Buffer::getDelegate)
 			.toFlowable()
-			.onErrorResumeNext(Flowable.empty());
+			.onErrorResumeNext(err -> {
+				log.warn(String.format("Could not read file {%s}", path), err);
+				return Flowable.empty();
+			});
 	}
 
 	public Flowable<DebugInfoEntry> readDebugInfoEntryOrEmpty(String path) {

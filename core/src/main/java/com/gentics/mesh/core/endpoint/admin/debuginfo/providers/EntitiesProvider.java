@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.endpoint.admin.debuginfo.providers;
 
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -36,10 +37,10 @@ public class EntitiesProvider implements DebugInfoProvider {
 	@Override
 	public Flowable<DebugInfoEntry> debugInfoEntries(InternalActionContext ac) {
 		return Flowable.mergeArray(
-			rootElements(ac, boot.jobRoot(), "entities/jobs.json"),
-			rootElements(ac, boot.schemaContainerRoot(), "entities/schemas.json"),
-			rootElements(ac, boot.microschemaContainerRoot(), "entities/microschemas.json"),
-			rootElements(ac, boot.projectRoot(), "entities/projects.json"),
+			rootElements(ac, boot::jobRoot, "entities/jobs.json"),
+			rootElements(ac, boot::schemaContainerRoot, "entities/schemas.json"),
+			rootElements(ac, boot::microschemaContainerRoot, "entities/microschemas.json"),
+			rootElements(ac, boot::projectRoot, "entities/projects.json"),
 			branches(ac)
 		);
 	}
@@ -53,8 +54,8 @@ public class EntitiesProvider implements DebugInfoProvider {
 			.flatMapPublisher(Flowable::fromIterable);
 	}
 
-	private <T extends MeshCoreVertex<? extends RestModel, T>> Flowable<DebugInfoEntry> rootElements(InternalActionContext ac, RootVertex<T> root, String filename) {
-		return db.singleTx(() -> rootToString(ac, root))
+	private <T extends MeshCoreVertex<? extends RestModel, T>> Flowable<DebugInfoEntry> rootElements(InternalActionContext ac, Supplier<RootVertex<T>> root, String filename) {
+		return db.singleTx(() -> rootToString(ac, root.get()))
 			.map(elementList -> DebugInfoEntry.fromString(filename, elementList))
 			.toFlowable();
 	}

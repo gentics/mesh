@@ -25,6 +25,7 @@ import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Function;
@@ -156,14 +157,32 @@ public interface Database extends TxFactory {
 		});
 	}
 
-	default <T> Single<T> singleTx(Supplier<T> handler) {
+	/**
+	 * Executes a supplier in a transaction within the worker thread pool.
+	 * If the supplier returns null, the maybe is completed, else the value is returned.
+	 * @param handler
+	 * @param <T>
+	 * @return
+	 */
+	default <T> Maybe<T> maybeTx(Supplier<T> handler) {
 		return new io.vertx.reactivex.core.Vertx(vertx()).<T>rxExecuteBlocking(promise -> {
 			try (Tx tx = tx()) {
 				promise.complete(handler.get());
 			} catch (Throwable e) {
 				promise.fail(e);
 			}
-		}, false).toSingle();
+		}, false);
+	}
+
+	/**
+	 * Executes a supplier in a transaction within the worker thread pool.
+	 * If the supplier returns null, a {@link java.util.NoSuchElementException} is emitted.
+	 * @param handler
+	 * @param <T>
+	 * @return
+	 */
+	default <T> Single<T> singleTx(Supplier<T> handler) {
+		return maybeTx(handler).toSingle();
 	}
 
 	/**

@@ -10,50 +10,34 @@ import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.StatusProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.SystemInfoProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.ThreadDumpProvider;
 
+import dagger.Binds;
 import dagger.Module;
-import dagger.Provides;
 import dagger.multibindings.IntoSet;
 
 @Module
-public class DebugInfoProviderModule {
+public abstract class DebugInfoProviderModule {
 
-	@Provides @IntoSet
-	public static DebugInfoProvider activeConfigProvider(ActiveConfigProvider provider) {
-		return provider;
-	}
+	@Binds @IntoSet
+	public abstract DebugInfoProvider activeConfigProvider(ActiveConfigProvider provider);
 
-	@Provides @IntoSet
-	public static DebugInfoProvider threadDumpProvider(ThreadDumpProvider provider) {
-		return provider;
-	}
+	@Binds @IntoSet
+	public abstract DebugInfoProvider threadDumpProvider(ThreadDumpProvider provider);
 
-	@Provides @IntoSet
-	public static DebugInfoProvider systemInfoProvider(SystemInfoProvider provider) {
-		return provider;
-	}
+	@Binds @IntoSet
+	public abstract DebugInfoProvider systemInfoProvider(SystemInfoProvider provider);
 
-	@Provides @IntoSet
-	public static DebugInfoProvider entitiesProvider(EntitiesProvider provider) {
-		return provider;
-	}
+	@Binds @IntoSet
+	public abstract DebugInfoProvider entitiesProvider(EntitiesProvider provider);
 
-	@Provides @IntoSet
-	public static DebugInfoProvider pluginsProvider(PluginsProvider provider) {
-		return provider;
-	}
+	@Binds @IntoSet
+	public abstract DebugInfoProvider pluginsProvider(PluginsProvider provider);
 
-	@Provides @IntoSet
-	public static DebugInfoProvider logProvider(LogProvider provider) {
-		return provider;
-	}
+	@Binds @IntoSet
+	public abstract DebugInfoProvider logProvider(LogProvider provider);
 
-	@Provides @IntoSet
-	public static DebugInfoProvider statusProvider(StatusProvider provider) {
-		return provider;
-	}
+	@Binds @IntoSet
+	public abstract DebugInfoProvider statusProvider(StatusProvider provider);
 
-	@Provides @IntoSet
-	public static DebugInfoProvider configProvider(ConfigProvider provider) {
-		return provider;
-	}
+	@Binds @IntoSet
+	public abstract DebugInfoProvider configProvider(ConfigProvider provider);
 }
