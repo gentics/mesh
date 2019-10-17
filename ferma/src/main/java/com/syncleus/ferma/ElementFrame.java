@@ -86,6 +86,14 @@ public interface ElementFrame {
 	void setProperty(String name, Object value);
 
 	/**
+	 * Set a property value.
+	 * 
+	 * @param name
+	 * @param value
+	 */
+	void setPropertyWithNull(String name, Object value);
+
+	/**
 	 * Returns the type resolution currently encoded into the element.
 	 *
 	 * @return the current type resolution.

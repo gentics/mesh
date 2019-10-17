@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ELASTICSEARCH_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LABEL_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Collections;
@@ -71,6 +72,9 @@ public class UpdateFieldChangeImpl extends AbstractSchemaFieldChange implements 
 		 */
 		if (restChange.getProperties().containsKey(ELASTICSEARCH_KEY) && restChange.getProperty(ELASTICSEARCH_KEY) == null) {
 			restChange.setProperty(ELASTICSEARCH_KEY, "{}");
+		}
+		if (restChange.getProperties().containsKey(LABEL_KEY) && restChange.getProperty(LABEL_KEY) == null) {
+			restChange.setProperty(LABEL_KEY, null);
 		}
 		super.updateFromRest(restChange);
 	}

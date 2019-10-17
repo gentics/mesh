@@ -583,6 +583,11 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			public void setProperty(String name, Object value) {
 
 			}
+			
+			@Override
+			public void setPropertyWithNull(String name, Object value) {
+
+			}
 
 			@Override
 			public Class<?> getTypeResolution() {

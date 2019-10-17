@@ -74,6 +74,10 @@ public interface MeshElement extends ElementFrame {
 		setProperty(key, value);
 	}
 
+	default <R> void propertyWithNull(String key, R value) {
+		setPropertyWithNull(key, value);
+	}
+
 	/**
 	 * Remove the property with the given key.
 	 *

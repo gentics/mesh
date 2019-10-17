@@ -46,6 +46,7 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
@@ -120,6 +121,31 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		assertEquals("pub_dir", response.getDisplayField());
 		assertEquals("name", response.getSegmentField());
 		assertEquals(2, response.getFields().size());
+	}
+
+	@Test
+	public void testResetFieldLabel() throws IOException {
+		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
+
+		String originalSchemaName = "content";
+		SchemaContainer schema = schemaContainer(originalSchemaName);
+		SchemaUpdateRequest request = JsonUtil.readValue(tx(() -> schema.getLatestVersion().getJson()), SchemaUpdateRequest.class);
+		request.getField("slug").setLabel("ENEMENEMUH");
+
+		call(() -> client().updateSchema(contentSchemaUuid, request));
+
+		SchemaChangesListModel changes = new SchemaChangesListModel();
+		SchemaChangeModel change = new SchemaChangeModel();
+		change.setOperation(SchemaChangeOperation.UPDATEFIELD);
+		change.setProperty(SchemaChangeModel.LABEL_KEY, null);
+		change.setProperty(SchemaChangeModel.FIELD_NAME_KEY, "slug");
+		changes.getChanges().add(change);
+		GenericMessageResponse e = call(() -> client().applyChangesToSchema(contentSchemaUuid, changes));
+		System.out.println(e.toJson());
+
+		SchemaResponse s = call(() -> client().findSchemaByUuid(contentSchemaUuid));
+		System.out.println(s.toJson());
+
 	}
 
 	@Test

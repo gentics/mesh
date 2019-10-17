@@ -132,6 +132,15 @@ public abstract class AbstractElementFrame implements ElementFrame {
 			getElement().setProperty(name, value);
 		}
 	}
+	
+	@Override
+	public void setPropertyWithNull(final String name, final Object value) {
+		if (value instanceof Enum) {
+			getElement().setProperty(name, value.toString());
+		} else {
+			getElement().setProperty(name, value);
+		}
+	}
 
 	@Override
 	public VertexTraversal<?, ?, ?> v() {
