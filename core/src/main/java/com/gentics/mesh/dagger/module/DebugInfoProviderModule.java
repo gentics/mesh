@@ -5,6 +5,7 @@ import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.ActiveConfigProv
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.ConfigProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.EntitiesProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.LogProvider;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.MigrationStatusProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.PluginsProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.StatusProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.SystemInfoProvider;
@@ -40,4 +41,7 @@ public abstract class DebugInfoProviderModule {
 
 	@Binds @IntoSet
 	public abstract DebugInfoProvider configProvider(ConfigProvider provider);
+
+	@Binds @IntoSet
+	public abstract DebugInfoProvider migrationStatusProvider(MigrationStatusProvider provider);
 }

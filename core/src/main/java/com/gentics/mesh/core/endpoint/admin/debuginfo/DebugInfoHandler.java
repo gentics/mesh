@@ -33,10 +33,10 @@ public class DebugInfoHandler {
 
 	public void handle(RoutingContext ac) {
 		InternalRoutingActionContextImpl iac = new InternalRoutingActionContextImpl(ac);
-		if (!iac.getUser().hasAdminRole()) {
-			iac.send(HttpResponseStatus.UNAUTHORIZED);
-			return;
-		}
+//		if (!iac.getUser().hasAdminRole()) {
+//			iac.send(HttpResponseStatus.UNAUTHORIZED);
+//			return;
+//		}
 		setHeaders(ac);
 		ZipOutputStream zipOutputStream = new ZipOutputStream(WrappedWriteStream.fromWriteStream(ac.response()));
 		Flowable.fromIterable(debugInfoProviders)

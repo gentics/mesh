@@ -20,6 +20,10 @@ public class BranchInfoSchemaList implements RestModel {
 	public BranchInfoSchemaList() {
 	}
 
+	public BranchInfoSchemaList(List<BranchSchemaInfo> schemas) {
+		this.schemas = schemas;
+	}
+
 	public List<BranchSchemaInfo> getSchemas() {
 		return schemas;
 	}
