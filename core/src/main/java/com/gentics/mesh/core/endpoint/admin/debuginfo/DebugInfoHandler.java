@@ -46,12 +46,13 @@ public class DebugInfoHandler {
 		Flowable.fromIterable(debugInfoProviders)
 			.flatMap(provider -> getDebugInfo(iac, provider))
 			.flatMapCompletable(entry -> {
-				log.debug("Start writing " + entry.getFileName());
 				zipOutputStream.putNextEntry(entry.createZipEntry());
-				zipOutputStream.write(entry.getData().getBytes());
-				log.debug("End writing " + entry.getFileName());
-				return Completable.complete();
-			})
+				return entry.getData()
+					.doOnNext(buffer -> zipOutputStream.write(buffer.getBytes()))
+					.ignoreElements()
+					.doOnSubscribe(sub -> log.debug("Start writing " + entry.getFileName()))
+					.doOnComplete(() -> log.debug("End writing " + entry.getFileName()));
+			}, false, 1)
 			.subscribe(() -> {
 				zipOutputStream.close();
 				ac.response().end();

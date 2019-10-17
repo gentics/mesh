@@ -4,6 +4,7 @@ import java.util.zip.ZipEntry;
 
 import com.gentics.mesh.json.JsonUtil;
 
+import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 
 public class DebugInfoBufferEntry implements DebugInfoEntry {
@@ -42,7 +43,7 @@ public class DebugInfoBufferEntry implements DebugInfoEntry {
 	}
 
 	@Override
-	public Buffer getData() {
-		return data;
+	public Flowable<Buffer> getData() {
+		return Flowable.just(data);
 	}
 }

@@ -4,7 +4,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.zip.ZipEntry;
 
+import io.reactivex.Flowable;
+import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.OpenOptions;
+import io.vertx.reactivex.core.file.AsyncFile;
 import io.vertx.reactivex.core.file.FileSystem;
 
 public class DebugInfoFileEntry implements DebugInfoEntry {
@@ -44,12 +48,9 @@ public class DebugInfoFileEntry implements DebugInfoEntry {
 	}
 
 	@Override
-	public Buffer getData() {
-		try {
-			return fs.readFileBlocking(source).getDelegate();
-		} catch (Throwable e) {
-			e.printStackTrace();
-			throw e;
-		}
+	public Flowable<Buffer> getData() {
+		return fs.rxOpen(source, new OpenOptions().setRead(true).setCreateNew(false).setDeleteOnClose(true))
+			.flatMapPublisher(AsyncFile::toFlowable)
+			.map(io.vertx.reactivex.core.buffer.Buffer::getDelegate);
 	}
 }

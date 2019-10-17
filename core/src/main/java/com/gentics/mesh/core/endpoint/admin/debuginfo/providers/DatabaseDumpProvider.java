@@ -4,11 +4,13 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.endpoint.admin.AdminHandler;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoFileEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoUtil;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.LoadLevel;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.spi.Database;
 
 import io.reactivex.Flowable;
 import io.vertx.reactivex.core.Vertx;
@@ -16,21 +18,22 @@ import io.vertx.reactivex.core.file.FileSystem;
 
 @Singleton
 public class DatabaseDumpProvider implements DebugInfoProvider {
-	private final MeshOptions options;
+	private final AdminHandler adminHandler;
+	private final Database db;
+	private final DebugInfoUtil util;
 	private final FileSystem fs;
-	private final String baseDir;
-	private final String TARGET_DIR = "graphdb";
 
 	@Inject
-	public DatabaseDumpProvider(MeshOptions options, Vertx vertx) {
-		this.options = options;
+	public DatabaseDumpProvider(AdminHandler adminHandler, Database db, DebugInfoUtil util, Vertx vertx) {
+		this.adminHandler = adminHandler;
+		this.db = db;
+		this.util = util;
 		this.fs = vertx.fileSystem();
-		this.baseDir = options.getStorageOptions().getDirectory();
 	}
 
 	@Override
 	public String name() {
-		return "databaseDump";
+		return "backup";
 	}
 
 	@Override
@@ -40,23 +43,8 @@ public class DatabaseDumpProvider implements DebugInfoProvider {
 
 	@Override
 	public Flowable<DebugInfoEntry> debugInfoEntries(InternalActionContext ac) {
-		if (baseDir == null) {
-			return Flowable.empty();
-		}
-		return sendFiles(baseDir);
-	}
-
-	private Flowable<DebugInfoEntry> sendFiles(String path) {
-		return fs.rxProps(path).flatMapPublisher(props -> {
-			if (props.isRegularFile()) {
-				return Flowable.just(DebugInfoFileEntry.fromFile(fs, baseDir, path, TARGET_DIR));
-			} else if (props.isDirectory()) {
-				return fs.rxReadDir(path)
-					.flatMapPublisher(Flowable::fromIterable)
-					.flatMap(this::sendFiles);
-			} else {
-				return Flowable.empty();
-			}
-		});
+		return db.singleTx(adminHandler::backup)
+			.map(filename -> DebugInfoFileEntry.fromFile(fs, filename, "graphdb.zip"))
+			.toFlowable();
 	}
 }
