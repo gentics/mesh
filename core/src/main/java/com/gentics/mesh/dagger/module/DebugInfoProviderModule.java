@@ -3,6 +3,7 @@ package com.gentics.mesh.dagger.module;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.ActiveConfigProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.ConfigProvider;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.ConsistencyCheckProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.EntitiesProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.LogProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.MigrationStatusProvider;
@@ -44,4 +45,7 @@ public abstract class DebugInfoProviderModule {
 
 	@Binds @IntoSet
 	public abstract DebugInfoProvider migrationStatusProvider(MigrationStatusProvider provider);
+
+	@Binds @IntoSet
+	public abstract DebugInfoProvider consistencyCheckProvider(ConsistencyCheckProvider provider);
 }

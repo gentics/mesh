@@ -164,10 +164,10 @@ public interface Database extends TxFactory {
 	 * @param <T>
 	 * @return
 	 */
-	default <T> Maybe<T> maybeTx(Supplier<T> handler) {
+	default <T> Maybe<T> maybeTx(Function<Tx, T> handler) {
 		return new io.vertx.reactivex.core.Vertx(vertx()).<T>rxExecuteBlocking(promise -> {
 			try (Tx tx = tx()) {
-				promise.complete(handler.get());
+				promise.complete(handler.apply(tx));
 			} catch (Throwable e) {
 				promise.fail(e);
 			}
@@ -182,6 +182,17 @@ public interface Database extends TxFactory {
 	 * @return
 	 */
 	default <T> Single<T> singleTx(Supplier<T> handler) {
+		return maybeTx(tx -> handler.get()).toSingle();
+	}
+
+	/**
+	 * Executes a supplier in a transaction within the worker thread pool.
+	 * If the supplier returns null, a {@link java.util.NoSuchElementException} is emitted.
+	 * @param handler
+	 * @param <T>
+	 * @return
+	 */
+	default <T> Single<T> singleTx(Function<Tx, T> handler) {
 		return maybeTx(handler).toSingle();
 	}
 

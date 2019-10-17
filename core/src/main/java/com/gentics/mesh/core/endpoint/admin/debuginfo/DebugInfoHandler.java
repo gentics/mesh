@@ -1,6 +1,9 @@
 package com.gentics.mesh.core.endpoint.admin.debuginfo;
 
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -34,8 +37,7 @@ public class DebugInfoHandler {
 	public void handle(RoutingContext ac) {
 		InternalRoutingActionContextImpl iac = new InternalRoutingActionContextImpl(ac);
 //		if (!iac.getUser().hasAdminRole()) {
-//			iac.send(HttpResponseStatus.UNAUTHORIZED);
-//			return;
+//			throw error(FORBIDDEN, "error_admin_permission_required");
 //		}
 		setHeaders(ac);
 		ZipOutputStream zipOutputStream = new ZipOutputStream(WrappedWriteStream.fromWriteStream(ac.response()));
