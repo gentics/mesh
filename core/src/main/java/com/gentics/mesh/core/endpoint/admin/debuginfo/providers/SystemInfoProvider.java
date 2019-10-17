@@ -3,6 +3,8 @@ package com.gentics.mesh.core.endpoint.admin.debuginfo.providers;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
+import java.lang.management.RuntimeMXBean;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -33,10 +35,12 @@ public class SystemInfoProvider implements DebugInfoProvider {
 	public Flowable<DebugInfoEntry> debugInfoEntries(InternalActionContext ac) {
 		SystemInfo info = new SystemInfo();
 		MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
+		RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
 
 		info.systemLoadAverage = ManagementFactory.getOperatingSystemMXBean().getSystemLoadAverage();
 		info.heapMemoryUsage = memoryMXBean.getHeapMemoryUsage();
 		info.nonHeapMemoryUsage = memoryMXBean.getNonHeapMemoryUsage();
+		info.jvmArguments = runtimeMXBean.getInputArguments();
 
 		return vertx.fileSystem().rxFsProps(".")
 			.map(fs -> {
@@ -56,6 +60,7 @@ public class SystemInfoProvider implements DebugInfoProvider {
 		public MemoryUsage heapMemoryUsage;
 		public MemoryUsage nonHeapMemoryUsage;
 		public DiskSpace diskSpace;
+		public List<String> jvmArguments;
 	}
 
 	private static class DiskSpace {
