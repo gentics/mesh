@@ -44,4 +44,9 @@ public class DebugInfoProviderModule {
 	public static DebugInfoProvider logProvider(LogProvider provider) {
 		return provider;
 	}
+
+	@Provides @IntoSet
+	public static DebugInfoProvider statusProvider(StatusProvider provider) {
+		return provider;
+	}
 }
