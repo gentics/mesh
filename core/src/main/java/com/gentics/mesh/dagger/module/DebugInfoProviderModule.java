@@ -2,6 +2,7 @@ package com.gentics.mesh.dagger.module;
 
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.ActiveConfigProvider;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.BinaryDiskUsageProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.ConfigProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.ConsistencyCheckProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.EntitiesProvider;
@@ -48,4 +49,7 @@ public abstract class DebugInfoProviderModule {
 
 	@Binds @IntoSet
 	public abstract DebugInfoProvider consistencyCheckProvider(ConsistencyCheckProvider provider);
+
+	@Binds @IntoSet
+	public abstract DebugInfoProvider binaryDiskUsageProvider(BinaryDiskUsageProvider provider);
 }

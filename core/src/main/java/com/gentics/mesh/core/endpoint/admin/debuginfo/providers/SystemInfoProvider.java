@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.endpoint.admin.debuginfo.providers;
 
+import static com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoUtil.humanReadableByteCount;
+
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
@@ -44,16 +46,16 @@ public class SystemInfoProvider implements DebugInfoProvider {
 		RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
 
 		info.systemLoadAverage = ManagementFactory.getOperatingSystemMXBean().getSystemLoadAverage();
-		info.heapMemoryUsage = memoryMXBean.getHeapMemoryUsage();
-		info.nonHeapMemoryUsage = memoryMXBean.getNonHeapMemoryUsage();
+		info.heapMemoryUsage = new ReadableMemoryUsage(memoryMXBean.getHeapMemoryUsage());
+		info.nonHeapMemoryUsage = new ReadableMemoryUsage(memoryMXBean.getNonHeapMemoryUsage());
 		info.jvmArguments = runtimeMXBean.getInputArguments();
 
 		return vertx.fileSystem().rxFsProps(".")
 			.map(fs -> {
 				DiskSpace diskSpace = new DiskSpace();
-				diskSpace.totalSpace = fs.totalSpace();
-				diskSpace.unallocatedSpace = fs.unallocatedSpace();
-				diskSpace.usableSpace = fs.usableSpace();
+				diskSpace.totalSpace = humanReadableByteCount(fs.totalSpace());
+				diskSpace.unallocatedSpace = humanReadableByteCount(fs.unallocatedSpace());
+				diskSpace.usableSpace = humanReadableByteCount(fs.usableSpace());
 				info.diskSpace = diskSpace;
 
 				return DebugInfoEntry.fromString("systemInfo.json", JsonUtil.toJson(info));
@@ -63,19 +65,39 @@ public class SystemInfoProvider implements DebugInfoProvider {
 
 	public static class SystemInfo {
 		public double systemLoadAverage;
-		public MemoryUsage heapMemoryUsage;
-		public MemoryUsage nonHeapMemoryUsage;
+		public ReadableMemoryUsage heapMemoryUsage;
+		public ReadableMemoryUsage nonHeapMemoryUsage;
 		public DiskSpace diskSpace;
 		public List<String> jvmArguments;
 	}
 
 	private static class DiskSpace {
-		public long totalSpace;
-		public long unallocatedSpace;
-		public long usableSpace;
+		public String totalSpace;
+		public String unallocatedSpace;
+		public String usableSpace;
+	}
 
-		public float getPercentUsedSpace() {
-			return 100f * usableSpace / totalSpace;
+	private static class ReadableMemoryUsage {
+		private final MemoryUsage memoryUsage;
+
+		private ReadableMemoryUsage(MemoryUsage memoryUsage) {
+			this.memoryUsage = memoryUsage;
+		}
+
+		public String getInit() {
+			return humanReadableByteCount(memoryUsage.getInit());
+		}
+
+		public String getUsed() {
+			return humanReadableByteCount(memoryUsage.getUsed());
+		}
+
+		public String getCommitted() {
+			return humanReadableByteCount(memoryUsage.getCommitted());
+		}
+
+		public String getMax() {
+			return humanReadableByteCount(memoryUsage.getMax());
 		}
 	}
 
