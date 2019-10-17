@@ -22,4 +22,9 @@ public class DebugInfoUtil {
 			.toFlowable()
 			.onErrorResumeNext(Flowable.empty());
 	}
+
+	public Flowable<DebugInfoEntry> readDebugInfoEntryOrEmpty(String path) {
+		return readFileOrEmpty(path)
+			.map(buf -> DebugInfoEntry.fromBuffer(path, buf));
+	}
 }
