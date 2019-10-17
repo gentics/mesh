@@ -7,6 +7,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoUtil;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.LoadLevel;
 
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
@@ -23,6 +24,11 @@ public class LogProvider implements DebugInfoProvider {
 	@Override
 	public String name() {
 		return "log";
+	}
+
+	@Override
+	public LoadLevel loadLevel() {
+		return LoadLevel.LIGHT;
 	}
 
 	@Override

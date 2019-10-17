@@ -6,5 +6,6 @@ import io.reactivex.Flowable;
 
 public interface DebugInfoProvider {
 	String name();
+	LoadLevel loadLevel();
 	Flowable<DebugInfoEntry> debugInfoEntries(InternalActionContext ac);
 }

@@ -7,6 +7,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.LoadLevel;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.reactivex.Flowable;
@@ -25,6 +26,11 @@ public class ConsistencyCheckProvider implements DebugInfoProvider {
 	@Override
 	public String name() {
 		return "consistencyCheck";
+	}
+
+	@Override
+	public LoadLevel loadLevel() {
+		return LoadLevel.HEAVY;
 	}
 
 	@Override
