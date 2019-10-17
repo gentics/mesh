@@ -14,6 +14,7 @@ import org.apache.commons.lang3.time.StopWatch;
 
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
@@ -32,6 +33,10 @@ public class DebugInfoHandler {
 
 	public void handle(RoutingContext ac) {
 		InternalRoutingActionContextImpl iac = new InternalRoutingActionContextImpl(ac);
+		if (!iac.getUser().hasAdminRole()) {
+			iac.send(HttpResponseStatus.UNAUTHORIZED);
+			return;
+		}
 		setHeaders(ac);
 		ZipOutputStream zipOutputStream = new ZipOutputStream(WrappedWriteStream.fromWriteStream(ac.response()));
 		Flowable.fromIterable(debugInfoProviders)
@@ -40,7 +45,7 @@ public class DebugInfoHandler {
 				log.debug("Start writing " + entry.getFileName());
 				zipOutputStream.putNextEntry(entry.createZipEntry());
 				zipOutputStream.write(entry.getData().getBytes());
-				log.debug("End writing" + entry.getFileName());
+				log.debug("End writing " + entry.getFileName());
 				return Completable.complete();
 			})
 			.subscribe(() -> {

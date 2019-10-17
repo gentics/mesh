@@ -163,7 +163,7 @@ public interface Database extends TxFactory {
 			} catch (Throwable e) {
 				promise.fail(e);
 			}
-		}).toSingle();
+		}, false).toSingle();
 	}
 
 	/**
