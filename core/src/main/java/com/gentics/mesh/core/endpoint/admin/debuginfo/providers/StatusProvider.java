@@ -4,6 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.endpoint.admin.AdminHandler;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
@@ -16,11 +17,13 @@ import io.reactivex.Flowable;
 public class StatusProvider implements DebugInfoProvider {
 	private final Database db;
 	private final AdminIndexHandler adminIndexHandler;
+	private final AdminHandler adminHandler;
 
 	@Inject
-	public StatusProvider(Database db, AdminIndexHandler adminIndexHandler) {
+	public StatusProvider(Database db, AdminIndexHandler adminIndexHandler, AdminHandler adminHandler) {
 		this.db = db;
 		this.adminIndexHandler = adminIndexHandler;
+		this.adminHandler = adminHandler;
 	}
 
 	@Override
@@ -31,6 +34,7 @@ public class StatusProvider implements DebugInfoProvider {
 	@Override
 	public Flowable<DebugInfoEntry> debugInfoEntries(InternalActionContext ac) {
 		return Flowable.mergeArray(
+			getVersions(),
 			getClusterStatus(),
 			getElasticSearchStatus()
 		);
@@ -46,5 +50,9 @@ public class StatusProvider implements DebugInfoProvider {
 		return adminIndexHandler.getSearchStatus()
 			.map(status -> DebugInfoBufferEntry.fromString("searchStatus.json", status.toJson()))
 			.toFlowable();
+	}
+
+	private Flowable<DebugInfoEntry> getVersions() {
+		return Flowable.just(DebugInfoBufferEntry.fromString("versions.json", adminHandler.getMeshServerInfoModel().toJson()));
 	}
 }

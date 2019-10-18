@@ -18,17 +18,17 @@ public class DebugInfoOptions implements Option {
 	private String logFolder = DEFAULT_LOG_FOLDER;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("The maximum file size of a single log file. Default is '5MB'")
+	@JsonPropertyDescription("The maximum file size of a single log file.")
 	@EnvironmentVariable(name = "MESH_DEBUGINFO_LOG_FILE_SIZE", description = "Override the log file size")
 	private String logFileSize = DEFAULT_LOG_FILE_SIZE;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Enables the debug info log")
+	@JsonPropertyDescription("Enables the debug info log.")
 	@EnvironmentVariable(name = "MESH_DEBUGINFO_LOG_ENABLED", description = "Enables the debug info log")
 	private boolean logEnabled = true;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("The pattern used for each log line")
+	@JsonPropertyDescription("The pattern used for each log line.")
 	@EnvironmentVariable(name = "MESH_DEBUGINFO_LOG_PATTERN", description = "Override the log pattern")
 	private String logPattern = DEFAULT_LOG_PATTERN;
 

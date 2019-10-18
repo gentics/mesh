@@ -263,6 +263,10 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleVersions(InternalActionContext ac) {
+		ac.send(getMeshServerInfoModel(), OK);
+	}
+
+	public MeshServerInfoModel getMeshServerInfoModel() {
 		MeshServerInfoModel info = new MeshServerInfoModel();
 		info.setDatabaseVendor(db.getVendorName());
 		info.setDatabaseVersion(db.getVersion());
@@ -272,7 +276,7 @@ public class AdminHandler extends AbstractHandler {
 		info.setMeshNodeName(options.getNodeName());
 		info.setVertxVersion(VersionCommand.getVersion());
 		info.setDatabaseRevision(db.getDatabaseRevision());
-		ac.send(info, OK);
+		return info;
 	}
 
 }
