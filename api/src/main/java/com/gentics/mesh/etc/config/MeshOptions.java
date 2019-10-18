@@ -94,6 +94,10 @@ public class MeshOptions implements Option {
 	@JsonPropertyDescription("Cache options.")
 	private CacheConfig cacheConfig = new CacheConfig();
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Debug info options.")
+	private DebugInfoOptions debugInfoOptions = new DebugInfoOptions();
+
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Path to the central tmp directory.")
 	@EnvironmentVariable(name = MESH_TEMP_DIR_ENV, description = "Override the configured temp directory.")
@@ -374,6 +378,25 @@ public class MeshOptions implements Option {
 	 */
 	public MeshOptions setContentOptions(ContentConfig contentOptions) {
 		this.contentOptions = contentOptions;
+		return this;
+	}
+
+	/**
+	 * Return the debug info options
+	 * @return
+	 */
+	@JsonProperty("debugInfo")
+	public DebugInfoOptions getDebugInfoOptions() {
+		return debugInfoOptions;
+	}
+
+	/**
+	 * Set the debug info options
+	 * @param debugInfoOptions
+	 * @return
+	 */
+	public MeshOptions setDebugInfoOptions(DebugInfoOptions debugInfoOptions) {
+		this.debugInfoOptions = debugInfoOptions;
 		return this;
 	}
 

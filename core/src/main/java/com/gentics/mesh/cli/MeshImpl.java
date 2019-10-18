@@ -71,42 +71,6 @@ public class MeshImpl implements Mesh {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 		log = LoggerFactory.getLogger(MeshImpl.class);
-		addDebugInfoAppender();
-	}
-
-	private static void addDebugInfoAppender() {
-		LoggerContext lc = (LoggerContext) org.slf4j.LoggerFactory.getILoggerFactory();
-		ch.qos.logback.classic.Logger rootLogger = lc.getLogger(ROOT_LOGGER_NAME);
-
-		RollingFileAppender<ILoggingEvent> appender = new RollingFileAppender<>();
-		appender.setFile("debuginfo/debuginfo.log");
-		appender.setContext(lc);
-
-		SizeBasedTriggeringPolicy<ILoggingEvent> triggeringPolicy = new SizeBasedTriggeringPolicy<>();
-		triggeringPolicy.setMaxFileSize(FileSize.valueOf("5MB"));
-		triggeringPolicy.setContext(lc);
-
-		FixedWindowRollingPolicy rollingPolicy = new FixedWindowRollingPolicy();
-
-		rollingPolicy.setMinIndex(1);
-		rollingPolicy.setMaxIndex(1);
-		rollingPolicy.setFileNamePattern("debuginfo/debuginfo.%i.log");
-		rollingPolicy.setParent(appender);
-		rollingPolicy.setContext(lc);
-
-		PatternLayoutEncoder encoder = new PatternLayoutEncoder();
-		encoder.setPattern("%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] [%file:%line] - %msg%n");
-		encoder.setContext(lc);
-
-		appender.setRollingPolicy(rollingPolicy);
-		appender.setTriggeringPolicy(triggeringPolicy);
-		appender.setEncoder(encoder);
-
-		rootLogger.addAppender(appender);
-		triggeringPolicy.start();
-		rollingPolicy.start();
-		encoder.start();
-		appender.start();
 	}
 
 	public MeshImpl(MeshOptions options) {
