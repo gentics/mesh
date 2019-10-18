@@ -4,10 +4,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
-import com.gentics.mesh.core.endpoint.admin.debuginfo.LoadLevel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.index.AdminIndexHandler;
 
@@ -27,11 +26,6 @@ public class StatusProvider implements DebugInfoProvider {
 	@Override
 	public String name() {
 		return "status";
-	}
-
-	@Override
-	public LoadLevel loadLevel() {
-		return LoadLevel.LIGHT;
 	}
 
 	@Override

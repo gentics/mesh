@@ -7,7 +7,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoUtil;
-import com.gentics.mesh.core.endpoint.admin.debuginfo.LoadLevel;
 
 import io.reactivex.Flowable;
 
@@ -23,11 +22,6 @@ public class ConfigProvider implements DebugInfoProvider {
 	@Override
 	public String name() {
 		return "config";
-	}
-
-	@Override
-	public LoadLevel loadLevel() {
-		return LoadLevel.LIGHT;
 	}
 
 	@Override

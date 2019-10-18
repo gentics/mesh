@@ -8,10 +8,9 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
-import com.gentics.mesh.core.endpoint.admin.debuginfo.LoadLevel;
 import com.gentics.mesh.core.endpoint.branch.BranchCrudHandler;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -34,11 +33,6 @@ public class MigrationStatusProvider implements DebugInfoProvider {
 	@Override
 	public String name() {
 		return "migrationStatus";
-	}
-
-	@Override
-	public LoadLevel loadLevel() {
-		return LoadLevel.LIGHT;
 	}
 
 	@Override

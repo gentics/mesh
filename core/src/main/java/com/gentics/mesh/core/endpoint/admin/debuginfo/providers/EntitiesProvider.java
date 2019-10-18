@@ -10,10 +10,9 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
-import com.gentics.mesh.core.endpoint.admin.debuginfo.LoadLevel;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -34,11 +33,6 @@ public class EntitiesProvider implements DebugInfoProvider {
 	@Override
 	public String name() {
 		return "entities";
-	}
-
-	@Override
-	public LoadLevel loadLevel() {
-		return LoadLevel.LIGHT;
 	}
 
 	@Override

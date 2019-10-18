@@ -6,10 +6,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
-import com.gentics.mesh.core.endpoint.admin.debuginfo.LoadLevel;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.reactivex.Flowable;
@@ -35,11 +34,6 @@ public class BinaryDiskUsageProvider implements DebugInfoProvider {
 	@Override
 	public String name() {
 		return "binaryDiskUsage";
-	}
-
-	@Override
-	public LoadLevel loadLevel() {
-		return LoadLevel.MEDIUM;
 	}
 
 	@Override

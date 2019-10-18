@@ -1,13 +1,12 @@
 package com.gentics.mesh.core.endpoint.admin.debuginfo;
 
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipOutputStream;
 
 import javax.inject.Inject;
@@ -18,7 +17,6 @@ import org.apache.commons.lang3.time.StopWatch;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 
-import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -29,6 +27,9 @@ public class DebugInfoHandler {
 	private final Set<DebugInfoProvider> debugInfoProviders;
 	private final Database db;
 	private static final Logger log = LoggerFactory.getLogger(DebugInfoHandler.class);
+	private final Set<String> defaultExcluded = Stream.of(
+		"consistencyCheck"
+	).collect(Collectors.toSet());
 
 	@Inject
 	public DebugInfoHandler(Set<DebugInfoProvider> debugInfoProviders, Database db) {
@@ -42,8 +43,10 @@ public class DebugInfoHandler {
 //			throw error(FORBIDDEN, "error_admin_permission_required");
 //		}
 		setHeaders(ac);
+		Set<String> includedInfos = getIncludedInfos(ac);
 		ZipOutputStream zipOutputStream = new ZipOutputStream(WrappedWriteStream.fromWriteStream(ac.response()));
 		Flowable.fromIterable(debugInfoProviders)
+			.filter(provider -> includedInfos.contains(provider.name()))
 			.flatMap(provider -> getDebugInfo(iac, provider))
 			.flatMapCompletable(entry -> {
 				zipOutputStream.putNextEntry(entry.createZipEntry());
@@ -82,5 +85,20 @@ public class DebugInfoHandler {
 		ac.response().setChunked(true);
 		ac.response().putHeader("Content-Type", "application/zip");
 		ac.response().putHeader("Content-Disposition", String.format("attachment; filename=\"%s\"", filename));
+	}
+
+	private Set<String> getIncludedInfos(RoutingContext ac) {
+		IncludedInfo includedInfos = new IncludedInfo(ac);
+		return Stream.concat(
+			defaultInclusions(),
+			includedInfos.getIncluded().stream()
+		).filter(name -> !includedInfos.getExcluded().contains(name))
+		.collect(Collectors.toSet());
+	}
+
+	private Stream<String> defaultInclusions() {
+		return debugInfoProviders.stream()
+			.map(DebugInfoProvider::name)
+			.filter(name -> !defaultExcluded.contains(name));
 	}
 }

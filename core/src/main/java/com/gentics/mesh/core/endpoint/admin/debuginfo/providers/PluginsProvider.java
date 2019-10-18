@@ -7,10 +7,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
-import com.gentics.mesh.core.endpoint.admin.debuginfo.LoadLevel;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
@@ -29,11 +28,6 @@ public class PluginsProvider implements DebugInfoProvider {
 	@Override
 	public String name() {
 		return "plugins";
-	}
-
-	@Override
-	public LoadLevel loadLevel() {
-		return LoadLevel.LIGHT;
 	}
 
 	@Override

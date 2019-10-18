@@ -12,10 +12,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
-import com.gentics.mesh.core.endpoint.admin.debuginfo.LoadLevel;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.reactivex.Flowable;
@@ -33,11 +32,6 @@ public class SystemInfoProvider implements DebugInfoProvider {
 	@Override
 	public String name() {
 		return "systemInfo";
-	}
-
-	@Override
-	public LoadLevel loadLevel() {
-		return LoadLevel.LIGHT;
 	}
 
 	@Override
