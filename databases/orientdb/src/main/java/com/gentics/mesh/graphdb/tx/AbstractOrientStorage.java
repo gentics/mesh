@@ -93,7 +93,7 @@ public abstract class AbstractOrientStorage implements OrientStorage {
 			new File(backupDirectory).mkdirs();
 			String absolutePath = new File(backupDirectory, backupFile).getAbsolutePath();
 			try (OutputStream out = new FileOutputStream(absolutePath)) {
-				db.backup(out, null, null, listener, 9, 2048);
+				db.backup(out, null, null, listener, 1, 2048);
 			}
 			return absolutePath;
 		} finally {

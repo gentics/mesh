@@ -14,11 +14,15 @@ import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.reactivex.Flowable;
 import io.reactivex.Single;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
 
 @Singleton
 public class BinaryDiskUsageProvider implements DebugInfoProvider {
+	private static final Logger log = LoggerFactory.getLogger(BinaryDiskUsageProvider.class);
+
 	private final MeshOptions options;
 	private final FileSystem fs;
 
@@ -62,7 +66,9 @@ public class BinaryDiskUsageProvider implements DebugInfoProvider {
 				} else {
 					return Single.just(0L);
 				}
-			});
+			})
+			.doOnError(err -> log.warn(String.format("Could not get filesize of file {%s}", path), err))
+			.onErrorReturnItem(0L);
 	}
 
 	public static class BinaryDiskUsage {

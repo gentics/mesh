@@ -1,11 +1,8 @@
 package com.gentics.mesh.core.endpoint.admin.debuginfo;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.zip.ZipEntry;
 
 import io.reactivex.Flowable;
-import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.reactivex.core.file.AsyncFile;
@@ -20,17 +17,6 @@ public class DebugInfoFileEntry implements DebugInfoEntry {
 		this.source = source;
 		this.target = target;
 		this.fs = fs;
-	}
-
-
-	public static DebugInfoEntry fromFile(FileSystem vertx, String sourceBaseDir, String sourcePath, String targetBaseDir) {
-		Path relativeFile = Paths.get(sourceBaseDir)
-			.toAbsolutePath()
-			.relativize(Paths.get(sourcePath));
-
-		String target = Paths.get(targetBaseDir)
-			.resolve(relativeFile).toString();
-		return new DebugInfoFileEntry(vertx, sourcePath, target);
 	}
 
 	public static DebugInfoEntry fromFile(FileSystem vertx, String source, String target) {
