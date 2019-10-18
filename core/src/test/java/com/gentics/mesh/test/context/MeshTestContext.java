@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -37,6 +38,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.auth.util.KeycloakUtils;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.search.IndexHandler;
@@ -67,6 +69,7 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import okhttp3.OkHttpClient;
@@ -544,8 +547,9 @@ public class MeshTestContext extends TestWatcher {
 			if (!keycloak.isRunning()) {
 				keycloak.start();
 			}
-			// String authUrl = "http://" + keycloak.getHost() + ":" + keycloak.getMappedPort(8080) + "/auth";
-			// String realmName = "master-test";
+			String realmName = "master-test";
+			Set<JsonObject> jwks = KeycloakUtils.loadJWKs("http", keycloak.getHost(), keycloak.getMappedPort(8080), realmName);
+			meshOptions.getAuthenticationOptions().setPublicKeys(jwks);
 		}
 		settings.optionChanger().changer.accept(meshOptions);
 		optionChanger.accept(meshOptions);
