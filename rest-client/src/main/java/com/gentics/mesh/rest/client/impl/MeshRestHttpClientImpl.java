@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Vector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
@@ -1452,6 +1453,16 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	public MeshRequest<PluginResponse> findPlugin(String id) {
 		Objects.requireNonNull(id, "id must not be null");
 		return prepareRequest(GET, "/admin/plugins/" + id, PluginResponse.class);
+	}
+
+	@Override
+	public MeshRequest<MeshBinaryResponse> debugInfo(String... includes) {
+		String includeString = Stream.of(includes)
+			.collect(Collectors.joining(","));
+		if (!includeString.isEmpty()) {
+			includeString = "?include=" + includeString;
+		}
+		return prepareRequest(GET, "/admin/debuginfo" + includeString, MeshBinaryResponse.class);
 	}
 
 	@Override

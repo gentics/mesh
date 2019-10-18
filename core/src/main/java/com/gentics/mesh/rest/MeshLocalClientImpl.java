@@ -1700,4 +1700,9 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public MeshRequest<MeshBinaryResponse> debugInfo(String... params) {
+		return null;
+	}
 }

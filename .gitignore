@@ -50,3 +50,4 @@ inclusions.txt
 *.iml
 elasticsearch-6.1.2
 build.sh
+debuginfo.log
