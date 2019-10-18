@@ -1,7 +1,10 @@
 package com.gentics.mesh.core.endpoint.admin.debuginfo;
 
+import static com.gentics.mesh.util.StreamUtil.toStream;
+
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,7 +25,7 @@ public class IncludedInfo {
 			return;
 		}
 		Stream.of(include.get(0).split(","))
-			.map(Inclusion::new)
+			.flatMap(part -> toStream(Inclusion.fromQueryPart(part)))
 			.forEach(inclusion -> {
 				if (inclusion.excluded) {
 					excluded.add(inclusion.name);
@@ -45,10 +48,21 @@ public class IncludedInfo {
 		private final boolean excluded;
 		private final String name;
 
-		public Inclusion(String queryPart) {
+		private Inclusion(boolean excluded, String name) {
+			this.excluded = excluded;
+			this.name = name;
+		}
+
+		public static Optional<Inclusion> fromQueryPart(String queryPart) {
 			Matcher matcher = pattern.matcher(queryPart);
-			this.excluded = "-".equals(matcher.group(1));
-			this.name = matcher.group(2);
+			if (!matcher.find()) {
+				return Optional.empty();
+			}
+			boolean excluded = "-".equals(matcher.group(1));
+			return Optional.ofNullable(matcher.group(2))
+				.map(String::trim)
+				.filter(name -> !name.isEmpty())
+				.map(name -> new Inclusion(excluded, name));
 		}
 
 		public boolean isExcluded() {
