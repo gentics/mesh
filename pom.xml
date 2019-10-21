@@ -44,7 +44,7 @@
 	<parent>
 		<groupId>com.gentics.vertx</groupId>
 		<artifactId>maven-vertx-parent</artifactId>
-		<version>3.8.2</version>
+		<version>3.8.3</version>
 	</parent>
 
 	<developers>
