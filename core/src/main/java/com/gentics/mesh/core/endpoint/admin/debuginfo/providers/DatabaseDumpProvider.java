@@ -45,7 +45,7 @@ public class DatabaseDumpProvider implements DebugInfoProvider {
 		}
 
 		return db.singleTx(adminHandler::backup)
-			.map(filename -> DebugInfoFileEntry.fromFile(fs, filename, "graphdb.zip"))
+			.map(filename -> DebugInfoFileEntry.fromFile(fs, filename, "graphdb.zip", true))
 			.toFlowable();
 	}
 }

@@ -12,15 +12,21 @@ public class DebugInfoFileEntry implements DebugInfoEntry {
 	private final FileSystem fs;
 	private final String source;
 	private final String target;
+	private final boolean deleteFileAfterRead;
 
-	public DebugInfoFileEntry(FileSystem fs, String source, String target) {
+	public DebugInfoFileEntry(FileSystem fs, String source, String target, boolean deleteFileAfterRead) {
 		this.source = source;
 		this.target = target;
 		this.fs = fs;
+		this.deleteFileAfterRead = deleteFileAfterRead;
 	}
 
 	public static DebugInfoEntry fromFile(FileSystem vertx, String source, String target) {
-		return new DebugInfoFileEntry(vertx, source, target);
+		return fromFile(vertx, source, target, false);
+	}
+
+	public static DebugInfoEntry fromFile(FileSystem vertx, String source, String target, boolean deleteFileAfterRead) {
+		return new DebugInfoFileEntry(vertx, source, target, deleteFileAfterRead);
 	}
 
 	@Override
@@ -35,7 +41,7 @@ public class DebugInfoFileEntry implements DebugInfoEntry {
 
 	@Override
 	public Flowable<Buffer> getData() {
-		return fs.rxOpen(source, new OpenOptions().setRead(true).setCreateNew(false).setDeleteOnClose(true))
+		return fs.rxOpen(source, new OpenOptions().setRead(true).setCreateNew(false).setDeleteOnClose(deleteFileAfterRead))
 			.flatMapPublisher(AsyncFile::toFlowable)
 			.map(io.vertx.reactivex.core.buffer.Buffer::getDelegate);
 	}

@@ -35,7 +35,6 @@ public class DebugInfoTest extends AbstractMeshTest {
 		DebugInfo info = getDebugInfo();
 		Stream.of(
 			"log.txt",
-			"config/mesh.yml",
 			"config/hazelcast.xml",
 			"config/orientdb-server-config.xml",
 			"activeConfig.json",
@@ -66,7 +65,6 @@ public class DebugInfoTest extends AbstractMeshTest {
 		DebugInfo info = getDebugInfo("consistencyCheck", "-log");
 		Stream.of(
 			"consistencyCheck.json",
-			"config/mesh.yml",
 			"config/hazelcast.xml",
 			"config/orientdb-server-config.xml",
 			"activeConfig.json",
@@ -115,7 +113,7 @@ public class DebugInfoTest extends AbstractMeshTest {
 		}
 
 		public void assertExistence(String path) {
-			assertThat(files).containsKey(path);
+			assertThat(files.keySet()).contains(path);
 		}
 	}
 }
