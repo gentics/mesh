@@ -82,8 +82,9 @@ public class ClusterOptions implements Option {
 	 * 
 	 * @param networkHost
 	 */
-	public void setNetworkHost(String networkHost) {
+	public ClusterOptions setNetworkHost(String networkHost) {
 		this.networkHost = networkHost;
+		return this;
 	}
 
 	/**
@@ -100,20 +101,9 @@ public class ClusterOptions implements Option {
 	 * 
 	 * @param clusterName
 	 */
-	public void setClusterName(String clusterName) {
+	public ClusterOptions setClusterName(String clusterName) {
 		this.clusterName = clusterName;
-	}
-
-	/**
-	 * Validate the options.
-	 * 
-	 * @param meshOptions
-	 */
-	public void validate(MeshOptions meshOptions) {
-		if (isEnabled()) {
-			Objects.requireNonNull(getClusterName(), "No cluster.clusterName was specified within mesh options.");
-			Objects.requireNonNull(meshOptions.getNodeName(), "No nodeName was specified within mesh options.");
-		}
+		return this;
 	}
 
 	/**
@@ -134,4 +124,15 @@ public class ClusterOptions implements Option {
 		this.vertxPort = vertxPort;
 	}
 
+	/**
+	 * Validate the options.
+	 * 
+	 * @param meshOptions
+	 */
+	public void validate(MeshOptions meshOptions) {
+		if (isEnabled()) {
+			Objects.requireNonNull(getClusterName(), "No cluster.clusterName was specified within mesh options.");
+			Objects.requireNonNull(meshOptions.getNodeName(), "No nodeName was specified within mesh options.");
+		}
+	}
 }

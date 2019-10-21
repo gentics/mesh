@@ -116,6 +116,14 @@ public class GraphStorageOptions implements Option {
 	}
 
 	/**
+	 * @param parameters the parameters to set
+	 */
+	public GraphStorageOptions setAllParameters(Map<String, String> parameters) {
+		this.parameters = parameters;
+		return this;
+	}
+
+	/**
 	 * Return the backup directory location.
 	 *
 	 * @return Backup directory

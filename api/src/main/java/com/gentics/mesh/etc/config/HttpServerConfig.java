@@ -130,6 +130,16 @@ public class HttpServerConfig implements Option {
 	}
 
 	/**
+	 * Return the CORS flag.
+	 * 
+	 * @return CORS enabled flag
+	 */
+	@JsonIgnore
+	public boolean isCorsEnabled() {
+		return this.enableCors != null && this.enableCors == true;
+	}
+
+	/**
 	 * Set the flag which will enable CORS.
 	 * 
 	 * @param enableCors
@@ -139,16 +149,6 @@ public class HttpServerConfig implements Option {
 	public HttpServerConfig setEnableCors(Boolean enableCors) {
 		this.enableCors = enableCors;
 		return this;
-	}
-
-	/**
-	 * Return the CORS flag.
-	 * 
-	 * @return CORS enabled flag
-	 */
-	@JsonIgnore
-	public boolean isCorsEnabled() {
-		return this.enableCors != null && this.enableCors == true;
 	}
 
 	/**

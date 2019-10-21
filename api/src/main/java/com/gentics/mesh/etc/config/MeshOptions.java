@@ -143,6 +143,16 @@ public class MeshOptions implements Option {
 	}
 
 	/**
+	 * Set the default language.
+	 * 
+	 * @param defaultLanguage the default language iso-code
+	 */
+	public MeshOptions setDefaultLanguage(String defaultLanguage) {
+		this.defaultLanguage = defaultLanguage;
+		return this;
+	}
+
+	/**
 	 * Return the (optional) languages file path
 	 * 
 	 * @return path to the optional languages file
@@ -157,8 +167,9 @@ public class MeshOptions implements Option {
 	 * @param languagesFilePath
 	 *            path to the optional languages file
 	 */
-	public void setLanguagesFilePath(String languagesFilePath) {
+	public MeshOptions setLanguagesFilePath(String languagesFilePath) {
 		this.languagesFilePath = languagesFilePath;
+		return this;
 	}
 
 	/**
@@ -192,6 +203,14 @@ public class MeshOptions implements Option {
 	}
 
 	/**
+	 * @param storageOptions the storageOptions to set
+	 */
+	public MeshOptions setStorageOptions(GraphStorageOptions storageOptions) {
+		this.storageOptions = storageOptions;
+		return this;
+	}
+
+	/**
 	 * Return the mesh upload options.
 	 * 
 	 * @return Upload options
@@ -207,8 +226,9 @@ public class MeshOptions implements Option {
 	 * @param uploadOptions
 	 *            Upload options
 	 */
-	public void setUploadOptions(MeshUploadOptions uploadOptions) {
+	public MeshOptions setUploadOptions(MeshUploadOptions uploadOptions) {
 		this.uploadOptions = uploadOptions;
+		return this;
 	}
 
 	/**
@@ -227,8 +247,9 @@ public class MeshOptions implements Option {
 	 * @param httpServerOptions
 	 *            Http server options
 	 */
-	public void setHttpServerOptions(HttpServerConfig httpServerOptions) {
+	public MeshOptions setHttpServerOptions(HttpServerConfig httpServerOptions) {
 		this.httpServerOptions = httpServerOptions;
+		return this;
 	}
 
 	@JsonProperty("monitoring")
@@ -241,12 +262,21 @@ public class MeshOptions implements Option {
 	 * 
 	 * @param monitoringOptions
 	 */
-	public void setMonitoringOptions(MonitoringConfig monitoringOptions) {
+	public MeshOptions setMonitoringOptions(MonitoringConfig monitoringOptions) {
 		this.monitoringOptions = monitoringOptions;
+		return this;
 	}
 
 	public VertxOptions getVertxOptions() {
 		return vertxOptions;
+	}
+
+	/**
+	 * @param vertxOptions the vertxOptions to set
+	 */
+	public MeshOptions setVertxOptions(VertxOptions vertxOptions) {
+		this.vertxOptions = vertxOptions;
+		return this;
 	}
 
 	@JsonProperty("cluster")
@@ -254,8 +284,9 @@ public class MeshOptions implements Option {
 		return clusterOptions;
 	}
 
-	public void setClusterOptions(ClusterOptions clusterOptions) {
+	public MeshOptions setClusterOptions(ClusterOptions clusterOptions) {
 		this.clusterOptions = clusterOptions;
+		return this;
 	}
 
 	/**
@@ -317,8 +348,9 @@ public class MeshOptions implements Option {
 	 * @param tempDirectory
 	 *            Temporary filesystem directory
 	 */
-	public void setTempDirectory(String tempDirectory) {
+	public MeshOptions setTempDirectory(String tempDirectory) {
 		this.tempDirectory = tempDirectory;
+		return this;
 	}
 
 	/**
@@ -335,8 +367,9 @@ public class MeshOptions implements Option {
 	 * 
 	 * @param pluginDirectory
 	 */
-	public void setPluginDirectory(String pluginDirectory) {
+	public MeshOptions setPluginDirectory(String pluginDirectory) {
 		this.pluginDirectory = pluginDirectory;
+		return this;
 	}
 
 	/**
@@ -443,6 +476,15 @@ public class MeshOptions implements Option {
 	}
 
 	/**
+	 * Return the node name.
+	 * 
+	 * @return
+	 */
+	public String getNodeName() {
+		return nodeName;
+	}
+
+	/**
 	 * Set the node name.
 	 * 
 	 * @param nodeName
@@ -451,15 +493,6 @@ public class MeshOptions implements Option {
 	public MeshOptions setNodeName(String nodeName) {
 		this.nodeName = nodeName;
 		return this;
-	}
-
-	/**
-	 * Return the node name.
-	 * 
-	 * @return
-	 */
-	public String getNodeName() {
-		return nodeName;
 	}
 
 	@JsonIgnore

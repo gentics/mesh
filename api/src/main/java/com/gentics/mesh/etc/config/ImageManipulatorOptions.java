@@ -109,24 +109,25 @@ public class ImageManipulatorOptions implements Option {
 		return this;
 	}
 
-	public void validate(MeshOptions meshOptions) {
-		// TODO Auto-generated method stub
-
-	}
-
 	public float getJpegQuality() {
 		return jpegQuality;
 	}
 
-	public void setJpegQuality(float jpegQuality) {
+	public ImageManipulatorOptions setJpegQuality(float jpegQuality) {
 		this.jpegQuality = jpegQuality;
+		return this;
 	}
 
 	public ResampleFilter getResampleFilter() {
 		return resampleFilter;
 	}
 
-	public void setResampleFilter(ResampleFilter resampleFilter) {
+	public ImageManipulatorOptions setResampleFilter(ResampleFilter resampleFilter) {
 		this.resampleFilter = resampleFilter;
+		return this;
+	}
+
+	public void validate(MeshOptions meshOptions) {
+		// TODO Auto-generated method stub
 	}
 }
