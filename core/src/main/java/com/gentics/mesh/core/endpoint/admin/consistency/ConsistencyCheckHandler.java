@@ -12,6 +12,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.BinaryCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.BranchCheck;
@@ -31,6 +32,7 @@ import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.Transactional;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
@@ -107,6 +109,12 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
+			return checkConsistency(attemptRepair).runInExistingTx(tx);
+		}, model -> ac.send(model, OK));
+	}
+
+	public Transactional<ConsistencyCheckResponse> checkConsistency(boolean attemptRepair) {
+		return db.transactional(tx -> {
 			log.info("Consistency check has been invoked. Repair: " + attemptRepair);
 			vertx.eventBus().publish(REPAIR_START.address, null);
 			ConsistencyCheckResponse response = new ConsistencyCheckResponse();
@@ -123,7 +131,7 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 			}
 			vertx.eventBus().publish(REPAIR_FINISHED.address, null);
 			return response;
-		}, model -> ac.send(model, OK));
+		});
 	}
 
 }

@@ -28,6 +28,7 @@ import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
@@ -45,13 +46,16 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 
 	private PluginHandler pluginHandler;
 
+	private DebugInfoHandler debugInfoHandler;
+
 	@Inject
-	public AdminEndpoint(MeshAuthChain chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler, PluginHandler pluginHandler) {
+	public AdminEndpoint(MeshAuthChain chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler, PluginHandler pluginHandler, DebugInfoHandler debugInfoHandler) {
 		super("admin", chain);
 		this.adminHandler = adminHandler;
 		this.jobHandler = jobHandler;
 		this.consistencyHandler = consistencyHandler;
 		this.pluginHandler = pluginHandler;
+		this.debugInfoHandler = debugInfoHandler;
 	}
 
 	public AdminEndpoint() {
@@ -80,6 +84,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		// addServiceHandler();
 		addJobHandler();
 		addPluginHandler();
+		addDebugInfoHandler();
 	}
 
 	private void addPluginHandler() {
@@ -137,7 +142,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 	/**
 	 * @deprecated Use monitoring server endpoint instead
 	 */
-	@Deprecated 
+	@Deprecated
 	private void addClusterStatusHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/cluster/status");
@@ -321,5 +326,11 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		});
 	}
 
-
+	private void addDebugInfoHandler() {
+		InternalEndpointRoute route = createRoute();
+		route.path("/debuginfo");
+		route.method(GET);
+		route.description("Downloads a zip file of various debug information files.");
+		route.handler(rc -> debugInfoHandler.handle(rc));
+	}
 }

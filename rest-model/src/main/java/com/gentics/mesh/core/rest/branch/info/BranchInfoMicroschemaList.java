@@ -20,6 +20,10 @@ public class BranchInfoMicroschemaList implements RestModel {
 	public BranchInfoMicroschemaList() {
 	}
 
+	public BranchInfoMicroschemaList(List<BranchMicroschemaInfo> microschemas) {
+		this.microschemas = microschemas;
+	}
+
 	public List<BranchMicroschemaInfo> getMicroschemas() {
 		return microschemas;
 	}

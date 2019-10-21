@@ -56,6 +56,10 @@ public class AdminIndexHandler {
 	}
 
 	public void handleStatus(InternalActionContext ac) {
+		getSearchStatus().subscribe(message -> ac.send(message, OK), ac::fail);
+	}
+
+	public Single<SearchStatusResponse> getSearchStatus() {
 		Map<String,Object> metrics = new HashMap<>();
 		// TODO fetch state
 		// statusResponse.setReindexRunning(REINDEX_FLAG.get());
@@ -66,11 +70,11 @@ public class AdminIndexHandler {
 			metrics.put(type, handler.getMetrics());
 		}
 
-		searchProvider.isAvailable().map(available ->
+		return searchProvider.isAvailable().map(available ->
 			new SearchStatusResponse()
 				.setMetrics(metrics)
 				.setAvailable(available)
-		).subscribe(message -> ac.send(message, OK), ac::fail);
+		);
 	}
 
 	public void handleSync(InternalActionContext ac) {

@@ -8,12 +8,14 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLI
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.STARTUP;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.slf4j.Logger.ROOT_LOGGER_NAME;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -82,6 +84,7 @@ import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.ClusterOptions;
+import com.gentics.mesh.etc.config.DebugInfoOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
@@ -98,6 +101,13 @@ import com.hazelcast.core.HazelcastInstance;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.rolling.FixedWindowRollingPolicy;
+import ch.qos.logback.core.rolling.RollingFileAppender;
+import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
+import ch.qos.logback.core.util.FileSize;
 import dagger.Lazy;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -197,7 +207,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	/**
 	 * Initialize the local data or create the initial dataset if no local data could be found.
-	 * 
+	 *
 	 * @param configuration
 	 *            Mesh configuration
 	 * @param isJoiningCluster
@@ -240,6 +250,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		boolean startOrientServer = storageOptions != null && storageOptions.getStartServer();
 
 		options = prepareMeshOptions(options);
+
+		addDebugInfoLogAppender(options);
 
 		try {
 			db.init(mesh.getOptions(), MeshVersion.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
@@ -332,8 +344,54 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	/**
+	 * Adds a file appender to the logging system.
+	 * The log file is later used by the {@link com.gentics.mesh.core.endpoint.admin.debuginfo.providers.LogProvider}
+	 * @param options
+	 */
+	private void addDebugInfoLogAppender(MeshOptions options) {
+		DebugInfoOptions debugInfoOptions = options.getDebugInfoOptions();
+		if (!debugInfoOptions.isLogEnabled()) {
+			return;
+		}
+		String logFolder = debugInfoOptions.getLogFolder();
+		// This requires that slf4j is actually used.
+		LoggerContext lc = (LoggerContext) org.slf4j.LoggerFactory.getILoggerFactory();
+		ch.qos.logback.classic.Logger rootLogger = lc.getLogger(ROOT_LOGGER_NAME);
+
+		RollingFileAppender<ILoggingEvent> appender = new RollingFileAppender<>();
+		appender.setFile(Paths.get(logFolder, "debuginfo.log").toString());
+		appender.setContext(lc);
+
+		SizeBasedTriggeringPolicy<ILoggingEvent> triggeringPolicy = new SizeBasedTriggeringPolicy<>();
+		triggeringPolicy.setMaxFileSize(FileSize.valueOf(debugInfoOptions.getLogFileSize()));
+		triggeringPolicy.setContext(lc);
+
+		FixedWindowRollingPolicy rollingPolicy = new FixedWindowRollingPolicy();
+
+		rollingPolicy.setMinIndex(1);
+		rollingPolicy.setMaxIndex(1);
+		rollingPolicy.setFileNamePattern(Paths.get(logFolder, "debuginfo.%i.log").toString());
+		rollingPolicy.setParent(appender);
+		rollingPolicy.setContext(lc);
+
+		PatternLayoutEncoder encoder = new PatternLayoutEncoder();
+		encoder.setPattern(debugInfoOptions.getLogPattern());
+		encoder.setContext(lc);
+
+		appender.setRollingPolicy(rollingPolicy);
+		appender.setTriggeringPolicy(triggeringPolicy);
+		appender.setEncoder(encoder);
+
+		rootLogger.addAppender(appender);
+		triggeringPolicy.start();
+		rollingPolicy.start();
+		encoder.start();
+		appender.start();
+	}
+
+	/**
 	 * Prepare the mesh options.
-	 * 
+	 *
 	 * @param options
 	 * @return
 	 */
@@ -345,7 +403,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	/**
 	 * Load the list of JWK's that may have been added to the public keys file.
-	 * 
+	 *
 	 * @param options
 	 */
 	private void loadExtraPublicKeys(MeshOptions options) {
@@ -381,7 +439,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	/**
 	 * Returns the IP of the network interface that is used to communicate with the given remote host/IP. Let's say we want to reach 8.8.8.8, it would return
 	 * the IP of the local network adapter that is routed into the Internet.
-	 * 
+	 *
 	 * @param destination
 	 *            The remote host name or IP
 	 * @return An IP of a local network adapter
@@ -440,7 +498,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	/**
 	 * Create a clustered vert.x instance and block until the instance has been created.
-	 * 
+	 *
 	 * @param options
 	 *            Mesh options
 	 * @param vertxOptions
@@ -490,7 +548,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	/**
 	 * Handle local data and prepare mesh API.
-	 * 
+	 *
 	 * @param forceIndexSync
 	 * @param configuration
 	 * @param verticleLoader
@@ -652,7 +710,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	/**
 	 * Return the mesh root node. This method will also create the node if it could not be found within the graph.
-	 * 
+	 *
 	 * @return
 	 */
 	@Override
@@ -677,7 +735,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	/**
 	 * Return the anonymous role.
-	 * 
+	 *
 	 * @return
 	 */
 	@Override
@@ -1007,7 +1065,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	/**
 	 * Create languages in the set, which do not exist yet
-	 * 
+	 *
 	 * @param root
 	 *            language root
 	 * @param languageSet

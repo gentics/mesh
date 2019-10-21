@@ -28,6 +28,8 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.PentaFunction;
+import com.gentics.mesh.util.StreamUtil;
+
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
@@ -89,7 +91,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 		validateParameter(uuid, "uuid");
 		db.asyncTx(() -> {
 			Branch branch = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
-			return getSchemaVersionsInfo(branch);
+			return Single.just(getSchemaVersionsInfo(branch));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -122,7 +124,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 					branch.assignSchemaVersion(ac.getUser(), version, event);
 				}
 
-				return getSchemaVersionsInfo(branch);
+				return Single.just(getSchemaVersionsInfo(branch));
 			});
 
 			// 2. Invoke migrations which will populate the created index
@@ -145,7 +147,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 		validateParameter(uuid, "uuid");
 		db.asyncTx(() -> {
 			Branch branch = getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM);
-			return getMicroschemaVersions(branch);
+			return Single.just(getMicroschemaVersions(branch));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -181,7 +183,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			});
 
 			MeshEvent.triggerJobWorker(boot.mesh());
-			return getMicroschemaVersions(branch).blockingGet();
+			return getMicroschemaVersions(branch);
 		}, model -> ac.send(model, OK));
 	}
 
@@ -192,18 +194,17 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	 *            branch
 	 * @return single emitting the rest model
 	 */
-	protected Single<BranchInfoSchemaList> getSchemaVersionsInfo(Branch branch) {
-		return Observable.fromIterable(branch.findAllLatestSchemaVersionEdges()).map(edge -> {
-			SchemaReference reference = edge.getSchemaContainerVersion().transformToReference();
-			BranchSchemaInfo info = new BranchSchemaInfo(reference);
-			info.setMigrationStatus(edge.getMigrationStatus());
-			info.setJobUuid(edge.getJobUuid());
-			return info;
-		}).collect(() -> {
-			return new BranchInfoSchemaList();
-		}, (x, y) -> {
-			x.getSchemas().add(y);
-		});
+	public BranchInfoSchemaList getSchemaVersionsInfo(Branch branch) {
+		List<BranchSchemaInfo> list = StreamUtil.toStream(branch.findAllLatestSchemaVersionEdges())
+			.map(edge -> {
+				SchemaReference reference = edge.getSchemaContainerVersion().transformToReference();
+				BranchSchemaInfo info = new BranchSchemaInfo(reference);
+				info.setMigrationStatus(edge.getMigrationStatus());
+				info.setJobUuid(edge.getJobUuid());
+				return info;
+			}).collect(Collectors.toList());
+
+		return new BranchInfoSchemaList(list);
 	}
 
 	/**
@@ -213,18 +214,16 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	 *            branch
 	 * @return single emitting the rest model
 	 */
-	protected Single<BranchInfoMicroschemaList> getMicroschemaVersions(Branch branch) {
-		return Observable.fromIterable(branch.findAllLatestMicroschemaVersionEdges()).map(edge -> {
+	public BranchInfoMicroschemaList getMicroschemaVersions(Branch branch) {
+		List<BranchMicroschemaInfo> list = StreamUtil.toStream(branch.findAllLatestMicroschemaVersionEdges()).map(edge -> {
 			MicroschemaReference reference = edge.getMicroschemaContainerVersion().transformToReference();
 			BranchMicroschemaInfo info = new BranchMicroschemaInfo(reference);
 			info.setMigrationStatus(edge.getMigrationStatus());
 			info.setJobUuid(edge.getJobUuid());
 			return info;
-		}).collect(() -> {
-			return new BranchInfoMicroschemaList();
-		}, (x, y) -> {
-			x.getMicroschemas().add(y);
-		});
+		}).collect(Collectors.toList());
+
+		return new BranchInfoMicroschemaList(list);
 	}
 
 	public void handleMigrateRemainingMicronodes(InternalActionContext ac, String branchUuid) {

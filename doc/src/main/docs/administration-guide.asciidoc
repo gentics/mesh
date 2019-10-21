@@ -144,7 +144,7 @@ Gentics Mesh comes with OrientDB, an embedded graph database and Elasticsearch. 
 
 ==== System Configuration
 
-The maxium open file limit on Linux has to be raised on most Linux systems since the embedded graph database and Elasticsearch server often exceed the amount of concurrent open files.
+The maximum open file limit on Linux has to be raised on most Linux systems since the embedded graph database and Elasticsearch server often exceed the amount of concurrent open files.
 
 Edit _/etc/security/limits.conf_ and add these two lines:
 
@@ -251,6 +251,10 @@ include::content/docs/snippets/config/cache.inc[]
 
 Additionally it is possible to tweak the underlying OrientDB cache settings.
 
+=== Debug Information Options
+
+include::content/docs/snippets/config/debuginfo.inc[]
+
 === Memory Settings
 
 Memory settings can be defined using the `JAVA_TOOL_OPTIONS` environment variable.
@@ -306,6 +310,103 @@ Take a look at our link:https://github.com/gentics/mesh-compose/tree/clustering#
 == Import & Export
 
 The `POST {apiLatest}/admin/graphdb/export` and `POST {apiLatest}/admin/graphdb/import` endpoints can be used to generate Graph Database export files which are gzipped json files. A large database can be exported and reimported again to reduce the sparse file size.
+
+[[debuginfo]]
+== Debug Information
+
+The debug info endpoint (GET {apiLatest}/admin/debuginfo) starts a zip download containing various useful data about the system.
+
+The documentation below lists all files that are included in the zip.
+
+Per default everything except the consistency check is included in the zip. You can use the `?include` query parameter to include or exclude specific parts.
+For example `{apiLatest}/admin/debuginfo?include=-backup,consistencyCheck` will exclude the database backup and include the consistency checks.
+
+=== Active Config
+Query name: `activeConfig`
+
+The effective link:{{< relref "administration-guide.asciidoc" >}}#conf[configuration] that is currently used in the system. This includes overrides by command line argument and environment variables.
+
+=== Binary Disk Usage
+Query name: `binaryDiskUsage`
+
+The total file size of all stored binaries and cached images.
+
+=== Configurations
+Query name: `config`
+
+The following files from the `config` folder:
+
+- `mesh.yml`
+- `hazelcast.xml`
+- `logback.xml`
+- `default-distributed-db-config.xml`
+- `orientdb-server-config.xml`
+
+=== Consistency Check
+Query name: `consistencyCheck`
+
+Performs a link:{{< relref "administration-guide.asciidoc" >}}#_database_consistency[consistency check] and includes the result.
+
+=== Database Backup
+Query name: `backup`
+
+WARNING: Including this will cause the database to be in read only mode for the duration of the backup.
+
+Performs a link:{{< relref "administration-guide.asciidoc" >}}#_backup_recovery[Graph database backup] and includes the files.
+
+=== Entities
+Query name: `entities`
+
+Includes the following entities as json:
+
+- All jobs
+- All Schemas
+- All Microschemas
+- All Projects
+- All Branches
+
+=== Log
+Query name: `log`
+
+Includes the latest debug log output of Gentics Mesh. Check the link:{{< relref "administration-guide.asciidoc" >}}#_debug_information_options[debug info options] for more options.
+
+=== Migration Status
+Query name: `migrationStatus`
+
+Includes the
+link:https://getmesh.io/docs/api/#project__branches__branchUuid__schemas_get[schema migration status]
+and
+link:https://getmesh.io/docs/api/#project__branches__branchUuid__microschemas_get[mircoschema migration status]
+for every branch of every project.
+
+=== Plugins
+Query name: `plugins`
+
+Includes the link:https://getmesh.io/docs/api/#admin_plugins_get[currently deployed plugins].
+
+=== Status
+Query name: `status`
+
+Includes the
+link:https://getmesh.io/docs/api/#_get[version],
+link:https://getmesh.io/docs/api/#admin_cluster_status_get[cluster status]
+and
+link:https://getmesh.io/docs/api/#search_status_get[elastic search status].
+
+=== System Information
+Query name: `systemInfo`
+
+Contains the following informations about the system:
+
+- System load average
+- JVM memory usage
+- JVM arguments
+- Disk space usage (of the file system where Gentics Mesh is running)
+
+=== Thread Dump
+Query name: `threadDump`
+
+A dump of all threads including all stack traces.
 
 == link:{{< relref "changelog.asciidoc" >}}[Changelog]
 

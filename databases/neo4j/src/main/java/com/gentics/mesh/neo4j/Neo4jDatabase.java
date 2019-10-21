@@ -81,7 +81,7 @@ public class Neo4jDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void backupGraph(String backupDirectory) throws IOException {
+	public String backupGraph(String backupDirectory) throws IOException {
 		throw new NotImplementedError("Not yet supported for Neo4j");
 	}
 

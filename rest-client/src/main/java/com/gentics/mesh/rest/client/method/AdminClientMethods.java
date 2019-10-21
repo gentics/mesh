@@ -4,6 +4,7 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 
@@ -76,4 +77,9 @@ public interface AdminClientMethods {
 	 */
 	MeshRequest<ConsistencyCheckResponse> repairConsistency();
 
+	/**
+	 * Gets zip file containing debug information.
+	 * @return
+	 */
+	MeshRequest<MeshBinaryResponse> debugInfo(String... include);
 }

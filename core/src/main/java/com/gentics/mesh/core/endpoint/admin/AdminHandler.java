@@ -99,27 +99,31 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleBackup(InternalActionContext ac) {
-		Mesh mesh = boot.mesh();
 		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			MeshStatus oldStatus = mesh.getStatus();
-			try {
-				vertx.eventBus().publish(GRAPH_BACKUP_START.address, null);
-				mesh.setStatus(MeshStatus.BACKUP);
-				db.backupGraph(options.getStorageOptions().getBackupDirectory());
-			} catch (GenericRestException e) {
-				throw e;
-			} catch (Throwable e) {
-				log.error("Backup process failed", e);
-				throw error(INTERNAL_SERVER_ERROR, "backup_failed", e);
-			} finally {
-				mesh.setStatus(oldStatus);
-				vertx.eventBus().publish(GRAPH_BACKUP_FINISHED.address, null);
-			}
+			backup();
 			return message(ac, "backup_finished");
 		}, model -> ac.send(model, OK));
+	}
+
+	public String backup() {
+		Mesh mesh = boot.mesh();
+		MeshStatus oldStatus = mesh.getStatus();
+		try {
+			vertx.eventBus().publish(GRAPH_BACKUP_START.address, null);
+			mesh.setStatus(MeshStatus.BACKUP);
+			return db.backupGraph(options.getStorageOptions().getBackupDirectory());
+		} catch (GenericRestException e) {
+			throw e;
+		} catch (Throwable e) {
+			log.error("Backup process failed", e);
+			throw error(INTERNAL_SERVER_ERROR, "backup_failed", e);
+		} finally {
+			mesh.setStatus(oldStatus);
+			vertx.eventBus().publish(GRAPH_BACKUP_FINISHED.address, null);
+		}
 	}
 
 	/**
@@ -259,6 +263,10 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleVersions(InternalActionContext ac) {
+		ac.send(getMeshServerInfoModel(), OK);
+	}
+
+	public MeshServerInfoModel getMeshServerInfoModel() {
 		MeshServerInfoModel info = new MeshServerInfoModel();
 		info.setDatabaseVendor(db.getVendorName());
 		info.setDatabaseVersion(db.getVersion());
@@ -268,7 +276,7 @@ public class AdminHandler extends AbstractHandler {
 		info.setMeshNodeName(options.getNodeName());
 		info.setVertxVersion(VersionCommand.getVersion());
 		info.setDatabaseRevision(db.getDatabaseRevision());
-		ac.send(info, OK);
+		return info;
 	}
 
 }
