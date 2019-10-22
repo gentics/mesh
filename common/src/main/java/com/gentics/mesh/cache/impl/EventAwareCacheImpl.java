@@ -48,9 +48,9 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 	private final Counter missCounter;
 	private final Counter hitCounter;
 
-	public EventAwareCacheImpl(long maxSize, Duration expireAfter, Vertx vertx, MeshOptions options, MetricsService metricsService, Predicate<Message<JsonObject>> filter,
+	public EventAwareCacheImpl(String name, long maxSize, Duration expireAfter, Vertx vertx, MeshOptions options, MetricsService metricsService, Predicate<Message<JsonObject>> filter,
 							   BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext,
-							   String name, MeshEvent... events) {
+							   MeshEvent... events) {
 		this.vertx = vertx;
 		this.options = options;
 		Caffeine<Object, Object> cacheBuilder = Caffeine.newBuilder().maximumSize(maxSize);
@@ -193,7 +193,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 			Objects.requireNonNull(events, "No events for the cache have been set");
 			Objects.requireNonNull(vertx, "No Vert.x instance has been set");
 			Objects.requireNonNull(name, "No name has been set");
-			EventAwareCacheImpl<K, V> c = new EventAwareCacheImpl<>(maxSize, expireAfter, vertx, options, metricsService, filter, onNext, name, events);
+			EventAwareCacheImpl<K, V> c = new EventAwareCacheImpl<>(name, maxSize, expireAfter, vertx, options, metricsService, filter, onNext, events);
 			if (disabled) {
 				c.disable();
 			}
