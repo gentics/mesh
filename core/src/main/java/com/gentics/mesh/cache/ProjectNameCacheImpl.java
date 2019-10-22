@@ -32,6 +32,7 @@ public class ProjectNameCacheImpl extends AbstractMeshCache<String, Project> imp
 					cache.invalidate();
 				}
 			})
+			.name("projectname")
 			.maxSize(CACHE_SIZE)
 			.build();
 	}

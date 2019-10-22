@@ -176,10 +176,6 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		}
 	}
 
-	public static <K, V> Builder<K, V> builder() {
-		return new Builder<K, V>();
-	}
-
 	public static class Builder<K, V> {
 		private boolean disabled = false;
 

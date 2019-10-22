@@ -13,6 +13,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_FINISHED;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -45,12 +46,12 @@ public class WebrootPathCacheImpl extends AbstractMeshCache<String, Path> implem
 		SCHEMA_MIGRATION_FINISHED };
 
 	@Inject
-	public WebrootPathCacheImpl(Vertx vertx, CacheRegistry registry, MeshOptions options) {
-		super(createCache(vertx, options.getCacheConfig()), registry, options.getCacheConfig().getPathCacheSize());
+	public WebrootPathCacheImpl(EventAwareCacheFactory factory, CacheRegistry registry, MeshOptions options) {
+		super(createCache(factory, options.getCacheConfig()), registry, options.getCacheConfig().getPathCacheSize());
 	}
 
-	private static EventAwareCache<String, Path> createCache(Vertx vertx, CacheConfig config) {
-		return EventAwareCache.<String, Path>builder()
+	private static EventAwareCache<String, Path> createCache(EventAwareCacheFactory factory, CacheConfig config) {
+		return factory.<String, Path>builder()
 			.events(EVENTS)
 			.action((event, cache) -> {
 				if (log.isDebugEnabled()) {
@@ -58,8 +59,8 @@ public class WebrootPathCacheImpl extends AbstractMeshCache<String, Path> implem
 				}
 				cache.invalidate();
 			})
+			.name("webroot")
 			.maxSize(config.getPathCacheSize())
-			.vertx(vertx)
 			.build();
 	}
 
