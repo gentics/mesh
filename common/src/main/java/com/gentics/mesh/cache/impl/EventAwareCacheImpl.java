@@ -4,11 +4,16 @@ import java.time.Duration;
 import java.time.temporal.TemporalUnit;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import com.codahale.metrics.Counter;
 import com.gentics.mesh.cache.EventAwareCache;
 import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.metric.CachingMetric;
+import com.gentics.mesh.metric.MetricsService;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
@@ -30,16 +35,24 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 
 	private final Vertx vertx;
 
+	private final MeshOptions options;
+
 	private final Predicate<Message<JsonObject>> filter;
 
 	private BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext;
 
 	private boolean disabled = false;
 
-	public EventAwareCacheImpl(long maxSize, Duration expireAfter, Vertx vertx, Predicate<Message<JsonObject>> filter,
-		BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext,
-		MeshEvent... events) {
+	private final Counter invalidateKeyCounter;
+	private final Counter invalidateAllCounter;
+	private final Counter missCounter;
+	private final Counter hitCounter;
+
+	public EventAwareCacheImpl(long maxSize, Duration expireAfter, Vertx vertx, MeshOptions options, MetricsService metricsService, Predicate<Message<JsonObject>> filter,
+							   BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext,
+							   String name, MeshEvent... events) {
 		this.vertx = vertx;
+		this.options = options;
 		Caffeine<Object, Object> cacheBuilder = Caffeine.newBuilder().maximumSize(maxSize);
 		if (expireAfter != null) {
 			cacheBuilder = cacheBuilder.expireAfterWrite(expireAfter.getSeconds(), TimeUnit.SECONDS);
@@ -48,6 +61,10 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		this.filter = filter;
 		this.onNext = onNext;
 		registerEventHandlers(events);
+		invalidateKeyCounter = metricsService.counter(new CachingMetric(CachingMetric.Event.CLEAR_SINGLE, name));
+		invalidateAllCounter = metricsService.counter(new CachingMetric(CachingMetric.Event.CLEAR_ALL, name));
+		missCounter = metricsService.counter(new CachingMetric(CachingMetric.Event.MISS, name));
+		hitCounter = metricsService.counter(new CachingMetric(CachingMetric.Event.HIT, name));
 	}
 
 	private void registerEventHandlers(MeshEvent... events) {
@@ -94,6 +111,9 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		if (log.isTraceEnabled()) {
 			log.trace("Invalidating full cache");
 		}
+		if (options.getMonitoringOptions().isEnabled()) {
+			invalidateAllCounter.inc();
+		}
 		cache.invalidateAll();
 	}
 
@@ -101,6 +121,9 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 	public void invalidate(K key) {
 		if (log.isTraceEnabled()) {
 			log.trace("Invalidating entry with key {" + key + "}");
+		}
+		if (options.getMonitoringOptions().isEnabled()) {
+			invalidateKeyCounter.inc();
 		}
 		cache.invalidate(key);
 	}
@@ -118,7 +141,17 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		if (disabled) {
 			return null;
 		}
-		return cache.getIfPresent(key);
+		if (options.getMonitoringOptions().isEnabled()) {
+			V value = cache.getIfPresent(key);
+			if (value == null) {
+				missCounter.inc();
+			} else {
+				hitCounter.inc();
+			}
+			return value;
+		} else {
+			return cache.getIfPresent(key);
+		}
 	}
 
 	@Override
@@ -126,7 +159,21 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		if (disabled) {
 			return mappingFunction.apply(key);
 		}
-		return cache.get(key, mappingFunction);
+		if (options.getMonitoringOptions().isEnabled()) {
+			AtomicBoolean wasCached = new AtomicBoolean(true);
+			V value = cache.get(key, k -> {
+				wasCached.set(false);
+				return mappingFunction.apply(k);
+			});
+			if (wasCached.get()) {
+				hitCounter.inc();
+			} else {
+				missCounter.inc();
+			}
+			return value;
+		} else {
+			return cache.get(key, mappingFunction);
+		}
 	}
 
 	public static <K, V> Builder<K, V> builder() {
@@ -134,19 +181,23 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 	}
 
 	public static class Builder<K, V> {
-
 		private boolean disabled = false;
+
 		private long maxSize = 1000;
 		private Predicate<Message<JsonObject>> filter = null;
 		private BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext = null;
 		private MeshEvent[] events = null;
 		private Vertx vertx;
 		private Duration expireAfter;
+		private String name;
+		private MeshOptions options;
+		private MetricsService metricsService;
 
 		public EventAwareCache<K, V> build() {
 			Objects.requireNonNull(events, "No events for the cache have been set");
 			Objects.requireNonNull(vertx, "No Vert.x instance has been set");
-			EventAwareCacheImpl<K, V> c = new EventAwareCacheImpl<>(maxSize, expireAfter, vertx, filter, onNext, events);
+			Objects.requireNonNull(name, "No name has been set");
+			EventAwareCacheImpl<K, V> c = new EventAwareCacheImpl<>(maxSize, expireAfter, vertx, options, metricsService, filter, onNext, name, events);
 			if (disabled) {
 				c.disable();
 			}
@@ -178,7 +229,6 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		/**
 		 * Action which will be invoked on every received event.
 		 * 
-		 * @param filter
 		 * @return Fluent API
 		 */
 		public Builder<K, V> action(BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext) {
@@ -208,6 +258,26 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		}
 
 		/**
+		 * Sets the mesh options which will be used to determine if cache metrics are enabled.
+		 * @param options
+		 * @return
+		 */
+		public Builder<K, V> meshOptions(MeshOptions options) {
+			this.options = options;
+			return this;
+		}
+
+		/**
+		 * Set the metrics service which will be used to track caching statistics.
+		 * @param metricsService
+		 * @return
+		 */
+		public Builder<K, V> setMetricsService(MetricsService metricsService) {
+			this.metricsService = metricsService;
+			return this;
+		}
+
+		/**
 		 * Set the maximum size for the cache.
 		 * 
 		 * @param maxSize
@@ -230,6 +300,15 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 			return this;
 		}
 
+		/**
+		 * Sets the name for the cache. This is used for caching metrics.
+		 * @param name
+		 * @return Fluent API
+		 */
+		public Builder<K, V> name(String name) {
+			this.name = name;
+			return this;
+		}
 	}
 
 	public static Observable<Message<JsonObject>> rxEventBus(EventBus eventBus, MeshEvent... addresses) {

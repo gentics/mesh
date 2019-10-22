@@ -1,6 +1,6 @@
 package com.gentics.mesh.neo4j;
 
-import static com.gentics.mesh.metric.Metrics.TX;
+import static com.gentics.mesh.metric.SimpleMetric.TX;
 
 import java.io.File;
 

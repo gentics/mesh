@@ -4,7 +4,7 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
-import static com.gentics.mesh.metric.Metrics.NODE_MIGRATION_PENDING;
+import static com.gentics.mesh.metric.SimpleMetric.NODE_MIGRATION_PENDING;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -52,7 +52,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	@Inject
 	public NodeMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider) {
 		super(db, nodeFieldAPIHandler, metrics, batchProvider);
-		migrationCounter = metrics.resetableCounter(NODE_MIGRATION_PENDING);
+		migrationCounter = metrics.resettableCounter(NODE_MIGRATION_PENDING);
 	}
 
 	/**
