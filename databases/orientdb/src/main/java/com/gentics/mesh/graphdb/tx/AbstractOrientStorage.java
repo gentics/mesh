@@ -1,8 +1,8 @@
 package com.gentics.mesh.graphdb.tx;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.metric.Metrics.NO_TX;
-import static com.gentics.mesh.metric.Metrics.TX;
+import static com.gentics.mesh.metric.SimpleMetric.NO_TX;
+import static com.gentics.mesh.metric.SimpleMetric.TX;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
 import java.io.File;

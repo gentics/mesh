@@ -6,10 +6,14 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import org.junit.Test;
 
+import com.gentics.mesh.cache.impl.EventAwareCacheImpl;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
@@ -19,7 +23,9 @@ public class EventAwareCacheTest extends AbstractMeshTest {
 
 	@Test
 	public void testCustomHandler() {
-		EventAwareCache<String, Boolean> USER_STATE_CACHE = EventAwareCache.<String, Boolean>builder()
+		MeshOptions options = new MeshOptions();
+		options.getMonitoringOptions().setEnabled(false);
+		EventAwareCache<String, Boolean> USER_STATE_CACHE = new EventAwareCacheImpl.Builder<String, Boolean>()
 			.maxSize(15_000)
 			.events(USER_UPDATED)
 			.action((event, cache) -> {
@@ -31,6 +37,9 @@ public class EventAwareCacheTest extends AbstractMeshTest {
 				}
 
 			})
+			.setMetricsService(mock(MetricsService.class))
+			.meshOptions(options)
+			.name("testcache")
 			.vertx(vertx())
 			.build();
 

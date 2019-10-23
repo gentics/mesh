@@ -1,8 +1,8 @@
 package com.gentics.mesh.graphdb;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.metric.Metrics.TX_RETRY;
-import static com.gentics.mesh.metric.Metrics.TX_TIME;
+import static com.gentics.mesh.metric.SimpleMetric.TX_RETRY;
+import static com.gentics.mesh.metric.SimpleMetric.TX_TIME;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
@@ -32,7 +32,7 @@ import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.graphdb.tx.impl.OrientLocalStorageImpl;
 import com.gentics.mesh.graphdb.tx.impl.OrientServerStorageImpl;
-import com.gentics.mesh.metric.Metrics;
+import com.gentics.mesh.metric.SimpleMetric;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.ETag;
 import com.orientechnologies.common.concur.ONeedRetryException;
@@ -299,7 +299,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public void reload(Element element) {
 		if (element instanceof OrientElement) {
 			if (metrics.isEnabled()) {
-				metrics.meter(Metrics.GRAPH_ELEMENT_RELOAD).mark();
+				metrics.meter(SimpleMetric.GRAPH_ELEMENT_RELOAD).mark();
 			}
 			((OrientElement) element).reload();
 		}

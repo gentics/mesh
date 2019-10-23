@@ -7,6 +7,7 @@ import java.time.temporal.ChronoUnit;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.etc.config.MeshOptions;
 
@@ -29,14 +30,14 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> impl
 	private static final long CACHE_SIZE = 100_000;
 
 	@Inject
-	public PermissionCacheImpl(Vertx vertx, CacheRegistry registry, MeshOptions options) {
-		super(createCache(vertx), registry, CACHE_SIZE);
+	public PermissionCacheImpl(EventAwareCacheFactory factory, Vertx vertx, CacheRegistry registry, MeshOptions options) {
+		super(createCache(factory), registry, CACHE_SIZE);
 		this.vertx = vertx;
 		this.options = options;
 	}
 
-	private static EventAwareCache<String, Boolean> createCache(Vertx vertx) {
-		return EventAwareCache.<String, Boolean>builder()
+	private static EventAwareCache<String, Boolean> createCache(EventAwareCacheFactory factory) {
+		return factory.<String, Boolean>builder()
 			.events(CLEAR_PERMISSION_STORE)
 			.action((event, cache) -> {
 				if (log.isDebugEnabled()) {
@@ -46,7 +47,7 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> impl
 			})
 			.expireAfter(30, ChronoUnit.MINUTES)
 			.maxSize(CACHE_SIZE)
-			.vertx(vertx)
+			.name("permission")
 			.build();
 	}
 

@@ -35,19 +35,19 @@ public interface MetricsService {
 	 */
 	MetricRegistry getMetricRegistry();
 
-	default Meter meter(Metrics metric) {
+	default Meter meter(Metric metric) {
 		return getMetricRegistry().meter(metric.key());
 	}
 
-	default Timer timer(Metrics metric) {
+	default Timer timer(Metric metric) {
 		return getMetricRegistry().timer(metric.key());
 	}
 
-	default Counter counter(Metrics metric) {
+	default Counter counter(Metric metric) {
 		return getMetricRegistry().counter(metric.key());
 	}
 
-	default ResettableCounter resetableCounter(Metrics metric) {
+	default ResettableCounter resettableCounter(Metric metric) {
 		return (ResettableCounter) getMetricRegistry().counter(metric.key(), () -> new ResettableCounter());
 	}
 

@@ -3,7 +3,7 @@ package com.gentics.mesh.metric;
 /**
  * Metrics which are used across Gentics Mesh. 
  */
-public enum Metrics {
+public enum SimpleMetric implements Metric {
 
 	TX("tx.created", "Meter which measures the rate of created transactions over time."),
 
@@ -21,7 +21,7 @@ public enum Metrics {
 
 	private String description;
 
-	private Metrics(String key, String description) {
+	private SimpleMetric(String key, String description) {
 		this.key = key;
 		this.description = description;
 	}

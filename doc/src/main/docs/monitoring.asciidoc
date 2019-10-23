@@ -112,11 +112,13 @@ scrape_configs:
 …
 ----
 
-
+[[metrics]]
 ### Metrics
 
 Gentics Mesh exposes the following metrics in addition to the default link:https://vertx.io/docs/vertx-dropwizard-metrics/java/#_the_metrics[Vert.x metrics].
 More metrics will be added over time.
+
+`<cache>` is one of `permission`, `projectbranchname`, `projectname`, `webroot`.
 
 [options="header",cols="2*"]
 |======
@@ -124,23 +126,35 @@ More metrics will be added over time.
 | Key
 | Description
 
-| mesh_tx_created
+| mesh.tx.created
 | Meter which measures the rate of created transactions over time.
 
-| mesh_notx_created
+| mesh.notx.created
 | Meter which measures the rate of created noTx transactions over time.
 
-| mesh_graph_element_reload
+| mesh.graph.element.reload
 | Meter which tracks the reload operations on used vertices.
 
-| mesh_tx_time
+| mesh.tx.time
 | Timer which tracks transaction durations.
 
-| mesh_tx_retry
+| mesh.tx.retry
 | Amount of transaction retries which happen if a conflict has been encountered.
 
-|	mesh_node_migration_pending
+| mesh.node_migration.pending
 | Pending contents which need to be processed by the node migration.
+
+| mesh.cache.<cache>.hit
+| Amount of cache hits.
+
+| mesh.cache.<cache>.miss
+| Amount of cache misses.
+
+| mesh.cache.<cache>.clear_all
+| Amount of invalidations of the whole cache.
+
+| mesh.cache.<cache>.clear_single
+| Amount of invalidations for a single entry in the cache.
 
 |======
 
