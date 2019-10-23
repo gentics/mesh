@@ -35,6 +35,8 @@ icon:plus[] Monitoring: New metrics for caching statistics have been added. Take
 
 icon:check[] OrientDB: The included OrientDB version has been updated to version 3.0.24
 
+icon:check[] Core: Some extensive logging messages will now only be logged on a finer log level. These include error messages for GraphQL queries, on closed client connections and requests sent to Elasticsearch.
+
 [[v1.0.2]]
 == 1.0.2 (11.10.2019)
 
