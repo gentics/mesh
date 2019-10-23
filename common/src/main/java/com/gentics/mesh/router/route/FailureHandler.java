@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.nio.file.NoSuchFileException;
 import java.util.MissingResourceException;
+import java.util.Optional;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.context.InternalActionContext;
@@ -57,6 +58,10 @@ public class FailureHandler implements Handler<RoutingContext> {
 
 	@Override
 	public void handle(RoutingContext rc) {
+		if (isSilentError(rc)) {
+			log.trace("Silenced error: ", rc.failure());
+			return;
+		}
 		if (rc.response().closed() && rc.failed()) {
 			log.error("Error in request for path {" + rc.request().method().name() + " " + rc.request().path() + "}", rc.failure());
 			return;
@@ -160,6 +165,14 @@ public class FailureHandler implements Handler<RoutingContext> {
 			}
 		}
 
+	}
+
+	private boolean isSilentError(RoutingContext rc) {
+		return Optional.ofNullable(rc)
+			.map(RoutingContext::failure)
+			.map(Throwable::getMessage)
+			.map(message -> message.equals("Response is closed"))
+			.orElse(false);
 	}
 
 	private String toPath(RoutingContext rc) {
