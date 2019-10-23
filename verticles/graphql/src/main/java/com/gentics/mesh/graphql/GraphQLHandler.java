@@ -62,8 +62,8 @@ public class GraphQLHandler {
 			JsonObject response = new JsonObject();
 			if (!errors.isEmpty()) {
 				addErrors(errors, response);
-				log.warn("Encountered {" + errors.size() + "} errors while executing query {" + query + "}");
 				if (log.isDebugEnabled()) {
+					log.debug("Encountered {" + errors.size() + "} errors while executing query {" + query + "}");
 					for (GraphQLError error : errors) {
 						String loc = "unknown location";
 						if (error.getLocations() != null) {
