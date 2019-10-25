@@ -227,7 +227,7 @@
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
-			<artifactId>vertx-dropwizard-metrics</artifactId>
+			<artifactId>vertx-micrometer-metrics</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

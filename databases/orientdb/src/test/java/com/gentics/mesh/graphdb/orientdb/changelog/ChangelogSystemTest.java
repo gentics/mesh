@@ -24,9 +24,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.mockito.Mockito;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.Timer;
 import com.gentics.mesh.changelog.Change;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -37,9 +34,10 @@ import com.gentics.mesh.maven.MavenMetadata;
 import com.gentics.mesh.maven.MavenUtilities;
 import com.gentics.mesh.maven.VersionNumber;
 import com.gentics.mesh.metric.MetricsService;
-import com.gentics.mesh.metric.ResettableCounter;
 import com.tinkerpop.blueprints.Vertex;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
@@ -131,8 +129,6 @@ public class ChangelogSystemTest {
 		MetricsService metrics = Mockito.mock(MetricsService.class);
 		Mockito.when(metrics.timer(Mockito.any())).thenReturn(Mockito.mock(Timer.class));
 		Mockito.when(metrics.counter(Mockito.any())).thenReturn(Mockito.mock(Counter.class));
-		Mockito.when(metrics.meter(Mockito.any())).thenReturn(Mockito.mock(Meter.class));
-		Mockito.when(metrics.resettableCounter(Mockito.any())).thenReturn(Mockito.mock(ResettableCounter.class));
 		Database database = new OrientDBDatabase(null, null, metrics, null, null, new OrientDBClusterManager(null, null, options, null));
 		try {
 			database.init(options, null);

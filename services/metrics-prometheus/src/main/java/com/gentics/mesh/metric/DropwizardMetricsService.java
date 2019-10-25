@@ -7,13 +7,11 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.SharedMetricRegistries;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import io.prometheus.client.CollectorRegistry;
-import io.prometheus.client.dropwizard.DropwizardExports;
 import io.prometheus.client.exporter.common.TextFormat;
 import io.vertx.core.buffer.Buffer;
 
@@ -22,26 +20,19 @@ public class DropwizardMetricsService implements MetricsService {
 
 	private final CollectorRegistry registry;
 
-	private final MetricRegistry metricRegistry;
+	private final MeterRegistry metricRegistry;
 
 	private MonitoringConfig options;
 
 	@Inject
-	public DropwizardMetricsService(MeshOptions options) {
+	public DropwizardMetricsService(MeshOptions options, MeterRegistry meterRegistry) {
 		this.options = options.getMonitoringOptions();
 		this.registry = CollectorRegistry.defaultRegistry;
-		this.metricRegistry = setupRegistry();
+		this.metricRegistry = meterRegistry;
 	}
 
-	private MetricRegistry setupRegistry() {
-		MetricRegistry metricRegistry = SharedMetricRegistries.getOrCreate("mesh");
-		registry.register(new DropwizardExports(metricRegistry));
-		return metricRegistry;
-	}
-
-	
 	@Override
-	public MetricRegistry getMetricRegistry() {
+	public MeterRegistry getMetricRegistry() {
 		return metricRegistry;
 	}
 

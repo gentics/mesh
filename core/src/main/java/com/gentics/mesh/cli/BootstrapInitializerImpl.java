@@ -109,15 +109,19 @@ import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
 import ch.qos.logback.core.util.FileSize;
 import dagger.Lazy;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.EventBusOptions;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.dropwizard.DropwizardMetricsOptions;
+import io.vertx.core.metrics.MetricsOptions;
+import io.vertx.micrometer.MicrometerMetricsOptions;
+import io.vertx.micrometer.VertxPrometheusOptions;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 /**
@@ -163,6 +167,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Inject
 	public RouterStorageRegistry routerStorageRegistry;
+
+	@Inject
+	public MeterRegistry meterRegistry;
 
 	private MeshRoot meshRoot;
 
@@ -466,13 +473,17 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// vertxOptions.setWorkerPoolSize(1);
 		// vertxOptions.setEventLoopPoolSize(1);
 
-		MonitoringConfig monitorinOptions = options.getMonitoringOptions();
-		if (monitorinOptions != null && monitorinOptions.isEnabled()) {
+		MonitoringConfig monitoringOptions = options.getMonitoringOptions();
+		if (monitoringOptions != null && monitoringOptions.isEnabled()) {
 			log.info("Enabling Vert.x metrics");
-			DropwizardMetricsOptions metricsOptions = new DropwizardMetricsOptions()
-				.setRegistryName("mesh")
+			MetricsOptions metricsOptions = new MicrometerMetricsOptions().setMicrometerRegistry(meterRegistry)
 				.setEnabled(true)
-				.setJmxEnabled(true);
+				.setJvmMetricsEnabled(true)
+				.setPrometheusOptions(new VertxPrometheusOptions()
+					.setStartEmbeddedServer(true)
+					.setEnabled(true)
+					.setEmbeddedServerOptions(new HttpServerOptions()
+						.setPort(8083)));
 			vertxOptions.setMetricsOptions(metricsOptions);
 		}
 		boolean logActivity = LoggerFactory.getLogger(EventBus.class).isDebugEnabled();

@@ -2,13 +2,9 @@ package com.gentics.mesh.search.index.metric;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.SortedMap;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.SharedMetricRegistries;
-
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -19,15 +15,13 @@ public class SyncMetric {
 
 	private static final Logger log = LoggerFactory.getLogger(SyncMetric.class);
 
-	private static final MetricRegistry metricRegistry = SharedMetricRegistries.getOrCreate("mesh");
-
 	private Counter insertTotal;
 	private Counter deleteTotal;
 	private Counter updateTotal;
 
-	private Meter insertMeter;
-	private Meter deleteMeter;
-	private Meter updateMeter;
+	private Counter insertMeter;
+	private Counter deleteMeter;
+	private Counter updateMeter;
 
 	private Counter insertCount;
 	private Counter deleteCount;
@@ -39,17 +33,19 @@ public class SyncMetric {
 	 * @param type
 	 */
 	public SyncMetric(String type) {
-		insertTotal = metricRegistry.counter("index.sync." + type + ".insert.total");
-		deleteTotal = metricRegistry.counter("index.sync." + type + ".delete.total");
-		updateTotal = metricRegistry.counter("index.sync." + type + ".update.total");
+		// FIXME FIX THIS CLASS
+//		insertTotal = registry.counter("index.sync." + type + ".insert.total");
+//		deleteTotal = registry.counter("index.sync." + type + ".delete.total");
+//		updateTotal = registry.counter("index.sync." + type + ".update.total");
+//
+//		insertMeter = registry.counter("index.sync." + type + ".insert.meter");
+//		deleteMeter = registry.counter("index.sync." + type + ".delete.meter");
+//		updateMeter = registry.counter("index.sync." + type + ".update.meter");
+//
+//		insertCount = registry.counter("index.sync." + type + ".insert.pending");
+//		deleteCount = registry.counter("index.sync." + type + ".delete.pending");
+//		updateCount = registry.counter("index.sync." + type + ".update.pending");
 
-		insertMeter = metricRegistry.meter("index.sync." + type + ".insert.meter");
-		deleteMeter = metricRegistry.meter("index.sync." + type + ".delete.meter");
-		updateMeter = metricRegistry.meter("index.sync." + type + ".update.meter");
-
-		insertCount = metricRegistry.counter("index.sync." + type + ".insert.pending");
-		deleteCount = metricRegistry.counter("index.sync." + type + ".delete.pending");
-		updateCount = metricRegistry.counter("index.sync." + type + ".update.pending");
 	}
 
 	/**
@@ -79,56 +75,58 @@ public class SyncMetric {
 	}
 
 	private static long getCount(String name, long fallback) {
-		MetricRegistry registry = SharedMetricRegistries.getOrCreate("mesh");
-		SortedMap<String, Counter> counters = registry.getCounters();
-		Counter counter = counters.get(name);
-		if (counter == null) {
-			return fallback;
-		} else {
-			return counter.getCount();
-		}
+
+		return 0L;
+//		MetricRegistry registry = SharedMetricRegistries.getOrCreate("mesh");
+//		SortedMap<String, Counter> counters = registry.getCounters();
+//		Counter counter = counters.get(name);
+//		if (counter == null) {
+//			return fallback;
+//		} else {
+//			return counter.getCount();
+//		}
 	}
 
 	/**
 	 * Removes all sync metrics.
 	 */
 	public static void reset() {
-		if (log.isDebugEnabled()) {
-			log.debug("Resetting all index.sync metrics by removing them.");
-		}
-		metricRegistry.removeMatching((name, metric) -> {
-			return name.startsWith("index.sync");
-		});
+//		if (log.isDebugEnabled()) {
+//			log.debug("Resetting all index.sync metrics by removing them.");
+//		}
+//		metricRegistry.removeMatching((name, metric) -> {
+//			return name.startsWith("index.sync");
+//		});
 	}
 
 	public void incInsert(int size) {
-		insertTotal.inc(size);
-		insertCount.inc(size);
+		insertTotal.increment(size);
+		insertCount.increment(size);
 	}
 
 	public void decInsert() {
-		insertMeter.mark();
-		insertCount.dec();
+		insertMeter.increment();
+//		insertCount.dec();
 	}
 
 	public void incDelete(int size) {
-		deleteTotal.inc(size);
-		deleteCount.inc(size);
+		deleteTotal.increment(size);
+		deleteCount.increment(size);
 	}
 
 	public void decDelete() {
-		deleteMeter.mark();
-		deleteCount.dec();
+		deleteMeter.increment();
+//		deleteCount.dec();
 	}
 
 	public void incUpdate(int size) {
-		updateTotal.inc(size);
-		updateCount.inc(size);
+		updateTotal.increment(size);
+		updateCount.increment(size);
 	}
 
 	public void decUpdate() {
-		updateMeter.mark();
-		updateCount.dec();
+		updateMeter.increment();
+//		updateCount.dec();
 	}
 
 }

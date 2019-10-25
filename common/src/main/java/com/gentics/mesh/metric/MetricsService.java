@@ -3,11 +3,10 @@ package com.gentics.mesh.metric;
 import java.io.IOException;
 import java.util.Set;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import io.vertx.core.buffer.Buffer;
 
 public interface MetricsService {
@@ -33,10 +32,10 @@ public interface MetricsService {
 	 * 
 	 * @return
 	 */
-	MetricRegistry getMetricRegistry();
+	MeterRegistry getMetricRegistry();
 
-	default Meter meter(Metric metric) {
-		return getMetricRegistry().meter(metric.key());
+	default DistributionSummary meter(Metric metric) {
+		return getMetricRegistry().summary(metric.key());
 	}
 
 	default Timer timer(Metric metric) {
@@ -45,10 +44,6 @@ public interface MetricsService {
 
 	default Counter counter(Metric metric) {
 		return getMetricRegistry().counter(metric.key());
-	}
-
-	default ResettableCounter resettableCounter(Metric metric) {
-		return (ResettableCounter) getMetricRegistry().counter(metric.key(), () -> new ResettableCounter());
 	}
 
 }

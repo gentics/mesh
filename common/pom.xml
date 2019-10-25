@@ -191,7 +191,11 @@
 		<!-- Metrics -->
 		<dependency>
 			<groupId>io.vertx</groupId>
-			<artifactId>vertx-dropwizard-metrics</artifactId>
+			<artifactId>vertx-micrometer-metrics</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
 		</dependency>
 	</dependencies>
 

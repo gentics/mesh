@@ -30,7 +30,6 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
-import com.gentics.mesh.metric.ResettableCounter;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.common.collect.Lists;
 
@@ -47,12 +46,10 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeMigrationHandler.class);
 
-	private final ResettableCounter migrationCounter;
 
 	@Inject
 	public NodeMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider) {
 		super(db, nodeFieldAPIHandler, metrics, batchProvider);
-		migrationCounter = metrics.resettableCounter(NODE_MIGRATION_PENDING);
 	}
 
 	/**
@@ -95,10 +92,10 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				return Lists.newArrayList(it);
 			});
 
-			if (metrics.isEnabled()) {
-				migrationCounter.reset();
-				migrationCounter.inc(containers.size());
-			}
+//			if (metrics.isEnabled()) {
+//				migrationCounter.reset();
+//				migrationCounter.inc(containers.size());
+//			}
 
 			// No field containers, migration is done
 			if (containers.isEmpty()) {
@@ -114,7 +111,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, container, errors) -> {
 			migrateContainer(context, batch, container, fromVersion, newSchema, errors, touchedFields);
 			if (metrics.isEnabled()) {
-				migrationCounter.dec();
+//				migrationCounter.dec();
 			}
 		});
 

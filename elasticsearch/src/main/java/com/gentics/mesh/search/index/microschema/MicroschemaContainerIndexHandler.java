@@ -20,6 +20,7 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetric;
 
+import com.gentics.mesh.search.index.metric.SyncMetricFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import io.reactivex.Flowable;
 
@@ -34,6 +35,9 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 
 	@Inject
 	MicroschemaMappingProvider mappingProvider;
+
+	@Inject
+	SyncMetricFactory syncMetricFactory;
 
 	@Inject
 	public MicroschemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options) {
