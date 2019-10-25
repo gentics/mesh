@@ -478,12 +478,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			log.info("Enabling Vert.x metrics");
 			MetricsOptions metricsOptions = new MicrometerMetricsOptions().setMicrometerRegistry(meterRegistry)
 				.setEnabled(true)
-				.setJvmMetricsEnabled(true)
-				.setPrometheusOptions(new VertxPrometheusOptions()
-					.setStartEmbeddedServer(true)
-					.setEnabled(true)
-					.setEmbeddedServerOptions(new HttpServerOptions()
-						.setPort(8083)));
+				.setJvmMetricsEnabled(monitoringOptions.isJvmMetricsEnabled())
+				.setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true));
 			vertxOptions.setMetricsOptions(metricsOptions);
 		}
 		boolean logActivity = LoggerFactory.getLogger(EventBus.class).isDebugEnabled();
