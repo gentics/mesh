@@ -476,7 +476,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		MonitoringConfig monitoringOptions = options.getMonitoringOptions();
 		if (monitoringOptions != null && monitoringOptions.isEnabled()) {
 			log.info("Enabling Vert.x metrics");
-			MetricsOptions metricsOptions = new MicrometerMetricsOptions().setMicrometerRegistry(meterRegistry)
+			MetricsOptions metricsOptions = new MicrometerMetricsOptions()
+				.setMicrometerRegistry(meterRegistry)
+				.setRegistryName(options.getNodeName())
 				.setEnabled(true)
 				.setJvmMetricsEnabled(monitoringOptions.isJvmMetricsEnabled())
 				.setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true));

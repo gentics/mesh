@@ -12,18 +12,18 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.endpoint.admin.AdminHandler;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.VersionHandler;
-import com.gentics.mesh.metric.MetricsHandler;
 import com.gentics.mesh.router.route.DefaultNotFoundHandler;
 import com.gentics.mesh.router.route.FailureHandler;
 
-import io.prometheus.client.exporter.common.TextFormat;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.LoggerHandler;
 import io.vertx.ext.web.impl.RouterImpl;
+import io.vertx.micrometer.PrometheusScrapingHandler;
 
 public class MonitoringRoutes {
 
@@ -35,18 +35,18 @@ public class MonitoringRoutes {
 
 	private final RouterImpl apiRouter;
 
-	private final MetricsHandler metrics;
-
 	private final AdminHandler adminHandler;
 
+	private final MeshOptions options;
+
 	@Inject
-	public MonitoringRoutes(Vertx vertx, BootstrapInitializer boot, MetricsHandler metrics, AdminHandler adminHandler) {
+	public MonitoringRoutes(Vertx vertx, BootstrapInitializer boot, AdminHandler adminHandler, MeshOptions options) {
 		this.router = new RouterImpl(vertx);
 		this.boot = boot;
 		this.apiRouter = new RouterImpl(vertx);
+		this.options = options;
 		VersionHandler.generateVersionMountpoints()
 			.forEach(mountPoint -> router.mountSubRouter(mountPoint, apiRouter));
-		this.metrics = metrics;
 		this.adminHandler = adminHandler;
 		init();
 	}
@@ -119,12 +119,7 @@ public class MonitoringRoutes {
 	private void addMetrics() {
 		// metrics.description("Returns the stored system metrics.");
 		apiRouter.route("/metrics")
-			.method(GET)
-			.produces(TextFormat.CONTENT_TYPE_004)
-			.blockingHandler(rc -> {
-				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-				metrics.handleMetrics(ac);
-			});
+			.handler(PrometheusScrapingHandler.create(options.getNodeName()));
 	}
 
 	private void addVersion() {
