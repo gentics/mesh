@@ -1,6 +1,8 @@
 package com.gentics.mesh.dagger.module;
 
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import javax.inject.Singleton;
 
@@ -12,10 +14,12 @@ import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
 import com.gentics.mesh.image.ImgscalrImageManipulator;
+import com.gentics.mesh.util.StreamUtil;
 
 import dagger.Module;
 import dagger.Provides;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.core.Vertx;
@@ -89,12 +93,23 @@ public class MeshModule {
 	@Singleton
 	public static MeterRegistry meterRegistry(MeshOptions options) {
 		PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
-		registry.config().commonTags(
-			"nodeName", options.getNodeName(),
-			"jvmId", JvmId.toString()
-		);
+
+		Iterable<Tag> tags = Stream.of(
+			createTag("nodeName", options.getNodeName()),
+			createTag("jvmId", JvmId.toString())
+		).flatMap(StreamUtil::toStream)::iterator;
+
+		registry.config().commonTags(tags);
 
 		return registry;
+	}
+
+	private static Optional<Tag> createTag(String key, String value) {
+		if (key == null || value == null) {
+			return Optional.empty();
+		} else {
+			return Optional.of(Tag.of(key, value));
+		}
 	}
 
 	/**
