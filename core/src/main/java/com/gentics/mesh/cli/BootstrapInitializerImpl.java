@@ -18,7 +18,6 @@ import java.net.InetAddress;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -110,7 +109,6 @@ import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
 import ch.qos.logback.core.util.FileSize;
 import dagger.Lazy;
-import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.eventbus.EventBus;
@@ -120,11 +118,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.metrics.MetricsOptions;
-import io.vertx.micrometer.Label;
-import io.vertx.micrometer.Match;
-import io.vertx.micrometer.MetricsDomain;
-import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.VertxPrometheusOptions;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 /**
@@ -172,7 +165,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public RouterStorageRegistry routerStorageRegistry;
 
 	@Inject
-	public MeterRegistry meterRegistry;
+	public MetricsOptions metricsOptions;
 
 	private MeshRoot meshRoot;
 
@@ -479,23 +472,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		MonitoringConfig monitoringOptions = options.getMonitoringOptions();
 		if (monitoringOptions != null && monitoringOptions.isEnabled()) {
 			log.info("Enabling Vert.x metrics");
-			MetricsOptions metricsOptions = new MicrometerMetricsOptions()
-				.setMicrometerRegistry(meterRegistry)
-				.setRegistryName(options.getNodeName())
-				.setJvmMetricsEnabled(monitoringOptions.isJvmMetricsEnabled())
-				.setLabels(EnumSet.of(Label.HTTP_CODE, Label.HTTP_METHOD, Label.LOCAL))
-				.addLabelMatch(new Match()
-					.setDomain(MetricsDomain.HTTP_SERVER)
-					.setLabel("local")
-					.setAlias("restapi")
-					.setValue(options.getHttpServerOptions().getHost() + ":" + options.getHttpServerOptions().getPort()))
-				.addLabelMatch(new Match()
-					.setDomain(MetricsDomain.HTTP_SERVER)
-					.setLabel("local")
-					.setAlias("monitoring")
-					.setValue(options.getMonitoringOptions().getHost() + ":" + options.getMonitoringOptions().getPort()))
-				.setPrometheusOptions(new VertxPrometheusOptions().setEnabled(true))
-				.setEnabled(true);
 			vertxOptions.setMetricsOptions(metricsOptions);
 		}
 		boolean logActivity = LoggerFactory.getLogger(EventBus.class).isDebugEnabled();
