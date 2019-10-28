@@ -126,34 +126,34 @@ More metrics will be added over time.
 | Key
 | Description
 
-| mesh.tx.created
+| mesh_tx_created
 | Meter which measures the rate of created transactions over time.
 
-| mesh.notx.created
+| mesh_notx_created
 | Meter which measures the rate of created noTx transactions over time.
 
-| mesh.graph.element.reload
+| mesh_graph_element_reload
 | Meter which tracks the reload operations on used vertices.
 
-| mesh.tx.time
+| mesh_tx_time
 | Timer which tracks transaction durations.
 
-| mesh.tx.retry
+| mesh_tx_retry
 | Amount of transaction retries which happen if a conflict has been encountered.
 
-| mesh.node_migration.pending
+| mesh_node_migration_pending
 | Pending contents which need to be processed by the node migration.
 
-| mesh.cache.<cache>.hit
+| mesh_cache_<cache>_hit
 | Amount of cache hits.
 
-| mesh.cache.<cache>.miss
+| mesh_cache_<cache>_miss
 | Amount of cache misses.
 
-| mesh.cache.<cache>.clear_all
+| mesh_cache_<cache>_clear_all
 | Amount of invalidations of the whole cache.
 
-| mesh.cache.<cache>.clear_single
+| mesh_cache_<cache>_clear_single
 | Amount of invalidations for a single entry in the cache.
 
 |======

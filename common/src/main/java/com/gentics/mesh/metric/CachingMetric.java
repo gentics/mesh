@@ -11,7 +11,7 @@ public class CachingMetric implements Metric {
 
 	@Override
 	public String key() {
-		return "mesh.cache." + name + "." + event.name().toLowerCase();
+		return "mesh_cache_" + name + "_" + event.name().toLowerCase();
 	}
 
 	@Override
