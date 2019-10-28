@@ -49,7 +49,7 @@ public abstract class AbstractInternalEndpoint implements InternalEndpoint {
 	 */
 	protected void secureAll() {
 		if (chain != null) {
-			chain.secure(getRouter().route("/*"));
+			chain.secure(getRouter().route());
 		}
 	}
 
