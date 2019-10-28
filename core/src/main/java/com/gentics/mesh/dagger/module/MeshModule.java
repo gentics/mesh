@@ -15,23 +15,15 @@ import com.gentics.mesh.image.ImgscalrImageManipulator;
 
 import dagger.Module;
 import dagger.Provides;
-import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.config.MeterFilter;
-import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
-import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.VertxPrometheusOptions;
-import io.vertx.micrometer.backends.BackendRegistries;
-import io.vertx.micrometer.backends.BackendRegistry;
 
 /**
  * Main dagger module class.
@@ -97,16 +89,7 @@ public class MeshModule {
 	@Singleton
 	public static MeterRegistry meterRegistry(MeshOptions options) {
 		PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
-		registry.config().meterFilter(new MeterFilter() {
-			@Override
-			public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
-				return DistributionStatisticConfig.builder()
-					.percentilesHistogram(true)
-					.build()
-					.merge(config);
-			}
-		})
-		.commonTags(
+		registry.config().commonTags(
 			"nodeName", options.getNodeName(),
 			"jvmId", JvmId.toString()
 		);
