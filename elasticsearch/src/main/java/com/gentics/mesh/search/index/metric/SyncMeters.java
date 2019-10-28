@@ -1,7 +1,5 @@
 package com.gentics.mesh.search.index.metric;
 
-import static com.gentics.mesh.metric.SyncMetric.Meter.PENDING;
-import static com.gentics.mesh.metric.SyncMetric.Meter.TOTAL;
 import static com.gentics.mesh.metric.SyncMetric.Operation.DELETE;
 import static com.gentics.mesh.metric.SyncMetric.Operation.INSERT;
 import static com.gentics.mesh.metric.SyncMetric.Operation.UPDATE;
@@ -10,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.gentics.mesh.metric.MetricsService;
-import com.gentics.mesh.metric.SyncMetric;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -43,13 +40,13 @@ public class SyncMeters {
 	public Map<String, Object> createSnapshot() {
 		Map<String, Object> snapshot = new HashMap<>(6);
 
-		snapshot.put(new SyncMetric(type, INSERT, TOTAL).key(), insert.getTotalSynced());
-		snapshot.put(new SyncMetric(type, UPDATE, TOTAL).key(), update.getTotalSynced());
-		snapshot.put(new SyncMetric(type, DELETE, TOTAL).key(), delete.getTotalSynced());
+		snapshot.put("insert.total", insert.getTotalSynced());
+		snapshot.put("update.total", update.getTotalSynced());
+		snapshot.put("delete.total", delete.getTotalSynced());
 
-		snapshot.put(new SyncMetric(type, INSERT, PENDING).key(), insert.getCurrentPending());
-		snapshot.put(new SyncMetric(type, UPDATE, PENDING).key(), update.getCurrentPending());
-		snapshot.put(new SyncMetric(type, DELETE, PENDING).key(), delete.getCurrentPending());
+		snapshot.put("insert.pending", insert.getCurrentPending());
+		snapshot.put("update.pending", update.getCurrentPending());
+		snapshot.put("delete.pending", delete.getCurrentPending());
 
 		return snapshot;
 	}
