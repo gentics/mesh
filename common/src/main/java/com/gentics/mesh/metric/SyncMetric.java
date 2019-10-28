@@ -13,7 +13,7 @@ public class SyncMetric implements Metric {
 
 	@Override
 	public String key() {
-		return String.format("index.sync.%s.%s.%s", type, operation.name().toLowerCase(), meter.name().toLowerCase());
+		return String.format("mesh_index_sync_%s_%s_%s", type, operation.name().toLowerCase(), meter.name().toLowerCase());
 	}
 
 	@Override
@@ -30,6 +30,6 @@ public class SyncMetric implements Metric {
 	public enum Meter {
 		PENDING,
 		TOTAL,
-		PENDINGGAUGE,
+		PENDING_CURRENT,
 	}
 }

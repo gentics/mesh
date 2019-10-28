@@ -15,7 +15,7 @@ public class SyncMeter {
 	public SyncMeter(MetricsService metricsService, String type, SyncMetric.Operation operation) {
 		pendingHistogram = metricsService.meter(new SyncMetric(type, operation, SyncMetric.Meter.PENDING));
 		syncedCounter = metricsService.meter(new SyncMetric(type, operation, SyncMetric.Meter.TOTAL));
-		pendingGauge = metricsService.longGauge(new SyncMetric(type, operation, SyncMetric.Meter.PENDINGGAUGE));
+		pendingGauge = metricsService.longGauge(new SyncMetric(type, operation, SyncMetric.Meter.PENDING_CURRENT));
 	}
 
 	public void addPending(int amount) {
