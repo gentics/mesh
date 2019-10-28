@@ -115,7 +115,7 @@ scrape_configs:
 [[metrics]]
 ### Metrics
 
-Gentics Mesh exposes the following metrics in addition to the default link:https://vertx.io/docs/vertx-dropwizard-metrics/java/#_the_metrics[Vert.x metrics].
+Gentics Mesh exposes the following metrics in addition to the default link:https://vertx.io/docs/vertx-micrometer-metrics/java/#_vert_x_core_tools_metrics[Vert.x metrics].
 More metrics will be added over time.
 
 `<cache>` is one of `permission`, `projectbranchname`, `projectname`, `webroot`.

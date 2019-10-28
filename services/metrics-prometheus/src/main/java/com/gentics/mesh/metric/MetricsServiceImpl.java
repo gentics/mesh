@@ -16,7 +16,7 @@ import io.prometheus.client.exporter.common.TextFormat;
 import io.vertx.core.buffer.Buffer;
 
 @Singleton
-public class DropwizardMetricsService implements MetricsService {
+public class MetricsServiceImpl implements MetricsService {
 
 	private final CollectorRegistry registry;
 
@@ -25,7 +25,7 @@ public class DropwizardMetricsService implements MetricsService {
 	private MonitoringConfig options;
 
 	@Inject
-	public DropwizardMetricsService(MeshOptions options, MeterRegistry meterRegistry) {
+	public MetricsServiceImpl(MeshOptions options, MeterRegistry meterRegistry) {
 		this.options = options.getMonitoringOptions();
 		this.registry = CollectorRegistry.defaultRegistry;
 		this.metricRegistry = meterRegistry;
