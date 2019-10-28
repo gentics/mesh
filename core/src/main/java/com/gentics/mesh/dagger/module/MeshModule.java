@@ -1,7 +1,9 @@
 package com.gentics.mesh.dagger.module;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Singleton;
@@ -94,10 +96,10 @@ public class MeshModule {
 	public static MeterRegistry meterRegistry(MeshOptions options) {
 		PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
 
-		Iterable<Tag> tags = Stream.of(
+		List<Tag> tags = Stream.of(
 			createTag("nodeName", options.getNodeName()),
 			createTag("jvmId", JvmId.toString())
-		).flatMap(StreamUtil::toStream)::iterator;
+		).flatMap(StreamUtil::toStream).collect(Collectors.toList());
 
 		registry.config().commonTags(tags);
 
