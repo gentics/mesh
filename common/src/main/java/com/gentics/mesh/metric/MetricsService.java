@@ -1,25 +1,13 @@
 package com.gentics.mesh.metric;
 
-import java.io.IOException;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
-import io.vertx.core.buffer.Buffer;
 
 public interface MetricsService {
-
-	/**
-	 * Transform the metrics to prometheus output text.
-	 * 
-	 * @param params
-	 * @return
-	 * @throws IOException
-	 */
-	Buffer toPrometheusFormat(Set<String> params) throws IOException;
 
 	/**
 	 * Check whether the metrics system is enabled.
@@ -29,7 +17,7 @@ public interface MetricsService {
 	boolean isEnabled();
 
 	/**
-	 * Return the drop wizard registry.
+	 * Return the metric registry.
 	 * 
 	 * @return
 	 */

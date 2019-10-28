@@ -4,7 +4,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.gentics.mesh.core.rest.search.TypeMetrics;
 import com.gentics.mesh.metric.MetricsService;
-import com.gentics.mesh.metric.SyncMetric;
 
 public class SyncMeter {
 	private final AtomicLong synced;

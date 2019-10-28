@@ -39,8 +39,6 @@ public class MeshModule {
 
 	private static Logger log = LoggerFactory.getLogger(BootstrapInitializer.class);
 
-	private static final UUID JvmId = UUID.randomUUID();
-
 	private static final int PASSWORD_HASH_LOGROUND_COUNT = 10;
 
 	@Provides
@@ -98,7 +96,7 @@ public class MeshModule {
 
 		List<Tag> tags = Stream.of(
 			createTag("nodeName", options.getNodeName()),
-			createTag("jvmId", JvmId.toString())
+			createTag("clusterName", options.getClusterOptions().getClusterName())
 		).flatMap(StreamUtil::toStream).collect(Collectors.toList());
 
 		registry.config().commonTags(tags);

@@ -2,7 +2,6 @@ package com.gentics.mesh.metric;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -12,7 +11,6 @@ import com.gentics.mesh.etc.config.MonitoringConfig;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.prometheus.client.CollectorRegistry;
-import io.prometheus.client.exporter.common.TextFormat;
 import io.vertx.core.buffer.Buffer;
 
 @Singleton
@@ -38,14 +36,6 @@ public class MetricsServiceImpl implements MetricsService {
 
 	public CollectorRegistry getRegistry() {
 		return registry;
-	}
-
-
-	@Override
-	public Buffer toPrometheusFormat(Set<String> params) throws IOException {
-		final BufferWriter writer = new BufferWriter();
-		TextFormat.write004(writer, getRegistry().filteredMetricFamilySamples(params));
-		return writer.getBuffer();
 	}
 
 	@Override

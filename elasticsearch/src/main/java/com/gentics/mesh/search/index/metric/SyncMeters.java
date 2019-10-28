@@ -1,8 +1,8 @@
 package com.gentics.mesh.search.index.metric;
 
-import static com.gentics.mesh.metric.SyncMetric.Operation.DELETE;
-import static com.gentics.mesh.metric.SyncMetric.Operation.INSERT;
-import static com.gentics.mesh.metric.SyncMetric.Operation.UPDATE;
+import static com.gentics.mesh.search.index.metric.SyncMetric.Operation.DELETE;
+import static com.gentics.mesh.search.index.metric.SyncMetric.Operation.INSERT;
+import static com.gentics.mesh.search.index.metric.SyncMetric.Operation.UPDATE;
 
 import com.gentics.mesh.core.rest.search.EntityMetrics;
 import com.gentics.mesh.metric.MetricsService;

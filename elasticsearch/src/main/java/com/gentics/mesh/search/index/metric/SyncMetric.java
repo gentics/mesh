@@ -1,4 +1,6 @@
-package com.gentics.mesh.metric;
+package com.gentics.mesh.search.index.metric;
+
+import com.gentics.mesh.metric.Metric;
 
 public class SyncMetric implements Metric {
 	private final Operation operation;

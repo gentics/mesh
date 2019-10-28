@@ -483,7 +483,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				.setMicrometerRegistry(meterRegistry)
 				.setRegistryName(options.getNodeName())
 				.setJvmMetricsEnabled(monitoringOptions.isJvmMetricsEnabled())
-				.setLabels(EnumSet.of(Label.HTTP_PATH, Label.HTTP_CODE, Label.HTTP_METHOD, Label.LOCAL, Label.CLASS_NAME))
+				.setLabels(EnumSet.of(Label.HTTP_CODE, Label.HTTP_METHOD, Label.LOCAL))
 				.addLabelMatch(new Match()
 					.setDomain(MetricsDomain.HTTP_SERVER)
 					.setLabel("local")
