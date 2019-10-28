@@ -30,6 +30,7 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.search.EntityMetrics;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
@@ -343,17 +344,15 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		assertMetrics("microschema", 0, 0, 1);
 	}
 
-	private void assertMetrics(String type, int inserted, int updated, int deleted) {
-		assertMetrics(type, "insert", inserted);
-		assertMetrics(type, "update", updated);
-		assertMetrics(type, "delete", deleted);
-	}
+	private void assertMetrics(String type, long inserted, long updated, long deleted) {
+		EntityMetrics entityMetrics = call(() -> client().searchStatus()).getMetrics().get(type);
+		assertEquals(inserted, entityMetrics.getInsert().getSynced().longValue());
+		assertEquals(updated, entityMetrics.getUpdate().getSynced().longValue());
+		assertEquals(deleted, entityMetrics.getDelete().getSynced().longValue());
 
-	private void assertMetrics(String type, String subType, long expectedCount) {
-		SearchStatusResponse status = call(() -> client().searchStatus());
-		Map<String, Integer> infos = (Map<String, Integer>) status.getMetrics().get(type);
-		assertEquals(expectedCount, infos.get(subType + ".total").intValue());
-		assertEquals(0, infos.get(subType + ".pending").intValue());
+		assertEquals(0, entityMetrics.getInsert().getPending().longValue());
+		assertEquals(0, entityMetrics.getUpdate().getPending().longValue());
+		assertEquals(0, entityMetrics.getDelete().getPending().longValue());
 	}
 
 	private void syncIndex() {

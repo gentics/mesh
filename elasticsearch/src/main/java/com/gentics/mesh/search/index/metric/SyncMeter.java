@@ -2,41 +2,44 @@ package com.gentics.mesh.search.index.metric;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.gentics.mesh.core.rest.search.TypeMetrics;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.SyncMetric;
 
-import io.micrometer.core.instrument.DistributionSummary;
-
 public class SyncMeter {
-	private final DistributionSummary pendingHistogram;
-	private final DistributionSummary syncedCounter;
-	private final AtomicLong pendingGauge;
+	private final AtomicLong synced;
+	private final AtomicLong pending;
 
 	public SyncMeter(MetricsService metricsService, String type, SyncMetric.Operation operation) {
-		pendingHistogram = metricsService.meter(new SyncMetric(type, operation, SyncMetric.Meter.PENDING));
-		syncedCounter = metricsService.meter(new SyncMetric(type, operation, SyncMetric.Meter.TOTAL));
-		pendingGauge = metricsService.longGauge(new SyncMetric(type, operation, SyncMetric.Meter.PENDING_CURRENT));
+		pending = metricsService.longGauge(new SyncMetric(type, operation, SyncMetric.Meter.PENDING));
+		synced = metricsService.longGauge(new SyncMetric(type, operation, SyncMetric.Meter.SYNCED));
 	}
 
-	public void addPending(int amount) {
-		pendingHistogram.record(amount);
-		pendingGauge.addAndGet(amount);
+	public void addPending(long amount) {
+		pending.addAndGet(amount);
 	}
 
 	public void synced() {
-		syncedCounter.record(1);
-		pendingGauge.decrementAndGet();
+		pending.decrementAndGet();
+		synced.incrementAndGet();
 	}
 
 	public void reset() {
-		pendingGauge.set(0);
+		synced.set(0);
+		pending.set(0);
 	}
 
-	public long getTotalSynced() {
-		return syncedCounter.count();
+	public long getSynced() {
+		return synced.get();
 	}
 
-	public long getCurrentPending() {
-		return pendingGauge.get();
+	public long getPending() {
+		return pending.get();
+	}
+
+	public TypeMetrics createSnapshot() {
+		return new TypeMetrics()
+			.setPending(pending.get())
+			.setSynced(synced.get());
 	}
 }

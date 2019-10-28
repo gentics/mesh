@@ -4,9 +4,7 @@ import static com.gentics.mesh.metric.SyncMetric.Operation.DELETE;
 import static com.gentics.mesh.metric.SyncMetric.Operation.INSERT;
 import static com.gentics.mesh.metric.SyncMetric.Operation.UPDATE;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import com.gentics.mesh.core.rest.search.EntityMetrics;
 import com.gentics.mesh.metric.MetricsService;
 
 import io.vertx.core.logging.Logger;
@@ -22,7 +20,6 @@ public class SyncMeters {
 	private final SyncMeter insert;
 	private final SyncMeter delete;
 	private final SyncMeter update;
-	private final String type;
 
 	/**
 	 * Create a new metric object and reset all managed metrics for the given type.
@@ -31,24 +28,16 @@ public class SyncMeters {
 	 * @param type
 	 */
 	public SyncMeters(MetricsService metrics, String type) {
-		this.type = type;
 		insert = new SyncMeter(metrics, type, INSERT);
 		update = new SyncMeter(metrics, type, UPDATE);
 		delete = new SyncMeter(metrics, type, DELETE);
 	}
 
-	public Map<String, Object> createSnapshot() {
-		Map<String, Object> snapshot = new HashMap<>(6);
-
-		snapshot.put("insert.total", insert.getTotalSynced());
-		snapshot.put("update.total", update.getTotalSynced());
-		snapshot.put("delete.total", delete.getTotalSynced());
-
-		snapshot.put("insert.pending", insert.getCurrentPending());
-		snapshot.put("update.pending", update.getCurrentPending());
-		snapshot.put("delete.pending", delete.getCurrentPending());
-
-		return snapshot;
+	public EntityMetrics createSnapshot() {
+		return new EntityMetrics()
+			.setInsert(insert.createSnapshot())
+			.setUpdate(update.createSnapshot())
+			.setDelete(delete.createSnapshot());
 	}
 
 	public void reset() {

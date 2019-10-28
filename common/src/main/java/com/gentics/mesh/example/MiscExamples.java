@@ -1,17 +1,19 @@
 package com.gentics.mesh.example;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Stream;
+
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.search.EntityMetrics;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
+import com.gentics.mesh.core.rest.search.TypeMetrics;
 
 import io.vertx.core.json.JsonObject;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Stream;
 
 public class MiscExamples extends AbstractExamples {
 
@@ -26,7 +28,7 @@ public class MiscExamples extends AbstractExamples {
 		SearchStatusResponse status = new SearchStatusResponse();
 		status.setAvailable(true);
 
-		Map<String, Object> metrics = new HashMap<>();
+		Map<String, EntityMetrics> metrics = new HashMap<>();
 		Stream.of(
 			"tagfamily",
 			"schema",
@@ -43,17 +45,14 @@ public class MiscExamples extends AbstractExamples {
 		return status;
 	}
 
-	private JsonObject exampleMetric() {
-		JsonObject object = new JsonObject();
-		Stream.of(
-			"insert.total",
-			"delete.pending",
-			"insert.pending",
-			"update.pending",
-			"delete.total",
-			"update.total"
-		).forEach(key -> object.put(key, 0));
-		return object;
+	private EntityMetrics exampleMetric() {
+		TypeMetrics zeroMetrics = new TypeMetrics()
+			.setPending(0L)
+			.setSynced(0L);
+		return new EntityMetrics()
+			.setInsert(zeroMetrics)
+			.setUpdate(zeroMetrics)
+			.setDelete(zeroMetrics);
 	}
 
 	public GenericMessageResponse createMessageResponse() {

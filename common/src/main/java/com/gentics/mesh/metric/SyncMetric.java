@@ -29,7 +29,6 @@ public class SyncMetric implements Metric {
 
 	public enum Meter {
 		PENDING,
-		TOTAL,
-		PENDING_CURRENT,
+		SYNCED
 	}
 }

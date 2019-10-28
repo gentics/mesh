@@ -15,6 +15,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.search.EntityMetrics;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -60,7 +61,7 @@ public class AdminIndexHandler {
 	}
 
 	public Single<SearchStatusResponse> getSearchStatus() {
-		Map<String,Object> metrics = new HashMap<>();
+		Map<String, EntityMetrics> metrics = new HashMap<>();
 		// TODO fetch state
 		// statusResponse.setReindexRunning(REINDEX_FLAG.get());
 
