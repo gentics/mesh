@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
@@ -194,47 +193,47 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 	}
 
-//	@Test
-//	public void testBigData() throws Throwable {
-//		EventQueueBatch batch = createBatch();
+	@Test
+	public void testBigData() throws Throwable {
+		EventQueueBatch batch = createBatch();
 //		MetricRegistry metrics = new MetricRegistry();
 //		Meter createdNode = metrics.meter("Create Node");
 //		metrics.timer("Migration");
-//		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
-//		createNode(baseNodeUuid);
-//
-//		Branch newBranch;
-//		try (Tx tx = tx()) {
-//			int numThreads = 1;
-//			int numFolders = 1000;
-//
+		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
+		createNode(baseNodeUuid);
+
+		Branch newBranch;
+		try (Tx tx = tx()) {
+			int numThreads = 1;
+			int numFolders = 1000;
+
 //			ConsoleReporter reporter = ConsoleReporter.forRegistry(metrics).convertRatesTo(TimeUnit.SECONDS).convertDurationsTo(TimeUnit.MILLISECONDS)
 //				.build();
 //			reporter.start(1, TimeUnit.SECONDS);
-//
-//			ExecutorService service = Executors.newFixedThreadPool(numThreads);
-//
-//			List<Future<Boolean>> futures = new ArrayList<>();
-//
-//			for (int i = 0; i < numFolders; i++) {
-//				futures.add(service.submit(() -> {
-//					createNode(baseNodeUuid);
+
+			ExecutorService service = Executors.newFixedThreadPool(numThreads);
+
+			List<Future<Boolean>> futures = new ArrayList<>();
+
+			for (int i = 0; i < numFolders; i++) {
+				futures.add(service.submit(() -> {
+					createNode(baseNodeUuid);
 //					createdNode.mark();
-//					return true;
-//				}));
-//			}
-//
-//			for (Future<Boolean> future : futures) {
-//				future.get();
-//			}
-//
-//			newBranch = project().getBranchRoot().create("newbranch", user(), batch);
-//			tx.success();
-//		}
-//
-//		String jobUuid = requestBranchMigration(newBranch);
-//		triggerAndWaitForJob(jobUuid);
-//	}
+					return true;
+				}));
+			}
+
+			for (Future<Boolean> future : futures) {
+				future.get();
+			}
+
+			newBranch = project().getBranchRoot().create("newbranch", user(), batch);
+			tx.success();
+		}
+
+		String jobUuid = requestBranchMigration(newBranch);
+		triggerAndWaitForJob(jobUuid);
+	}
 
 	private void createNode(String baseNodeUuid) {
 		NodeCreateRequest create = new NodeCreateRequest();

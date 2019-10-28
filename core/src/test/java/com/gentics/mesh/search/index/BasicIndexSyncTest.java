@@ -350,12 +350,6 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	}
 
 	private void assertMetrics(String type, String subType, long expectedCount) {
-//		MetricRegistry registry = SharedMetricRegistries.getOrCreate("mesh");
-//		assertEquals("The expected total count did not match for type {" + type + "} / {" + subType + "}", expectedCount,
-//			registry.getCounters().get("index.sync." + type + "." + subType + ".total").getCount());
-//		assertEquals("The pending items should be zero.", 0,
-//			registry.getCounters().get("index.sync." + type + "." + subType + ".pending").getCount());
-
 		SearchStatusResponse status = call(() -> client().searchStatus());
 		Map<String, Integer> infos = (Map<String, Integer>) status.getMetrics().get(type);
 		assertEquals(expectedCount, infos.get(subType + ".total").intValue());
