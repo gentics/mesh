@@ -18,10 +18,9 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
-import com.gentics.mesh.search.index.metric.SyncMetric;
-
-import com.gentics.mesh.search.index.metric.SyncMetricFactory;
+import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
+
 import io.reactivex.Flowable;
 
 /**
@@ -37,11 +36,11 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	MicroschemaMappingProvider mappingProvider;
 
 	@Inject
-	SyncMetricFactory syncMetricFactory;
+	SyncMetersFactory syncMetersFactory;
 
 	@Inject
-	public MicroschemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options) {
-		super(searchProvider, db, boot, helper, options);
+	public MicroschemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options, SyncMetersFactory syncMetricsFactory) {
+		super(searchProvider, db, boot, helper, options, syncMetricsFactory);
 	}
 
 	@Override
@@ -76,7 +75,7 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 
 	@Override
 	public Flowable<SearchRequest> syncIndices() {
-		return diffAndSync(MicroschemaContainer.composeIndexName(), null, new SyncMetric(getType()));
+		return diffAndSync(MicroschemaContainer.composeIndexName(), null);
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package com.gentics.mesh.metric;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
@@ -46,4 +47,7 @@ public interface MetricsService {
 		return getMetricRegistry().counter(metric.key());
 	}
 
+	default AtomicLong longGauge(Metric metric) {
+		return getMetricRegistry().gauge(metric.key(), new AtomicLong(0));
+	}
 }

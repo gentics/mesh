@@ -24,9 +24,9 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
-import com.gentics.mesh.search.index.metric.SyncMetric;
-
+import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
+
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
@@ -49,8 +49,8 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	TagMappingProvider mappingProvider;
 
 	@Inject
-	public TagIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options) {
-		super(searchProvider, db, boot, helper, options);
+	public TagIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options, SyncMetersFactory syncMetricsFactory) {
+		super(searchProvider, db, boot, helper, options, syncMetricsFactory);
 	}
 
 	@Override
@@ -115,11 +115,10 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	@Override
 	public Flowable<SearchRequest> syncIndices() {
 		return Flowable.defer(() -> db.tx(() -> {
-			SyncMetric metric = new SyncMetric(getType());
 			return boot.meshRoot().getProjectRoot().findAll().stream()
 				.map(project -> {
 					String uuid = project.getUuid();
-					return diffAndSync(Tag.composeIndexName(uuid), uuid, metric);
+					return diffAndSync(Tag.composeIndexName(uuid), uuid);
 				}).collect(Collectors.collectingAndThen(Collectors.toList(), Flowable::merge));
 		}));
 	}

@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -46,10 +47,12 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeMigrationHandler.class);
 
+	private final AtomicLong migrationGauge;
 
 	@Inject
 	public NodeMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider) {
 		super(db, nodeFieldAPIHandler, metrics, batchProvider);
+		migrationGauge = metrics.longGauge(NODE_MIGRATION_PENDING);
 	}
 
 	/**
@@ -92,10 +95,9 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				return Lists.newArrayList(it);
 			});
 
-//			if (metrics.isEnabled()) {
-//				migrationCounter.reset();
-//				migrationCounter.inc(containers.size());
-//			}
+			if (metrics.isEnabled()) {
+				migrationGauge.set(containers.size());
+			}
 
 			// No field containers, migration is done
 			if (containers.isEmpty()) {
@@ -111,7 +113,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, container, errors) -> {
 			migrateContainer(context, batch, container, fromVersion, newSchema, errors, touchedFields);
 			if (metrics.isEnabled()) {
-//				migrationCounter.dec();
+				migrationGauge.decrementAndGet();
 			}
 		});
 

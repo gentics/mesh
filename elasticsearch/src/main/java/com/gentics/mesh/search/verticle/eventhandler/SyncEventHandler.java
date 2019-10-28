@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.index.metric.SyncMetric;
+import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.MessageEvent;
 
 import dagger.Lazy;
@@ -44,6 +44,8 @@ public class SyncEventHandler implements EventHandler {
 
 	private final Vertx vertx;
 
+	private final SyncMetersFactory syncMetersFactory;
+
 	/**
 	 * Send the index sync event which will trigger the index sync job.
 	 */
@@ -65,10 +67,11 @@ public class SyncEventHandler implements EventHandler {
 	}
 
 	@Inject
-	public SyncEventHandler(Lazy<IndexHandlerRegistry> registry, SearchProvider provider, Vertx vertx) {
+	public SyncEventHandler(Lazy<IndexHandlerRegistry> registry, SearchProvider provider, Vertx vertx, SyncMetersFactory syncMetersFactory) {
 		this.registry = registry;
 		this.provider = provider;
 		this.vertx = vertx;
+		this.syncMetersFactory = syncMetersFactory;
 	}
 
 	@Override
@@ -84,7 +87,7 @@ public class SyncEventHandler implements EventHandler {
 		).doOnSubscribe(ignore -> {
 			log.info("Processing index sync job.");
 			vertx.eventBus().publish(INDEX_SYNC_START.address, null);
-			SyncMetric.reset();
+			syncMetersFactory.reset();
 		});
 	}
 

@@ -31,7 +31,8 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.MappingProvider;
 import com.gentics.mesh.search.index.Transformer;
-import com.gentics.mesh.search.index.metric.SyncMetric;
+import com.gentics.mesh.search.index.metric.SyncMeters;
+import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
@@ -72,13 +73,16 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	protected final ComplianceMode complianceMode;
 
-	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options) {
+	protected final SyncMeters meters;
+
+	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options, SyncMetersFactory syncMetersFactory) {
 		this.searchProvider = searchProvider;
 		this.db = db;
 		this.boot = boot;
 		this.helper = helper;
 		this.options = options;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();
+		this.meters = syncMetersFactory.createSyncMetric(getType());
 	}
 
 	/**
@@ -187,10 +191,9 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 * 
 	 * @param indexName
 	 * @param projectUuid
-	 * @param metric
 	 * @return
 	 */
-	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid, SyncMetric metric) {
+	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid) {
 		return Single.zip(
 			loadVersionsFromIndex(indexName),
 			Single.fromCallable(this::loadVersionsFromGraph),
@@ -210,9 +213,9 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				log.info("Pending insertions on {" + indexName + "}:" + needInsertionInES.size());
 				log.info("Pending removals on {" + indexName + "}:" + needRemovalInES.size());
 
-				metric.incInsert(needInsertionInES.size());
-				metric.incUpdate(needUpdateInEs.size());
-				metric.incDelete(needRemovalInES.size());
+				meters.getInsertMeter().addPending(needInsertionInES.size());
+				meters.getUpdateMeter().addPending((needUpdateInEs.size()));
+				meters.getDeleteMeter().addPending((needRemovalInES.size()));
 
 				Function<Action, Function<String, CreateDocumentRequest>> toCreateRequest = action -> uuid -> {
 					JsonObject doc = db.tx(() -> getTransformer().toDocument(getElement(uuid)));
@@ -220,13 +223,13 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				};
 
 				Flowable<SearchRequest> toInsert = Flowable.fromIterable(needInsertionInES)
-					.map(toCreateRequest.apply(metric::decInsert));
+					.map(toCreateRequest.apply(meters.getInsertMeter()::synced));
 
 				Flowable<SearchRequest> toUpdate = Flowable.fromIterable(needUpdateInEs)
-					.map(toCreateRequest.apply(metric::decUpdate));
+					.map(toCreateRequest.apply(meters.getUpdateMeter()::synced));
 
 				Flowable<SearchRequest> toDelete = Flowable.fromIterable(needRemovalInES)
-					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, complianceMode, metric::decDelete));
+					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, complianceMode, meters.getDeleteMeter()::synced));
 
 				return Flowable.merge(toInsert, toUpdate, toDelete);
 			}).flatMapPublisher(x -> x);
@@ -367,7 +370,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	@Override
 	public Map<String, Object> getMetrics() {
-		return SyncMetric.fetch(getType());
+		return meters.createSnapshot();
 	}
 
 	/**
