@@ -23,6 +23,7 @@ monitoring:
   enabled: true
   port: 8081
   host: "127.0.0.1"
+  jvmMetricsEnabled: true
 cluster:
   networkHost: null
   enabled: false
@@ -63,6 +64,7 @@ search:
   waitForIdle: true
   includeBinaryFields: true
   mappingMode: "DYNAMIC"
+  complianceMode: "ES_6"
 upload:
   byteLimit: 262144000
   directory: "data/binaryFiles"
@@ -86,3 +88,8 @@ content:
   autoPurge: true
 cache:
   pathCacheSize: 20000
+debugInfo:
+  logFolder: "debuginfo"
+  logFileSize: "5MB"
+  logEnabled: true
+  logPattern: "%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] [%file:%line] - %msg%n"

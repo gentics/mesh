@@ -32,6 +32,11 @@
 | string
 | Path to the trusted server certificate (PEM format). This setting can be used when the Elasticsearch server is using a self-signed certificate which would otherwise not be trusted.
 
+| complianceMode
+| false
+| string
+| This setting controls the compliance mode for Elasticsearch. When set to ES_7 it will support Elasticsearch 7.x - In PRE_ES_7 mode it will support Elasticsearch 6.x - Default: PRE_ES_7
+
 | embeddedArguments
 | false
 | string

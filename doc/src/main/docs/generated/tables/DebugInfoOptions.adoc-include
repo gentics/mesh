@@ -1,0 +1,30 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| logEnabled
+| false
+| boolean
+| Enables the debug info log.
+
+| logFileSize
+| false
+| string
+| The maximum file size of a single log file.
+
+| logFolder
+| false
+| string
+| The path of the folder where the debug info log is stored.
+
+| logPattern
+| false
+| string
+| The pattern used for each log line.
+
+|======
