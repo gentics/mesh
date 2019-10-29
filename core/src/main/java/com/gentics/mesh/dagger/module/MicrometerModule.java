@@ -54,14 +54,14 @@ public class MicrometerModule {
 	private static final List<PathMatcher> regexMatcher = Arrays.asList(
 		StaticRegexMatcher.projectMatch("webroot", "/webroot"),
 		StaticRegexMatcher.projectMatch("graphql", "/graphql"),
-		StaticRegexMatcher.projectMatch("nodes", "/nodes"),
-		StaticRegexMatcher.projectMatch("binary", "/nodes/[^/]*/binary"),
-		GroupRegexMatcher.apiPathMatch("plugin", "/plugins/([^/]*)"),
-		GroupRegexMatcher.projectMatch("plugin", "/plugins/([^/]*)"),
 		StaticRegexMatcher.projectMatch("search", "/search"),
 		StaticRegexMatcher.projectMatch("search", "/rawSearch"),
 		StaticRegexMatcher.apiPathMatch("search", "/search"),
-		StaticRegexMatcher.apiPathMatch("search", "/rawSearch")
+		StaticRegexMatcher.apiPathMatch("search", "/rawSearch"),
+		StaticRegexMatcher.projectMatch("binary", "/nodes/[^/]*/binary"),
+		StaticRegexMatcher.projectMatch("nodes", "/nodes"),
+		GroupRegexMatcher.apiPathMatch("plugin", "/plugins/([^/]*)"),
+		GroupRegexMatcher.projectMatch("plugin", "/plugins/([^/]*)")
 	);
 
 	private static String replacePath(String actualPath) {
