@@ -18,9 +18,9 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
-import com.gentics.mesh.search.index.metric.SyncMetric;
-
+import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
+
 import io.reactivex.Flowable;
 
 /**
@@ -36,8 +36,8 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 	GroupMappingProvider mappingProvider;
 
 	@Inject
-	public GroupIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options) {
-		super(searchProvider, db, boot, helper, options);
+	public GroupIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options, SyncMetersFactory syncMetersFactory) {
+		super(searchProvider, db, boot, helper, options, syncMetersFactory);
 	}
 
 	@Override
@@ -89,7 +89,7 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 
 	@Override
 	public Flowable<SearchRequest> syncIndices() {
-		return diffAndSync(Group.composeIndexName(), null, new SyncMetric(getType()));
+		return diffAndSync(Group.composeIndexName(), null);
 	}
 
 	@Override

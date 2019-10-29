@@ -117,7 +117,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.dropwizard.DropwizardMetricsOptions;
+import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 /**
@@ -163,6 +163,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Inject
 	public RouterStorageRegistry routerStorageRegistry;
+
+	@Inject
+	public MetricsOptions metricsOptions;
 
 	private MeshRoot meshRoot;
 
@@ -466,13 +469,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// vertxOptions.setWorkerPoolSize(1);
 		// vertxOptions.setEventLoopPoolSize(1);
 
-		MonitoringConfig monitorinOptions = options.getMonitoringOptions();
-		if (monitorinOptions != null && monitorinOptions.isEnabled()) {
+		MonitoringConfig monitoringOptions = options.getMonitoringOptions();
+		if (monitoringOptions != null && monitoringOptions.isEnabled()) {
 			log.info("Enabling Vert.x metrics");
-			DropwizardMetricsOptions metricsOptions = new DropwizardMetricsOptions()
-				.setRegistryName("mesh")
-				.setEnabled(true)
-				.setJmxEnabled(true);
 			vertxOptions.setMetricsOptions(metricsOptions);
 		}
 		boolean logActivity = LoggerFactory.getLogger(EventBus.class).isDebugEnabled();

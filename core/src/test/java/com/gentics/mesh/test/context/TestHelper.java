@@ -567,6 +567,10 @@ public interface TestHelper extends EventHelper, ClientHelper {
 			contentType));
 	}
 
+	default NodeResponse uploadImage(NodeResponse node) throws IOException {
+		return uploadImage(node, node.getLanguage(), "binary");
+	}
+
 	default public NodeResponse uploadImage(NodeResponse node, String languageTag, String fieldName) throws IOException {
 		String contentType = "image/jpeg";
 		String fileName = "blume.jpg";

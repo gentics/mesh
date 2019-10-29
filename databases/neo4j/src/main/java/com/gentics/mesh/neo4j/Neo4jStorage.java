@@ -8,11 +8,12 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
-import com.codahale.metrics.Meter;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.GraphStorage;
 import com.gentics.mesh.metric.MetricsService;
+
+import io.micrometer.core.instrument.Counter;
 
 public class Neo4jStorage implements GraphStorage {
 
@@ -20,14 +21,14 @@ public class Neo4jStorage implements GraphStorage {
 
 	private final MeshOptions options;
 
-	private final Meter txCounter;
+	private final Counter txCounter;
 
 	private GraphDatabaseService graphDb;
 
 	public Neo4jStorage(MeshOptions options, MetricsService metrics) {
 		this.options = options;
 		this.metrics = metrics;
-		this.txCounter = metrics.meter(TX);
+		this.txCounter = metrics.counter(TX);
 	}
 
 	public void open(String name) {

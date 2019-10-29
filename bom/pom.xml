@@ -265,8 +265,13 @@
 			</dependency>
 			<dependency>
 				<groupId>io.vertx</groupId>
-				<artifactId>vertx-dropwizard-metrics</artifactId>
+				<artifactId>vertx-micrometer-metrics</artifactId>
 				<version>${vertx.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.micrometer</groupId>
+				<artifactId>micrometer-registry-prometheus</artifactId>
+				<version>1.3.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.vertx</groupId>

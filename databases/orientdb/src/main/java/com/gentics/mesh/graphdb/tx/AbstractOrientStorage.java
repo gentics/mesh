@@ -16,7 +16,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import com.codahale.metrics.Meter;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.metric.MetricsService;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
@@ -24,6 +23,7 @@ import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
+import io.micrometer.core.instrument.Counter;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -37,15 +37,15 @@ public abstract class AbstractOrientStorage implements OrientStorage {
 
 	protected final MeshOptions options;
 
-	protected final Meter txCounter;
+	protected final Counter txCounter;
 
-	protected final Meter noTxCounter;
+	protected final Counter noTxCounter;
 
 	public AbstractOrientStorage(MeshOptions options, MetricsService metrics) {
 		this.options = options;
 		this.metrics = metrics;
-		this.txCounter = metrics.meter(TX);
-		this.noTxCounter = metrics.meter(NO_TX);
+		this.txCounter = metrics.counter(TX);
+		this.noTxCounter = metrics.counter(NO_TX);
 	}
 
 	public MeshOptions getOptions() {

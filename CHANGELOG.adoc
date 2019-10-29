@@ -26,12 +26,15 @@ include::content/docs/variables.adoc-include[]
 [[v1.1.0]]
 == 1.1.0 (TBD)
 
+WARNING: The internal monitoring library has been changed from dropwizard to link:https://micrometer.io/[micrometer]. This allows better labeling of various metrics for link:https://prometheus.io/[Prometheus]. With this change, some metrics names from Vert.x have been changed. See link:https://vertx.io/docs/vertx-micrometer-metrics/java/#_vert_x_core_tools_metrics[here] for the new list of Vert.x metrics. Also, the response structure in the `/search/status` endpoint has changed. Take a look at the link:https://getmesh.io/docs/api/#search_status_get[API docs] for a new example.
+
 icon:plus[] Search: A new setting has been added which can be used to enable Elasticsearch 7 support. The `search.complianceMode` setting in the `mesh.yml` file can be used to control the compliance mode for Elasticsearch support. The setting can also be controlled via the `MESH_ELASTICSEARCH_COMPLIANCE_MODE` environment variable. Currently there are two modes: `ES_7` for Elasticsearch 7.x and `ES_6` for Elasticsearch 6.x.
 By default `ES_6` will be used thus no changes are required for existing installations.
 
 icon:plus[] Core: A new endpoint for administration has been added. The `/admin/debuginfo` endpoint lets you gain various informations about the system. Take a look at the link:{{< relref "administration-guide.asciidoc" >}}#debuginfo[administration guide] for details.
 
 icon:plus[] Monitoring: New metrics for caching statistics have been added. Take a look at the link:{{< relref "monitoring.asciidoc" >}}#metrics[documentation] for the new metrics.
+
 
 icon:check[] OrientDB: The included OrientDB version has been updated to version 3.0.24
 

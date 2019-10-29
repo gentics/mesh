@@ -24,8 +24,8 @@ import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.RangeRequestHandler;
 import com.gentics.mesh.handler.impl.RangeRequestHandlerImpl;
-import com.gentics.mesh.metric.DropwizardMetricsService;
 import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.metric.MetricsServiceImpl;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.plugin.manager.MeshPluginManagerImpl;
@@ -57,7 +57,7 @@ public abstract class BindModule {
 	abstract BinaryStorage bindBinaryStorage(LocalBinaryStorage e);
 
 	@Binds
-	abstract MetricsService bindMetricsService(DropwizardMetricsService e);
+	abstract MetricsService bindMetricsService(MetricsServiceImpl e);
 
 	@Binds
 	abstract Database bindDatabase(OrientDBDatabase e);

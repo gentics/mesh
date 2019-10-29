@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -30,7 +31,6 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
-import com.gentics.mesh.metric.ResettableCounter;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.common.collect.Lists;
 
@@ -47,12 +47,12 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeMigrationHandler.class);
 
-	private final ResettableCounter migrationCounter;
+	private final AtomicLong migrationGauge;
 
 	@Inject
 	public NodeMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider) {
 		super(db, nodeFieldAPIHandler, metrics, batchProvider);
-		migrationCounter = metrics.resettableCounter(NODE_MIGRATION_PENDING);
+		migrationGauge = metrics.longGauge(NODE_MIGRATION_PENDING);
 	}
 
 	/**
@@ -96,8 +96,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			});
 
 			if (metrics.isEnabled()) {
-				migrationCounter.reset();
-				migrationCounter.inc(containers.size());
+				migrationGauge.set(containers.size());
 			}
 
 			// No field containers, migration is done
@@ -114,7 +113,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, container, errors) -> {
 			migrateContainer(context, batch, container, fromVersion, newSchema, errors, touchedFields);
 			if (metrics.isEnabled()) {
-				migrationCounter.dec();
+				migrationGauge.decrementAndGet();
 			}
 		});
 

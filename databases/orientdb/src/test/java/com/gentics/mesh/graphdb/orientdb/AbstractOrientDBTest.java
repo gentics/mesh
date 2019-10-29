@@ -5,19 +5,17 @@ import static org.mockito.Mockito.when;
 
 import org.mockito.Mockito;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.Timer;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
-import com.gentics.mesh.metric.ResettableCounter;
 import com.syncleus.ferma.FramedGraph;
 
 import dagger.Lazy;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
 
 public class AbstractOrientDBTest {
 
@@ -25,8 +23,6 @@ public class AbstractOrientDBTest {
 		MetricsService metrics = Mockito.mock(MetricsService.class);
 		when(metrics.timer(Mockito.any())).thenReturn(Mockito.mock(Timer.class));
 		when(metrics.counter(Mockito.any())).thenReturn(Mockito.mock(Counter.class));
-		when(metrics.meter(Mockito.any())).thenReturn(Mockito.mock(Meter.class));
-		when(metrics.resettableCounter(Mockito.any())).thenReturn(Mockito.mock(ResettableCounter.class));
 		Lazy<BootstrapInitializer> lazyBoot = mock(Lazy.class);
 		BootstrapInitializer bootMock = mock(BootstrapInitializer.class);
 		when(lazyBoot.get()).thenReturn(bootMock);

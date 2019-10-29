@@ -50,7 +50,7 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 	@Override
 	public OrientGraph rawTx() {
 		if (metrics.isEnabled()) {
-			txCounter.mark();
+			txCounter.increment();
 		}
 		return factory.getTx();
 	}
@@ -58,7 +58,7 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 	@Override
 	public OrientGraphNoTx rawNoTx() {
 		if (metrics.isEnabled()) {
-			noTxCounter.mark();
+			noTxCounter.increment();
 		}
 		return factory.getNoTx();
 	}
