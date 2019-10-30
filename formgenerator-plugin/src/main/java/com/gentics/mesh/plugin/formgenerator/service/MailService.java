@@ -221,11 +221,11 @@ public class MailService {
 		// download all binary data and add as attachments
 		return Observable.fromIterable(fileFieldNames).flatMapSingle(name -> {
 			return adminClient.downloadBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), name).toSingle();
-		}).flatMapSingle(download -> {
-			Buffer buffer = RxUtil.readEntireData(download.getFlowable()).blockingGet();
+		}).flatMapSingle(download -> RxUtil.readEntireData(download.getFlowable())
+		.map(buffer -> {
 			message.getAttachment()
 				.add(new MailAttachment().setName(download.getFilename()).setContentType(download.getContentType()).setData(buffer));
-			return Single.just(message);
-		}).lastOrError();
+			return message;
+		})).lastOrError();
 	}
 }

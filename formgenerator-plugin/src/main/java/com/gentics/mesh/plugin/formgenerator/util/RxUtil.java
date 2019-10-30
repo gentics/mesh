@@ -1,6 +1,7 @@
 package com.gentics.mesh.plugin.formgenerator.util;
 
 import io.reactivex.Flowable;
+import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 
@@ -14,5 +15,13 @@ public final class RxUtil {
 	 */
 	public static Single<Buffer> readEntireData(Flowable<byte[]> stream) {
 		return stream.map(b -> Buffer.buffer(b)).reduce((a, b) -> a.appendBuffer(b)).toSingle();
+	}
+
+	public static <T> Maybe<T> fromNullable(T item) {
+		if (item == null) {
+			return Maybe.empty();
+		} else {
+			return Maybe.just(item);
+		}
 	}
 }

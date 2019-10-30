@@ -2,6 +2,7 @@ package com.gentics.mesh.plugin.formgenerator.service;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -42,6 +43,7 @@ import com.gentics.mesh.plugin.formgenerator.model.FormElement;
 import com.gentics.mesh.plugin.formgenerator.model.FormpageElement;
 import com.gentics.mesh.plugin.formgenerator.model.PostDataResponse;
 import com.gentics.mesh.plugin.formgenerator.model.ValidationError;
+import com.gentics.mesh.plugin.formgenerator.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -49,9 +51,9 @@ import com.gentics.mesh.rest.client.impl.EmptyResponse;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
 
+import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -59,6 +61,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.ext.web.templ.handlebars.HandlebarsTemplateEngine;
 
@@ -121,10 +124,9 @@ public class FormDataService {
 	 */
 	public Single<PostDataResponse> create(String projectName, String uuid, MultiMap postedData, Set<FileUpload> fileUploads, String referer,
 		PluginContext meshContext, boolean handleCookies) {
-		return formService.load(projectName, uuid).flatMap(formNode -> {
-			Form form = formService.toForm(formNode).blockingGet();
-			return savePostedData(projectName, formNode, null, form, postedData, fileUploads, referer, meshContext, handleCookies);
-		});
+		return formService.load(projectName, uuid)
+			.flatMap(formNode -> formService.toForm(formNode)
+			.flatMap(form -> savePostedData(projectName, formNode, null, form, postedData, fileUploads, referer, meshContext, handleCookies)));
 	}
 
 	/**
@@ -151,10 +153,10 @@ public class FormDataService {
 	public Single<PostDataResponse> update(String projectName, String formUuid, String formDataUuid, MultiMap postedData, Set<FileUpload> fileUploads,
 		String referer,
 		PluginContext meshContext, boolean handleCookies) {
-		return Single.zip(formService.load(projectName, formUuid), load(projectName, formUuid, formDataUuid), (formNode, formDataNode) -> {
-			Form form = formService.toForm(formNode).blockingGet();
-			return savePostedData(projectName, formNode, formDataNode, form, postedData, fileUploads, referer, meshContext, handleCookies);
-		}).flatMap(x -> x);
+		return Single.zip(formService.load(projectName, formUuid), load(projectName, formUuid, formDataUuid), (formNode, formDataNode) ->
+			formService.toForm(formNode)
+			.flatMap(form -> savePostedData(projectName, formNode, formDataNode, form, postedData, fileUploads, referer, meshContext, handleCookies)))
+			.flatMap(x -> x);
 	}
 
 	/**
@@ -300,27 +302,30 @@ public class FormDataService {
 				// add options
 				formJson.put("options", JsonObject.mapFrom(configuration));
 
-				Set<String> completed = Collections.emptySet();
-				if (formDataNode != null) {
-					Form form = formService.toForm(formNode).blockingGet();
+				return RxUtil.fromNullable(formDataNode)
+					.map(fdn -> {
+						Form form = formService.toForm(formNode).blockingGet();
 
-					// only fill in data, if form is not completed
-					if (!form.isCompleted(formDataNode)) {
-						// get completed formpages
-						completed = form.flattened().filter(elem -> elem instanceof FormpageElement)
-							.filter(elem -> elem.isCompleted(formDataNode))
-							.map(FormElement::getName).collect(Collectors.toSet());
-						JsonObject formDataJson = form.getFormDataJson(formDataNode);
-						formJson.put("dataid", formDataUuid);
-						mergeData(formJson, formDataJson);
-					}
-				}
+						// only fill in data, if form is not completed
+						if (!form.isCompleted(formDataNode)) {
+							// get completed formpages
+							Set<String> completed = form.flattened().filter(elem -> elem instanceof FormpageElement)
+								.filter(elem -> elem.isCompleted(formDataNode))
+								.map(FormElement::getName).collect(Collectors.toSet());
+							JsonObject formDataJson = form.getFormDataJson(formDataNode);
+							formJson.put("dataid", formDataUuid);
+							mergeData(formJson, formDataJson);
+							return completed;
+						}
+						return Collections.<String>emptySet();
+					}).toSingle(Collections.emptySet())
+				.flatMap(completed -> {
+					formService.markFormpages(formJson, completed);
 
-				formService.markFormpages(formJson, completed);
+					rc.put("form", formJson);
 
-				rc.put("form", formJson);
-
-				return templateEngine.rxRender(rc.data(), "form");
+					return templateEngine.rxRender(rc.data(), "form");
+				});
 			}).flatMap(s -> s);
 	}
 
@@ -476,30 +481,24 @@ public class FormDataService {
 			return Single.just(formDataNode);
 		}
 
-		// upload binaries one after the other
-		List<Single<NodeResponse>> singleList = fileUploads.stream().map(fileUpload -> {
-			return Single.defer(() -> {
+		return Flowable.fromIterable(fileUploads)
+			// The upload can be blocking in some implementations of the rest client. Therefore we queue
+			// it as a worker job just in case.
+			.flatMapSingle(fileUpload -> vertx.<NodeResponse>rxExecuteBlocking(prm -> {
 				long size = fileUpload.size();
-				InputStream ins = new FileInputStream(new File(fileUpload.uploadedFileName()));
-				return adminClient
-					.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), formDataNode.getVersion(),
-						fileUpload.name(),
-						ins, size, fileUpload.fileName(), fileUpload.contentType())
-					.toSingle().doFinally(() -> {
-						ins.close();
-					});
-
-			});
-		}).collect(Collectors.toList());
-
-		return Single.concat(singleList).lastOrError();
-
-		// this would upload binaries asynchronously
-		// return Observable.fromIterable(fileUploads).flatMapSingle(fileUpload -> {
-		// return meshClient.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), formDataNode.getVersion(),
-		// fileUpload.name(),
-		// vertx.fileSystem().readFileBlocking(fileUpload.uploadedFileName()), fileUpload.fileName(), fileUpload.contentType()).toSingle();
-		// }).lastOrError();
+				InputStream ins;
+				try {
+					ins = new FileInputStream(new File(fileUpload.uploadedFileName()));
+				} catch (FileNotFoundException e) {
+					prm.fail(e);
+					return;
+				}
+				adminClient.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), formDataNode.getVersion(),
+					fileUpload.name(),
+					ins, size, fileUpload.fileName(), fileUpload.contentType())
+				.toSingle().subscribe(prm::complete, prm::fail);
+			}).toSingle(), false, 1)
+		.lastOrError();
 	}
 
 	/**
