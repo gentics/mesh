@@ -558,7 +558,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			.map(Project::getName)
 			.collect(Collectors.toList()));
 
-		loader.get().loadVerticles(initialProjects);
+		loader.get().loadVerticles(initialProjects).subscribe();
 		if (verticleLoader != null) {
 			verticleLoader.apply(vertx);
 		}

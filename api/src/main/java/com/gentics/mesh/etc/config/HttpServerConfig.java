@@ -36,7 +36,7 @@ public class HttpServerConfig implements Option {
 	public static final String MESH_HTTP_SSL_KEY_PATH_ENV = "MESH_HTTP_SSL_KEY_PATH";
 	public static final String MESH_HTTP_CORS_ALLOW_CREDENTIALS_ENV = "MESH_HTTP_CORS_ALLOW_CREDENTIALS";
 
-	public static final int DEFAULT_VERTICLE_AMOUNT = 16;
+	public static final int DEFAULT_VERTICLE_AMOUNT = 2 * Runtime.getRuntime().availableProcessors();
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure the Gentics Mesh HTTP server port. Default is: " + DEFAULT_HTTP_PORT)
@@ -79,7 +79,7 @@ public class HttpServerConfig implements Option {
 	private String keyPath = DEFAULT_KEY_PATH;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Amount of rest API verticles to be deployed. Default: " + DEFAULT_VERTICLE_AMOUNT)
+	@JsonPropertyDescription("Amount of rest API verticles to be deployed. Default is 2 * CPU Cores")
 	@EnvironmentVariable(name = "MESH_HTTP_VERTICLE_AMOUNT", description = "Override the http verticle amount.")
 	private int verticleAmount = DEFAULT_VERTICLE_AMOUNT;
 
