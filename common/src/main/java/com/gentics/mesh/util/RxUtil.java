@@ -5,6 +5,7 @@ import java.util.function.Function;
 import io.reactivex.Completable;
 import io.reactivex.CompletableSource;
 import io.reactivex.Flowable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.SingleSource;
@@ -88,5 +89,13 @@ public final class RxUtil {
 		SingleSource<? extends T1> source1, SingleSource<? extends T2> source2,
 		BiFunction<? super T1, ? super T2, SingleSource<? extends R>> zipper) {
 		return Single.zip(source1, source2, zipper).flatMap(x -> x);
+	}
+
+	public static <T> Maybe<T> fromNullable(T item) {
+		if (item == null) {
+			return Maybe.empty();
+		} else {
+			return Maybe.just(item);
+		}
 	}
 }
