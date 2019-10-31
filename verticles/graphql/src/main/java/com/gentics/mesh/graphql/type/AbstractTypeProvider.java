@@ -61,11 +61,8 @@ public abstract class AbstractTypeProvider {
 
 	private final MeshOptions options;
 
-	protected final MeshEventSender meshEventSender;
-
-	public AbstractTypeProvider(MeshOptions options, MeshEventSender meshEventSender) {
+	public AbstractTypeProvider(MeshOptions options) {
 		this.options = options;
-		this.meshEventSender = meshEventSender;
 	}
 
 	/**
@@ -358,15 +355,11 @@ public abstract class AbstractTypeProvider {
 					throw new RuntimeException("Only one way of filtering can be specified. Either by query or by filter");
 				}
 				if (query != null) {
-					return awaitSync(env)
-						.andThen(Single.defer(() -> {
-							try {
-								return Single.just(searchHandler.query(gc, query, getPagingInfo(env), READ_PERM));
-							} catch (MeshConfigurationException | InterruptedException | ExecutionException | TimeoutException e) {
-								return Single.error(new RuntimeException(e));
-							}
-						}))
-						.blockingGet();
+					try {
+						return searchHandler.query(gc, query, getPagingInfo(env), READ_PERM);
+					} catch (MeshConfigurationException | InterruptedException | ExecutionException | TimeoutException e) {
+						throw new RuntimeException(e);
+					}
 				} else {
 					RootVertex<T> root = rootProvider.apply(gc);
 					if (filterProvider != null && filter != null) {
@@ -489,29 +482,5 @@ public abstract class AbstractTypeProvider {
 		} else {
 			return new DynamicStreamPageImpl<>(stream, pagingInfo);
 		}
-	}
-
-	private boolean delayRequested(DataFetchingEnvironment env) {
-		GraphQLContext gc = env.getContext();
-		GraphQLParameters params = gc.getGraphQLParameters();
-		if (params.isWait().isPresent()) {
-			return params.isWait().get();
-		}
-
-		return options.getSearchOptions().isWaitForIdle();
-	}
-
-	protected Completable awaitSync(DataFetchingEnvironment env) {
-		if (!delayRequested(env)) {
-			return Completable.complete();
-		}
-
-		return meshEventSender.isSearchIdle().flatMapCompletable(isIdle -> {
-			if (isIdle) {
-				return Completable.complete();
-			}
-			meshEventSender.flushSearch();
-			return meshEventSender.waitForEvent(MeshEvent.SEARCH_IDLE);
-		}).andThen(meshEventSender.refreshSearch());
 	}
 }

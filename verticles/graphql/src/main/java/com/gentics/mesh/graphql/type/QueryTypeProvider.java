@@ -168,7 +168,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 	@Inject
 	public QueryTypeProvider(MeshOptions options, MeshEventSender meshEventSender) {
-		super(options, meshEventSender);
+		super(options);
 	}
 
 	/**
@@ -387,10 +387,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 						GraphQLContext gc = env.getContext();
 						// TODO add filtering for query nodes
 						gc.getNodeParameters().setLanguages(getLanguageArgument(env).stream().toArray(String[]::new));
-						return awaitSync(env)
-								.andThen(Single.defer(() -> Single.just(
-										nodeTypeProvider.handleContentSearch(gc, query, getPagingInfo(env)))))
-								.blockingGet();
+						return nodeTypeProvider.handleContentSearch(gc, query, getPagingInfo(env));
 					}
 
 					if (env.containsArgument("uuids")) {
