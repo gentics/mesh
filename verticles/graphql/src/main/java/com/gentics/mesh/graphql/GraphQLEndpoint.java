@@ -4,6 +4,7 @@ import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.context.impl.GraphQLContextImpl;
+import com.gentics.mesh.parameter.impl.GraphQLParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 import io.vertx.core.logging.Logger;
@@ -39,6 +40,7 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 		InternalEndpointRoute queryEndpoint = createRoute();
 		queryEndpoint.method(POST);
 		queryEndpoint.exampleRequest(graphqlExamples.createQueryRequest());
+		queryEndpoint.addQueryParameters(GraphQLParametersImpl.class);
 		queryEndpoint.exampleResponse(OK, graphqlExamples.createResponse(), "Basic GraphQL response.");
 		queryEndpoint.description("Endpoint which accepts GraphQL queries.");
 		queryEndpoint.path("/");

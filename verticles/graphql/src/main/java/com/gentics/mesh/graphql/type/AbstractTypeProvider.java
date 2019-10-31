@@ -2,6 +2,7 @@ package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLLong;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLArgument.newArgument;
@@ -30,11 +31,14 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.event.MeshEventSender;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.NodeFilter;
+import com.gentics.mesh.parameter.GraphQLParameters;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -48,6 +52,8 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldDefinition.Builder;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLTypeReference;
+import io.reactivex.Completable;
+import io.reactivex.Single;
 
 public abstract class AbstractTypeProvider {
 
@@ -55,8 +61,11 @@ public abstract class AbstractTypeProvider {
 
 	private final MeshOptions options;
 
-	public AbstractTypeProvider(MeshOptions options) {
+	protected final MeshEventSender meshEventSender;
+
+	public AbstractTypeProvider(MeshOptions options, MeshEventSender meshEventSender) {
 		this.options = options;
+		this.meshEventSender = meshEventSender;
 	}
 
 	/**
@@ -349,11 +358,15 @@ public abstract class AbstractTypeProvider {
 					throw new RuntimeException("Only one way of filtering can be specified. Either by query or by filter");
 				}
 				if (query != null) {
-					try {
-						return searchHandler.query(gc, query, getPagingInfo(env), READ_PERM);
-					} catch (MeshConfigurationException | InterruptedException | ExecutionException | TimeoutException e) {
-						throw new RuntimeException(e);
-					}
+						return awaitSync(env)
+								.andThen(Single.defer(() -> {
+									try {
+										return Single.just(searchHandler.query(gc, query, getPagingInfo(env), READ_PERM));
+									} catch (MeshConfigurationException | InterruptedException | ExecutionException | TimeoutException e) {
+										return Single.error(new RuntimeException(e));
+									}
+								}))
+								.blockingGet();
 				} else {
 					RootVertex<T> root = rootProvider.apply(gc);
 					if (filterProvider != null && filter != null) {
@@ -476,5 +489,32 @@ public abstract class AbstractTypeProvider {
 		} else {
 			return new DynamicStreamPageImpl<>(stream, pagingInfo);
 		}
+	}
+
+	private boolean delayRequested(DataFetchingEnvironment env) {
+		GraphQLContext gc = env.getContext();
+		GraphQLParameters params = gc.getGraphQLParameters();
+		if (params.isWait().isPresent()) {
+			return params.isWait().get();
+		}
+
+		return options.getSearchOptions().isWaitForIdle();
+	}
+
+	protected Completable awaitSync(DataFetchingEnvironment env) {
+		if (!delayRequested(env)) {
+			System.out.println("No delay requested, continue without wait ...");
+			return Completable.complete();
+		}
+
+		System.out.println("Requested delay!");
+		return meshEventSender.isSearchIdle().flatMapCompletable(isIdle -> {
+			if (isIdle) {
+				System.out.println("Search is already idle, continue ...");
+				return Completable.complete();
+			}
+			meshEventSender.flushSearch();
+			return meshEventSender.waitForEvent(MeshEvent.SEARCH_IDLE).doOnComplete(() -> System.out.println("Search is now idle, continue ..."));
+		}).andThen(meshEventSender.refreshSearch());
 	}
 }

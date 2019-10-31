@@ -1,18 +1,7 @@
 package com.gentics.mesh.parameter;
 
 import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
-import com.gentics.mesh.parameter.impl.GenericParametersImpl;
-import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
-import com.gentics.mesh.parameter.impl.NodeParametersImpl;
-import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.ProjectPurgeParametersImpl;
-import com.gentics.mesh.parameter.impl.PublishParametersImpl;
-import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
-import com.gentics.mesh.parameter.impl.SearchParametersImpl;
-import com.gentics.mesh.parameter.impl.UserParametersImpl;
-import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.parameter.impl.*;
 
 /**
  * Collection / Convenience interface which provides getters for parameter providers to all context implementations which use this interface.
@@ -65,5 +54,9 @@ public interface ParameterProviderContext extends ActionContext {
 
 	default SearchParameters getSearchParameters() {
 		return new SearchParametersImpl(this);
+	}
+
+	default GraphQLParameters getGraphQLParameters() {
+		return new GraphQLParametersImpl(this);
 	}
 }
