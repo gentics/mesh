@@ -38,12 +38,14 @@ public class CoreVerticleLoader {
 	public JobWorkerVerticle jobWorkerVerticle;
 
 	@Inject
-	public ElasticsearchProcessVerticle elasticsearchProcessVerticle;
+	public Provider<ElasticsearchProcessVerticle> elasticsearchProcessVerticleProvider;
+	private ElasticsearchProcessVerticle elasticsearchProcessVerticle;
 
 	@Inject
 	public MeshOptions meshOptions;
 
 	private final Vertx rxVertx;
+	private String searchVerticleId;
 
 	@Inject
 	public CoreVerticleLoader(Vertx rxVertx) {
@@ -99,13 +101,21 @@ public class CoreVerticleLoader {
 		// Only deploy search sync verticle if we actually have a configured ES
 		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
 		if (searchOptions != null && searchOptions.getUrl() != null) {
+			elasticsearchProcessVerticle = elasticsearchProcessVerticleProvider.get();
 			return rxVertx.rxDeployVerticle(elasticsearchProcessVerticle, new DeploymentOptions()
 				.setInstances(1))
+				.doOnSuccess(id -> searchVerticleId = id)
 				.ignoreElement();
 		} else {
 			return Completable.complete();
 		}
 	}
+
+	public Completable redeploySearchVerticle() {
+		return rxVertx.rxUndeploy(searchVerticleId)
+			.andThen(deploySearchVerticle());
+	}
+
 
 	public ElasticsearchProcessVerticle getSearchVerticle() {
 		return elasticsearchProcessVerticle;

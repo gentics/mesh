@@ -93,6 +93,11 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		}
 	}
 
+	@After
+	public void resetSearchVerticle() throws Exception {
+		((BootstrapInitializerImpl) boot()).loader.get().redeploySearchVerticle().blockingAwait();
+	}
+
 	public OkHttpClient httpClient() {
 		if (this.httpClient == null) {
 			int timeout;
