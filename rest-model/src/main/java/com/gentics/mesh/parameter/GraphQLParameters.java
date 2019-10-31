@@ -11,15 +11,14 @@ public interface GraphQLParameters extends ParameterProvider {
 	}
 
 	default Optional<Boolean> isWait() {
-		return Optional.ofNullable(getParameter(WAIT_PARAMETER_KEY))
-				.flatMap(str -> {
-					if ("true".equalsIgnoreCase(str)) {
-						return Optional.of(true);
-					} else if ("false".equalsIgnoreCase(str)) {
-						return Optional.of(false);
-					} else {
-						return Optional.empty();
-					}
-				});
+		return Optional.ofNullable(getParameter(WAIT_PARAMETER_KEY)).flatMap(str -> {
+			if ("true".equalsIgnoreCase(str)) {
+				return Optional.of(true);
+			} else if ("false".equalsIgnoreCase(str)) {
+				return Optional.of(false);
+			} else {
+				return Optional.empty();
+			}
+		});
 	}
 }

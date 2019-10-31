@@ -358,15 +358,15 @@ public abstract class AbstractTypeProvider {
 					throw new RuntimeException("Only one way of filtering can be specified. Either by query or by filter");
 				}
 				if (query != null) {
-						return awaitSync(env)
-								.andThen(Single.defer(() -> {
-									try {
-										return Single.just(searchHandler.query(gc, query, getPagingInfo(env), READ_PERM));
-									} catch (MeshConfigurationException | InterruptedException | ExecutionException | TimeoutException e) {
-										return Single.error(new RuntimeException(e));
-									}
-								}))
-								.blockingGet();
+					return awaitSync(env)
+						.andThen(Single.defer(() -> {
+							try {
+								return Single.just(searchHandler.query(gc, query, getPagingInfo(env), READ_PERM));
+							} catch (MeshConfigurationException | InterruptedException | ExecutionException | TimeoutException e) {
+								return Single.error(new RuntimeException(e));
+							}
+						}))
+						.blockingGet();
 				} else {
 					RootVertex<T> root = rootProvider.apply(gc);
 					if (filterProvider != null && filter != null) {
@@ -503,18 +503,15 @@ public abstract class AbstractTypeProvider {
 
 	protected Completable awaitSync(DataFetchingEnvironment env) {
 		if (!delayRequested(env)) {
-			System.out.println("No delay requested, continue without wait ...");
 			return Completable.complete();
 		}
 
-		System.out.println("Requested delay!");
 		return meshEventSender.isSearchIdle().flatMapCompletable(isIdle -> {
 			if (isIdle) {
-				System.out.println("Search is already idle, continue ...");
 				return Completable.complete();
 			}
 			meshEventSender.flushSearch();
-			return meshEventSender.waitForEvent(MeshEvent.SEARCH_IDLE).doOnComplete(() -> System.out.println("Search is now idle, continue ..."));
+			return meshEventSender.waitForEvent(MeshEvent.SEARCH_IDLE);
 		}).andThen(meshEventSender.refreshSearch());
 	}
 }

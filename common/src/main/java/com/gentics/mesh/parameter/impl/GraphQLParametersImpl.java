@@ -30,7 +30,8 @@ public class GraphQLParametersImpl extends AbstractParameters implements GraphQL
 	@Override
 	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
 		QueryParameter waitParameter = new QueryParameter();
-		waitParameter.setDescription("Specify whether search should wait for the search to be idle before responding. Only effective when a query is used inside of the request.");
+		waitParameter.setDescription(
+				"Specify whether search should wait for the search to be idle before responding. Only effective when a query is used inside of the request.");
 		waitParameter.setExample("true");
 		waitParameter.setRequired(false);
 		waitParameter.setType(ParamType.BOOLEAN);

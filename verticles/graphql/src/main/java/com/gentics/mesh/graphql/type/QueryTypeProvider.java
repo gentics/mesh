@@ -11,7 +11,6 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.service.WebRootService;
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.core.rest.error.UuidNotFoundException;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -24,8 +23,6 @@ import com.gentics.mesh.graphql.filter.UserFilter;
 import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
 import com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider;
 import com.gentics.mesh.handler.Versioned;
-import com.gentics.mesh.parameter.GraphQLParameters;
-import com.gentics.mesh.parameter.SearchParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.search.index.group.GroupSearchHandler;
 import com.gentics.mesh.search.index.project.ProjectSearchHandler;
@@ -33,19 +30,16 @@ import com.gentics.mesh.search.index.role.RoleSearchHandler;
 import com.gentics.mesh.search.index.tag.TagSearchHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
 import com.gentics.mesh.search.index.user.UserSearchHandler;
-import com.google.common.util.concurrent.Futures;
 import graphql.ExceptionWhileDataFetching;
 import graphql.execution.ExecutionContext;
 import graphql.schema.*;
 import graphql.schema.GraphQLObjectType.Builder;
-import io.reactivex.Completable;
 import io.reactivex.Single;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.*;
-import java.util.concurrent.ExecutorCompletionService;
 import java.util.stream.Stream;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -394,7 +388,8 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 						// TODO add filtering for query nodes
 						gc.getNodeParameters().setLanguages(getLanguageArgument(env).stream().toArray(String[]::new));
 						return awaitSync(env)
-								.andThen(Single.defer(() -> Single.just(nodeTypeProvider.handleContentSearch(gc, query, getPagingInfo(env)))))
+								.andThen(Single.defer(() -> Single.just(
+										nodeTypeProvider.handleContentSearch(gc, query, getPagingInfo(env)))))
 								.blockingGet();
 					}
 

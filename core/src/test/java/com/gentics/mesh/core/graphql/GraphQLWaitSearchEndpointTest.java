@@ -41,10 +41,13 @@ public class GraphQLWaitSearchEndpointTest extends AbstractMultiESTest {
 			recreateIndices();
 		}
 
-		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName), new GraphQLParametersImpl().setWait(true)));
+		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName),
+				new GraphQLParametersImpl().setWait(true)));
 		JsonObject json = new JsonObject(response.toJson());
 		System.out.println(json.encodePrettily());
-		MeshAssertions.assertThat(json).has("data.nodes.elements[0]fields.slug", slugContent, "The search should find the element after wait");
+		MeshAssertions
+				.assertThat(json)
+				.has("data.nodes.elements[0]fields.slug", slugContent, "The search should find the element after wait");
 	}
 
 	@Test
@@ -53,9 +56,13 @@ public class GraphQLWaitSearchEndpointTest extends AbstractMultiESTest {
 			recreateIndices();
 		}
 
-		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName), new GraphQLParametersImpl().setWait(false)));
+		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName),
+				new GraphQLParametersImpl().setWait(false)));
 		JsonObject json = new JsonObject(response.toJson());
 		System.out.println(json.encodePrettily());
-		MeshAssertions.assertThat(json).has("data.nodes.elements[0]fields.slug", slugContent, "The search should not find the element without wait");
+		MeshAssertions
+				.assertThat(json)
+				.has("data.nodes.elements[0]fields.slug", slugContent,
+						"The search should not find the element without wait");
 	}
 }
