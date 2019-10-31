@@ -303,22 +303,21 @@ public class FormDataService {
 				formJson.put("options", JsonObject.mapFrom(configuration));
 
 				return RxUtil.fromNullable(formDataNode)
-					.map(fdn -> {
-						Form form = formService.toForm(formNode).blockingGet();
-
+					.flatMapSingleElement(fdn -> formService.toForm(formNode)
+					.map(form -> {
 						// only fill in data, if form is not completed
-						if (!form.isCompleted(formDataNode)) {
+						if (!form.isCompleted(fdn)) {
 							// get completed formpages
 							Set<String> completed = form.flattened().filter(elem -> elem instanceof FormpageElement)
-								.filter(elem -> elem.isCompleted(formDataNode))
+								.filter(elem -> elem.isCompleted(fdn))
 								.map(FormElement::getName).collect(Collectors.toSet());
-							JsonObject formDataJson = form.getFormDataJson(formDataNode);
+							JsonObject formDataJson = form.getFormDataJson(fdn);
 							formJson.put("dataid", formDataUuid);
 							mergeData(formJson, formDataJson);
 							return completed;
 						}
 						return Collections.<String>emptySet();
-					}).toSingle(Collections.emptySet())
+					})).toSingle(Collections.emptySet())
 				.flatMap(completed -> {
 					formService.markFormpages(formJson, completed);
 
