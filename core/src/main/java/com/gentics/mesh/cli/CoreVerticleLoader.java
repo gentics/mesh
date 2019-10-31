@@ -12,6 +12,7 @@ import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.monitor.MonitoringServerVerticle;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
+import com.gentics.mesh.util.RxUtil;
 
 import io.reactivex.Completable;
 import io.vertx.core.DeploymentOptions;
@@ -101,18 +102,21 @@ public class CoreVerticleLoader {
 		// Only deploy search sync verticle if we actually have a configured ES
 		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
 		if (searchOptions != null && searchOptions.getUrl() != null) {
-			elasticsearchProcessVerticle = elasticsearchProcessVerticleProvider.get();
-			return rxVertx.rxDeployVerticle(elasticsearchProcessVerticle, new DeploymentOptions()
-				.setInstances(1))
-				.doOnSuccess(id -> searchVerticleId = id)
-				.ignoreElement();
+			return Completable.defer(() -> {
+				elasticsearchProcessVerticle = elasticsearchProcessVerticleProvider.get();
+				return rxVertx.rxDeployVerticle(elasticsearchProcessVerticle, new DeploymentOptions()
+					.setInstances(1))
+					.doOnSuccess(id -> searchVerticleId = id)
+					.ignoreElement();
+			});
 		} else {
 			return Completable.complete();
 		}
 	}
 
 	public Completable redeploySearchVerticle() {
-		return rxVertx.rxUndeploy(searchVerticleId)
+		return RxUtil.fromNullable(searchVerticleId)
+			.flatMapCompletable(rxVertx::rxUndeploy)
 			.andThen(deploySearchVerticle());
 	}
 
