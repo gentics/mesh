@@ -47,79 +47,35 @@ public class ClusterOptions implements Option {
 	@EnvironmentVariable(name = MESH_CLUSTER_VERTX_PORT_ENV, description = "Override the vert.x eventbus server port.")
 	private Integer vertxPort = 0;
 
-	/**
-	 * Return the cluster enabled flag.
-	 * 
-	 * @return Flag value
-	 */
 	public boolean isEnabled() {
 		return enabled;
 	}
 
-	/**
-	 * Set the flag which can toggle the cluster mode.
-	 * 
-	 * @param flag
-	 *            Flag value
-	 * @return Fluent API
-	 */
 	public ClusterOptions setEnabled(boolean flag) {
 		this.enabled = flag;
 		return this;
 	}
 
-	/**
-	 * Return the configured network host which is used to bind all mesh related internal services to that IP.
-	 * 
-	 * @return
-	 */
 	public String getNetworkHost() {
 		return networkHost;
 	}
 
-	/**
-	 * Set the network host which is used to bind to.
-	 * 
-	 * @param networkHost
-	 */
-	public ClusterOptions setNetworkHost(String networkHost) {
+	public void setNetworkHost(String networkHost) {
 		this.networkHost = networkHost;
-		return this;
 	}
 
-	/**
-	 * Return the configured cluster name.
-	 * 
-	 * @return
-	 */
 	public String getClusterName() {
 		return clusterName;
 	}
 
-	/**
-	 * Set the cluster name to be used.
-	 * 
-	 * @param clusterName
-	 */
-	public ClusterOptions setClusterName(String clusterName) {
+	public void setClusterName(String clusterName) {
 		this.clusterName = clusterName;
-		return this;
 	}
 
-	/**
-	 * Return the vert.x cluster port.
-	 * 
-	 * @return
-	 */
 	public Integer getVertxPort() {
 		return vertxPort;
 	}
 
-	/**
-	 * Set the vert.x cluster port.
-	 * 
-	 * @param vertxPort
-	 */
 	public void setVertxPort(Integer vertxPort) {
 		this.vertxPort = vertxPort;
 	}

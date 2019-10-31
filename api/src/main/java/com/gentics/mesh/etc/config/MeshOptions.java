@@ -133,40 +133,19 @@ public class MeshOptions implements Option {
 	public MeshOptions() {
 	}
 
-	/**
-	 * Return the default language.
-	 * 
-	 * @return Language tag of the default language
-	 */
 	public String getDefaultLanguage() {
 		return defaultLanguage;
 	}
 
-	/**
-	 * Set the default language.
-	 * 
-	 * @param defaultLanguage the default language iso-code
-	 */
 	public MeshOptions setDefaultLanguage(String defaultLanguage) {
 		this.defaultLanguage = defaultLanguage;
 		return this;
 	}
 
-	/**
-	 * Return the (optional) languages file path
-	 * 
-	 * @return path to the optional languages file
-	 */
 	public String getLanguagesFilePath() {
 		return languagesFilePath;
 	}
 
-	/**
-	 * Set the languages file path
-	 * 
-	 * @param languagesFilePath
-	 *            path to the optional languages file
-	 */
 	public MeshOptions setLanguagesFilePath(String languagesFilePath) {
 		this.languagesFilePath = languagesFilePath;
 		return this;
@@ -192,61 +171,31 @@ public class MeshOptions implements Option {
 		return this;
 	}
 
-	/**
-	 * Return the mesh graph database storage options.
-	 * 
-	 * @return Storage options
-	 */
 	@JsonProperty("storage")
 	public GraphStorageOptions getStorageOptions() {
 		return this.storageOptions;
 	}
 
-	/**
-	 * @param storageOptions the storageOptions to set
-	 */
 	public MeshOptions setStorageOptions(GraphStorageOptions storageOptions) {
 		this.storageOptions = storageOptions;
 		return this;
 	}
 
-	/**
-	 * Return the mesh upload options.
-	 * 
-	 * @return Upload options
-	 */
 	@JsonProperty("upload")
 	public MeshUploadOptions getUploadOptions() {
 		return uploadOptions;
 	}
 
-	/**
-	 * Set the mesh upload options.
-	 * 
-	 * @param uploadOptions
-	 *            Upload options
-	 */
 	public MeshOptions setUploadOptions(MeshUploadOptions uploadOptions) {
 		this.uploadOptions = uploadOptions;
 		return this;
 	}
 
-	/**
-	 * Return the http server options.
-	 * 
-	 * @return Http server options
-	 */
 	@JsonProperty("httpServer")
 	public HttpServerConfig getHttpServerOptions() {
 		return httpServerOptions;
 	}
 
-	/**
-	 * Set the http server options.
-	 * 
-	 * @param httpServerOptions
-	 *            Http server options
-	 */
 	public MeshOptions setHttpServerOptions(HttpServerConfig httpServerOptions) {
 		this.httpServerOptions = httpServerOptions;
 		return this;
@@ -257,11 +206,6 @@ public class MeshOptions implements Option {
 		return monitoringOptions;
 	}
 
-	/**
-	 * Set the monitoring options.
-	 * 
-	 * @param monitoringOptions
-	 */
 	public MeshOptions setMonitoringOptions(MonitoringConfig monitoringOptions) {
 		this.monitoringOptions = monitoringOptions;
 		return this;
@@ -271,9 +215,6 @@ public class MeshOptions implements Option {
 		return vertxOptions;
 	}
 
-	/**
-	 * @param vertxOptions the vertxOptions to set
-	 */
 	public MeshOptions setVertxOptions(VertxOptions vertxOptions) {
 		this.vertxOptions = vertxOptions;
 		return this;
@@ -289,207 +230,98 @@ public class MeshOptions implements Option {
 		return this;
 	}
 
-	/**
-	 * Return the search options.
-	 * 
-	 * @return Search options
-	 */
 	@JsonProperty("search")
 	public ElasticSearchOptions getSearchOptions() {
 		return searchOptions;
 	}
 
-	/**
-	 * Set the search options.
-	 * 
-	 * @param searchOptions
-	 *            Search options
-	 * @return Fluent API
-	 */
 	public MeshOptions setSearchOptions(ElasticSearchOptions searchOptions) {
 		this.searchOptions = searchOptions;
 		return this;
 	}
 
-	/**
-	 * Return the authentication options
-	 * 
-	 * @return Authentication options
-	 */
 	@JsonProperty("security")
 	public AuthenticationOptions getAuthenticationOptions() {
 		return authenticationOptions;
 	}
 
-	/**
-	 * Set the authentication options
-	 * 
-	 * @param authenticationOptions
-	 *            Authentication options
-	 * @return Fluent API
-	 */
 	public MeshOptions setAuthenticationOptions(AuthenticationOptions authenticationOptions) {
 		this.authenticationOptions = authenticationOptions;
 		return this;
 	}
 
-	/**
-	 * Returns the temporary directory.
-	 * 
-	 * @return Temporary filesystem directory
-	 */
 	public String getTempDirectory() {
 		return tempDirectory;
 	}
 
-	/**
-	 * Set the temporary directory.
-	 * 
-	 * @param tempDirectory
-	 *            Temporary filesystem directory
-	 */
 	public MeshOptions setTempDirectory(String tempDirectory) {
 		this.tempDirectory = tempDirectory;
 		return this;
 	}
 
-	/**
-	 * Return the plugin directory.
-	 * 
-	 * @return
-	 */
 	public String getPluginDirectory() {
 		return pluginDirectory;
 	}
 
-	/**
-	 * Set the plugin directory.
-	 * 
-	 * @param pluginDirectory
-	 */
 	public MeshOptions setPluginDirectory(String pluginDirectory) {
 		this.pluginDirectory = pluginDirectory;
 		return this;
 	}
 
-	/**
-	 * Return the image manipulation options.
-	 * 
-	 * @return
-	 */
 	@JsonProperty("image")
 	public ImageManipulatorOptions getImageOptions() {
 		return imageOptions;
 	}
 
-	/**
-	 * Set the image manipulation options.
-	 * 
-	 * @param imageOptions
-	 * @return Fluent API
-	 */
 	public MeshOptions setImageOptions(ImageManipulatorOptions imageOptions) {
 		this.imageOptions = imageOptions;
 		return this;
 	}
 
-	/**
-	 * Return the content options
-	 * 
-	 * @return
-	 */
 	@JsonProperty("content")
 	public ContentConfig getContentOptions() {
 		return contentOptions;
 	}
 
-	/**
-	 * Set the content options
-	 * 
-	 * @param contentOptions
-	 * @return
-	 */
 	public MeshOptions setContentOptions(ContentConfig contentOptions) {
 		this.contentOptions = contentOptions;
 		return this;
 	}
 
-	/**
-	 * Return the debug info options
-	 * @return
-	 */
 	@JsonProperty("debugInfo")
 	public DebugInfoOptions getDebugInfoOptions() {
 		return debugInfoOptions;
 	}
 
-	/**
-	 * Set the debug info options
-	 * @param debugInfoOptions
-	 * @return
-	 */
 	public MeshOptions setDebugInfoOptions(DebugInfoOptions debugInfoOptions) {
 		this.debugInfoOptions = debugInfoOptions;
 		return this;
 	}
 
-	/**
-	 * Return the cache options.
-	 * 
-	 * @return
-	 */
 	@JsonProperty("cache")
 	public CacheConfig getCacheConfig() {
 		return cacheConfig;
 	}
 
-	/**
-	 * Set the cache options.
-	 * 
-	 * @param cacheConfig
-	 * @return
-	 */
 	public MeshOptions setCacheConfig(CacheConfig cacheConfig) {
 		this.cacheConfig = cacheConfig;
 		return this;
 	}
 
-	/**
-	 * Return update checker flag.
-	 * 
-	 * @return
-	 */
 	@JsonProperty("updateCheck")
 	public boolean isUpdateCheckEnabled() {
 		return updateCheck;
 	}
 
-	/**
-	 * Set the update checker flag. If set to true a update check will be invoked during mesh server startup.
-	 * 
-	 * @param updateCheck
-	 * @return Fluent API
-	 */
 	public MeshOptions setUpdateCheck(boolean updateCheck) {
 		this.updateCheck = updateCheck;
 		return this;
 	}
 
-	/**
-	 * Return the node name.
-	 * 
-	 * @return
-	 */
 	public String getNodeName() {
 		return nodeName;
 	}
 
-	/**
-	 * Set the node name.
-	 * 
-	 * @param nodeName
-	 * @return
-	 */
 	public MeshOptions setNodeName(String nodeName) {
 		this.nodeName = nodeName;
 		return this;

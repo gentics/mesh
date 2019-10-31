@@ -73,22 +73,10 @@ public class GraphStorageOptions implements Option {
 	@JsonPropertyDescription("Additional set of graph database parameters.")
 	private Map<String, String> parameters = new HashMap<>();
 
-	/**
-	 * Return the graph storage directory.
-	 *
-	 * @return Graph storage filesystem directory
-	 */
 	public String getDirectory() {
 		return directory;
 	}
 
-	/**
-	 * Set the graph storage directory.
-	 *
-	 * @param directory
-	 *            Graph storage filesystem directory
-	 * @return Fluent API
-	 */
 	public GraphStorageOptions setDirectory(String directory) {
 		this.directory = directory;
 		return this;
@@ -115,71 +103,28 @@ public class GraphStorageOptions implements Option {
 		return this;
 	}
 
-	/**
-	 * @param parameters the parameters to set
-	 */
-	public GraphStorageOptions setAllParameters(Map<String, String> parameters) {
-		this.parameters = parameters;
-		return this;
-	}
-
-	/**
-	 * Return the backup directory location.
-	 *
-	 * @return Backup directory
-	 */
 	public String getBackupDirectory() {
 		return backupDirectory;
 	}
 
-	/**
-	 * Set the backup directory location.
-	 *
-	 * @param backupDirectory
-	 *            Backup directory
-	 * @return Fluent API
-	 */
 	public GraphStorageOptions setBackupDirectory(String backupDirectory) {
 		this.backupDirectory = backupDirectory;
 		return this;
 	}
 
-	/**
-	 * Return the graph export directory.
-	 *
-	 * @return Export directory
-	 */
 	public String getExportDirectory() {
 		return exportDirectory;
 	}
 
-	/**
-	 * Set the export directory.
-	 *
-	 * @param exportDirectory
-	 *            Export directory
-	 * @return Fluent API
-	 */
 	public GraphStorageOptions setExportDirectory(String exportDirectory) {
 		this.exportDirectory = exportDirectory;
 		return this;
 	}
 
-	/**
-	 * Return the start server flag.
-	 *
-	 * @return
-	 */
 	public Boolean getStartServer() {
 		return startServer;
 	}
 
-	/**
-	 * Set the start server flag.
-	 *
-	 * @param startServer
-	 * @return Fluent API
-	 */
 	public GraphStorageOptions setStartServer(Boolean startServer) {
 		this.startServer = startServer;
 		return this;
@@ -198,13 +143,6 @@ public class GraphStorageOptions implements Option {
 		return txRetryDelay;
 	}
 
-	/**
-	 * Set the transaction retry delay.
-	 *
-	 * @param txRetryDelay
-	 *            The delay in milliseconds
-	 * @return Fluent API
-	 */
 	public GraphStorageOptions setTxRetryDelay(int txRetryDelay) {
 		this.txRetryDelay = txRetryDelay;
 
@@ -215,11 +153,6 @@ public class GraphStorageOptions implements Option {
 		return txRetryLimit;
 	}
 
-	/**
-	 * Set the retry limit for transactions. 
-	 * @param txRetryLimit
-	 * @return Fluent API
-	 */
 	public GraphStorageOptions setTxRetryLimit(int txRetryLimit) {
 		this.txRetryLimit = txRetryLimit;
 		return this;
