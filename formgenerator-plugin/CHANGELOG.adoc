@@ -18,6 +18,8 @@ CAUTION: This version of the plugin can only be compiled against Mesh versions 0
 
 icon:plus[] Updated Mesh dependency to 0.40.2
 
+icon:check[] Replaced some blocking code with asynchronous code.
+
 [[v4.1.1]]
 == 4.1.1 (2019-08-20)
 
