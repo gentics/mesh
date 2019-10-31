@@ -24,7 +24,9 @@ include::content/docs/variables.adoc-include[]
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
 [[v1.1.0]]
-== 1.1.0 (TBD)
+== 1.1.0 (29.10.2019)
+
+WARNING: The internal monitoring library has been changed from dropwizard to link:https://micrometer.io/[micrometer]. This allows better labeling of various metrics for link:https://prometheus.io/[Prometheus]. With this change, some metrics names from Vert.x have been changed. See link:https://vertx.io/docs/vertx-micrometer-metrics/java/#_vert_x_core_tools_metrics[here] for the new list of Vert.x metrics. By default, JVM metrics are also recorded. This can be configured in the link:{{< relref "administration-guide.asciidoc" >}}#_monitoring_options[monitoring options]. Also, the response structure in the `/search/status` endpoint has changed. Take a look at the link:https://getmesh.io/docs/api/#search_status_get[API docs] for a new example.
 
 icon:plus[] Search: A new setting has been added which can be used to enable Elasticsearch 7 support. The `search.complianceMode` setting in the `mesh.yml` file can be used to control the compliance mode for Elasticsearch support. The setting can also be controlled via the `MESH_ELASTICSEARCH_COMPLIANCE_MODE` environment variable. Currently there are two modes: `ES_7` for Elasticsearch 7.x and `ES_6` for Elasticsearch 6.x.
 By default `ES_6` will be used thus no changes are required for existing installations.

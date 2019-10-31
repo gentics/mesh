@@ -8,7 +8,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import com.codahale.metrics.Counter;
 import com.gentics.mesh.cache.EventAwareCache;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -17,6 +16,7 @@ import com.gentics.mesh.metric.MetricsService;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
+import io.micrometer.core.instrument.Counter;
 import io.reactivex.Observable;
 import io.reactivex.functions.Predicate;
 import io.vertx.core.Vertx;
@@ -112,7 +112,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 			log.trace("Invalidating full cache");
 		}
 		if (options.getMonitoringOptions().isEnabled()) {
-			invalidateAllCounter.inc();
+			invalidateAllCounter.increment();
 		}
 		cache.invalidateAll();
 	}
@@ -123,7 +123,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 			log.trace("Invalidating entry with key {" + key + "}");
 		}
 		if (options.getMonitoringOptions().isEnabled()) {
-			invalidateKeyCounter.inc();
+			invalidateKeyCounter.increment();
 		}
 		cache.invalidate(key);
 	}
@@ -144,9 +144,9 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		if (options.getMonitoringOptions().isEnabled()) {
 			V value = cache.getIfPresent(key);
 			if (value == null) {
-				missCounter.inc();
+				missCounter.increment();
 			} else {
-				hitCounter.inc();
+				hitCounter.increment();
 			}
 			return value;
 		} else {
@@ -166,9 +166,9 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 				return mappingFunction.apply(k);
 			});
 			if (wasCached.get()) {
-				hitCounter.inc();
+				hitCounter.increment();
 			} else {
-				missCounter.inc();
+				missCounter.increment();
 			}
 			return value;
 		} else {

@@ -7,15 +7,34 @@
       "required" : true,
       "description" : "Flag which indicates whether Elasticsearch is available and search queries can be executed."
     },
-    "indexSyncRunning" : {
-      "type" : "boolean",
-      "description" : "Flag which indicates whether a index synchronization is currently running."
-    },
     "metrics" : {
       "type" : "object",
       "description" : "Map which contains various metric values.",
       "additionalProperties" : {
-        "type" : "any"
+        "type" : "object",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:search:EntityMetrics",
+        "properties" : {
+          "insert" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:search:TypeMetrics",
+            "properties" : {
+              "synced" : {
+                "type" : "integer"
+              },
+              "pending" : {
+                "type" : "integer"
+              }
+            }
+          },
+          "update" : {
+            "type" : "object",
+            "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:search:TypeMetrics"
+          },
+          "delete" : {
+            "type" : "object",
+            "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:search:TypeMetrics"
+          }
+        }
       }
     }
   }

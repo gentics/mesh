@@ -19,9 +19,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.MappingProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
-import com.gentics.mesh.search.index.metric.SyncMetric;
-
+import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
+
 import io.reactivex.Flowable;
 
 @Singleton
@@ -36,8 +36,8 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	UserMappingProvider mappingProvider;
 
 	@Inject
-	public UserIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options) {
-		super(searchProvider, db, boot, helper, options);
+	public UserIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options, SyncMetersFactory syncMetricsFactory) {
+		super(searchProvider, db, boot, helper, options, syncMetricsFactory);
 	}
 
 	@Override
@@ -72,7 +72,7 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 
 	@Override
 	public Flowable<SearchRequest> syncIndices() {
-		return diffAndSync(User.composeIndexName(), null, new SyncMetric(getType()));
+		return diffAndSync(User.composeIndexName(), null);
 	}
 
 	@Override

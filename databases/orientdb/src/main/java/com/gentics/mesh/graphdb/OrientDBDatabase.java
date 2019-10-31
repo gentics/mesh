@@ -13,8 +13,6 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Timer;
 import com.gentics.madl.tx.Tx;
 import com.gentics.madl.tx.TxAction;
 import com.gentics.madl.tx.TxAction0;
@@ -59,6 +57,8 @@ import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 import com.tinkerpop.pipes.util.FastNoSuchElementException;
 
 import dagger.Lazy;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -299,7 +299,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public void reload(Element element) {
 		if (element instanceof OrientElement) {
 			if (metrics.isEnabled()) {
-				metrics.meter(SimpleMetric.GRAPH_ELEMENT_RELOAD).mark();
+				metrics.counter(SimpleMetric.GRAPH_ELEMENT_RELOAD).increment();
 			}
 			((OrientElement) element).reload();
 		}
@@ -324,7 +324,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		boolean handlerFinished = false;
 		int maxRetry = options.getStorageOptions().getTxRetryLimit();
 		for (int retry = 0; retry < maxRetry; retry++) {
-			final Timer.Context context = txTimer.time();
+			Timer.Sample sample = Timer.start();
 			try (Tx tx = tx()) {
 				handlerResult = txHandler.handle(tx);
 				handlerFinished = true;
@@ -366,12 +366,12 @@ public class OrientDBDatabase extends AbstractDatabase {
 				}
 				throw new RuntimeException("Transaction error", e);
 			} finally {
-				context.stop();
+				sample.stop(txTimer);
 			}
 			if (!handlerFinished && log.isDebugEnabled()) {
 				log.debug("Retrying .. {" + retry + "}");
 				if (metrics.isEnabled()) {
-					txRetryCounter.inc();
+					txRetryCounter.increment();
 				}
 			}
 			if (handlerFinished) {

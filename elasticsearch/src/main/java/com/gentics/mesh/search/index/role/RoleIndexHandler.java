@@ -19,9 +19,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.MappingProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
-import com.gentics.mesh.search.index.metric.SyncMetric;
-
+import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
+
 import io.reactivex.Flowable;
 
 /**
@@ -37,8 +37,8 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 	RoleMappingProvider mappingProvider;
 
 	@Inject
-	public RoleIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options) {
-		super(searchProvider, db, boot, helper, options);
+	public RoleIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options, SyncMetersFactory syncMetricsFactory) {
+		super(searchProvider, db, boot, helper, options, syncMetricsFactory);
 	}
 
 	@Override
@@ -80,7 +80,7 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 
 	@Override
 	public Flowable<SearchRequest> syncIndices() {
-		return diffAndSync(Role.composeIndexName(), null, new SyncMetric(getType()));
+		return diffAndSync(Role.composeIndexName(), null);
 	}
 
 	@Override

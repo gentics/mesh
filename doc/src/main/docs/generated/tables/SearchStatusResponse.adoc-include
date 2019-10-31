@@ -12,11 +12,6 @@
 | boolean
 | Flag which indicates whether Elasticsearch is available and search queries can be executed.
 
-| indexSyncRunning
-| false
-| boolean
-| Flag which indicates whether a index synchronization is currently running.
-
 | metrics
 | false
 | object

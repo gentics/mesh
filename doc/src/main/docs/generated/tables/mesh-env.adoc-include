@@ -59,6 +59,9 @@
 | *MESH_ELASTICSEARCH_WAIT_FOR_IDLE*
 | Override the search idle wait flag.
 
+| *MESH_DEBUGINFO_LOG_FOLDER*
+| Override the path to the debug info log folder
+
 | *MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION*
 | Override the configured hostname verification flag.
 
@@ -92,6 +95,9 @@
 | *MESH_BINARY_DOCUMENT_PARSER*
 | Override the document parser enabled flag.
 
+| *MESH_MONITORING_JVM_METRICS_ENABLED*
+| Override the configured JVM metrics enabled flag.
+
 | *MESH_GRAPH_EXPORT_DIRECTORY*
 | Override the graph database export directory.
 
@@ -110,6 +116,9 @@
 | *MESH_MONITORING_HTTP_PORT*
 | Override the configured monitoring server http port.
 
+| *MESH_ELASTICSEARCH_COMPLIANCE_MODE*
+| Override the search compliance mode.
+
 | *MESH_HTTP_SSL_KEY_PATH*
 | Override the configured SSL enable flag.
 
@@ -118,6 +127,9 @@
 
 | *MESH_MONITORING_ENABLED*
 | Override the configured monitoring enabled flag.
+
+| *MESH_DEBUGINFO_LOG_ENABLED*
+| Enables the debug info log
 
 | *MESH_ELASTICSEARCH_RETRY_LIMIT*
 | Override the retry limit.
@@ -136,6 +148,9 @@
 
 | *MESH_BINARY_DIR*
 | Override the configured binary data directory.
+
+| *MESH_DEBUGINFO_LOG_FILE_SIZE*
+| Override the log file size
 
 | *MESH_UPDATECHECK*
 | Override the configured updatecheck flag.
@@ -190,6 +205,9 @@
 
 | *MESH_AUTH_ANONYMOUS_ENABLED*
 | Override the configured anonymous enabled flag.
+
+| *MESH_DEBUGINFO_LOG_PATTERN*
+| Override the log pattern
 
 | *MESH_CLUSTER_INIT*
 | Enable or disable the initial cluster database setup. This is useful for testing.

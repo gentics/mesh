@@ -22,6 +22,8 @@ public class MonitoringConfig implements Option {
 
 	public static final String DEFAULT_MONITORING_HTTP_HOST = "127.0.0.1";
 
+	public static final boolean DEFAULT_JVM_METRICS_ENABLED = true;
+
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Enable or disable the monitoring system. Default is: " + DEFAULT_MONITORING_ENABLED)
 	@EnvironmentVariable(name = MESH_MONITORING_ENABLED_ENV, description = "Override the configured monitoring enabled flag.")
@@ -36,6 +38,11 @@ public class MonitoringConfig implements Option {
 	@JsonPropertyDescription("Configure the Gentics Mesh monitoring HTTP server host to bind to. Default is: " + DEFAULT_MONITORING_HTTP_HOST)
 	@EnvironmentVariable(name = MESH_MONITORING_HTTP_HOST_ENV, description = "Override the configured monitoring http server host which is used to bind to.")
 	private String host = DEFAULT_MONITORING_HTTP_HOST;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Enable or disable the measuring of JVM metrics. Default is: " + DEFAULT_JVM_METRICS_ENABLED)
+	@EnvironmentVariable(name = "MESH_MONITORING_JVM_METRICS_ENABLED", description = "Override the configured JVM metrics enabled flag.")
+	private boolean jvmMetricsEnabled = DEFAULT_JVM_METRICS_ENABLED;
 
 	public MonitoringConfig() {
 	}
@@ -62,6 +69,15 @@ public class MonitoringConfig implements Option {
 
 	public void setHost(String host) {
 		this.host = host;
+	}
+
+	public boolean isJvmMetricsEnabled() {
+		return jvmMetricsEnabled;
+	}
+
+	public MonitoringConfig setJvmMetricsEnabled(boolean jvmMetricsEnabled) {
+		this.jvmMetricsEnabled = jvmMetricsEnabled;
+		return this;
 	}
 
 	@Override
