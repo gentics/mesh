@@ -2,7 +2,6 @@ package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLLong;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLArgument.newArgument;
@@ -31,14 +30,11 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.event.MeshEventSender;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.NodeFilter;
-import com.gentics.mesh.parameter.GraphQLParameters;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -52,8 +48,6 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldDefinition.Builder;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLTypeReference;
-import io.reactivex.Completable;
-import io.reactivex.Single;
 
 public abstract class AbstractTypeProvider {
 
@@ -67,7 +61,7 @@ public abstract class AbstractTypeProvider {
 
 	/**
 	 * Return the elasticsearch query argument.
-	 * 
+	 *
 	 * @return
 	 */
 	public GraphQLArgument createQueryArg() {
@@ -76,7 +70,7 @@ public abstract class AbstractTypeProvider {
 
 	/**
 	 * Return a new set of paging arguments.
-	 * 
+	 *
 	 * @return
 	 */
 	public List<GraphQLArgument> createPagingArgs() {
@@ -110,7 +104,7 @@ public abstract class AbstractTypeProvider {
 
 	/**
 	 * Generate a language fallback list and utilize any existing language fallback list from the given content.
-	 * 
+	 *
 	 * @param env
 	 * @param content
 	 * @return
@@ -121,7 +115,7 @@ public abstract class AbstractTypeProvider {
 
 	/**
 	 * Generate a language fallback list and utilize the given container language. Prefer the language of the container for the fallback.
-	 * 
+	 *
 	 * @param env
 	 * @param source
 	 * @return
@@ -132,7 +126,7 @@ public abstract class AbstractTypeProvider {
 
 	/**
 	 * Return the lang argument values. The default language will automatically added to the list in order to provide a language fallback.
-	 * 
+	 *
 	 * @param env
 	 * @param preferedLanguages
 	 * @return
@@ -159,7 +153,7 @@ public abstract class AbstractTypeProvider {
 
 	/**
 	 * Create a new argument for the lang.
-	 * 
+	 *
 	 * @param withDefaultLang
 	 * @return
 	 */
@@ -168,9 +162,9 @@ public abstract class AbstractTypeProvider {
 		// #lang
 		String defaultLanguage = options.getDefaultLanguage();
 		graphql.schema.GraphQLArgument.Builder arg = newArgument()
-			.name("lang")
-			.type(new GraphQLList(GraphQLString))
-			.description("Language tags to filter by. When set only nodes which contain at least one of the provided language tags will be returned");
+				.name("lang")
+				.type(new GraphQLList(GraphQLString))
+				.description("Language tags to filter by. When set only nodes which contain at least one of the provided language tags will be returned");
 
 		if (withDefaultLang) {
 			arg.defaultValue(Arrays.asList(defaultLanguage));
@@ -184,9 +178,9 @@ public abstract class AbstractTypeProvider {
 		// #lang
 		String defaultLanguage = options.getDefaultLanguage();
 		graphql.schema.GraphQLArgument.Builder arg = newArgument()
-			.name("lang")
-			.type(GraphQLString)
-			.description("Language tag to filter by.");
+				.name("lang")
+				.type(GraphQLString)
+				.description("Language tag to filter by.");
 
 		if (withDefaultLang) {
 			arg.defaultValue(defaultLanguage);
@@ -197,7 +191,7 @@ public abstract class AbstractTypeProvider {
 
 	/**
 	 * Return a new argument for the uuid.
-	 * 
+	 *
 	 * @param description
 	 * @return
 	 */
@@ -218,7 +212,7 @@ public abstract class AbstractTypeProvider {
 
 	/**
 	 * Return a new webroot path argument.
-	 * 
+	 *
 	 * @return
 	 */
 	public GraphQLArgument createPathArg() {
@@ -227,7 +221,7 @@ public abstract class AbstractTypeProvider {
 
 	/**
 	 * Return a new name argument with the provided description.
-	 * 
+	 *
 	 * @param description
 	 * @return
 	 */
@@ -237,21 +231,21 @@ public abstract class AbstractTypeProvider {
 
 	public GraphQLEnumType createLinkEnumType() {
 		GraphQLEnumType linkTypeEnum = newEnum().name(LINK_TYPE_NAME).description("Mesh resolve link type").value(LinkType.FULL.name(), LinkType.FULL,
-			"Render full links").value(LinkType.MEDIUM.name(), LinkType.MEDIUM, "Render medium links").value(LinkType.SHORT.name(),
+				"Render full links").value(LinkType.MEDIUM.name(), LinkType.MEDIUM, "Render medium links").value(LinkType.SHORT.name(),
 				LinkType.SHORT, "Render short links")
-			.value(LinkType.OFF.name(), LinkType.OFF, "Don't render links").build();
+				.value(LinkType.OFF.name(), LinkType.OFF, "Don't render links").build();
 		return linkTypeEnum;
 	}
 
 	public GraphQLArgument createLinkTypeArg() {
 
 		return newArgument().name("linkType").type(new GraphQLTypeReference(LINK_TYPE_NAME)).defaultValue(LinkType.OFF).description(
-			"Specify the resolve type").build();
+				"Specify the resolve type").build();
 	}
 
 	/**
 	 * Returns the linkType argument value from the given environment.
-	 * 
+	 *
 	 * @param env
 	 * @return Found value or default value.
 	 */
@@ -261,7 +255,7 @@ public abstract class AbstractTypeProvider {
 
 	/**
 	 * Handle the UUID or name arguments and locate and return the vertex from the root vertex.
-	 * 
+	 *
 	 * @param env
 	 * @param root
 	 * @return
@@ -285,7 +279,7 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	protected MeshCoreVertex<?, ?> handleUuidNameArgsNoPerm(DataFetchingEnvironment env, Function<String, MeshCoreVertex<?, ?>> uuidFetcher,
-		Function<String, MeshCoreVertex<?, ?>> nameFetcher) {
+			Function<String, MeshCoreVertex<?, ?>> nameFetcher) {
 		String uuid = env.getArgument("uuid");
 		MeshCoreVertex<?, ?> element = null;
 		if (uuid != null) {
@@ -312,20 +306,20 @@ public abstract class AbstractTypeProvider {
 			SchemaContainer container = schema.getSchemaContainer();
 			return container.getUuid().equals(uuid) && gc.getUser().hasPermission(container, READ_PERM);
 		}).findFirst().get(), name -> schemas.filter(schema -> schema.getName().equals(name) && gc.getUser().hasPermission(schema
-			.getSchemaContainer(), READ_PERM)).findFirst().get());
+				.getSchemaContainer(), READ_PERM)).findFirst().get());
 	}
 
 	protected Page<SchemaContainerVersion> handleBranchSchemas(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
 		Branch branch = env.getSource();
 		Stream<? extends SchemaContainerVersion> schemas = StreamSupport.stream(branch.findActiveSchemaVersions().spliterator(), false).filter(
-			schema -> gc.getUser().hasPermission(schema.getSchemaContainer(), READ_PERM));
+				schema -> gc.getUser().hasPermission(schema.getSchemaContainer(), READ_PERM));
 		return new DynamicStreamPageImpl<>(schemas, getPagingInfo(env));
 	}
 
 	/**
 	 * Construct a field which can page the result set and also accept a elasticsearch query for processing.
-	 * 
+	 *
 	 * @param name
 	 *            Name of the field
 	 * @param description
@@ -340,35 +334,35 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	protected <T extends MeshCoreVertex<? extends RestModel, T>> GraphQLFieldDefinition newPagingSearchField(String name, String description,
-		Function<GraphQLContext, RootVertex<T>> rootProvider,
-		String pageTypeName, SearchHandler<?, ?> searchHandler, StartFilter<T, Map<String, ?>> filterProvider) {
+			Function<GraphQLContext, RootVertex<T>> rootProvider,
+			String pageTypeName, SearchHandler<?, ?> searchHandler, StartFilter<T, Map<String, ?>> filterProvider) {
 		Builder fieldDefBuilder = newFieldDefinition()
-			.name(name)
-			.description(description)
-			.argument(createPagingArgs())
-			.argument(createQueryArg()).type(new GraphQLTypeReference(pageTypeName))
-			.dataFetcher((env) -> {
-				GraphQLContext gc = env.getContext();
-				String query = env.getArgument("query");
-				Map<String, Object> filter = env.getArgument("filter");
-				if (query != null && filter != null) {
-					throw new RuntimeException("Only one way of filtering can be specified. Either by query or by filter");
-				}
-				if (query != null) {
-					try {
-						return searchHandler.query(gc, query, getPagingInfo(env), READ_PERM);
-					} catch (MeshConfigurationException | InterruptedException | ExecutionException | TimeoutException e) {
-						throw new RuntimeException(e);
+				.name(name)
+				.description(description)
+				.argument(createPagingArgs())
+				.argument(createQueryArg()).type(new GraphQLTypeReference(pageTypeName))
+				.dataFetcher((env) -> {
+					GraphQLContext gc = env.getContext();
+					String query = env.getArgument("query");
+					Map<String, Object> filter = env.getArgument("filter");
+					if (query != null && filter != null) {
+						throw new RuntimeException("Only one way of filtering can be specified. Either by query or by filter");
 					}
-				} else {
-					RootVertex<T> root = rootProvider.apply(gc);
-					if (filterProvider != null && filter != null) {
-						return root.findAll(gc, getPagingInfo(env), filterProvider.createPredicate(filter));
+					if (query != null) {
+						try {
+							return searchHandler.query(gc, query, getPagingInfo(env), READ_PERM);
+						} catch (MeshConfigurationException | InterruptedException | ExecutionException | TimeoutException e) {
+							throw new RuntimeException(e);
+						}
 					} else {
-						return root.findAll(gc, getPagingInfo(env));
+						RootVertex<T> root = rootProvider.apply(gc);
+						if (filterProvider != null && filter != null) {
+							return root.findAll(gc, getPagingInfo(env), filterProvider.createPredicate(filter));
+						} else {
+							return root.findAll(gc, getPagingInfo(env));
+						}
 					}
-				}
-			});
+				});
 
 		if (filterProvider != null) {
 			fieldDefBuilder.argument(filterProvider.createFilterArgument());
@@ -378,7 +372,7 @@ public abstract class AbstractTypeProvider {
 
 	/**
 	 * Construct a new paging field which fetches specific data.
-	 * 
+	 *
 	 * @param name
 	 *            Name of the field
 	 * @param description
@@ -390,18 +384,18 @@ public abstract class AbstractTypeProvider {
 	 * @return Field definition
 	 */
 	protected GraphQLFieldDefinition newPagingFieldWithFetcher(String name, String description, DataFetcher<?> dataFetcher,
-		String referenceTypeName) {
+			String referenceTypeName) {
 		return newPagingFieldWithFetcherBuilder(name, description, dataFetcher, referenceTypeName).build();
 	}
 
 	protected graphql.schema.GraphQLFieldDefinition.Builder newPagingFieldWithFetcherBuilder(String name, String description,
-		DataFetcher<?> dataFetcher, String pageTypeName) {
+			DataFetcher<?> dataFetcher, String pageTypeName) {
 		return newFieldDefinition().name(name).description(description).argument(createPagingArgs()).type(new GraphQLTypeReference(pageTypeName))
-			.dataFetcher(dataFetcher);
+				.dataFetcher(dataFetcher);
 	}
 
 	protected GraphQLFieldDefinition newPagingField(String name, String description, Function<GraphQLContext, RootVertex<?>> rootProvider,
-		String referenceTypeName) {
+			String referenceTypeName) {
 		return newPagingFieldWithFetcher(name, description, (env) -> {
 			GraphQLContext gc = env.getContext();
 			return rootProvider.apply(gc).findAll(gc, getPagingInfo(env));
@@ -410,7 +404,7 @@ public abstract class AbstractTypeProvider {
 
 	/**
 	 * Create a new elements field which automatically allows to resolve the element using it's name or uuid.
-	 * 
+	 *
 	 * @param name
 	 *            Name of the field
 	 * @param description
@@ -422,17 +416,17 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	protected GraphQLFieldDefinition newElementField(String name, String description, Function<GraphQLContext, RootVertex<?>> rootProvider,
-		String elementType) {
+			String elementType) {
 		return newFieldDefinition().name(name).description(description).argument(createUuidArg("Uuid of the " + name + ".")).argument(createNameArg(
-			"Name of the " + name + ".")).type(new GraphQLTypeReference(elementType)).dataFetcher(env -> {
-				GraphQLContext gc = env.getContext();
-				return handleUuidNameArgs(env, rootProvider.apply(gc));
-			}).build();
+				"Name of the " + name + ".")).type(new GraphQLTypeReference(elementType)).dataFetcher(env -> {
+			GraphQLContext gc = env.getContext();
+			return handleUuidNameArgs(env, rootProvider.apply(gc));
+		}).build();
 	}
 
 	/**
 	 * Load the paging parameters from the provided {@link DataFetchingEnvironment}.
-	 * 
+	 *
 	 * @param env
 	 * @return Loaded paging parameters
 	 */
@@ -464,10 +458,10 @@ public abstract class AbstractTypeProvider {
 		List<String> languageTags = getLanguageArgument(env);
 
 		Stream<NodeContent> contents = nodeRoot.findAllStream(gc, READ_PUBLISHED_PERM)
-			// Now lets try to load the containers for those found nodes - apply the language fallback
-			.map(node -> new NodeContent(node, node.findVersion(gc, languageTags), languageTags))
-			// Filter nodes without a container
-			.filter(content -> content.getContainer() != null);
+				// Now lets try to load the containers for those found nodes - apply the language fallback
+				.map(node -> new NodeContent(node, node.findVersion(gc, languageTags), languageTags))
+				// Filter nodes without a container
+				.filter(content -> content.getContainer() != null);
 
 		return applyNodeFilter(env, contents);
 	}
