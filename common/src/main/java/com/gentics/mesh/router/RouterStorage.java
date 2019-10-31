@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
 import com.gentics.madl.tx.Tx;
@@ -43,6 +44,7 @@ import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
  * Project routers are automatically bound to all projects. This way only a single node verticle is needed to handle all project requests.
  * 
  */
+@Singleton
 public class RouterStorage {
 
 	private static final Logger log = LoggerFactory.getLogger(RouterStorage.class);
