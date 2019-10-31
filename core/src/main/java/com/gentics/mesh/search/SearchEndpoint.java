@@ -1,8 +1,7 @@
 package com.gentics.mesh.search;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.parameter.impl.
-;
+import com.gentics.mesh.parameter.impl.SearchParametersImpl;
 import com.gentics.mesh.rest.InternalEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
