@@ -307,6 +307,8 @@ public class OrientDBClusterManager implements ClusterManager {
 		ClusterStatusResponse response = new ClusterStatusResponse();
 		if (hazelcastPlugin != null) {
 			ODocument distribCfg = hazelcastPlugin.getClusterConfiguration();
+			ODocument dbConfig = (ODocument) hazelcastPlugin.getConfigurationMap().get("database.storage");
+			ODocument serverConfig = dbConfig.field("servers");
 
 			Collection<ODocument> members = distribCfg.field("members");
 			if (members != null) {
@@ -338,6 +340,7 @@ public class OrientDBClusterManager implements ClusterManager {
 						}
 					}
 					instanceInfo.setAddress(address);
+					instanceInfo.setRole(serverConfig.field(name));
 
 					response.getInstances().add(instanceInfo);
 				}
