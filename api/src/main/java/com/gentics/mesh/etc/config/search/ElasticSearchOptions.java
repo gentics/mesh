@@ -422,8 +422,9 @@ public class ElasticSearchOptions implements Option {
 	}
 
 	@JsonIgnore
-	public void disable() {
+	public ElasticSearchOptions disable() {
 		setUrl(null);
 		setStartEmbedded(false);
+		return this;
 	}
 }

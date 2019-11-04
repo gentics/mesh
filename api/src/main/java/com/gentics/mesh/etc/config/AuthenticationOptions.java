@@ -72,11 +72,6 @@ public class AuthenticationOptions implements Option {
 	@JsonIgnore
 	private List<JsonObject> publicKeys = new ArrayList<>();
 
-	/**
-	 * Return the list of configured public keys.
-	 * 
-	 * @return
-	 */
 	public List<JsonObject> getPublicKeys() {
 		return publicKeys;
 	}
@@ -87,115 +82,51 @@ public class AuthenticationOptions implements Option {
 		return this;
 	}
 
-	/**
-	 * Set a single JWK public key.
-	 * 
-	 * @param jwk
-	 * @return
-	 */
 	public AuthenticationOptions setPublicKey(JsonObject jwk) {
 		this.publicKeys = Arrays.asList(jwk);
 		return this;
 	}
 
-	/**
-	 * Return the path to the public keys JSON file which contains JWK's.
-	 * 
-	 * @return
-	 */
 	public String getPublicKeysPath() {
 		return publicKeysPath;
 	}
 
-	/**
-	 * Set the JWK public keys file.
-	 * 
-	 * @param publicKeysPath
-	 * @return
-	 */
 	public AuthenticationOptions setPublicKeysPath(String publicKeysPath) {
 		this.publicKeysPath = publicKeysPath;
 		return this;
 	}
 
-	/**
-	 * Gets the time after which an authentication token should expire.
-	 * 
-	 * @return The expiration time in seconds
-	 */
 	public int getTokenExpirationTime() {
 		return tokenExpirationTime;
 	}
 
-	/**
-	 * Sets the time after which an authentication token should expire.
-	 * 
-	 * @param tokenExpirationTime
-	 *            The expiration time in seconds
-	 * @return Fluent API
-	 */
 	public AuthenticationOptions setTokenExpirationTime(int tokenExpirationTime) {
 		this.tokenExpirationTime = tokenExpirationTime;
 		return this;
 	}
 
-	/**
-	 * Gets the password which is used to open the java key store.
-	 * 
-	 * @return Keystore password
-	 */
 	public String getKeystorePassword() {
 		return keystorePassword;
 	}
 
-	/**
-	 * Sets the password which is used to open the java key store.
-	 * 
-	 * @param password
-	 * @return Fluent API
-	 * 
-	 */
 	public AuthenticationOptions setKeystorePassword(String password) {
 		this.keystorePassword = password;
 		return this;
 	}
 
-	/**
-	 * Gets the path to the keystore file.
-	 * 
-	 * @return Path to keystore
-	 */
 	public String getKeystorePath() {
 		return keystorePath;
 	}
 
-	/**
-	 * Sets the path to the keystore file.
-	 * 
-	 * @param keystorePath
-	 * @return Fluent API
-	 * 
-	 */
 	public AuthenticationOptions setKeystorePath(String keystorePath) {
 		this.keystorePath = keystorePath;
 		return this;
 	}
 
-	/**
-	 * Return the algorithm which is used to sign the JWT tokens. By default {@value #DEFAULT_ALGORITHM} is used.
-	 * 
-	 * @return Configured algorithm
-	 */
 	public String getAlgorithm() {
 		return algorithm;
 	}
 
-	/**
-	 * Set the algorithm which is used to sign the JWT tokens.
-	 * 
-	 * @param algorithm
-	 * @return Fluent API
-	 */
 	public AuthenticationOptions setAlgorithm(String algorithm) {
 		this.algorithm = algorithm;
 		return this;

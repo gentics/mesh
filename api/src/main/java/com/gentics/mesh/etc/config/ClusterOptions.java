@@ -60,24 +60,27 @@ public class ClusterOptions implements Option {
 		return networkHost;
 	}
 
-	public void setNetworkHost(String networkHost) {
+	public ClusterOptions setNetworkHost(String networkHost) {
 		this.networkHost = networkHost;
+		return this;
 	}
 
 	public String getClusterName() {
 		return clusterName;
 	}
 
-	public void setClusterName(String clusterName) {
+	public ClusterOptions setClusterName(String clusterName) {
 		this.clusterName = clusterName;
+		return this;
 	}
 
 	public Integer getVertxPort() {
 		return vertxPort;
 	}
 
-	public void setVertxPort(Integer vertxPort) {
+	public ClusterOptions setVertxPort(Integer vertxPort) {
 		this.vertxPort = vertxPort;
+		return this;
 	}
 
 	/**
