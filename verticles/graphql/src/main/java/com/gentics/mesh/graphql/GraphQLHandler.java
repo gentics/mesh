@@ -1,16 +1,5 @@
 package com.gentics.mesh.graphql;
 
-import static graphql.GraphQL.newGraphQL;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.error.AbstractUnavailableException;
@@ -19,12 +8,9 @@ import com.gentics.mesh.event.MeshEventSender;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.QueryTypeProvider;
-import com.gentics.mesh.parameter.GraphQLParameters;
-import graphql.ExceptionWhileDataFetching;
-import graphql.ExecutionInput;
-import graphql.ExecutionResult;
-import graphql.GraphQL;
-import graphql.GraphQLError;
+import com.gentics.mesh.parameter.SearchParameters;
+import com.gentics.mesh.util.SearchWaitUtil;
+import graphql.*;
 import graphql.language.SourceLocation;
 import io.reactivex.Completable;
 import io.vertx.core.json.JsonArray;
@@ -32,6 +18,16 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static graphql.GraphQL.newGraphQL;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 @Singleton
 public class GraphQLHandler {
@@ -48,10 +44,7 @@ public class GraphQLHandler {
 	public Vertx vertx;
 
 	@Inject
-	public MeshEventSender meshEventSender;
-
-	@Inject
-	public MeshOptions options;
+	public SearchWaitUtil waitUtil;
 
 	@Inject
 	public GraphQLHandler() {
@@ -66,7 +59,7 @@ public class GraphQLHandler {
 	 * 		GraphQL query
 	 */
 	public void handleQuery(GraphQLContext gc, String body) {
-		awaitSync(gc).andThen(vertx.rxExecuteBlocking(promise -> {
+		waitUtil.awaitSync(gc).andThen(vertx.rxExecuteBlocking(promise -> {
 			try (Tx tx = db.tx()) {
 				JsonObject queryJson = new JsonObject(body);
 				String query = queryJson.getString("query");
@@ -94,7 +87,7 @@ public class GraphQLHandler {
 					}
 				}
 				if (result.getData() != null) {
-					Map<String, Object> data = (Map<String, Object>) result.getData();
+					Map<String, Object> data = result.getData();
 					response.put("data", new JsonObject(data));
 				}
 				gc.send(response.encodePrettily(), OK);
@@ -164,28 +157,5 @@ public class GraphQLHandler {
 			}
 			jsonErrors.add(jsonError);
 		}
-	}
-
-	private boolean delayRequested(GraphQLContext gc) {
-		GraphQLParameters params = gc.getGraphQLParameters();
-		if (params.isWait().isPresent()) {
-			return params.isWait().get();
-		}
-
-		return options.getSearchOptions().isWaitForIdle();
-	}
-
-	protected Completable awaitSync(GraphQLContext gc) {
-		if (!delayRequested(gc)) {
-			return Completable.complete();
-		}
-
-		return meshEventSender.isSearchIdle().flatMapCompletable(isIdle -> {
-			if (isIdle) {
-				return Completable.complete();
-			}
-			meshEventSender.flushSearch();
-			return meshEventSender.waitForEvent(MeshEvent.SEARCH_IDLE);
-		}).andThen(meshEventSender.refreshSearch());
 	}
 }

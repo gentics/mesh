@@ -15,8 +15,8 @@ import com.gentics.mesh.search.index.AbstractSearchHandler;
 public class UserSearchHandler extends AbstractSearchHandler<User, UserResponse> {
 
 	@Inject
-	public UserSearchHandler(Database db, SearchProvider searchProvider, UserIndexHandler indexHandler, MeshEventSender meshEventSender, MeshOptions options) {
-		super(db, searchProvider, options, indexHandler, meshEventSender);
+	public UserSearchHandler(Database db, SearchProvider searchProvider, UserIndexHandler indexHandler, MeshOptions options) {
+		super(db, searchProvider, options, indexHandler);
 	}
 
 }

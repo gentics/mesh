@@ -2,7 +2,7 @@ package com.gentics.mesh.core.graphql;
 
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.parameter.impl.GraphQLParametersImpl;
+import com.gentics.mesh.parameter.impl.SearchParametersImpl;
 import com.gentics.mesh.search.AbstractMultiESTest;
 import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -38,7 +38,7 @@ public class GraphQLWaitSearchEndpointTest extends AbstractMultiESTest {
 	@Test
 	public void queryWithWait() {
 		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(QUERY_NAME),
-				new GraphQLParametersImpl().setWait(true)));
+				new SearchParametersImpl().setWait(true)));
 		JsonObject json = new JsonObject(response.toJson());
 		System.out.println(json.encodePrettily());
 		assertThat(json.getValue("errors")).isNull();
@@ -53,7 +53,7 @@ public class GraphQLWaitSearchEndpointTest extends AbstractMultiESTest {
 	@Test
 	public void queryWithoutWait() {
 		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(QUERY_NAME),
-				new GraphQLParametersImpl().setWait(false)));
+				new SearchParametersImpl().setWait(false)));
 		JsonObject json = new JsonObject(response.toJson());
 		System.out.println(json.encodePrettily());
 		assertThat(json.getValue("errors")).isNull();

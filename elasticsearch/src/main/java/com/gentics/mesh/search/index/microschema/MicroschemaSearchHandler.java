@@ -15,8 +15,8 @@ import com.gentics.mesh.search.index.AbstractSearchHandler;
 public class MicroschemaSearchHandler extends AbstractSearchHandler<MicroschemaContainer, MicroschemaResponse> {
 
 	@Inject
-	public MicroschemaSearchHandler(Database db, SearchProvider searchProvider, MicroschemaContainerIndexHandler indexHandler, MeshOptions options, MeshEventSender meshEventSender) {
-		super(db, searchProvider, options, indexHandler, meshEventSender);
+	public MicroschemaSearchHandler(Database db, SearchProvider searchProvider, MicroschemaContainerIndexHandler indexHandler, MeshOptions options) {
+		super(db, searchProvider, options, indexHandler);
 	}
 
 }
