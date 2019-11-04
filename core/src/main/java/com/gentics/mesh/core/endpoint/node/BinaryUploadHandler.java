@@ -185,11 +185,8 @@ public class BinaryUploadHandler extends AbstractHandler {
 				}
 			});
 
-			return storeUploadInTemp(ctx, ul, hash).andThen(Single.defer(() -> {
-				NodeResponse response = storeUploadInGraph(ac, modifierList, ctx, nodeUuid, languageTag, nodeVersion, fieldName);
-				return Single.just(response);
-			}));
-
+			return storeUploadInTemp(ctx, ul, hash)
+				.andThen(Single.defer(() -> storeUploadInGraph(ac, modifierList, ctx, nodeUuid, languageTag, nodeVersion, fieldName)));
 		}).onErrorResumeNext(e -> {
 			if (ctx.isInvokeStore()) {
 				String tmpId = ctx.getTemporaryId();
@@ -244,7 +241,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 			});
 	}
 
-	private NodeResponse storeUploadInGraph(InternalActionContext ac, List<Consumer<BinaryGraphField>> fieldModifier, UploadContext context,
+	private Single<NodeResponse> storeUploadInGraph(InternalActionContext ac, List<Consumer<BinaryGraphField>> fieldModifier, UploadContext context,
 		String nodeUuid,
 		String languageTag, String nodeVersion,
 		String fieldName) {
@@ -252,7 +249,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 		String hash = context.getHash();
 		String binaryUuid = context.getBinaryUuid();
 
-		return db.tx(() -> {
+		return db.singleTx(() -> {
 			BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
 			Project project = ac.getProject();
 			Branch branch = ac.getBranch();
