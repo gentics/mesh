@@ -111,7 +111,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 			throw error(FORBIDDEN, "error_missing_perm", getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		MicroschemaContainer container = create(microschema, requestUser, uuid, batch);
-		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
+		requestUser.inheritRolePermissions(this, container);
 		batch.add(container.onCreated());
 		return container;
 

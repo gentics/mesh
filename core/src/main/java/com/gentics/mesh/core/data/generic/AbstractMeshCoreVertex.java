@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -51,7 +52,9 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 	@Override
 	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
-		return in(perm.label(), RoleImpl.class);
+		Set<String> roleUuids = property(perm.propertyKey());
+		RoleRoot roleRoot = mesh().boot().roleRoot();
+		return new TraversalResult<>(roleUuids.stream().map(roleRoot::findByUuid));
 	}
 
 	@Override

@@ -19,19 +19,6 @@ public interface NodeRoot extends RootVertex<Node> {
 	public static final String TYPE = "nodes";
 
 	/**
-	 * Find all nodes that are visible for the user.
-	 * 
-	 * @param requestUser
-	 *            User that is used to check view permission
-	 * @param languageTags
-	 * @param pagingInfo
-	 *            Paging parameters
-	 * @return Page with found nodes or an empty page
-	 * @throws InvalidArgumentException
-	 */
-	Page<? extends Node> findAll(MeshAuthUser requestUser, List<String> languageTags, PagingParameters pagingInfo) throws InvalidArgumentException;
-
-	/**
 	 * Create a new node.
 	 * 
 	 * @param user

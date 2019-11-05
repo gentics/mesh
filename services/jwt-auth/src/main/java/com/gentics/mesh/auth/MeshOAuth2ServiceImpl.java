@@ -199,7 +199,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			if (user == null) {
 				com.gentics.mesh.core.data.User admin = root.findByUsername("admin");
 				com.gentics.mesh.core.data.User createdUser = root.create(username, admin);
-				admin.addCRUDPermissionOnRole(root, CREATE_PERM, createdUser);
+				admin.inheritRolePermissions(root, createdUser);
 
 				user = root.findMeshAuthUserByUsername(username);
 				String uuid = user.getUuid();
@@ -314,7 +314,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 							// Role not found - Lets create it
 							if (role == null) {
 								role = roleRoot.create(roleName, admin);
-								admin.addCRUDPermissionOnRole(roleRoot, CREATE_PERM, role);
+								admin.inheritRolePermissions(roleRoot, role);
 								batch.add(role.onCreated());
 							}
 						}
@@ -333,7 +333,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 							boolean created = false;
 							if (group == null) {
 								group = groupRoot.create(groupName, admin);
-								admin.addCRUDPermissionOnRole(groupRoot, CREATE_PERM, group);
+								admin.inheritRolePermissions(groupRoot, group);
 								batch.add(group.onCreated());
 								created = true;
 							}

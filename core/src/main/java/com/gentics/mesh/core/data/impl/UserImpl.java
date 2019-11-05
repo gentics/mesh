@@ -340,12 +340,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			Iterable<Edge> roleEdges = graph.getEdges(idxKey.toLowerCase(), this.id());
 			for (Edge roleEdge : roleEdges) {
 				Vertex role = roleEdge.getVertex(Direction.IN);
-				// Find all permission edges between the found role and target
-				// vertex with the specified label
-				String roleEdgeIdx = "e." + permission.label() + "_inout";
-				Iterable<Edge> edges = graph.getEdges(roleEdgeIdx.toLowerCase(),
-					db().index().createComposedIndexKey(elementId, role.getId()));
-				boolean foundPermEdge = edges.iterator().hasNext();
+
+				Set<String> allowedRoles = graph.getVertex(elementId).getProperty(permission.propertyKey());
+				boolean foundPermEdge = allowedRoles.contains(role.<String>getProperty("uuid"));
 				if (foundPermEdge) {
 					// We only store granting permissions in the store in order
 					// reduce the invalidation calls.
@@ -496,37 +493,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public User addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode) {
-		addPermissionsOnRole(sourceNode, permission, targetNode, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM, PUBLISH_PERM, READ_PUBLISHED_PERM);
-		return this;
-	}
-
-	@Override
-	public User addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
-		// 1. Determine all roles that grant given permission on the source
-		// node.
-		List<? extends Role> rolesThatGrantPermission = new TraversalResult(sourceNode.in(permission.label()).frameExplicit(RoleImpl.class)).list();
-
-		// 2. Add CRUD permission to identified roles and target node
-		for (Role role : rolesThatGrantPermission) {
-			role.grantPermissions(targetNode, toGrant);
-		}
-
-		inheritRolePermissions(sourceNode, targetNode);
-		return this;
-	}
-
-	@Override
 	public User inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode) {
 
 		for (GraphPermission perm : GraphPermission.values()) {
-			Iterable<? extends RoleImpl> rolesWithPerm = sourceNode.in(perm.label()).frameExplicit(RoleImpl.class);
-			for (Role role : rolesWithPerm) {
-				if (log.isDebugEnabled()) {
-					log.debug("Granting permission {" + perm.name() + "} to node {" + targetNode.getUuid() + "} on role {" + role.getName() + "}");
-				}
-				role.grantPermissions(targetNode, perm);
-			}
+			String key = perm.propertyKey();
+			targetNode.property(key, sourceNode.property(key));
 		}
 		return this;
 	}

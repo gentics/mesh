@@ -11,6 +11,7 @@ import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.gentics.madl.index.IndexHandler;
@@ -99,19 +100,15 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public boolean hasPermission(GraphPermission permission, MeshVertex vertex) {
-		FramedGraph graph = Tx.getActive().getGraph();
-		String idxKey = "e." + permission.label() + "_inout";
-		Iterable<Edge> edges = graph.getEdges(idxKey.toLowerCase(), mesh().database().createComposedIndexKey(vertex
-			.id(), id()));
-		return edges.iterator().hasNext();
+		return vertex.<Set<String>>property(permission.propertyKey()).contains(getUuid());
 	}
 
 	@Override
 	public void grantPermissions(MeshVertex vertex, GraphPermission... permissions) {
 		for (GraphPermission permission : permissions) {
-			if (!hasPermission(permission, vertex)) {
-				addFramedEdge(permission.label(), vertex);
-			}
+			Set<String> allowedRoles = vertex.property(permission.propertyKey());
+			allowedRoles.add(getUuid());
+			vertex.property(permission.propertyKey(), allowedRoles);
 		}
 	}
 
@@ -143,42 +140,20 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public void revokePermissions(MeshVertex vertex, GraphPermission... permissions) {
-		FramedGraph graph = Tx.get().getGraph();
-		Object indexKey = db().createComposedIndexKey(vertex.id(), getId());
+		boolean permissionRevoked = false;
+		for (GraphPermission permission : permissions) {
+			Set<String> allowedRoles = vertex.property(permission.propertyKey());
+			permissionRevoked = allowedRoles.remove(getUuid()) || permissionRevoked;
+			vertex.property(permission.propertyKey(), allowedRoles);
+		}
 
-		long edgesRemoved = Arrays.stream(permissions).map(perm -> "e." + perm.label() + "_inout")
-			.map(e -> e.toLowerCase())
-			.flatMap(key -> StreamSupport.stream(graph.getEdges(key, indexKey).spliterator(), false))
-			.peek(Edge::remove)
-			.count();
-
-		if (edgesRemoved > 0) {
+		if (permissionRevoked) {
 			mesh().permissionCache().clear();
 		}
 	}
 
-	/**
-	 * Return all vertices to which the role has the given permission.
-	 * 
-	 * @param perm
-	 * @return
-	 */
-	public TraversalResult<? extends MeshVertex> getElementsWithPermission(GraphPermission perm) {
-		return new TraversalResult<>(out(perm.label()).frame(MeshVertexImpl.class));
-	}
-
 	@Override
 	public void delete(BulkActionContext bac) {
-		// TODO don't allow deletion of admin role
-		// Update all document in the index which reference the uuid of the role
-		for (GraphPermission perm : Arrays.asList(READ_PERM, READ_PUBLISHED_PERM)) {
-			for (MeshVertex element : getElementsWithPermission(perm)) {
-				// We don't need to update the role itself since it will be purged from the index anyway
-				if (element.getUuid().equals(getUuid())) {
-					continue;
-				}
-			}
-		}
 		bac.add(onDeleted());
 		getVertex().remove();
 		bac.process();

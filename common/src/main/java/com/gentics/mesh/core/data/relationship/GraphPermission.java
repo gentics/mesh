@@ -18,17 +18,17 @@ import com.gentics.mesh.core.rest.common.Permission;
  */
 public enum GraphPermission {
 
-	CREATE_PERM("HAS_CREATE_PERMISSION", CREATE),
+	CREATE_PERM("create_permission", CREATE),
 
-	READ_PERM("HAS_READ_PERMISSION", READ),
+	READ_PERM("read_permission", READ),
 
-	UPDATE_PERM("HAS_UPDATE_PERMISSION", UPDATE),
+	UPDATE_PERM("update_permission", UPDATE),
 
-	DELETE_PERM("HAS_DELETE_PERMISSION", DELETE),
+	DELETE_PERM("delete_permission", DELETE),
 
-	READ_PUBLISHED_PERM("HAS_READ_PUBLISHED_PERMISSION", READ_PUBLISHED),
+	READ_PUBLISHED_PERM("read_published_permission", READ_PUBLISHED),
 
-	PUBLISH_PERM("HAS_PUBLISH_PERMISSION", PUBLISH);
+	PUBLISH_PERM("publish_permission", PUBLISH);
 
 	public static void init(TypeHandler type, IndexHandler index) {
 		for (String label : GraphPermission.labels()) {
@@ -37,18 +37,18 @@ public enum GraphPermission {
 		}
 	}
 
-	private String label;
+	private String propertyKey;
 	private Permission restPerm;
 
 	/**
 	 * Create a new graph permission.
 	 * 
-	 * @param label
+	 * @param propertyKey
 	 * @param restPerm
 	 *            Rest permission representation
 	 */
-	GraphPermission(String label, Permission restPerm) {
-		this.label = label;
+	GraphPermission(String propertyKey, Permission restPerm) {
+		this.propertyKey = propertyKey;
 		this.restPerm = restPerm;
 	}
 
@@ -62,7 +62,7 @@ public enum GraphPermission {
 		String[] names = new String[permissions.length];
 
 		for (int i = 0; i < permissions.length; i++) {
-			names[i] = permissions[i].label();
+			names[i] = permissions[i].propertyKey();
 		}
 
 		return names;
@@ -73,19 +73,19 @@ public enum GraphPermission {
 	 * 
 	 * @return
 	 */
-	public String label() {
-		return label;
+	public String propertyKey() {
+		return propertyKey;
 	}
 
 	/**
-	 * Convert a label name back into a graph permission object.
+	 * Convert a key name back into a graph permission object.
 	 * 
-	 * @param labelName
+	 * @param propertyKey
 	 * @return
 	 */
-	public static GraphPermission valueOfLabel(String labelName) {
+	public static GraphPermission valueOfLabel(String propertyKey) {
 		for (GraphPermission p : GraphPermission.values()) {
-			if (labelName.equals(p.label())) {
+			if (propertyKey.equals(p.propertyKey())) {
 				return p;
 			}
 		}
@@ -103,7 +103,7 @@ public enum GraphPermission {
 
 	@Override
 	public String toString() {
-		return label;
+		return propertyKey;
 	}
 
 	public static GraphPermission[] basicPermissions() {

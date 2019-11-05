@@ -1529,7 +1529,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	private VertexTraversal<?, ?, ?> getChildrenTraversal(MeshAuthUser requestUser, String branchUuid, List<String> languageTags,
 		ContainerType type) {
-		String permLabel = type == PUBLISHED ? READ_PUBLISHED_PERM.label() : READ_PERM.label();
+		GraphPermission permissionToCheck = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
 
 		VertexTraversal<?, ?, ?> traversal = null;
 		if (branchUuid != null) {
@@ -1537,7 +1537,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		} else {
 			traversal = in(HAS_PARENT_NODE);
 		}
-		traversal = traversal.mark().in(permLabel).out(HAS_ROLE).in(HAS_USER).retain(requestUser).back();
+		traversal = traversal.filter(v -> requestUser.hasPermissionForId(v.getId(), permissionToCheck));
 		if (branchUuid != null || type != null) {
 			EdgeTraversal<?, ?, ?> edgeTraversal = traversal.mark().outE(HAS_FIELD_CONTAINER);
 			if (branchUuid != null) {

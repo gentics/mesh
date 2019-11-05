@@ -159,7 +159,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 			InternalActionContext ac = mockActionContext();
 			Group group = root.getGroupRoot().create("newGroup", user);
 			assertFalse(user.hasPermission(group, GraphPermission.CREATE_PERM));
-			user.addCRUDPermissionOnRole(root.getGroupRoot(), GraphPermission.CREATE_PERM, group);
+			user.inheritRolePermissions(root.getGroupRoot(), group);
 			ac.data().clear();
 			assertTrue(user.hasPermission(group, GraphPermission.CREATE_PERM));
 		}

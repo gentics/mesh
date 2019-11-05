@@ -100,31 +100,6 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	}
 
 	@Test
-	public void testGrantDuplicates() {
-		try (Tx tx = tx()) {
-			Role role = meshRoot().getRoleRoot().create("testRole", user());
-			group().addRole(role);
-			NodeImpl extraNode = tx.getGraph().addFramedVertex(NodeImpl.class);
-			assertEquals(0, countEdges(role, READ_PERM.label(), Direction.OUT));
-			role.grantPermissions(extraNode, READ_PERM);
-			assertEquals(1, countEdges(role, READ_PERM.label(), Direction.OUT));
-			role.grantPermissions(extraNode, READ_PERM);
-			assertEquals("We already got a permission edge. No additional edge should have been created.", 1, countEdges(role, READ_PERM.label(),
-				Direction.OUT));
-		}
-	}
-
-	private long countEdges(MeshVertex vertex, String label, Direction direction) {
-		long count = 0;
-		Iterator<Edge> it = vertex.getElement().getEdges(direction, label).iterator();
-		while (it.hasNext()) {
-			it.next();
-			count++;
-		}
-		return count;
-	}
-
-	@Test
 	public void testIsPermitted() throws Exception {
 		try (Tx tx = tx()) {
 			User user = user();
@@ -222,7 +197,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			Node node = parentNode.create(user(), getSchemaContainer().getLatestVersion(), project());
 			assertEquals(0, requestUser.getPermissions(node).size());
-			requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
+			requestUser.inheritRolePermissions(parentNode, node);
 			ac.data().clear();
 			assertEquals(6, requestUser.getPermissions(node).size());
 
@@ -345,7 +320,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			InternalActionContext ac = mockActionContext();
 			Role role = root.getRoleRoot().create("SuperUser", user());
 			assertFalse(user().hasPermission(role, GraphPermission.CREATE_PERM));
-			user().addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, role);
+			user().inheritRolePermissions(root.getUserRoot(), role);
 			ac.data().clear();
 			assertTrue(user().hasPermission(role, GraphPermission.CREATE_PERM));
 		}

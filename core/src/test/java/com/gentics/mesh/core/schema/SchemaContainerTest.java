@@ -177,7 +177,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 			SchemaModel schema = FieldUtil.createMinimalValidSchema();
 			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 			assertFalse(role().hasPermission(GraphPermission.CREATE_PERM, newContainer));
-			getRequestUser().addCRUDPermissionOnRole(meshRoot().getSchemaContainerRoot(), GraphPermission.CREATE_PERM, newContainer);
+			getRequestUser().inheritRolePermissions(meshRoot().getSchemaContainerRoot(), newContainer);
 			assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new schema container.", role().hasPermission(
 				GraphPermission.CREATE_PERM, newContainer));
 		}

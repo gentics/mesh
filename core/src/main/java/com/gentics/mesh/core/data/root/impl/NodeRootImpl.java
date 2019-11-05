@@ -95,13 +95,6 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Page<? extends Node> findAll(MeshAuthUser user, List<String> languageTags, PagingParameters pagingInfo)
-			throws InvalidArgumentException {
-		VertexTraversal<?, ?, ?> traversal = user.getPermTraversal(READ_PERM);
-		return new DynamicTransformablePageImpl<Node>(user, traversal, pagingInfo, READ_PERM, NodeImpl.class);
-	}
-
-	@Override
 	public TransformablePage<? extends Node> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 
 		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
@@ -270,9 +263,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		Node node = parentNode.create(requestUser, schemaVersion, project, branch, uuid);
 
 		// Add initial permissions to the created node
-		requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
-		requestUser.addPermissionsOnRole(parentNode, READ_PUBLISHED_PERM, node, READ_PUBLISHED_PERM);
-		requestUser.addPermissionsOnRole(parentNode, PUBLISH_PERM, node, PUBLISH_PERM);
+		requestUser.inheritRolePermissions(parentNode, node);
 
 		// Create the language specific graph field container for the node
 		Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());

@@ -85,7 +85,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		}
 
 		// set initial permissions on the branch
-		creator.addCRUDPermissionOnRole(getProject(), UPDATE_PERM, branch);
+		creator.inheritRolePermissions(getProject(), branch);
 
 		if (assignSchemas) {
 			assignSchemas(creator, baseBranch, branch, false, batch);

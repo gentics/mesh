@@ -209,14 +209,12 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		String branchUuid = initialBranch.getUuid();
 
 		// Add project permissions
-		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project);
-		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getBaseNode());
-		creator.addPermissionsOnRole(this, CREATE_PERM, project.getBaseNode(), READ_PUBLISHED_PERM, PUBLISH_PERM);
-		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getTagFamilyRoot());
-		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getSchemaContainerRoot());
-		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getMicroschemaContainerRoot());
-		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getNodeRoot());
-		creator.addPermissionsOnRole(this, CREATE_PERM, initialBranch);
+		creator.inheritRolePermissions(this, project);
+		creator.inheritRolePermissions(this, project.getBaseNode());
+		creator.inheritRolePermissions(this, project.getTagFamilyRoot());
+		creator.inheritRolePermissions(this, project.getSchemaContainerRoot());
+		creator.inheritRolePermissions(this, project.getMicroschemaContainerRoot());
+		creator.inheritRolePermissions(this, project.getNodeRoot());
 
 		// Store the project and the branch in the index
 		batch.add(project.onCreated());
