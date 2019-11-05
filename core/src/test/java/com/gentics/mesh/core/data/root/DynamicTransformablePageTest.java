@@ -21,7 +21,7 @@ public class DynamicTransformablePageTest extends AbstractMeshTest {
 	@Test
 	public void testAddNode() {
 		try (Tx tx = tx()) {
-			NodeRoot root = boot().nodeRoot();
+			NodeRoot root = project().getNodeRoot();
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(2, 2L);
 			InternalActionContext ac = getMockedInternalActionContext("", user(), project());
 			TransformablePage<?> page = new DynamicTransformablePageImpl<>(ac.getUser(), root, pagingInfo);
@@ -33,7 +33,7 @@ public class DynamicTransformablePageTest extends AbstractMeshTest {
 	@Test
 	public void testEmptyPerPage() {
 		try (Tx tx = tx()) {
-			NodeRoot root = boot().nodeRoot();
+			NodeRoot root = project().getNodeRoot();
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(2, null);
 			InternalActionContext ac = getMockedInternalActionContext("", user(), project());
 			TransformablePage<?> page = new DynamicTransformablePageImpl<>(ac.getUser(), root, pagingInfo);

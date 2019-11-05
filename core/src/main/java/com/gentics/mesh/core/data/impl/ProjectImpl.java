@@ -194,9 +194,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			Language language = mesh().boot().languageRoot().findByLanguageTag(mesh().boot().mesh().getOptions().getDefaultLanguage());
 			baseNode.createGraphFieldContainer(language.getLanguageTag(), getLatestBranch(), creator);
 			setBaseNode(baseNode);
-			// Add the node to the aggregation nodes
+			// Add the node to the aggregation node
 			getNodeRoot().addNode(baseNode);
-			mesh().boot().nodeRoot().addNode(baseNode);
 		}
 		return baseNode;
 	}

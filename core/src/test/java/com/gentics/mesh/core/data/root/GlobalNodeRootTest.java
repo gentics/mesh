@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root;
 
 import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
@@ -12,7 +13,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.FramedGraph;
 
 @MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = false)
-public class NodeRootTest extends AbstractMeshTest {
+public class GlobalNodeRootTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddNode() {
@@ -25,6 +26,12 @@ public class NodeRootTest extends AbstractMeshTest {
 			project().getNodeRoot().addItem(node);
 			project().getNodeRoot().addItem(node);
 			assertEquals(start + 1, project().getNodeRoot().computeCount());
+
+			// Test the global root
+			GlobalNodeRoot gr = boot().globalNodeRoot();
+			assertEquals(start + 1, gr.computeCount());
+			assertNotNull(gr.findByUuid(node.getUuid()));
+			assertEquals(start + 1, gr.findAll().count());
 		}
 	}
 

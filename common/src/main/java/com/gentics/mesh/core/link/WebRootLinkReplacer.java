@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.VersioningParameters;
@@ -41,11 +42,14 @@ public class WebRootLinkReplacer {
 
 	private final BootstrapInitializer boot;
 
-	private final MeshOptions options; 
+	private final Database db;
+
+	private final MeshOptions options;
 
 	@Inject
-	public WebRootLinkReplacer(BootstrapInitializer boot, MeshOptions options) {
+	public WebRootLinkReplacer(BootstrapInitializer boot, Database db, MeshOptions options) {
 		this.boot = boot;
+		this.db = db;
 		this.options = options;
 	}
 
@@ -155,7 +159,8 @@ public class WebRootLinkReplacer {
 		String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
-		Node node = boot.meshRoot().getNodeRoot().findByUuid(uuid);
+		boot.meshRoot();
+		Node node = boot.meshRoot().findNodeByUuid(uuid);
 
 		// check for null
 		if (node == null) {
@@ -181,8 +186,8 @@ public class WebRootLinkReplacer {
 	 * 
 	 * @param ac
 	 * @param branchNameOrUuid
-	 *            Branch UUID or name which will be used to render the path to the linked node.
-	 *            If this is invalid, the default branch of the target node will be used.
+	 *            Branch UUID or name which will be used to render the path to the linked node. If this is invalid, the default branch of the target node will
+	 *            be used.
 	 * @param edgeType
 	 *            edge type
 	 * @param node
@@ -193,7 +198,8 @@ public class WebRootLinkReplacer {
 	 *            target language
 	 * @return observable of the rendered link
 	 */
-	public String resolve(InternalActionContext ac, String branchNameOrUuid, ContainerType edgeType, Node node, LinkType type, String... languageTags) {
+	public String resolve(InternalActionContext ac, String branchNameOrUuid, ContainerType edgeType, Node node, LinkType type,
+		String... languageTags) {
 		String defaultLanguage = options.getDefaultLanguage();
 		if (languageTags == null || languageTags.length == 0) {
 			languageTags = new String[] { defaultLanguage };
@@ -232,7 +238,8 @@ public class WebRootLinkReplacer {
 		case MEDIUM:
 			return "/" + node.getProject().getName() + path;
 		case FULL:
-			return VersionHandler.baseRoute(ac.getApiVersion()) + "/" + node.getProject().getName() + "/webroot" + path + branchQueryParameter(branch);
+			return VersionHandler.baseRoute(ac.getApiVersion()) + "/" + node.getProject().getName() + "/webroot" + path
+				+ branchQueryParameter(branch);
 		default:
 			throw error(BAD_REQUEST, "Cannot render link with type " + type);
 		}
@@ -242,7 +249,8 @@ public class WebRootLinkReplacer {
 	 * Return the URL prefix for the given node. The latest branch of the node's project will be used to fetch the needed information.
 	 *
 	 * @param node
-	 * @param branch branch
+	 * @param branch
+	 *            branch
 	 * @return scheme and authority or empty string if the branch of the node does not supply the needed information
 	 */
 	private String generateSchemeAuthorityForNode(Node node, Branch branch) {
@@ -263,11 +271,11 @@ public class WebRootLinkReplacer {
 	}
 
 	/**
-	 * Returns the query parameter for the given branch. This is the query parameter that is necessary to get the
-	 * node in the correct branch.
-	 * If the given branch is the latest branch, no query parameter is necessary and thus an empty string is returned.
+	 * Returns the query parameter for the given branch. This is the query parameter that is necessary to get the node in the correct branch. If the given
+	 * branch is the latest branch, no query parameter is necessary and thus an empty string is returned.
 	 *
-	 * @param branch The branch to generate the query parameter for.
+	 * @param branch
+	 *            The branch to generate the query parameter for.
 	 * @return Example: "?branch=test1"
 	 */
 	private String branchQueryParameter(Branch branch) {

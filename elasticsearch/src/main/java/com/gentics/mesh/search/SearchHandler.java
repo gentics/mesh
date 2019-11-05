@@ -2,13 +2,12 @@ package com.gentics.mesh.search;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.error.InvalidArgumentException;
@@ -46,8 +45,8 @@ public interface SearchHandler<T extends MeshCoreVertex<RM, T>, RM extends RestM
 	 * Invoke the query and response to the requester via the action context.
 	 *
 	 * @param ac
-	 * @param rootVertex
-	 *            Root Vertex of the elements that should be searched
+	 * @param elementLoader
+	 *            Loader function which can return graph elements for uuids
 	 * @param classOfRL
 	 *            Class of the rest model list that should be used when creating the response
 	 * @param indices
@@ -60,7 +59,8 @@ public interface SearchHandler<T extends MeshCoreVertex<RM, T>, RM extends RestM
 	 * @throws MeshJsonException
 	 * @throws MeshConfigurationException
 	 */
-	<RL extends ListResponse<RM>> void query(InternalActionContext ac, Supplier<RootVertex<T>> rootVertex, Class<RL> classOfRL, boolean filterByLanguage)
+	<RL extends ListResponse<RM>> void query(InternalActionContext ac, Function<String, T> elementLoader, Class<RL> classOfRL,
+		boolean filterByLanguage)
 		throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException, MeshConfigurationException;
 
 	/**

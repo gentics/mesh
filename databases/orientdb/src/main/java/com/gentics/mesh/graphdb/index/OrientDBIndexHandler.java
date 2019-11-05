@@ -6,6 +6,7 @@ import static com.gentics.mesh.graphdb.FieldTypeMapper.toType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -18,6 +19,7 @@ import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.index.EdgeIndexDefinition;
 import com.gentics.mesh.madl.index.ElementIndexDefinition;
 import com.gentics.mesh.madl.index.VertexIndexDefinition;
+import com.gentics.mesh.util.StreamUtil;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.index.OCompositeKey;
 import com.orientechnologies.orient.core.index.OIndex;
@@ -33,6 +35,7 @@ import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientElementType;
@@ -394,5 +397,4 @@ public class OrientDBIndexHandler implements IndexHandler {
 		}
 		return null;
 	}
-
 }

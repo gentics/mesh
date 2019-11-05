@@ -265,7 +265,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 
 		// Assert that the node was only deleted in the new branch
 		try (Tx tx = tx()) {
-			assertElement(meshRoot().getNodeRoot(), uuid, true);
+			assertElement(project().getNodeRoot(), uuid, true);
 			assertThat(node.getGraphFieldContainers(initialBranch(), DRAFT)).as("draft containers for initial branch").isNotEmpty();
 			assertThat(node.getGraphFieldContainers(newBranch, DRAFT)).as("draft containers for new branch").isEmpty();
 		}
@@ -303,7 +303,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 
 		// Assert deletion - nodes should only be deleted for new branch
 		try (Tx tx = tx()) {
-			assertElement(meshRoot().getNodeRoot(), uuid, true);
+			assertElement(project().getNodeRoot(), uuid, true);
 			assertThat(node.getGraphFieldContainers(initialBranch(), ContainerType.DRAFT)).as("draft containers for initial branch").isNotEmpty();
 			assertThat(node.getGraphFieldContainers(initialBranch(), ContainerType.PUBLISHED)).as("published containers for initial branch")
 				.isNotEmpty();
@@ -320,7 +320,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 
 			call(() -> client().deleteNode(PROJECT_NAME, uuid), METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 
-			Node foundNode = meshRoot().getNodeRoot().findByUuid(uuid);
+			Node foundNode = project().getNodeRoot().findByUuid(uuid);
 			assertNotNull("The node should still exist.", foundNode);
 		}
 	}

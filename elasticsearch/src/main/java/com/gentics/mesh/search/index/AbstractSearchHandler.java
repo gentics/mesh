@@ -15,9 +15,10 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
-import com.gentics.mesh.util.SearchWaitUtil;
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.elasticsearch.client.ElasticsearchClient;
@@ -30,9 +31,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.IndexHandler;
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -41,7 +40,6 @@ import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
-import com.gentics.mesh.event.MeshEventSender;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -49,18 +47,16 @@ import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.SearchHandler;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
+import com.gentics.mesh.util.SearchWaitUtil;
 import com.gentics.mesh.util.Tuple;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import javax.inject.Inject;
 
 /**
  * Abstract implementation for a mesh search handler.
@@ -197,7 +193,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	}
 
 	@Override
-	public <RL extends ListResponse<RM>> void query(InternalActionContext ac, Supplier<RootVertex<T>> rootVertex, Class<RL> classOfRL,
+	public <RL extends ListResponse<RM>> void query(InternalActionContext ac, Function<String, T> elementLoader, Class<RL> classOfRL,
 		boolean filterLanguage)
 		throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException, MeshConfigurationException {
 		if (searchProvider instanceof DevNullSearchProvider || searchProvider instanceof TrackingSearchProvider) {
@@ -267,10 +263,9 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 					String uuid = pos > 0 ? id.substring(0, pos) : id;
 
 					// Locate the node
-					T element = rootVertex.get().findByUuid(uuid);
+					T element = elementLoader.apply(uuid);
 					if (element == null) {
-						log.warn("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.get().getRootLabel()
-							+ "}. The element will be omitted.");
+						log.warn("Object could not be found for uuid {" + uuid + "}. The element will be omitted.");
 						// Reduce the total count
 						long total = extractTotalCount(hitsInfo);
 						switch (complianceMode) {

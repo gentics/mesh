@@ -4,7 +4,7 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.POST;
 
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 import javax.inject.Inject;
 
@@ -12,12 +12,13 @@ import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
@@ -29,22 +30,30 @@ import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
  */
 public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implements SearchEndpoint {
 
-	@Inject
-	public NodeSearchHandler nodeSearchHandler;
+	public final Database db;
 
-	@Inject
-	public TagSearchHandler tagSearchHandler;
+	public final NodeSearchHandler nodeSearchHandler;
 
-	@Inject
-	public TagFamilySearchHandler tagFamilySearchHandler;
+	public final TagSearchHandler tagSearchHandler;
+
+	public final TagFamilySearchHandler tagFamilySearchHandler;
 
 	public ProjectSearchEndpointImpl() {
 		super("search", null, null);
+		this.db = null;
+		this.nodeSearchHandler = null;
+		this.tagSearchHandler = null;
+		this.tagFamilySearchHandler = null;
 	}
 
 	@Inject
-	public ProjectSearchEndpointImpl(MeshAuthChain chain, BootstrapInitializer boot) {
+	public ProjectSearchEndpointImpl(MeshAuthChain chain, BootstrapInitializer boot, Database db, TagFamilySearchHandler tagFamilySearchHandler,
+		TagSearchHandler tagSearchHandler, NodeSearchHandler nodeSearchHandler) {
 		super("search", chain, boot);
+		this.db = db;
+		this.nodeSearchHandler = nodeSearchHandler;
+		this.tagSearchHandler = tagSearchHandler;
+		this.tagFamilySearchHandler = tagFamilySearchHandler;
 	}
 
 	@Override
@@ -63,13 +72,17 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	 * Add various search endpoints using the aggregation nodes.
 	 */
 	private void addSearchEndpoints() {
-		registerSearchHandler("nodes", () -> boot.meshRoot().getNodeRoot(), NodeListResponse.class, nodeSearchHandler, nodeExamples
-			.getNodeListResponse(), true);
-		registerSearchHandler("tags", () -> boot.meshRoot().getTagRoot(), TagListResponse.class, tagSearchHandler, tagExamples
-			.createTagListResponse(), false);
-		registerSearchHandler("tagFamilies", () -> boot.meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, tagFamilySearchHandler,
-			tagFamilyExamples.getTagFamilyListResponse(), false);
+		registerSearchHandler("nodes", (uuid) -> {
+			return db.index().findByUuid(NodeImpl.class, uuid);
+		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true);
 
+		registerSearchHandler("tags", (uuid) -> {
+			return boot.meshRoot().getTagRoot().findByUuid(uuid);
+		}, TagListResponse.class, tagSearchHandler, tagExamples.createTagListResponse(), false);
+
+		registerSearchHandler("tagFamilies", (uuid) -> {
+			return boot.meshRoot().getTagFamilyRoot().findByUuid(uuid);
+		}, TagFamilyListResponse.class, tagFamilySearchHandler, tagFamilyExamples.getTagFamilyListResponse(), false);
 	}
 
 	/**
@@ -77,8 +90,8 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	 * 
 	 * @param typeName
 	 *            Name of the search endpoint
-	 * @param root
-	 *            Aggregation node that should be used to load the objects that were found within the search index
+	 * @param elementLoader
+	 *            Loader function which will load the element with the given uuid from the graph.
 	 * @param classOfRL
 	 *            Class of matching list response
 	 * @param indexHandlerKey
@@ -89,7 +102,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	 *            Whether to append the language filter
 	 */
 	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerSearchHandler(String typeName,
-		Supplier<RootVertex<T>> root, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleResponse, boolean filterByLanguage) {
+		Function<String, T> elementLoader, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleResponse, boolean filterByLanguage) {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);
@@ -101,7 +114,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 		endpoint.handler(rc -> {
 			try {
 				InternalActionContext ac = wrap(rc);
-				searchHandler.query(ac, root, classOfRL, filterByLanguage);
+				searchHandler.query(ac, elementLoader, classOfRL, filterByLanguage);
 			} catch (Exception e) {
 				rc.fail(e);
 			}

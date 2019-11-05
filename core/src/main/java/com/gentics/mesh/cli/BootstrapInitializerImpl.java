@@ -54,17 +54,18 @@ import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.job.JobRoot;
+import com.gentics.mesh.core.data.root.GlobalNodeRoot;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
-import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.root.impl.GlobalNodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.IndexHandler;
@@ -166,6 +167,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Inject
 	public MetricsOptions metricsOptions;
+
+	@Inject
+	public GlobalNodeRootImpl globalNodeRoot;
 
 	private MeshRoot meshRoot;
 
@@ -347,8 +351,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	/**
-	 * Adds a file appender to the logging system.
-	 * The log file is later used by the {@link com.gentics.mesh.core.endpoint.admin.debuginfo.providers.LogProvider}
+	 * Adds a file appender to the logging system. The log file is later used by the
+	 * {@link com.gentics.mesh.core.endpoint.admin.debuginfo.providers.LogProvider}
+	 * 
 	 * @param options
 	 */
 	private void addDebugInfoLogAppender(MeshOptions options) {
@@ -774,11 +779,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public NodeRoot nodeRoot() {
-		return meshRoot().getNodeRoot();
-	}
-
-	@Override
 	public BinaryRoot binaryRoot() {
 		return meshRoot().getBinaryRoot();
 	}
@@ -791,6 +791,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public UserRoot userRoot() {
 		return meshRoot().getUserRoot();
+	}
+
+	@Override
+	public GlobalNodeRoot globalNodeRoot() {
+		return globalNodeRoot;
 	}
 
 	@Override
@@ -834,7 +839,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			meshRoot = meshRoot();
 
 			// Create the initial root vertices
-			meshRoot.getNodeRoot();
 			meshRoot.getTagRoot();
 			meshRoot.getTagFamilyRoot();
 			meshRoot.getProjectRoot();

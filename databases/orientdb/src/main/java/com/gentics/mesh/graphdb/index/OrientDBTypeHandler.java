@@ -3,21 +3,29 @@ package com.gentics.mesh.graphdb.index;
 import static com.gentics.mesh.graphdb.FieldTypeMapper.toSubType;
 import static com.gentics.mesh.graphdb.FieldTypeMapper.toType;
 
+import java.util.stream.Stream;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.madl.field.FieldMap;
 import com.gentics.mesh.madl.field.FieldType;
+import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.type.EdgeTypeDefinition;
 import com.gentics.mesh.madl.type.ElementTypeDefinition;
 import com.gentics.mesh.madl.type.VertexTypeDefinition;
+import com.gentics.mesh.util.StreamUtil;
 import com.orientechnologies.orient.core.id.ORID;
 import com.orientechnologies.orient.core.metadata.schema.OType;
+import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
@@ -181,4 +189,23 @@ public class OrientDBTypeHandler implements TypeHandler {
 
 	}
 
+	@Override
+	public <T extends VertexFrame> long count(Class<? extends T> persistanceClass) {
+		FramedGraph graph = Tx.get().getGraph();
+		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
+		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
+		return orientBaseGraph.countVertices(persistanceClass.getSimpleName());
+	}
+
+	@Override
+	public <T extends VertexFrame> Stream<T> findAll(Class<? extends T> classOfT) {
+		FramedGraph graph = Tx.get().getGraph();
+		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
+		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
+
+		Iterable<Vertex> it = orientBaseGraph.getVerticesOfClass(classOfT.getSimpleName());
+		return StreamUtil.toStream(it).map(v -> {
+			return (T) graph.getFramedVertexExplicit(classOfT, v.getId());
+		});
+	}
 }

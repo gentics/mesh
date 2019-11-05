@@ -330,7 +330,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	public RootVertex<Node> getRootVertex() {
-		return boot.meshRoot().getNodeRoot();
+		return boot.globalNodeRoot();
 	}
 
 	@Override

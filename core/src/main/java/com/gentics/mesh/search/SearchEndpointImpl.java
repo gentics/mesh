@@ -1,10 +1,18 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
+
+import java.util.function.Function;
+
+import javax.inject.Inject;
+
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
@@ -30,15 +38,8 @@ import com.gentics.mesh.search.index.schema.SchemaSearchHandler;
 import com.gentics.mesh.search.index.tag.TagSearchHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
 import com.gentics.mesh.search.index.user.UserSearchHandler;
+
 import dagger.Lazy;
-
-import javax.inject.Inject;
-import java.util.function.Supplier;
-
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.core.http.HttpMethod.POST;
 
 public class SearchEndpointImpl extends AbstractInternalEndpoint implements SearchEndpoint {
 
@@ -100,25 +101,25 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 	 * Add various search endpoints using the aggregation nodes.
 	 */
 	private void addSearchEndpoints() {
-		registerHandler("users", () -> boot.get().meshRoot().getUserRoot(), UserListResponse.class, userSearchHandler, userExamples
+		registerHandler("users", (uuid) -> boot.get().meshRoot().getUserRoot().findByUuid(uuid), UserListResponse.class, userSearchHandler, userExamples
 			.getUserListResponse(), false);
-		registerHandler("groups", () -> boot.get().meshRoot().getGroupRoot(), GroupListResponse.class, groupSearchHandler, groupExamples
+		registerHandler("groups", (uuid) -> boot.get().meshRoot().getGroupRoot().findByUuid(uuid), GroupListResponse.class, groupSearchHandler, groupExamples
 			.getGroupListResponse(), false);
-		registerHandler("roles", () -> boot.get().meshRoot().getRoleRoot(), RoleListResponse.class, roleSearchHandler, roleExamples
+		registerHandler("roles", (uuid) -> boot.get().meshRoot().getRoleRoot().findByUuid(uuid), RoleListResponse.class, roleSearchHandler, roleExamples
 			.getRoleListResponse(), false);
 
-		registerHandler("nodes", () -> boot.get().meshRoot().getNodeRoot(), NodeListResponse.class, nodeSearchHandler, nodeExamples
+		registerHandler("nodes", (uuid) -> boot.get().globalNodeRoot().findByUuid(uuid), NodeListResponse.class, nodeSearchHandler, nodeExamples
 			.getNodeListResponse(), true);
-		registerHandler("tags", () -> boot.get().meshRoot().getTagRoot(), TagListResponse.class, tagSearchHandler, tagExamples
+		registerHandler("tags", (uuid) -> boot.get().meshRoot().getTagRoot().findByUuid(uuid), TagListResponse.class, tagSearchHandler, tagExamples
 			.createTagListResponse(), false);
-		registerHandler("tagFamilies", () -> boot.get().meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, tagFamilySearchHandler,
+		registerHandler("tagFamilies", (uuid) -> boot.get().meshRoot().getTagFamilyRoot().findByUuid(uuid), TagFamilyListResponse.class, tagFamilySearchHandler,
 			tagFamilyExamples.getTagFamilyListResponse(), false);
 
-		registerHandler("projects", () -> boot.get().meshRoot().getProjectRoot(), ProjectListResponse.class, projectSearchHandler, projectExamples
+		registerHandler("projects", (uuid) -> boot.get().meshRoot().getProjectRoot().findByUuid(uuid), ProjectListResponse.class, projectSearchHandler, projectExamples
 			.getProjectListResponse(), false);
-		registerHandler("schemas", () -> boot.get().meshRoot().getSchemaContainerRoot(), SchemaListResponse.class, schemaContainerSearchHandler,
+		registerHandler("schemas", (uuid) -> boot.get().meshRoot().getSchemaContainerRoot().findByUuid(uuid), SchemaListResponse.class, schemaContainerSearchHandler,
 			schemaExamples.getSchemaListResponse(), false);
-		registerHandler("microschemas", () -> boot.get().meshRoot().getMicroschemaContainerRoot(), MicroschemaListResponse.class,
+		registerHandler("microschemas", (uuid) -> boot.get().meshRoot().getMicroschemaContainerRoot().findByUuid(uuid), MicroschemaListResponse.class,
 			microschemaContainerSearchHandler, microschemaExamples.getMicroschemaListResponse(), false);
 		addAdminHandlers();
 	}
@@ -175,13 +176,13 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 	 * 
 	 * @param typeName
 	 *            Name of the search endpoint
-	 * @param root
-	 *            Aggregation node that should be used to load the objects that were found within the search index
+	 * @param elementLoader
+	 *            Loader that should used to load the objects that were found within the search index
 	 * @param classOfRL
 	 *            Class of matching list response
 	 */
 	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName,
-		Supplier<RootVertex<T>> root, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleListResponse, boolean filterByLanguage) {
+		Function<String, T> elementLoader, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleListResponse, boolean filterByLanguage) {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);
@@ -195,7 +196,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 		endpoint.handler(rc -> {
 			try {
 				InternalActionContext ac = wrap(rc);
-				searchHandler.query(ac, root, classOfRL, filterByLanguage);
+				searchHandler.query(ac, elementLoader, classOfRL, filterByLanguage);
 			} catch (Exception e) {
 				rc.fail(e);
 			}
