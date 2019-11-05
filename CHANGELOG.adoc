@@ -27,6 +27,8 @@ include::content/docs/variables.adoc-include[]
 
 icon:plus[] GraphQL: The GraphQL Endpoint now supports the `wait` query-parameter like the Search Endpoint does. link:https://github.com/gentics/mesh/issues/805[#805]
 
+icon:plus[] Clustering: The role of an instance has been added to the link:https://getmesh.io/docs/api/#admin_cluster_status_get[cluster status response].
+
 icon:check[] Core: Some optimizations to uploading binaries have been made.
 
 [[v1.1.0]]

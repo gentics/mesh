@@ -3,7 +3,10 @@ package com.gentics.mesh.example;
 import static com.gentics.mesh.example.AbstractExamples.DATE_OLD;
 import static com.gentics.mesh.example.ExampleUuids.UUID_1;
 
+import java.util.stream.Stream;
+
 import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
@@ -22,7 +25,22 @@ public class AdminExamples {
 	}
 
 	public ClusterStatusResponse createClusterStatusResponse() {
-		return new ClusterStatusResponse();
+		ClusterStatusResponse result = new ClusterStatusResponse();
+		Stream.of(
+			new ClusterInstanceInfo()
+				.setAddress("127.0.0.1:2424")
+				.setName("node1")
+				.setStatus("ONLINE")
+				.setStartDate("2019-11-04T13:54:59.131Z")
+				.setRole("MASTER"),
+			new ClusterInstanceInfo()
+				.setAddress("127.0.0.1:2425")
+				.setName("node2")
+				.setStatus("ONLINE")
+				.setStartDate("2019-11-04T13:54:59.131Z")
+				.setRole("REPLICA")
+		).forEach(result.getInstances()::add);
+		return result;
 	}
 
 	public PluginResponse createHelloWorldPluginResponse() {
