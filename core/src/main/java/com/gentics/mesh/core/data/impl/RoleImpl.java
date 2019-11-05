@@ -9,6 +9,7 @@ import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -100,15 +101,20 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public boolean hasPermission(GraphPermission permission, MeshVertex vertex) {
-		return vertex.<Set<String>>property(permission.propertyKey()).contains(getUuid());
+		Set<String> allowedUuids = vertex.property(permission.propertyKey());
+		return allowedUuids != null && allowedUuids.contains(getUuid());
 	}
 
 	@Override
 	public void grantPermissions(MeshVertex vertex, GraphPermission... permissions) {
 		for (GraphPermission permission : permissions) {
 			Set<String> allowedRoles = vertex.property(permission.propertyKey());
-			allowedRoles.add(getUuid());
-			vertex.property(permission.propertyKey(), allowedRoles);
+			if (allowedRoles == null) {
+				vertex.property(permission.propertyKey(), Collections.singleton(getUuid()));
+			} else {
+				allowedRoles.add(getUuid());
+				vertex.property(permission.propertyKey(), allowedRoles);
+			}
 		}
 	}
 
@@ -143,8 +149,10 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 		boolean permissionRevoked = false;
 		for (GraphPermission permission : permissions) {
 			Set<String> allowedRoles = vertex.property(permission.propertyKey());
-			permissionRevoked = allowedRoles.remove(getUuid()) || permissionRevoked;
-			vertex.property(permission.propertyKey(), allowedRoles);
+			if (allowedRoles != null) {
+				permissionRevoked = allowedRoles.remove(getUuid()) || permissionRevoked;
+				vertex.property(permission.propertyKey(), allowedRoles);
+			}
 		}
 
 		if (permissionRevoked) {

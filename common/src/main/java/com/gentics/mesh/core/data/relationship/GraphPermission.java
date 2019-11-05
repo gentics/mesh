@@ -18,17 +18,17 @@ import com.gentics.mesh.core.rest.common.Permission;
  */
 public enum GraphPermission {
 
-	CREATE_PERM("create_permission", CREATE),
+	CREATE_PERM("permission_create", CREATE),
 
-	READ_PERM("read_permission", READ),
+	READ_PERM("permission_read", READ),
 
-	UPDATE_PERM("update_permission", UPDATE),
+	UPDATE_PERM("permission_update", UPDATE),
 
-	DELETE_PERM("delete_permission", DELETE),
+	DELETE_PERM("permission_delete", DELETE),
 
-	READ_PUBLISHED_PERM("read_published_permission", READ_PUBLISHED),
+	READ_PUBLISHED_PERM("permission_read_published", READ_PUBLISHED),
 
-	PUBLISH_PERM("publish_permission", PUBLISH);
+	PUBLISH_PERM("permission_publish", PUBLISH);
 
 	public static void init(TypeHandler type, IndexHandler index) {
 		for (String label : GraphPermission.labels()) {
