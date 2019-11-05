@@ -6,7 +6,6 @@ import com.tinkerpop.blueprints.Vertex;
 
 import java.util.Iterator;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.tinkerpop.blueprints.Direction.IN;
 import static com.tinkerpop.blueprints.Direction.OUT;
 
@@ -36,7 +35,7 @@ public class NodeContentEditorMigration extends AbstractChange {
 	}
 
 	private void migrateContainer(Vertex nodeContainer) {
-		Iterator<Edge> it = nodeContainer.getEdges(OUT, HAS_EDITOR).iterator();
+		Iterator<Edge> it = nodeContainer.getEdges(OUT, "HAS_EDITOR").iterator();
 		if (!it.hasNext()) {
 			// We skip containers which have no editor set. Those need to be cleaned using the consistency check.
 			return;

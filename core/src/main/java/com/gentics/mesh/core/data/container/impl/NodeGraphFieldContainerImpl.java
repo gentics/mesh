@@ -108,8 +108,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	public static final String VERSION_PROPERTY_KEY = "version";
 
-	public static final String EDITOR_UUID_PROPERTY_KEY = "editor";
-
 	// Cached instance of the parent node.
 	private Node parentNodeRef;
 
@@ -656,21 +654,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public User getEditor() {
-		String uuid = property(EDITOR_UUID_PROPERTY_KEY);
-		if (uuid == null) {
-			return null;
-		} else {
-			UserRoot userRoot = mesh().boot().userRoot();
-			return userRoot.findByUuid(uuid);
-		}
+		return mesh().userProperties().getEditor(this);
 	}
 
 	@Override
 	public void setEditor(User user) {
-		String uuid = user == null
-			? null
-			: user.getUuid();
-		property(EDITOR_UUID_PROPERTY_KEY, uuid);
+		mesh().userProperties().setEditor(this, user);
 	}
 
 	@Override
