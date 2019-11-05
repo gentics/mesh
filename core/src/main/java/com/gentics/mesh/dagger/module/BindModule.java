@@ -16,6 +16,8 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
+import com.gentics.mesh.core.data.PersistenceClassMap;
+import com.gentics.mesh.core.data.PersistenceClassMapImpl;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -91,4 +93,7 @@ public abstract class BindModule {
 
 	@Binds
 	abstract CacheRegistry bindCacheRegistry(CacheRegistryImpl e);
+
+	@Binds
+	abstract PersistenceClassMap bindPersistenceClassMap(PersistenceClassMapImpl e);
 }

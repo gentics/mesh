@@ -664,15 +664,11 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	public Function<String, Node> elementLoader() {
-		// TODO fix this mess
-		Class<? extends Node> clazz = boot.projectRoot().findAll().next().getNodeRoot().getPersistanceClass();
-		return (uuid) -> db.index().findByUuid(clazz, uuid);
+		return (uuid) -> db.index().findByUuid(Node.class, uuid);
 	}
 
 	@Override
 	public Stream<? extends Node> loadAllElements() {
-		// TODO fix this mess
-		Class<? extends Node> clazz = boot.projectRoot().findAll().next().getNodeRoot().getPersistanceClass();
-		return db.type().findAll(clazz);
+		return db.type().findAll(Node.class);
 	}
 }

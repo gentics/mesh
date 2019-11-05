@@ -6,20 +6,19 @@ import static com.gentics.mesh.graphdb.FieldTypeMapper.toType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.core.data.PersistenceClassMap;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.madl.field.FieldMap;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.index.EdgeIndexDefinition;
 import com.gentics.mesh.madl.index.ElementIndexDefinition;
 import com.gentics.mesh.madl.index.VertexIndexDefinition;
-import com.gentics.mesh.util.StreamUtil;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.index.OCompositeKey;
 import com.orientechnologies.orient.core.index.OIndex;
@@ -35,7 +34,6 @@ import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientElementType;
@@ -52,11 +50,14 @@ public class OrientDBIndexHandler implements IndexHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(OrientDBIndexHandler.class);
 
-	private Lazy<OrientDBDatabase> db;
+	private final Lazy<OrientDBDatabase> db;
+
+	private final PersistenceClassMap persistenceClassMap;
 
 	@Inject
-	public OrientDBIndexHandler(Lazy<OrientDBDatabase> db) {
+	public OrientDBIndexHandler(Lazy<OrientDBDatabase> db, PersistenceClassMap persistenceClassMap) {
 		this.db = db;
+		this.persistenceClassMap = persistenceClassMap;
 	}
 
 	@Override
@@ -380,6 +381,12 @@ public class OrientDBIndexHandler implements IndexHandler {
 
 	@Override
 	public <T extends VertexFrame> T findByUuid(Class<? extends T> classOfT, String uuid) {
+		Class<?> foundImpl = persistenceClassMap.get(classOfT);
+		// Use the found impl when one was found.
+		if (foundImpl != null) {
+			classOfT = (Class<? extends T>) foundImpl;
+		}
+
 		FramedGraph graph = Tx.get().getGraph();
 		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
 		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
