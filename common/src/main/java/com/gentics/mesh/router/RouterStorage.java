@@ -44,7 +44,6 @@ import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
  * Project routers are automatically bound to all projects. This way only a single node verticle is needed to handle all project requests.
  * 
  */
-@Singleton
 public class RouterStorage {
 
 	private static final Logger log = LoggerFactory.getLogger(RouterStorage.class);
