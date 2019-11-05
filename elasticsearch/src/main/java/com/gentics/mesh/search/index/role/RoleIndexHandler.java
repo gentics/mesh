@@ -3,6 +3,8 @@ package com.gentics.mesh.search.index.role;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -10,7 +12,6 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -37,7 +38,8 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 	RoleMappingProvider mappingProvider;
 
 	@Inject
-	public RoleIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options, SyncMetersFactory syncMetricsFactory) {
+	public RoleIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+		SyncMetersFactory syncMetricsFactory) {
 		super(searchProvider, db, boot, helper, options, syncMetricsFactory);
 	}
 
@@ -94,8 +96,13 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 	}
 
 	@Override
-	public RootVertex<Role> getRootVertex() {
-		return boot.meshRoot().getRoleRoot();
+	public Function<String, Role> elementLoader() {
+		return (uuid) -> boot.meshRoot().getRoleRoot().findByUuid(uuid);
+	}
+
+	@Override
+	public Stream<? extends Role> loadAllElements() {
+		return boot.meshRoot().getRoleRoot().findAll().stream();
 	}
 
 }

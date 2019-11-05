@@ -407,7 +407,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 						String uuid = pos > 0 ? id.substring(0, pos) : id;
 
 						// Locate the node
-						T element = indexHandler.getRootVertex().findByUuid(uuid);
+						T element = indexHandler.elementLoader().apply(uuid);
 						if (element != null) {
 							elementList.add(element);
 						}

@@ -28,14 +28,11 @@ import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.event.MeshEventSender;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.SearchProvider;
@@ -134,10 +131,10 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 					String languageTag = pos > 0 ? id.substring(pos + 1) : null;
 					String uuid = pos > 0 ? id.substring(0, pos) : id;
 
-					RootVertex<Node> root = getIndexHandler().getRootVertex();
-					Node element = root.findByUuid(uuid);
+					
+					Node element = getIndexHandler().elementLoader().apply(uuid);
 					if (element == null) {
-						log.warn("Object could not be found for uuid {" + uuid + "} in root vertex {" + root.getRootLabel() + "}");
+						log.warn("Object could not be found for uuid {" + uuid + "}");
 						totalCount--;
 						continue;
 					}

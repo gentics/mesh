@@ -27,7 +27,6 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.MoveDocumentEntry;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
@@ -85,7 +84,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public NodeContainerMappingProvider mappingProvider;
 
 	@Inject
-	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options, SyncMetersFactory syncMetersFactory) {
+	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+		SyncMetersFactory syncMetersFactory) {
 		super(searchProvider, db, boot, helper, options, syncMetersFactory);
 	}
 
@@ -174,7 +174,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		});
 	}
 
-
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
 		Set<String> activeIndices = new HashSet<>();
@@ -183,12 +182,13 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				for (Branch branch : currentProject.getBranchRoot().findAll()) {
 					for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
 						if (log.isDebugEnabled()) {
-							log.debug("Found active schema version {}-{} in branch {}", version.getSchema().getName(), version.getVersion(), branch.getName());
+							log.debug("Found active schema version {}-{} in branch {}", version.getSchema().getName(), version.getVersion(),
+								branch.getName());
 						}
 						Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
 							activeIndices
 								.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(), branch.getUuid(), version.getUuid(),
-										type));
+									type));
 						});
 					}
 				}
@@ -198,10 +198,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		if (log.isDebugEnabled()) {
 			log.debug(
 				"All indices:\n" +
-				String.join("\n", indices) + "\n" +
-				"Active indices: \n" +
-				String.join("\n", activeIndices)
-			);
+					String.join("\n", indices) + "\n" +
+					"Active indices: \n" +
+					String.join("\n", activeIndices));
 		}
 		return indices.stream()
 			// Only handle indices of the handler's type
@@ -216,9 +215,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		return Flowable.defer(() -> db.tx(() -> {
 			return boot.meshRoot().getProjectRoot().findAll().stream()
 				.flatMap(project -> project.getBranchRoot().findAll().stream()
-				.flatMap(branch -> branch.findActiveSchemaVersions().stream()
-				.flatMap(version -> Stream.of(DRAFT, PUBLISHED)
-				.map(type -> diffAndSync(project, branch, version, type)))))
+					.flatMap(branch -> branch.findActiveSchemaVersions().stream()
+						.flatMap(version -> Stream.of(DRAFT, PUBLISHED)
+							.map(type -> diffAndSync(project, branch, version, type)))))
 				.collect(Collectors.collectingAndThen(Collectors.toList(), Flowable::merge));
 		}));
 	}
@@ -279,10 +278,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				meters.getDeleteMeter().addPending(needRemovalInES.size());
 				meters.getUpdateMeter().addPending(needUpdateInEs.size());
 
-				io.reactivex.functions.Function<
-					Action,
-					io.reactivex.functions.Function<String, CreateDocumentRequest>
-					> toCreateRequest = action -> uuid -> {
+				io.reactivex.functions.Function<Action, io.reactivex.functions.Function<String, CreateDocumentRequest>> toCreateRequest = action -> uuid -> {
 					JsonObject doc = db.tx(() -> getTransformer().toDocument(sourceNodes.get(uuid), branchUuid, type));
 					return helper.createDocumentRequest(indexName, uuid, doc, complianceMode, action);
 				};
@@ -297,7 +293,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, complianceMode, meters.getDeleteMeter()::synced));
 
 				return Flowable.merge(toInsert, toUpdate, toDelete);
-		}).flatMapPublisher(x -> x);
+			}).flatMapPublisher(x -> x);
 	}
 
 	@Override
@@ -326,11 +322,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			}
 			return indices;
 		});
-	}
-
-	@Override
-	public RootVertex<Node> getRootVertex() {
-		return boot.globalNodeRoot();
 	}
 
 	@Override
@@ -526,7 +517,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String newLanguageTag = newContainer.getLanguageTag();
 		String newDocumentId = NodeGraphFieldContainer.composeDocumentId(newContainer.getParentNode().getUuid(), newLanguageTag);
 		JsonObject doc = transformer.toDocument(newContainer, releaseUuid, type);
-		return 	Observable.just(new IndexBulkEntry(newIndexName, newDocumentId, doc, complianceMode));
+		return Observable.just(new IndexBulkEntry(newIndexName, newDocumentId, doc, complianceMode));
 
 	}
 
@@ -600,7 +591,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	@Override
 	public Observable<UpdateBulkEntry> updatePermissionForBulk(UpdateDocumentEntry entry) {
 		String uuid = entry.getElementUuid();
-		Node node = getRootVertex().findByUuid(uuid);
+		Node node = elementLoader().apply(uuid);
 		if (node == null) {
 			// Not found
 			throw error(INTERNAL_SERVER_ERROR, "error_element_not_found", uuid);
@@ -669,5 +660,19 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 */
 	public String generateVersion(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
 		return getTransformer().generateVersion(container, branchUuid, type);
+	}
+
+	@Override
+	public Function<String, Node> elementLoader() {
+		// TODO fix this mess
+		Class<? extends Node> clazz = boot.projectRoot().findAll().next().getNodeRoot().getPersistanceClass();
+		return (uuid) -> db.index().findByUuid(clazz, uuid);
+	}
+
+	@Override
+	public Stream<? extends Node> loadAllElements() {
+		// TODO fix this mess
+		Class<? extends Node> clazz = boot.projectRoot().findAll().next().getNodeRoot().getPersistanceClass();
+		return db.type().findAll(clazz);
 	}
 }

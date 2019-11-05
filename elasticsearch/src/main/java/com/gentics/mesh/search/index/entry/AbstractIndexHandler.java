@@ -144,7 +144,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public Observable<UpdateBulkEntry> updatePermissionForBulk(UpdateDocumentEntry entry) {
 		String uuid = entry.getElementUuid();
-		T element = getRootVertex().findByUuid(uuid);
+		T element = elementLoader().apply(uuid);
 		if (element == null) {
 			throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, getType());
 		} else {
@@ -167,7 +167,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		return Observable.defer(() -> {
 			try (Tx tx = db.tx()) {
 				String uuid = entry.getElementUuid();
-				T element = getRootVertex().findByUuid(uuid);
+				T element = elementLoader().apply(uuid);
 				if (element == null) {
 					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, getType());
 				} else {
@@ -237,11 +237,11 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	protected T getElement(String elementUuid) {
-		return getRootVertex().findByUuid(elementUuid);
+		return elementLoader().apply(elementUuid);
 	}
 
 	private Map<String, String> loadVersionsFromGraph() {
-		return db.tx(() -> getRootVertex().findAll().stream()
+		return db.tx(() -> loadAllElements()
 			.collect(Collectors.toMap(
 				MeshElement::getUuid,
 				this::generateVersion)));

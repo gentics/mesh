@@ -3,6 +3,8 @@ package com.gentics.mesh.search.index.user;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -10,7 +12,6 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -86,8 +87,13 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	}
 
 	@Override
-	public RootVertex<User> getRootVertex() {
-		return boot.meshRoot().getUserRoot();
+	public Function<String, User> elementLoader() {
+		return (uuid) -> boot.meshRoot().getUserRoot().findByUuid(uuid);
+	}
+
+	@Override
+	public Stream<? extends User> loadAllElements() {
+		return boot.meshRoot().getUserRoot().findAll().stream();
 	}
 
 	@Override

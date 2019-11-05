@@ -2,11 +2,12 @@ package com.gentics.mesh.core.data.search;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.bulk.DeleteBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
@@ -41,11 +42,18 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	String getType();
 
 	/**
-	 * Return the root vertex of the index handler. The root vertex is used to retrieve nodes by UUID in order to update the search index.
+	 * Returns loader function which can be used to find and load elements by uuid.
 	 * 
 	 * @return
 	 */
-	RootVertex<T> getRootVertex();
+	Function<String, T> elementLoader();
+
+	/**
+	 * Load all elements from the graph that are needed for the index handler.
+	 * 
+	 * @return
+	 */
+	Stream<? extends T> loadAllElements();
 
 	/**
 	 * Return the class of elements which can be handled by this handler.

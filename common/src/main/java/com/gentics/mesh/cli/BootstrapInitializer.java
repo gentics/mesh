@@ -10,7 +10,6 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.job.JobRoot;
-import com.gentics.mesh.core.data.root.GlobalNodeRoot;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -60,8 +59,6 @@ public interface BootstrapInitializer {
 	 * @return
 	 */
 	UserRoot userRoot();
-
-//	GlobalNodeRoot globalNodeRoot();
 
 	/**
 	 * Return the job root element.
