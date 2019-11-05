@@ -1,0 +1,12 @@
+{
+    nodes(query: "{\"query\":{\"query_string\":{\"query\":\"waittest\", \"fields\": [\"fields.slug\"], \"type\": \"phrase\"}}}") {
+        elements {
+            uuid
+            ... on folder {
+                fields {
+                    slug
+                }
+            }
+        }
+    }
+}

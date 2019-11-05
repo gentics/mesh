@@ -58,16 +58,16 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 	private BootstrapInitializer boot;
 
 	@Inject
-	public NodeSearchHandler(SearchProvider searchProvider, Database db, NodeIndexHandler nodeIndexHandler, HandlerUtilities utils,
-		BootstrapInitializer boot, MeshEventSender meshEventSender, MeshOptions options) {
-		super(db, searchProvider, options, nodeIndexHandler, meshEventSender);
+	public NodeSearchHandler(SearchProvider searchProvider, Database db, NodeIndexHandler nodeIndexHandler,
+		MeshOptions options, BootstrapInitializer boot) {
+		super(db, searchProvider, options, nodeIndexHandler);
 		this.boot = boot;
 	}
 
 	/**
 	 * Invoke the given query and return a page of node containers.
 	 * 
-	 * @param gc
+	 * @param ac
 	 * @param query
 	 *            Elasticsearch query
 	 * @param pagingInfo

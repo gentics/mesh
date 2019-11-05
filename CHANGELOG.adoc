@@ -25,6 +25,8 @@ include::content/docs/variables.adoc-include[]
 
 [[Unreleased]]
 
+icon:plus[] GraphQL: The GraphQL Endpoint now supports the `wait` query-parameter like the Search Endpoint does. link:https://github.com/gentics/mesh/issues/805[#805]
+
 icon:check[] Core: Some optimizations to uploading binaries have been made.
 
 [[v1.1.0]]

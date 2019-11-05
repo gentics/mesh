@@ -15,8 +15,8 @@ import com.gentics.mesh.search.index.AbstractSearchHandler;
 public class RoleSearchHandler extends AbstractSearchHandler<Role, RoleResponse> {
 
 	@Inject
-	public RoleSearchHandler(Database db, SearchProvider searchProvider, RoleIndexHandler indexHandler, MeshEventSender meshEventSender, MeshOptions options) {
-		super(db, searchProvider, options, indexHandler, meshEventSender);
+	public RoleSearchHandler(Database db, SearchProvider searchProvider, RoleIndexHandler indexHandler, MeshOptions options) {
+		super(db, searchProvider, options, indexHandler);
 	}
 
 }
