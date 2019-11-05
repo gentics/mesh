@@ -40,7 +40,6 @@ public class GraphQLWaitSearchEndpointTest extends AbstractMultiESTest {
 		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(QUERY_NAME),
 				new SearchParametersImpl().setWait(true)));
 		JsonObject json = new JsonObject(response.toJson());
-		System.out.println(json.encodePrettily());
 		assertThat(json.getValue("errors")).isNull();
 		JsonArray elements = json
 				.getJsonObject("data", new JsonObject())
@@ -55,7 +54,6 @@ public class GraphQLWaitSearchEndpointTest extends AbstractMultiESTest {
 		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(QUERY_NAME),
 				new SearchParametersImpl().setWait(false)));
 		JsonObject json = new JsonObject(response.toJson());
-		System.out.println(json.encodePrettily());
 		assertThat(json.getValue("errors")).isNull();
 		JsonArray elements = json
 				.getJsonObject("data", new JsonObject())
