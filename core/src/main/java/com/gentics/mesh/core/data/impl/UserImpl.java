@@ -342,8 +342,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				Vertex role = roleEdge.getVertex(Direction.IN);
 
 				Set<String> allowedRoles = graph.getVertex(elementId).getProperty(permission.propertyKey());
-				boolean foundPermEdge = allowedRoles.contains(role.<String>getProperty("uuid"));
-				if (foundPermEdge) {
+				boolean hasPermission = allowedRoles != null && allowedRoles.contains(role.<String>getProperty("uuid"));
+				if (hasPermission) {
 					// We only store granting permissions in the store in order
 					// reduce the invalidation calls.
 					// This way we do not need to invalidate the cache if a role
