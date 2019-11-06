@@ -7,6 +7,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
@@ -53,8 +54,11 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	@Override
 	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
 		Set<String> roleUuids = property(perm.propertyKey());
+		Stream<String> stream = roleUuids == null
+			? Stream.empty()
+			: roleUuids.stream();
 		RoleRoot roleRoot = mesh().boot().roleRoot();
-		return new TraversalResult<>(roleUuids.stream().map(roleRoot::findByUuid));
+		return new TraversalResult<>(stream.map(roleRoot::findByUuid));
 	}
 
 	@Override
