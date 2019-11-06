@@ -43,7 +43,7 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 
 @Singleton
-public class PersistenceClassMapImpl extends HashMap<Class<?>, Class<?>> {
+public class PersistenceClassMapImpl extends HashMap<Class<?>, Class<?>> implements PersistenceClassMap {
 
 	private static final long serialVersionUID = -5867896951957817737L;
 
