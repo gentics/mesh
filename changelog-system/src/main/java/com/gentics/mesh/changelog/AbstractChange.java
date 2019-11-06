@@ -3,6 +3,7 @@ package com.gentics.mesh.changelog;
 import java.util.Iterator;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
@@ -208,6 +209,34 @@ public abstract class AbstractChange implements Change {
 	@Override
 	public void setDb(Database db) {
 		this.db = db;
+	}
+
+	/**
+	 * Iterates over some items, committing the transaction after some iterations.
+	 * @param iterable
+	 * @param commitInterval
+	 * @param consumer
+	 * @param <T>
+	 */
+	protected <T> void iterateWithCommit(Iterable<T> iterable, int commitInterval, Consumer<T> consumer) {
+		int count = 0;
+		for (T item : iterable) {
+			consumer.accept(item);
+			count++;
+			if (count % commitInterval == 0) {
+				log.info("Migrated {" + count + "} contents");
+				getGraph().commit();
+			}
+		}
+	}
+
+	/**
+	 * Iterates over some items, committing the transaction after 1000 iterations.
+	 * @param iterable
+	 * @param consumer
+	 */
+	protected <T> void iterateWithCommit(Iterable<T> iterable, Consumer<T> consumer) {
+		iterateWithCommit(iterable, 1000, consumer);
 	}
 
 	public void debug(Element element) {
