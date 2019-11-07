@@ -51,24 +51,27 @@ public class MonitoringConfig implements Option {
 		return enabled;
 	}
 
-	public void setEnabled(boolean enabled) {
+	public MonitoringConfig setEnabled(boolean enabled) {
 		this.enabled = enabled;
+		return this;
 	}
 
 	public int getPort() {
 		return port;
 	}
 
-	public void setPort(int port) {
+	public MonitoringConfig setPort(int port) {
 		this.port = port;
+		return this;
 	}
 
 	public String getHost() {
 		return host;
 	}
 
-	public void setHost(String host) {
+	public MonitoringConfig setHost(String host) {
 		this.host = host;
+		return this;
 	}
 
 	public boolean isJvmMetricsEnabled() {

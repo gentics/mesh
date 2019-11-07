@@ -27,8 +27,9 @@ public class ContentConfig implements Option {
 		return autoPurge;
 	}
 
-	public void setAutoPurge(boolean autoPurge) {
+	public ContentConfig setAutoPurge(boolean autoPurge) {
 		this.autoPurge = autoPurge;
+		return this;
 	}
 
 	@Override

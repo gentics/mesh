@@ -49,84 +49,51 @@ public class ImageManipulatorOptions implements Option {
 	@EnvironmentVariable(name = MESH_IMAGE_RESAMPLE_FILTER_ENV, description = "Override the sample filter for image resize operations.")
 	private ResampleFilter resampleFilter = DEFAULT_RESAMPLE_FILTER;
 
-	/**
-	 * Return the binary image cache directory.
-	 * 
-	 * @return
-	 */
 	public String getImageCacheDirectory() {
 		return imageCacheDirectory;
 	}
 
-	/**
-	 * Set the binary image cache directory.
-	 * 
-	 * @param imageCacheDirectory
-	 * @return Fluent API
-	 */
 	public ImageManipulatorOptions setImageCacheDirectory(String imageCacheDirectory) {
 		this.imageCacheDirectory = imageCacheDirectory;
 		return this;
 	}
 
-	/**
-	 * Return the maximum image height.
-	 * 
-	 * @return
-	 */
 	public Integer getMaxHeight() {
 		return maxHeight;
 	}
 
-	/**
-	 * Set the maximum image height.
-	 * 
-	 * @param maxHeight
-	 * @return Fluent API
-	 */
 	public ImageManipulatorOptions setMaxHeight(int maxHeight) {
 		this.maxHeight = maxHeight;
 		return this;
 	}
 
-	/**
-	 * Return the maximum allowed image width.
-	 * 
-	 * @return
-	 */
 	public Integer getMaxWidth() {
 		return maxWidth;
 	}
 
-	/**
-	 * Set the maximum allowed image width.
-	 * 
-	 * @param maxWidth
-	 * @return Fluent API
-	 */
 	public ImageManipulatorOptions setMaxWidth(int maxWidth) {
 		this.maxWidth = maxWidth;
 		return this;
-	}
-
-	public void validate(MeshOptions meshOptions) {
-		// TODO Auto-generated method stub
-
 	}
 
 	public float getJpegQuality() {
 		return jpegQuality;
 	}
 
-	public void setJpegQuality(float jpegQuality) {
+	public ImageManipulatorOptions setJpegQuality(float jpegQuality) {
 		this.jpegQuality = jpegQuality;
+		return this;
 	}
 
 	public ResampleFilter getResampleFilter() {
 		return resampleFilter;
 	}
 
-	public void setResampleFilter(ResampleFilter resampleFilter) {
+	public ImageManipulatorOptions setResampleFilter(ResampleFilter resampleFilter) {
 		this.resampleFilter = resampleFilter;
+		return this;
+	}
+
+	public void validate(MeshOptions meshOptions) {
 	}
 }

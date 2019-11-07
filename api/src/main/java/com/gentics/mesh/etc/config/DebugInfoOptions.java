@@ -45,8 +45,9 @@ public class DebugInfoOptions implements Option {
 		return logFileSize;
 	}
 
-	public void setLogFileSize(String logFileSize) {
+	public DebugInfoOptions setLogFileSize(String logFileSize) {
 		this.logFileSize = logFileSize;
+		return this;
 	}
 
 	public boolean isLogEnabled() {
