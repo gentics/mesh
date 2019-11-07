@@ -8,6 +8,7 @@ public class ClusterInstanceInfo implements RestModel {
 	private String name;
 	private String status;
 	private String startDate;
+	private String role;
 
 	/**
 	 * Return the cluster address.
@@ -54,5 +55,14 @@ public class ClusterInstanceInfo implements RestModel {
 
 	public String getStartDate() {
 		return startDate;
+	}
+
+	public String getRole() {
+		return role;
+	}
+
+	public ClusterInstanceInfo setRole(String role) {
+		this.role = role;
+		return this;
 	}
 }

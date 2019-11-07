@@ -17,6 +17,11 @@
 | string
 | Configure the Gentics Mesh monitoring HTTP server host to bind to. Default is: 127.0.0.1
 
+| jvmMetricsEnabled
+| false
+| boolean
+| Enable or disable the measuring of JVM metrics. Default is: true
+
 | port
 | false
 | integer

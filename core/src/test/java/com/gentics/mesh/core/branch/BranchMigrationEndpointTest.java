@@ -13,15 +13,11 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import com.codahale.metrics.ConsoleReporter;
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Branch;
@@ -200,9 +196,6 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testBigData() throws Throwable {
 		EventQueueBatch batch = createBatch();
-		MetricRegistry metrics = new MetricRegistry();
-		Meter createdNode = metrics.meter("Create Node");
-		metrics.timer("Migration");
 		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
 		createNode(baseNodeUuid);
 
@@ -211,10 +204,6 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 			int numThreads = 1;
 			int numFolders = 1000;
 
-			ConsoleReporter reporter = ConsoleReporter.forRegistry(metrics).convertRatesTo(TimeUnit.SECONDS).convertDurationsTo(TimeUnit.MILLISECONDS)
-				.build();
-			reporter.start(1, TimeUnit.SECONDS);
-
 			ExecutorService service = Executors.newFixedThreadPool(numThreads);
 
 			List<Future<Boolean>> futures = new ArrayList<>();
@@ -222,7 +211,6 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 			for (int i = 0; i < numFolders; i++) {
 				futures.add(service.submit(() -> {
 					createNode(baseNodeUuid);
-					createdNode.mark();
 					return true;
 				}));
 			}

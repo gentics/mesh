@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.rest.search.EntityMetrics;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -143,7 +144,7 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	 * 
 	 * @return
 	 */
-	Map<String, Object> getMetrics();
+	EntityMetrics getMetrics();
 
 	/**
 	 * Process the entry and generate the bulk entry.

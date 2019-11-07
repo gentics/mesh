@@ -15,17 +15,6 @@ import com.gentics.mesh.cache.impl.EventAwareCacheImpl;
 public interface EventAwareCache<K, V> {
 
 	/**
-	 * Return a builder for a new cache.
-	 * 
-	 * @param <K>
-	 * @param <V>
-	 * @return
-	 */
-	static <K, V> EventAwareCacheImpl.Builder<K, V> builder() {
-		return EventAwareCacheImpl.builder();
-	}
-
-	/**
 	 * Invalidate the cache.
 	 */
 	void invalidate();

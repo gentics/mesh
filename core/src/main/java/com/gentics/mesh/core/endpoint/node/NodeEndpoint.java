@@ -155,7 +155,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleResponse(NO_CONTENT, "Language variation of the node has been deleted.");
 		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
 		endpoint.events(NODE_CONTENT_DELETED);
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			String languageTag = ac.getParameter("language");
@@ -399,7 +399,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleResponse(NO_CONTENT, "Deletion was successful.");
 		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
 		endpoint.events(NODE_DELETED);
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			crudHandler.handleDelete(ac, uuid);

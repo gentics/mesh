@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
 import com.gentics.mesh.core.data.Project;
 
 import io.vertx.core.Vertx;
@@ -16,12 +17,12 @@ public class ProjectNameCacheImpl extends AbstractMeshCache<String, Project> imp
 	public static final long CACHE_SIZE = 100;
 
 	@Inject
-	public ProjectNameCacheImpl(Vertx vertx, CacheRegistry registry) {
-		super(createCache(vertx), registry, CACHE_SIZE);
+	public ProjectNameCacheImpl(EventAwareCacheFactory factory, CacheRegistry registry) {
+		super(createCache(factory), registry, CACHE_SIZE);
 	}
 
-	private static EventAwareCache<String, Project> createCache(Vertx vertx) {
-		return EventAwareCache.<String, Project>builder()
+	private static EventAwareCache<String, Project> createCache(EventAwareCacheFactory factory) {
+		return factory.<String, Project>builder()
 			.events(PROJECT_DELETED, PROJECT_UPDATED)
 			.action((event, cache) -> {
 				String name = event.body().getString("name");
@@ -31,8 +32,8 @@ public class ProjectNameCacheImpl extends AbstractMeshCache<String, Project> imp
 					cache.invalidate();
 				}
 			})
+			.name("projectname")
 			.maxSize(CACHE_SIZE)
-			.vertx(vertx)
 			.build();
 	}
 

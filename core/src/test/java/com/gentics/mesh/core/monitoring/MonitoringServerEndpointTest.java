@@ -13,7 +13,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
-import com.gentics.mesh.metric.Metrics;
+import com.gentics.mesh.metric.SimpleMetric;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -35,7 +35,7 @@ public class MonitoringServerEndpointTest extends AbstractMeshTest {
 			call(() -> client().me());
 		}
 		String metrics = call(() -> monClient().metrics());
-		assertThat(metrics).as("Metrics result").isNotEmpty().contains(Metrics.TX.key());
+		assertThat(metrics).as("Metrics result").isNotEmpty().contains(SimpleMetric.TX.key());
 	}
 
 	@Test

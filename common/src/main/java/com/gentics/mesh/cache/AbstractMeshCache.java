@@ -2,6 +2,7 @@ package com.gentics.mesh.cache;
 
 import java.util.function.Function;
 
+
 public abstract class AbstractMeshCache<K, V> implements MeshCache<K, V> {
 
 	protected final EventAwareCache<K, V> cache;

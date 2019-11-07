@@ -77,6 +77,11 @@
 | string
 | Configure the Gentics Mesh monitoring HTTP server host to bind to. Default is: 127.0.0.1
 
+| monitoringOptions.jvmMetricsEnabled
+| false
+| boolean
+| Enable or disable the measuring of JVM metrics. Default is: true
+
 | vertxOptions.workerPoolSize
 | false
 | int
@@ -252,6 +257,11 @@
 | mappingmode
 | This setting controls the mapping mode of fields for Elasticsearch. When set to STRICT only fields which have a custom mapping will be added to Elasticsearch. Mode DYNAMIC will automatically use the Gentics Mesh default mappings which can be supplemented with custom mappings. Default: DYNAMIC
 
+| searchOptions.complianceMode
+| false
+| compliancemode
+| This setting controls the compliance mode for Elasticsearch. When set to ES_7 it will support Elasticsearch 7.x - In PRE_ES_7 mode it will support Elasticsearch 6.x - Default: PRE_ES_7
+
 | uploadOptions.byteLimit
 | false
 | long
@@ -336,6 +346,26 @@
 | false
 | long
 | Set the maximum size of the path cache. A value of 0 will disable the cache. Default: 20000
+
+| debugInfoOptions.logFolder
+| false
+| string
+| The path of the folder where the debug info log is stored.
+
+| debugInfoOptions.logFileSize
+| false
+| string
+| The maximum file size of a single log file.
+
+| debugInfoOptions.logEnabled
+| false
+| boolean
+| Enables the debug info log.
+
+| debugInfoOptions.logPattern
+| false
+| string
+| The pattern used for each log line.
 
 | tempDirectory
 | false

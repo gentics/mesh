@@ -112,11 +112,13 @@ scrape_configs:
 …
 ----
 
-
+[[metrics]]
 ### Metrics
 
-Gentics Mesh exposes the following metrics in addition to the default link:https://vertx.io/docs/vertx-dropwizard-metrics/java/#_the_metrics[Vert.x metrics].
+Gentics Mesh exposes the following metrics in addition to the default link:https://vertx.io/docs/vertx-micrometer-metrics/java/#_vert_x_core_tools_metrics[Vert.x metrics].
 More metrics will be added over time.
+
+`<cache>` is one of `permission`, `projectbranchname`, `projectname`, `webroot`.
 
 [options="header",cols="2*"]
 |======
@@ -139,8 +141,20 @@ More metrics will be added over time.
 | mesh_tx_retry
 | Amount of transaction retries which happen if a conflict has been encountered.
 
-|	mesh_node_migration_pending
+| mesh_node_migration_pending
 | Pending contents which need to be processed by the node migration.
+
+| mesh_cache_<cache>_hit
+| Amount of cache hits.
+
+| mesh_cache_<cache>_miss
+| Amount of cache misses.
+
+| mesh_cache_<cache>_clear_all
+| Amount of invalidations of the whole cache.
+
+| mesh_cache_<cache>_clear_single
+| Amount of invalidations for a single entry in the cache.
 
 |======
 

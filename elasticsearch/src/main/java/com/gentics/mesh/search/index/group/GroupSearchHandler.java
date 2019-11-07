@@ -15,8 +15,8 @@ import com.gentics.mesh.search.index.AbstractSearchHandler;
 public class GroupSearchHandler extends AbstractSearchHandler<Group, GroupResponse> {
 
 	@Inject
-	public GroupSearchHandler(Database db, SearchProvider searchProvider, GroupIndexHandler indexHandler, MeshOptions options, MeshEventSender meshEventSender) {
-		super(db, searchProvider, options, indexHandler, meshEventSender);
+	public GroupSearchHandler(Database db, SearchProvider searchProvider, GroupIndexHandler indexHandler, MeshOptions options) {
+		super(db, searchProvider, options, indexHandler);
 	}
 
 }

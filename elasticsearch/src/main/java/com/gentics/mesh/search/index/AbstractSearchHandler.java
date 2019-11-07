@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
+import com.gentics.mesh.util.SearchWaitUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.elasticsearch.client.ElasticsearchClient;
@@ -59,6 +60,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import javax.inject.Inject;
+
 /**
  * Abstract implementation for a mesh search handler.
  *
@@ -72,8 +75,10 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	protected final SearchProvider searchProvider;
 	protected final MeshOptions options;
 	protected final IndexHandler<T> indexHandler;
-	protected final MeshEventSender meshEventSender;
 	protected final ComplianceMode complianceMode;
+
+	@Inject
+	public SearchWaitUtil waitUtil;
 
 	public static final long DEFAULT_SEARCH_PER_PAGE = 10;
 
@@ -84,15 +89,12 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	 * @param searchProvider
 	 * @param options
 	 * @param indexHandler
-	 * @param meshEventSender
 	 */
-	public AbstractSearchHandler(Database db, SearchProvider searchProvider, MeshOptions options, IndexHandler<T> indexHandler,
-		MeshEventSender meshEventSender) {
+	public AbstractSearchHandler(Database db, SearchProvider searchProvider, MeshOptions options, IndexHandler<T> indexHandler) {
 		this.db = db;
 		this.searchProvider = searchProvider;
 		this.options = options;
 		this.indexHandler = indexHandler;
-		this.meshEventSender = meshEventSender;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();
 	}
 
@@ -147,7 +149,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			return;
 		}
 
-		awaitSync(ac).andThen(Single.defer(() -> {
+		waitUtil.awaitSync(ac).andThen(Single.defer(() -> {
 			ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 			String searchQuery = ac.getBodyAsString();
 			if (log.isDebugEnabled()) {
@@ -214,7 +216,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 		RL listResponse = classOfRL.newInstance();
 
-		awaitSync(ac).andThen(Single.defer(() -> {
+		waitUtil.awaitSync(ac).andThen(Single.defer(() -> {
 			ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 			String searchQuery = ac.getBodyAsString();
 			if (log.isDebugEnabled()) {
@@ -308,25 +310,6 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			log.error("Error while processing search response items", error);
 			ac.fail(error);
 		});
-	}
-
-	private boolean delayRequested(InternalActionContext ac) {
-		return ac.getSearchParameters().isWait()
-			.orElseGet(options.getSearchOptions()::isWaitForIdle);
-	}
-
-	private Completable awaitSync(InternalActionContext ac) {
-		if (!delayRequested(ac)) {
-			return Completable.complete();
-		}
-
-		return meshEventSender.isSearchIdle().flatMapCompletable(isIdle -> {
-			if (isIdle) {
-				return Completable.complete();
-			}
-			meshEventSender.flushSearch();
-			return meshEventSender.waitForEvent(MeshEvent.SEARCH_IDLE);
-		}).andThen(meshEventSender.refreshSearch());
 	}
 
 	/**

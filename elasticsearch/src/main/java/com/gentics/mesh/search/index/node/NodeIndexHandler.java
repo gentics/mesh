@@ -48,7 +48,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.Transactional;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
-import com.gentics.mesh.search.index.metric.SyncMetric;
+import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
@@ -85,8 +85,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public NodeContainerMappingProvider mappingProvider;
 
 	@Inject
-	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options) {
-		super(searchProvider, db, boot, helper, options);
+	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options, SyncMetersFactory syncMetersFactory) {
+		super(searchProvider, db, boot, helper, options, syncMetersFactory);
 	}
 
 	@Override
@@ -214,12 +214,11 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	@Override
 	public Flowable<SearchRequest> syncIndices() {
 		return Flowable.defer(() -> db.tx(() -> {
-			SyncMetric metric = new SyncMetric(getType());
 			return boot.meshRoot().getProjectRoot().findAll().stream()
 				.flatMap(project -> project.getBranchRoot().findAll().stream()
 				.flatMap(branch -> branch.findActiveSchemaVersions().stream()
 				.flatMap(version -> Stream.of(DRAFT, PUBLISHED)
-				.map(type -> diffAndSync(project, branch, version, type, metric)))))
+				.map(type -> diffAndSync(project, branch, version, type)))))
 				.collect(Collectors.collectingAndThen(Collectors.toList(), Flowable::merge));
 		}));
 	}
@@ -249,7 +248,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		}
 	}
 
-	private Flowable<SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type, SyncMetric metric) {
+	private Flowable<SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type) {
 		String indexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(),
 			version.getUuid(), type);
 
@@ -276,9 +275,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				log.info("Pending removals on {" + indexName + "}:" + needRemovalInES.size());
 				log.info("Pending updates on {" + indexName + "}:" + needUpdateInEs.size());
 
-				metric.incInsert(needInsertionInES.size());
-				metric.incDelete(needRemovalInES.size());
-				metric.incUpdate(needUpdateInEs.size());
+				meters.getInsertMeter().addPending(needInsertionInES.size());
+				meters.getDeleteMeter().addPending(needRemovalInES.size());
+				meters.getUpdateMeter().addPending(needUpdateInEs.size());
 
 				io.reactivex.functions.Function<
 					Action,
@@ -289,13 +288,13 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				};
 
 				Flowable<SearchRequest> toInsert = Flowable.fromIterable(needInsertionInES)
-					.map(toCreateRequest.apply(metric::decInsert));
+					.map(toCreateRequest.apply(meters.getInsertMeter()::synced));
 
 				Flowable<SearchRequest> toUpdate = Flowable.fromIterable(needUpdateInEs)
-					.map(toCreateRequest.apply(metric::decUpdate));
+					.map(toCreateRequest.apply(meters.getUpdateMeter()::synced));
 
 				Flowable<SearchRequest> toDelete = Flowable.fromIterable(needRemovalInES)
-					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, complianceMode, metric::decDelete));
+					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, complianceMode, meters.getDeleteMeter()::synced));
 
 				return Flowable.merge(toInsert, toUpdate, toDelete);
 		}).flatMapPublisher(x -> x);

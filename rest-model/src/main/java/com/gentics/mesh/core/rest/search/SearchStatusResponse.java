@@ -17,30 +17,17 @@ public class SearchStatusResponse implements RestModel {
 	boolean available = false;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Flag which indicates whether a index synchronization is currently running.")
-	boolean indexSyncRunning = false;
-
-	@JsonProperty(required = false)
 	@JsonPropertyDescription("Map which contains various metric values.")
-	Map<String, Object> metrics = new HashMap<>();
+	private Map<String, EntityMetrics> metrics = new HashMap<>();
 
 	public SearchStatusResponse() {
 	}
 
-	public boolean isIndexSyncRunning() {
-		return indexSyncRunning;
-	}
-
-	public SearchStatusResponse setIndexSyncRunning(boolean indexSyncRunning) {
-		this.indexSyncRunning = indexSyncRunning;
-		return this;
-	}
-
-	public Map<String, Object> getMetrics() {
+	public Map<String, EntityMetrics> getMetrics() {
 		return metrics;
 	}
 
-	public SearchStatusResponse setMetrics(Map<String, Object> metrics) {
+	public SearchStatusResponse setMetrics(Map<String, EntityMetrics> metrics) {
 		this.metrics = metrics;
 		return this;
 	}

@@ -1,31 +1,33 @@
 package com.gentics.mesh.graphql;
 
-import static graphql.GraphQL.newGraphQL;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.error.AbstractUnavailableException;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.event.MeshEventSender;
+import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.type.QueryTypeProvider;
+import com.gentics.mesh.parameter.SearchParameters;
+import com.gentics.mesh.util.SearchWaitUtil;
+import graphql.*;
+import graphql.language.SourceLocation;
+import io.reactivex.Completable;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.Vertx;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import com.gentics.madl.tx.Tx;
-import com.gentics.mesh.core.rest.error.AbstractUnavailableException;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphql.context.GraphQLContext;
-import com.gentics.mesh.graphql.type.QueryTypeProvider;
-import graphql.ExceptionWhileDataFetching;
-import graphql.ExecutionInput;
-import graphql.ExecutionResult;
-import graphql.GraphQL;
-import graphql.GraphQLError;
-import graphql.language.SourceLocation;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import static graphql.GraphQL.newGraphQL;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 @Singleton
 public class GraphQLHandler {
@@ -39,6 +41,12 @@ public class GraphQLHandler {
 	public Database db;
 
 	@Inject
+	public Vertx vertx;
+
+	@Inject
+	public SearchWaitUtil waitUtil;
+
+	@Inject
 	public GraphQLHandler() {
 	}
 
@@ -46,47 +54,56 @@ public class GraphQLHandler {
 	 * Handle the GraphQL query.
 	 *
 	 * @param gc
-	 *            Context
+	 * 		Context
 	 * @param body
-	 *            GraphQL query
+	 * 		GraphQL query
 	 */
 	public void handleQuery(GraphQLContext gc, String body) {
-		try (Tx tx = db.tx()) {
-			JsonObject queryJson = new JsonObject(body);
-			String query = queryJson.getString("query");
-			GraphQL graphQL = newGraphQL(typeProvider.getRootSchema(gc)).build();
-			ExecutionInput executionInput = ExecutionInput.newExecutionInput().query(query).context(gc).variables(extractVariables(queryJson))
-					.build();
-			ExecutionResult result = graphQL.execute(executionInput);
-			List<GraphQLError> errors = result.getErrors();
-			JsonObject response = new JsonObject();
-			if (!errors.isEmpty()) {
-				addErrors(errors, response);
-				log.warn("Encountered {" + errors.size() + "} errors while executing query {" + query + "}");
-				if (log.isDebugEnabled()) {
-					for (GraphQLError error : errors) {
-						String loc = "unknown location";
-						if (error.getLocations() != null) {
-							loc = error.getLocations().stream().map(Object::toString).collect(Collectors.joining(","));
+		waitUtil.awaitSync(gc).andThen(vertx.rxExecuteBlocking(promise -> {
+			try (Tx tx = db.tx()) {
+				JsonObject queryJson = new JsonObject(body);
+				String query = queryJson.getString("query");
+				GraphQL graphQL = newGraphQL(typeProvider.getRootSchema(gc)).build();
+				ExecutionInput executionInput = ExecutionInput
+						.newExecutionInput()
+						.query(query)
+						.context(gc)
+						.variables(extractVariables(queryJson))
+						.build();
+				ExecutionResult result = graphQL.execute(executionInput);
+				List<GraphQLError> errors = result.getErrors();
+				JsonObject response = new JsonObject();
+				if (!errors.isEmpty()) {
+					addErrors(errors, response);
+					if (log.isDebugEnabled()) {
+						log.debug("Encountered {" + errors.size() + "} errors while executing query {" + query + "}");
+						for (GraphQLError error : errors) {
+							String loc = "unknown location";
+							if (error.getLocations() != null) {
+								loc = error.getLocations().stream().map(Object::toString).collect(Collectors.joining(","));
+							}
+							log.debug("Error: " + error.getErrorType() + ":" + error.getMessage() + ":" + loc);
 						}
-						log.debug("Error: " + error.getErrorType() + ":" + error.getMessage() + ":" + loc);
 					}
 				}
+				if (result.getData() != null) {
+					Map<String, Object> data = result.getData();
+					response.put("data", new JsonObject(data));
+				}
+				gc.send(response.encodePrettily(), OK);
+				promise.complete();
+			} catch (Exception e) {
+				promise.fail(e);
 			}
-			if (result.getData() != null) {
-				Map<String, Object> data = (Map<String, Object>) result.getData();
-				response.put("data", new JsonObject(data));
-			}
-			gc.send(response.encodePrettily(), OK);
-		}
-
+		})).subscribe();
 	}
 
 	/**
 	 * Extracts the variables of a query as a map. Returns empty map if no variables are found.
 	 *
 	 * @param request
-	 *            The request body
+	 * 		The request body
+	 *
 	 * @return GraphQL variables
 	 */
 	private Map<String, Object> extractVariables(JsonObject request) {
@@ -100,7 +117,7 @@ public class GraphQLHandler {
 
 	/**
 	 * Add the listed errors to the response.
-	 * 
+	 *
 	 * @param errors
 	 * @param response
 	 */
