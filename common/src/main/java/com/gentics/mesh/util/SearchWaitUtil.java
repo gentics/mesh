@@ -2,6 +2,7 @@ package com.gentics.mesh.util;
 
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.event.MeshEventSender;
 import com.gentics.mesh.parameter.ParameterProviderContext;
 import io.reactivex.Completable;
@@ -30,6 +31,12 @@ public class SearchWaitUtil {
 
 	public Completable awaitSync(ParameterProviderContext ppc) {
 		if (!delayRequested(ppc)) {
+			return Completable.complete();
+		}
+
+		// We don't have to wait if no search is configured
+		ElasticSearchOptions searchOptions = options.getSearchOptions();
+		if (searchOptions == null || searchOptions.getUrl() == null) {
 			return Completable.complete();
 		}
 
