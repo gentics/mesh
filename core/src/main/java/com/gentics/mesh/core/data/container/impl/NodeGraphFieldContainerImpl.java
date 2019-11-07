@@ -9,8 +9,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_VERSION_KEY_PROPERTY;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
@@ -20,6 +20,9 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
+import static com.gentics.mesh.madl.field.FieldType.STRING;
+import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
+import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
@@ -81,7 +84,9 @@ import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.madl.type.VertexTypeDefinition;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.ETag;
@@ -114,17 +119,21 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	private Node parentNodeRef;
 
 	public static void init(TypeHandler type, IndexHandler index) {
-		type.createVertexType(NodeGraphFieldContainerImpl.class, MeshVertexImpl.class);
+		type.createType(vertexType(NodeGraphFieldContainerImpl.class, MeshVertexImpl.class)
+			.withField(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY, STRING));
+
+		index.createIndex(vertexIndex(NodeGraphFieldContainerImpl.class)
+			.withField(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY, STRING));
 	}
 
 	@Override
 	public void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> version) {
-		setSingleLinkOutTo(version, HAS_SCHEMA_CONTAINER_VERSION);
+		property(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY, version.getUuid());
 	}
 
 	@Override
 	public SchemaContainerVersion getSchemaContainerVersion() {
-		return out(HAS_SCHEMA_CONTAINER_VERSION, SchemaContainerVersionImpl.class).nextOrNull();
+		return db().index().findByUuid(SchemaContainerVersionImpl.class, property(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY));
 	}
 
 	@Override

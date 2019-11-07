@@ -61,7 +61,6 @@ public class GraphRelationships {
 		type.createType(edgeType(HAS_VERSION));
 		type.createType(edgeType(HAS_LATEST_VERSION));
 		type.createType(edgeType(HAS_PARENT_CONTAINER));
-		type.createType(edgeType(HAS_SCHEMA_CONTAINER_VERSION));
 
 		// Branches
 		type.createType(edgeType(HAS_SCHEMA_VERSION));
@@ -131,7 +130,7 @@ public class GraphRelationships {
 	public static final String HAS_SCHEMA_ROOT = "HAS_ROOT_SCHEMA";
 	public static final String HAS_SCHEMA_CONTAINER = "HAS_SCHEMA_CONTAINER";
 	public static final String SCHEMA_CONTAINER_KEY_PROPERTY = "schema";
-	public static final String HAS_SCHEMA_CONTAINER_VERSION = "HAS_SCHEMA_CONTAINER_VERSION";
+	public static final String SCHEMA_CONTAINER_VERSION_KEY_PROPERTY = "schemaVersion";
 	public static final String HAS_PARENT_CONTAINER = "HAS_PARENT_CONTAINER";
 	public static final String HAS_SCHEMA_CONTAINER_ITEM = "HAS_SCHEMA_CONTAINER_ITEM";
 	public static final String HAS_MICROSCHEMA_CONTAINER = "HAS_MICROSCHEMA_CONTAINER";

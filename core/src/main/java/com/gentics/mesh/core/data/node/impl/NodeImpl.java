@@ -169,10 +169,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createType(vertexType(NodeImpl.class, MeshVertexImpl.class)
-			.withField("schema", STRING));
+			.withField(SCHEMA_CONTAINER_KEY_PROPERTY, STRING));
 
 		index.createIndex(vertexIndex(NodeImpl.class)
-			.withField("schema", STRING));
+			.withField(SCHEMA_CONTAINER_KEY_PROPERTY, STRING));
 
 		index.createIndex(edgeIndex(HAS_PARENT_NODE));
 
