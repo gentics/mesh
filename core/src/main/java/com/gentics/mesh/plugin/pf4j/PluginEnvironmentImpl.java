@@ -10,7 +10,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
-import com.gentics.mesh.rest.RestAPIVersion;
+import com.gentics.mesh.RestAPIVersion;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 

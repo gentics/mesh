@@ -29,6 +29,8 @@ icon:plus[] GraphQL: The GraphQL Endpoint now supports the `wait` query-paramete
 
 icon:plus[] Clustering: The role of an instance has been added to the link:https://getmesh.io/docs/api/#admin_cluster_status_get[cluster status response].
 
+icon:plus[] Plugins: It is now possible to specify the API Version that should be used when creating a new admin client. link:https://github.com/gentics/mesh-incubator/issues/216[#216]
+
 icon:check[] Core: Some optimizations to uploading binaries have been made.
 
 [[v1.1.0]]
