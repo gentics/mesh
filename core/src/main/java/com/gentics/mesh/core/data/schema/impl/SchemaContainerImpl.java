@@ -2,8 +2,8 @@ package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_KEY_PROPERTY;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
@@ -32,6 +32,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.tinkerpop.blueprints.Vertex;
 
 /**
  * @see SchemaContainer
@@ -71,7 +72,12 @@ public class SchemaContainerImpl extends
 
 	@Override
 	public TraversalResult<? extends NodeImpl> getNodes() {
-		return in(HAS_SCHEMA_CONTAINER, NodeImpl.class);
+		Iterator<Vertex> vertices = mesh().database().getVertices(
+			NodeImpl.class,
+			new String[]{SCHEMA_CONTAINER_KEY_PROPERTY},
+			new Object[]{getUuid()}
+		);
+		return new TraversalResult<>(graph.frameExplicit(vertices, NodeImpl.class));
 	}
 
 	@Override
