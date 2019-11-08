@@ -229,7 +229,7 @@ public class SearchHandler extends AbstractQueryHandler {
 		// We just pass on the raw Elasticsearch hits for now, they will be processed later.
 		output.put(RS_HITS_FIELD, pageHits);
 		// We need to know how many hits Elasticsearch found, even if the GraphQL query will reduce this later.
-		output.put(RS_TOTAL_FIELD, hits.getInteger("total"));
+		output.put(RS_TOTAL_FIELD, getTotalHits(hits));
 		output.put(RS_PAGE_HITCOUNT_FIELD, pageHits.size());
 
 		JsonObject aggregations = result.getJsonObject("aggregations", new JsonObject());
@@ -245,6 +245,41 @@ public class SearchHandler extends AbstractQueryHandler {
 		}
 
 		return Single.just(output);
+	}
+
+	/**
+	 * Get the number of total hits from the search result.
+	 *
+	 * <p>
+	 *     Before Elasticsearch 7 the respective field in the response was just an integer. Since version 7.0.0 it
+	 *     is an object containing
+	 *     <ul>
+	 *         <li>value: the number of hits</li>
+	 *         <li>relation: "eq" or "gte" when "value" is exact or a lower bound respectively</li>
+	 *     </ul>
+	 * </p>
+	 *
+	 * <p>
+	 *     As of now "relation" will always be "eq", so we just ignore it.
+	 * </p>
+	 *
+	 * @param hits The search hits to get the total from
+	 * @return The number of total hits
+	 */
+	private int getTotalHits(JsonObject hits) {
+		Object total = hits.getValue("total");
+
+		if (total instanceof Integer) {
+			return (Integer) total;
+		} else if (total instanceof JsonObject) {
+			// TODO Indicate that the total is just a lower bound when Elasticsearch implements this. (As of now the
+			//  relation will always be "eq".)
+			return ((JsonObject) total).getInteger("value");
+		}
+
+		log.warn("Could not determine total hits");
+
+		return 0;
 	}
 
 	/**

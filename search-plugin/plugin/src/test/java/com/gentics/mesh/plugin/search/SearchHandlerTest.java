@@ -1,34 +1,5 @@
 package com.gentics.mesh.plugin.search;
 
-import static com.gentics.mesh.plugin.search.util.TestUtils.mockContext;
-import static com.gentics.mesh.plugin.search.util.TestUtils.mockRequest;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.anyVararg;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -42,11 +13,39 @@ import com.gentics.mesh.plugin.search.service.QueryService;
 import com.gentics.mesh.plugin.search.transformer.BasicHitTransformer;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.vertx.http.HttpResponseStatus;
-
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import static com.gentics.mesh.plugin.search.util.TestUtils.mockContext;
+import static com.gentics.mesh.plugin.search.util.TestUtils.mockRequest;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.anyVararg;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.contains;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for the {@link SearchHandler}.
@@ -263,6 +262,24 @@ public class SearchHandlerTest {
 		verify(pc.client(), times(1)).searchNodesRaw(anyString(), anyString(), anyVararg());
 		verify(pc.client(), times(1)).graphql(anyString(), any(), anyVararg());
 		verify(pc.response()).end(anyString());
+	}
+
+	/**
+	 * Test that the handler works with the new structure of the search response.
+	 */
+	@Test
+	public void testSearchResultNewTotal() throws IOException {
+		searchResult = mockRequest(new ObjectMapper().readValue(getClass().getResource("/results/searchResultNewTotal.json"), ObjectNode.class));
+
+		// The did you mean queries would mess up the count of the searchNodesRaw() invocations.
+		config.setDidYouMeanThreshold(0);
+
+		PluginContext pc = mockContext(DEFAULT_PROJECT, "/search", "q=test");
+
+		makeSearchRequest(pc, null);
+
+		verify(pc.client(), times(1)).searchNodesRaw(anyString(), anyString(), anyVararg());
+		verify(pc.response()).end(contains("\"totalHits\":2"));
 	}
 
 	/**

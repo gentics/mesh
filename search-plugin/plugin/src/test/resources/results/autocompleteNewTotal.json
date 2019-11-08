@@ -1,0 +1,19 @@
+{
+	"responses" : [
+		{
+			"hits" : {
+				"total": {
+					"value": 1,
+					"relation": "eq"
+				},
+				"hits" : [
+					{
+						"highlight" : {
+							"fields.teaser.auto" : [ "<p>%hb%testing%he%</p>" ]
+						}
+					}
+				]
+			}
+		}
+	]
+}
