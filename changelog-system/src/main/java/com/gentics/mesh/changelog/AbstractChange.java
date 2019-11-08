@@ -3,11 +3,13 @@ package com.gentics.mesh.changelog;
 import java.util.Iterator;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
@@ -208,6 +210,57 @@ public abstract class AbstractChange implements Change {
 	@Override
 	public void setDb(Database db) {
 		this.db = db;
+	}
+
+	/**
+	 * Iterates over some items, committing the transaction after some iterations.
+	 * @param iterable
+	 * @param commitInterval
+	 * @param consumer
+	 * @param <T>
+	 */
+	protected <T> void iterateWithCommit(Iterable<T> iterable, int commitInterval, Consumer<T> consumer) {
+		int count = 0;
+		for (T item : iterable) {
+			consumer.accept(item);
+			count++;
+			if (count % commitInterval == 0) {
+				log.info("Migrated {" + count + "} contents");
+				getGraph().commit();
+			}
+		}
+	}
+
+	/**
+	 * Iterates over some items, committing the transaction after 1000 iterations.
+	 * @param iterable
+	 * @param consumer
+	 */
+	protected <T> void iterateWithCommit(Iterable<T> iterable, Consumer<T> consumer) {
+		iterateWithCommit(iterable, 1000, consumer);
+	}
+
+	/**
+	 * Replaces the first edge with <code>direction</code> and <code>label</code> from all vertices of type <code>vertexClass</code>
+	 * with a property with key <code>uuidPropertyKey</code> containing the uuid of the connected vertex.
+	 *
+	 * @param vertexClass
+	 * @param direction
+	 * @param label
+	 * @param uuidPropertyKey
+	 */
+	protected void replaceSingleEdge(String vertexClass, Direction direction, String label, String uuidPropertyKey) {
+		iterateWithCommit(getGraph().getVertices("@class", vertexClass), node -> {
+			Iterator<Edge> edges = node.getEdges(direction, label).iterator();
+			if (!edges.hasNext()) {
+				log.warn("Expected {} with uuid {} to have {} edge {}, but none was found", vertexClass, node.getProperty("uuid"), direction, label);
+				return;
+			}
+			Edge edge = edges.next();
+			String uuid = edge.getVertex(direction.opposite()).getProperty("uuid");
+			node.setProperty(uuidPropertyKey, uuid);
+			edge.remove();
+		});
 	}
 
 	public void debug(Element element) {
