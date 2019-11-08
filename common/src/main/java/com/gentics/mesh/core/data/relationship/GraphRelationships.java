@@ -13,7 +13,8 @@ public class GraphRelationships {
 	/**
 	 * Initialise the graph database by adding all needed edge types and indices.
 	 * 
-	 * @param db
+	 * @param type
+	 * @param index
 	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 
@@ -41,7 +42,6 @@ public class GraphRelationships {
 		type.createType(edgeType(HAS_SCHEMA_TYPE));
 
 		type.createType(edgeType(HAS_SCHEMA_CONTAINER));
-		type.createType(edgeType(HAS_MICROSCHEMA_CONTAINER));
 		type.createType(edgeType(HAS_MICROSCHEMA_ROOT));
 
 		type.createType(edgeType(HAS_NODE_ROOT));
@@ -133,7 +133,7 @@ public class GraphRelationships {
 	public static final String SCHEMA_CONTAINER_VERSION_KEY_PROPERTY = "schemaVersion";
 	public static final String HAS_PARENT_CONTAINER = "HAS_PARENT_CONTAINER";
 	public static final String HAS_SCHEMA_CONTAINER_ITEM = "HAS_SCHEMA_CONTAINER_ITEM";
-	public static final String HAS_MICROSCHEMA_CONTAINER = "HAS_MICROSCHEMA_CONTAINER";
+	public static final String MICROSCHEMA_VERSION_KEY_PROPERTY = "microschema";
 
 	// Roots
 	public static final String HAS_NODE_ROOT = "HAS_NODE_ROOT";
