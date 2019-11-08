@@ -4,6 +4,7 @@
 
 * The plugin stores user-specific lists of strings (favorites) for types (favorite-type)
 * Anonymous calls are not allowed
+* favorite-types are configured in the `config.yml` (cross project)
 * All values can be read for favorite-type
 * Single value can be added to favorite-type
 * Single value can be deleted from favorite-type
