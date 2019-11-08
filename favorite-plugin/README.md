@@ -5,14 +5,15 @@
 * The plugin stores user-specific lists of strings (favorites) for types (favorite-type)
 * Anonymous calls are not allowed
 * favorite-types are configured in the `config.yml` (cross project)
-* All values can be read for favorite-type
-* Single value can be added to favorite-type
-* Single value can be deleted from favorite-type
-* All values can be overwritten for favorite-type
+* The following REST calls are supported
+    * Get all values for a favorite-type
+    * Add single value to favorite-type
+    * Remove single value from favorite-type
+    * Overwrite all values for favorite-type
 
 ## REST API
 
-### Get Favorits
+### Get favorites
 ```http
 GET /api/v1/[project]/plugins/favorite/[type]
 ```
@@ -37,6 +38,8 @@ POST /api/v1/[project]/plugins/favorite/[type]/[value]
 DELETE /api/v1/[project]/plugins/favorite/[type]/[value]
 ```
 
+If duplicates are allowed, all occurrences of the value will be removed.
+
 ### Overwrite favorite values
 ```http
 POST /api/v1/[project]/plugins/favorite/[type]
@@ -59,14 +62,17 @@ types:
         maxEntries: -1
         allowDuplicates: false
         reorderDuplicates: false
+        addToList: append
     infobox:
         maxEntries: -1
         allowDuplicates: false
         reorderDuplicates: false
+        addToList: append
     ongoing_procedures:
         maxEntries: 3
         allowDuplicates: false
         reorderDuplicates: true
+        addToList: append
 ```
 
 | Key | Type | Description | Default value |
@@ -76,3 +82,4 @@ types:
 | maxEntries | integer | Maximum number of entries stored for the type. -1 for unbounded | -1 |
 | allowDuplicates   | boolean          | Flag to allow duplicate values for the type | false |
 | reorderDuplicates | boolean          | Flag to specify behaviour for POSTed duplicates, if `allowDuplicates` is `false`. If set to `false`, duplicates will just be ignored, if `true` they will be reordered to the back of the list | false |
+| addToList  | `append` or `prepend` | POSTed values will be added at the end (`append`) or at the start (`prepend`) of the list | `append` |
