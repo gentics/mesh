@@ -93,6 +93,7 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -508,7 +509,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public SchemaContainer getSchemaContainer() {
-		return mesh().boot().schemaContainerRoot().findByUuid(property(SCHEMA_CONTAINER_KEY_PROPERTY));
+		return db().index().findByUuid(SchemaContainerImpl.class, property(SCHEMA_CONTAINER_KEY_PROPERTY));
 	}
 
 	@Override
