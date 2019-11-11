@@ -28,6 +28,7 @@ import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
@@ -44,9 +45,12 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(MicronodeMigrationHandler.class);
 
+	private final HandlerUtilities handlerUtilities;
+
 	@Inject
-	public MicronodeMigrationHandler(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider) {
+	public MicronodeMigrationHandler(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, HandlerUtilities handlerUtilities) {
 		super(db, binaryFieldHandler, metrics, batchProvider);
+		this.handlerUtilities = handlerUtilities;
 	}
 
 	/**
@@ -101,8 +105,14 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 			}
 
 			List<Exception> errorsDetected = migrateLoop(fieldContainersResult, cause, status,
-				(batch, container, errors) -> migrateMicronodeContainer(ac,
-					batch, branch, fromVersion, toVersion, container, touchedFields, errors));
+				(batch, container, errors) -> {
+					handlerUtilities.lock();
+					try {
+						migrateMicronodeContainer(ac, batch, branch, fromVersion, toVersion, container, touchedFields, errors);
+					} finally {
+						handlerUtilities.unlock();
+					}
+				});
 
 			Completable result = Completable.complete();
 			if (!errorsDetected.isEmpty()) {

@@ -31,6 +31,8 @@ icon:plus[] Clustering: The role of an instance has been added to the link:https
 
 icon:check[] Core: Some optimizations to uploading binaries have been made.
 
+icon:check[] Core: Fixed an issues that sometimes caused errors when performing write requests during a schema migration.
+
 icon:check[] UI: The UI has been updated to version link:https://github.com/gentics/mesh-ui/blob/develop/CHANGELOG.md#102---2019-11-11[1.0.2].
 
 [[v1.1.0]]
