@@ -53,12 +53,12 @@
         "type" : "object",
         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
         "properties" : {
-          "required" : {
-            "type" : "boolean"
-          },
           "elasticsearch" : {
             "type" : "object",
             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+          },
+          "required" : {
+            "type" : "boolean"
           },
           "label" : {
             "type" : "string",

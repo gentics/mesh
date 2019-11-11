@@ -19,6 +19,9 @@
           },
           "startDate" : {
             "type" : "string"
+          },
+          "role" : {
+            "type" : "string"
           }
         }
       }

@@ -1,3 +1,15 @@
 {
-  "instances" : [ ]
+  "instances" : [ {
+    "address" : "127.0.0.1:2424",
+    "name" : "node1",
+    "status" : "ONLINE",
+    "startDate" : "2019-11-04T13:54:59.131Z",
+    "role" : "MASTER"
+  }, {
+    "address" : "127.0.0.1:2425",
+    "name" : "node2",
+    "status" : "ONLINE",
+    "startDate" : "2019-11-04T13:54:59.131Z",
+    "role" : "REPLICA"
+  } ]
 }
