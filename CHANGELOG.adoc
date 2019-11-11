@@ -23,7 +23,8 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
-[[Unreleased]]
+[[v1.1.1]]
+== 1.1.1 (11.11.2019)
 
 icon:plus[] GraphQL: The GraphQL Endpoint now supports the `wait` query-parameter like the Search Endpoint does. link:https://github.com/gentics/mesh/issues/805[#805]
 
