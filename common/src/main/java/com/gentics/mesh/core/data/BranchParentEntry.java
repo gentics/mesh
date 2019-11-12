@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.node.impl;
+package com.gentics.mesh.core.data;
 
 import java.security.InvalidParameterException;
 import java.util.Objects;
