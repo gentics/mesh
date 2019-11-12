@@ -543,6 +543,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void setParentNode(String branchUuid, Node parent) {
 		String parentUuid = parent.getUuid();
+		removeParent(branchUuid);
 		addToStringSetProperty(PARENTS_KEY_PROPERTY, parentUuid);
 		addToStringSetProperty(BRANCH_PARENTS_KEY_PROPERTY, branchParentEntry(branchUuid, parentUuid).toString());
 	}
@@ -1490,31 +1491,32 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (getGraphFieldContainerCount() == 0) {
 			delete(bac);
 		} else {
-			// Otherwise we need to remove the "parent" edge for the branch
-			// first remove the "parent" edge (because the node itself will
-			// probably not be deleted, but just removed from the branch)
-			Set<String> branchParents = property(BRANCH_PARENTS_KEY_PROPERTY);
-			if (branchParents != null) {
-				// Divide parents by branch uuid.
-				Map<Boolean, Set<String>> partitions = branchParents.stream()
-					.collect(Collectors.partitioningBy(
-						parent -> BranchParentEntry.fromString(parent).getBranchUuid().equals(branchUuid),
-						Collectors.toSet()
-					));
-				// Only set parents that don't that are not in the branch
-				Set<String> newParents = partitions.get(false);
-				property(BRANCH_PARENTS_KEY_PROPERTY, newParents);
+			removeParent(branchUuid);
+		}
+	}
 
-				// If the removed parent is not parent of any other branch, remove it from the common parent set.
-				Set<String> removedParents = partitions.get(true);
-				if (!removedParents.isEmpty()) {
-					String removedParent = BranchParentEntry.fromString(removedParents.iterator().next()).getParentUuid();
-					boolean hasParent = newParents.stream().anyMatch(parent -> BranchParentEntry.fromString(parent).getParentUuid().equals(removedParent));
-					if (!hasParent) {
-						Set<String> parents = property(PARENTS_KEY_PROPERTY);
-						parents.remove(removedParent);
-						property(PARENTS_KEY_PROPERTY, parents);
-					}
+	private void removeParent(String branchUuid) {
+		Set<String> branchParents = property(BRANCH_PARENTS_KEY_PROPERTY);
+		if (branchParents != null) {
+			// Divide parents by branch uuid.
+			Map<Boolean, Set<String>> partitions = branchParents.stream()
+				.collect(Collectors.partitioningBy(
+					parent -> BranchParentEntry.fromString(parent).getBranchUuid().equals(branchUuid),
+					Collectors.toSet()
+				));
+			// Only set parents that don't that are not in the branch
+			Set<String> newParents = partitions.get(false);
+			property(BRANCH_PARENTS_KEY_PROPERTY, newParents);
+
+			// If the removed parent is not parent of any other branch, remove it from the common parent set.
+			Set<String> removedParents = partitions.get(true);
+			if (!removedParents.isEmpty()) {
+				String removedParent = BranchParentEntry.fromString(removedParents.iterator().next()).getParentUuid();
+				boolean hasParent = newParents.stream().anyMatch(parent -> BranchParentEntry.fromString(parent).getParentUuid().equals(removedParent));
+				if (!hasParent) {
+					Set<String> parents = property(PARENTS_KEY_PROPERTY);
+					parents.remove(removedParent);
+					property(PARENTS_KEY_PROPERTY, parents);
 				}
 			}
 		}

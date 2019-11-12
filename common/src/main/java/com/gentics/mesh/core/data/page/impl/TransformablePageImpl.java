@@ -23,7 +23,11 @@ public class TransformablePageImpl<T extends TransformableElement<? extends Rest
 
 	@Override
 	public long getPageCount() {
-		return (long) Math.ceil((double) elements.size() / pagingParameters.getPerPage());
+		if (pagingParameters.getPerPage() == null) {
+			return 1;
+		} else {
+			return (long) Math.ceil((double) elements.size() / pagingParameters.getPerPage());
+		}
 	}
 
 	@Override
