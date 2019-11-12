@@ -277,7 +277,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branchUuid
 	 * @return
 	 */
-	TraversalResult<Node> getChildren(String branchUuid);
+	TraversalResult<? extends Node> getChildren(String branchUuid);
 
 	/**
 	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.
@@ -296,7 +296,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            edge type
 	 * @return
 	 */
-	TraversalResult<? extends Node> getChildren(MeshAuthUser requestUser, String branchUuid, List<String> languageTags, ContainerType type);
+	Stream<? extends Node> getChildren(MeshAuthUser requestUser, String branchUuid, List<String> languageTags, ContainerType type);
 
 	/**
 	 * Returns the parent node of this node.

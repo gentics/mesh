@@ -10,6 +10,8 @@ import java.util.Map.Entry;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
@@ -340,9 +342,14 @@ public class OrientDBIndexHandler implements IndexHandler {
 		FieldMap fields = def.getFields();
 		boolean unique = def.isUnique();
 
+		if (!StringUtils.isEmpty(def.getPostfix())) {
+			indexName = indexName + "_" + def.getPostfix();
+		}
+
 		if (log.isDebugEnabled()) {
 			log.debug("Adding vertex index for class {" + name + "}");
 		}
+
 		OrientGraphNoTx noTx = db.get().getTxProvider().rawNoTx();
 		try {
 			OrientVertexType v = noTx.getVertexType(name);

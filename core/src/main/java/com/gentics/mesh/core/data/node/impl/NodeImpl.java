@@ -1,20 +1,20 @@
 package com.gentics.mesh.core.data.node.impl;
 
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_INDEX_NAME;
+import static com.gentics.mesh.core.data.node.impl.BranchParentEntry.branchParentEntry;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.BRANCH_PARENTS_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.PARENTS_KEY_PROPERTY;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
@@ -26,14 +26,11 @@ import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
-import static com.gentics.mesh.madl.field.FieldType.LINK;
-import static com.gentics.mesh.madl.field.FieldType.STRING;
-import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
+import static com.gentics.mesh.madl.field.FieldType.STRING_SET;
+import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
-import static com.tinkerpop.blueprints.Direction.IN;
-import static com.tinkerpop.blueprints.Direction.OUT;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -51,9 +48,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -89,6 +86,7 @@ import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
+import com.gentics.mesh.core.data.page.impl.TransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -149,11 +147,7 @@ import com.gentics.mesh.util.URIUtils;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -168,19 +162,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
 	public static void init(TypeHandler type, IndexHandler index) {
-		type.createType(vertexType(NodeImpl.class, MeshVertexImpl.class));
-		index.createIndex(edgeIndex(HAS_PARENT_NODE));
+		type.createType(vertexType(NodeImpl.class, MeshVertexImpl.class)
+			.withField(PARENTS_KEY_PROPERTY, STRING_SET)
+			.withField(BRANCH_PARENTS_KEY_PROPERTY, STRING_SET));
 
-		index.createIndex(edgeIndex(HAS_PARENT_NODE)
-			.withPostfix("branch_out")
-			.withField("out", LINK)
-			.withField(BRANCH_UUID_KEY, STRING));
+		index.createIndex(vertexIndex(NodeImpl.class)
+			.withPostfix("parents")
+			.withField(PARENTS_KEY_PROPERTY, STRING_SET));
 
-		index.createIndex(edgeIndex(HAS_PARENT_NODE)
-			.withPostfix("branch")
-			.withField("in", LINK)
-			.withField(BRANCH_UUID_KEY, STRING));
-
+		index.createIndex(vertexIndex(NodeImpl.class)
+			.withPostfix("branch_parents")
+			.withField(BRANCH_PARENTS_KEY_PROPERTY, STRING_SET));
 	}
 
 	@Override
@@ -508,60 +500,50 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public TraversalResult<? extends Node> getChildren() {
-		return in(HAS_PARENT_NODE, NodeImpl.class);
+		return new TraversalResult<>(graph.frameExplicit(db().getVertices(
+			NodeImpl.class,
+			new String[]{PARENTS_KEY_PROPERTY},
+			new Object[]{getUuid()}
+		), NodeImpl.class));
 	}
 
 	@Override
-	public TraversalResult<Node> getChildren(String branchUuid) {
-		FramedGraph graph = Tx.get().getGraph();
-		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_branch", db().createComposedIndexKey(id(), branchUuid));
-		Iterator<Edge> it = edges.iterator();
-		Iterable<Edge> iterable = () -> it;
-		Stream<Edge> stream = StreamSupport.stream(iterable.spliterator(), false);
-
-		Stream<Node> nstream = stream.map(edge -> {
-			Vertex vertex = edge.getVertex(OUT);
-			return graph.frameElementExplicit(vertex, NodeImpl.class);
-		});
-		return new TraversalResult<>(() -> nstream.iterator());
+	public TraversalResult<? extends Node> getChildren(String branchUuid) {
+		return new TraversalResult<>(graph.frameExplicit(db().getVertices(
+			NodeImpl.class,
+			new String[]{BRANCH_PARENTS_KEY_PROPERTY},
+			new Object[]{branchParentEntry(branchUuid, getUuid())}
+		), NodeImpl.class));
 	}
 
 	@Override
 	public Stream<Node> getChildrenStream(InternalActionContext ac) {
-		FramedGraph graph = Tx.get().getGraph();
 		MeshAuthUser user = ac.getUser();
-
-		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_branch",
-			db().createComposedIndexKey(id(), ac.getBranch().getUuid()));
-		Iterator<Edge> it = edges.iterator();
-		Iterable<Edge> iterable = () -> it;
-		Stream<Edge> stream = StreamSupport.stream(iterable.spliterator(), false);
-		return stream
-			.map(edge -> edge.getVertex(OUT))
-			.filter(vertex -> {
-				Object id = vertex.getId();
-				return user.hasPermissionForId(id, READ_PERM) || user.hasPermissionForId(id, READ_PUBLISHED_PERM);
-			})
-			.map(vertex -> graph.frameElementExplicit(vertex, NodeImpl.class));
+		return (Stream<Node>)getChildren(ac.getBranch().getUuid())
+			.stream()
+			.filter(node -> user.hasPermission(node, READ_PERM) || user.hasPermission(node, READ_PUBLISHED_PERM));
 	}
 
 	@Override
 	public Node getParentNode(String branchUuid) {
-		FramedGraph graph = Tx.get().getGraph();
-		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_branch_out", db().createComposedIndexKey(id(), branchUuid));
-		Iterator<Edge> it = edges.iterator();
-		if (it.hasNext()) {
-			Vertex in = it.next().getVertex(IN);
-			return graph.frameElementExplicit(in, NodeImpl.class);
-		} else {
+		Set<String> parents = property(BRANCH_PARENTS_KEY_PROPERTY);
+		if (parents == null) {
 			return null;
+		} else {
+			return parents.stream()
+				.map(BranchParentEntry::fromString)
+				.filter(entry -> entry.getBranchUuid().equals(branchUuid))
+				.findAny()
+				.map(entry -> db().index().findByUuid(NodeImpl.class, entry.getParentUuid()))
+				.orElse(null);
 		}
 	}
 
 	@Override
 	public void setParentNode(String branchUuid, Node parent) {
-		outE(HAS_PARENT_NODE).has(BRANCH_UUID_KEY, branchUuid).removeAll();
-		addFramedEdge(HAS_PARENT_NODE, parent).setProperty(BRANCH_UUID_KEY, branchUuid);
+		String parentUuid = parent.getUuid();
+		addToStringSetProperty(PARENTS_KEY_PROPERTY, parentUuid);
+		addToStringSetProperty(BRANCH_PARENTS_KEY_PROPERTY, branchParentEntry(branchUuid, parentUuid).toString());
 	}
 
 	@Override
@@ -1011,11 +993,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		StringBuilder builder = new StringBuilder();
 		builder.append(node.getETag(ac));
 
-		TraversalResult<? extends Node> nodes = node.getChildren(ac.getUser(), branchUuid, null, type);
+		List<? extends Node> nodes = node.getChildren(ac.getUser(), branchUuid, null, type).collect(Collectors.toList());
 
 		// Abort recursion when we reach the max level or when no more children
 		// can be found.
-		if (level == maxDepth || !nodes.iterator().hasNext()) {
+		if (level == maxDepth || nodes.isEmpty()) {
 			return builder.toString();
 		}
 		for (Node child : nodes) {
@@ -1051,7 +1033,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	private Single<NavigationResponse> buildNavigationResponse(InternalActionContext ac, Node node, int maxDepth, int level,
 		NavigationResponse navigation, NavigationElement currentElement, String branchUuid, ContainerType type) {
-		TraversalResult<? extends Node> nodes = node.getChildren(ac.getUser(), branchUuid, null, type);
+		List<? extends Node> nodes = node.getChildren(ac.getUser(), branchUuid, null, type).collect(Collectors.toList());
 		List<Single<NavigationResponse>> obsResponses = new ArrayList<>();
 
 		obsResponses.add(node.transformToRest(ac, 0).map(response -> {
@@ -1063,7 +1045,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Abort recursion when we reach the max level or when no more children
 		// can be found.
-		if (level == maxDepth || !nodes.iterator().hasNext()) {
+		if (level == maxDepth || nodes.isEmpty()) {
 			List<Observable<NavigationResponse>> obsList = obsResponses.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
 			return Observable.merge(obsList).lastOrError();
 		}
@@ -1510,80 +1492,50 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// Otherwise we need to remove the "parent" edge for the branch
 			// first remove the "parent" edge (because the node itself will
 			// probably not be deleted, but just removed from the branch)
-			outE(HAS_PARENT_NODE).has(BRANCH_UUID_KEY, branchUuid).removeAll();
-		}
-	}
+			Set<String> branchParents = property(BRANCH_PARENTS_KEY_PROPERTY);
+			if (branchParents != null) {
+				// Divide parents by branch uuid.
+				Map<Boolean, Set<String>> partitions = branchParents.stream()
+					.collect(Collectors.partitioningBy(
+						parent -> BranchParentEntry.fromString(parent).getBranchUuid().equals(branchUuid),
+						Collectors.toSet()
+					));
+				// Only set parents that don't that are not in the branch
+				Set<String> newParents = partitions.get(false);
+				property(BRANCH_PARENTS_KEY_PROPERTY, newParents);
 
-	/**
-	 * Get a vertex traversal to find the children of this node, this user has read permission for.
-	 *
-	 * @param requestUser
-	 *            user
-	 * @param branchUuid
-	 *            branch uuid
-	 * @param languageTags
-	 *            Only list nodes which match the given language tags. Don't filter if the language tags list is null
-	 * @param type
-	 *            edge type
-	 * @return vertex traversal
-	 */
-	private VertexTraversal<?, ?, ?> getChildrenTraversal(MeshAuthUser requestUser, String branchUuid, List<String> languageTags,
-		ContainerType type) {
-		String permLabel = type == PUBLISHED ? READ_PUBLISHED_PERM.label() : READ_PERM.label();
-
-		VertexTraversal<?, ?, ?> traversal = null;
-		if (branchUuid != null) {
-			traversal = inE(HAS_PARENT_NODE).has(BRANCH_UUID_KEY, branchUuid).outV();
-		} else {
-			traversal = in(HAS_PARENT_NODE);
+				// If the removed parent is not parent of any other branch, remove it from the common parent set.
+				Set<String> removedParents = partitions.get(true);
+				if (!removedParents.isEmpty()) {
+					String removedParent = BranchParentEntry.fromString(removedParents.iterator().next()).getParentUuid();
+					boolean hasParent = newParents.stream().anyMatch(parent -> BranchParentEntry.fromString(parent).getParentUuid().equals(removedParent));
+					if (!hasParent) {
+						Set<String> parents = property(PARENTS_KEY_PROPERTY);
+						parents.remove(removedParent);
+						property(PARENTS_KEY_PROPERTY, parents);
+					}
+				}
+			}
 		}
-		traversal = traversal.mark().in(permLabel).out(HAS_ROLE).in(HAS_USER).retain(requestUser).back();
-		if (branchUuid != null || type != null) {
-			EdgeTraversal<?, ?, ?> edgeTraversal = traversal.mark().outE(HAS_FIELD_CONTAINER);
-			if (branchUuid != null) {
-				edgeTraversal = edgeTraversal.has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid);
-			}
-			if (type != null) {
-				edgeTraversal = edgeTraversal.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
-			}
-
-			// Filter out nodes which are not listed in the given language tags
-			if (languageTags != null) {
-				edgeTraversal = edgeTraversal.filter(edge -> {
-					String languageTag = edge.getProperty(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY);
-					return languageTags.contains(languageTag);
-				});
-			}
-			traversal = (VertexTraversal<?, ?, ?>) edgeTraversal.outV().back();
-		}
-		return traversal;
 	}
 
 	@Override
-	public TraversalResult<? extends Node> getChildren(MeshAuthUser requestUser, String branchUuid, List<String> languageTags, ContainerType type) {
-		return new TraversalResult<>(getChildrenTraversal(requestUser, branchUuid, languageTags, type).frameExplicit(NodeImpl.class));
+	public Stream<? extends Node> getChildren(MeshAuthUser requestUser, String branchUuid, List<String> languageTags, ContainerType type) {
+		GraphPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
+
+		Predicate<Node> languageFilter = languageTags == null || languageTags.isEmpty()
+			? item -> true
+			: item -> languageTags.stream().anyMatch(languageTag -> item.getGraphFieldContainer(languageTag, branchUuid, type) != null);
+
+		return getChildren(branchUuid).stream()
+			.filter(languageFilter.and(item -> requestUser.hasPermission(item, perm)));
 	}
 
 	@Override
 	public TransformablePage<? extends Node> getChildren(InternalActionContext ac, List<String> languageTags, String branchUuid, ContainerType type,
 		PagingParameters pagingInfo) {
-		String indexName = "e." + HAS_PARENT_NODE.toLowerCase() + "_branch";
-		Object indexKey = db().createComposedIndexKey(id(), branchUuid);
-
-		GraphPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
-		if (languageTags == null) {
-			return new DynamicTransformablePageImpl<>(ac.getUser(), indexName, indexKey, Direction.OUT, NodeImpl.class, pagingInfo, perm, null, true);
-		} else {
-			return new DynamicTransformablePageImpl<>(ac.getUser(), indexName, indexKey, Direction.OUT, NodeImpl.class, pagingInfo, perm, (item) -> {
-				// Filter out nodes which do not provide one of the specified language tags and type
-				for (String languageTag : languageTags) {
-					if (item.getGraphFieldContainerEdge(languageTag, branchUuid, type) != null) {
-						return true;
-					}
-				}
-				return false;
-			}, true);
-		}
+		return new TransformablePageImpl<>(getChildren(ac.getUser(), branchUuid, languageTags, type)
+			.collect(Collectors.toList()), pagingInfo);
 	}
 
 	@Override

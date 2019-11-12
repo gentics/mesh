@@ -1,5 +1,8 @@
 package com.gentics.mesh.graphdb.model;
 
+import java.util.Collections;
+import java.util.Set;
+
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.ElementFrame;
@@ -51,9 +54,19 @@ public interface MeshElement extends ElementFrame {
 		return getProperty(name);
 	}
 
+	default void addToStringSetProperty(String propertyKey, String value) {
+		Set<String> set = property(propertyKey);
+		if (set == null) {
+			set = Collections.singleton(value);
+		} else {
+			set.add(value);
+		}
+		property(propertyKey, set);
+	}
+
 	/**
 	 * Set the property.
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -63,7 +76,7 @@ public interface MeshElement extends ElementFrame {
 
 	/**
 	 * Remove the property with the given key.
-	 * 
+	 *
 	 * @param key
 	 */
 	default void removeProperty(String key) {
@@ -72,21 +85,21 @@ public interface MeshElement extends ElementFrame {
 
 	/**
 	 * Return the db reference.
-	 * 
+	 *
 	 * @return
 	 */
 	Database db();
 
 	/**
 	 * Return the used Vert.x instance.
-	 * 
+	 *
 	 * @return
 	 */
 	Vertx vertx();
 
 	/**
 	 * Return the mesh options.
-	 * 
+	 *
 	 * @return
 	 */
 	MeshOptions options();
