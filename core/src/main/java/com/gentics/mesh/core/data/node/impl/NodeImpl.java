@@ -149,6 +149,7 @@ import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -510,19 +511,25 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public TraversalResult<? extends Node> getChildren(String branchUuid) {
-		return new TraversalResult<>(graph.frameExplicit(db().getVertices(
+		return new TraversalResult<>(graph.frameExplicit(getUnframedChildren(branchUuid), NodeImpl.class));
+	}
+
+	private Iterator<Vertex> getUnframedChildren(String branchUuid) {
+		return db().getVertices(
 			NodeImpl.class,
 			new String[]{BRANCH_PARENTS_KEY_PROPERTY},
-			new Object[]{branchParentEntry(branchUuid, getUuid())}
-		), NodeImpl.class));
+			new Object[]{branchParentEntry(branchUuid, getUuid()).encode()}
+		);
 	}
 
 	@Override
 	public Stream<Node> getChildrenStream(InternalActionContext ac) {
 		MeshAuthUser user = ac.getUser();
-		return (Stream<Node>)getChildren(ac.getBranch().getUuid())
-			.stream()
-			.filter(node -> user.hasPermission(node, READ_PERM) || user.hasPermission(node, READ_PUBLISHED_PERM));
+		return toStream(getUnframedChildren(ac.getBranch().getUuid()))
+			.filter(node -> {
+				id = node.getId();
+				return user.hasPermissionForId(id, READ_PERM) || user.hasPermissionForId(id, READ_PUBLISHED_PERM);
+			}).map(node -> graph.frameElementExplicit(node, NodeImpl.class));
 	}
 
 	@Override
@@ -545,7 +552,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String parentUuid = parent.getUuid();
 		removeParent(branchUuid);
 		addToStringSetProperty(PARENTS_KEY_PROPERTY, parentUuid);
-		addToStringSetProperty(BRANCH_PARENTS_KEY_PROPERTY, branchParentEntry(branchUuid, parentUuid).toString());
+		addToStringSetProperty(BRANCH_PARENTS_KEY_PROPERTY, branchParentEntry(branchUuid, parentUuid).encode());
 	}
 
 	@Override
@@ -1504,16 +1511,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					parent -> BranchParentEntry.fromString(parent).getBranchUuid().equals(branchUuid),
 					Collectors.toSet()
 				));
-			// Only set parents that don't that are not in the branch
-			Set<String> newParents = partitions.get(false);
-			property(BRANCH_PARENTS_KEY_PROPERTY, newParents);
 
-			// If the removed parent is not parent of any other branch, remove it from the common parent set.
 			Set<String> removedParents = partitions.get(true);
 			if (!removedParents.isEmpty()) {
+				// If any parents were removed, we set the new set of parents back to the vertex.
+				Set<String> newParents = partitions.get(false);
+				property(BRANCH_PARENTS_KEY_PROPERTY, newParents);
+
 				String removedParent = BranchParentEntry.fromString(removedParents.iterator().next()).getParentUuid();
-				boolean hasParent = newParents.stream().anyMatch(parent -> BranchParentEntry.fromString(parent).getParentUuid().equals(removedParent));
-				if (!hasParent) {
+				// If the removed parent is not parent of any other branch, remove it from the common parent set.
+				boolean parentStillExists = newParents.stream().anyMatch(parent -> BranchParentEntry.fromString(parent).getParentUuid().equals(removedParent));
+				if (!parentStillExists) {
 					Set<String> parents = property(PARENTS_KEY_PROPERTY);
 					parents.remove(removedParent);
 					property(PARENTS_KEY_PROPERTY, parents);

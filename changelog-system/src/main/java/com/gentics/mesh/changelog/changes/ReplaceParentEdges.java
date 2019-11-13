@@ -41,7 +41,7 @@ public class ReplaceParentEdges extends AbstractChange {
 					continue;
 				}
 				parents.add(parentUuid);
-				branchParents.add(branchParentEntry(branchUuid, parentUuid).toString());
+				branchParents.add(branchParentEntry(branchUuid, parentUuid).encode());
 				edge.remove();
 			}
 			vertex.setProperty(PARENTS_KEY_PROPERTY, parents);
