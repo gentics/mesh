@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.endpoint.admin.consistency.check;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
@@ -44,13 +43,14 @@ public class NodeCheck extends AbstractConsistencyCheck {
 	private void checkNode(Node node, ConsistencyCheckResult result) {
 		String uuid = node.getUuid();
 
-		checkOut(node, ASSIGNED_TO_PROJECT, ProjectImpl.class, result, HIGH);
 		checkOut(node, HAS_SCHEMA_CONTAINER, SchemaContainerImpl.class, result, HIGH);
 		// checkOut(node, HAS_CREATOR, UserImpl.class, response, MEDIUM);
 
 		boolean isBaseNode = false;
-		Project project = node.out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
-		if (project != null) {
+		Project project = node.getProject();
+		if (project == null) {
+			result.addInconsistency("The node has no project", uuid, HIGH);
+		} else {
 			Project rootNodeProject = node.in(HAS_ROOT_NODE).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
 			if (rootNodeProject != null) {
 				isBaseNode = true;

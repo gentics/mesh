@@ -9,6 +9,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NOD
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_MICROSCHEMA_ASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_MICROSCHEMA_UNASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_ASSIGNED;
@@ -194,9 +195,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			Language language = mesh().boot().languageRoot().findByLanguageTag(mesh().boot().mesh().getOptions().getDefaultLanguage());
 			baseNode.createGraphFieldContainer(language.getLanguageTag(), getLatestBranch(), creator);
 			setBaseNode(baseNode);
-			// Add the node to the aggregation nodes
-			getNodeRoot().addNode(baseNode);
-			mesh().boot().nodeRoot().addNode(baseNode);
 		}
 		return baseNode;
 	}
@@ -213,6 +211,12 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 		// Remove the tagfamilies from the index
 		getTagFamilyRoot().delete(bac);
+
+		// Remove all nodes in this project
+		for (Node node : graph.getFramedVerticesExplicit("NodeImpl." + PROJECT_KEY_PROPERTY, getUuid(), NodeImpl.class)) {
+			node.delete(bac, true, false);
+			bac.inc();
+		}
 
 		// Finally also remove the node root
 		getNodeRoot().delete(bac);

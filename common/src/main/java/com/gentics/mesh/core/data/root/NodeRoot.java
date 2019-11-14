@@ -1,15 +1,9 @@
 package com.gentics.mesh.core.data.root;
 
-import java.util.List;
-
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.error.InvalidArgumentException;
-import com.gentics.mesh.parameter.PagingParameters;
 
 /**
  * Aggregation node for nodes.
@@ -17,19 +11,6 @@ import com.gentics.mesh.parameter.PagingParameters;
 public interface NodeRoot extends RootVertex<Node> {
 
 	public static final String TYPE = "nodes";
-
-	/**
-	 * Find all nodes that are visible for the user.
-	 * 
-	 * @param requestUser
-	 *            User that is used to check view permission
-	 * @param languageTags
-	 * @param pagingInfo
-	 *            Paging parameters
-	 * @return Page with found nodes or an empty page
-	 * @throws InvalidArgumentException
-	 */
-	Page<? extends Node> findAll(MeshAuthUser requestUser, List<String> languageTags, PagingParameters pagingInfo) throws InvalidArgumentException;
 
 	/**
 	 * Create a new node.
@@ -60,19 +41,5 @@ public interface NodeRoot extends RootVertex<Node> {
 	 * @return Created node
 	 */
 	Node create(User user, SchemaContainerVersion container, Project project, String uuid);
-
-	/**
-	 * Add the node to the aggregation node.
-	 * 
-	 * @param node
-	 */
-	void addNode(Node node);
-
-	/**
-	 * Remove the node from the aggregation node.
-	 * 
-	 * @param node
-	 */
-	void removeNode(Node node);
 
 }

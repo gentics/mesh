@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_INDEX_N
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
@@ -15,6 +14,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROO
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
@@ -29,6 +29,7 @@ import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static com.gentics.mesh.madl.field.FieldType.LINK;
 import static com.gentics.mesh.madl.field.FieldType.STRING;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
+import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
@@ -168,7 +169,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
 	public static void init(TypeHandler type, IndexHandler index) {
-		type.createType(vertexType(NodeImpl.class, MeshVertexImpl.class));
+		type.createType(vertexType(NodeImpl.class, MeshVertexImpl.class)
+			.withField(PROJECT_KEY_PROPERTY, STRING));
+
+		index.createIndex(vertexIndex(NodeImpl.class)
+			.withField(PROJECT_KEY_PROPERTY, STRING));
+
 		index.createIndex(edgeIndex(HAS_PARENT_NODE));
 
 		index.createIndex(edgeIndex(HAS_PARENT_NODE)
@@ -566,12 +572,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Project getProject() {
-		return out(ASSIGNED_TO_PROJECT, ProjectImpl.class).nextOrNull();
+		return db().index().findByUuid(ProjectImpl.class, property(PROJECT_KEY_PROPERTY));
 	}
 
 	@Override
 	public void setProject(Project project) {
-		setLinkOut(project, ASSIGNED_TO_PROJECT);
+		property(PROJECT_KEY_PROPERTY, project.getUuid());
 	}
 
 	@Override
