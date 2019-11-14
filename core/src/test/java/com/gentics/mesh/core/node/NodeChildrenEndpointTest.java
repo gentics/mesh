@@ -198,10 +198,13 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 		long childrenSize;
 		long expectedItemsInPage;
 		Branch newBranch;
-		Node firstChild;
+		Node firstFolder;
 
 		try (Tx tx = tx()) {
-			firstChild = node.getChildren().iterator().next();
+			firstFolder = node.getChildren()
+				.stream()
+				.filter(child -> child.getSchemaContainer().getName().equals("folder"))
+				.findAny().get();
 			childrenSize = size(node.getChildren());
 			expectedItemsInPage = childrenSize > 25 ? 25 : childrenSize;
 			newBranch = createBranch("newbranch");
@@ -234,7 +237,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 			create.setLanguage("en");
 			create.getFields().put("name", FieldUtil.createStringField("new"));
 			create.setParentNodeUuid(node.getUuid());
-			call(() -> client().createNode(firstChild.getUuid(), PROJECT_NAME, create));
+			call(() -> client().createNode(firstFolder.getUuid(), PROJECT_NAME, create));
 
 			nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
 					new VersioningParametersImpl().setBranch(newBranch.getName()).draft()));

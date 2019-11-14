@@ -114,7 +114,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		container.setName(schema.getName());
 
 		EventQueueBatch batch = createBatch();
-		addSchemaContainer(creator, container, batch);
+		addSchemaContainer(creator, container, null);
 		return container;
 	}
 
