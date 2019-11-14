@@ -43,8 +43,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(MeshVertexImpl.class, null);
 		index.createIndex(vertexIndex(MeshVertexImpl.class)
-			.withField("uuid", FieldType.STRING)
-			.unique());
+			.withField("uuid", FieldType.STRING));
 	}
 
 	@Override

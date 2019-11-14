@@ -4,6 +4,7 @@ import static com.gentics.mesh.graphdb.FieldTypeMapper.toSubType;
 import static com.gentics.mesh.graphdb.FieldTypeMapper.toType;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -387,6 +388,21 @@ public class OrientDBIndexHandler implements IndexHandler {
 			OIndex<?> index = vertexType.getClassIndex(type);
 			if (index != null) {
 				Object recordId = index.get(uuid);
+				if (recordId instanceof Iterable<?>) {
+					Iterable<?> it = (Iterable<?>) recordId;
+					Iterator<?> iterator = it.iterator();
+					if (!iterator.hasNext()) {
+						return null;
+					}
+					recordId = iterator.next();
+					if (iterator.hasNext()) {
+						throw new RuntimeException("Found multiple elements with the same uuid");
+					}
+				} else {
+					if (recordId != null) {
+						System.out.println(recordId.getClass().getName());
+					}
+				}
 				if (recordId != null) {
 					return (T) graph.getFramedVertexExplicit(classOfT, recordId);
 				}
