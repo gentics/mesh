@@ -387,17 +387,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public User addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
-				return this;
-			}
-
-			@Override
 			public User addGroup(Group group) {
-				return this;
-			}
-
-			@Override
-			public User addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode) {
 				return this;
 			}
 
@@ -637,11 +627,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public void setUniqueLinkOutTo(com.gentics.mesh.madl.frame.VertexFrame vertex, String... labels) {
 
-			}
-
-			@Override
-			public VertexTraversal<?, ?, ?> getPermTraversal(GraphPermission permission) {
-				return null;
 			}
 
 			@Override

@@ -262,7 +262,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 			MicroschemaContainer container = createMicroschema(schema);
 
 			assertFalse(role().hasPermission(GraphPermission.CREATE_PERM, container));
-			getRequestUser().addCRUDPermissionOnRole(meshRoot().getMicroschemaContainerRoot(), GraphPermission.CREATE_PERM, container);
+			getRequestUser().inheritRolePermissions(meshRoot().getMicroschemaContainerRoot(), container);
 			assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new microschema container.",
 				role().hasPermission(GraphPermission.CREATE_PERM, container));
 		}

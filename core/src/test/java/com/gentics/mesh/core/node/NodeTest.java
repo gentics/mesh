@@ -141,10 +141,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			List<String> languageTags = new ArrayList<>();
-			languageTags.add("de");
-			languageTags.add("en");
-			Page<? extends Node> page = boot().nodeRoot().findAll(getRequestUser(), languageTags, new PagingParametersImpl(1, 25L));
+			Page<? extends Node> page = boot().nodeRoot().findAll(mockActionContext(), new PagingParametersImpl(1, 25L));
 			assertNotNull(page);
 		}
 	}
@@ -222,7 +219,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Node node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project());
 			InternalActionContext ac = mockActionContext("");
 			assertFalse(user().hasPermission(node, GraphPermission.CREATE_PERM));
-			user().addCRUDPermissionOnRole(folder("2015"), GraphPermission.CREATE_PERM, node);
+			user().inheritRolePermissions(folder("2015"), node);
 			ac.data().clear();
 			assertTrue(user().hasPermission(node, GraphPermission.CREATE_PERM));
 		}

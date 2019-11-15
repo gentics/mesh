@@ -159,7 +159,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 			user.setForcedPasswordChange(forcedPasswordChange);
 		}
 
-		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, user);
+		requestUser.inheritRolePermissions(this, user);
 		ExpandableNode reference = requestModel.getNodeReference();
 		batch.add(user.onCreated());
 
@@ -167,7 +167,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 			Group parentGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, CREATE_PERM);
 			parentGroup.addUser(user);
 			// batch.add(parentGroup.onUpdated());
-			requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
+			requestUser.inheritRolePermissions(parentGroup, user);
 		}
 
 		if (reference != null && reference instanceof NodeReference) {
