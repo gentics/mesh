@@ -250,17 +250,29 @@ public abstract class AbstractChange implements Change {
 	 * @param uuidPropertyKey
 	 */
 	protected void replaceSingleEdge(String vertexClass, Direction direction, String label, String uuidPropertyKey) {
-		iterateWithCommit(getGraph().getVertices("@class", vertexClass), node -> {
-			Iterator<Edge> edges = node.getEdges(direction, label).iterator();
-			if (!edges.hasNext()) {
-				log.warn("Expected {} with uuid {} to have {} edge {}, but none was found", vertexClass, node.getProperty("uuid"), direction, label);
-				return;
-			}
-			Edge edge = edges.next();
-			String uuid = edge.getVertex(direction.opposite()).getProperty("uuid");
-			node.setProperty(uuidPropertyKey, uuid);
-			edge.remove();
-		});
+		iterateWithCommit(getGraph().getVertices("@class", vertexClass), vertex ->
+			replaceSingleEdge(vertex, direction, label, uuidPropertyKey));
+	}
+
+	/**
+	 * Replaces the first edge with <code>direction</code> and <code>label</code> from the given vertex
+	 * with a property with key <code>uuidPropertyKey</code> containing the uuid of the connected vertex.
+	 *
+	 * @param vertex
+	 * @param direction
+	 * @param label
+	 * @param uuidPropertyKey
+	 */
+	protected void replaceSingleEdge(Vertex vertex, Direction direction, String label, String uuidPropertyKey) {
+		Iterator<Edge> edges = vertex.getEdges(direction, label).iterator();
+		if (!edges.hasNext()) {
+			log.warn("Expected vertex with uuid {} to have {} edge {}, but none was found", vertex.getProperty("uuid"), direction, label);
+			return;
+		}
+		Edge edge = edges.next();
+		String uuid = edge.getVertex(direction.opposite()).getProperty("uuid");
+		vertex.setProperty(uuidPropertyKey, uuid);
+		edge.remove();
 	}
 
 	public void debug(Element element) {
