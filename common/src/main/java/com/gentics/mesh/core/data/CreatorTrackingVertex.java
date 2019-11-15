@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.CREATOR_UUID_PROPERTY_KEY;
 
 import com.gentics.mesh.util.DateUtils;
 
@@ -25,7 +26,7 @@ public interface CreatorTrackingVertex extends MeshVertex {
 	 *            Creator
 	 */
 	default void setCreator(User user) {
-		setLinkOut(user, HAS_CREATOR);
+		setProperty(CREATOR_UUID_PROPERTY_KEY, user.getUuid());
 	}
 
 	/**

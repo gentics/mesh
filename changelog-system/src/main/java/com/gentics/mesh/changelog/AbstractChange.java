@@ -213,6 +213,7 @@ public abstract class AbstractChange implements Change {
 		this.db = db;
 	}
 
+<<<<<<< HEAD
 	/**
 	 * Iterates over some items, committing the transaction after some iterations.
 	 * @param iterable

@@ -33,8 +33,6 @@ public class GraphRelationships {
 		type.createType(edgeType(HAS_TAG_ROOT));
 		type.createType(edgeType(HAS_TAG_FAMILY));
 
-		type.createType(edgeType(HAS_CREATOR));
-		type.createType(edgeType(HAS_EDITOR));
 		type.createType(edgeType(HAS_LANGUAGE));
 		type.createType(edgeType(HAS_ROOT_NODE));
 		type.createType(edgeType(HAS_JOB_ROOT));
@@ -105,8 +103,8 @@ public class GraphRelationships {
 	public static final String HAS_TAG = "HAS_TAG";
 
 	// Misc
-	public static final String HAS_CREATOR = "HAS_CREATOR";
-	public static final String HAS_EDITOR = "HAS_EDITOR";
+	public static final String CREATOR_UUID_PROPERTY_KEY = "creator";
+	public static final String EDITOR_UUID_PROPERTY_KEY = "editor";
 	public static final String HAS_LANGUAGE = "HAS_LANGUAGE";
 	public static final String HAS_FIELD_CONTAINER = "HAS_FIELD_CONTAINER";
 

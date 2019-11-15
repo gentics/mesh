@@ -1,8 +1,6 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH_ROOT;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
@@ -309,12 +307,12 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public User getCreator() {
-		return out(HAS_CREATOR, UserImpl.class).nextOrNull();
+		return mesh().userProperties().getCreator(this);
 	}
 
 	@Override
 	public User getEditor() {
-		return out(HAS_EDITOR, UserImpl.class).nextOrNull();
+		return mesh().userProperties().getEditor(this);
 	}
 
 	@Override

@@ -46,7 +46,8 @@ public final class ChangesList {
 			new ReplaceParentEdges(),
 			new ReplaceProjectEdges(),
 			new RemoveBinaryEdges(),
-			new RemoveGlobalNodeRoot()
+			new RemoveGlobalNodeRoot(),
+			new RemoveEditorCreatorEdges()
 			// ADD NEW CHANGES HERE!
 		);
 	}

@@ -1,5 +1,7 @@
 package com.syncleus.ferma.ext.orientdb3;
 
+import static com.gentics.mesh.core.graph.GraphAttribute.MESH_COMPONENT;
+
 import java.util.function.Function;
 
 import com.gentics.madl.traversal.RawTraversalResult;
@@ -116,7 +118,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	protected void init(FramedTransactionalGraph transactionalGraph) {
 		Mesh mesh = boot.mesh();
 		if (mesh != null) {
-			transactionalGraph.setAttribute("meshComponent", mesh.internal());
+			transactionalGraph.setAttribute(MESH_COMPONENT, mesh.internal());
 		} else {
 			log.error("Could not set mesh component attribute. Followup errors may happen.");
 		}
