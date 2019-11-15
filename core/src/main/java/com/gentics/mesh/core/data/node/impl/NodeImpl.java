@@ -14,6 +14,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.PARENTS_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_KEY_PROPERTY;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
@@ -27,7 +28,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static com.gentics.mesh.madl.field.FieldType.LINK;
-import static com.gentics.mesh.madl.field.FieldType.STRING;
+import static com.gentics.mesh.madl.field.FieldType.*;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
@@ -173,8 +174,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		index.createIndex(vertexIndex(NodeImpl.class)
 			.withField(SCHEMA_CONTAINER_KEY_PROPERTY, STRING));
-
-		index.createIndex(edgeIndex(HAS_PARENT_NODE));
 
 		index.createIndex(vertexIndex(NodeImpl.class)
 			.withPostfix("parents")
@@ -1534,39 +1533,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					parents.remove(removedParent);
 					property(PARENTS_KEY_PROPERTY, parents);
 				}
-			}
-		}
-	}
-
-	/**
-	 * Get a vertex traversal to find the children of this node, this user has read permission for.
-	 *
-	 * @param requestUser
-	 *            user
-	 * @param branchUuid
-	 *            branch uuid
-	 * @param languageTags
-	 *            Only list nodes which match the given language tags. Don't filter if the language tags list is null
-	 * @param type
-	 *            edge type
-	 * @return vertex traversal
-	 */
-	private VertexTraversal<?, ?, ?> getChildrenTraversal(MeshAuthUser requestUser, String branchUuid, List<String> languageTags,
-		ContainerType type) {
-		GraphPermission permissionToCheck = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
-
-			Set<String> removedParents = partitions.get(true);
-			if (!removedParents.isEmpty()) {
-				// If any parents were removed, we set the new set of parents back to the vertex.
-				Set<String> newParents = partitions.get(false);
-				property(BRANCH_PARENTS_KEY_PROPERTY, newParents);
-
-			// Filter out nodes which are not listed in the given language tags
-			if (languageTags != null) {
-				edgeTraversal = edgeTraversal.filter(edge -> {
-					String languageTag = edge.getProperty(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY);
-					return languageTags.contains(languageTag);
-				});
 			}
 		}
 	}
