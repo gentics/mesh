@@ -43,7 +43,8 @@ public final class ChangesList {
 			new ReplaceSchemaEdges(),
 			new ReplaceSchemaVersionEdges(),
 			new ReplaceMicroschemaVersionEdges(),
-			new ReplaceParentEdges()
+			new ReplaceParentEdges(),
+			new ReplaceProjectEdges()
 			// ADD NEW CHANGES HERE!
 		);
 	}

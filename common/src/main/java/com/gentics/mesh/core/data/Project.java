@@ -191,4 +191,11 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * @return
 	 */
 	Branch findBranchOrLatest(String branchNameOrUuid);
+
+	/**
+	 * Find all nodes that belong to the project.
+	 * 
+	 * @return
+	 */
+	TraversalResult<? extends Node> findNodes();
 }
