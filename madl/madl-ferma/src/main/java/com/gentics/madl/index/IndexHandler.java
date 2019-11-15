@@ -1,7 +1,6 @@
 package com.gentics.madl.index;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 import com.gentics.mesh.madl.field.FieldMap;
 import com.gentics.mesh.madl.index.ElementIndexDefinition;
