@@ -19,6 +19,8 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.cluster.ClusterManager;
 import com.gentics.mesh.graphdb.model.MeshElement;
+import com.gentics.mesh.madl.frame.VertexFrame;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.syncleus.ferma.EdgeFrame;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
@@ -309,6 +311,29 @@ public interface Database extends TxFactory {
 	 * @return
 	 */
 	Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues);
+
+	/**
+	 * Utilize the index and locate the matching vertices.
+	 *
+	 * @param <T> Type of the vertices
+	 * @param classOfVertex Class to be used for framing
+	 * @param fieldNames
+	 * @param fieldValues
+	 * @return
+	 */
+	<T extends VertexFrame> TraversalResult<T> getVerticesTraversal(Class<T> classOfVertex, String[] fieldNames, Object[] fieldValues);
+
+	/**
+	 * Utilize the index and locate the matching vertices.
+	 *
+	 * @param classOfVertex Class to be used for framing
+	 * @param fieldName
+	 * @param fieldValue
+	 * @return
+	 */
+	default<T extends VertexFrame> TraversalResult<T> getVerticesTraversal(Class<T> classOfVertex, String fieldName, Objecŧ fieldValue) {
+		return getVerticesTraversal(classOfVertex, new String[]{fieldName}, new Objecŧ[]{fieldValue});
+	}
 
 	/**
 	 * Locate all vertices for the given type.
