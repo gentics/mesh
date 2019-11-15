@@ -25,7 +25,11 @@ public interface EditorTrackingVertex extends MeshVertex {
 	 *            Editor
 	 */
 	default void setEditor(User user) {
-		setProperty(EDITOR_UUID_PROPERTY_KEY, user.getUuid());
+		if (user == null) {
+			removeProperty(EDITOR_UUID_PROPERTY_KEY);
+		} else {
+			setProperty(EDITOR_UUID_PROPERTY_KEY, user.getUuid());
+		}
 	}
 
 	/**

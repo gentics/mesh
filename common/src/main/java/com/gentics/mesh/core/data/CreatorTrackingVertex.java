@@ -26,7 +26,11 @@ public interface CreatorTrackingVertex extends MeshVertex {
 	 *            Creator
 	 */
 	default void setCreator(User user) {
-		setProperty(CREATOR_UUID_PROPERTY_KEY, user.getUuid());
+		if (user == null) {
+			removeProperty(CREATOR_UUID_PROPERTY_KEY);
+		} else {
+			setProperty(CREATOR_UUID_PROPERTY_KEY, user.getUuid());
+		}
 	}
 
 	/**

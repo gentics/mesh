@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
@@ -45,11 +44,11 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedTransactionalGraph;
 
@@ -80,11 +79,16 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	@Override
 	public TransformablePage<? extends Node> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return new DynamicTransformableStreamPageImpl<>(findAllStream(ac, null), pagingInfo);
+		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
+		return new DynamicTransformableStreamPageImpl<>(findAllStream(ac, type), pagingInfo);
 	}
 
 	@Override
-	public Stream<? extends Node> findAllStream(InternalActionContext ac, GraphPermission permission) {
+	public Stream<? extends Node> findAllStream(InternalActionContext ac, GraphPermission perm) {
+		return findAllStream(ac, DRAFT);
+	}
+
+	private Stream<? extends Node> findAllStream(InternalActionContext ac, ContainerType type) {
 		MeshAuthUser user = ac.getUser();
 		FramedTransactionalGraph graph = Tx.get().getGraph();
 
@@ -96,13 +100,13 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			new String[]{PROJECT_KEY_PROPERTY},
 			new Object[]{ac.getProject().getUuid()}
 		)).filter(item -> {
-			// Check whether the node has at least a draft in the selected branch - Otherwise the node should be skipped
-			return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, DRAFT);
+			// Check whether the node has at least one content of the type in the selected branch - Otherwise the node should be skipped
+			return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, type);
 		}).filter(item -> {
 			boolean hasRead = user.hasPermissionForId(item.getId(), READ_PERM);
 			if (hasRead) {
 				return true;
-			} else {
+			} else if (type == PUBLISHED) {
 				// Check whether the node is published. In this case we need to check the read publish perm.
 				boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED);
 				if (isPublishedForBranch) {

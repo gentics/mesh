@@ -30,11 +30,19 @@ public class UserProperties {
 	}
 
 	public void setCreator(MeshVertex vertex, User user) {
-		vertex.property(CREATOR_UUID_PROPERTY_KEY, user.getUuid());
+		setUser(vertex, user, CREATOR_UUID_PROPERTY_KEY);
 	}
 
 	public void setEditor(MeshVertex vertex, User user) {
-		vertex.property(EDITOR_UUID_PROPERTY_KEY, user.getUuid());
+		setUser(vertex, user, EDITOR_UUID_PROPERTY_KEY);
+	}
+
+	private void setUser(MeshVertex vertex, User user, String propertyKey) {
+		if (user == null) {
+			vertex.removeProperty(propertyKey);
+		} else {
+			vertex.property(propertyKey, user.getUuid());
+		}
 	}
 
 	private User getUser(MeshVertex vertex, String propertyKey) {
@@ -43,6 +51,7 @@ public class UserProperties {
 			.map(boot.userRoot()::findByUuid)
 			.orElse(null);
 	}
+
 
 
 }
