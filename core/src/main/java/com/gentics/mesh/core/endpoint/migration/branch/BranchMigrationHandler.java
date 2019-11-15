@@ -66,7 +66,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 
 			List<? extends Node> nodes = db.tx(() -> {
 				Project project = oldBranch.getProject();
-				return project.getNodeRoot().findAll().list();
+				return project.findNodes().list();
 			});
 
 			List<Exception> errorsDetected = new ArrayList<>();
