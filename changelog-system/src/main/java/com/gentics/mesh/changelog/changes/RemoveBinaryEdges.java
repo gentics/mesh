@@ -36,5 +36,6 @@ public class RemoveBinaryEdges extends AbstractChange {
 			graph.shutdown();
 		}
 		getDb().type().removeVertexType("BinaryRootImpl");
+		getDb().type().removeEdgeType("HAS_BINARY_ROOT");
 	}
 }

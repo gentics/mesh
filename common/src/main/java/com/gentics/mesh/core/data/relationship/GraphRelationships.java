@@ -76,9 +76,6 @@ public class GraphRelationships {
 		// Changelog
 		type.createType(edgeType(HAS_CHANGELOG_ROOT));
 
-		// Binary
-		type.createType(edgeType(HAS_BINARY_ROOT));
-
 	}
 
 	// Project
@@ -144,9 +141,6 @@ public class GraphRelationships {
 	public static final String HAS_PROJECT_ROOT = "HAS_PROJECT_ROOT";
 	public static final String HAS_BRANCH_ROOT = "HAS_BRANCH_ROOT";
 	public static final String HAS_JOB_ROOT = "HAS_JOB_ROOT";
-
-	// Asset root
-	public static final String HAS_BINARY_ROOT = "HAS_BINARY_ROOT";
 
 	public static final String HAS_FIELD = "HAS_FIELD";
 	public static final String HAS_ITEM = "HAS_ITEM";
