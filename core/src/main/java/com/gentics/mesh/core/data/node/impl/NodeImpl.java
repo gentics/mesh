@@ -15,6 +15,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROO
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.PARENTS_KEY_PROPERTY;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_KEY_PROPERTY;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
@@ -170,7 +171,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		type.createType(vertexType(NodeImpl.class, MeshVertexImpl.class)
 			.withField(PARENTS_KEY_PROPERTY, STRING_SET)
 			.withField(BRANCH_PARENTS_KEY_PROPERTY, STRING_SET)
-			.withField(PROJECT_KEY_PROPERTY, STRING))
+			.withField(PROJECT_KEY_PROPERTY, STRING)
 			.withField(SCHEMA_CONTAINER_KEY_PROPERTY, STRING));
 
 		index.createIndex(vertexIndex(NodeImpl.class)
