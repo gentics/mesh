@@ -18,6 +18,8 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.cluster.ClusterManager;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
+import com.gentics.mesh.madl.frame.VertexFrame;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.neo4j.tx.Neo4jTx;
 import com.gentics.mesh.neo4j.type.Neo4jTypeResolver;
@@ -185,6 +187,12 @@ public class Neo4jDatabase extends AbstractDatabase {
 
 	@Override
 	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public <T extends VertexFrame> TraversalResult<T> getVerticesTraversal(Class<T> classOfVertex, String[] fieldNames, Object[] fieldValues) {
 		// TODO Auto-generated method stub
 		return null;
 	}

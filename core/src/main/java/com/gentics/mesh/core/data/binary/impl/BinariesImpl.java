@@ -35,10 +35,7 @@ public class BinariesImpl implements Binaries {
 
 	@Override
 	public Transactional<Binary> findByHash(String hash) {
-		return database.transactional(tx -> toStream(database.getVertices(BinaryImpl.class, new String[] { Binary.SHA512SUM_KEY }, new String[] { hash }))
-			.findAny()
-			.map(binary -> tx.getGraph().frameElementExplicit(binary, BinaryImpl.class))
-			.orElse(null));
+		return database.transactional(tx -> database.getVerticesTraversal(BinaryImpl.class, Binary.SHA512SUM_KEY, hash).nextOrNull());
 	}
 
 	@Override

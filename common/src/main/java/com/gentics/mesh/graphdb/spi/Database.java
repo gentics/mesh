@@ -331,8 +331,8 @@ public interface Database extends TxFactory {
 	 * @param fieldValue
 	 * @return
 	 */
-	default<T extends VertexFrame> TraversalResult<T> getVerticesTraversal(Class<T> classOfVertex, String fieldName, Objecŧ fieldValue) {
-		return getVerticesTraversal(classOfVertex, new String[]{fieldName}, new Objecŧ[]{fieldValue});
+	default<T extends VertexFrame> TraversalResult<T> getVerticesTraversal(Class<T> classOfVertex, String fieldName, Object fieldValue) {
+		return getVerticesTraversal(classOfVertex, new String[]{fieldName}, new Object[]{fieldValue});
 	}
 
 	/**
