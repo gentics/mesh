@@ -24,8 +24,8 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
@@ -81,6 +81,8 @@ public class BinaryUploadHandler extends AbstractHandler {
 
 	private final MeshOptions options;
 
+	private final Binaries binaries;
+
 	@Inject
 	public BinaryUploadHandler(ImageManipulator imageManipulator,
 		Database db,
@@ -88,8 +90,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 		BinaryFieldResponseHandler binaryFieldResponseHandler,
 		BinaryStorage binaryStorage,
 		BinaryProcessorRegistry binaryProcessorRegistry,
-		HandlerUtilities utils, Vertx rxVertx, MeshOptions options) {
-
+		HandlerUtilities utils, Vertx rxVertx, MeshOptions options, Binaries binaries) {
 		this.db = db;
 		this.boot = boot;
 
@@ -98,6 +99,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 		this.utils = utils;
 		this.fs = rxVertx.fileSystem();
 		this.options = options;
+		this.binaries = binaries;
 	}
 
 	private void validateFileUpload(FileUpload ul, String fieldName) {
@@ -174,16 +176,13 @@ public class BinaryUploadHandler extends AbstractHandler {
 			ctx.setHash(hash);
 
 			// Check whether the binary with the given hashsum was already stored
-			db.tx(() -> {
-				BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
-				Binary binary = binaryRoot.findByHash(hash);
+			Binary binary = binaries.findByHash(hash).runInNewTx();
 
-				// Create a new binary uuid if the data was not already stored
-				if (binary == null) {
-					ctx.setBinaryUuid(UUIDUtil.randomUUID());
-					ctx.setInvokeStore();
-				}
-			});
+			// Create a new binary uuid if the data was not already stored
+			if (binary == null) {
+				ctx.setBinaryUuid(UUIDUtil.randomUUID());
+				ctx.setInvokeStore();
+			}
 
 			return storeUploadInTemp(ctx, ul, hash)
 				.andThen(Single.defer(() -> storeUploadInGraph(ac, modifierList, ctx, nodeUuid, languageTag, nodeVersion, fieldName)));
@@ -249,8 +248,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 		String hash = context.getHash();
 		String binaryUuid = context.getBinaryUuid();
 
-		return db.singleTx(() -> {
-			BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
+		return db.singleTx(tx -> {
 			Project project = ac.getProject();
 			Branch branch = ac.getBranch();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
@@ -258,9 +256,9 @@ public class BinaryUploadHandler extends AbstractHandler {
 			utils.eventAction(batch -> {
 
 				// We need to check whether someone else has stored the binary in the meanwhile
-				Binary binary = binaryRoot.findByHash(hash);
+				Binary binary = binaries.findByHash(hash).runInExistingTx(tx);
 				if (binary == null) {
-					binary = binaryRoot.create(binaryUuid, hash, upload.size());
+					binary = binaries.create(binaryUuid, hash, upload.size()).runInExistingTx(tx);
 				}
 				Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
 				if (language == null) {

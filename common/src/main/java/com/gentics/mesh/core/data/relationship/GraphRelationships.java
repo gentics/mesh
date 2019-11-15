@@ -78,7 +78,6 @@ public class GraphRelationships {
 
 		// Binary
 		type.createType(edgeType(HAS_BINARY_ROOT));
-		type.createType(edgeType(HAS_BINARY));
 
 	}
 
@@ -148,7 +147,6 @@ public class GraphRelationships {
 
 	// Asset root
 	public static final String HAS_BINARY_ROOT = "HAS_BINARY_ROOT";
-	public static final String HAS_BINARY = "HAS_BINARY";
 
 	public static final String HAS_FIELD = "HAS_FIELD";
 	public static final String HAS_ITEM = "HAS_ITEM";

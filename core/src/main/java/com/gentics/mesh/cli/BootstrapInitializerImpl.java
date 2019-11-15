@@ -49,7 +49,6 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
@@ -779,11 +778,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public BinaryRoot binaryRoot() {
-		return meshRoot().getBinaryRoot();
-	}
-
-	@Override
 	public ChangelogRoot changelogRoot() {
 		return meshRoot().getChangelogRoot();
 	}
@@ -840,7 +834,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			meshRoot.getProjectRoot();
 			meshRoot.getLanguageRoot();
 			meshRoot.getJobRoot();
-			meshRoot.getBinaryRoot();
 			meshRoot.getChangelogRoot();
 
 			GroupRoot groupRoot = meshRoot.getGroupRoot();

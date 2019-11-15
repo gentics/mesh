@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.impl;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.binary.impl.BinaryImpl;
-import com.gentics.mesh.core.data.binary.impl.BinaryRootImpl;
 import com.gentics.mesh.core.data.branch.impl.BranchMicroschemaEdgeImpl;
 import com.gentics.mesh.core.data.branch.impl.BranchSchemaEdgeImpl;
 import com.gentics.mesh.core.data.changelog.ChangeMarkerVertexImpl;
@@ -108,7 +107,6 @@ public final class DatabaseHelper {
 
 		// Binary
 		BinaryImpl.init(type, index);
-		BinaryRootImpl.init(type, index);
 
 		// Nodes
 		ProjectImpl.init(type, index);

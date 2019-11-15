@@ -21,8 +21,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
+import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.binary.BinaryFieldTestHelper;
@@ -46,13 +47,13 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	final DataProvider FILL = (container, name) -> {
 		Buffer buffer = Buffer.buffer(FILECONTENTS);
 		hash = FileUtils.hash(buffer).blockingGet();
-		BinaryRoot binaryRoot = mesh().boot().binaryRoot();
+		Binaries binaries = mesh().binaries();
 
 		// Check whether the binary could already be found
-		Binary binary = binaryRoot.findByHash(hash);
+		Binary binary = binaries.findByHash(hash).runInExistingTx(Tx.get());
 		boolean store = false;
 		if (binary == null) {
-			binary = binaryRoot.create(hash, 1L);
+			binary = binaries.create(hash, 1L).runInExistingTx(Tx.get());
 			store = true;
 		}
 		BinaryGraphField field = container.createBinary(name, binary);
