@@ -2,7 +2,6 @@ package com.gentics.mesh.core.endpoint.admin.consistency.check;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.HIGH;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
@@ -62,10 +61,6 @@ public class NodeCheck extends AbstractConsistencyCheck {
 						HIGH);
 				}
 			}
-		}
-
-		if (!isBaseNode) {
-			checkOut(node, HAS_PARENT_NODE, NodeImpl.class, result, HIGH);
 		}
 
 		if (node.getCreationDate() == null) {

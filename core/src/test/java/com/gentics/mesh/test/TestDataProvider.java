@@ -67,6 +67,9 @@ public class TestDataProvider {
 	public static final String TAG_CATEGORIES_SCHEMA_NAME = "tagCategories";
 	public static final String TAG_DEFAULT_SCHEMA_NAME = "tag";
 
+	public static final String CONTENT_UUID = "43ee8f9ff71e4016ae8f9ff71e10161c";
+	public static final String NEWS_UUID = "4b1346a2163a4ff89346a2163a9ff883";
+
 	private static TestDataProvider instance;
 
 	public static TestDataProvider getInstance() {
@@ -221,30 +224,28 @@ public class TestDataProvider {
 
 		SchemaContainer contentSchema = schemaContainers.get("content");
 
-		addContent(folders.get("2014"), "News_2014", "News!", "Neuigkeiten!", contentSchema);
-		addContent(folders.get("march"), "New_in_March_2014", "This is new in march 2014.", "Das ist neu im März 2014", contentSchema);
+		addContent(folders.get("2014"), "News_2014", "News!", "Neuigkeiten!");
+		addContent(folders.get("march"), "New_in_March_2014", "This is new in march 2014.", "Das ist neu im März 2014");
 
-		Node content = addContent(folders.get("news"), "News Overview", "News Overview", "News Übersicht", contentSchema);
+		Node content = addContent(folders.get("news"), "News Overview", "News Overview", "News Übersicht", CONTENT_UUID);
 		contentUuid = content.getUuid();
 
-		addContent(folders.get("deals"), "Super Special Deal 2015", "Buy two get nine!", "Kauf zwei und nimm neun mit!", contentSchema);
-		addContent(folders.get("deals"), "Special Deal June 2015", "Buy two get three!", "Kauf zwei und nimm drei mit!", contentSchema);
+		addContent(folders.get("deals"), "Super Special Deal 2015", "Buy two get nine!", "Kauf zwei und nimm neun mit!");
+		addContent(folders.get("deals"), "Special Deal June 2015", "Buy two get three!", "Kauf zwei und nimm drei mit!");
 
-		addContent(folders.get("2015"), "Special News_2014", "News!", "Neuigkeiten!", contentSchema);
-		addContent(folders.get("2015"), "News_2015", "News!", "Neuigkeiten!", contentSchema);
+		addContent(folders.get("2015"), "Special News_2014", "News!", "Neuigkeiten!");
+		addContent(folders.get("2015"), "News_2015", "News!", "Neuigkeiten!");
 
 		Node concorde = addContent(folders.get("products"), "Concorde",
 			"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
-			"Die Aérospatiale-BAC Concorde 101/102, kurz Concorde (französisch und englisch für Eintracht, Einigkeit), ist ein Überschall-Passagierflugzeug, das von 1976 bis 2003 betrieben wurde.",
-			contentSchema);
+			"Die Aérospatiale-BAC Concorde 101/102, kurz Concorde (französisch und englisch für Eintracht, Einigkeit), ist ein Überschall-Passagierflugzeug, das von 1976 bis 2003 betrieben wurde.");
 		concorde.addTag(tags.get("plane"), project.getLatestBranch());
 		concorde.addTag(tags.get("twinjet"), project.getLatestBranch());
 		concorde.addTag(tags.get("red"), project.getLatestBranch());
 
 		Node hondaNR = addContent(folders.get("products"), "Honda NR",
 			"The Honda NR (New Racing) was a V-four motorcycle engine series started by Honda in 1979 with the 500cc NR500 Grand Prix racer that used oval pistons.",
-			"Die NR750 ist ein Motorrad mit Ovalkolben-Motor des japanischen Motorradherstellers Honda, von dem in den Jahren 1991 und 1992 300 Exemplare gebaut wurden.",
-			contentSchema);
+			"Die NR750 ist ein Motorrad mit Ovalkolben-Motor des japanischen Motorradherstellers Honda, von dem in den Jahren 1991 und 1992 300 Exemplare gebaut wurden.");
 		hondaNR.addTag(tags.get("vehicle"), project.getLatestBranch());
 		hondaNR.addTag(tags.get("motorcycle"), project.getLatestBranch());
 		hondaNR.addTag(tags.get("green"), project.getLatestBranch());
@@ -256,7 +257,7 @@ public class TestDataProvider {
 		Node baseNode = project.getBaseNode();
 		// rootNode.addProject(project);
 
-		Node news = addFolder(baseNode, "News", "Neuigkeiten");
+		Node news = addFolder(baseNode, "News", "Neuigkeiten", NEWS_UUID);
 		Node news2015 = addFolder(news, "2015", null);
 		if (getSize() == FULL) {
 			news2015.addTag(tags.get("car"), project.getLatestBranch());
@@ -494,10 +495,19 @@ public class TestDataProvider {
 	}
 
 	public Node addFolder(Node rootNode, String englishName, String germanName) {
+		return addFolder(rootNode, englishName, germanName, null);
+	}
+
+	public Node addFolder(Node rootNode, String englishName, String germanName, String uuid) {
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		SchemaContainerVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
-		Node folderNode = rootNode.create(userInfo.getUser(), schemaVersion, project);
 		Branch branch = project.getLatestBranch();
+		Node folderNode;
+		if (uuid == null) {
+			folderNode = rootNode.create(userInfo.getUser(), schemaVersion, project);
+		} else {
+			folderNode = rootNode.create(userInfo.getUser(), schemaVersion, project, branch, uuid);
+		}
 		if (germanName != null) {
 			NodeGraphFieldContainer germanContainer = folderNode.createGraphFieldContainer(german, branch, userInfo.getUser());
 			// germanContainer.createString("displayName").setString(germanName);
@@ -541,10 +551,19 @@ public class TestDataProvider {
 		return tag;
 	}
 
-	private Node addContent(Node parentNode, String name, String englishContent, String germanContent, SchemaContainer schema) {
+	private Node addContent(Node parentNode, String name, String englishContent, String germanContent) {
+		return addContent(parentNode, name, englishContent, germanContent, null);
+	}
+
+	private Node addContent(Node parentNode, String name, String englishContent, String germanContent, String uuid) {
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
-		Node node = parentNode.create(userInfo.getUser(), schemaContainers.get("content").getLatestVersion(), project);
 		Branch branch = project.getLatestBranch();
+		Node node;
+		if (uuid == null) {
+			node = parentNode.create(userInfo.getUser(), schemaContainers.get("content").getLatestVersion(), project);
+		} else {
+			node = parentNode.create(userInfo.getUser(), schemaContainers.get("content").getLatestVersion(), project, branch, uuid);
+		}
 		if (englishContent != null) {
 			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, branch, userInfo.getUser());
 			englishContainer.createString("teaser").setString(name + "_english_name");

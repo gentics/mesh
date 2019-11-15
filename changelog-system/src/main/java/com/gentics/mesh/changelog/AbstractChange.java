@@ -37,6 +37,7 @@ public abstract class AbstractChange implements Change {
 		setGraph(graph);
 		try {
 			applyInTx();
+			graph.commit();
 		} catch (Throwable e) {
 			log.error("Invoking rollback due to error", e);
 			graph.rollback();

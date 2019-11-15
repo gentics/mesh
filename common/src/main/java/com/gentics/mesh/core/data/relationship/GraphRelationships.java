@@ -4,6 +4,7 @@ import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
+import com.gentics.mesh.core.data.BranchParentEntry;
 
 /**
  * Main class that holds all the graph relationship names.
@@ -35,7 +36,6 @@ public class GraphRelationships {
 		type.createType(edgeType(HAS_CREATOR));
 		type.createType(edgeType(HAS_EDITOR));
 		type.createType(edgeType(HAS_LANGUAGE));
-		type.createType(edgeType(HAS_PARENT_NODE));
 		type.createType(edgeType(HAS_ROOT_NODE));
 		type.createType(edgeType(HAS_JOB_ROOT));
 
@@ -113,7 +113,18 @@ public class GraphRelationships {
 	public static final String HAS_LANGUAGE = "HAS_LANGUAGE";
 	public static final String HAS_FIELD_CONTAINER = "HAS_FIELD_CONTAINER";
 
-	public static final String HAS_PARENT_NODE = "HAS_PARENT_NODE";
+	/**
+	 * The value of this property is a set of strings containing all parent node uuids of every branch.
+	 */
+	public static final String PARENTS_KEY_PROPERTY = "parents";
+
+	/**
+	 * The value of this property is a set of strings containing all parent nodes of every branch.
+	 * The format of the entries is different from <code>PARENTS_KEY_PROPERTY</code>. Every entry is a combination
+	 * of the branch uuid and the parent uuid concatenated with a <code>":"</code>. The {@link BranchParentEntry} class
+	 * helps with transforming from/to this format.
+	 */
+	public static final String BRANCH_PARENTS_KEY_PROPERTY = "branchParents";
 
 	// Jobs
 	public static final String HAS_JOB = "HAS_JOB";

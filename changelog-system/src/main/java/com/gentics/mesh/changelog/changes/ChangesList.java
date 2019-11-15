@@ -42,7 +42,8 @@ public final class ChangesList {
 			new RemoveReleaseIndices(),
 			new ReplaceSchemaEdges(),
 			new ReplaceSchemaVersionEdges(),
-			new ReplaceMicroschemaVersionEdges()
+			new ReplaceMicroschemaVersionEdges(),
+			new ReplaceParentEdges()
 			// ADD NEW CHANGES HERE!
 		);
 	}
