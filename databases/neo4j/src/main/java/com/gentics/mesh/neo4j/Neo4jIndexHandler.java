@@ -1,6 +1,7 @@
 package com.gentics.mesh.neo4j;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -48,31 +49,27 @@ public class Neo4jIndexHandler implements IndexHandler {
 
 	@Override
 	public void addCustomEdgeIndex(String label, String indexPostfix, FieldMap fields, boolean unique) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public Object createComposedIndexKey(Object... keys) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public <T extends ElementFrame> T checkIndexUniqueness(String indexName, T element, Object key) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public <T extends ElementFrame> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	
 	@Override
 	public <T extends VertexFrame> T findByUuid(Class<? extends T> classOfT, String uuid) {
-		// TODO Auto-generated method stub
 		return null;
 	}
+
 }

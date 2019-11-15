@@ -13,7 +13,6 @@ import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
-import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -67,12 +66,6 @@ public interface BootstrapInitializer {
 	 */
 	JobRoot jobRoot();
 
-	/**
-	 * Return the global node root element. Note that projects have their own node root element.
-	 * 
-	 * @return
-	 */
-	NodeRoot nodeRoot();
 
 	/**
 	 * Return the changelog root element.

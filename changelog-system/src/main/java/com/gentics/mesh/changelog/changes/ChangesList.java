@@ -45,7 +45,8 @@ public final class ChangesList {
 			new ReplaceMicroschemaVersionEdges(),
 			new ReplaceParentEdges(),
 			new ReplaceProjectEdges(),
-			new RemoveBinaryEdges()
+			new RemoveBinaryEdges(),
+			new RemoveGlobalNodeRoot()
 			// ADD NEW CHANGES HERE!
 		);
 	}

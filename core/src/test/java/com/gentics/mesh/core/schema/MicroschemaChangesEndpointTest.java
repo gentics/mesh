@@ -176,7 +176,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		micronode.getFields().put("firstName", new StringFieldImpl().setString("Max"));
 		micronode.getFields().put("lastName", new StringFieldImpl().setString("Mustermann"));
 		NodeResponse response = createNode("micronodeField", micronode);
-		Node node = mesh().boot().meshRoot().getNodeRoot().findByUuid(response.getUuid());
+		Node node = project().getNodeRoot().findByUuid(response.getUuid());
 		assertNotNull("The node should have been created.", node);
 		assertNotNull("The node should have a micronode graph field", node.getGraphFieldContainer("en").getMicronode("micronodeField"));
 

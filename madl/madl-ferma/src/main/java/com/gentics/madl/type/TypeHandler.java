@@ -2,6 +2,9 @@ package com.gentics.madl.type;
 
 import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 
+import java.util.stream.Stream;
+
+import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.type.ElementTypeDefinition;
 import com.gentics.mesh.madl.type.impl.EdgeTypeDefinitionImpl.EdgeTypeDefinitionBuilder;
 import com.gentics.mesh.madl.type.impl.VertexTypeDefinitionImpl.VertexTypeDefinitionBuilder;
@@ -74,5 +77,9 @@ public interface TypeHandler {
 	 * @param classOfVertex
 	 */
 	void setVertexType(Element element, Class<?> classOfVertex);
+
+	<T extends VertexFrame> long count(Class<? extends T> persistanceClass);
+
+	<T extends VertexFrame> Stream<T> findAll(Class<? extends T> classOfT);
 
 }

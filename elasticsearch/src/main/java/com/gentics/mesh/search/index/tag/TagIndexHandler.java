@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -15,7 +17,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.root.ProjectRoot;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
@@ -49,7 +50,8 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	TagMappingProvider mappingProvider;
 
 	@Inject
-	public TagIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options, SyncMetersFactory syncMetricsFactory) {
+	public TagIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+		SyncMetersFactory syncMetricsFactory) {
 		super(searchProvider, db, boot, helper, options, syncMetricsFactory);
 	}
 
@@ -150,8 +152,13 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	}
 
 	@Override
-	public RootVertex<Tag> getRootVertex() {
-		return boot.meshRoot().getTagRoot();
+	public Function<String, Tag> elementLoader() {
+		return (uuid) -> boot.meshRoot().getTagRoot().findByUuid(uuid);
+	}
+
+	@Override
+	public Stream<? extends Tag> loadAllElements() {
+		return boot.meshRoot().getTagRoot().findAll().stream();
 	}
 
 }

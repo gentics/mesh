@@ -70,7 +70,7 @@ public class LinkRenderPathPrefixTest extends AbstractMeshTest {
 			String linkToNode = replacer.resolve(ac, initialBranchUuid(), ContainerType.DRAFT, nodeResponse.getUuid(), LinkType.SHORT, "en");
 			assertEquals("Check rendered content", "https://dummy.io/some/prefix/new-page.html", linkToNode);
 
-			linkToNode = replacer.resolve(ac, initialBranchUuid(), ContainerType.DRAFT, boot().nodeRoot().findByUuid(nodeResponse.getUuid()),
+			linkToNode = replacer.resolve(ac, initialBranchUuid(), ContainerType.DRAFT, project().getNodeRoot().findByUuid(nodeResponse.getUuid()),
 					LinkType.SHORT, "en");
 			assertEquals("Check rendered content", "https://dummy.io/some/prefix/new-page.html", linkToNode);
 		}

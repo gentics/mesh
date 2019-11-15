@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -22,6 +21,7 @@ import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
@@ -71,16 +71,17 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 		// Otherwise the list which is linked to old versions would be updated.
 		graphNodeFieldList = container.createNodeList(fieldKey);
 
-		// Handle Update
-		BootstrapInitializer boot = mesh.boot();
 		// Remove all and add the listed items
 		graphNodeFieldList.removeAll();
+
+		// Handle Update
+		NodeRoot nodeRoot = ac.getProject().getNodeRoot();
 		AtomicInteger integer = new AtomicInteger();
 		for (NodeFieldListItem item : nodeList.getItems()) {
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			Node node = boot.nodeRoot().findByUuid(item.getUuid());
+			Node node = nodeRoot.findByUuid(item.getUuid());
 			if (node == null) {
 				throw error(BAD_REQUEST, "node_list_item_not_found", item.getUuid());
 			}

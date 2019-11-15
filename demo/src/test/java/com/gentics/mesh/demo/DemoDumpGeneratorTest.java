@@ -16,6 +16,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
@@ -55,7 +56,8 @@ public class DemoDumpGeneratorTest {
 	public void testSetup() throws Exception {
 		generator.dump();
 		try (Tx tx = db.tx()) {
-			assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").getNodeRoot().computeCount() > 0);
+			Project project = boot.meshRoot().getProjectRoot().findByName("demo");
+			assertTrue(project.getNodeRoot().computeCount() > 0);
 			User user = boot.meshRoot().getUserRoot().findByUsername("webclient");
 			assertNotNull("The webclient user should have been created but could not be found.", user);
 			assertFalse("The webclient user should also have at least one group assigned to it.", !user.getGroups().iterator().hasNext());
@@ -68,13 +70,13 @@ public class DemoDumpGeneratorTest {
 			assertTrue("The webclient user has no read permission on the user root node..", user.hasPermission(boot.meshRoot().getUserRoot(),
 				GraphPermission.READ_PERM));
 
-			assertTrue("We expected to find at least 5 nodes.", boot.meshRoot().getNodeRoot().computeCount() > 5);
+			assertTrue("We expected to find at least 5 nodes.", project.getNodeRoot().computeCount() > 5);
 
 			// Verify that the uuids have been updated
-			assertNotNull(boot.meshRoot().getNodeRoot().findByUuid("df8beb3922c94ea28beb3922c94ea2f6"));
+			assertNotNull(project.getNodeRoot().findByUuid("df8beb3922c94ea28beb3922c94ea2f6"));
 
 			// Verify that all documents are stored in the index
-			for (Node node : boot.meshRoot().getNodeRoot().findAll()) {
+			for (Node node : project.getNodeRoot().findAll()) {
 				NodeGraphFieldContainer container = node.getLatestDraftFieldContainer("en");
 				String languageTag = "en";
 				String projectUuid = node.getProject().getUuid();

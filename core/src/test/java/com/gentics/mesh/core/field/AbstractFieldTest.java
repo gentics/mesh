@@ -51,7 +51,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 			schema.setSegmentField(segmentField);
 		}
 		version.setSchema(schema);
-		Node node = meshRoot().getNodeRoot().create(user(), version, project());
+		Node node = project().getNodeRoot().create(user(), version, project());
 		node.setParentNode(initialBranchUuid(), project().getBaseNode());
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
 		initialBranch().assignSchemaVersion(user(), version, batch);

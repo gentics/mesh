@@ -3,6 +3,8 @@ package com.gentics.mesh.search.index.group;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -10,7 +12,6 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -36,7 +37,8 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 	GroupMappingProvider mappingProvider;
 
 	@Inject
-	public GroupIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options, SyncMetersFactory syncMetersFactory) {
+	public GroupIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+		SyncMetersFactory syncMetersFactory) {
 		super(searchProvider, db, boot, helper, options, syncMetersFactory);
 	}
 
@@ -83,8 +85,13 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 	}
 
 	@Override
-	public RootVertex<Group> getRootVertex() {
-		return boot.meshRoot().getGroupRoot();
+	public Function<String, Group> elementLoader() {
+		return (uuid) -> boot.meshRoot().getGroupRoot().findByUuid(uuid);
+	}
+
+	@Override
+	public Stream<? extends Group> loadAllElements() {
+		return boot.meshRoot().getGroupRoot().findAll().stream();
 	}
 
 	@Override

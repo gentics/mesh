@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GRO
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_JOB_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_ROOT;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
@@ -32,11 +31,12 @@ import com.gentics.mesh.core.data.changelog.ChangelogRootImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.job.impl.JobRootImpl;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
-import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -58,7 +58,6 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	private GroupRoot groupRoot;
 	private RoleRoot roleRoot;
 
-	private NodeRoot nodeRoot;
 	private TagRoot tagRoot;
 	private TagFamilyRoot tagFamilyRoot;
 
@@ -267,25 +266,6 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	}
 
 	@Override
-	public NodeRoot getNodeRoot() {
-		if (nodeRoot == null) {
-			synchronized (MeshRootImpl.class) {
-				NodeRoot foundNodeRoot = out(HAS_NODE_ROOT).nextOrDefaultExplicit(NodeRootImpl.class, null);
-				if (foundNodeRoot == null) {
-					nodeRoot = getGraph().addFramedVertex(NodeRootImpl.class);
-					linkOut(nodeRoot, HAS_NODE_ROOT);
-					if (log.isDebugEnabled()) {
-						log.debug("Created node root {" + nodeRoot.getUuid() + "}");
-					}
-				} else {
-					nodeRoot = foundNodeRoot;
-				}
-			}
-		}
-		return nodeRoot;
-	}
-
-	@Override
 	public TagFamilyRoot getTagFamilyRoot() {
 		if (tagFamilyRoot == null) {
 			synchronized (MeshRootImpl.class) {
@@ -330,7 +310,6 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	 */
 	public void clearReferences() {
 		projectRoot = null;
-		nodeRoot = null;
 		tagRoot = null;
 
 		userRoot = null;
@@ -394,6 +373,11 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 				throw error(NOT_FOUND, "Could not resolve given path. Unknown element {" + rootNodeSegment + "}");
 			}
 		}
+	}
+
+	@Override
+	public Node findNodeByUuid(String uuid) {
+		return db().index().findByUuid(NodeImpl.class, uuid);
 	}
 
 }
