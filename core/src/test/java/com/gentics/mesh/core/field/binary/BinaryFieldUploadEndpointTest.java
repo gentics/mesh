@@ -561,10 +561,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		}
 
 		call(() -> client().deleteNode(PROJECT_NAME, uuid, new DeleteParametersImpl().setRecursive(true)));
-		try (Tx tx = tx()) {
-			assertNull("The binary for the hash should have also been removed since only one node used the binary.", meshRoot().getBinaryRoot()
-				.findByHash(hash));
-		}
+		assertNull("The binary for the hash should have also been removed since only one node used the binary.", mesh().binaries()
+			.findByHash(hash).runInNewTx());
 		assertFalse("The binary file should have been removed.", binaryFile.exists());
 		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 1).hasTempFiles(0).hasTempUploads(0);
 
@@ -659,10 +657,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 		// Now delete nodeA
 		call(() -> client().deleteNode(PROJECT_NAME, uuidA, new DeleteParametersImpl().setRecursive(true)));
-		try (Tx tx = tx()) {
-			assertNotNull("The binary for the hash should not have been removed since it is still in use.", meshRoot().getBinaryRoot().findByHash(
-				hashA));
-		}
+		assertNotNull("The binary for the hash should not have been removed since it is still in use.", mesh().binaries().findByHash(
+			hashA).runInNewTx());
 		assertTrue("The binary file should not have been deleted since there is still one node which uses it.", binaryFileA.exists());
 		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
 
@@ -670,7 +666,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		call(() -> client().deleteNode(PROJECT_NAME, uuidB, new DeleteParametersImpl().setRecursive(true)));
 
 		try (Tx tx = tx()) {
-			assertNull("The binary for the hash should have also been removed since only one node used the binary.", meshRoot().getBinaryRoot()
+			assertNull("The binary for the hash should have also been removed since only one node used the binary.", mesh().binaries()
 				.findByHash(hashA));
 		}
 		assertFalse("The binary file should have been removed.", binaryFileA.exists());

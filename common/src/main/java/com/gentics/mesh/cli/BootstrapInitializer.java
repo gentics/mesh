@@ -7,7 +7,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.root.GroupRoot;
@@ -74,13 +73,6 @@ public interface BootstrapInitializer {
 	 * @return
 	 */
 	NodeRoot nodeRoot();
-
-	/**
-	 * Return the binary root element.
-	 * 
-	 * @return
-	 */
-	BinaryRoot binaryRoot();
 
 	/**
 	 * Return the changelog root element.

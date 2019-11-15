@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BINARY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CHANGELOG_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_JOB_ROOT;
@@ -28,8 +27,6 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.binary.BinaryRoot;
-import com.gentics.mesh.core.data.binary.impl.BinaryRootImpl;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.changelog.ChangelogRootImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -71,7 +68,6 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	private SchemaContainerRoot schemaContainerRoot;
 	private MicroschemaContainerRoot microschemaContainerRoot;
 	private JobRoot jobRoot;
-	private BinaryRoot binaryRoot;
 	private ChangelogRoot changelogRoot;
 
 	public static void init(TypeHandler type, IndexHandler index) {
@@ -96,25 +92,6 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	@Override
 	public void setDatabaseRevision(String rev) {
 		property(MESH_DB_REV, rev);
-	}
-
-	@Override
-	public BinaryRoot getBinaryRoot() {
-		if (binaryRoot == null) {
-			synchronized (MeshRootImpl.class) {
-				BinaryRoot foundAssetBinaryRoot = out(HAS_BINARY_ROOT).nextOrDefaultExplicit(BinaryRootImpl.class, null);
-				if (foundAssetBinaryRoot == null) {
-					binaryRoot = getGraph().addFramedVertex(BinaryRootImpl.class);
-					linkOut(binaryRoot, HAS_BINARY_ROOT);
-					if (log.isInfoEnabled()) {
-						log.info("Created binary root {" + binaryRoot.getUuid() + "}");
-					}
-				} else {
-					binaryRoot = foundAssetBinaryRoot;
-				}
-			}
-		}
-		return binaryRoot;
 	}
 
 	@Override
@@ -355,7 +332,6 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		projectRoot = null;
 		nodeRoot = null;
 		tagRoot = null;
-		binaryRoot = null;
 
 		userRoot = null;
 		groupRoot = null;

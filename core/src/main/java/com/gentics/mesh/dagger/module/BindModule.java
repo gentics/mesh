@@ -16,6 +16,8 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
+import com.gentics.mesh.core.data.binary.Binaries;
+import com.gentics.mesh.core.data.binary.impl.BinariesImpl;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -91,4 +93,7 @@ public abstract class BindModule {
 
 	@Binds
 	abstract CacheRegistry bindCacheRegistry(CacheRegistryImpl e);
+
+	@Binds
+	abstract Binaries bindBinaries(BinariesImpl e);
 }

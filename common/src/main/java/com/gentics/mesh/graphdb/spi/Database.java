@@ -304,7 +304,7 @@ public interface Database extends TxFactory {
 
 	/**
 	 * Utilize the index and locate the matching vertices.
-	 * 
+	 *
 	 * @param classOfVertex
 	 * @param fieldNames
 	 * @param fieldValues
