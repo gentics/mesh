@@ -3,8 +3,9 @@ package com.gentics.mesh.core.data.node.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.MICROSCHEMA_VERSION_KEY_PROPERTY;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
@@ -42,6 +43,8 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.madl.field.FieldType;
+import com.gentics.mesh.madl.index.VertexIndexDefinition;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.util.CompareUtils;
@@ -55,7 +58,10 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	private static final Logger log = LoggerFactory.getLogger(MicronodeImpl.class);
 
 	public static void init(TypeHandler type, IndexHandler index) {
-		type.createVertexType(MicronodeImpl.class, MeshVertexImpl.class);
+		type.createType(vertexType(MicronodeImpl.class, MeshVertexImpl.class)
+			.withField(MICROSCHEMA_VERSION_KEY_PROPERTY, FieldType.STRING));
+		index.createIndex(VertexIndexDefinition.vertexIndex(MicronodeImpl.class)
+			.withField(MICROSCHEMA_VERSION_KEY_PROPERTY, FieldType.STRING));
 	}
 
 	@Override
@@ -100,12 +106,12 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public MicroschemaContainerVersion getSchemaContainerVersion() {
-		return out(HAS_MICROSCHEMA_CONTAINER, MicroschemaContainerVersionImpl.class).next();
+		return db().index().findByUuid(MicroschemaContainerVersionImpl.class, property(MICROSCHEMA_VERSION_KEY_PROPERTY));
 	}
 
 	@Override
 	public void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> version) {
-		setLinkOut(version, HAS_MICROSCHEMA_CONTAINER);
+		property(MICROSCHEMA_VERSION_KEY_PROPERTY, version.getUuid());
 	}
 
 	@Override

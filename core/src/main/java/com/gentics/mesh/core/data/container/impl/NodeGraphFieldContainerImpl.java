@@ -6,11 +6,10 @@ import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_INDEX_N
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_URLFIELD_INDEX_NAME;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.MICROSCHEMA_VERSION_KEY_PROPERTY;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_VERSION_KEY_PROPERTY;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
@@ -20,6 +19,9 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
+import static com.gentics.mesh.madl.field.FieldType.STRING;
+import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
+import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
@@ -63,7 +65,6 @@ import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
@@ -114,17 +115,21 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	private Node parentNodeRef;
 
 	public static void init(TypeHandler type, IndexHandler index) {
-		type.createVertexType(NodeGraphFieldContainerImpl.class, MeshVertexImpl.class);
+		type.createType(vertexType(NodeGraphFieldContainerImpl.class, MeshVertexImpl.class)
+			.withField(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY, STRING));
+
+		index.createIndex(vertexIndex(NodeGraphFieldContainerImpl.class)
+			.withField(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY, STRING));
 	}
 
 	@Override
 	public void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> version) {
-		setSingleLinkOutTo(version, HAS_SCHEMA_CONTAINER_VERSION);
+		property(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY, version.getUuid());
 	}
 
 	@Override
 	public SchemaContainerVersion getSchemaContainerVersion() {
-		return out(HAS_SCHEMA_CONTAINER_VERSION, SchemaContainerVersionImpl.class).nextOrNull();
+		return db().index().findByUuid(SchemaContainerVersionImpl.class, property(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY));
 	}
 
 	@Override
@@ -632,14 +637,20 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaContainerVersion version) {
-		return outE(HAS_FIELD).mark().inV().has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER).has(MicroschemaContainerVersionImpl.class).has(
-			"uuid", version.getUuid()).back().toListExplicit(MicronodeGraphFieldImpl.class);
+		String microschemaVersionUuid = version.getUuid();
+		return outE(HAS_FIELD, MicronodeGraphFieldImpl.class)
+			.stream()
+			.filter(edge -> edge.getMicronode().property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid))
+			.collect(Collectors.toList());
 	}
 
 	@Override
 	public TraversalResult<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaContainerVersion version) {
-		return new TraversalResult<>(out(HAS_LIST).has(MicronodeGraphFieldListImpl.class).mark().out(HAS_ITEM).has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER).has(
-			MicroschemaContainerVersionImpl.class).has("uuid", version.getUuid()).back().frameExplicit(MicronodeGraphFieldListImpl.class));
+		String microschemaVersionUuid = version.getUuid();
+		return new TraversalResult<>(out(HAS_LIST, MicronodeGraphFieldListImpl.class).stream()
+			.filter(list -> list.getValues().stream()
+			.anyMatch(micronode -> micronode.property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid)))
+		);
 	}
 
 	@Override

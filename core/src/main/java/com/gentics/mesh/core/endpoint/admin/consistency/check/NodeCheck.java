@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.HIGH;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 
@@ -45,7 +44,9 @@ public class NodeCheck extends AbstractConsistencyCheck {
 		String uuid = node.getUuid();
 
 		checkOut(node, ASSIGNED_TO_PROJECT, ProjectImpl.class, result, HIGH);
-		checkOut(node, HAS_SCHEMA_CONTAINER, SchemaContainerImpl.class, result, HIGH);
+		if (node.getSchemaContainer() == null) {
+			result.addInconsistency("The node is not assigned to a schema", uuid, HIGH);
+		}
 		// checkOut(node, HAS_CREATOR, UserImpl.class, response, MEDIUM);
 
 		boolean isBaseNode = false;

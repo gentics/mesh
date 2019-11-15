@@ -39,7 +39,7 @@ public interface SchemaContainerVersion
 	 *            branch Uuid
 	 * @return
 	 */
-	Stream<NodeGraphFieldContainer> getFieldContainers(String branchUuid);
+	Stream<? extends NodeGraphFieldContainer> getFieldContainers(String branchUuid);
 
 	/**
 	 * Returns an iterator for those {@link NodeGraphFieldContainer}'s which can be edited by users. Those are draft and publish versions.

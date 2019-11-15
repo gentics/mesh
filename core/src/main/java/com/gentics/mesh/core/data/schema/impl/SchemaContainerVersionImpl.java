@@ -1,15 +1,16 @@
 package com.gentics.mesh.core.data.schema.impl;
 
+import static com.gentics.mesh.core.data.GraphFieldContainerEdge.BRANCH_UUID_KEY;
+import static com.gentics.mesh.core.data.GraphFieldContainerEdge.EDGE_TYPE_KEY;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FROM_VERSION;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_VERSION_KEY_PROPERTY;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
+import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.Iterator;
 import java.util.Spliterator;
@@ -46,7 +47,10 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
+import com.gentics.mesh.util.StreamUtil;
 import com.syncleus.ferma.VertexFrame;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
@@ -77,28 +81,30 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid) {
-		return in(HAS_SCHEMA_CONTAINER_VERSION).inE(HAS_FIELD_CONTAINER).filter(e -> {
-			GraphFieldContainerEdgeImpl edge = e.reframeExplicit(GraphFieldContainerEdgeImpl.class);
-			ContainerType type = edge.getType();
-			return branchUuid.equals(edge.getBranchUuid()) && (DRAFT == type);
-		}).inV().frameExplicit(NodeGraphFieldContainerImpl.class).iterator();
+		return toStream(mesh().database().getVertices(
+			NodeGraphFieldContainerImpl.class,
+			new String[]{SCHEMA_CONTAINER_VERSION_KEY_PROPERTY},
+			new Object[]{getUuid()}
+		)).filter(v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
+		.anyMatch(e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid) && ContainerType.get(e.getProperty(EDGE_TYPE_KEY)).equals(DRAFT)))
+		.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class)).iterator();
 	}
 
 	@Override
 	public TraversalResult<? extends Node> getNodes(String branchUuid, User user, ContainerType type) {
-		// Load (schema version)->(schema container)->(node)->(field container edge)
-		Iterable<? extends NodeImpl> it = in(HAS_PARENT_CONTAINER).in(HAS_SCHEMA_CONTAINER).filter(node -> {
-			return GraphFieldContainerEdgeImpl.matchesBranchAndType(node.getId(), branchUuid, type) && user.hasPermissionForId(node.getId(), READ_PUBLISHED_PERM);
-		}).frameExplicit(NodeImpl.class);
-		return new TraversalResult<>(it);
+		return new TraversalResult<>(getSchemaContainer().getNodes().stream()
+			.filter(node -> GraphFieldContainerEdgeImpl.matchesBranchAndType(node.getId(), branchUuid, type) && user.hasPermissionForId(node.getId(), READ_PUBLISHED_PERM)));
 	}
 
 	@Override
-	public Stream<NodeGraphFieldContainer> getFieldContainers(String branchUuid) {
-		Spliterator<VertexFrame> it = in(HAS_SCHEMA_CONTAINER_VERSION).spliterator();
-		Stream<NodeGraphFieldContainer> stream = StreamSupport.stream(it, false).map(frame -> frame.reframe(NodeGraphFieldContainerImpl.class))
-			.filter(e -> e.getParentNode(branchUuid) != null).map(e -> (NodeGraphFieldContainer) e);
-		return stream;
+	public Stream<NodeGraphFieldContainerImpl> getFieldContainers(String branchUuid) {
+		return toStream(mesh().database().getVertices(
+			NodeGraphFieldContainerImpl.class,
+			new String[]{SCHEMA_CONTAINER_VERSION_KEY_PROPERTY},
+			new Object[]{getUuid()}
+		)).filter(v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
+		.anyMatch(e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid)))
+		.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class));
 	}
 
 	@Override

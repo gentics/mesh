@@ -13,7 +13,8 @@ public class GraphRelationships {
 	/**
 	 * Initialise the graph database by adding all needed edge types and indices.
 	 * 
-	 * @param db
+	 * @param type
+	 * @param index
 	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 
@@ -41,7 +42,6 @@ public class GraphRelationships {
 		type.createType(edgeType(HAS_SCHEMA_TYPE));
 
 		type.createType(edgeType(HAS_SCHEMA_CONTAINER));
-		type.createType(edgeType(HAS_MICROSCHEMA_CONTAINER));
 		type.createType(edgeType(HAS_MICROSCHEMA_ROOT));
 
 		type.createType(edgeType(HAS_NODE_ROOT));
@@ -61,7 +61,6 @@ public class GraphRelationships {
 		type.createType(edgeType(HAS_VERSION));
 		type.createType(edgeType(HAS_LATEST_VERSION));
 		type.createType(edgeType(HAS_PARENT_CONTAINER));
-		type.createType(edgeType(HAS_SCHEMA_CONTAINER_VERSION));
 
 		// Branches
 		type.createType(edgeType(HAS_SCHEMA_VERSION));
@@ -130,10 +129,11 @@ public class GraphRelationships {
 	public static final String HAS_SCHEMA_TYPE = "HAS_SCHEMA_TYPE";
 	public static final String HAS_SCHEMA_ROOT = "HAS_ROOT_SCHEMA";
 	public static final String HAS_SCHEMA_CONTAINER = "HAS_SCHEMA_CONTAINER";
-	public static final String HAS_SCHEMA_CONTAINER_VERSION = "HAS_SCHEMA_CONTAINER_VERSION";
+	public static final String SCHEMA_CONTAINER_KEY_PROPERTY = "schema";
+	public static final String SCHEMA_CONTAINER_VERSION_KEY_PROPERTY = "schemaVersion";
 	public static final String HAS_PARENT_CONTAINER = "HAS_PARENT_CONTAINER";
 	public static final String HAS_SCHEMA_CONTAINER_ITEM = "HAS_SCHEMA_CONTAINER_ITEM";
-	public static final String HAS_MICROSCHEMA_CONTAINER = "HAS_MICROSCHEMA_CONTAINER";
+	public static final String MICROSCHEMA_VERSION_KEY_PROPERTY = "microschema";
 
 	// Roots
 	public static final String HAS_NODE_ROOT = "HAS_NODE_ROOT";

@@ -12,9 +12,9 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_KEY_PROPERTY;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
@@ -29,6 +29,7 @@ import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static com.gentics.mesh.madl.field.FieldType.LINK;
 import static com.gentics.mesh.madl.field.FieldType.STRING;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
+import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
@@ -168,7 +169,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
 	public static void init(TypeHandler type, IndexHandler index) {
-		type.createType(vertexType(NodeImpl.class, MeshVertexImpl.class));
+		type.createType(vertexType(NodeImpl.class, MeshVertexImpl.class)
+			.withField(SCHEMA_CONTAINER_KEY_PROPERTY, STRING));
+
+		index.createIndex(vertexIndex(NodeImpl.class)
+			.withField(SCHEMA_CONTAINER_KEY_PROPERTY, STRING));
+
 		index.createIndex(edgeIndex(HAS_PARENT_NODE));
 
 		index.createIndex(edgeIndex(HAS_PARENT_NODE)
@@ -498,12 +504,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void setSchemaContainer(SchemaContainer schema) {
-		setLinkOut(schema, HAS_SCHEMA_CONTAINER);
+		property(SCHEMA_CONTAINER_KEY_PROPERTY, schema.getUuid());
 	}
 
 	@Override
 	public SchemaContainer getSchemaContainer() {
-		return out(HAS_SCHEMA_CONTAINER, SchemaContainerImpl.class).nextOrNull();
+		return db().index().findByUuid(SchemaContainerImpl.class, property(SCHEMA_CONTAINER_KEY_PROPERTY));
 	}
 
 	@Override

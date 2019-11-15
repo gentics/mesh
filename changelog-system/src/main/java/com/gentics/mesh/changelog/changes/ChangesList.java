@@ -38,8 +38,11 @@ public final class ChangesList {
 			new RenameReleasesToBranches(),
 			new NodeContentLanguageMigration(),
 			new NodeContentEditorMigration(),
+			new ReplacePermissionEdges(),
 			new RemoveReleaseIndices(),
-			new ReplacePermissionEdges()
+			new ReplaceSchemaEdges(),
+			new ReplaceSchemaVersionEdges(),
+			new ReplaceMicroschemaVersionEdges()
 			// ADD NEW CHANGES HERE!
 		);
 	}

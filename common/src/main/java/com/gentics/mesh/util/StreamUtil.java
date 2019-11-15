@@ -2,10 +2,13 @@ package com.gentics.mesh.util;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -97,5 +100,34 @@ public final class StreamUtil {
 
 	public static <T> Predicate<T> not(Predicate<T> predicate) {
 		return predicate.negate();
+	}
+
+	/**
+	 * Filters out duplicate items in the stream. Use this with {@link Stream#filter(Predicate)}.
+	 * @return
+	 */
+	public static <T> Predicate<T> unique() {
+		return uniqueBy(Function.identity());
+	}
+
+	/**
+	 * Filters out duplicate items in the stream. Use this with {@link Stream#filter(Predicate)}.
+	 * Two items are considered equal when the results of the <code>keyMapper</code> function are equal by {@link #equals(Object)}.
+	 * @param keyMapper
+	 * @param <T>
+	 * @param <K>
+	 * @return
+	 */
+	public static <T, K> Predicate<T> uniqueBy(Function<T, K> keyMapper) {
+		Set<K> keys = new HashSet<>();
+		return item -> {
+			K key = keyMapper.apply(item);
+			if (keys.contains(key)) {
+				return false;
+			} else {
+				keys.add(key);
+				return true;
+			}
+		};
 	}
 }
