@@ -506,7 +506,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public SchemaContainer getSchemaContainer() {
-		return db().index().findByUuid(SchemaContainerImpl.class, property(SCHEMA_CONTAINER_KEY_PROPERTY));
+		String uuid = property(SCHEMA_CONTAINER_KEY_PROPERTY);
+		if (uuid == null) {
+			return null;
+		}
+		return db().index().findByUuid(SchemaContainerImpl.class, uuid);
 	}
 
 	@Override
