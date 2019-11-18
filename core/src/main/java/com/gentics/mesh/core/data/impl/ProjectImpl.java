@@ -211,7 +211,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		getTagFamilyRoot().delete(bac);
 
 		// Remove all nodes in this project
-		for (Node node : graph.getFramedVerticesExplicit("NodeImpl." + PROJECT_KEY_PROPERTY, getUuid(), NodeImpl.class)) {
+		for (Node node : findNodes()) {
 			node.delete(bac, true, false);
 			bac.inc();
 		}
