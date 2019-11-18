@@ -665,10 +665,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		// Now delete nodeB
 		call(() -> client().deleteNode(PROJECT_NAME, uuidB, new DeleteParametersImpl().setRecursive(true)));
 
-		try (Tx tx = tx()) {
-			assertNull("The binary for the hash should have also been removed since only one node used the binary.", mesh().binaries()
-				.findByHash(hashA));
-		}
+		assertNull("The binary for the hash should have also been removed since only one node used the binary.", mesh().binaries()
+			.findByHash(hashA).runInNewTx());
 		assertFalse("The binary file should have been removed.", binaryFileA.exists());
 
 		// The folder is not removed. Removing the parent folder of the upload would require us to lock uploads.
