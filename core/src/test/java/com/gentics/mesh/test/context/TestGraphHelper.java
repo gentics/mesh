@@ -1,19 +1,19 @@
 package com.gentics.mesh.test.context;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+
+import java.util.stream.Stream;
+
 import org.mockito.Mockito;
 
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.event.EventQueueBatch;
-
-import java.util.stream.Stream;
-
-import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
-import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
 /**
  * Interface which contains graph specific methods which can be used to quickly interact with the graph.
@@ -60,7 +60,7 @@ public interface TestGraphHelper extends TestHelper {
 	 * @return
 	 */
 	default Stream<NodeGraphFieldContainer> getAllContents() {
-		return project().getNodeRoot().findAll().stream()
+		return project().findNodes().stream()
 			.flatMap(node -> Stream.of(DRAFT, PUBLISHED)
 			.flatMap(type -> node.getGraphFieldContainers(type).stream()));
 	}
