@@ -1,8 +1,6 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -209,12 +207,13 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		String branchUuid = initialBranch.getUuid();
 
 		// Add project permissions
-		creator.inheritRolePermissions(this, project);
-		creator.inheritRolePermissions(this, project.getBaseNode());
-		creator.inheritRolePermissions(this, project.getTagFamilyRoot());
-		creator.inheritRolePermissions(this, project.getSchemaContainerRoot());
-		creator.inheritRolePermissions(this, project.getMicroschemaContainerRoot());
-		creator.inheritRolePermissions(this, project.getNodeRoot());
+		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project);
+		creator.inheritRolePermissions(project, project.getBaseNode());
+		creator.inheritRolePermissions(project, project.getTagFamilyRoot());
+		creator.inheritRolePermissions(project, project.getSchemaContainerRoot());
+		creator.inheritRolePermissions(project, project.getMicroschemaContainerRoot());
+		creator.inheritRolePermissions(project, project.getNodeRoot());
+		creator.inheritRolePermissions(project, initialBranch);
 
 		// Store the project and the branch in the index
 		batch.add(project.onCreated());

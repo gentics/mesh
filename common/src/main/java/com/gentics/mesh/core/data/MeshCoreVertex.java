@@ -2,14 +2,11 @@ package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
 /**
@@ -21,7 +18,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  * @param <V>
  *            The core vertex itself
  */
-public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R, V>> extends MeshVertex, TransformableElement<R> {
+public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R, V>> extends MeshVertex, TransformableElement<R>, HasPermissions {
 
 	/**
 	 * Update the vertex using the action context information.
@@ -49,23 +46,6 @@ public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R,
 	 * @param ac
 	 */
 	void fillCommonRestFields(InternalActionContext ac, FieldsSet fields, GenericRestResponse model);
-
-	/**
-	 * Get the permissions of a role for this element.
-	 *
-	 * @param ac
-	 * @param roleUuid
-	 * @return
-	 */
-	PermissionInfo getRolePermissions(InternalActionContext ac, String roleUuid);
-
-	/**
-	 * Return a traversal result for all roles which grant the permission to the element.
-	 * 
-	 * @param perm
-	 * @return
-	 */
-	TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm);
 
 	/**
 	 * Method which is being invoked once the element has been created.

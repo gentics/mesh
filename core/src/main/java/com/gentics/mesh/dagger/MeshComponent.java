@@ -14,6 +14,7 @@ import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.binary.Binaries;
+import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -160,6 +161,8 @@ public interface MeshComponent {
 	Binaries binaries();
 
 	UserProperties userProperties();
+
+	PermissionProperties permissionProperties();
 
 	@Component.Builder
 	interface Builder {
