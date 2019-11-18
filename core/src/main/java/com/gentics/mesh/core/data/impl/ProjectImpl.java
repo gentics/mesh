@@ -270,7 +270,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		if (recursive) {
 			getTagFamilyRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 			getBranchRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
-			getNodeRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
+			getBaseNode().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 		}
 		super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
