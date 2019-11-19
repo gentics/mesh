@@ -18,7 +18,8 @@ properties([
 		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
 		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
 		booleanParam(name: 'runMavenBuild',       defaultValue: false, description: "Whether to run the maven build steps."),
-		booleanParam(name: 'runIntegrationTests', defaultValue: false, description: "Whether to run integration tests.")
+		booleanParam(name: 'runIntegrationTests', defaultValue: false, description: "Whether to run integration tests."),
+		booleanParam(name: 'release',             defaultValue: false, description: "Releases the built version on github and getmesh.io")
 	])
 ])
 
@@ -223,6 +224,16 @@ stage("Setup Build Environment") {
 					echo "Push skipped.."
 				}
 			}
+
+			stage("Release") {
+                if (Boolean.valueof(params.runDeploy) && Boolean.valueOf(params.release)) {
+                    mergeToMaster()
+                    createGithubRelease version
+                    updateWebsite()
+                } else {
+                    echo "Release skipped.."
+                }
+			}
 		} catch (Exception e) {
 			if (currentBuild.result == null || currentBuild.currentResult == "STABLE") {
 				currentBuild.result = 'FAILURE'
@@ -234,4 +245,31 @@ stage("Setup Build Environment") {
 			notifyMattermostUsers()
 		}
 	}
+}
+
+def mergeToMaster() {
+    sh "git checkout master"
+    GitHelper.merge "dev"
+    sh "git push"
+}
+
+def createGithubRelease(version) {
+    // https://developer.github.com/v3/repos/releases/#create-a-release
+	GitHub.connectUsingOAuth(credentials("Github-API-Token"))
+		.getRepository("gentics/mesh")
+		.createRelease(version)
+		.name(version)
+		.body("""<ul>
+<li><a href='https://getmesh.io/docs/changelog#v${version}'>Changelog</a></li>
+<li><a href='https://maven.gentics.com/maven2/com/gentics/mesh/mesh-demo/${version}/mesh-demo-${version}.jar'>Download Demo</a></li>
+<li><a href='https://maven.gentics.com/maven2/com/gentics/mesh/mesh-server/${version}/mesh-server-${version}.jar'>Download Server</a></li>
+</ul>""")
+		.create()
+}
+
+def updateWebsite() {
+	build job: "/Mesh/mesh-website", parameters: [
+		booleanParam(name: 'BumpDocs', value: true),
+		booleanParam(name: 'deploy', value: true)
+	], wait: true
 }
