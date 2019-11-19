@@ -469,7 +469,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	}
 
 	/**
-	 * Sets the uuid of a schema and also the "schema" property of all nodes of that schema.Psche
+	 * Sets the uuid of a schema and also the "schema" property of all nodes of that schema.
 	 * @param tx
 	 * @param schemaContainer
 	 * @param uuid

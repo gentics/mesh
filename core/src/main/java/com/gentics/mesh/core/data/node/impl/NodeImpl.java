@@ -540,7 +540,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		MeshAuthUser user = ac.getUser();
 		return toStream(getUnframedChildren(ac.getBranch().getUuid()))
 			.filter(node -> {
-				id = node.getId();
+				Object id = node.getId();
 				return user.hasPermissionForId(id, READ_PERM) || user.hasPermissionForId(id, READ_PUBLISHED_PERM);
 			}).map(node -> graph.frameElementExplicit(node, NodeImpl.class));
 	}
