@@ -1,13 +1,15 @@
 package com.gentics.mesh.plugin.favorite.config;
 
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FavoritePluginConfig {
 	private List<String> projects;
-
-	private int maxEntriesPerType = -1;
-	
-	private boolean uniqueEntries = true;
+	private Map<String, FavoriteTypeOptions> typeOptions = new HashMap<>();
 
 	public List<String> getProjects() {
 		return projects;
@@ -16,21 +18,14 @@ public class FavoritePluginConfig {
 	public void setProjects(List<String> projects) {
 		this.projects = projects;
 	}
-	
-	public int getMaxEntriesPerType() {
-		return maxEntriesPerType;
+
+	@JsonProperty("types")
+	public Map<String, FavoriteTypeOptions> getTypeOptions() {
+		return typeOptions;
 	}
 
-	public void setMaxEntriesPerType(int maxEntriesPerType) {
-		this.maxEntriesPerType = maxEntriesPerType;
+	@JsonProperty("types")
+	public void setTypeOptions(Map<String, FavoriteTypeOptions> typeOptions) {
+		this.typeOptions = typeOptions;
 	}
-
-	public boolean hasUniqueEntries() {
-		return uniqueEntries;
-	}
-
-	public void setUniqueEntries(boolean uniqueEntries) {
-		this.uniqueEntries = uniqueEntries;
-	}
-	
 }

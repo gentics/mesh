@@ -4,7 +4,8 @@
 
 * The plugin stores user-specific lists of strings (favorites) for types (favorite-type)
 * Anonymous calls are not allowed
-* favorite-types are configured in the `config.yml` (cross project)
+* The favorite-types are configured in the `config.yml` (cross project)
+* The names of the favorite-types can contain letters, numbers, underscores and dashes
 * The following REST calls are supported
     * Get all values for a favorite-type
     * Add single value to favorite-type

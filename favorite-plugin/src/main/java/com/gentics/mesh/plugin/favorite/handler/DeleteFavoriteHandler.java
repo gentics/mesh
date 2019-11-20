@@ -6,6 +6,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.favorite.FavoriteService;
+import com.gentics.mesh.plugin.favorite.error.InvalidTypeError;
 import com.gentics.mesh.plugin.favorite.model.PostedFavorite;
 
 import io.reactivex.Completable;
@@ -23,11 +24,11 @@ public class DeleteFavoriteHandler extends AbstractFavoriteHandler {
 	public Completable handle(PluginContext context) {
 		String projectName = context.project().getString("name");
 		String type = context.pathParam("type");
-		
-		PostedFavorite posted = JsonUtil.readValue(context.getBodyAsString(), PostedFavorite.class);
-		String value = posted.getValue();
-		
-		return favoriteService.deleteFavorite(projectName, type, value).doOnSuccess(response -> {
+		String favoriteID = context.pathParam("id");
+		if (!type.matches("[A-Za-z0-9\\-\\_]+")) {
+			throw new InvalidTypeError(type);
+		}
+		return favoriteService.deleteFavorite(projectName, type, favoriteID).doOnSuccess(response -> {
 			context.response().setStatusCode(204).end();
 		}).ignoreElement();
 	}
