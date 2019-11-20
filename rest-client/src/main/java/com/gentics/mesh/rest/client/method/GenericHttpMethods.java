@@ -23,7 +23,7 @@ public interface GenericHttpMethods {
 
 	MeshRequest<JsonObject> post(String path, JsonObject body);
 
-	<R extends RestModel> MeshRequest<R> post(String path, Class<R> responseClass);
+	<R> MeshRequest<R> post(String path, Class<R> responseClass);
 
 	<R extends RestModel, T extends RestModel> MeshRequest<R> post(String path, T request, Class<R> responseClass);
 
@@ -33,7 +33,7 @@ public interface GenericHttpMethods {
 
 	MeshRequest<JsonObject> put(String path, JsonObject body);
 
-	<R extends RestModel> MeshRequest<R> put(String path, Class<R> responseClass);
+	<R> MeshRequest<R> put(String path, Class<R> responseClass);
 
 	<R extends RestModel, T extends RestModel> MeshRequest<R> put(String path, T request, Class<R> responseClass);
 
@@ -43,6 +43,6 @@ public interface GenericHttpMethods {
 
 	MeshRequest<EmptyResponse> deleteEmpty(String path);
 
-	<R extends RestModel> MeshRequest<R> delete(String path, Class<R> responseClass);
+	<R> MeshRequest<R> delete(String path, Class<R> responseClass);
 
 }
