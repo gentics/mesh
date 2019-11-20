@@ -1666,7 +1666,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public <R extends RestModel> MeshRequest<R> delete(String path, Class<R> responseClass) {
+	public <R> MeshRequest<R> delete(String path, Class<R> responseClass) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -1684,7 +1684,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public <R extends RestModel> MeshRequest<R> post(String path, Class<R> responseClass) {
+	public <R> MeshRequest<R> post(String path, Class<R> responseClass) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -1696,7 +1696,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public <R extends RestModel> MeshRequest<R> put(String path, Class<R> responseClass) {
+	public <R> MeshRequest<R> put(String path, Class<R> responseClass) {
 		// TODO Auto-generated method stub
 		return null;
 	}
