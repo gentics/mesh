@@ -267,7 +267,7 @@ public abstract class AbstractChange implements Change {
 	protected void replaceSingleEdge(Vertex vertex, Direction direction, String label, String uuidPropertyKey) {
 		Iterator<Edge> edges = vertex.getEdges(direction, label).iterator();
 		if (!edges.hasNext()) {
-			log.warn("Expected vertex with uuid {} to have {} edge {}, but none was found", vertex.getProperty("uuid"), direction, label);
+			log.warn(String.format("Expected vertex with uuid %s to have %s edge %s, but none was found", vertex.getProperty("uuid"), direction, label));
 			return;
 		}
 		Edge edge = edges.next();

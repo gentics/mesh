@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
@@ -36,6 +37,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
+import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -49,8 +51,10 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedTransactionalGraph;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -84,8 +88,44 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
+	public TraversalResult<? extends Node> findAll() {
+		ProjectImpl project = in(HAS_NODE_ROOT, ProjectImpl.class).next();
+		return project.findNodes();
+	}
+
+	@Override
 	public Stream<? extends Node> findAllStream(InternalActionContext ac, GraphPermission perm) {
-		return findAllStream(ac, DRAFT);
+		MeshAuthUser user = ac.getUser();
+		String branchUuid = ac.getBranch().getUuid();
+
+		return findAll(ac.getProject().getUuid())
+			.filter(item -> {
+				boolean hasRead = user.hasPermissionForId(item.getId(), READ_PERM);
+				if (hasRead) {
+					return true;
+				} else {
+					// Check whether the node is published. In this case we need to check the read publish perm.
+					boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED);
+					if (isPublishedForBranch) {
+						return user.hasPermissionForId(item.getId(), READ_PUBLISHED_PERM);
+					}
+				}
+				return false;
+			})
+			.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
+	}
+
+	/**
+	 * Finds all nodes of a project.
+	 * @param projectUuid
+	 * @return
+	 */
+	private Stream<Vertex> findAll(String projectUuid) {
+		return toStream(db().getVertices(
+			NodeImpl.class,
+			new String[]{PROJECT_KEY_PROPERTY},
+			new Object[]{projectUuid}
+		));
 	}
 
 	private Stream<? extends Node> findAllStream(InternalActionContext ac, ContainerType type) {
@@ -95,11 +135,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		Branch branch = ac.getBranch();
 		String branchUuid = branch.getUuid();
 
-		return toStream(db().getVertices(
-			NodeImpl.class,
-			new String[]{PROJECT_KEY_PROPERTY},
-			new Object[]{ac.getProject().getUuid()}
-		)).filter(item -> {
+		return findAll(ac.getProject().getUuid()).filter(item -> {
 			// Check whether the node has at least one content of the type in the selected branch - Otherwise the node should be skipped
 			return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, type);
 		}).filter(item -> {
@@ -186,7 +222,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * Create a new node using the specified schema container.
 	 * 
 	 * @param ac
-	 * @param schemaContainer
+	 * @param schemaVersion
 	 * @param batch
 	 * @param uuid
 	 * @return

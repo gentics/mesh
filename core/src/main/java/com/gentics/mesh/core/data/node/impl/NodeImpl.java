@@ -506,7 +506,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public SchemaContainer getSchemaContainer() {
-		return db().index().findByUuid(SchemaContainerImpl.class, property(SCHEMA_CONTAINER_KEY_PROPERTY));
+		String uuid = property(SCHEMA_CONTAINER_KEY_PROPERTY);
+		if (uuid == null) {
+			return null;
+		}
+		return db().index().findByUuid(SchemaContainerImpl.class, uuid);
 	}
 
 	@Override
@@ -536,7 +540,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		MeshAuthUser user = ac.getUser();
 		return toStream(getUnframedChildren(ac.getBranch().getUuid()))
 			.filter(node -> {
-				id = node.getId();
+				Object id = node.getId();
 				return user.hasPermissionForId(id, READ_PERM) || user.hasPermissionForId(id, READ_PUBLISHED_PERM);
 			}).map(node -> graph.frameElementExplicit(node, NodeImpl.class));
 	}

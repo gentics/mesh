@@ -386,14 +386,6 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertFalse("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(READ_PERM, targetNode));
 			assertTrue("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(UPDATE_PERM, targetNode));
 			assertFalse("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(DELETE_PERM, targetNode));
-
-			// roleWithCreatePerm
-			for (GraphPermission perm : GraphPermission.values()) {
-				assertTrue(
-					"The role should have all permission on the object since addCRUDPermissionOnRole has been invoked using CREATE_PERM parameter. Failed for permission {"
-						+ perm.name() + "}",
-					roleWithCreatePerm.hasPermission(perm, targetNode));
-			}
 		}
 
 	}

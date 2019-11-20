@@ -18,7 +18,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
@@ -36,6 +35,7 @@ import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -336,10 +336,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			// shortcut edge from the index
 			String idxKey = "e." + ASSIGNED_TO_ROLE + "_out";
 			Iterable<Edge> roleEdges = graph.getEdges(idxKey.toLowerCase(), this.id());
+			Vertex vertex = graph.getVertex(elementId);
 			for (Edge roleEdge : roleEdges) {
 				Vertex role = roleEdge.getVertex(Direction.IN);
 
-				Set<String> allowedRoles = graph.getVertex(elementId).getProperty(permission.propertyKey());
+				Set<String> allowedRoles = vertex.getProperty(permission.propertyKey());
 				boolean hasPermission = allowedRoles != null && allowedRoles.contains(role.<String>getProperty("uuid"));
 				if (hasPermission) {
 					// We only store granting permissions in the store in order
@@ -487,6 +488,21 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		property(PASSWORD_HASH_PROPERTY_KEY, hash);
 		// Password has changed, the user is not forced to change their password anymore.
 		setForcedPasswordChange(false);
+		return this;
+	}
+
+	@Override
+	public User addCRUDPermissionOnRole(HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode) {
+		addPermissionsOnRole(sourceNode, permission, targetNode, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM, PUBLISH_PERM, READ_PUBLISHED_PERM);
+		return this;
+	}
+
+	@Override
+	public User addPermissionsOnRole(HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
+		// 2. Add CRUD permission to identified roles and target node
+		for (Role role : sourceNode.getRolesWithPerm(permission)) {
+			role.grantPermissions(targetNode, toGrant);
+		}
 		return this;
 	}
 

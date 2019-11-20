@@ -18,6 +18,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -334,6 +335,16 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public Set<GraphPermission> getPermissions(MeshVertex vertex) {
 				return new HashSet<GraphPermission>(Arrays.asList(GraphPermission.values()));
+			}
+
+			@Override
+			public User addCRUDPermissionOnRole(HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode) {
+				return null;
+			}
+
+			@Override
+			public User addPermissionsOnRole(HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
+				return null;
 			}
 
 			@Override
