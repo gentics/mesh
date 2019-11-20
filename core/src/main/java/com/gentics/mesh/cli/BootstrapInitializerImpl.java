@@ -49,7 +49,6 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
@@ -58,7 +57,6 @@ import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
-import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -347,8 +345,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	/**
-	 * Adds a file appender to the logging system.
-	 * The log file is later used by the {@link com.gentics.mesh.core.endpoint.admin.debuginfo.providers.LogProvider}
+	 * Adds a file appender to the logging system. The log file is later used by the
+	 * {@link com.gentics.mesh.core.endpoint.admin.debuginfo.providers.LogProvider}
+	 * 
 	 * @param options
 	 */
 	private void addDebugInfoLogAppender(MeshOptions options) {
@@ -774,16 +773,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public NodeRoot nodeRoot() {
-		return meshRoot().getNodeRoot();
-	}
-
-	@Override
-	public BinaryRoot binaryRoot() {
-		return meshRoot().getBinaryRoot();
-	}
-
-	@Override
 	public ChangelogRoot changelogRoot() {
 		return meshRoot().getChangelogRoot();
 	}
@@ -834,13 +823,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			meshRoot = meshRoot();
 
 			// Create the initial root vertices
-			meshRoot.getNodeRoot();
 			meshRoot.getTagRoot();
 			meshRoot.getTagFamilyRoot();
 			meshRoot.getProjectRoot();
 			meshRoot.getLanguageRoot();
 			meshRoot.getJobRoot();
-			meshRoot.getBinaryRoot();
 			meshRoot.getChangelogRoot();
 
 			GroupRoot groupRoot = meshRoot.getGroupRoot();

@@ -18,7 +18,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.ProjectElement;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
@@ -49,26 +48,15 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractMeshCoreVertex.class);
 
-	@Override
-	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
-		return in(perm.label(), RoleImpl.class);
-	}
 
 	@Override
 	public PermissionInfo getRolePermissions(InternalActionContext ac, String roleUuid) {
-		if (!isEmpty(roleUuid)) {
-			Role role = mesh().boot().meshRoot().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
-			if (role != null) {
-				PermissionInfo permissionInfo = new PermissionInfo();
-				Set<GraphPermission> permSet = role.getPermissions(this);
-				for (GraphPermission permission : permSet) {
-					permissionInfo.set(permission.getRestPerm(), true);
-				}
-				permissionInfo.setOthers(false);
-				return permissionInfo;
-			}
-		}
-		return null;
+		return mesh().permissionProperties().getRolePermissions(this, ac, roleUuid);
+	}
+
+	@Override
+	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
+		return mesh().permissionProperties().getRolesWithPerm(this, perm);
 	}
 
 	public void setRolePermissions(InternalActionContext ac, GenericRestResponse model) {

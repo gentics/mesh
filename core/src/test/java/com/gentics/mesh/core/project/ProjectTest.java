@@ -161,7 +161,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 			// 2. Create the project
 			Project project = createProject("TestProject", "folder");
 			assertFalse("The user should not have create permissions on the project.", user().hasPermission(project, CREATE_PERM));
-			user().addCRUDPermissionOnRole(root.getProjectRoot(), CREATE_PERM, project);
+			user().inheritRolePermissions(root.getProjectRoot(), project);
 			// 3. Assert that the crud permissions (eg. CREATE) was inherited
 			ac.data().clear();
 			assertTrue("The users role should have inherited the initial permission on the project root.",

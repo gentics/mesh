@@ -3,7 +3,9 @@ package com.gentics.mesh.search.index.project;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -11,7 +13,6 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -37,7 +38,8 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	ProjectMappingProvider mappingProvider;
 
 	@Inject
-	public ProjectIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options, SyncMetersFactory syncMetricsFactory) {
+	public ProjectIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+		SyncMetersFactory syncMetricsFactory) {
 		super(searchProvider, db, boot, helper, options, syncMetricsFactory);
 	}
 
@@ -90,8 +92,13 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	}
 
 	@Override
-	public RootVertex<Project> getRootVertex() {
-		return boot.meshRoot().getProjectRoot();
+	public Function<String, Project> elementLoader() {
+		return (uuid) -> boot.meshRoot().getProjectRoot().findByUuid(uuid);
+	}
+
+	@Override
+	public Stream<? extends Project> loadAllElements() {
+		return boot.meshRoot().getProjectRoot().findAll().stream();
 	}
 
 	@Override

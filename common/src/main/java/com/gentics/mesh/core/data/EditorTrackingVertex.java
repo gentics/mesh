@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.EDITOR_UUID_PROPERTY_KEY;
 
 import com.gentics.mesh.util.DateUtils;
 
@@ -25,7 +25,11 @@ public interface EditorTrackingVertex extends MeshVertex {
 	 *            Editor
 	 */
 	default void setEditor(User user) {
-		setLinkOut(user, HAS_EDITOR);
+		if (user == null) {
+			removeProperty(EDITOR_UUID_PROPERTY_KEY);
+		} else {
+			setProperty(EDITOR_UUID_PROPERTY_KEY, user.getUuid());
+		}
 	}
 
 	/**

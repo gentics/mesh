@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.project.maintenance;
 
 import java.time.ZonedDateTime;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -13,7 +12,6 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.DateUtils;
@@ -53,10 +51,7 @@ public class ProjectVersionPurgeHandler {
 	public Completable purgeVersions(Project project, ZonedDateTime maxAge) {
 		return Completable.fromAction(() -> {
 			db.tx(tx -> {
-				NodeRoot nodeRoot = project.getNodeRoot();
-				Iterator<? extends Node> it = nodeRoot.findAll().iterator();
-				while (it.hasNext()) {
-					Node node = it.next();
+				for (Node node : project.findNodes()) {
 					purgeNode(tx, node, maxAge);
 				}
 				return null;

@@ -3,12 +3,14 @@ package com.gentics.mesh.graphdb;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.metric.SimpleMetric.TX_RETRY;
 import static com.gentics.mesh.metric.SimpleMetric.TX_TIME;
+import static com.gentics.mesh.util.StreamUtil.toStream;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -30,8 +32,10 @@ import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.graphdb.tx.impl.OrientLocalStorageImpl;
 import com.gentics.mesh.graphdb.tx.impl.OrientServerStorageImpl;
-import com.gentics.mesh.metric.SimpleMetric;
+import com.gentics.mesh.madl.frame.VertexFrame;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.metric.SimpleMetric;
 import com.gentics.mesh.util.ETag;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.orientechnologies.orient.core.OConstants;
@@ -239,6 +243,16 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		return orientBaseGraph.getVertices(classOfVertex.getSimpleName(), fieldNames, fieldValues).iterator();
+	}
+
+	@Override
+	public <T extends VertexFrame> TraversalResult<T> getVerticesTraversal(Class<T> classOfVertex, String[] fieldNames, Object[] fieldValues) {
+		Stream<Vertex> stream = toStream(getVertices(classOfVertex, fieldNames, fieldValues));
+		FramedGraph graph = Tx.get().getGraph();
+
+		return new TraversalResult<>(stream.map(v -> {
+			return graph.frameElementExplicit(v, classOfVertex);
+		}));
 	}
 
 	@Override

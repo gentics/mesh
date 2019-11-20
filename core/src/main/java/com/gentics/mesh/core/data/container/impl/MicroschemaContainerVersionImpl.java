@@ -1,15 +1,13 @@
 package com.gentics.mesh.core.data.container.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FROM_VERSION;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.MICROSCHEMA_VERSION_KEY_PROPERTY;
+import static com.gentics.mesh.util.StreamUtil.toStream;
+import static com.gentics.mesh.util.StreamUtil.uniqueBy;
 
-import java.util.Iterator;
+import java.util.stream.Stream;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -19,7 +17,6 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
-import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
@@ -27,7 +24,6 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.impl.AbstractGraphFieldSchemaContainerVersion;
-import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -38,7 +34,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
-import com.syncleus.ferma.VertexFrame;
+import com.syncleus.ferma.ElementFrame;
 
 import io.reactivex.Single;
 
@@ -61,28 +57,23 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public TraversalResult<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid) {
-		Iterator<? extends NodeGraphFieldContainer> it = in(HAS_MICROSCHEMA_CONTAINER).copySplit((a) -> a.in(HAS_FIELD).mark().inE(
-			HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()).has(
-				GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid)
-			.back(),
-			(a) -> a.in(HAS_ITEM).in(HAS_LIST).mark().inE(
-				HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()).has(
-					GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid)
-				.back())
-			.fairMerge()
-			// To circumvent a bug in the ferma library we have to transform the VertexFrame object to itself
-			// before calling dedup(). This forces the actual conversion to VertexFrame inside of the pipeline.
-			.transform(v -> v)
-			// when calling dedup we use the the id of the vertex instead of the whole object to save memory
-			.dedup(VertexFrame::getId).transform(v -> v.reframeExplicit(NodeGraphFieldContainerImpl.class)).iterator();
-		return new TraversalResult<>(() -> it);
+		return new TraversalResult<>(getMicronodeStream()
+			.flatMap(micronode -> micronode.getContainers().stream())
+			.filter(uniqueBy(ElementFrame::getId)));
 	}
 
 	@Override
 	public TraversalResult<? extends Micronode> findMicronodes() {
-		return in(HAS_MICROSCHEMA_CONTAINER, MicronodeImpl.class);
+		return new TraversalResult<>(getMicronodeStream());
+	}
+
+	private Stream<MicronodeImpl> getMicronodeStream() {
+		return toStream(db().getVertices(
+			MicronodeImpl.class,
+			new String[]{MICROSCHEMA_VERSION_KEY_PROPERTY},
+			new Object[]{getUuid()}
+		)).map(v -> graph.frameElementExplicit(v, MicronodeImpl.class));
 	}
 
 	@Override

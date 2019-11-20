@@ -1,5 +1,17 @@
 package com.gentics.mesh.linkrenderer;
 
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.concurrent.ExecutionException;
+
+import org.apache.commons.io.IOUtils;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -14,18 +26,6 @@ import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
-
-import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.ExecutionException;
-
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static org.junit.Assert.assertEquals;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class LinkRendererTest extends AbstractMeshTest {
@@ -304,7 +304,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			schema.addField(new BinaryFieldSchemaImpl().setName("binary").setLabel("Binary content"));
 			schema.setSegmentField("binary");
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
-			Binary binary = mesh().boot().binaryRoot().create("bogus", 1L);
+			Binary binary = mesh().binaries().create("bogus", 1L).runInExistingTx(tx);
 			node.getLatestDraftFieldContainer(english()).createBinary("binary", binary).setFileName(fileName);
 
 			// Render the link

@@ -11,6 +11,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -18,6 +19,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import com.gentics.madl.tx.Tx;
 import com.gentics.madl.tx.TxAction;
 import com.gentics.madl.tx.TxAction0;
 import com.gentics.madl.tx.TxAction1;
@@ -323,14 +325,25 @@ public class HandlerUtilities {
 	 * @return
 	 */
 	public <T> T eventAction(Function<EventQueueBatch, T> function) {
+		return eventAction((tx, batch) -> function.apply(batch));
+	}
+
+	/**
+	 * Invoke an event action which returns a result.
+	 *
+	 * @param function
+	 * @return
+	 */
+	public <T> T eventAction(BiFunction<Tx, EventQueueBatch, T> function) {
 		Tuple<T, EventQueueBatch> tuple = database.tx(tx -> {
 			EventQueueBatch batch = queueProvider.get();
-			T result = function.apply(batch);
+			T result = function.apply(tx, batch);
 			return Tuple.tuple(result, batch);
 		});
 		tuple.v2().dispatch();
 		return tuple.v1();
 	}
+
 
 	/**
 	 * Locks writes. Use this to prevent concurrent write transactions.

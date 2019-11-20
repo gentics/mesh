@@ -297,7 +297,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			User user = user();
 			User newUser = root.getUserRoot().create("Anton", user());
 			assertFalse(user.hasPermission(newUser, GraphPermission.CREATE_PERM));
-			user.addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, newUser);
+			user.inheritRolePermissions(root.getUserRoot(), newUser);
 			assertTrue(user.hasPermission(newUser, GraphPermission.CREATE_PERM));
 		}
 	}
@@ -346,7 +346,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			roleWithNoPerm = meshRoot().getRoleRoot().create("roleWithNoPerm", newUser);
 			newGroup.addRole(roleWithNoPerm);
-			user().addCRUDPermissionOnRole(sourceNode, GraphPermission.CREATE_PERM, targetNode);
+			user().inheritRolePermissions(sourceNode, targetNode);
 			ac.data().clear();
 			for (GraphPermission perm : GraphPermission.values()) {
 				assertTrue(
@@ -386,14 +386,6 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertFalse("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(READ_PERM, targetNode));
 			assertTrue("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(UPDATE_PERM, targetNode));
 			assertFalse("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(DELETE_PERM, targetNode));
-
-			// roleWithCreatePerm
-			for (GraphPermission perm : GraphPermission.values()) {
-				assertTrue(
-					"The role should have all permission on the object since addCRUDPermissionOnRole has been invoked using CREATE_PERM parameter. Failed for permission {"
-						+ perm.name() + "}",
-					roleWithCreatePerm.hasPermission(perm, targetNode));
-			}
 		}
 
 	}

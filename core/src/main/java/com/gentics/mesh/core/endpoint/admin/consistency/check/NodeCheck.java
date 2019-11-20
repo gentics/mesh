@@ -1,10 +1,7 @@
 package com.gentics.mesh.core.endpoint.admin.consistency.check;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.HIGH;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 
@@ -44,13 +41,19 @@ public class NodeCheck extends AbstractConsistencyCheck {
 	private void checkNode(Node node, ConsistencyCheckResult result) {
 		String uuid = node.getUuid();
 
+/*
 		checkOut(node, ASSIGNED_TO_PROJECT, ProjectImpl.class, result, HIGH);
-		checkOut(node, HAS_SCHEMA_CONTAINER, SchemaContainerImpl.class, result, HIGH);
+		if (node.getSchemaContainer() == null) {
+			result.addInconsistency("The node is not assigned to a schema", uuid, HIGH);
+		}
+*/
 		// checkOut(node, HAS_CREATOR, UserImpl.class, response, MEDIUM);
 
 		boolean isBaseNode = false;
-		Project project = node.out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
-		if (project != null) {
+		Project project = node.getProject();
+		if (project == null) {
+			result.addInconsistency("The node has no project", uuid, HIGH);
+		} else {
 			Project rootNodeProject = node.in(HAS_ROOT_NODE).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
 			if (rootNodeProject != null) {
 				isBaseNode = true;
@@ -61,10 +64,6 @@ public class NodeCheck extends AbstractConsistencyCheck {
 						HIGH);
 				}
 			}
-		}
-
-		if (!isBaseNode) {
-			checkOut(node, HAS_PARENT_NODE, NodeImpl.class, result, HIGH);
 		}
 
 		if (node.getCreationDate() == null) {

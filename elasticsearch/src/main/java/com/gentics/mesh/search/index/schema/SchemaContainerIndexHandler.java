@@ -3,13 +3,14 @@ package com.gentics.mesh.search.index.schema;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
@@ -37,7 +38,8 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	SchemaMappingProvider mappingProvider;
 
 	@Inject
-	public SchemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options, SyncMetersFactory syncMetricsFactory) {
+	public SchemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+		SyncMetersFactory syncMetricsFactory) {
 		super(searchProvider, db, boot, helper, options, syncMetricsFactory);
 	}
 
@@ -94,8 +96,12 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	}
 
 	@Override
-	public RootVertex<SchemaContainer> getRootVertex() {
-		return boot.meshRoot().getSchemaContainerRoot();
+	public Function<String, SchemaContainer> elementLoader() {
+		return (uuid) -> boot.meshRoot().getSchemaContainerRoot().findByUuid(uuid);
 	}
 
+	@Override
+	public Stream<? extends SchemaContainer> loadAllElements() {
+		return boot.meshRoot().getSchemaContainerRoot().findAll().stream();
+	}
 }

@@ -17,7 +17,6 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -131,7 +130,9 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(),
 				"projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid(), request));
 			assertThat(message).matches("role_updated_permission", role().getName());
+		}
 
+		try (Tx tx = tx()) {
 			assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
 		}
 	}
@@ -149,9 +150,10 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			tx.success();
 		}
 
+		MicroschemaContainer vcard;
 		try (Tx tx = tx()) {
 			// Validate revocation
-			MicroschemaContainer vcard = microschemaContainer("vcard");
+			vcard = microschemaContainer("vcard");
 			assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, vcard));
 
 			RolePermissionRequest request = new RolePermissionRequest();
@@ -161,7 +163,9 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			request.getPermissions().add(CREATE);
 			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(), "microschemas/" + vcard.getUuid(), request));
 			assertThat(message).matches("role_updated_permission", role().getName());
+		}
 
+		try (Tx tx = tx()) {
 			assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, vcard));
 			assertTrue(role().hasPermission(GraphPermission.UPDATE_PERM, vcard));
 			assertTrue(role().hasPermission(GraphPermission.CREATE_PERM, vcard));
@@ -414,8 +418,9 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			tx.success();
 		}
 
+		Node node;
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
+			node = folder("2015");
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(false);
 			request.getPermissions().add(READ);
@@ -424,12 +429,13 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			GenericMessageResponse message = call(
 				() -> client().updateRolePermissions(role().getUuid(), "projects/" + project().getUuid() + "/nodes/" + node.getUuid(), request));
 			assertThat(message).matches("role_updated_permission", role().getName());
+		}
 
+		try (Tx tx = tx()) {
 			assertTrue(role().hasPermission(GraphPermission.UPDATE_PERM, node));
 			assertTrue(role().hasPermission(GraphPermission.CREATE_PERM, node));
 			assertTrue(role().hasPermission(GraphPermission.READ_PERM, node));
 		}
-
 	}
 
 	@Test

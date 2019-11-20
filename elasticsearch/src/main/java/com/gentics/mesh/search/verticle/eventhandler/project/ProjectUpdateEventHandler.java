@@ -71,7 +71,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 		return Flowable.defer(() -> helper.getDb().transactional(tx -> toStream(entities.project.getElement(model))
 				.flatMap(project -> {
 					List<Branch> branches = (List<Branch>) project.getBranchRoot().findAll().list();
-					return project.getNodeRoot().findAll().stream()
+					return project.findNodes().stream()
 				.flatMap(node -> Stream.of(DRAFT, PUBLISHED)
 				.flatMap(type -> branches.stream()
 				.flatMap(branch -> node.getGraphFieldContainers(branch, type).stream()

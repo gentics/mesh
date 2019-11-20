@@ -15,8 +15,7 @@ import com.gentics.mesh.changelog.highlevel.AbstractHighLevelChange;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.binary.impl.TikaBinaryProcessor;
 import com.gentics.mesh.core.binary.impl.TikaResult;
-import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.binary.BinaryRoot;
+import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.storage.LocalBinaryStorage;
@@ -37,11 +36,14 @@ public class ExtractPlainText extends AbstractHighLevelChange {
 
 	private final Lazy<BootstrapInitializer> boot;
 
+	private final Binaries binaries;
+
 	@Inject
-	public ExtractPlainText(Lazy<BootstrapInitializer> boot, TikaBinaryProcessor processor, Lazy<LocalBinaryStorage> storage) {
+	public ExtractPlainText(Lazy<BootstrapInitializer> boot, TikaBinaryProcessor processor, Lazy<LocalBinaryStorage> storage, Binaries binaries) {
 		this.boot = boot;
 		this.processor = processor;
 		this.storage = storage;
+		this.binaries = binaries;
 	}
 
 	@Override
@@ -58,9 +60,8 @@ public class ExtractPlainText extends AbstractHighLevelChange {
 	public void apply() {
 		log.info("Applying change: " + getName());
 		FramedTransactionalGraph graph = Tx.getActive().getGraph();
-		BinaryRoot root = boot.get().meshRoot().getBinaryRoot();
 		AtomicLong total = new AtomicLong(0);
-		for (Binary binary : root.findAll()) {
+		binaries.findAll().runInExistingTx(Tx.get()).forEach(binary -> {
 			final String filename = storage.get().getFilePath(binary.getUuid());
 			File uploadFile = new File(filename);
 			if (uploadFile.exists()) {
@@ -103,7 +104,7 @@ public class ExtractPlainText extends AbstractHighLevelChange {
 				graph.commit();
 				log.info("File for binary {" + binary.getUuid() + "} could not be found {" + filename + "}");
 			}
-		}
+		});
 		log.info("Done updating {" + total + "} binary fields.");
 
 	}

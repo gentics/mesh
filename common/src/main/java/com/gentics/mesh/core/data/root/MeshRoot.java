@@ -2,9 +2,9 @@ package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.job.JobRoot;
+import com.gentics.mesh.core.data.node.Node;
 
 /**
  * The mesh root is the primary graph element. All other aggregation nodes for users, roles, groups, projects connect to this element.
@@ -94,25 +94,11 @@ public interface MeshRoot extends MeshVertex {
 	TagRoot getTagRoot();
 
 	/**
-	 * Returns the node aggregation vertex.
-	 * 
-	 * @return
-	 */
-	NodeRoot getNodeRoot();
-
-	/**
 	 * Returns the tag family aggregation vertex.
 	 * 
 	 * @return
 	 */
 	TagFamilyRoot getTagFamilyRoot();
-
-	/**
-	 * Return the binary aggregation vertex.
-	 * 
-	 * @return
-	 */
-	BinaryRoot getBinaryRoot();
 
 	/**
 	 * Return the changelog aggregation vertex.
@@ -143,5 +129,7 @@ public interface MeshRoot extends MeshVertex {
 	MeshVertex resolvePathToElement(String pathToElement);
 
 	void clearReferences();
+
+	Node findNodeByUuid(String uuid);
 
 }

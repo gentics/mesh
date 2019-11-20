@@ -7,14 +7,12 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
-import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -68,19 +66,6 @@ public interface BootstrapInitializer {
 	 */
 	JobRoot jobRoot();
 
-	/**
-	 * Return the global node root element. Note that projects have their own node root element.
-	 * 
-	 * @return
-	 */
-	NodeRoot nodeRoot();
-
-	/**
-	 * Return the binary root element.
-	 * 
-	 * @return
-	 */
-	BinaryRoot binaryRoot();
 
 	/**
 	 * Return the changelog root element.

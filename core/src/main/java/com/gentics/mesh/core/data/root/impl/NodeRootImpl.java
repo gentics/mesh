@@ -1,15 +1,16 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
+import static com.gentics.mesh.util.StreamUtil.toStream;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -17,9 +18,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.List;
 import java.util.Set;
-import java.util.Spliterator;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -38,11 +37,11 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
+import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
+import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -50,14 +49,12 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
-import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedTransactionalGraph;
-import com.syncleus.ferma.traversals.VertexTraversal;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -85,52 +82,23 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public void addNode(Node node) {
-		addItem(node);
-	}
-
-	@Override
-	public void removeNode(Node node) {
-		removeItem(node);
-	}
-
-	@Override
-	public Page<? extends Node> findAll(MeshAuthUser user, List<String> languageTags, PagingParameters pagingInfo)
-			throws InvalidArgumentException {
-		VertexTraversal<?, ?, ?> traversal = user.getPermTraversal(READ_PERM);
-		return new DynamicTransformablePageImpl<Node>(user, traversal, pagingInfo, READ_PERM, NodeImpl.class);
-	}
-
-	@Override
 	public TransformablePage<? extends Node> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-
 		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-		GraphPermission perm = type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
-
-		Branch branch = ac.getBranch();
-		String branchUuid = branch.getUuid();
-
-		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, perm, (item) -> {
-			return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.id(), branchUuid, type);
-		}, true);
+		return new DynamicTransformableStreamPageImpl<>(findAllStream(ac, type), pagingInfo);
 	}
 
 	@Override
-	public Stream<? extends Node> findAllStream(InternalActionContext ac, GraphPermission permission) {
+	public TraversalResult<? extends Node> findAll() {
+		ProjectImpl project = in(HAS_NODE_ROOT, ProjectImpl.class).next();
+		return project.findNodes();
+	}
+
+	@Override
+	public Stream<? extends Node> findAllStream(InternalActionContext ac, GraphPermission perm) {
 		MeshAuthUser user = ac.getUser();
-		FramedTransactionalGraph graph = Tx.get().getGraph();
+		String branchUuid = ac.getBranch().getUuid();
 
-		Branch branch = ac.getBranch();
-		String branchUuid = branch.getUuid();
-
-		String idx = "e." + getRootLabel().toLowerCase() + "_out";
-		Spliterator<Edge> itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();
-		return StreamSupport.stream(itemEdges, false)
-			.map(edge -> edge.getVertex(Direction.IN))
-			.filter(item -> {
-				// Check whether the node has at least a draft in the selected branch - Otherwise the node should be skipped
-				return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, DRAFT);
-			})
+		return findAll(ac.getProject().getUuid())
 			.filter(item -> {
 				boolean hasRead = user.hasPermissionForId(item.getId(), READ_PERM);
 				if (hasRead) {
@@ -145,6 +113,50 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				return false;
 			})
 			.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
+	}
+
+	/**
+	 * Finds all nodes of a project.
+	 * @param projectUuid
+	 * @return
+	 */
+	private Stream<Vertex> findAll(String projectUuid) {
+		return toStream(db().getVertices(
+			NodeImpl.class,
+			new String[]{PROJECT_KEY_PROPERTY},
+			new Object[]{projectUuid}
+		));
+	}
+
+	private Stream<? extends Node> findAllStream(InternalActionContext ac, ContainerType type) {
+		MeshAuthUser user = ac.getUser();
+		FramedTransactionalGraph graph = Tx.get().getGraph();
+
+		Branch branch = ac.getBranch();
+		String branchUuid = branch.getUuid();
+
+		return findAll(ac.getProject().getUuid()).filter(item -> {
+			// Check whether the node has at least one content of the type in the selected branch - Otherwise the node should be skipped
+			return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, type);
+		}).filter(item -> {
+			boolean hasRead = user.hasPermissionForId(item.getId(), READ_PERM);
+			if (hasRead) {
+				return true;
+			} else if (type == PUBLISHED) {
+				// Check whether the node is published. In this case we need to check the read publish perm.
+				boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED);
+				if (isPublishedForBranch) {
+					return user.hasPermissionForId(item.getId(), READ_PUBLISHED_PERM);
+				}
+			}
+			return false;
+		})
+		.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
+	}
+
+	@Override
+	public Node findByUuid(String uuid) {
+		return db().index().findByUuid(NodeImpl.class, uuid);
 	}
 
 	@Override
@@ -183,23 +195,6 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		throw error(FORBIDDEN, "error_missing_perm", uuid, perm.getRestPerm().getName());
 	}
 
-	/**
-	 * Get the vertex traversal that finds all nodes visible to the user
-	 * 
-	 * @param requestUser user
-	 * @param branch      branch
-	 * @param type        type
-	 * @param permission  permission to filter by
-	 * @return vertex traversal
-	 */
-	protected VertexTraversal<?, ?, ?> getAllTraversal(MeshAuthUser requestUser, Branch branch, ContainerType type,
-			GraphPermission permission) {
-		return out(getRootLabel()).filter(vertex -> {
-			return requestUser.hasPermissionForId(vertex.getId(), permission);
-		}).mark().outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid())
-				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).outV().back();
-	}
-
 	@Override
 	public Node create(User creator, SchemaContainerVersion version, Project project, String uuid) {
 		// TODO check whether the mesh node is in fact a folder node.
@@ -211,37 +206,23 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		// TODO is this a duplicate? - Maybe we should only store the project assignment
 		// in one way?
-		project.getNodeRoot().addNode(node);
 		node.setProject(project);
 		node.setCreator(creator);
 		node.setCreationTimestamp();
 
-		addNode(node);
 		return node;
 	}
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		// TODO maybe add a check to prevent deletion of meshRoot.nodeRoot
-		if (log.isDebugEnabled()) {
-			log.debug("Deleting node root {" + getUuid() + "}");
-		}
-		// Delete all containers of all nodes
-		for (Node node : findAll()) {
-			// We don't need to handle recursion because we delete the root sequentially
-			node.delete(bac, true, false);
-			bac.inc();
-		}
-		// All nodes are gone. Lets remove the node root element.
 		getElement().remove();
-		bac.inc();
 	}
 
 	/**
 	 * Create a new node using the specified schema container.
 	 * 
 	 * @param ac
-	 * @param schemaContainer
+	 * @param schemaVersion
 	 * @param batch
 	 * @param uuid
 	 * @return
@@ -270,9 +251,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		Node node = parentNode.create(requestUser, schemaVersion, project, branch, uuid);
 
 		// Add initial permissions to the created node
-		requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
-		requestUser.addPermissionsOnRole(parentNode, READ_PUBLISHED_PERM, node, READ_PUBLISHED_PERM);
-		requestUser.addPermissionsOnRole(parentNode, PUBLISH_PERM, node, PUBLISH_PERM);
+		requestUser.inheritRolePermissions(parentNode, node);
 
 		// Create the language specific graph field container for the node
 		Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());

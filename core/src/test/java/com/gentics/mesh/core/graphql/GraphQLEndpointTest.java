@@ -1,5 +1,30 @@
 package com.gentics.mesh.core.graphql;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.CONTENT_UUID;
+import static com.gentics.mesh.test.TestDataProvider.NEWS_UUID;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static java.util.Objects.hash;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.assertj.impl.JsonObjectAssert;
@@ -60,44 +85,21 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.hazelcast.util.function.Consumer;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.functions.Function;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static java.util.Objects.hash;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(testSize = TestSize.FULL, startServer = true)
 public class GraphQLEndpointTest extends AbstractMeshTest {
 
-	private static final String CONTENT_UUID = "43ee8f9ff71e4016ae8f9ff71e10161c";
 	private static final String FOLDER_SCHEMA_UUID = "70bf14ed1267446eb70c5f02cfec0e38";
 	private static final String NODE_WITH_LINKS_UUID = "8d2f5769fe114353af5769fe11e35355";
 	private static final String NODE_WITH_NODE_REF_UUID = "e8f5c7875b2f49a7b5c7875b2fa9a718";
-	private static final String NEWS_UUID = "4b1346a2163a4ff89346a2163a9ff883";
 
 	private final String queryName;
 
@@ -217,19 +219,17 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			Node folder = folder("news");
-			folder.setUuid(NEWS_UUID);
 			folder.getGraphFieldContainer("de").updateWebrootPathInfo(initialBranchUuid(), null);
 			folder.getGraphFieldContainer("de").updateWebrootPathInfo(initialBranchUuid(), null);
 
 			Node node2 = content();
-			node2.setUuid(CONTENT_UUID);
 			node2.getGraphFieldContainer("en").updateWebrootPathInfo(initialBranchUuid(), null);
 			node2.getGraphFieldContainer("de").updateWebrootPathInfo(initialBranchUuid(), null);
 			Node node3 = folder("2014");
 
 			// Update the folder schema to contain all fields
 			SchemaContainer schemaContainer = schemaContainer("folder");
-			schemaContainer.setUuid(FOLDER_SCHEMA_UUID);
+			safelySetUuid(tx, schemaContainer, FOLDER_SCHEMA_UUID);
 			SchemaModel schema = schemaContainer.getLatestVersion().getSchema();
 			schema.setUrlFields("niceUrl");
 			schema.setAutoPurge(true);
@@ -350,7 +350,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			container.createBoolean("boolean").setBoolean(true);
 
 			// binary
-			Binary binary = mesh().boot().binaryRoot().create("hashsumvalue", 1L);
+			Binary binary = mesh().binaries().create("hashsumvalue", 1L).runInExistingTx(tx);
 			binary.setImageHeight(10).setImageWidth(20).setSize(2048);
 			container.createBinary("binary", binary).setImageDominantColor("00FF00")
 				.setMimeType("image/jpeg").setImageFocalPoint(new FocalPoint(0.2f, 0.3f));
@@ -466,6 +466,19 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		} else {
 			assertion.accept(jsonResponse);
 		}
+	}
+
+	/**
+	 * Sets the uuid of a schema and also the "schema" property of all nodes of that schema.
+	 * @param tx
+	 * @param schemaContainer
+	 * @param uuid
+	 */
+	private void safelySetUuid(Tx tx, SchemaContainer schemaContainer, String uuid) {
+		for (Vertex node : tx.getGraph().getVertices("schema", schemaContainer.getUuid())) {
+			node.setProperty("schema", uuid);
+		}
+		schemaContainer.setUuid(uuid);
 	}
 
 	private long dateToMilis(String date) throws ParseException {

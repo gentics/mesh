@@ -3,8 +3,6 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
@@ -139,7 +137,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		}
 
 		Tag newTag = create(requestModel.getName(), project, requestUser, uuid);
-		ac.getUser().addCRUDPermissionOnRole(this, CREATE_PERM, newTag);
+		ac.getUser().inheritRolePermissions(this, newTag);
 		addTag(newTag);
 
 		batch.add(newTag.onCreated());
@@ -239,12 +237,12 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public User getCreator() {
-		return out(HAS_CREATOR, UserImpl.class).nextOrNull();
+		return mesh().userProperties().getCreator(this);
 	}
 
 	@Override
 	public User getEditor() {
-		return out(HAS_EDITOR, UserImpl.class).nextOrNull();
+		return mesh().userProperties().getEditor(this);
 	}
 
 	@Override

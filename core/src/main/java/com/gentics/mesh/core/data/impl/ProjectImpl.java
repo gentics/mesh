@@ -1,14 +1,13 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH_ROOT;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_MICROSCHEMA_ASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_MICROSCHEMA_UNASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_ASSIGNED;
@@ -194,9 +193,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			Language language = mesh().boot().languageRoot().findByLanguageTag(mesh().boot().mesh().getOptions().getDefaultLanguage());
 			baseNode.createGraphFieldContainer(language.getLanguageTag(), getLatestBranch(), creator);
 			setBaseNode(baseNode);
-			// Add the node to the aggregation nodes
-			getNodeRoot().addNode(baseNode);
-			mesh().boot().nodeRoot().addNode(baseNode);
 		}
 		return baseNode;
 	}
@@ -213,6 +209,12 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 		// Remove the tagfamilies from the index
 		getTagFamilyRoot().delete(bac);
+
+		// Remove all nodes in this project
+		for (Node node : findNodes()) {
+			node.delete(bac, true, false);
+			bac.inc();
+		}
 
 		// Finally also remove the node root
 		getNodeRoot().delete(bac);
@@ -268,7 +270,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		if (recursive) {
 			getTagFamilyRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 			getBranchRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
-			getNodeRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
+			getBaseNode().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 		}
 		super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
@@ -305,12 +307,12 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public User getCreator() {
-		return out(HAS_CREATOR, UserImpl.class).nextOrNull();
+		return mesh().userProperties().getCreator(this);
 	}
 
 	@Override
 	public User getEditor() {
-		return out(HAS_EDITOR, UserImpl.class).nextOrNull();
+		return mesh().userProperties().getEditor(this);
 	}
 
 	@Override
@@ -362,6 +364,11 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		model.setProject(transformToReference());
 		model.setMicroschema(microschema.transformToReference());
 		return model;
+	}
+
+	@Override
+	public TraversalResult<? extends Node> findNodes() {
+		return db().getVerticesTraversal(NodeImpl.class, new String[] { PROJECT_KEY_PROPERTY }, new Object[] { getUuid() });
 	}
 
 	@Override

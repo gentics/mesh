@@ -23,6 +23,12 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v1.2.0]]
+
+== 1.2.0 (20.11.2019)
+
+WARNING: The internal database structure has changed significantly to avoid vertices with many edges. This will result in a higher write performance on bigger systems. For this change, the API of Gentics Mesh did not change at all. When starting with this version on an existing database, the structure changes will be applied automatically, which will take some time to complete.
+
 [[v1.1.1]]
 == 1.1.1 (11.11.2019)
 

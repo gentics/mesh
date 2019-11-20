@@ -8,7 +8,6 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static java.util.stream.Collectors.toList;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -175,7 +174,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 				}
 			}).collect(toList());
 			assertThat(response).hasDepth(2).isValid(8);
-			assertThat(nodeNames).containsExactly(expectedNodes);
+			assertThat(nodeNames).containsOnly(expectedNodes);
 		}
 	}
 
@@ -200,7 +199,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 			List<String> nodeNames = response.getChildren().stream().map(e -> e.getNode().getFields().getStringField("name").getString())
 				.collect(toList());
 			assertThat(response).hasDepth(2).isValid(4);
-			assertThat(nodeNames).containsExactly(expectedNodes);
+			assertThat(nodeNames).containsOnly(expectedNodes);
 		}
 	}
 

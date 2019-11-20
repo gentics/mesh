@@ -18,8 +18,8 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.binary.BinaryRoot;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
@@ -65,17 +65,19 @@ public class BinaryTransformHandler extends AbstractHandler {
 	private final Lazy<BootstrapInitializer> boot;
 	private final BinaryStorage binaryStorage;
 	private final Database db;
+	private final Binaries binaries;
 
 	@Inject
 	public BinaryTransformHandler(Database db, HandlerUtilities utils, Vertx rxVertx, ImageManipulator imageManipulator,
 		Lazy<BootstrapInitializer> boot,
-		BinaryStorage binaryStorage) {
+		BinaryStorage binaryStorage, Binaries binaries) {
 		this.db = db;
 		this.utils = utils;
 		this.rxVertx = rxVertx;
 		this.imageManipulator = imageManipulator;
 		this.boot = boot;
 		this.binaryStorage = binaryStorage;
+		this.binaries = binaries;
 	}
 
 	/**
@@ -162,10 +164,9 @@ public class BinaryTransformHandler extends AbstractHandler {
 		});
 
 		obsTransformation.flatMap(r -> {
-			db.tx(() -> {
+			db.tx(tx -> {
 				String hash = r.getHash();
-				BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
-				Binary binary = binaryRoot.findByHash(hash);
+				Binary binary = binaries.findByHash(hash).runInExistingTx(tx);
 
 				// Set the info that the store operation is needed
 				if (binary == null) {
@@ -207,7 +208,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 	private NodeResponse updateNodeInGraph(InternalActionContext ac, UploadContext context, TransformationResult result, Node node,
 		String languageTag, String fieldName, ImageManipulationParameters parameters) {
-		return utils.eventAction(batch -> {
+		return utils.eventAction((tx, batch) -> {
 
 			NodeGraphFieldContainer latestDraftVersion = loadTargetedContent(node, languageTag, fieldName);
 
@@ -221,13 +222,12 @@ public class BinaryTransformHandler extends AbstractHandler {
 			// TODO Add conflict checking
 
 			// Now that the binary data has been resized and inspected we can use this information to create a new binary and store it.
-			BinaryRoot binaryRoot = boot.get().meshRoot().getBinaryRoot();
 			String hash = result.getHash();
-			Binary binary = binaryRoot.findByHash(hash);
+			Binary binary = binaries.findByHash(hash).runInExistingTx(tx);
 			// Check whether the binary was already stored.
 			if (binary == null) {
 				// Open the file again since we already read from it. We need to read it again in order to store it in the binary storage.
-				binary = binaryRoot.create(context.getBinaryUuid(), hash, result.getSize());
+				binary = binaries.create(context.getBinaryUuid(), hash, result.getSize()).runInExistingTx(tx);
 			} else {
 				if (log.isDebugEnabled()) {
 					log.debug("Data of resized image with hash {" + hash + "} has already been stored. Skipping store.");

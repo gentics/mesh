@@ -99,7 +99,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Before
 	public void addAdminPerms() {
 		// Grant admin perms. Otherwise we can't check the jobs
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdminRole();
 	}
 
 	@Test
@@ -406,7 +406,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			() -> client().createNode(PROJECT_NAME, request, new VersioningParametersImpl().setBranch(INITIAL_BRANCH_NAME)));
 
 		try (Tx tx = tx()) {
-			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid());
+			Node newNode = project().getNodeRoot().findByUuid(nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(newNode.getGraphFieldContainer("en", initialBranchUuid, type)).as(type + " Field container for initial branch")
 					.isNotNull().hasVersion("0.1");
@@ -434,7 +434,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			initialBranchUuid)));
 
 		try (Tx tx = tx()) {
-			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid());
+			Node newNode = project().getNodeRoot().findByUuid(nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(newNode.getGraphFieldContainer("en", initialBranchUuid, type)).as(type + " Field container for initial branch")
 					.isNotNull().hasVersion("0.1");
@@ -462,7 +462,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			NodeResponse nodeResponse = call(() -> client().createNode(PROJECT_NAME, request));
 
-			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid());
+			Node newNode = project().getNodeRoot().findByUuid(nodeResponse.getUuid());
 
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(newNode.getGraphFieldContainer("en", initialBranchUuid(), type)).as(type + " Field container for initial branch")
@@ -476,7 +476,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testCreateForBogusBranch() {
 		String uuid = tx(() -> {
-			Project project = project();
 			createBranch("newbranch");
 
 			Node parentNode = folder("news");
@@ -527,7 +526,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 			assertThat(restNode).matches(request);
 
-			Node node = meshRoot().getNodeRoot().findByUuid(restNode.getUuid());
+			Node node = project().getNodeRoot().findByUuid(restNode.getUuid());
 			assertNotNull(node);
 			assertThat(node).matches(request);
 
@@ -538,7 +537,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Delete the node
 			call(() -> client().deleteNode(PROJECT_NAME, restNode2.getUuid()));
 
-			Node deletedNode = meshRoot().getNodeRoot().findByUuid(restNode2.getUuid());
+			Node deletedNode = project().getNodeRoot().findByUuid(restNode2.getUuid());
 			assertNull("The node should have been deleted.", deletedNode);
 		}
 	}
@@ -976,7 +975,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Node parentNode = folder("news");
 			uuid = parentNode.getUuid();
 
-			nNodesFound = meshRoot().getNodeRoot().computeCount();
+			nNodesFound = project().getNodeRoot().computeCount();
 		}
 
 		Function<Long, NodeCreateRequest> createRequest = nr -> {
@@ -1013,7 +1012,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			}).blockingAwait();
 
 		try (Tx tx = tx()) {
-			long nNodesFoundAfterRest = meshRoot().getNodeRoot().findAll().count();
+			long nNodesFoundAfterRest = project().getNodeRoot().findAll().count();
 			assertEquals("All created nodes should have been created.", nNodesFound, nNodesFoundAfterRest);
 		}
 	}
@@ -1890,7 +1889,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
-			assertElement(meshRoot().getNodeRoot(), uuid, false);
+			assertElement(project().getNodeRoot(), uuid, false);
 			// Delete Events after node delete. We expect 4 since both languages have draft and publish version.
 			int deletes = 4;
 			assertThat(trackingSearchProvider()).hasEvents(0, 0, deletes, 0, 0);
@@ -2047,7 +2046,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		call(() -> client().deleteNode(PROJECT_NAME, uuid), FORBIDDEN, "error_missing_perm", uuid, DELETE_PERM.getRestPerm().getName());
 		try (Tx tx = tx()) {
-			assertNotNull(meshRoot().getNodeRoot().findByUuid(uuid));
+			assertNotNull(project().getNodeRoot().findByUuid(uuid));
 		}
 	}
 

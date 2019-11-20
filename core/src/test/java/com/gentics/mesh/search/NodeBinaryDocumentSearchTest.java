@@ -66,14 +66,14 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// image
-			Binary binaryA = mesh().boot().binaryRoot().create("someHashA", 200L);
+			Binary binaryA = mesh().binaries().create("someHashA", 200L).runInExistingTx(tx);
 			binaryA.setImageHeight(200);
 			binaryA.setImageWidth(400);
 			nodeA.getLatestDraftFieldContainer(english()).createBinary("binary", binaryA).setFileName("somefile.jpg").setMimeType("image/jpeg")
 				.setImageDominantColor("#super");
 
 			// file
-			Binary binaryB = mesh().boot().binaryRoot().create("someHashB", 200L);
+			Binary binaryB = mesh().binaries().create("someHashB", 200L).runInExistingTx(tx);
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
 			mesh().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binaryB.getUuid()).blockingAwait();
 
@@ -123,14 +123,14 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// image
-			Binary binaryA = mesh().boot().binaryRoot().create("someHashA", 200L);
+			Binary binaryA = mesh().binaries().create("someHashA", 200L).runInExistingTx(tx);
 			binaryA.setImageHeight(200);
 			binaryA.setImageWidth(400);
 			nodeA.getLatestDraftFieldContainer(english()).createBinary("binary", binaryA).setFileName("somefile.jpg").setMimeType("image/jpeg")
 				.setImageDominantColor("#super");
 
 			// file
-			Binary binaryB = mesh().boot().binaryRoot().create("someHashB", 200L);
+			Binary binaryB = mesh().binaries().create("someHashB", 200L).runInExistingTx(tx);
 			BinaryGraphField binary = nodeB.getLatestDraftFieldContainer(english()).createBinary("binary", binaryB).setFileName("somefile.dat")
 				.setMimeType("text/plain");
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");

@@ -11,12 +11,4 @@ import io.vertx.ext.auth.User;
  */
 public interface MeshAuthUser extends User, com.gentics.mesh.core.data.User, ClusterSerializable {
 
-	/**
-	 * Return a traversal which starts by the user and emits all elements to which the user has permissions.
-	 * 
-	 * @param permission
-	 * @return
-	 */
-	VertexTraversal<?, ?, ?> getPermTraversal(GraphPermission permission);
-
 }

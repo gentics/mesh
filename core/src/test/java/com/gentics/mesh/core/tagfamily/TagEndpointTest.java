@@ -243,7 +243,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			TagFamily tagFamily = root.create("test123", user());
 			assertFalse(user().hasPermission(tagFamily, GraphPermission.CREATE_PERM));
-			user().addCRUDPermissionOnRole(root, GraphPermission.CREATE_PERM, tagFamily);
+			user().inheritRolePermissions(root, tagFamily);
 			assertTrue(user().hasPermission(tagFamily, GraphPermission.CREATE_PERM));
 		}
 	}

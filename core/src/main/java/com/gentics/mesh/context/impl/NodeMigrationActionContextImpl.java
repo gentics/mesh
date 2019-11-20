@@ -18,6 +18,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -337,6 +338,16 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
+			public User addCRUDPermissionOnRole(HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode) {
+				return null;
+			}
+
+			@Override
+			public User addPermissionsOnRole(HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
+				return null;
+			}
+
+			@Override
 			public String getPasswordHash() {
 				return null;
 			}
@@ -387,17 +398,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public User addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
-				return this;
-			}
-
-			@Override
 			public User addGroup(Group group) {
-				return this;
-			}
-
-			@Override
-			public User addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode) {
 				return this;
 			}
 
@@ -637,11 +638,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public void setUniqueLinkOutTo(com.gentics.mesh.madl.frame.VertexFrame vertex, String... labels) {
 
-			}
-
-			@Override
-			public VertexTraversal<?, ?, ?> getPermTraversal(GraphPermission permission) {
-				return null;
 			}
 
 			@Override

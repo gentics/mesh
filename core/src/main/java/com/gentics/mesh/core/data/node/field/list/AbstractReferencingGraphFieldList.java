@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.node.field.list;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
+import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,8 +44,8 @@ public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphF
 
 	@Override
 	public List<? extends T> getList() {
-		List<? extends T> list = outE(HAS_ITEM).has(getListType()).toListExplicit(getListType());
-		return list.stream().sorted((a, b) -> {
+		return toStream(outE(HAS_ITEM).has(getListType()).frameExplicit(getListType()))
+		.sorted((a, b) -> {
 			String bk = b.getFieldKey();
 			String ak = a.getFieldKey();
 			if (bk == null) {

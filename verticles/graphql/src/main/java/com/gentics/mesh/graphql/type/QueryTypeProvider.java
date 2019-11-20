@@ -203,8 +203,8 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			return new DynamicStreamPageImpl<>(Stream.empty(), getPagingInfo(env));
 		}
 
-		NodeRoot root = boot.nodeRoot();
 		GraphQLContext gc = env.getContext();
+		NodeRoot root = gc.getProject().getNodeRoot();
 		ExecutionContext ec = env.getExecutionContext();
 		List<String> languageTags = getLanguageArgument(env);
 
@@ -249,7 +249,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		String uuid = env.getArgument("uuid");
 		if (uuid != null) {
 			GraphQLContext gc = env.getContext();
-			Node node = boot.nodeRoot().findByUuid(uuid);
+			Node node = gc.getProject().getNodeRoot().findByUuid(uuid);
 			if (node == null) {
 				// TODO Throw graphql aware not found exception
 				return null;

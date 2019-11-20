@@ -114,7 +114,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		container.setName(schema.getName());
 
 		EventQueueBatch batch = createBatch();
-		addSchemaContainer(creator, container, batch);
+		addSchemaContainer(creator, container, null);
 		return container;
 	}
 
@@ -163,7 +163,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 			throw error(FORBIDDEN, "error_missing_perm", getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		SchemaContainer container = create(requestModel, requestUser, uuid, ac.getSchemaUpdateParameters().isStrictValidation());
-		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
+		requestUser.inheritRolePermissions(this, container);
 		batch.add(container.onCreated());
 		return container;
 

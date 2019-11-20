@@ -1,5 +1,12 @@
 package com.gentics.mesh.core.data;
 
+import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
+
+import java.util.Objects;
+import java.util.Set;
+
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
@@ -12,13 +19,6 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.DateUtils;
-
-import java.util.Objects;
-import java.util.Set;
-
-import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
 
 /**
  * The User Domain Model interface.
@@ -211,11 +211,11 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 *            Node to which the CRUD permissions will be assigned.
 	 * @return Fluent API
 	 */
-	User addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode);
+	User addCRUDPermissionOnRole(HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode);
 
 	/**
 	 * This method adds additional permissions to the target node. The roles are selected like in method
-	 * {@link #addCRUDPermissionOnRole(MeshVertex, GraphPermission, MeshVertex)} .
+	 * {@link #addCRUDPermissionOnRole(HasPermissions, GraphPermission, MeshVertex)} .
 	 *
 	 * @param sourceNode
 	 *            Node that will be checked
@@ -227,7 +227,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 *            permissions to grant
 	 * @return Fluent API
 	 */
-	User addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant);
+	User addPermissionsOnRole(HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant);
 
 	/**
 	 * Inherit permissions egdes from the source node and assign those permissions to the target node.

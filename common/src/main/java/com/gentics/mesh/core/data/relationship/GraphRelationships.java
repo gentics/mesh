@@ -4,6 +4,7 @@ import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
+import com.gentics.mesh.core.data.BranchParentEntry;
 
 /**
  * Main class that holds all the graph relationship names.
@@ -13,7 +14,8 @@ public class GraphRelationships {
 	/**
 	 * Initialise the graph database by adding all needed edge types and indices.
 	 * 
-	 * @param db
+	 * @param type
+	 * @param index
 	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 
@@ -31,17 +33,13 @@ public class GraphRelationships {
 		type.createType(edgeType(HAS_TAG_ROOT));
 		type.createType(edgeType(HAS_TAG_FAMILY));
 
-		type.createType(edgeType(HAS_CREATOR));
-		type.createType(edgeType(HAS_EDITOR));
 		type.createType(edgeType(HAS_LANGUAGE));
-		type.createType(edgeType(HAS_PARENT_NODE));
 		type.createType(edgeType(HAS_ROOT_NODE));
 		type.createType(edgeType(HAS_JOB_ROOT));
 
 		type.createType(edgeType(HAS_SCHEMA_TYPE));
 
 		type.createType(edgeType(HAS_SCHEMA_CONTAINER));
-		type.createType(edgeType(HAS_MICROSCHEMA_CONTAINER));
 		type.createType(edgeType(HAS_MICROSCHEMA_ROOT));
 
 		type.createType(edgeType(HAS_NODE_ROOT));
@@ -61,7 +59,6 @@ public class GraphRelationships {
 		type.createType(edgeType(HAS_VERSION));
 		type.createType(edgeType(HAS_LATEST_VERSION));
 		type.createType(edgeType(HAS_PARENT_CONTAINER));
-		type.createType(edgeType(HAS_SCHEMA_CONTAINER_VERSION));
 
 		// Branches
 		type.createType(edgeType(HAS_SCHEMA_VERSION));
@@ -75,10 +72,6 @@ public class GraphRelationships {
 
 		// Changelog
 		type.createType(edgeType(HAS_CHANGELOG_ROOT));
-
-		// Binary
-		type.createType(edgeType(HAS_BINARY_ROOT));
-		type.createType(edgeType(HAS_BINARY));
 
 	}
 
@@ -95,6 +88,7 @@ public class GraphRelationships {
 	public static final String HAS_NODE = "HAS_NODE";
 	public static final String HAS_NODE_REFERENCE = "HAS_NODE_REFERENCE";
 	public static final String ASSIGNED_TO_PROJECT = "ASSIGNED_TO_PROJECT";
+	public static final String PROJECT_KEY_PROPERTY = "project";
 
 	// Groups/User/Role
 	public static final String HAS_GROUP_ROOT = "HAS_GROUP_ROOT";
@@ -109,12 +103,23 @@ public class GraphRelationships {
 	public static final String HAS_TAG = "HAS_TAG";
 
 	// Misc
-	public static final String HAS_CREATOR = "HAS_CREATOR";
-	public static final String HAS_EDITOR = "HAS_EDITOR";
+	public static final String CREATOR_UUID_PROPERTY_KEY = "creator";
+	public static final String EDITOR_UUID_PROPERTY_KEY = "editor";
 	public static final String HAS_LANGUAGE = "HAS_LANGUAGE";
 	public static final String HAS_FIELD_CONTAINER = "HAS_FIELD_CONTAINER";
 
-	public static final String HAS_PARENT_NODE = "HAS_PARENT_NODE";
+	/**
+	 * The value of this property is a set of strings containing all parent node uuids of every branch.
+	 */
+	public static final String PARENTS_KEY_PROPERTY = "parents";
+
+	/**
+	 * The value of this property is a set of strings containing all parent nodes of every branch.
+	 * The format of the entries is different from <code>PARENTS_KEY_PROPERTY</code>. Every entry is a combination
+	 * of the branch uuid and the parent uuid concatenated with a <code>":"</code>. The {@link BranchParentEntry} class
+	 * helps with transforming from/to this format.
+	 */
+	public static final String BRANCH_PARENTS_KEY_PROPERTY = "branchParents";
 
 	// Jobs
 	public static final String HAS_JOB = "HAS_JOB";
@@ -130,10 +135,11 @@ public class GraphRelationships {
 	public static final String HAS_SCHEMA_TYPE = "HAS_SCHEMA_TYPE";
 	public static final String HAS_SCHEMA_ROOT = "HAS_ROOT_SCHEMA";
 	public static final String HAS_SCHEMA_CONTAINER = "HAS_SCHEMA_CONTAINER";
-	public static final String HAS_SCHEMA_CONTAINER_VERSION = "HAS_SCHEMA_CONTAINER_VERSION";
+	public static final String SCHEMA_CONTAINER_KEY_PROPERTY = "schema";
+	public static final String SCHEMA_CONTAINER_VERSION_KEY_PROPERTY = "schemaVersion";
 	public static final String HAS_PARENT_CONTAINER = "HAS_PARENT_CONTAINER";
 	public static final String HAS_SCHEMA_CONTAINER_ITEM = "HAS_SCHEMA_CONTAINER_ITEM";
-	public static final String HAS_MICROSCHEMA_CONTAINER = "HAS_MICROSCHEMA_CONTAINER";
+	public static final String MICROSCHEMA_VERSION_KEY_PROPERTY = "microschema";
 
 	// Roots
 	public static final String HAS_NODE_ROOT = "HAS_NODE_ROOT";
@@ -145,10 +151,6 @@ public class GraphRelationships {
 	public static final String HAS_PROJECT_ROOT = "HAS_PROJECT_ROOT";
 	public static final String HAS_BRANCH_ROOT = "HAS_BRANCH_ROOT";
 	public static final String HAS_JOB_ROOT = "HAS_JOB_ROOT";
-
-	// Asset root
-	public static final String HAS_BINARY_ROOT = "HAS_BINARY_ROOT";
-	public static final String HAS_BINARY = "HAS_BINARY";
 
 	public static final String HAS_FIELD = "HAS_FIELD";
 	public static final String HAS_ITEM = "HAS_ITEM";
