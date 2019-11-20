@@ -29,6 +29,10 @@ include::content/docs/variables.adoc-include[]
 
 WARNING: The internal database structure has changed significantly to avoid vertices with many edges. This will result in a higher write performance on bigger systems. For this change, the API of Gentics Mesh did not change at all. When starting with this version on an existing database, the structure changes will be applied automatically, which will take some time to complete.
 
+icon:check[] Java Rest Client: Generic methods (get, post, put, delete) now allow response objects of any class.
+
+icon:check[] UI: The UI has been updated to version link:https://github.com/gentics/mesh-ui/blob/develop/CHANGELOG.md#110---2019-11-20[1.1.0].
+
 [[v1.1.1]]
 == 1.1.1 (11.11.2019)
 
