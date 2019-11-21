@@ -23,6 +23,10 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[Unrelesed]]
+
+icon:check[] Core: Mesh now uses a different parser for processing `*.docx` and `*.pptx` files. Parsing these files will now require far less memory.
+
 [[v1.2.0]]
 
 == 1.2.0 (20.11.2019)

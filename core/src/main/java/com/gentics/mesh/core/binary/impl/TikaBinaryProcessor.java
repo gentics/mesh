@@ -25,11 +25,10 @@ import com.gentics.mesh.etc.config.MeshOptions;
 
 import dagger.Lazy;
 import io.reactivex.Maybe;
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
-import io.vertx.reactivex.RxHelper;
+import io.vertx.reactivex.core.Vertx;
 
 @Singleton
 public class TikaBinaryProcessor extends AbstractBinaryProcessor {
@@ -109,7 +108,7 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 
 	@Override
 	public Maybe<Consumer<BinaryGraphField>> process(FileUpload upload, String hash) {
-		Maybe<Consumer<BinaryGraphField>> result = Maybe.create(sub -> {
+		return vertx.get().rxExecuteBlocking(promise -> {
 			File uploadFile = new File(upload.uploadedFileName());
 			if (log.isDebugEnabled()) {
 				log.debug("Parsing file {" + uploadFile + "}");
@@ -134,15 +133,12 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 						field.setLocation(pr.getLoc());
 					}
 				};
-				sub.onSuccess(consumer);
+				promise.complete(consumer);
 			} catch (Exception e) {
 				log.warn("Tika processing of upload failed", e);
-				sub.onError(e);
+				promise.fail(e);
 			}
-		});
-
-		return result.observeOn(RxHelper.blockingScheduler(vertx.get(), false)).onErrorComplete();
-
+		}, true);
 	}
 
 	public TikaResult parseFile(InputStream ins, int len) throws TikaException, IOException {
