@@ -69,8 +69,6 @@ public class DocumentTikaParser {
 
 	private static OOXMLParser xmlParser() {
 		OOXMLParser ooxmlParser = new OOXMLParser();
-		ooxmlParser.setIncludeDeletedContent(true);
-		ooxmlParser.setIncludeMoveFromContent(true);
 		ooxmlParser.setUseSAXDocxExtractor(true);
 		ooxmlParser.setUseSAXPptxExtractor(true);
 		return ooxmlParser;
