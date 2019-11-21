@@ -191,6 +191,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		server = vertx.createHttpServer(options);
 		RouterStorage storage = routerStorage.get();
 		Router rootRouter = storage.root().getRouter();
+		registerEndPoints(storage);
 		server.requestHandler(rootRouter);
 
 		if (initialProjects != null) {
@@ -207,7 +208,6 @@ public class RestAPIVerticle extends AbstractVerticle {
 					log.info("Started http server.. Port: " + config().getInteger("port"));
 				}
 				try {
-					registerEndPoints(storage);
 					promise.complete();
 				} catch (Exception e) {
 					e.printStackTrace();
