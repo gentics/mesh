@@ -32,6 +32,13 @@ public interface PluginEnvironment {
 	MeshRestClient createAdminClient();
 
 	/**
+	 * Create a new admin client which uses local API instead of http.
+	 * 
+	 * @return
+	 */
+	MeshRestClient createLocalClient();
+
+	/**
 	 * Return the Mesh options.
 	 * 
 	 * @return

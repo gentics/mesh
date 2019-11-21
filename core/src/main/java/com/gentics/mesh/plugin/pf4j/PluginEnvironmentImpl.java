@@ -8,6 +8,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
+import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 import dagger.Lazy;
@@ -16,7 +17,7 @@ import io.vertx.core.Vertx;
 public class PluginEnvironmentImpl implements PluginEnvironment {
 
 	private final Database db;
-	
+
 	private final Lazy<Vertx> vertx;
 
 	private final MeshOptions options;
@@ -25,17 +26,20 @@ public class PluginEnvironmentImpl implements PluginEnvironment {
 
 	private Lazy<BootstrapInitializer> boot;
 
+	private Lazy<MeshLocalClientImpl> localClient;
+
 	private static final String WILDCARD_IP = "0.0.0.0";
 
 	private static final String LOOPBACK_IP = "127.0.0.1";
 
 	@Inject
-	public PluginEnvironmentImpl(Lazy<BootstrapInitializer> boot, Database db, Lazy<MeshJWTAuthProvider> authProvider, Lazy<Vertx> vertx, MeshOptions options) {
+	public PluginEnvironmentImpl(Lazy<BootstrapInitializer> boot, Database db, Lazy<MeshJWTAuthProvider> authProvider, Lazy<Vertx> vertx, MeshOptions options, Lazy<MeshLocalClientImpl> localClient) {
 		this.boot = boot;
 		this.db = db;
 		this.authProvider = authProvider;
 		this.vertx = vertx;
 		this.options = options;
+		this.localClient = localClient;
 	}
 
 	@Override
@@ -59,6 +63,11 @@ public class PluginEnvironmentImpl implements PluginEnvironment {
 		MeshRestClient client = MeshRestClient.create(host, port, false);
 		client.setAPIKey(adminToken());
 		return client;
+	}
+
+	@Override
+	public MeshRestClient createLocalClient() {
+		return localClient.get();
 	}
 
 	@Override
