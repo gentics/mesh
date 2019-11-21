@@ -66,10 +66,9 @@ public class HandlerUtilities {
 	@Inject
 	public HandlerUtilities(Database database, MeshOptions meshOptions, MetricsService metrics, Provider<EventQueueBatch> queueProvider, Provider<BulkActionContext> bulkProvider) {
 		GraphStorageOptions storageOptions = meshOptions.getStorageOptions();
-		boolean isClustered = meshOptions.getClusterOptions() != null && meshOptions.getClusterOptions().isEnabled();
 		this.database = database;
 		this.metrics = metrics;
-		this.syncWrites = isClustered || storageOptions.isSynchronizeWrites();
+		this.syncWrites = storageOptions.isSynchronizeWrites();
 		this.queueProvider = queueProvider;
 		this.bulkProvider = bulkProvider;
 	}
