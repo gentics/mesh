@@ -1,16 +1,5 @@
 package com.gentics.mesh.graphql.type;
 
-import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphql.context.GraphQLContext;
-import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLObjectType.Builder;
-import graphql.schema.GraphQLTypeReference;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.graphql.type.GroupTypeProvider.GROUP_PAGE_TYPE_NAME;
@@ -19,6 +8,22 @@ import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
+
+import java.util.List;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphql.context.GraphQLContext;
+
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLObjectType.Builder;
+import graphql.schema.GraphQLTypeReference;
 
 @Singleton
 public class UserTypeProvider extends AbstractTypeProvider {
@@ -108,7 +113,11 @@ public class UserTypeProvider extends AbstractTypeProvider {
 					// TODO throw error - We can't traverse across projects
 					return null;
 				}
-				return gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
+
+				node = gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
+				List<String> languageTags = getLanguageArgument(env);
+				NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
+				return new NodeContent(node, container, languageTags);
 			}));
 
 		return root.build();
