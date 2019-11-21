@@ -78,6 +78,8 @@ import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -179,7 +181,8 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Arrays.asList("filtering/roles", true, "draft"),
 			Arrays.asList("node/breadcrumb-root", true, "draft"),
 			Arrays.asList("node/versionslist", true, "draft"),
-			Arrays.asList("permissions", true, "draft")
+			Arrays.asList("permissions", true, "draft"),
+			Arrays.asList("user-node-reference", true, "draft")
 		)
 		.flatMap(testCase -> IntStream.rangeClosed(1, CURRENT_API_VERSION).mapToObj(version -> {
 			// Make sure all testData entries have five parts.
@@ -456,6 +459,11 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		nodeUpdateRequest.getFields().put("nodeList", FieldUtil.createNodeListField(NODE_WITH_LINKS_UUID));
 		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("node-with-reference-de"));
 		call(() -> client.updateNode(PROJECT_NAME, NODE_WITH_NODE_REF_UUID, nodeUpdateRequest));
+
+		// Add node reference to user
+		UserResponse user = call(() -> client.me());
+		NodeResponse newsNode = call(() -> client.findNodeByUuid(PROJECT_NAME, NEWS_UUID));
+		call(() -> client.updateUser(user.getUuid(), new UserUpdateRequest().setNodeReference(newsNode)));
 
 		// Now execute the query and assert it
 		GraphQLResponse response = call(

@@ -23,9 +23,11 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
-[[Unrelesed]]
+[[Unreleased]]
 
 icon:check[] Core: Mesh now uses a different parser for processing `*.docx` and `*.pptx` files. Parsing these files will now require far less memory.
+
+icon:check[] GraphQL: Fixed fetching node references from users. link:https://github.com/gentics/mesh/issues/393[#393] link:https://github.com/gentics/mesh/issues/934[#934]
 
 [[v1.2.0]]
 

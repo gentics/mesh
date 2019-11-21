@@ -1,0 +1,9 @@
+{
+    me {
+        nodeReference {
+            # [$.data.me.nodeReference.uuid=<is-uuid>]
+            uuid
+        }
+    }
+}
+# [$.errors=<is-undefined>]
