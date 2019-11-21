@@ -22,8 +22,8 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 
 import dagger.Lazy;
 import io.reactivex.Maybe;
-import io.vertx.core.Vertx;
 import io.vertx.ext.web.FileUpload;
+import io.vertx.reactivex.core.Vertx;
 
 @MeshTestSetting(elasticsearch = NONE, testSize = TestSize.EMPTY, startServer = false)
 public class TikaBinaryProcessorTest extends AbstractMeshTest {

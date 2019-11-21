@@ -17,6 +17,7 @@ import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.ParserDecorator;
+import org.apache.tika.parser.microsoft.ooxml.OOXMLParser;
 
 public class DocumentTikaParser {
 
@@ -35,7 +36,7 @@ public class DocumentTikaParser {
 	/**
 	 * Supported parsers.
 	 */
-	private static final Parser PARSERS[] = new Parser[] {
+	private static final Parser[] PARSERS = new Parser[] {
 		// documents
 		new org.apache.tika.parser.html.HtmlParser(),
 		new org.apache.tika.parser.rtf.RTFParser(),
@@ -43,7 +44,7 @@ public class DocumentTikaParser {
 		new org.apache.tika.parser.txt.TXTParser(),
 		new org.apache.tika.parser.microsoft.OfficeParser(),
 		new org.apache.tika.parser.microsoft.OldExcelParser(),
-		ParserDecorator.withoutTypes(new org.apache.tika.parser.microsoft.ooxml.OOXMLParser(), EXCLUDES),
+		ParserDecorator.withoutTypes(xmlParser(), EXCLUDES),
 		new org.apache.tika.parser.odf.OpenDocumentParser(),
 		new org.apache.tika.parser.iwork.IWorkPackageParser(),
 		new org.apache.tika.parser.xml.DcXMLParser(),
@@ -65,6 +66,15 @@ public class DocumentTikaParser {
 		// ogg (audio/video)
 		new org.gagravarr.tika.OggParser()
 	};
+
+	private static OOXMLParser xmlParser() {
+		OOXMLParser ooxmlParser = new OOXMLParser();
+		ooxmlParser.setIncludeDeletedContent(true);
+		ooxmlParser.setIncludeMoveFromContent(true);
+		ooxmlParser.setUseSAXDocxExtractor(true);
+		ooxmlParser.setUseSAXPptxExtractor(true);
+		return ooxmlParser;
+	}
 
 	private static final AutoDetectParser PARSER_INSTANCE = new AutoDetectParser(PARSERS);
 
