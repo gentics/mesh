@@ -20,9 +20,9 @@ public class SchemaService {
 
 	private final Map<String, String> rootNodeUuids;
 
-	public static final String PLUGIN_SCHEMA_NAME = "folder";
+	public static final String PLUGIN_SCHEMA_NAME = "favorite_folder";
 
-	public static final String SECTION_SCHEMA_NAME = "folder";
+	public static final String SECTION_SCHEMA_NAME = "favorite_folder";
 
 	public static final String FAVORITE_SCHEMA_NAME = "favorite";
 
@@ -34,7 +34,7 @@ public class SchemaService {
 	}
 
 	public List<String> getSchemaNames() {
-		return Arrays.asList(FAVORITE_SCHEMA_NAME);
+		return Arrays.asList(PLUGIN_SCHEMA_NAME, FAVORITE_SCHEMA_NAME);
 	}
 
 	/**

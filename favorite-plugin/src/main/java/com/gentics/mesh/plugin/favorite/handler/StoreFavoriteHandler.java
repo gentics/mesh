@@ -23,7 +23,7 @@ public class StoreFavoriteHandler extends AbstractFavoriteHandler{
 		String projectName = context.project().getString("name");
 		String type = context.pathParam("type");
 		String favoriteID = context.pathParam("id");
-		if(!type.matches("[A-Za-z0-9\\-\\_]+")) {
+		if(!type.matches(regexMatch)) {
 
 			throw new InvalidTypeError(type);
 		}

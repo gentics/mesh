@@ -27,7 +27,7 @@ public class GetFavoriteHandler extends AbstractFavoriteHandler {
 		String projectName = context.project().getString("name");
 		String type = context.pathParam("type");
 		
-		if(!type.matches("[A-Za-z0-9\\-\\_]+")) {
+		if(!type.matches(regexMatch)) {
 			throw new InvalidTypeError(type);
 		}
 

@@ -22,7 +22,7 @@ public class OverrideFavoriteHandler extends AbstractFavoriteHandler {
 	public Completable handle(PluginContext context) {
 		String projectName = context.project().getString("name");
 		String type = context.pathParam("type");
-		if (!type.matches("[A-Za-z0-9\\-\\_]+")) {
+		if (!type.matches(regexMatch)) {
 			throw new InvalidTypeError(type);
 		}
 		return favoriteService.overrideFavorite(projectName, type, context.getBodyAsJson()).doOnEvent((response, t) -> {

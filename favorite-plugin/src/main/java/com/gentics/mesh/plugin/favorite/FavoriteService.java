@@ -10,6 +10,7 @@ import com.gentics.mesh.plugin.favorite.client.AdminClient;
 import com.gentics.mesh.plugin.favorite.client.UserClient;
 import com.gentics.mesh.plugin.favorite.config.FavoritePluginConfig;
 import com.gentics.mesh.plugin.favorite.error.FavoriteNotAllowedError;
+import com.gentics.mesh.plugin.favorite.error.TypeNotFoundError;
 import com.gentics.mesh.plugin.favorite.model.FavoriteResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
@@ -68,15 +69,15 @@ public class FavoriteService {
 	 *
 	 * @param projectName project name
 	 * @param type        favorite type
-	 * @param body        request body
+	 * @param favoriteID  request favoriteID
 	 * @return single node response of the created/updated favorite node
 	 */
-	public Single<NodeResponse> postFavorite(String projectName, String type, String body) {
+	public Single<NodeResponse> postFavorite(String projectName, String type, String favoriteID) {
 		JsonArray value = new JsonArray();
-		value.add(body);
+		value.add(favoriteID);
 		return ifLoggedIn(user -> {
 			return getUserFavorite(projectName, type)
-					.flatMap(favorite -> updateUserFavorite(projectName, favorite, body, type))
+					.flatMap(favorite -> updateUserFavorite(projectName, favorite, favoriteID, type))
 					.onErrorResumeNext(t -> ifNotFound(t, () -> createUserFavorites(projectName, type, value)));
 		}, user -> Single.error(new FavoriteNotAllowedError()));
 	}
@@ -108,7 +109,7 @@ public class FavoriteService {
 	public Single<FavoriteResponse> getFavorite(String projectName, String type) {
 		return ifLoggedIn(user -> {
 			FavoriteResponse response = new FavoriteResponse();
-			StringFieldListImpl  emptyFavorites = new StringFieldListImpl();
+			StringFieldListImpl emptyFavorites = new StringFieldListImpl();
 			return getUserFavorite(projectName, type).flatMap(favorite -> {
 				StringFieldListImpl valueField = favorite.getFields().getStringFieldList(FAVORITE_FIELD);
 				response.setFavorites(valueField.getItems());
@@ -163,7 +164,6 @@ public class FavoriteService {
 		create.setLanguage("en");
 		create.setParentNodeUuid(schemaService.getRootNodeUuid(projectName));
 		create.getFields().put("slug", new StringFieldImpl().setString(type));
-		create.getFields().put("name", new StringFieldImpl().setString(type));
 		return adminClient.createNode(projectName, create).toSingle();
 	}
 
@@ -192,16 +192,18 @@ public class FavoriteService {
 	 * @return single node response of the favorite node
 	 */
 	protected Single<NodeResponse> createUserFavorites(String projectName, String type, JsonArray value) {
+
 		return Single.zip(getSection(projectName, type), getUser(), (section, user) -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setSchemaName(SchemaService.FAVORITE_SCHEMA_NAME);
 			create.setLanguage("en");
 			create.setParentNodeUuid(section.getUuid());
 			StringFieldListImpl list = new StringFieldListImpl();
-			for (Object o : value) {
-				list.add((String) o);
-			}
+
 			create.getFields().put("userUuid", new StringFieldImpl().setString(user.getUuid()));
+			for (Object o : value) {
+				this.addFavorite(list, o.toString(), type);
+			}
 			create.getFields().put(FAVORITE_FIELD, list);
 			return adminClient.createNode(projectName, create).toSingle();
 		}).flatMap(x -> x);
@@ -271,7 +273,10 @@ public class FavoriteService {
 	 */
 	protected void addFavorite(StringFieldListImpl list, String favorite, String type) {
 		//get the config Values
-		String listOrdening = this.configuration.getTypeOptions().get(type).getAddToList();
+		if (!configuration.getTypeOptions().containsKey(type)) {
+			throw new TypeNotFoundError(type);
+		}
+		String listOrdering = this.configuration.getTypeOptions().get(type).getAddToList();
 		int maxEntries = this.configuration.getTypeOptions().get(type).getmaxEntries();
 		boolean allowDuplicates = this.configuration.getTypeOptions().get(type).hasAllowDuplicates();
 		boolean reorderDuplicates = this.configuration.getTypeOptions().get(type).hasReorderDuplicates();
@@ -281,16 +286,16 @@ public class FavoriteService {
 		//check if the favorite exists and set found to true
 		if (!allowDuplicates) {
 			for (String item : items) {
-				if (item.equals(favorite)) {
+				if (item.contains(favorite)) {
 					found = true;
 					break;
 				}
 			}
 		}
 		//check if the reorder duplicates is set to true and allow duplicates is set to false. The delete the favorite, and add it according to the policy: append or prepend
-		if (!allowDuplicates && found && reorderDuplicates) {
+		if (!allowDuplicates && reorderDuplicates) {
 			for (String item : items) {
-				if (item.equals(favorite)) {
+				if (item.contains(favorite)) {
 					list.getItems().removeAll(Collections.singleton(favorite));
 					break;
 				}
@@ -298,9 +303,9 @@ public class FavoriteService {
 		}
 		//if the element is not found and the duplicates are not allowed, or duplicates are allowed then append or prepend the favorite according to the policy.
 
-		if ((!allowDuplicates && !found) || allowDuplicates || (!allowDuplicates && found && reorderDuplicates)) {
+		if (!found || allowDuplicates || (!allowDuplicates && found && reorderDuplicates)) {
 			//if max Entries are reached - delete oldest (last) entry
-			if (listOrdening.toLowerCase().equals("prepend")) {
+			if ("prepend".equalsIgnoreCase(listOrdering)) {
 				if (maxEntries > 0 && items.size() >= maxEntries) {
 					items.remove(items.size() - 1);
 				}
@@ -311,7 +316,7 @@ public class FavoriteService {
 				if (maxEntries > 0 && items.size() >= maxEntries) {
 					items.remove(0);
 				}
-				items.add(items.size(), favorite);
+				items.add(favorite);
 			}
 
 		}

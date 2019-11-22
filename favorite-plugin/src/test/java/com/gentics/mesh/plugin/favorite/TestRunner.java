@@ -14,7 +14,9 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.router.EndpointRegistry;
 import io.reactivex.Completable;
 import io.vertx.core.json.JsonObject;
-
+/**
+ * Starts a MESH Server with the port 8092 with the plugin deployed. It creates a user admin and a project test
+ */
 public class TestRunner {
 	public static void main(String[] args) throws Throwable {
 		final int httpPort = 8092;

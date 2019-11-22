@@ -22,22 +22,23 @@ public class FavoritePluginClient {
 		this.client = client;
 		this.projectName = projectName;
 	}
-	// TODO Please change that to post(String, EmptyResponse.class when in MESH Available)
 
 	public Completable addFavorite(String type, String value) {
-		return Completable.fromAction(() -> client.post(String.format("/%s/plugins/favorite/%s/%s", projectName, type, value)).blockingAwait());
+		return client.post(String.format("/%s/plugins/favorite/%s/%s", projectName, type, value), EmptyResponse.class).toCompletable();
 	}
 
 	public Completable overrideFavorite(String type, String... values) {
 		return overrideFavorite(type, Arrays.asList(values));
 	}
 
+	//TODO next Mesh Release please change it to post(path, body, EmptyResponse.class)
 	public Completable overrideFavorite(String type, List<String> values) {
 		JsonObject value = new JsonObject().put("favorites", new JsonArray(values));
 		return Completable.fromAction(() -> client.post(String.format("/%s/plugins/favorite/%s", projectName, type), value).blockingAwait());
 	}
+
 	public Completable deleteFavorite(String type, String value) {
-		return Completable.fromAction(() -> client.delete(String.format("/%s/plugins/favorite/%s/%s", projectName, type, value)).blockingAwait());
+		return client.delete(String.format("/%s/plugins/favorite/%s/%s", projectName, type, value), EmptyResponse.class).toCompletable();
 	}
 
 	public Single<List<String>> getFavorites(String type) {
@@ -50,6 +51,7 @@ public class FavoritePluginClient {
 				.flatMapObservable(res -> Observable.fromIterable(res.getData()))
 				.flatMapSingle(favorite -> delete(projectName, favorite)).ignoreElements();
 	}
+
 	protected Single<EmptyResponse> delete(String projectName, NodeResponse favorite) {
 		return client.deleteNode(projectName, favorite.getUuid(), new DeleteParametersImpl().setRecursive(true)).toSingle();
 	}

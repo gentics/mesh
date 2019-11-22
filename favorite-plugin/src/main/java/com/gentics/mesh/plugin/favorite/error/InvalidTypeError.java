@@ -14,6 +14,6 @@ public class InvalidTypeError extends FavoritePluginError {
 
 	@Override
 	public int getHttpStatusCode() {
-		return HttpResponseStatus.UNAUTHORIZED.code();
+		return HttpResponseStatus.BAD_REQUEST.code();
 	}
 }
