@@ -52,4 +52,10 @@ public class FormGeneratorPluginModule {
 		engine.getHandlebars().registerHelpers(new FormHelper());
 		return new HandlebarsTemplateEngine(engine);
 	}
+
+	@Singleton
+	@Provides
+	public io.vertx.reactivex.core.Vertx vertx(Vertx vertx) {
+		return new io.vertx.reactivex.core.Vertx(vertx);
+	}
 }
