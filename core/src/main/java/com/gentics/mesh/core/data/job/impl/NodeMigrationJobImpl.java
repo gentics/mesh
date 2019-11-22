@@ -29,6 +29,7 @@ import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 
 import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -60,10 +61,10 @@ public class NodeMigrationJobImpl extends JobImpl {
 		return model;
 	}
 
-	private NodeMigrationActionContextImpl prepareContext() {
+	private Single<NodeMigrationActionContextImpl> prepareContext() {
 		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(this, vertx(), JobType.schema);
-		try {
-			return db().tx(() -> {
+		return db().singleTx(() -> {
+			try {
 				NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 				context.setStatus(status);
 
@@ -116,43 +117,35 @@ public class NodeMigrationJobImpl extends JobImpl {
 
 				context.getStatus().commit();
 				return context;
-			});
-		} catch (Exception e) {
-			db().tx(() -> {
-				status.error(e, "Error while preparing node migration.");
-			});
-			throw e;
-		}
+			} catch (Exception e) {
+				db().tx(() -> {
+					status.error(e, "Error while preparing node migration.");
+				});
+				throw e;
+			}
+		});
 	}
 
 	protected Completable processTask() {
 		NodeMigrationHandler handler = mesh().nodeMigrationHandler();
 
-		return Completable.defer(() -> {
-			NodeMigrationActionContextImpl context = prepareContext();
-
-			return handler.migrateNodes(context)
-				.doOnComplete(() -> {
-					db().tx(() -> {
-						JobWarningList warnings = new JobWarningList();
-						if (!context.getConflicts().isEmpty()) {
-							for (ConflictWarning conflict : context.getConflicts()) {
-								log.info("Encountered conflict for node {" + conflict.getNodeUuid() + "} which was automatically resolved.");
-								warnings.add(conflict);
-							}
-						}
-						setWarnings(warnings);
-						finalizeMigration(context);
-						context.getStatus().done();
-					});
-				}).doOnError(err -> {
-					db().tx(() -> {
-						context.getStatus().error(err, "Error in node migration.");
-						createBatch().add(createEvent(SCHEMA_MIGRATION_FINISHED, FAILED)).dispatch();
-					});
-				});
-
-		});
+		return prepareContext()
+			.flatMapCompletable(context -> handler.migrateNodes(context)
+			.andThen(db().completableTx(tx -> {
+				JobWarningList warnings = new JobWarningList();
+				if (!context.getConflicts().isEmpty()) {
+					for (ConflictWarning conflict : context.getConflicts()) {
+						log.info("Encountered conflict for node {" + conflict.getNodeUuid() + "} which was automatically resolved.");
+						warnings.add(conflict);
+					}
+				}
+				setWarnings(warnings);
+				finalizeMigration(context);
+				context.getStatus().done();
+			})).onErrorResumeNext(err -> db().completableTx(tx -> {
+				context.getStatus().error(err, "Error in node migration.");
+				createBatch().add(createEvent(SCHEMA_MIGRATION_FINISHED, FAILED)).dispatch();
+			})));
 	}
 
 	private void finalizeMigration(NodeMigrationActionContext context) {

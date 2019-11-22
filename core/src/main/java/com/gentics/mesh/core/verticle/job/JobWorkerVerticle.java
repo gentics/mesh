@@ -54,10 +54,10 @@ public class JobWorkerVerticle extends AbstractJobVerticle {
 
 	@Override
 	public Completable executeJob(Message<Object> message) {
-		return Completable.defer(() -> db.tx(() -> {
+		return db.singleTx(() -> {
 			JobRoot jobRoot = boot.get().jobRoot();
 			return jobRoot.process();
-		}));
+		}).flatMapCompletable(x -> x);
 	}
 
 }

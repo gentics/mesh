@@ -19,7 +19,6 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.impl.BranchImpl;
-import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -311,17 +310,12 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public Completable process() {
-		return Completable.defer(() -> {
-
-			db().tx(() -> {
-				log.info("Processing job {" + getUuid() + "}");
-				setStartTimestamp();
-				setStatus(STARTING);
-				setNodeName();
-			});
-
-			return processTask();
-		});
+		return db().completableTx(tx -> {
+			log.info("Processing job {" + getUuid() + "}");
+			setStartTimestamp();
+			setStatus(STARTING);
+			setNodeName();
+		}).andThen(Completable.defer(this::processTask));
 	}
 
 	/**

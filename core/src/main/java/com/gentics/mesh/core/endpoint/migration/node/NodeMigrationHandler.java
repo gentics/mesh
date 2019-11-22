@@ -7,7 +7,6 @@ import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
 import static com.gentics.mesh.metric.SimpleMetric.NODE_MIGRATION_PENDING;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -76,68 +75,59 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 
 			// Prepare the migration - Collect the migration scripts
 			Set<String> touchedFields = new HashSet<>();
-		SchemaModel newSchema = db.tx(() -> toVersion.getSchema());
 
-			try {
-				db.tx(() -> {
+			return db.singleTx(toVersion::getSchema)
+				.flatMapCompletable(newSchema -> db.completableTx(tx -> {
 					prepareMigration(fromVersion, touchedFields);
 					if (status != null) {
 						status.setStatus(RUNNING);
 						status.commit();
 					}
-				});
-			} catch (Exception e) {
-				log.error("Error while preparing migration");
-				return Completable.error(e);
-			}
+				})
+				// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
+				// versions. We'll work on drafts. The migration code will later on also handle publish versions.
+				.andThen(db.singleTx(() -> Lists.newArrayList(fromVersion.getDraftFieldContainers(branch.getUuid()))))
+				.flatMapCompletable(containers -> {
 
-			// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
-			// versions. We'll work on drafts. The migration code will later on also handle publish versions.
-			List<? extends NodeGraphFieldContainer> containers = db.tx(() -> {
-				Iterator<? extends NodeGraphFieldContainer> it = fromVersion.getDraftFieldContainers(branch.getUuid());
-				return Lists.newArrayList(it);
-			});
-
-			if (metrics.isEnabled()) {
-				migrationGauge.set(containers.size());
-			}
-
-			// No field containers, migration is done
-			if (containers.isEmpty()) {
-				if (status != null) {
-					db.tx(() -> {
-						status.setStatus(COMPLETED);
-						status.commit();
-					});
-				}
-				return Completable.complete();
-			}
-
-		List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, container, errors) -> {
-			handlerUtilities.lock();
-			try {
-				migrateContainer(context, batch, container, fromVersion, newSchema, errors, touchedFields);
-			} finally {
-				handlerUtilities.unlock();
-			}
-			if (metrics.isEnabled()) {
-				migrationGauge.decrementAndGet();
-			}
-		});
-
-			// TODO prepare errors. They should be easy to understand and to grasp
-			Completable result = Completable.complete();
-			if (!errorsDetected.isEmpty()) {
-				if (log.isDebugEnabled()) {
-					for (Exception error : errorsDetected) {
-						log.error("Encountered migration error.", error);
+					if (metrics.isEnabled()) {
+						migrationGauge.set(containers.size());
 					}
-				}
-				result = Completable.error(new CompositeException(errorsDetected));
-			}
-			return result;
-		});
 
+					// No field containers, migration is done
+					if (containers.isEmpty()) {
+						if (status != null) {
+							return db.completableTx(tx -> {
+								status.setStatus(COMPLETED);
+								status.commit();
+							});
+						}
+						return Completable.complete();
+					}
+
+					List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, container, errors) -> {
+						handlerUtilities.lock();
+						try {
+							migrateContainer(context, batch, container, fromVersion, newSchema, errors, touchedFields);
+						} finally {
+							handlerUtilities.unlock();
+						}
+						if (metrics.isEnabled()) {
+							migrationGauge.decrementAndGet();
+						}
+					});
+
+					// TODO prepare errors. They should be easy to understand and to grasp
+					Completable result = Completable.complete();
+					if (!errorsDetected.isEmpty()) {
+						if (log.isDebugEnabled()) {
+							for (Exception error : errorsDetected) {
+								log.error("Encountered migration error.", error);
+							}
+						}
+						result = Completable.error(new CompositeException(errorsDetected));
+					}
+					return result;
+				}));});
 	}
 
 	/**

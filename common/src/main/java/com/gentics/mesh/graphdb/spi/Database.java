@@ -30,6 +30,7 @@ import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Vertx;
@@ -174,6 +175,18 @@ public interface Database extends TxFactory {
 				promise.fail(e);
 			}
 		}, false);
+	}
+
+	/**
+	 * Executes a consumer in a transaction within the worker thread pool.
+	 * @param handler
+	 * @return
+	 */
+	default Completable completableTx(Consumer<Tx> handler) {
+		return maybeTx(tx -> {
+			handler.accept(tx);
+			return null;
+		}).ignoreElement();
 	}
 
 	/**

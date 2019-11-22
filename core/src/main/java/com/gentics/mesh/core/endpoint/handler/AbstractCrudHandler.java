@@ -105,21 +105,15 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("param0");
 			// Only try to load the root element when a uuid string was specified
-			if (!isEmpty(uuid)) {
-				boolean result = db.tx(() -> {
-					T foundElement = getRootVertex(ac).findByUuid(uuid);
-					if (foundElement == null) {
-						throw error(NOT_FOUND, i18nNotFoundMessage, uuid);
-					} else {
-						ac.data().put(TAGFAMILY_ELEMENT_CONTEXT_DATA_KEY, foundElement);
-					}
-					return true;
-				});
-				if (!result) {
-					return;
-				}
+			if (isEmpty(uuid)) {
+				rc.next();
+			} else {
+				db.maybeTx(tx -> getRootVertex(ac).findByUuid(uuid))
+				.subscribe(foundElement -> {
+					ac.data().put(TAGFAMILY_ELEMENT_CONTEXT_DATA_KEY, foundElement);
+					rc.next();
+				}, rc::fail, () -> rc.fail(error(NOT_FOUND, i18nNotFoundMessage, uuid)));
 			}
-			rc.next();
 		};
 		return handler;
 	}

@@ -85,7 +85,7 @@ public class UtilityEndpoint extends AbstractInternalEndpoint {
 		endpoint.addQueryParameters(NodeParametersImpl.class);
 		endpoint.exampleRequest("Some text before {{mesh.link(\"" + NODE_DELOREAN_UUID + "\", \"en\")}} and after.");
 		endpoint.exampleResponse(OK, "Some text before " + CURRENT_API_BASE_PATH + "/dummy/webroot/flower.jpg and after");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			utilityHandler.handleResolveLinks(ac);
 		});
