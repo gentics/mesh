@@ -23,8 +23,9 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.gentics.mesh.plugin</groupId>
+			<groupId>com.gentics.mesh.plugin.commercial</groupId>
 			<artifactId>mesh-commercial-plugins-common</artifactId>
+			<version>1.0.2-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
