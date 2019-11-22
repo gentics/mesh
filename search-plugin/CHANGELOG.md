@@ -10,6 +10,13 @@
 
 = Mesh Search Plugin Changelog
 
+[[v1.0.1]]
+== 1.0.1 (2019-11-08)
+
+CAUTION: In future versions of the plugin the returned total hits might not be exact but a lower bound.
+
+icon:check[] SearchHandler: Fix compatibility issues with Elasticsearch 7.
+
 [[v1.0.0]]
 == 1.0.0 (2019-08-20)
 

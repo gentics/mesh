@@ -1,20 +1,5 @@
 package com.gentics.mesh.plugin.search;
 
-import static com.gentics.mesh.plugin.search.util.TestUtils.mockContext;
-import static com.gentics.mesh.plugin.search.util.TestUtils.mockRequest;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.anyVararg;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.plugin.PluginContext;
@@ -23,10 +8,23 @@ import com.gentics.mesh.plugin.search.handler.AutocompleteHandler;
 import com.gentics.mesh.plugin.search.service.QueryService;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.vertx.http.HttpResponseStatus;
-
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.io.IOException;
+
+import static com.gentics.mesh.plugin.search.util.TestUtils.mockContext;
+import static com.gentics.mesh.plugin.search.util.TestUtils.mockRequest;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.anyVararg;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class AutocompleteHandlerTest {
 	private static final String DEFAULT_PROJECT = "dummy";
@@ -72,6 +70,29 @@ public class AutocompleteHandlerTest {
 		AutocompleteHandler handler = new AutocompleteHandler(config, pc, queryServiceMock, null);
 
 		MeshRequest<ObjectNode> searchResult = mockRequest(new ObjectMapper().readValue(getClass().getResource("/results/autocompleteSingleTermResult.json"), ObjectNode.class));
+
+		when(pc.client().searchNodesRaw(anyString(), any(), anyVararg())).thenReturn(searchResult);
+
+		handler.handle().test()
+			.assertComplete();
+
+		verify(pc.response()).end(new JsonArray().add(new JsonObject().put("name", "testing")).encode());
+	}
+
+	/**
+	 * Test that the handler works with the Elasticsearch 7 result structure.
+	 *
+	 * <p>
+	 *     The autocomplete handler does not use the "total" field, but just to be sure test that the structure
+	 *     change does not affect the handler.
+	 * </p>
+	 */
+	@Test
+	public void testNewTotal() throws IOException {
+		PluginContext pc = mockContext(DEFAULT_PROJECT, "/autocomplete", "q=test");
+		AutocompleteHandler handler = new AutocompleteHandler(config, pc, queryServiceMock, null);
+
+		MeshRequest<ObjectNode> searchResult = mockRequest(new ObjectMapper().readValue(getClass().getResource("/results/autocompleteNewTotal.json"), ObjectNode.class));
 
 		when(pc.client().searchNodesRaw(anyString(), any(), anyVararg())).thenReturn(searchResult);
 

@@ -2,6 +2,7 @@
 	"responses" : [
 		{
 			"hits" : {
+				"total": 1,
 				"hits" : [
 					{
 						"highlight" : {
