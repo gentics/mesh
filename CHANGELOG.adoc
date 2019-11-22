@@ -29,6 +29,8 @@ icon:check[] Core: Mesh now uses a different parser for processing `*.docx` and 
 
 icon:check[] GraphQL: Fixed fetching node references from users. link:https://github.com/gentics/mesh/issues/393[#393] link:https://github.com/gentics/mesh/issues/934[#934]
 
+icon:check[] Java Rest Client: Fixed a bug that some generic methods would not allow response objects of any class.
+
 [[v1.2.0]]
 
 == 1.2.0 (20.11.2019)

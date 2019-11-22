@@ -1472,7 +1472,7 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public <R extends RestModel> MeshRequest<R> get(String path, Class<R> responseClass) {
+	public <R> MeshRequest<R> get(String path, Class<R> responseClass) {
 		return prepareRequest(GET, path, responseClass);
 	}
 
@@ -1495,7 +1495,7 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public <R extends RestModel, T extends RestModel> MeshRequest<R> put(String path, T request, Class<R> responseClass) {
+	public <R, T extends RestModel> MeshRequest<R> put(String path, T request, Class<R> responseClass) {
 		Objects.requireNonNull(path, "path must not be null");
 		Objects.requireNonNull(request, "request must not be null");
 		return prepareRequest(PUT, path, responseClass, request);
@@ -1520,7 +1520,7 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public <R extends RestModel, T extends RestModel> MeshRequest<R> post(String path, T request, Class<R> responseClass) {
+	public <R, T extends RestModel> MeshRequest<R> post(String path, T request, Class<R> responseClass) {
 		Objects.requireNonNull(request, "The request must not be null");
 		return prepareRequest(POST, path, responseClass, request);
 	}

@@ -15,7 +15,7 @@ public interface GenericHttpMethods {
 
 	MeshRequest<JsonObject> get(String path);
 
-	<R extends RestModel> MeshRequest<R> get(String path, Class<R> responseClass);
+	<R> MeshRequest<R> get(String path, Class<R> responseClass);
 
 	/* POST */
 
@@ -25,7 +25,7 @@ public interface GenericHttpMethods {
 
 	<R> MeshRequest<R> post(String path, Class<R> responseClass);
 
-	<R extends RestModel, T extends RestModel> MeshRequest<R> post(String path, T request, Class<R> responseClass);
+	<R, T extends RestModel> MeshRequest<R> post(String path, T request, Class<R> responseClass);
 
 	/* PUT */
 
@@ -35,7 +35,7 @@ public interface GenericHttpMethods {
 
 	<R> MeshRequest<R> put(String path, Class<R> responseClass);
 
-	<R extends RestModel, T extends RestModel> MeshRequest<R> put(String path, T request, Class<R> responseClass);
+	<R, T extends RestModel> MeshRequest<R> put(String path, T request, Class<R> responseClass);
 
 	/* DELETE */
 
