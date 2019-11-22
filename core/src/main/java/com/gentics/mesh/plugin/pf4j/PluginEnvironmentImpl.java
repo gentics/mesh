@@ -4,6 +4,7 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -67,7 +68,11 @@ public class PluginEnvironmentImpl implements PluginEnvironment {
 
 	@Override
 	public MeshRestClient createLocalClient() {
-		return localClient.get();
+		MeshLocalClientImpl client = localClient.get();
+		// TODO add null check
+		MeshAuthUser admin = db.tx(() -> boot.get().userRoot().findByUsername("admin").toAuthUser());
+		client.setUser(admin);
+		return client;
 	}
 
 	@Override

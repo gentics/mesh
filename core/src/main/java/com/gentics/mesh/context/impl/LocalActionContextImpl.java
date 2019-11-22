@@ -37,7 +37,7 @@ import io.vertx.ext.web.FileUpload;
  */
 public class LocalActionContextImpl<T> extends AbstractInternalActionContext implements InternalActionContext {
 
-	private RestModel payloadObject;
+	private Object payloadObject;
 	private MeshAuthUser user;
 	private Map<String, Object> data = new HashMap<>();
 	private MultiMap parameters = MultiMap.caseInsensitiveMultiMap();
@@ -95,7 +95,11 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 
 	@Override
 	public String getBodyAsString() {
-		return payloadObject.toJson();
+		if (payloadObject instanceof RestModel) {
+			return ((RestModel) payloadObject).toJson();
+		} else {
+			return (String) payloadObject;
+		}
 	}
 
 	@Override
@@ -113,7 +117,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	 * 
 	 * @param model
 	 */
-	public void setPayloadObject(RestModel model) {
+	public void setPayloadObject(Object model) {
 		this.payloadObject = model;
 	}
 
@@ -136,8 +140,12 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	public void send(String body, HttpResponseStatus status, String contentType) {
 		this.responseBody = body;
 		this.responseStatus = status;
-		T model = JsonUtil.readValue(responseBody, classOfResponse);
-		promise.complete(model);
+		if ("text/plain".equals(contentType)) {
+			promise.complete((T) body);
+		} else {
+			T model = JsonUtil.readValue(responseBody, classOfResponse);
+			promise.complete(model);
+		}
 	}
 
 	@Override

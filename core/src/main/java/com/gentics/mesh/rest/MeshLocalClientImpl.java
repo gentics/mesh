@@ -13,6 +13,8 @@ import org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.context.impl.LocalActionContextImpl;
+import com.gentics.mesh.context.impl.LocalGraphQLContextImpl;
+import com.gentics.mesh.context.impl.LocalRoutingContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.endpoint.admin.AdminHandler;
@@ -21,6 +23,7 @@ import com.gentics.mesh.core.endpoint.auth.AuthenticationRestHandler;
 import com.gentics.mesh.core.endpoint.branch.BranchCrudHandler;
 import com.gentics.mesh.core.endpoint.group.GroupCrudHandler;
 import com.gentics.mesh.core.endpoint.microschema.MicroschemaCrudHandler;
+import com.gentics.mesh.core.endpoint.node.BinaryDownloadHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
 import com.gentics.mesh.core.endpoint.project.ProjectCrudHandler;
@@ -104,6 +107,7 @@ import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
+import com.gentics.mesh.graphql.GraphQLHandler;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
@@ -164,6 +168,9 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public BinaryUploadHandler fieldAPIHandler;
 
 	@Inject
+	public BinaryDownloadHandler binaryDownloadHandler;
+
+	@Inject
 	public WebRootHandler webrootHandler;
 
 	@Inject
@@ -183,6 +190,9 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Inject
 	public PluginHandler pluginHandler;
+
+	@Inject
+	public GraphQLHandler graphQLHandler;
 
 	@Inject
 	public Vertx vertx;
@@ -1167,15 +1177,17 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	@Override
 	public MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
 		ParameterProvider... parameters) {
-		// LocalActionContextImpl<NodeResponse> ac = createContext();
-		// return new MeshLocalRequestImpl<>( ac.getFuture());
-		return null;
+		LocalRoutingContextImpl<MeshBinaryResponse> rc = new LocalRoutingContextImpl<>();
+		binaryDownloadHandler.handleReadBinaryField(rc, nodeUuid, fieldKey);
+		return new MeshLocalRequestImpl<>(rc.getFuture());
 	}
 
 	@Override
 	public MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey, long from,
 		long to, ParameterProvider... parameters) {
-		return null;
+		LocalRoutingContextImpl<MeshBinaryResponse> rc = new LocalRoutingContextImpl<>();
+		binaryDownloadHandler.handleReadBinaryField(rc, nodeUuid, fieldKey);
+		return new MeshLocalRequestImpl<>(rc.getFuture());
 	}
 
 	@Override
@@ -1189,7 +1201,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	@Override
 	public MeshRequest<String> resolveLinks(String body, ParameterProvider... parameters) {
 		LocalActionContextImpl<String> ac = createContext(String.class, parameters);
-		// utilityHandler.handleResolveLinks(rc);
+		ac.setPayloadObject(body);
+		utilityHandler.handleResolveLinks(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -1484,8 +1497,11 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<GraphQLResponse> graphql(String projectName, GraphQLRequest request, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		LocalGraphQLContextImpl gc = new LocalGraphQLContextImpl(user, parameters);
+		gc.setProject(projectName);
+		gc.setPayloadObject(request);
+		graphQLHandler.handleQuery(gc, gc.getBodyAsString());
+		return new MeshLocalRequestImpl<>(gc.getFuture());
 	}
 
 	@Override
