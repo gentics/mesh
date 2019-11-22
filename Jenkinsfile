@@ -18,6 +18,7 @@ properties([
 		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
 		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
 		booleanParam(name: 'runMavenBuild',       defaultValue: false, description: "Whether to run the maven build steps."),
+		booleanParam(name: 'runE2ETests',         defaultValue: false, description: "Runs the Mesh-UI E2E Tests."),
 		booleanParam(name: 'runIntegrationTests', defaultValue: false, description: "Whether to run integration tests."),
 		booleanParam(name: 'release',             defaultValue: false, description: "Releases the built version on github and getmesh.io")
 	])
@@ -182,6 +183,20 @@ stage("Setup Build Environment") {
 					}
 				} else {
 					echo "Performance tests skipped.."
+				}
+			}
+
+			stage("UI E2E Tests") {
+				if (Boolean.valueOf(params.runE2ETests)) {
+					sh """cd / && \
+					git clone -b master git@github.com:gentics/mesh-ui.git mesh-ui && \
+					cd mesh-ui && \
+					npm ci && \
+					npm run mesh-daemon && \
+					npm run build && \
+					npm run e2e-ci"""
+				} else {
+					echo "E2E Tests skipped.."
 				}
 			}
 

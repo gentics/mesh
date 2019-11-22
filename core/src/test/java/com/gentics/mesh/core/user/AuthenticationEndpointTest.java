@@ -15,9 +15,13 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
+import io.reactivex.Completable;
+import io.reactivex.Flowable;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
@@ -50,6 +54,14 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 
 			call(() -> client.me(), UNAUTHORIZED, "error_not_authorized");
 		}
+	}
+
+	@Test
+	public void testMe() {
+		Completable.merge(
+			Flowable.just(client().findProjectByName(TestDataProvider.PROJECT_NAME).toCompletable()).repeat(),
+			10
+		).blockingAwait();
 	}
 
 	@Test
