@@ -59,8 +59,7 @@ public class UserTokenAuthHandler extends AuthHandlerImpl {
 		String token = parameters.getToken();
 		String uuid = ac.getParameter("userUuid");
 		if (ac.getUser() == null && !isEmpty(token)) {
-
-			MeshAuthUser lastEditor = db.tx(() -> {
+			db.maybeTx(tx -> {
 				// 1. Load the element from the root element using the given uuid
 				UserRoot root = boot.userRoot();
 				User element = root.findByUuid(uuid);
@@ -81,14 +80,12 @@ public class UserTokenAuthHandler extends AuthHandlerImpl {
 				// TODO it would be better to store the designated token
 				// requester instead and use that user
 				return (MeshAuthUser) element.getEditor().reframeExplicit(MeshAuthUserImpl.class);
-			});
-			if (lastEditor == null) {
-				throw error(UNAUTHORIZED, "user_error_provided_token_invalid");
-			}
-			rc.setUser(lastEditor);
+			}).subscribe(lastEditor -> {
+				rc.setUser(lastEditor);
 
-			// Token found and validated. Lets continue
-			rc.next();
+				// Token found and validated. Lets continue
+				rc.next();
+			}, rc::fail,() -> rc.fail(error(UNAUTHORIZED, "user_error_provided_token_invalid")));
 		} else {
 			// No token could be found. Lets continue with another auth handler
 			// which should be added to the original request route.

@@ -110,7 +110,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		deployEndpoint.exampleRequest(adminExamples.createPluginDeploymentRequest());
 		deployEndpoint.exampleResponse(OK, adminExamples.createHelloWorldPluginResponse(), "Plugin response.");
 		deployEndpoint.events(PLUGIN_DEPLOYED, PLUGIN_DEPLOYING);
-		deployEndpoint.handler(rc -> {
+		deployEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			pluginHandler.handleDeploy(ac);
 		});
@@ -123,7 +123,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		undeployEndpoint.addUriParameter("id", "Id of the plugin.", PLUGIN_1_ID);
 		undeployEndpoint.exampleResponse(OK, adminExamples.createHelloWorldPluginResponse(), "Plugin response.");
 		undeployEndpoint.events(PLUGIN_UNDEPLOYED, PLUGIN_UNDEPLOYING);
-		undeployEndpoint.handler(rc -> {
+		undeployEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("id");
 			pluginHandler.handleUndeploy(ac, uuid);
@@ -136,7 +136,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		readEndpoint.produces(APPLICATION_JSON);
 		readEndpoint.addUriParameter("uuid", "Uuid of the plugin.", PLUGIN_1_ID);
 		readEndpoint.exampleResponse(OK, adminExamples.createHelloWorldPluginResponse(), "Plugin response.");
-		readEndpoint.handler(rc -> {
+		readEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("uuid");
 			pluginHandler.handleRead(ac, uuid);
@@ -148,7 +148,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		readAllEndpoint.description("Loads deployment information for all deployed plugins.");
 		readAllEndpoint.produces(APPLICATION_JSON);
 		readAllEndpoint.exampleResponse(OK, adminExamples.createPluginListResponse(), "Plugin list response.");
-		readAllEndpoint.handler(rc -> {
+		readAllEndpoint.blockingHandler(rc -> {
 			pluginHandler.handleReadList(wrap(rc));
 		});
 	}
@@ -164,7 +164,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.description("Loads the cluster status information.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, adminExamples.createClusterStatusResponse(), "Cluster status.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			adminHandler.handleClusterStatus(wrap(rc));
 		});
 	}
@@ -263,7 +263,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, adminExamples.createMeshStatusResponse(MeshStatus.READY), "Status of the Gentics Mesh server.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			// TODO this is currently polled by apa. We need to update their monitoring as well if we change this
 			adminHandler.handleMeshStatus(ac);

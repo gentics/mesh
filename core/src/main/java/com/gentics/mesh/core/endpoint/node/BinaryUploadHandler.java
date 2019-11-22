@@ -176,15 +176,13 @@ public class BinaryUploadHandler extends AbstractHandler {
 			ctx.setHash(hash);
 
 			// Check whether the binary with the given hashsum was already stored
-			Binary binary = binaries.findByHash(hash).runInNewTx();
-
-			// Create a new binary uuid if the data was not already stored
-			if (binary == null) {
-				ctx.setBinaryUuid(UUIDUtil.randomUUID());
-				ctx.setInvokeStore();
-			}
-
-			return storeUploadInTemp(ctx, ul, hash)
+			return binaries.findByHash(hash).runInNullableAsyncTx()
+				.doOnComplete(() -> {
+					// Create a new binary uuid if the data was not already stored
+					ctx.setBinaryUuid(UUIDUtil.randomUUID());
+					ctx.setInvokeStore();
+				}).ignoreElement()
+				.andThen(storeUploadInTemp(ctx, ul))
 				.andThen(Single.defer(() -> storeUploadInGraph(ac, modifierList, ctx, nodeUuid, languageTag, nodeVersion, fieldName)));
 		}).onErrorResumeNext(e -> {
 			if (ctx.isInvokeStore()) {
@@ -213,22 +211,24 @@ public class BinaryUploadHandler extends AbstractHandler {
 
 	}
 
-	private Completable storeUploadInTemp(UploadContext ctx, FileUpload ul, String hash) {
-		String uploadFilePath = ul.uploadedFileName();
-		if (ctx.isInvokeStore()) {
-			return binaryStorage.storeInTemp(uploadFilePath, ctx.getTemporaryId());
-		} else {
-			// File has already been stored. Lets remove the upload from the vert.x tmpdir. We no longer need it.
-			return fs.rxDelete(uploadFilePath)
-				.doOnComplete(() -> {
-					if (log.isTraceEnabled()) {
-						log.trace("Removed temporary file {}", uploadFilePath);
-					}
-				})
-				.doOnError(e -> {
-					log.warn("Failed to remove upload from tmpDir {}", uploadFilePath, e);
-				}).onErrorComplete();
-		}
+	private Completable storeUploadInTemp(UploadContext ctx, FileUpload ul) {
+		return Completable.defer(() -> {
+			String uploadFilePath = ul.uploadedFileName();
+			if (ctx.isInvokeStore()) {
+				return binaryStorage.storeInTemp(uploadFilePath, ctx.getTemporaryId());
+			} else {
+				// File has already been stored. Lets remove the upload from the vert.x tmpdir. We no longer need it.
+				return fs.rxDelete(uploadFilePath)
+					.doOnComplete(() -> {
+						if (log.isTraceEnabled()) {
+							log.trace("Removed temporary file {}", uploadFilePath);
+						}
+					})
+					.doOnError(e -> {
+						log.warn("Failed to remove upload from tmpDir {}", uploadFilePath, e);
+					}).onErrorComplete();
+			}
+		});
 	}
 
 	private Single<String> hashUpload(FileUpload ul) {

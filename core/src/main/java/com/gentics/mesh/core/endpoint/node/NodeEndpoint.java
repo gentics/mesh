@@ -1,26 +1,5 @@
 package com.gentics.mesh.core.endpoint.node;
 
-import com.gentics.mesh.auth.MeshAuthChain;
-import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.rest.navigation.NavigationResponse;
-import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
-import com.gentics.mesh.parameter.impl.GenericParametersImpl;
-import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
-import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
-import com.gentics.mesh.parameter.impl.NodeParametersImpl;
-import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.PublishParametersImpl;
-import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.InternalEndpointRoute;
-import com.gentics.mesh.router.route.AbstractProjectEndpoint;
-import io.vertx.core.MultiMap;
-import org.apache.commons.lang3.StringUtils;
-import org.raml.model.Resource;
-
-import javax.inject.Inject;
-
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
@@ -43,6 +22,29 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
+
+import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
+import org.raml.model.Resource;
+
+import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.rest.navigation.NavigationResponse;
+import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
+import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.PublishParametersImpl;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.route.AbstractProjectEndpoint;
+
+import io.vertx.core.MultiMap;
 
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
@@ -120,7 +122,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleResponse(OK, responseExample, "Loaded navigation.");
 		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
 		endpoint.addQueryParameters(NavigationParametersImpl.class);
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			crudHandler.handleNavigation(ac, uuid);
@@ -270,7 +272,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		getTags.description("Return a list of all tags which tag the node.");
 		getTags.addQueryParameters(VersioningParametersImpl.class);
 		getTags.addQueryParameters(GenericParametersImpl.class);
-		getTags.handler(rc -> {
+		getTags.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			crudHandler.readTags(ac, uuid);
@@ -285,7 +287,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		bulkUpdate.exampleRequest(tagExamples.getTagListUpdateRequest());
 		bulkUpdate.exampleResponse(OK, tagExamples.createTagListResponse(), "Updated tag list.");
 		bulkUpdate.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
-		bulkUpdate.handler(rc -> {
+		bulkUpdate.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String nodeUuid = ac.getParameter("nodeUuid");
 			crudHandler.handleBulkTagUpdate(ac, nodeUuid);
@@ -302,7 +304,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		addTag.description("Assign the given tag to the node.");
 		addTag.addQueryParameters(VersioningParametersImpl.class);
 		addTag.events(NODE_TAGGED);
-		addTag.handler(rc -> {
+		addTag.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			String tagUuid = ac.getParameter("tagUuid");
@@ -320,7 +322,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		removeTag.exampleResponse(NO_CONTENT, "Removal was successful.");
 		removeTag.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or tag could not be found.");
 		removeTag.events(NODE_UNTAGGED);
-		removeTag.handler(rc -> {
+		removeTag.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			String tagUuid = ac.getParameter("tagUuid");

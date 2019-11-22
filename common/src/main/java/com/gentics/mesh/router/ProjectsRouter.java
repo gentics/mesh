@@ -11,7 +11,6 @@ import java.util.Map;
 import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.Vertx;
@@ -86,14 +85,14 @@ public class ProjectsRouter {
 			projectRouter.route().handler(ctx -> {
 				BootstrapInitializer boot = apiRouter.getRoot().getStorage().getBoot().get();
 				Database db = apiRouter.getRoot().getStorage().getDb().get();
-				Project project = db.tx(() -> boot.projectRoot().findByName(name));
-				if (project == null) {
+				db.maybeTx(tx -> boot.projectRoot().findByName(name))
+				.subscribe(project -> {
+					ctx.data().put(ProjectsRouter.PROJECT_CONTEXT_KEY, project);
+					ctx.next();
+				}, ctx::fail, () -> {
 					log.warn("Project for name {" + name + "} could not be found.");
 					ctx.fail(error(NOT_FOUND, "project_not_found", name));
-					return;
-				}
-				ctx.data().put(ProjectsRouter.PROJECT_CONTEXT_KEY, project);
-				ctx.next();
+				});
 			});
 			router.mountSubRouter("/" + encodedName, projectRouter);
 			projectRouter.mountSubRouter("/", this.projectRouter.getRouter());

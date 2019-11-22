@@ -1,6 +1,7 @@
 package com.gentics.mesh.util;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import io.reactivex.Completable;
 import io.reactivex.CompletableSource;
@@ -15,6 +16,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.Vertx;
 
 public final class RxUtil {
 
@@ -89,6 +91,16 @@ public final class RxUtil {
 		SingleSource<? extends T1> source1, SingleSource<? extends T2> source2,
 		BiFunction<? super T1, ? super T2, SingleSource<? extends R>> zipper) {
 		return Single.zip(source1, source2, zipper).flatMap(x -> x);
+	}
+
+	public static <T> Maybe<T> executeBlocking(Vertx vertx, Supplier<T> supplier) {
+		return vertx.rxExecuteBlocking(promise -> {
+			try {
+				promise.complete(supplier.get());
+			} catch (Throwable e) {
+				promise.fail(e);
+			}
+		}, false);
 	}
 
 	public static <T> Maybe<T> fromNullable(T item) {

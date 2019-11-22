@@ -55,7 +55,7 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Read all microschemas which are assigned to the project.");
 		endpoint.exampleResponse(OK, microschemaExamples.getMicroschemaListResponse(), "List of assigned microschemas.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadMicroschemaList(ac);
 		});
@@ -70,7 +70,7 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Add the microschema to the project.");
 		endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Microschema was added to the project.");
 		endpoint.events(PROJECT_MICROSCHEMA_ASSIGNED);
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleAddMicroschemaToProject(ac, uuid);
@@ -86,7 +86,7 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Remove the microschema from the project.");
 		endpoint.exampleResponse(NO_CONTENT, "Microschema was removed from project.");
 		endpoint.events(PROJECT_MICROSCHEMA_UNASSIGNED);
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleRemoveMicroschemaFromProject(ac, uuid);

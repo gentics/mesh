@@ -121,7 +121,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getTokenResponse(), "User token response.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("userUuid");
 			crudHandler.handleFetchToken(ac, uuid);

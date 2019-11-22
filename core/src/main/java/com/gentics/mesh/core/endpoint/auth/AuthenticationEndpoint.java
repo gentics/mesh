@@ -48,7 +48,7 @@ public class AuthenticationEndpoint extends AbstractInternalEndpoint {
 		meEndpoint.produces(APPLICATION_JSON);
 		meEndpoint.description("Load your own user which is currently logged in.");
 		meEndpoint.exampleResponse(OK, userExamples.getUserResponse1("jdoe"), "Currently logged in user.");
-		meEndpoint.handler(rc -> {
+		meEndpoint.blockingHandler(rc -> {
 			authRestHandler.handleMe(wrap(rc));
 		});
 

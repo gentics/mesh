@@ -7,7 +7,6 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.http.MeshHeaders;
@@ -82,17 +81,17 @@ public class MeshAnonymousAuthHandler extends AuthHandlerImpl implements MeshAut
 			if (log.isDebugEnabled()) {
 				log.debug("Using anonymous user.");
 			}
-			MeshAuthUser anonymousUser = db.tx(() -> boot.userRoot().findMeshAuthUserByUsername(ANONYMOUS_USERNAME));
-			if (anonymousUser == null) {
-				if (log.isDebugEnabled()) {
-					log.debug("No anonymous user and authorization header was found. Can't authenticate request.");
-				}
-				handle401(rc);
-				return;
-			} else {
-				rc.setUser(anonymousUser);
-			}
-			rc.next();
+
+			db.maybeTx(tx -> boot.userRoot().findMeshAuthUserByUsername(ANONYMOUS_USERNAME))
+				.subscribe(anonymousUser -> {
+					rc.setUser(anonymousUser);
+					rc.next();
+				}, rc::fail, () -> {
+					if (log.isDebugEnabled()) {
+						log.debug("No anonymous user and authorization header was found. Can't authenticate request.");
+					}
+					handle401(rc);
+				});
 		} else {
 			handle401(rc);
 			return;

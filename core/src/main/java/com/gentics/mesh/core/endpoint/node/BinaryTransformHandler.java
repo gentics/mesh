@@ -163,25 +163,20 @@ public class BinaryTransformHandler extends AbstractHandler {
 			}).flatMap(e -> e);
 		});
 
-		obsTransformation.flatMap(r -> {
-			db.tx(tx -> {
-				String hash = r.getHash();
-				Binary binary = binaries.findByHash(hash).runInExistingTx(tx);
-
-				// Set the info that the store operation is needed
-				if (binary == null) {
-					context.setBinaryUuid(UUIDUtil.randomUUID());
-					context.setInvokeStore();
-				}
-			});
-			// Store the binary in a temporary location
+		obsTransformation.flatMap(r -> binaries.findByHash(r.getHash()).runInNullableAsyncTx()
+		.doOnComplete(() -> {
+			context.setBinaryUuid(UUIDUtil.randomUUID());
+			context.setInvokeStore();
+		}).ignoreElement()
+		.andThen(Single.defer(() -> {
 			Flowable<Buffer> data = fs.rxOpen(r.getFilePath(), new OpenOptions()).toFlowable()
 				.flatMap(RxUtil::toBufferFlow);
+			// Store the binary in a temporary location
 			return binaryStorage.storeInTemp(data, temporaryId).andThen(Single.just(r));
-		}).map(r -> {
-			// Update graph with the new image information
-			return updateNodeInGraph(ac, context, r, node, languageTag, fieldName, parameters);
-		}).onErrorResumeNext(e -> {
+		})))
+		// Update graph with the new image information
+		.flatMap(r -> updateNodeInGraph(ac, context, r, node, languageTag, fieldName, parameters))
+		.onErrorResumeNext(e -> {
 			if (context.isInvokeStore()) {
 				if (log.isDebugEnabled()) {
 					log.debug("Error detected. Purging previously stored upload for tempId {}", temporaryId, e);
@@ -206,10 +201,9 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 	}
 
-	private NodeResponse updateNodeInGraph(InternalActionContext ac, UploadContext context, TransformationResult result, Node node,
+	private Single<NodeResponse> updateNodeInGraph(InternalActionContext ac, UploadContext context, TransformationResult result, Node node,
 		String languageTag, String fieldName, ImageManipulationParameters parameters) {
-		return utils.eventAction((tx, batch) -> {
-
+		return RxUtil.executeBlocking(rxVertx, () -> utils.eventAction((tx, batch) -> {
 			NodeGraphFieldContainer latestDraftVersion = loadTargetedContent(node, languageTag, fieldName);
 
 			Branch branch = ac.getBranch();
@@ -264,7 +258,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 			batch.add(newDraftVersion.onCreated(branchUuid, DRAFT));
 			return node.transformToRestSync(ac, 0);
-		});
+		})).toSingle();
 	}
 
 	private NodeGraphFieldContainer loadTargetedContent(Node node, String languageTag, String fieldName) {
