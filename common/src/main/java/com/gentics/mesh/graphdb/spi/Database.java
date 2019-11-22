@@ -458,6 +458,16 @@ public interface Database extends TxFactory {
 					return mapper.apply(val).runInExistingTx(tx);
 				});
 			}
+
+			@Override
+			public Single<T> runInAsyncTx() {
+				return singleTx(txFunction);
+			}
+
+			@Override
+			public Maybe<T> runInNullableAsyncTx() {
+				return maybeTx(txFunction);
+			}
 		};
 	}
 

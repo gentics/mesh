@@ -210,7 +210,7 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 
 	@Override
 	public InternalEndpointRoute blockingHandler(Handler<RoutingContext> requestHandler) {
-		route.blockingHandler(requestHandler);
+		route.blockingHandler(requestHandler, false);
 		return this;
 	}
 
