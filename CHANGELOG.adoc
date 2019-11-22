@@ -23,7 +23,10 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the embedded Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
-[[Unreleased]]
+* The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
+
+[[v1.2.1]]
+== 1.2.1 (22.11.2019)
 
 icon:check[] Core: Mesh now uses a different parser for processing `*.docx` and `*.pptx` files. Parsing these files will now require far less memory.
 
@@ -31,8 +34,8 @@ icon:check[] GraphQL: Fixed fetching node references from users. link:https://gi
 
 icon:check[] Java Rest Client: Fixed a bug that some generic methods would not allow response objects of any class.
 
-[[v1.2.0]]
 
+[[v1.2.0]]
 == 1.2.0 (20.11.2019)
 
 WARNING: The internal database structure has changed significantly to avoid vertices with many edges. This will result in a higher write performance on bigger systems. For this change, the API of Gentics Mesh did not change at all. When starting with this version on an existing database, the structure changes will be applied automatically, which will take some time to complete.
