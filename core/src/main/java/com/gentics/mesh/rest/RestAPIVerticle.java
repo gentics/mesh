@@ -192,7 +192,6 @@ public class RestAPIVerticle extends AbstractVerticle {
 		RouterStorage storage = routerStorage.get();
 		Router rootRouter = storage.root().getRouter();
 		registerEndPoints(storage);
-		server.requestHandler(rootRouter);
 
 		if (initialProjects != null) {
 			for (Object project : initialProjects) {
@@ -200,6 +199,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 			}
 		}
 
+		server.requestHandler(rootRouter);
 		server.listen(rh -> {
 			if (rh.failed()) {
 				promise.fail(rh.cause());
