@@ -95,7 +95,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	@After
 	public void resetSearchVerticle() throws Exception {
-		((BootstrapInitializerImpl) boot()).loader.get().reloadSearchVerticle();
+		((BootstrapInitializerImpl) boot()).loader.get().redeploySearchVerticle().blockingAwait();
 	}
 
 	public OkHttpClient httpClient() {
@@ -202,21 +202,6 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 			Optional<String> o = Optional.empty();
 			return o;
 		}
-	}
-
-	protected Completable stopRestVerticle() {
-		return ((BootstrapInitializerImpl) boot()).loader.get().unloadVerticles();
-	}
-
-	protected Completable startRestVerticle() {
-		return Completable.fromAction(() -> {
-			CoreVerticleLoader loader = ((BootstrapInitializerImpl) boot()).loader.get();
-			loader.loadVerticles(Collections.singletonList(PROJECT_NAME));
-		});
-	}
-
-	protected Completable restartRestVerticle() {
-		return stopRestVerticle().andThen(startRestVerticle());
 	}
 
 	/**

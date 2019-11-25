@@ -1,10 +1,6 @@
 package com.gentics.mesh.cli;
 
-import static com.gentics.mesh.util.DeploymentUtil.deployAndWait;
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -16,11 +12,10 @@ import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.monitor.MonitoringServerVerticle;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
-import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
+import com.gentics.mesh.util.RxUtil;
 
 import io.reactivex.Completable;
-import io.reactivex.Observable;
-import io.vertx.core.AbstractVerticle;
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -31,11 +26,6 @@ import io.vertx.reactivex.core.Vertx;
  */
 @Singleton
 public class CoreVerticleLoader {
-
-	/**
-	 * Default amount of verticle instances which should be deployed.
-	 */
-	private static final int DEFAULT_VERTICLE_DEPLOYMENTS = 5;
 
 	private static Logger log = LoggerFactory.getLogger(CoreVerticleLoader.class);
 
@@ -49,25 +39,20 @@ public class CoreVerticleLoader {
 	public JobWorkerVerticle jobWorkerVerticle;
 
 	@Inject
-	public Provider<SyncEventHandler> indexSyncVerticle;
-
-	@Inject
 	public Provider<ElasticsearchProcessVerticle> elasticsearchProcessVerticleProvider;
-
 	private ElasticsearchProcessVerticle elasticsearchProcessVerticle;
-	private String searchVerticleId;
 
 	@Inject
 	public MeshOptions meshOptions;
 
 	private final Vertx rxVertx;
+	private String searchVerticleId;
 
 	@Inject
 	public CoreVerticleLoader(Vertx rxVertx) {
 		this.rxVertx = rxVertx;
 	}
 
-	private final List<String> deploymentIds = new ArrayList<>();
 	private JsonObject defaultConfig;
 
 	/**
@@ -75,98 +60,66 @@ public class CoreVerticleLoader {
 	 * 
 	 * @param initialProjects
 	 */
-	public void loadVerticles(List<String> initialProjects) {
+	public Completable loadVerticles(List<String> initialProjects) {
 		defaultConfig = new JsonObject();
 		defaultConfig.put("port", meshOptions.getHttpServerOptions().getPort());
 		defaultConfig.put("host", meshOptions.getHttpServerOptions().getHost());
 		defaultConfig.put("initialProjects", initialProjects);
 
-		for (Provider<? extends AbstractVerticle> verticle : getMandatoryVerticleClasses()) {
-			try {
-				for (int i = 0; i < DEFAULT_VERTICLE_DEPLOYMENTS; i++) {
-					if (log.isInfoEnabled()) {
-						log.info("Deploying mandatory verticle {" + verticle.getClass().getName() + "} " + i + " of " + DEFAULT_VERTICLE_DEPLOYMENTS
-							+ " instances");
-					}
-					deploymentIds.add(deployAndWait(rxVertx.getDelegate(), defaultConfig, verticle.get(), false));
-				}
-			} catch (Exception e) {
-				log.error("Could not load mandatory verticle {" + verticle.getClass().getSimpleName() + "}.", e);
-			}
-		}
-
-		for (AbstractVerticle verticle : getMandatoryWorkerVerticleClasses()) {
-			loadVerticle(verticle)
-				.ifPresent(deploymentIds::add);
-		}
-		loadVerticle(resetSearchVerticle())
-			.ifPresent(id -> searchVerticleId = id);
+		return Completable.mergeArray(
+			deployRestVerticle(),
+			deployMonitoringVerticle(),
+			deployJobWorkerVerticle(),
+			deploySearchVerticle()
+		);
 	}
 
-	public Optional<String> loadVerticle(AbstractVerticle verticle) {
-		if (verticle == null) {
-			return Optional.empty();
-		}
-		try {
-			if (log.isInfoEnabled()) {
-				log.info("Loading mandatory verticle {" + verticle.getClass().getName() + "}.");
-			}
-			return Optional.of(deployAndWait(rxVertx.getDelegate(), defaultConfig, verticle, true));
-		} catch (Exception e) {
-			log.error("Could not load mandatory verticle {" + verticle.getClass().getSimpleName() + "}.", e);
-			return Optional.empty();
-		}
+	private Completable deployRestVerticle() {
+		return rxVertx.rxDeployVerticle(restVerticle::get, new DeploymentOptions()
+			.setConfig(defaultConfig)
+			.setInstances(meshOptions.getHttpServerOptions().getVerticleAmount()))
+			.ignoreElement();
 	}
 
-	public Completable unloadVerticles() {
-		return Observable.merge(
-			searchVerticleId != null ? Observable.just(searchVerticleId) : Observable.empty(),
-			Observable.fromIterable(deploymentIds)).flatMapCompletable(rxVertx::rxUndeploy)
-			.doOnComplete(deploymentIds::clear);
-	}
-
-	public void reloadSearchVerticle() {
-		if (searchVerticleId != null) {
-			rxVertx.rxUndeploy(searchVerticleId).blockingAwait();
-			loadVerticle(resetSearchVerticle())
-				.ifPresent(id -> searchVerticleId = id);
-		}
-	}
-
-	/**
-	 * Return a Map of mandatory verticles.
-	 * 
-	 * @return
-	 */
-	private List<Provider<? extends AbstractVerticle>> getMandatoryVerticleClasses() {
-		List<Provider<? extends AbstractVerticle>> verticles = new ArrayList<>();
-		verticles.add(restVerticle);
+	private Completable deployMonitoringVerticle() {
 		if (meshOptions.getMonitoringOptions() != null && meshOptions.getMonitoringOptions().isEnabled()) {
-			verticles.add(monitoringServerVerticle);
+			return rxVertx.rxDeployVerticle(monitoringServerVerticle::get, new DeploymentOptions()
+				.setInstances(1))
+				.ignoreElement();
+		} else {
+			return Completable.complete();
 		}
-		return verticles;
 	}
 
-	/**
-	 * Get the map of mandatory worker verticle classes.
-	 * 
-	 * @return
-	 */
-	private List<AbstractVerticle> getMandatoryWorkerVerticleClasses() {
-		List<AbstractVerticle> verticles = new ArrayList<>();
-		verticles.add(jobWorkerVerticle);
-		return verticles;
+	private Completable deployJobWorkerVerticle() {
+		return rxVertx.rxDeployVerticle(jobWorkerVerticle, new DeploymentOptions()
+			.setInstances(1)
+			.setWorker(true))
+			.ignoreElement();
 	}
 
-	private ElasticsearchProcessVerticle resetSearchVerticle() {
+	private Completable deploySearchVerticle() {
 		// Only deploy search sync verticle if we actually have a configured ES
 		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
 		if (searchOptions != null && searchOptions.getUrl() != null) {
-			elasticsearchProcessVerticle = elasticsearchProcessVerticleProvider.get();
-			return elasticsearchProcessVerticle;
+			return Completable.defer(() -> {
+				elasticsearchProcessVerticle = elasticsearchProcessVerticleProvider.get();
+				return rxVertx.rxDeployVerticle(elasticsearchProcessVerticle, new DeploymentOptions()
+					.setInstances(1))
+					.doOnSuccess(id -> searchVerticleId = id)
+					.ignoreElement();
+			});
+		} else {
+			return Completable.complete();
 		}
-		return null;
 	}
+
+	public Completable redeploySearchVerticle() {
+		return RxUtil.fromNullable(searchVerticleId)
+			.flatMapCompletable(rxVertx::rxUndeploy)
+			.andThen(deploySearchVerticle());
+	}
+
 
 	public ElasticsearchProcessVerticle getSearchVerticle() {
 		return elasticsearchProcessVerticle;

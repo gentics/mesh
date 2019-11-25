@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
 import com.gentics.madl.tx.Tx;
