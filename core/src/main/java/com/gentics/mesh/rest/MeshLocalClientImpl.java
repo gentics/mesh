@@ -637,8 +637,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> updateSchema(String uuid, SchemaUpdateRequest request, ParameterProvider... parameters) {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class, parameters);
+	public MeshRequest<SchemaResponse> updateSchema(String uuid, SchemaUpdateRequest request, ParameterProvider... parameters) {
+		LocalActionContextImpl<SchemaResponse> ac = createContext(SchemaResponse.class, parameters);
 		ac.setPayloadObject(request);
 		schemaCrudHandler.handleUpdate(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());

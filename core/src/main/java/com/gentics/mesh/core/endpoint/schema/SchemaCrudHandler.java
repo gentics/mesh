@@ -28,7 +28,6 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -118,7 +117,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 			SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
 			User user = ac.getUser();
-			String version = utils.eventAction(batch -> {
+			SchemaContainerVersion schemaContainerVersion = utils.eventAction(batch -> {
 
 				// Check whether there are any microschemas which are referenced by the schema
 				for (FieldSchema field : requestModel.getFields()) {
@@ -175,15 +174,10 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 						branch.assignSchemaVersion(user, createdVersion, batch);
 					}
 				}
-				return createdVersion.getVersion();
+				return createdVersion;
 			});
 
-			if (updateParams.getUpdateAssignedBranches()) {
-				MeshEvent.triggerJobWorker(boot.get().mesh());
-				return message(ac, "schema_updated_migration_invoked", schemaName, version);
-			} else {
-				return message(ac, "schema_updated_migration_deferred", schemaName, version);
-			}
+			return schemaContainerVersion.transformToRestSync(ac, 0);
 		}, message -> ac.send(message, OK));
 	}
 

@@ -499,7 +499,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return call(() -> client().findSchemaByUuid(uuid));
 	}
 
-	default public GenericMessageResponse updateSchema(String uuid, String schemaName, SchemaUpdateParameters... updateParameters) {
+	default public SchemaResponse updateSchema(String uuid, String schemaName, SchemaUpdateParameters... updateParameters) {
 		SchemaUpdateRequest schema = new SchemaUpdateRequest();
 		schema.setName(schemaName);
 		return call(() -> client().updateSchema(uuid, schema, updateParameters));

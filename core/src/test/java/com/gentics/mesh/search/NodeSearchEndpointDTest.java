@@ -7,7 +7,6 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -27,7 +26,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -126,13 +124,13 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		mesh().serverSchemaStorage().clear();
 
 		// 4. Invoke the schema migration
-		GenericMessageResponse message = call(() -> client().updateSchema(schemaUuid, schema, new SchemaUpdateParametersImpl()
+		SchemaResponse updatedSchema = call(() -> client().updateSchema(schemaUuid, schema, new SchemaUpdateParametersImpl()
 			.setUpdateAssignedBranches(false)));
-		assertThat(message).matches("schema_updated_migration_deferred", "content", "2.0");
+		assertThat(updatedSchema)
+			.hasName("content")
+			.hasVersion("2.0");
 
 		// 5. Assign the new schema version to the branch
-		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
-
 		// Wait for migration to complete
 		tx(() -> group().addRole(roles().get("admin")));
 		waitForJobs(() -> {

@@ -53,6 +53,16 @@ public class SchemaResponseAssert extends AbstractMeshAssert<SchemaResponseAsser
 		return this;
 	}
 
+	public SchemaResponseAssert hasName(String name) {
+		assertEquals(name, actual.getName());
+		return this;
+	}
+
+	public SchemaResponseAssert hasVersion(String version) {
+		assertEquals(version, actual.getVersion());
+		return this;
+	}
+
 	public SchemaResponseAssert matches(SchemaContainerVersion version) {
 		assertNotNull(version);
 		assertNotNull(actual);

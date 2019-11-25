@@ -86,8 +86,10 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		waitForJobs(() -> {
 			// Invoke the update of the schema which will trigger the node migration
-			GenericMessageResponse message = call(() -> client().updateSchema(schemaUuid, request));
-			assertThat(message).matches("schema_updated_migration_invoked", "content", "2.0");
+			SchemaResponse schema = call(() -> client().updateSchema(schemaUuid, request));
+			assertThat(schema)
+				.hasName(name)
+				.hasVersion("2.0");
 		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
@@ -228,12 +230,10 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		// 4. Update the schema server side -> 2.0
 		try (Tx tx = tx()) {
-			GenericMessageResponse status = call(() -> client().updateSchema(schemaContainer.getUuid(), request,
+			SchemaResponse updatedSchema = call(() -> client().updateSchema(schemaContainer.getUuid(), request,
 				new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
-			assertThat(status).matches("schema_updated_migration_deferred", request.getName(), "2.0");
+			assertThat(updatedSchema).hasName(request.getName()).hasVersion("2.0");
 			// 5. assign the new schema version to the branch (which will start the migration)
-			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaContainer.getUuid()));
-
 			waitForJobs(() -> {
 				call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, project().getLatestBranch().getUuid(),
 					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
@@ -469,21 +469,6 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 	}
 
-	/**
-	 * Update the schema without applying any changes.
-	 */
-	@Test
-	public void testNoChangesUpdate() {
-		try (Tx tx = tx()) {
-			SchemaContainer container = schemaContainer("content");
-			SchemaUpdateRequest schema = JsonUtil.readValue(container.getLatestVersion().getSchema().toJson(), SchemaUpdateRequest.class);
-
-			// Update the schema server side
-			GenericMessageResponse status = call(() -> client().updateSchema(container.getUuid(), schema));
-			assertThat(status).matches("schema_update_no_difference_detected");
-		}
-	}
-
 	@Test
 	public void testUpdateAddField() throws Exception {
 		SchemaUpdateRequest schema;
@@ -500,13 +485,14 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		// 3. Update the schema server side -> 2.0
-		GenericMessageResponse status = call(
+		SchemaResponse updatedSchema = call(
 			() -> client().updateSchema(schemaUuid, schema, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
-		assertThat(status).matches("schema_updated_migration_deferred", "content", "2.0");
+
+		assertThat(updatedSchema)
+			.hasName("content")
+			.hasVersion("2.0");
 
 		// 4. Assign the new schema version to the branch
-		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
-
 		waitForJobs(() -> {
 			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
 				new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));

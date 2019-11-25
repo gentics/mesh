@@ -55,7 +55,7 @@ public interface SchemaClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> updateSchema(String uuid, SchemaUpdateRequest request, ParameterProvider... parameters);
+	MeshRequest<SchemaResponse> updateSchema(String uuid, SchemaUpdateRequest request, ParameterProvider... parameters);
 
 	/**
 	 * Compare the given schema with the currently stored one and return a list of schema changes.
