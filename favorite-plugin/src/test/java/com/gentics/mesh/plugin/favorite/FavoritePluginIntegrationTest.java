@@ -49,15 +49,33 @@ public class FavoritePluginIntegrationTest {
 		client.addFavorite("widgets_max_nr_prepend", "abc3").blockingAwait();
 		assertThat(client.getFavorites("widgets_max_nr_prepend").blockingGet()).containsExactly("abc3", "abc2", "abc1");
 	}
+
 	@Test
 	public void testAddFavoriteNoConfig() {
 		assertStatusCode(400, client.addFavorite("infoboxxx", "abc1"));
 	}
+
+	@Test
+	public void testDeleteFavoriteNoConfig() {
+		assertStatusCode(400, client.deleteFavorite("infoboxxx", "abc1"));
+	}
+
+	@Test
+	public void testOverrideFavoriteNoConfig() {
+		assertStatusCode(400, client.overrideFavorite("infoboxxx", "abc1"));
+	}
+
+	@Test
+	public void testGetFavoriteNoConfig() {
+		assertStatusCode(400, client.getFavorites("widgetsss").toCompletable());
+	}
+
 	@Test
 	public void testAnonymous() {
 		switchUser("anonymous");
 		assertStatusCode(401, client.addFavorite("infobox_max_nr_duplicates", "abc1"));
 	}
+
 	@Test
 	public void testWidgets() {
 		client.addFavorite("widgets", "abc1").blockingAwait();
@@ -74,6 +92,7 @@ public class FavoritePluginIntegrationTest {
 		assertThat(client.getFavorites("widgets").blockingGet()).containsExactly("abc1", "abc2", "abc3", "abc4", "abc5", "abc6", "abc7", "abc8", "abc9", "abc10");
 
 	}
+
 	@Test
 	public void testInfobox() {
 		client.addFavorite("infobox", "abc1").blockingAwait();
@@ -90,6 +109,7 @@ public class FavoritePluginIntegrationTest {
 		assertThat(client.getFavorites("infobox").blockingGet()).containsExactly("abc1", "abc2", "abc3", "abc4", "abc5", "abc6", "abc7", "abc8", "abc9", "abc10");
 
 	}
+
 	@Test
 	public void testOngoingProcedures() {
 		client.addFavorite("ongoing_procedures", "abc1").blockingAwait();
@@ -102,6 +122,7 @@ public class FavoritePluginIntegrationTest {
 		assertThat(client.getFavorites("ongoing_procedures").blockingGet()).containsExactly("abc5", "abc6", "abc4");
 
 	}
+
 	@Test
 	public void testMaxEntriesWithDuplicatesAppend() {
 		client.addFavorite("infobox_max_nr_duplicates", "abc1").blockingAwait();
@@ -114,6 +135,7 @@ public class FavoritePluginIntegrationTest {
 		assertThat(client.getFavorites("infobox_max_nr_duplicates").blockingGet()).containsExactly("abc3", "abc4", "abc5", "abc6", "abc4");
 
 	}
+
 	@Test
 	public void testMaxEntriesWithoutDuplicatesPrepend() {
 		client.addFavorite("widgets_max_nr_prepend", "abc1").blockingAwait();
@@ -126,6 +148,7 @@ public class FavoritePluginIntegrationTest {
 		assertThat(client.getFavorites("widgets_max_nr_prepend").blockingGet()).containsExactly("abc6", "abc5", "abc4", "abc3");
 
 	}
+
 	@Test
 	public void testMaxEntriesWithDuplicatesPrepend() {
 		client.addFavorite("ongoing_procedures_duplicates", "abc1").blockingAwait();
@@ -138,6 +161,7 @@ public class FavoritePluginIntegrationTest {
 		assertThat(client.getFavorites("ongoing_procedures_duplicates").blockingGet()).containsExactly("abc4", "abc5", "abc6", "abc4");
 
 	}
+
 	@Test
 	public void testMaxEntriesWithOutDuplicatesAllowReorderPrepend() {
 		client.addFavorite("prepend_duplicates", "abc1").blockingAwait();
@@ -150,6 +174,7 @@ public class FavoritePluginIntegrationTest {
 		assertThat(client.getFavorites("prepend_duplicates").blockingGet()).containsExactly("abc4", "abc6", "abc5", "abc3", "abc2");
 
 	}
+
 	@Test
 	public void testMaxEntriesWithOutDuplicatesDontAllowReorderPrepend() {
 		client.addFavorite("widgets_max_nr_prepend", "abc1").blockingAwait();
@@ -162,6 +187,7 @@ public class FavoritePluginIntegrationTest {
 		assertThat(client.getFavorites("widgets_max_nr_prepend").blockingGet()).containsExactly("abc6", "abc5", "abc4", "abc3");
 
 	}
+
 	@Test
 	public void testMaxEntriesWithOutDuplicatesAllowReorderAppend() {
 		client.addFavorite("ongoing_procedures_append_reorder", "abc1").blockingAwait();
@@ -174,6 +200,7 @@ public class FavoritePluginIntegrationTest {
 		assertThat(client.getFavorites("ongoing_procedures_append_reorder").blockingGet()).containsExactly("abc3", "abc5", "abc6", "abc4");
 
 	}
+
 	@Test
 	public void testMaxEntriesWithOutDuplicatesDontAllowReorderAppend() {
 		client.addFavorite("ongoing_procedures_append", "abc1").blockingAwait();
@@ -186,6 +213,7 @@ public class FavoritePluginIntegrationTest {
 		assertThat(client.getFavorites("ongoing_procedures_append").blockingGet()).containsExactly("abc3", "abc4", "abc5", "abc6");
 
 	}
+
 	@Test
 	public void testUnlimitedEntries() {
 		client.addFavorite("test_no_max", "abc1").blockingAwait();
@@ -224,6 +252,7 @@ public class FavoritePluginIntegrationTest {
 		assertThat(client.getFavorites("ongoing_procedures_duplicates").blockingGet()).containsExactly("widget1", "widget2");
 
 	}
+
 	@Test
 	public void testDelete() {
 		client.addFavorite("infobox_max_nr_duplicates", "abc1").blockingAwait();
@@ -237,12 +266,14 @@ public class FavoritePluginIntegrationTest {
 		assertThat(client.getFavorites("infobox_max_nr_duplicates").blockingGet()).containsExactly("abc3");
 
 	}
+
 	@Test
 	public void testWrongRegexType() {
 		assertStatusCode(400, client.addFavorite("infobox.2", "abc1"));
 
 
 	}
+
 	private void switchUser(String userName) {
 		if (userName.equals("anonymous")) {
 			server.client().logout().blockingGet();
@@ -251,13 +282,14 @@ public class FavoritePluginIntegrationTest {
 		}
 
 	}
+
 	protected void assertStatusCode(int code, Completable completable) {
 		try {
 			completable.blockingAwait();
 			fail();
 		} catch (Throwable e) {
 			e.getCause();
-			if(e.getCause() instanceof MeshRestClientMessageException){
+			if (e.getCause() instanceof MeshRestClientMessageException) {
 				assertEquals(code, ((MeshRestClientMessageException) e.getCause()).getStatusCode());
 			} else {
 				throw e;
@@ -265,5 +297,4 @@ public class FavoritePluginIntegrationTest {
 		}
 
 	}
-
 }

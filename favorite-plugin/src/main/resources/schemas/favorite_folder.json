@@ -1,21 +1,15 @@
 {
   "name": "favorite_folder",
+  "description": "FavoritePlugin: Plugin root node",
   "displayField": "name",
-  "segmentField": "slug",
-  "urlFields": [],
+  "segmentField": "name",
   "container": true,
   "fields": [
     {
-      "name": "slug",
-      "label": "Slug",
-      "required": false,
-      "type": "string"
-    },
-    {
       "name": "name",
       "label": "Name",
-      "required": false,
-      "type": "string"
+      "type": "string",
+      "required": true
     }
   ]
 }

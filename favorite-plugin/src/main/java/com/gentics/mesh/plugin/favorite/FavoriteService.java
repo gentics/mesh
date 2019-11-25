@@ -44,7 +44,7 @@ public class FavoriteService {
 	private final SchemaService schemaService;
 
 	private final String FAVORITE_FIELD = "favorites";
-	private final String FAVORITE_PLUGIN_SLUG = "favorite_plugin";
+	private final String FAVORITE_PLUGIN_NAME = "favorite_plugin";
 
 	protected static <T> T ifNotFound(Throwable t, Supplier<T> notFoundHandler) {
 		if (t instanceof MeshRestClientMessageException) {
@@ -54,6 +54,7 @@ public class FavoriteService {
 			}
 		}
 		throw new RuntimeException(t);
+
 	}
 
 	@Inject
@@ -73,6 +74,9 @@ public class FavoriteService {
 	 * @return single node response of the created/updated favorite node
 	 */
 	public Single<NodeResponse> postFavorite(String projectName, String type, String favoriteID) {
+		if (!configuration.getTypeOptions().containsKey(type)) {
+			throw new TypeNotFoundError(type);
+		}
 		JsonArray value = new JsonArray();
 		value.add(favoriteID);
 		return ifLoggedIn(user -> {
@@ -91,6 +95,9 @@ public class FavoriteService {
 	 * @return single node response of the created/updated favorite node
 	 */
 	public Single<NodeResponse> overrideFavorite(String projectName, String type, JsonObject body) {
+		if (!configuration.getTypeOptions().containsKey(type)) {
+			throw new TypeNotFoundError(type);
+		}
 		return ifLoggedIn(user -> {
 			JsonArray favorites = body.getJsonArray(FAVORITE_FIELD);
 			return getUserFavorite(projectName, type)
@@ -107,6 +114,9 @@ public class FavoriteService {
 	 * @return single favoriteResponse
 	 */
 	public Single<FavoriteResponse> getFavorite(String projectName, String type) {
+		if (!configuration.getTypeOptions().containsKey(type)) {
+			throw new TypeNotFoundError(type);
+		}
 		return ifLoggedIn(user -> {
 			FavoriteResponse response = new FavoriteResponse();
 			StringFieldListImpl emptyFavorites = new StringFieldListImpl();
@@ -144,7 +154,7 @@ public class FavoriteService {
 	 * @return single section node
 	 */
 	protected Single<NodeResponse> getSection(String projectName, String type) {
-		return adminClient.webroot(projectName, new String[]{FAVORITE_PLUGIN_SLUG, type})
+		return adminClient.webroot(projectName, new String[]{FAVORITE_PLUGIN_NAME, type})
 				.toSingle()
 				.map(MeshWebrootResponse::getNodeResponse)
 				.onErrorResumeNext(t -> ifNotFound(t, () -> createSection(projectName, type)));
@@ -163,7 +173,7 @@ public class FavoriteService {
 		create.setSchemaName(SchemaService.SECTION_SCHEMA_NAME);
 		create.setLanguage("en");
 		create.setParentNodeUuid(schemaService.getRootNodeUuid(projectName));
-		create.getFields().put("slug", new StringFieldImpl().setString(type));
+		create.getFields().put("type", new StringFieldImpl().setString(type));
 		return adminClient.createNode(projectName, create).toSingle();
 	}
 
@@ -177,7 +187,7 @@ public class FavoriteService {
 	 */
 	protected Single<NodeResponse> getUserFavorite(String projectName, String type) {
 		return getUser().flatMap(user ->
-				adminClient.webroot(projectName, new String[]{FAVORITE_PLUGIN_SLUG, type, user.getUuid()})
+				adminClient.webroot(projectName, new String[]{FAVORITE_PLUGIN_NAME, type, user.getUuid()})
 						.toSingle()
 						.doOnSubscribe(disp -> log.debug(String.format("Loading favorite section for type %s, user %s in project %s", user.getUuid(), type, projectName)))
 						.map(MeshWebrootResponse::getNodeResponse));
@@ -192,7 +202,6 @@ public class FavoriteService {
 	 * @return single node response of the favorite node
 	 */
 	protected Single<NodeResponse> createUserFavorites(String projectName, String type, JsonArray value) {
-
 		return Single.zip(getSection(projectName, type), getUser(), (section, user) -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setSchemaName(SchemaService.FAVORITE_SCHEMA_NAME);
@@ -272,10 +281,6 @@ public class FavoriteService {
 	 * @param favorite new favorite entry
 	 */
 	protected void addFavorite(StringFieldListImpl list, String favorite, String type) {
-		//get the config Values
-		if (!configuration.getTypeOptions().containsKey(type)) {
-			throw new TypeNotFoundError(type);
-		}
 		String listOrdering = this.configuration.getTypeOptions().get(type).getAddToList();
 		int maxEntries = this.configuration.getTypeOptions().get(type).getmaxEntries();
 		boolean allowDuplicates = this.configuration.getTypeOptions().get(type).hasAllowDuplicates();
@@ -285,21 +290,11 @@ public class FavoriteService {
 		boolean found = false;
 		//check if the favorite exists and set found to true
 		if (!allowDuplicates) {
-			for (String item : items) {
-				if (item.contains(favorite)) {
-					found = true;
-					break;
-				}
-			}
+			found = items.contains(favorite);
 		}
 		//check if the reorder duplicates is set to true and allow duplicates is set to false. The delete the favorite, and add it according to the policy: append or prepend
-		if (!allowDuplicates && reorderDuplicates) {
-			for (String item : items) {
-				if (item.contains(favorite)) {
-					list.getItems().removeAll(Collections.singleton(favorite));
-					break;
-				}
-			}
+		if (!allowDuplicates && reorderDuplicates && found) {
+			list.getItems().removeAll(Collections.singleton(favorite));
 		}
 		//if the element is not found and the duplicates are not allowed, or duplicates are allowed then append or prepend the favorite according to the policy.
 
@@ -364,6 +359,9 @@ public class FavoriteService {
 	 * @return single void
 	 */
 	public Single<Object> deleteFavorite(String projectName, String type, String value) {
+		if (!configuration.getTypeOptions().containsKey(type)) {
+			throw new TypeNotFoundError(type);
+		}
 		return ifLoggedIn(user -> getUserFavorite(projectName, type)
 						.flatMap(favorite -> {
 							StringFieldListImpl list = favorite.getFields().getStringFieldList(FAVORITE_FIELD);

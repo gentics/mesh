@@ -1085,8 +1085,8 @@ public class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public <R extends RestModel> MeshRequest<R> get(String path, Class<R> responseClass) {
-		throw new NotImplementedException();
+	public <R> MeshRequest<R> get(String path, Class<R> responseClass) {
+		return null;
 	}
 
 	@Override
@@ -1105,8 +1105,8 @@ public class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public <R extends RestModel, T extends RestModel> MeshRequest<R> post(String path, T request, Class<R> responseClass) {
-		throw new NotImplementedException();
+	public <R, T extends RestModel> MeshRequest<R> post(String path, T request, Class<R> responseClass) {
+		return null;
 	}
 
 	@Override
@@ -1125,8 +1125,8 @@ public class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public <R extends RestModel, T extends RestModel> MeshRequest<R> put(String path, T request, Class<R> responseClass) {
-		throw new NotImplementedException();
+	public <R, T extends RestModel> MeshRequest<R> put(String path, T request, Class<R> responseClass) {
+		return null;
 	}
 
 	@Override

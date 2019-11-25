@@ -22,7 +22,7 @@ public class SchemaService {
 
 	public static final String PLUGIN_SCHEMA_NAME = "favorite_folder";
 
-	public static final String SECTION_SCHEMA_NAME = "favorite_folder";
+	public static final String SECTION_SCHEMA_NAME = "favorite_section";
 
 	public static final String FAVORITE_SCHEMA_NAME = "favorite";
 
@@ -34,7 +34,7 @@ public class SchemaService {
 	}
 
 	public List<String> getSchemaNames() {
-		return Arrays.asList(PLUGIN_SCHEMA_NAME, FAVORITE_SCHEMA_NAME);
+		return Arrays.asList(SECTION_SCHEMA_NAME, PLUGIN_SCHEMA_NAME, FAVORITE_SCHEMA_NAME);
 	}
 
 	/**

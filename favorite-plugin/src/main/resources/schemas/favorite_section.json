@@ -1,0 +1,15 @@
+{
+  "name": "favorite_section",
+  "description": "FavoritePlugin: Favorite section (type)",
+  "container": true,
+  "displayField": "type",
+  "segmentField": "type",
+  "fields": [
+    {
+      "name": "type",
+      "type": "string",
+      "required": false,
+      "label": "Type"
+    }
+  ]
+}
