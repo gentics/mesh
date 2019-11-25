@@ -1067,8 +1067,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> updateMicroschema(String uuid, MicroschemaUpdateRequest request, ParameterProvider... parameters) {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class, parameters);
+	public MeshRequest<MicroschemaResponse> updateMicroschema(String uuid, MicroschemaUpdateRequest request, ParameterProvider... parameters) {
+		LocalActionContextImpl<MicroschemaResponse> ac = createContext(MicroschemaResponse.class, parameters);
 		ac.setPayloadObject(request);
 		microschemaCrudHandler.handleUpdate(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());

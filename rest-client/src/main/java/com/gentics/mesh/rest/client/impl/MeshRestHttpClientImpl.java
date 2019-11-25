@@ -1188,9 +1188,9 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> updateMicroschema(String uuid, MicroschemaUpdateRequest request, ParameterProvider... parameters) {
+	public MeshRequest<MicroschemaResponse> updateMicroschema(String uuid, MicroschemaUpdateRequest request, ParameterProvider... parameters) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return prepareRequest(POST, "/microschemas/" + uuid + getQuery(parameters), GenericMessageResponse.class, request);
+		return prepareRequest(POST, "/microschemas/" + uuid + getQuery(parameters), MicroschemaResponse.class, request);
 	}
 
 	@Override

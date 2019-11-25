@@ -50,7 +50,7 @@ public interface MicroschemaClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> updateMicroschema(String uuid, MicroschemaUpdateRequest request, ParameterProvider... parameters);
+	MeshRequest<MicroschemaResponse> updateMicroschema(String uuid, MicroschemaUpdateRequest request, ParameterProvider... parameters);
 
 	/**
 	 * Delete the given microschema.

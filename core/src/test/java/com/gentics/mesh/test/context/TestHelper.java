@@ -36,7 +36,6 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
@@ -515,7 +514,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return call(() -> client().createMicroschema(microschema));
 	}
 
-	default public GenericMessageResponse updateMicroschema(String uuid, String microschemaName, SchemaUpdateParameters... parameters) {
+	default public MicroschemaResponse updateMicroschema(String uuid, String microschemaName, SchemaUpdateParameters... parameters) {
 		MicroschemaUpdateRequest microschema = FieldUtil.createMinimalValidMicroschemaUpdateRequest();
 		microschema.setName(microschemaName);
 		return call(() -> client().updateMicroschema(uuid, microschema, parameters));
