@@ -1466,6 +1466,16 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
+	public MeshRequest<EmptyResponse> ready() {
+		return prepareRequest(GET, "/health/ready", EmptyResponse.class);
+	}
+
+	@Override
+	public MeshRequest<EmptyResponse> live() {
+		return prepareRequest(GET, "/health/live", EmptyResponse.class);
+	}
+
+	@Override
 	public MeshRequest<JsonObject> get(String path) {
 		Objects.requireNonNull(path, "path must not be null");
 		return prepareRequest(GET, path, JsonObject.class);

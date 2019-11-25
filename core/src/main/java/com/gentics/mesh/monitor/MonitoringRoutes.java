@@ -1,17 +1,15 @@
 package com.gentics.mesh.monitor;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
-import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.endpoint.admin.AdminHandler;
+import com.gentics.mesh.core.endpoint.handler.MonitoringCrudHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.router.route.DefaultNotFoundHandler;
@@ -39,12 +37,15 @@ public class MonitoringRoutes {
 
 	private final MeshOptions options;
 
+	private final MonitoringCrudHandler monitoringCrudHandler;
+
 	@Inject
-	public MonitoringRoutes(Vertx vertx, BootstrapInitializer boot, AdminHandler adminHandler, MeshOptions options) {
+	public MonitoringRoutes(Vertx vertx, BootstrapInitializer boot, AdminHandler adminHandler, MeshOptions options, MonitoringCrudHandler monitoringCrudHandler) {
 		this.router = new RouterImpl(vertx);
 		this.boot = boot;
 		this.apiRouter = new RouterImpl(vertx);
 		this.options = options;
+		this.monitoringCrudHandler = monitoringCrudHandler;
 		VersionHandler.generateVersionMountpoints()
 			.forEach(mountPoint -> router.mountSubRouter(mountPoint, apiRouter));
 		this.adminHandler = adminHandler;
@@ -94,26 +95,13 @@ public class MonitoringRoutes {
 	private void addLive() {
 		apiRouter.route("/health/live")
 			.method(GET)
-			.handler(rc -> {
-				// We currently don't have a situation which would justify to let the service being restarted automatically.
-				rc.response().setStatusCode(200).end();
-			});
+			.handler(monitoringCrudHandler::handleLive);
 	}
 
 	private void addReady() {
 		apiRouter.route("/health/ready")
 			.method(GET)
-			.handler(rc -> {
-				MeshStatus status = boot.mesh().getStatus();
-				if (status.equals(MeshStatus.READY)) {
-					rc.response().end();
-				} else {
-					if (log.isDebugEnabled()) {
-						log.debug("Status is {" + status.name() + "} - Failing readiness probe");
-					}
-					throw error(SERVICE_UNAVAILABLE, "error_internal");
-				}
-			});
+			.handler(monitoringCrudHandler::handleReady);
 	}
 
 	private void addMetrics() {
