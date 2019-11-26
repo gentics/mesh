@@ -113,6 +113,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 		diffEndpoint.path("/:schemaUuid/diff");
 		diffEndpoint.addUriParameter("schemaUuid", "Uuid of the schema.", SCHEMA_VEHICLE_UUID);
 		diffEndpoint.method(POST);
+		diffEndpoint.setMutating(false);
 		diffEndpoint.description("Compare the given schema with the stored schema and create a changeset.");
 		diffEndpoint.consumes(APPLICATION_JSON);
 		diffEndpoint.produces(APPLICATION_JSON);

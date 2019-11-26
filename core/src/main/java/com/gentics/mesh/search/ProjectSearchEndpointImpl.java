@@ -107,6 +107,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);
 		endpoint.description("Invoke a search query for " + typeName + " and return a paged list response.");
+		endpoint.setMutating(false);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, exampleResponse, "Paged search result list.");

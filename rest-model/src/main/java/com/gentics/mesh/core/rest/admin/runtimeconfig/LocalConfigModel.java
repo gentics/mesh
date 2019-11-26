@@ -1,0 +1,23 @@
+package com.gentics.mesh.core.rest.admin.runtimeconfig;
+
+import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.common.RestModel;
+
+public class LocalConfigModel implements RestModel, Serializable {
+
+	@JsonProperty
+	@JsonPropertyDescription("If true, mutating requests to this instance are not allowed.")
+	private boolean readOnly = false;
+
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+
+	public LocalConfigModel setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
+		return this;
+	}
+}

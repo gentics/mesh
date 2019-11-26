@@ -1,5 +1,11 @@
 package com.gentics.mesh.graphql;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
+
+import javax.inject.Inject;
+
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -7,15 +13,10 @@ import com.gentics.mesh.graphql.context.impl.GraphQLContextImpl;
 import com.gentics.mesh.parameter.impl.SearchParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.handler.StaticHandler;
-
-import javax.inject.Inject;
-
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.core.http.HttpMethod.POST;
 
 public class GraphQLEndpoint extends AbstractProjectEndpoint {
 
@@ -44,6 +45,8 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 		queryEndpoint.exampleResponse(OK, graphqlExamples.createResponse(), "Basic GraphQL response.");
 		queryEndpoint.description("Endpoint which accepts GraphQL queries.");
 		queryEndpoint.path("/");
+		// TODO Change this when mutations are implemented
+		queryEndpoint.setMutating(false);
 		queryEndpoint.blockingHandler(rc -> {
 			GraphQLContext gc = new GraphQLContextImpl(rc);
 			String body = gc.getBodyAsString();

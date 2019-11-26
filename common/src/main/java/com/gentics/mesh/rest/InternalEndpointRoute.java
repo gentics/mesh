@@ -12,6 +12,7 @@ import org.raml.model.parameter.QueryParameter;
 import org.raml.model.parameter.UriParameter;
 
 import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.admin.runtimeconfig.LocalConfigModel;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.ParameterProvider;
 
@@ -381,4 +382,26 @@ public interface InternalEndpointRoute extends Comparable<InternalEndpointRoute>
 	 */
 	InternalEndpointRoute events(MeshEvent... events);
 
+	/**
+	 * If true, this endpoint will create, update or delete items in the database.
+	 * The route will throw an error if this instance is in read only mode.
+	 *
+	 * Per default, all POST, DELETE and PUT requests are mutating, other requests are not.
+	 *
+	 * @see LocalConfigModel#isReadOnly()
+	 * @return
+	 */
+	boolean isMutating();
+
+	/**
+	 * If true, this endpoint will create, update or delete items in the database.
+	 * The route will throw an error if this instance is in read only mode.
+	 *
+	 * Per default, all POST, DELETE and PUT requests are mutating, other requests are not.
+	 *
+	 * @see LocalConfigModel#isReadOnly()
+	 * @param mutating
+	 * @return
+	 */
+	InternalEndpointRoute setMutating(Boolean mutating);
 }

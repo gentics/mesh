@@ -48,6 +48,7 @@ public class UtilityEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/validateSchema");
 		endpoint.method(POST);
+		endpoint.setMutating(false);
 		endpoint.description("Validate the posted schema and report errors.");
 		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
 		endpoint.exampleResponse(OK, utilityExamples.createValidationResponse(), "The validation message");
@@ -61,6 +62,7 @@ public class UtilityEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/validateMicroschema");
 		endpoint.method(POST);
+		endpoint.setMutating(false);
 		endpoint.description("Validate the posted microschema and report errors.");
 		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaCreateRequest());
 		endpoint.exampleResponse(OK, utilityExamples.createValidationResponse(), "The validation report");
@@ -77,6 +79,7 @@ public class UtilityEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/linkResolver");
 		endpoint.method(POST);
+		endpoint.setMutating(false);
 		endpoint.description("Return the posted text and resolve and replace all found mesh links. "
 			+ "A mesh link must be in the format {{mesh.link(\"UUID\",\"languageTag\")}}");
 		endpoint.addQueryParameters(NodeParametersImpl.class);

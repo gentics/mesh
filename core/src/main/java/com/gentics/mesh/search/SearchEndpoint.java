@@ -1,13 +1,13 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.vertx.core.http.HttpMethod.POST;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.parameter.impl.SearchParametersImpl;
 import com.gentics.mesh.rest.InternalEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
-
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.vertx.core.http.HttpMethod.POST;
 
 public interface SearchEndpoint extends InternalEndpoint {
 
@@ -21,6 +21,7 @@ public interface SearchEndpoint extends InternalEndpoint {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);
+		endpoint.setMutating(false);
 		endpoint.description("Invoke a search query for " + typeName + " and return the unmodified Elasticsearch response. Note that the query will be executed using the multi search API of Elasticsearch.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);

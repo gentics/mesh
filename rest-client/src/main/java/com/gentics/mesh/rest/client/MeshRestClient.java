@@ -14,6 +14,7 @@ import com.gentics.mesh.rest.client.method.GraphQLClientMethods;
 import com.gentics.mesh.rest.client.method.GroupClientMethods;
 import com.gentics.mesh.rest.client.method.HealthClientMethods;
 import com.gentics.mesh.rest.client.method.JobClientMethods;
+import com.gentics.mesh.rest.client.method.LocalConfigMethods;
 import com.gentics.mesh.rest.client.method.MicroschemaClientMethods;
 import com.gentics.mesh.rest.client.method.NavRootClientMethods;
 import com.gentics.mesh.rest.client.method.NavigationClientMethods;
@@ -35,7 +36,7 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods,
 	AdminPluginClientMethods, MicroschemaClientMethods, NodeBinaryFieldClientMethods, UtilityClientMethods, NavigationClientMethods,
 	NavRootClientMethods, EventbusClientMethods, BranchClientMethods, ApiInfoClientMethods, GraphQLClientMethods, JobClientMethods,
-	GenericHttpMethods, HealthClientMethods {
+	GenericHttpMethods, HealthClientMethods, LocalConfigMethods {
 
 	/**
 	 * Create a new mesh rest client.

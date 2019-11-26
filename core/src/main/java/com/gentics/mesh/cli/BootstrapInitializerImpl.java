@@ -67,6 +67,7 @@ import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -164,6 +165,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Inject
 	public MetricsOptions metricsOptions;
+
+	@Inject
+	public LocalConfigApi localConfigApi;
 
 	private MeshRoot meshRoot;
 
@@ -557,6 +561,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		List<String> initialProjects = db.tx(() -> meshRoot().getProjectRoot().findAll().stream()
 			.map(Project::getName)
 			.collect(Collectors.toList()));
+
+		// Set read only mode
+		localConfigApi.init().blockingAwait();
 
 		loader.get().loadVerticles(initialProjects).blockingAwait();
 		if (verticleLoader != null) {
