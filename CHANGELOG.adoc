@@ -29,6 +29,7 @@ include::content/docs/variables.adoc-include[]
 
 icon:plus[] Core: The amount of the deployed REST API verticles can now be link:{{< relref "administration-guide.asciidoc" >}}#_httpsssl[configured] and its default has been changed from 5 to 2 * CPU Cores.
 
+icon:check[] REST: The `/health/live` and `/health/ready` endpoints have been added to the REST API. These endpoints are also available on the monitoring server, but adding them to the REST server makes it possible for load balancers to monitor the server on the same port that used to proxy the requests.
 
 [[v1.2.1]]
 == 1.2.1 (22.11.2019)
@@ -41,7 +42,6 @@ icon:check[] Java Rest Client: Fixed a bug that some generic methods would not a
 
 
 [[v1.2.0]]
-
 == 1.2.0 (20.11.2019)
 
 WARNING: The internal database structure has changed significantly to avoid vertices with many edges. This will result in a higher write performance on bigger systems. For this change, the API of Gentics Mesh did not change at all. When starting with this version on an existing database, the structure changes will be applied automatically, which will take some time to complete.
