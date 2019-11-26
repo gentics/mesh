@@ -1705,4 +1705,14 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public MeshRequest<MeshBinaryResponse> debugInfo(String... params) {
 		return null;
 	}
+
+	@Override
+	public MeshRequest<EmptyResponse> ready() {
+		return null;
+	}
+
+	@Override
+	public MeshRequest<EmptyResponse> live() {
+		return null;
+	}
 }

@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.endpoint.admin.AdminEndpoint;
+import com.gentics.mesh.core.endpoint.admin.HealthEndpoint;
 import com.gentics.mesh.core.endpoint.admin.RestInfoEndpoint;
 import com.gentics.mesh.core.endpoint.auth.AuthenticationEndpoint;
 import com.gentics.mesh.core.endpoint.branch.BranchEndpoint;
@@ -137,8 +138,11 @@ public class RestAPIVerticle extends AbstractVerticle {
 	public Provider<AdminEndpoint> adminEndpoint;
 
 	@Inject
+	public Provider<HealthEndpoint> healthEndpoint;
+
+	@Inject
 	public RouterStorageRegistry routerStorageRegistry;
-	
+
 	@Inject
 	public Vertx vertx;
 
@@ -232,7 +236,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 	/**
 	 * Register the API endpoints and bind them to the given router.
 	 * 
-	 * @param router
+	 * @param storage
 	 * @throws Exception
 	 */
 	private void registerEndPoints(RouterStorage storage) throws Exception {
@@ -269,6 +273,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		endpoints.add(eventbusEndpoint.get());
 		endpoints.add(utilityEndpoint.get());
 		endpoints.add(projectInfoEndpoint.get());
+		endpoints.add(healthEndpoint.get());
 
 		for (AbstractInternalEndpoint endpoint : endpoints) {
 			endpoint.init(vertx, storage);
