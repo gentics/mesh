@@ -84,3 +84,8 @@ types:
 | allowDuplicates   | boolean          | Flag to allow duplicate values for the type | false |
 | reorderDuplicates | boolean          | Flag to specify behaviour for POSTed duplicates, if `allowDuplicates` is `false`. If set to `false`, duplicates will just be ignored, if `true` they will be reordered to the back of the list | false |
 | addToList  | `append` or `prepend` | POSTed values will be added at the end (`append`) or at the start (`prepend`) of the list | `append` |
+
+
+
+Disclaimer: 
+This plugin does not support parallel requests on the same favorite type!

@@ -143,7 +143,7 @@ public class SchemaInitializer {
 							.setSchemaName(SchemaService.PLUGIN_SCHEMA_NAME)
 							.setParentNode(project.getRootNode())
 							.setLanguage("en");
-					create.getFields().put("name", new StringFieldImpl().setString("favorite_plugin"));
+					create.getFields().put("name", new StringFieldImpl().setString(FavoriteService.FAVORITE_PLUGIN_NAME));
 					return adminClient.createNode(project.getName(), create).toSingle()
 							.flatMap(created -> adminClient.publishNode(project.getName(), created.getUuid()).toSingle().map(status -> created))
 							.map(response -> response.getUuid());

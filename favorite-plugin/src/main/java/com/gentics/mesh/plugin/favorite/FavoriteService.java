@@ -44,7 +44,7 @@ public class FavoriteService {
 	private final SchemaService schemaService;
 
 	private final String FAVORITE_FIELD = "favorites";
-	private final String FAVORITE_PLUGIN_NAME = "favorite_plugin";
+	public static final String FAVORITE_PLUGIN_NAME = "favorite_plugin";
 
 	protected static <T> T ifNotFound(Throwable t, Supplier<T> notFoundHandler) {
 		if (t instanceof MeshRestClientMessageException) {
@@ -287,34 +287,30 @@ public class FavoriteService {
 		boolean reorderDuplicates = this.configuration.getTypeOptions().get(type).hasReorderDuplicates();
 
 		List<String> items = list.getItems();
-		boolean found = false;
-		//check if the favorite exists and set found to true
-		if (!allowDuplicates) {
-			found = items.contains(favorite);
+		if (!allowDuplicates && !reorderDuplicates && items.contains(favorite)) {
+			return;
 		}
+
 		//check if the reorder duplicates is set to true and allow duplicates is set to false. The delete the favorite, and add it according to the policy: append or prepend
-		if (!allowDuplicates && reorderDuplicates && found) {
+		if (!allowDuplicates && reorderDuplicates) {
 			list.getItems().removeAll(Collections.singleton(favorite));
 		}
 		//if the element is not found and the duplicates are not allowed, or duplicates are allowed then append or prepend the favorite according to the policy.
-
-		if (!found || allowDuplicates || (!allowDuplicates && found && reorderDuplicates)) {
-			//if max Entries are reached - delete oldest (last) entry
-			if ("prepend".equalsIgnoreCase(listOrdering)) {
-				if (maxEntries > 0 && items.size() >= maxEntries) {
-					items.remove(items.size() - 1);
-				}
-				items.add(0, favorite);
-
-			} else {
-				//if max Entries are reached - delete newest (first) entry
-				if (maxEntries > 0 && items.size() >= maxEntries) {
-					items.remove(0);
-				}
-				items.add(favorite);
+		//if max Entries are reached - delete oldest (last) entry
+		if ("prepend".equalsIgnoreCase(listOrdering)) {
+			if (maxEntries > 0 && items.size() >= maxEntries) {
+				items.remove(items.size() - 1);
 			}
+			items.add(0, favorite);
 
+		} else {
+			//if max Entries are reached - delete newest (first) entry
+			if (maxEntries > 0 && items.size() >= maxEntries) {
+				items.remove(0);
+			}
+			items.add(favorite);
 		}
+
 		list.setItems(items);
 	}
 

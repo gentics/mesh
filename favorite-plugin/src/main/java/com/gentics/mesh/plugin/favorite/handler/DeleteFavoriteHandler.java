@@ -11,6 +11,8 @@ import com.gentics.mesh.plugin.favorite.model.PostedFavorite;
 
 import io.reactivex.Completable;
 
+import java.util.regex.Matcher;
+
 @Singleton
 public class DeleteFavoriteHandler extends AbstractFavoriteHandler {
 	private final FavoriteService favoriteService;
@@ -25,7 +27,7 @@ public class DeleteFavoriteHandler extends AbstractFavoriteHandler {
 		String projectName = context.project().getString("name");
 		String type = context.pathParam("type");
 		String favoriteID = context.pathParam("id");
-		if (!type.matches(regexMatch)) {
+		if(!pattern.matcher(type).matches()) {
 			throw new InvalidTypeError(type);
 		}
 		return favoriteService.deleteFavorite(projectName, type, favoriteID).doOnSuccess(response -> {

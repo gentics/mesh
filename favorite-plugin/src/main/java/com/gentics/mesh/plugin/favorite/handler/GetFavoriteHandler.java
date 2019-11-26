@@ -11,6 +11,8 @@ import com.gentics.mesh.plugin.favorite.error.InvalidTypeError;
 
 import io.reactivex.Completable;
 
+import java.util.regex.Matcher;
+
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 
 @Singleton
@@ -26,8 +28,7 @@ public class GetFavoriteHandler extends AbstractFavoriteHandler {
 	public Completable handle(PluginContext context) {
 		String projectName = context.project().getString("name");
 		String type = context.pathParam("type");
-		
-		if(!type.matches(regexMatch)) {
+		if(!pattern.matcher(type).matches()) {
 			throw new InvalidTypeError(type);
 		}
 
