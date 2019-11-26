@@ -1,7 +1,31 @@
 package com.gentics.mesh.generator;
 
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.mockito.Mockito.mock;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
+
+import org.apache.commons.io.FileUtils;
+import org.mockito.Mockito;
+import org.raml.emitter.RamlEmitter;
+import org.raml.model.Action;
+import org.raml.model.ActionType;
+import org.raml.model.MimeType;
+import org.raml.model.Protocol;
+import org.raml.model.Raml;
+import org.raml.model.Resource;
+import org.raml.model.Response;
+
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.core.endpoint.admin.AdminEndpoint;
+import com.gentics.mesh.core.endpoint.admin.HealthEndpoint;
 import com.gentics.mesh.core.endpoint.admin.RestInfoEndpoint;
 import com.gentics.mesh.core.endpoint.auth.AuthenticationEndpoint;
 import com.gentics.mesh.core.endpoint.branch.BranchEndpoint;
@@ -30,33 +54,12 @@ import com.gentics.mesh.search.ProjectRawSearchEndpointImpl;
 import com.gentics.mesh.search.ProjectSearchEndpointImpl;
 import com.gentics.mesh.search.RawSearchEndpointImpl;
 import com.gentics.mesh.search.SearchEndpointImpl;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
-import org.apache.commons.io.FileUtils;
-import org.mockito.Mockito;
-import org.raml.emitter.RamlEmitter;
-import org.raml.model.Action;
-import org.raml.model.ActionType;
-import org.raml.model.MimeType;
-import org.raml.model.Protocol;
-import org.raml.model.Raml;
-import org.raml.model.Resource;
-import org.raml.model.Response;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
-
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.mockito.Mockito.mock;
 
 /**
  * Generator for RAML documentation. The generation mocks all endpoint classes and extracts the routes from these endpoints in order to generate the RAML.
@@ -362,6 +365,10 @@ public class RAMLGenerator extends AbstractGenerator {
 		AdminEndpoint adminEndpoint = Mockito.spy(new AdminEndpoint());
 		initEndpoint(adminEndpoint);
 		addEndpoints(coreBasePath, resources, adminEndpoint);
+
+		HealthEndpoint healthEndpoint = Mockito.spy(new HealthEndpoint());
+		initEndpoint(healthEndpoint);
+		addEndpoints(coreBasePath, resources, healthEndpoint);
 
 		SearchEndpointImpl searchEndpoint = Mockito.spy(new SearchEndpointImpl());
 		initEndpoint(searchEndpoint);

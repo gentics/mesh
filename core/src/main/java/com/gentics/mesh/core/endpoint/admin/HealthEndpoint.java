@@ -10,12 +10,16 @@ import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 public class HealthEndpoint extends AbstractInternalEndpoint {
-	private final MonitoringCrudHandler monitoringCrudHandler;
+	private MonitoringCrudHandler monitoringCrudHandler;
 
 	@Inject
 	public HealthEndpoint(MeshAuthChain chain, MonitoringCrudHandler monitoringCrudHandler) {
 		super("health", chain);
 		this.monitoringCrudHandler = monitoringCrudHandler;
+	}
+
+	public HealthEndpoint() {
+		super("health", null);
 	}
 
 	@Override
@@ -34,7 +38,7 @@ public class HealthEndpoint extends AbstractInternalEndpoint {
 		deployEndpoint.path("/live");
 		deployEndpoint.method(GET);
 		deployEndpoint.description("Returns an empty response with status code 200 if Gentics Mesh is alive.");
-		deployEndpoint.handler(monitoringCrudHandler::handleLive);
+		deployEndpoint.handler(rc -> monitoringCrudHandler.handleLive(rc));
 	}
 
 	private void addReady() {
@@ -42,6 +46,6 @@ public class HealthEndpoint extends AbstractInternalEndpoint {
 		deployEndpoint.path("/ready");
 		deployEndpoint.method(GET);
 		deployEndpoint.description("Returns an empty response with status code 200 if Gentics Mesh is ready. Responds with 503 otherwise.");
-		deployEndpoint.handler(monitoringCrudHandler::handleReady);
+		deployEndpoint.handler(rc -> monitoringCrudHandler.handleReady(rc));
 	}
 }
