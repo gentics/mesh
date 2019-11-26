@@ -11,8 +11,6 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-import io.reactivex.Observable;
-
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class HealthEndpointTest extends AbstractMeshTest {
 
@@ -29,13 +27,7 @@ public class HealthEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void name() {
-	}
-
-	@Test
 	public void testLivenessProbe() {
-		Observable.range(1, 10)
-			.flatMap(nr -> cli)
 		call(() -> client().live());
 	}
 }

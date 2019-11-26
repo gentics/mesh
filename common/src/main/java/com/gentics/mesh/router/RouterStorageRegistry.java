@@ -1,7 +1,6 @@
 package com.gentics.mesh.router;
 
 import java.util.Set;
-import java.util.stream.IntStream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -16,7 +15,6 @@ public class RouterStorageRegistry {
 
 	@Inject
 	public RouterStorageRegistry() {
-		IntStream.rangeClosed(1, 10).mapToObj(Integer::toString).toArray(String[]::new)
 	}
 
 	public synchronized void registerEventbus() {
