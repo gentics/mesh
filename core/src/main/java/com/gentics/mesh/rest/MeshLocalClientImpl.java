@@ -107,6 +107,7 @@ import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphql.GraphQLHandler;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -117,6 +118,7 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.rest.client.MeshWebsocket;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
+import com.gentics.mesh.router.ProjectsRouter;
 import com.gentics.mesh.search.index.AdminIndexHandler;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -193,7 +195,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Inject
 	public GraphQLHandler graphQLHandler;
-
+	
 	@Inject
 	public Vertx vertx;
 
@@ -1177,7 +1179,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	@Override
 	public MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
 		ParameterProvider... parameters) {
-		LocalRoutingContextImpl<MeshBinaryResponse> rc = new LocalRoutingContextImpl<>();
+		LocalRoutingContextImpl<MeshBinaryResponse> rc = new LocalRoutingContextImpl<>(user);
+		rc.setProject(projectName);
 		binaryDownloadHandler.handleReadBinaryField(rc, nodeUuid, fieldKey);
 		return new MeshLocalRequestImpl<>(rc.getFuture());
 	}
@@ -1185,7 +1188,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	@Override
 	public MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey, long from,
 		long to, ParameterProvider... parameters) {
-		LocalRoutingContextImpl<MeshBinaryResponse> rc = new LocalRoutingContextImpl<>();
+		LocalRoutingContextImpl<MeshBinaryResponse> rc = new LocalRoutingContextImpl<>(user);
+		rc.setProject(projectName);
 		binaryDownloadHandler.handleReadBinaryField(rc, nodeUuid, fieldKey);
 		return new MeshLocalRequestImpl<>(rc.getFuture());
 	}
@@ -1338,8 +1342,10 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<BranchResponse> findBranchByUuid(String projectName, String branchUuid, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		LocalActionContextImpl<BranchResponse> ac = createContext(BranchResponse.class, parameters);
+		ac.setProject(projectName);
+		branchCrudHandler.handleRead(ac, branchUuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
@@ -1375,8 +1381,11 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	@Override
 	public MeshRequest<BranchInfoSchemaList> assignBranchSchemaVersions(String projectName, String branchUuid,
 		SchemaReference... schemaVersionReferences) {
-		// TODO Auto-generated method stub
-		return null;
+		LocalActionContextImpl<BranchInfoSchemaList> ac = createContext(BranchInfoSchemaList.class);
+		ac.setProject(projectName);
+		ac.setPayloadObject(schemaVersionReferences);
+		branchCrudHandler.handleAssignSchemaVersion(ac, branchUuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
@@ -1413,8 +1422,10 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<BranchResponse> setLatestBranch(String projectName, String branchUuid) {
-		// TODO Auto-generated method stub
-		return null;
+		LocalActionContextImpl<BranchResponse> ac = createContext(BranchResponse.class);
+		ac.setProject(projectName);
+		branchCrudHandler.handleSetLatest(ac, branchUuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override

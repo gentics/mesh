@@ -11,4 +11,9 @@ public class LocalGraphQLContextImpl extends LocalActionContextImpl<GraphQLRespo
 		super(user, GraphQLResponse.class, parameters);
 	}
 
+	@Override
+	public int getApiVersion() {
+		return 1 ; //VersionHandler.CURRENT_API_VERSION;
+	}
+
 }

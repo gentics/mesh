@@ -1,11 +1,17 @@
 package com.gentics.mesh.context.impl;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.graph.GraphAttribute;
+import com.gentics.mesh.dagger.MeshComponent;
+import com.gentics.mesh.router.ProjectsRouter;
 
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Future;
@@ -32,12 +38,18 @@ public class LocalRoutingContextImpl<T> implements RoutingContext {
 
 	private Promise<T> promise = Promise.promise();
 
-	private HttpServerResponse responseMock = null;
+	private HttpServerResponse responseMock;
 
-	private User user;
+	private HttpServerRequest requestMock;
+
+	private MeshAuthUser user;
+
+	private Map<String, Object> data = new HashMap<>();
 
 	public LocalRoutingContextImpl(MeshAuthUser user) {
 		this.user = user;
+		this.responseMock = new LocalHttpServerResponse();
+		this.requestMock = new LocalHttpServerRequest(responseMock);
 	}
 
 	public Future<T> getFuture() {
@@ -46,8 +58,7 @@ public class LocalRoutingContextImpl<T> implements RoutingContext {
 
 	@Override
 	public HttpServerRequest request() {
-		// TODO Auto-generated method stub
-		return null;
+		return requestMock;
 	}
 
 	@Override
@@ -79,26 +90,23 @@ public class LocalRoutingContextImpl<T> implements RoutingContext {
 
 	@Override
 	public RoutingContext put(String key, Object obj) {
-		// TODO Auto-generated method stub
-		return null;
+		data.put(key, obj);
+		return this;
 	}
 
 	@Override
 	public <T> T get(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return (T) data.get(key);
 	}
 
 	@Override
 	public <T> T remove(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return (T) data.remove(key);
 	}
 
 	@Override
 	public Map<String, Object> data() {
-		// TODO Auto-generated method stub
-		return null;
+		return data;
 	}
 
 	@Override
@@ -265,7 +273,7 @@ public class LocalRoutingContextImpl<T> implements RoutingContext {
 
 	@Override
 	public void setUser(User user) {
-		this.user = user;
+		this.user = (MeshAuthUser) user;
 	}
 
 	@Override
@@ -312,6 +320,20 @@ public class LocalRoutingContextImpl<T> implements RoutingContext {
 	public List<String> queryParam(String name) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	/**
+	 * Set the project that will be used to invoke project scope specific actions.
+	 * 
+	 * @param projectName
+	 */
+	public void setProject(String projectName) {
+		MeshComponent mesh = user.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
+		Project project = mesh.database().tx(() -> {
+			BootstrapInitializer boot = mesh.boot();
+			return boot.projectRoot().findByName(projectName);
+		});
+		put(ProjectsRouter.PROJECT_CONTEXT_KEY, project);
 	}
 
 }
