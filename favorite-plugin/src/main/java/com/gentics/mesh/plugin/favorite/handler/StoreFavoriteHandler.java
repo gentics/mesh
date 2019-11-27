@@ -10,6 +10,8 @@ import com.gentics.mesh.plugin.favorite.error.InvalidTypeError;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 
+import java.util.regex.Matcher;
+
 @Singleton
 public class StoreFavoriteHandler extends AbstractFavoriteHandler{
 	private final FavoriteService favoriteService;
@@ -22,12 +24,12 @@ public class StoreFavoriteHandler extends AbstractFavoriteHandler{
 	public Completable handle(PluginContext context) {
 		String projectName = context.project().getString("name");
 		String type = context.pathParam("type");
-		
-		if(!type.matches("[a-zA-Z0-9]*")) {
+		String favoriteID = context.pathParam("id");
+		if(!pattern.matcher(type).matches()) {
 			throw new InvalidTypeError(type);
 		}
-		
-		return favoriteService.postFavorite(projectName, type, context.getBodyAsString()).doOnEvent((response, t) -> {
+
+		return favoriteService.postFavorite(projectName, type, favoriteID).doOnEvent((response, t) -> {
 			if (t == null) {
 				context.response().setStatusCode(HttpResponseStatus.CREATED.code()).end();
 			}

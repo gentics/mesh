@@ -9,11 +9,11 @@ public class InvalidTypeError extends FavoritePluginError {
 	private static final long serialVersionUID = -3164364960298323786L;
 
 	public InvalidTypeError(String type) {
-		super("Type "+type+" is invalid - type may only contains letters and digits");
+		super("Type "+type+" is invalid - type may only contains letters, digits, underscores and dashes");
 	}
 
 	@Override
 	public int getHttpStatusCode() {
-		return HttpResponseStatus.UNAUTHORIZED.code();
+		return HttpResponseStatus.BAD_REQUEST.code();
 	}
 }

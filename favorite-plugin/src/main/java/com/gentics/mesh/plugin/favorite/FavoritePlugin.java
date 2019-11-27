@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.core.http.HttpMethod.POST;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.vertx.core.http.HttpMethod.*;
 
 public class FavoritePlugin extends AbstractPlugin implements RestPlugin {
 
@@ -46,12 +46,10 @@ public class FavoritePlugin extends AbstractPlugin implements RestPlugin {
 	public Router createProjectRouter() {
 		log.info("Registering routes for {" + name() + "}");
 		Router projectRouter = Router.router(vertx());
-		projectRouter.route("/favorite/:type").method(GET).handler(fromComponent(FavoritePluginComponent::getFavoriteHandler));
-
-		projectRouter.route("/favorite/:type").method(POST).handler(fromComponent(FavoritePluginComponent::storeFavoriteHandler));
-		projectRouter.route("/favorite/:type/override").method(POST).handler(fromComponent(FavoritePluginComponent::getOverrideFavoriteHandler));
-
-		projectRouter.route("/favorite/:type/delete").method(POST).handler(fromComponent(FavoritePluginComponent::getDeleteFavoriteHandler));
+		projectRouter.route("/:type").method(POST).handler(fromComponent(FavoritePluginComponent::getOverrideFavoriteHandler));
+		projectRouter.route("/:type").method(GET).produces(APPLICATION_JSON).handler(fromComponent(FavoritePluginComponent::getFavoriteHandler));
+		projectRouter.route("/:type/:id").method(POST).handler(fromComponent(FavoritePluginComponent::storeFavoriteHandler));
+		projectRouter.route("/:type/:id").method(DELETE).handler(fromComponent(FavoritePluginComponent::getDeleteFavoriteHandler));
 		return projectRouter;
 	}
 
@@ -69,12 +67,12 @@ public class FavoritePlugin extends AbstractPlugin implements RestPlugin {
 
 	private FavoritePluginComponent component(MeshRestClient userClient) {
 		return DaggerFavoritePluginComponent.builder()
-			.configuration(configuration)
-			.adminClient(adminClient())
-			.userClient(userClient)
-			.rootNodeUuids(rootNodeUuids)
-			.vertx(vertx())
-			.build();
+				.configuration(configuration)
+				.adminClient(adminClient())
+				.userClient(userClient)
+				.rootNodeUuids(rootNodeUuids)
+				.vertx(vertx())
+				.build();
 	}
 
 	private Handler<RoutingContext> fromComponent(Function<FavoritePluginComponent, AbstractFavoriteHandler> handler) {
@@ -82,23 +80,33 @@ public class FavoritePlugin extends AbstractPlugin implements RestPlugin {
 			PluginContext meshContext = wrap(context);
 			MeshRestClient userClient = meshContext.client();
 
-			// TODO better error handler
-			handler.apply(component(userClient)).handle(meshContext).doOnError(t -> {
-				log.error("Error while handling request", t);
-				if (t instanceof MeshRestClientMessageException) {
-					MeshRestClientMessageException meshException = (MeshRestClientMessageException) t;
-					context.response().setStatusCode(meshException.getStatusCode()).setStatusMessage(meshException.getMessage()).end();
-				} else if (t instanceof GenericRestException) {
-					GenericRestException restException = (GenericRestException) t;
-					context.response().setStatusCode(restException.getStatus().code()).setStatusMessage(restException.getMessage()).end();
-				} else if (t instanceof FavoritePluginError) {
-					FavoritePluginError FavoritePluginError = (FavoritePluginError) t;
-					context.response().setStatusCode(FavoritePluginError.getHttpStatusCode()).setStatusMessage(FavoritePluginError.getMessage())
-						.end();
-				} else {
-					context.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).setStatusMessage("Internal Server Error").end();
-				}
-			}).subscribe();
+
+			try {
+				handler.apply(component(userClient)).handle(meshContext)
+						.subscribe(() -> {}, t -> handleError(context, t));
+
+			} catch (Throwable e){
+				handleError(context, e);
+
+			}
 		};
 	}
+
+	private void handleError(RoutingContext context, Throwable t) {
+		log.error("Error while handling request", t);
+		if (t instanceof MeshRestClientMessageException) {
+			MeshRestClientMessageException meshException = (MeshRestClientMessageException) t;
+			context.response().setStatusCode(meshException.getStatusCode()).setStatusMessage(meshException.getMessage()).end();
+		} else if (t instanceof GenericRestException) {
+			GenericRestException restException = (GenericRestException) t;
+			context.response().setStatusCode(restException.getStatus().code()).setStatusMessage(restException.getMessage()).end();
+		} else if (t instanceof FavoritePluginError) {
+			FavoritePluginError FavoritePluginError = (FavoritePluginError) t;
+			context.response().setStatusCode(FavoritePluginError.getHttpStatusCode()).setStatusMessage(FavoritePluginError.getMessage())
+					.end();
+		} else {
+			context.response().setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()).setStatusMessage("Internal Server Error").end();
+		}
+	}
+
 }

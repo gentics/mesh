@@ -8,10 +8,15 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.router.EndpointRegistry;
 import io.reactivex.Completable;
-
+import io.vertx.core.json.JsonObject;
+/**
+ * Starts a MESH Server with the port 8092 with the plugin deployed. It creates a user admin and a project test
+ */
 public class TestRunner {
 	public static void main(String[] args) throws Throwable {
 		final int httpPort = 8092;
@@ -39,7 +44,7 @@ public class TestRunner {
 		client.login().blockingGet();
 
 		ProjectResponse project = createProject(client);
-		createFolder(client, project, "comments");
+		createFolder(client, project, "favorite");
 		createFolder(client, project, "someNode");
 
 		mesh.deployPlugin(FavoriteTestPlugin.class, "favorite").blockingAwait();
@@ -65,11 +70,17 @@ public class TestRunner {
 
 	private static Completable awaitStartup(Mesh mesh) {
 		return Completable.create(sub -> {
-			while (mesh.getVertx() == null) {
+			while (true) {
 				try {
+					if(mesh.getVertx() == null){
+						Thread.sleep(1000);
+					}else {
+						break;
+					}
+
+				} catch (Throwable e) {
+
 					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
 				}
 			}
 			mesh.getVertx().eventBus().consumer(MeshEvent.STARTUP.address, mh -> {

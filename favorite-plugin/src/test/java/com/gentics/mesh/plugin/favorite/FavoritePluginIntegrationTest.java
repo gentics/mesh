@@ -1,101 +1,204 @@
 package com.gentics.mesh.plugin.favorite;
 
-import static com.gentics.mesh.test.ClientHelper.call;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-
-import org.apache.commons.io.IOUtils;
-import org.junit.Before;
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.user.UserCreateRequest;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
+import com.gentics.mesh.test.local.MeshLocalServer;
+import io.reactivex.Completable;
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Test;
 
-import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
-import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
-import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
-import com.gentics.mesh.core.rest.user.UserCreateRequest;
-import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.client.DeleteParametersImpl;
-import com.gentics.mesh.test.local.MeshLocalServer;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
- * Integration tests for the LikePlugin
+ * Integration tests for the FavoritePlugin
  */
 public class FavoritePluginIntegrationTest {
-	private final static String PROJECT_NAME = "testproject";
+
+	private static FavoritePluginClient client;
 
 	@ClassRule
-	public static final MeshLocalServer server = new MeshLocalServer().withInMemoryMode().waitForStartup();
-
-	private static ProjectResponse project;
-
-	private static SchemaResponse schema;
-
-	private static Map<String, String> userTokens = new HashMap<>();
-
-	/**
-	 * Get the project specific url for the plugin with the given path appended
-	 * 
-	 * @param path
-	 *            path
-	 * @return complete url
-	 */
-	private static String projectUrl(String path) {
-		if (!path.startsWith("/")) {
-			path = "/" + path;
-		}
-		return String.format("http://%s:%d/api/v1/%s/plugins/%s%s", server.getHostname(), server.getPort(), PROJECT_NAME, "favorite", path);
-	}
+	public final static MeshLocalServer server = new MeshLocalServer()
+			.withInMemoryMode()
+			.waitForStartup();
 
 	@BeforeClass
-	public static void setupOnce() throws InterruptedException, ExecutionException, TimeoutException, GenericRestException, IOException {
-		ProjectCreateRequest createProject = new ProjectCreateRequest().setName(PROJECT_NAME).setSchemaRef("folder");
-		project = call(() -> server.client().createProject(createProject));
-
-		SchemaCreateRequest request = JsonUtil.readValue(
-			IOUtils.toString(FavoritePluginIntegrationTest.class.getResource("testcontent_schema.json"), "UTF-8"),
-			SchemaCreateRequest.class);
-		schema = call(() -> server.client().createSchema(request));
-		call(() -> server.client().assignSchemaToProject(PROJECT_NAME, schema.getUuid()));
+	public static void setUp() throws Exception {
+		server.client().createProject(new ProjectCreateRequest().setName("test").setSchemaRef("folder")).blockingAwait();
+		server.client().createUser(new UserCreateRequest().setUsername("user1").setPassword("user1"));
 
 		server.getMesh().deployPlugin(FavoriteTestPlugin.class, "favorite").blockingAwait();
-
-		for (int i = 1; i <= 100; i++) {
-			UserCreateRequest createUser = new UserCreateRequest();
-			createUser.setFirstname(String.format("User%dFirst", i));
-			createUser.setLastname(String.format("User%dLast", i));
-			createUser.setUsername(String.format("user%d", i));
-			createUser.setPassword(String.format("user%d", i));
-			UserResponse user = call(() -> server.client().createUser(createUser));
-			UserAPITokenResponse token = call(() -> server.client().issueAPIToken(user.getUuid()));
-			userTokens.put(user.getUuid(), token.getToken());
-		}
+		client = new FavoritePluginClient(server.client(), "test");
 	}
 
-	/**
-	 * Clean data before test run
-	 */
-	@Before
-	public void setup() {
-		// delete all nodes of the specified schemas
-		List<String> schemasToDelete = Arrays.asList(SchemaService.SECTION_SCHEMA_NAME, schema.getName());
-		NodeListResponse response = call(() -> server.client().findNodes(PROJECT_NAME));
-		for (NodeResponse node : response.getData()) {
-			if (schemasToDelete.contains(node.getSchema().getName())) {
-				call(() -> server.client().deleteNode(PROJECT_NAME, node.getUuid(), new DeleteParametersImpl().setRecursive(true)));
+
+	@After
+	public void cleanUp() {
+		switchUser("admin");
+		client.deleteAllFavorites().blockingAwait();
+	}
+
+	@Test
+	public void testAddFavorite() {
+		addFavorites("widgets_max_nr_prepend", "abc1", "abc2", "abc3");
+		assertThat(client.getFavorites("widgets_max_nr_prepend").blockingGet()).containsExactly("abc3", "abc2", "abc1");
+	}
+	@Test
+	public void testAddFavoriteNoConfig() {
+		assertStatusCode(400, client.addFavorite("infoboxxx", "111"));
+	}
+
+	@Test
+	public void testDeleteFavoriteNoConfig() {
+		assertStatusCode(400, client.deleteFavorite("infoboxxx", "abc1"));
+	}
+
+	@Test
+	public void testOverrideFavoriteNoConfig() {
+		assertStatusCode(400, client.overrideFavorite("infoboxxx", "abc1"));
+	}
+
+	@Test
+	public void testGetFavoriteNoConfig() {
+		assertStatusCode(400, client.getFavorites("widgetsss").ignoreElement());
+	}
+
+	@Test
+	public void testAnonymous() {
+		switchUser("anonymous");
+		assertStatusCode(401, client.addFavorite("infobox_max_nr_duplicates", "abc1"));
+	}
+
+	@Test
+	public void testWidgets() {
+		addFavorites("widgets", "abc1", "abc2", "abc3", "abc4", "abc5", "abc6", "abc7", "abc8", "abc4", "abc9", "abc10");
+		assertThat(client.getFavorites("widgets").blockingGet()).containsExactly("abc1", "abc2", "abc3", "abc4", "abc5", "abc6", "abc7", "abc8", "abc9", "abc10");
+
+	}
+
+	@Test
+	public void testInfobox() {
+		addFavorites("infobox", "abc1", "abc2", "abc3", "abc4", "abc5", "abc6", "abc7", "abc8", "abc9", "abc10");
+		assertThat(client.getFavorites("infobox").blockingGet()).containsExactly("abc1", "abc2", "abc3", "abc4", "abc5", "abc6", "abc7", "abc8", "abc9", "abc10");
+
+	}
+
+	@Test
+	public void testOngoingProcedures() {
+		addFavorites("ongoing_procedures", "abc1", "abc2", "abc3", "abc4", "abc5", "abc6", "abc4");
+		assertThat(client.getFavorites("ongoing_procedures").blockingGet()).containsExactly("abc5", "abc6", "abc4");
+
+	}
+
+	@Test
+	public void testMaxEntriesWithDuplicatesAppend() {
+		addFavorites("infobox_max_nr_duplicates", "abc1", "abc2", "abc3", "abc4", "abc5", "abc6", "abc4");
+		assertThat(client.getFavorites("infobox_max_nr_duplicates").blockingGet()).containsExactly("abc3", "abc4", "abc5", "abc6", "abc4");
+
+	}
+
+	@Test
+	public void testMaxEntriesWithoutDuplicatesPrepend() {
+		addFavorites("widgets_max_nr_prepend", "abc1", "abc2", "abc3", "abc4", "abc5", "abc6", "abc4");
+		assertThat(client.getFavorites("widgets_max_nr_prepend").blockingGet()).containsExactly("abc6", "abc5", "abc4", "abc3");
+
+	}
+
+	@Test
+	public void testMaxEntriesWithDuplicatesPrepend() {
+		addFavorites("ongoing_procedures_duplicates", "abc1", "abc2", "abc3", "abc4", "abc5", "abc6", "abc4");
+		assertThat(client.getFavorites("ongoing_procedures_duplicates").blockingGet()).containsExactly("abc4", "abc5", "abc6", "abc4");
+
+	}
+
+	@Test
+	public void testMaxEntriesWithOutDuplicatesAllowReorderPrepend() {
+		addFavorites("prepend_duplicates", "abc1", "abc2", "abc3", "abc4", "abc5", "abc6", "abc4");
+		assertThat(client.getFavorites("prepend_duplicates").blockingGet()).containsExactly("abc4", "abc6", "abc5", "abc3", "abc2");
+
+	}
+
+	@Test
+	public void testMaxEntriesWithOutDuplicatesDontAllowReorderPrepend() {
+		addFavorites("widgets_max_nr_prepend", "abc1", "abc2", "abc3", "abc4", "abc5", "abc6", "abc4");
+		assertThat(client.getFavorites("widgets_max_nr_prepend").blockingGet()).containsExactly("abc6", "abc5", "abc4", "abc3");
+
+	}
+
+	@Test
+	public void testMaxEntriesWithOutDuplicatesAllowReorderAppend() {
+		addFavorites("ongoing_procedures_append_reorder", "abc1", "abc2", "abc3", "abc4", "abc5", "abc6", "abc4");
+		assertThat(client.getFavorites("ongoing_procedures_append_reorder").blockingGet()).containsExactly("abc3", "abc5", "abc6", "abc4");
+
+	}
+
+	@Test
+	public void testMaxEntriesWithOutDuplicatesDontAllowReorderAppend() {
+		addFavorites("ongoing_procedures_append", "abc1", "abc2", "abc3", "abc4", "abc5", "abc6", "abc4");
+		assertThat(client.getFavorites("ongoing_procedures_append").blockingGet()).containsExactly("abc3", "abc4", "abc5", "abc6");
+
+	}
+
+	@Test
+	public void testUnlimitedEntries() {
+		addFavorites("test_no_max", "abc1", "abc2", "abc3", "abc4", "abc5", "abc6", "abc7", "abc8", "abc9", "abc10", "abc11", "abc12", "abc13", "abc14", "abc15", "abc16", "abc17", "abc18", "abc19", "abc20");
+		assertThat(client.getFavorites("test_no_max").blockingGet()).hasSize(20);
+
+	}
+
+	@Test
+	public void testOverride() {
+		addFavorites("ongoing_procedures_duplicates", "abc1", "abc2", "abc3", "abc4", "abc5", "abc6");
+		client.overrideFavorite("ongoing_procedures_duplicates", "widget1", "widget2").blockingAwait();
+		assertThat(client.getFavorites("ongoing_procedures_duplicates").blockingGet()).containsExactly("widget1", "widget2");
+
+	}
+
+	@Test
+	public void testDelete() {
+		addFavorites("infobox_max_nr_duplicates", "abc1", "abc2", "abc1", "abc1", "abc3", "abc1", "abc1");
+		client.deleteFavorite("infobox_max_nr_duplicates", "abc1").blockingAwait();
+		assertThat(client.getFavorites("infobox_max_nr_duplicates").blockingGet()).containsExactly("abc3");
+
+	}
+
+	@Test
+	public void testWrongRegexType() {
+		assertStatusCode(400, client.addFavorite("infobox.2", "abc1"));
+
+
+	}
+
+	private void switchUser(String userName) {
+		if (userName.equals("anonymous")) {
+			server.client().logout().blockingGet();
+		} else {
+			server.client().setLogin(userName, userName).login().blockingGet();
+		}
+
+	}
+
+	protected void assertStatusCode(int code, Completable completable) {
+		try {
+			completable.blockingAwait();
+			fail();
+		} catch (Throwable e) {
+			e.getCause();
+			if (e.getCause() instanceof MeshRestClientMessageException) {
+				assertEquals(code, ((MeshRestClientMessageException) e.getCause()).getStatusCode());
+			} else {
+				throw e;
 			}
 		}
-	}
 
+	}
+	private void addFavorites(String type, String... favorites){
+		for (String favorite : favorites) {
+			client.addFavorite(type, favorite).blockingAwait();
+		}
+	}
 }

@@ -12,17 +12,11 @@
 			"label": "UUID of the user who saved favorites"
 		},
 		{
-			"name": "value",
+			"name": "favorites",
 			"type": "list",
 			"listType": "string",
 			"required": false,
 			"label": "value"
-		},
-		{
-			"name": "plusminus",
-			"type": "boolean",
-			"required": false,
-			"label": "Plus Minus"
 		}
 	]
 }

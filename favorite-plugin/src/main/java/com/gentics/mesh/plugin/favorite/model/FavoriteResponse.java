@@ -15,8 +15,9 @@ public class FavoriteResponse implements RestModel {
 		return favorites;
 	}
 
-	public void setFavorites(List<String> favorites) {
+	public FavoriteResponse setFavorites(List<String> favorites) {
 		this.favorites = favorites;
+		return this;
 	}
 
 }
