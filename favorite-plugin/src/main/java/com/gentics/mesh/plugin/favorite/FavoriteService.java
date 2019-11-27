@@ -287,15 +287,16 @@ public class FavoriteService {
 		boolean reorderDuplicates = this.configuration.getTypeOptions().get(type).hasReorderDuplicates();
 
 		List<String> items = list.getItems();
+		//if the favorite is already in the list, allow duplicates is set to false, and reorder duplicates is set to false then do nothing with the favorite.
 		if (!allowDuplicates && !reorderDuplicates && items.contains(favorite)) {
 			return;
 		}
 
-		//check if the reorder duplicates is set to true and allow duplicates is set to false. The delete the favorite, and add it according to the policy: append or prepend
+		//check if the reorder duplicates is set to true and allow duplicates is set to false. Then delete all the currencies of the favorite so we can add the favorite again according to the policy: prepend or append.
 		if (!allowDuplicates && reorderDuplicates) {
 			list.getItems().removeAll(Collections.singleton(favorite));
 		}
-		//if the element is not found and the duplicates are not allowed, or duplicates are allowed then append or prepend the favorite according to the policy.
+		//if duplicates are allowed, or the element is not found at all, or the element was removed because the policy is set o reorder duplicates, then add the favorite according to the policy: prepend or append.
 		//if max Entries are reached - delete oldest (last) entry
 		if ("prepend".equalsIgnoreCase(listOrdering)) {
 			if (maxEntries > 0 && items.size() >= maxEntries) {
