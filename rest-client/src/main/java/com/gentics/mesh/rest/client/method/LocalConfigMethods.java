@@ -1,6 +1,6 @@
 package com.gentics.mesh.rest.client.method;
 
-import com.gentics.mesh.core.rest.admin.runtimeconfig.LocalConfigModel;
+import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
 import com.gentics.mesh.rest.client.MeshRequest;
 
 public interface LocalConfigMethods {

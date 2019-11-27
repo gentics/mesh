@@ -9,7 +9,7 @@ import java.util.function.IntFunction;
 import org.junit.After;
 import org.junit.Test;
 
-import com.gentics.mesh.core.rest.admin.runtimeconfig.LocalConfigModel;
+import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.test.context.AbstractMeshTest;

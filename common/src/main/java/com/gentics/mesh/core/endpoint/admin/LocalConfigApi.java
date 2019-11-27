@@ -3,7 +3,8 @@ package com.gentics.mesh.core.endpoint.admin;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.rest.admin.runtimeconfig.LocalConfigModel;
+import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
+import com.gentics.mesh.util.PojoUtil;
 
 import dagger.Lazy;
 import io.reactivex.Completable;
@@ -36,8 +37,13 @@ public class LocalConfigApi {
 	}
 
 	public Single<LocalConfigModel> setActiveConfig(LocalConfigModel runtimeConfig) {
-		return getMap().flatMap(map -> map.rxPut(LOCAL_CONFIG_KEY, runtimeConfig)
-			.andThen(Single.just(runtimeConfig)));
+		return getMap()
+			.flatMap(map -> map.rxGet(LOCAL_CONFIG_KEY).toSingle()
+			.flatMap(oldConfig -> {
+				LocalConfigModel mergedConfig = PojoUtil.assignIgnoringNull(oldConfig, runtimeConfig);
+				return map.rxPut(LOCAL_CONFIG_KEY, mergedConfig)
+					.andThen(Single.just(mergedConfig));
+			}));
 	}
 
 	private Single<AsyncMap<String, LocalConfigModel>> getMap() {
