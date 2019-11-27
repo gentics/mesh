@@ -4,6 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.PojoUtil;
 
 import dagger.Lazy;
@@ -16,11 +17,13 @@ import io.vertx.reactivex.core.shareddata.AsyncMap;
 public class LocalConfigApi {
 
 	private final Lazy<Vertx> vertx;
+	private final MeshOptions meshOptions;
 	private final String LOCAL_CONFIG_KEY = "localConfig";
 
 	@Inject
-	public LocalConfigApi(Lazy<Vertx> vertx) {
+	public LocalConfigApi(Lazy<Vertx> vertx, MeshOptions meshOptions) {
 		this.vertx = vertx;
+		this.meshOptions = meshOptions;
 	}
 
 	/**
@@ -28,7 +31,8 @@ public class LocalConfigApi {
 	 * @return
 	 */
 	public Completable init() {
-		LocalConfigModel localConfigModel = new LocalConfigModel();
+		LocalConfigModel localConfigModel = new LocalConfigModel()
+			.setReadOnly(meshOptions.isStartInReadOnly());
 		return setActiveConfig(localConfigModel).ignoreElement();
 	}
 

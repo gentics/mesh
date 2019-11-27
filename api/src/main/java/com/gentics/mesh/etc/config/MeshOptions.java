@@ -31,6 +31,7 @@ public class MeshOptions implements Option {
 	public static final String MESH_NODE_NAME_ENV = "MESH_NODE_NAME";
 	public static final String MESH_CLUSTER_INIT_ENV = "MESH_CLUSTER_INIT";
 	public static final String MESH_LOCK_PATH_ENV = "MESH_LOCK_PATH";
+	public static final String MESH_START_IN_READ_ONLY_ENV = "MESH_START_IN_READ_ONLY";
 
 	// TODO remove this setting. There should not be a default max depth. This is no longer needed once we remove the expand all parameter
 	private int defaultMaxDepth = DEFAULT_MAX_DEPTH;
@@ -118,6 +119,11 @@ public class MeshOptions implements Option {
 	@EnvironmentVariable(name = MESH_NODE_NAME_ENV, description = "Override the configured node name.")
 	private String nodeName;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("If true, Gentics Mesh will be started in read only mode.")
+	@EnvironmentVariable(name = MESH_START_IN_READ_ONLY_ENV, description = "Override the read only mode flag.")
+	private boolean startInReadOnly = false;
+
 	/* EXTRA Command Line Arguments */
 	@JsonIgnore
 	@EnvironmentVariable(name = MESH_CLUSTER_INIT_ENV, description = "Enable or disable the initial cluster database setup. This is useful for testing.")
@@ -129,9 +135,6 @@ public class MeshOptions implements Option {
 
 	@JsonIgnore
 	private String adminPassword;
-
-	public MeshOptions() {
-	}
 
 	public String getDefaultLanguage() {
 		return defaultLanguage;
@@ -366,6 +369,15 @@ public class MeshOptions implements Option {
 
 	public MeshOptions setPluginTimeout(int pluginTimeout) {
 		this.pluginTimeout = pluginTimeout;
+		return this;
+	}
+
+	public boolean isStartInReadOnly() {
+		return startInReadOnly;
+	}
+
+	public MeshOptions setStartInReadOnly(boolean startInReadOnly) {
+		this.startInReadOnly = startInReadOnly;
 		return this;
 	}
 
