@@ -36,10 +36,19 @@ public class LocalConfigApi {
 		return setActiveConfig(localConfigModel).ignoreElement();
 	}
 
+	/**
+	 * Loads the local config currently active in this instance.
+	 * @return
+	 */
 	public Single<LocalConfigModel> getActiveConfig() {
 		return getMap().flatMap(map -> map.rxGet(LOCAL_CONFIG_KEY).toSingle());
 	}
 
+	/**
+	 * Sets the local config of this instance.
+	 * @param runtimeConfig
+	 * @return
+	 */
 	public Single<LocalConfigModel> setActiveConfig(LocalConfigModel runtimeConfig) {
 		return getMap()
 			.flatMap(map -> map.rxGet(LOCAL_CONFIG_KEY).toSingle(new LocalConfigModel())

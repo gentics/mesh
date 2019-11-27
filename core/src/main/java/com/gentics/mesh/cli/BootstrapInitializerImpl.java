@@ -563,9 +563,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			.collect(Collectors.toList()));
 
 		// Set read only mode
-		localConfigApi.init().blockingAwait();
+		localConfigApi.init()
+			.andThen(loader.get().loadVerticles(initialProjects))
+			.blockingAwait();
 
-		loader.get().loadVerticles(initialProjects).blockingAwait();
 		if (verticleLoader != null) {
 			verticleLoader.apply(vertx);
 		}
