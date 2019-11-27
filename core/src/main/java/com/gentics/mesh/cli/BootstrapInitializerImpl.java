@@ -465,8 +465,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		vertxOptions.getEventBusOptions().setClustered(options.getClusterOptions().isEnabled());
 		vertxOptions.setWorkerPoolSize(options.getVertxOptions().getWorkerPoolSize());
 		vertxOptions.setEventLoopPoolSize(options.getVertxOptions().getEventPoolSize());
-		// vertxOptions.setWorkerPoolSize(1);
-		// vertxOptions.setEventLoopPoolSize(1);
 
 		MonitoringConfig monitoringOptions = options.getMonitoringOptions();
 		if (monitoringOptions != null && monitoringOptions.isEnabled()) {
