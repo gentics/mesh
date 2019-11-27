@@ -29,6 +29,8 @@ include::content/docs/variables.adoc-include[]
 
 icon:plus[] Core: The amount of the deployed REST API verticles can now be link:{{< relref "administration-guide.asciidoc" >}}#_httpsssl[configured] and its default has been changed from 5 to 2 * CPU Cores.
 
+icon:plus[] Core: It is now possible to use Gentics Mesh in read only mode. Take a look at the link:{{< relref "administration-guide.asciidoc" >}}#readonly[documentation] for more information.
+
 icon:check[] REST: The `/health/live` and `/health/ready` endpoints have been added to the REST API. These endpoints are also available on the monitoring server, but adding them to the REST server makes it possible for load balancers to monitor the server on the same port that used to proxy the requests.
 
 [[v1.2.1]]
