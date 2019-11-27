@@ -35,6 +35,7 @@ public class DebugInfoTest extends AbstractMeshTest {
 		DebugInfo info = getDebugInfo();
 		Stream.of(
 			"log.txt",
+			"localConfig.json",
 			"config/hazelcast.xml",
 			"config/orientdb-server-config.xml",
 			"activeConfig.json",
@@ -64,6 +65,7 @@ public class DebugInfoTest extends AbstractMeshTest {
 	public void testInclusions() throws IOException {
 		DebugInfo info = getDebugInfo("consistencyCheck", "-log");
 		Stream.of(
+			"localConfig.json",
 			"consistencyCheck.json",
 			"config/hazelcast.xml",
 			"config/orientdb-server-config.xml",
