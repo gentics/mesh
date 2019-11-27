@@ -42,7 +42,7 @@ public class LocalConfigApi {
 
 	public Single<LocalConfigModel> setActiveConfig(LocalConfigModel runtimeConfig) {
 		return getMap()
-			.flatMap(map -> map.rxGet(LOCAL_CONFIG_KEY).toSingle()
+			.flatMap(map -> map.rxGet(LOCAL_CONFIG_KEY).toSingle(new LocalConfigModel())
 			.flatMap(oldConfig -> {
 				LocalConfigModel mergedConfig = PojoUtil.assignIgnoringNull(oldConfig, runtimeConfig);
 				return map.rxPut(LOCAL_CONFIG_KEY, mergedConfig)

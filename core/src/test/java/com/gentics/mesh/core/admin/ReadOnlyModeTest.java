@@ -3,6 +3,8 @@ package com.gentics.mesh.core.admin;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.PROJECT;
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import java.util.function.IntFunction;
 
@@ -16,13 +18,27 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.reactivex.Single;
+import io.vertx.core.json.pointer.JsonPointer;
 
 @MeshTestSetting(testSize = PROJECT, startServer = true)
 public class ReadOnlyModeTest extends AbstractMeshTest {
 
 	@After
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		setReadOnly(false);
+	}
+
+	@Test
+	public void testReadGraphQL() {
+		Single<Boolean> request = client().graphqlQuery(PROJECT_NAME, "{ mesh { localConfig { readOnly } } }")
+			.toSingle().map(response -> (Boolean)JsonPointer.from("/mesh/localConfig/readOnly").queryJson(response.getData()));
+
+		assertFalse(request.blockingGet());
+		setReadOnly(true);
+		assertTrue(request.blockingGet());
+		setReadOnly(false);
+		assertFalse(request.blockingGet());
 	}
 
 	@Test
