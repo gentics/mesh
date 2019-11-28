@@ -7,3 +7,4 @@ mesh.lock
 .classpath
 .factorypath
 dependency-reduced-pom.xml
+debuginfo
