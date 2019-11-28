@@ -15,10 +15,10 @@ import io.vertx.reactivex.core.shareddata.AsyncMap;
 
 @Singleton
 public class LocalConfigApi {
+	private static final String LOCAL_CONFIG_KEY = "localConfig";
 
 	private final Lazy<Vertx> vertx;
 	private final MeshOptions meshOptions;
-	private final String LOCAL_CONFIG_KEY = "localConfig";
 
 	@Inject
 	public LocalConfigApi(Lazy<Vertx> vertx, MeshOptions meshOptions) {

@@ -14,10 +14,14 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+/**
+ * Various utility methods regarding POJOs
+ */
 public final class PojoUtil {
+	private final static Pattern prefixRegex = Pattern.compile("^(get|set|is)(.*)");
+
 	private PojoUtil() {
 	}
-	private static Pattern prefixRegex = Pattern.compile("^(get|set|is)(.*)");
 
 	/**
 	 * Assigns properties to the first pojo from the other pojos similar to JavaScripts <code>Object.assign()</code>.
@@ -59,6 +63,7 @@ public final class PojoUtil {
 	 * @return
 	 */
 	public static <T> Stream<Property<T, ?>> getProperties(Class<T> clazz) {
+		// Maps property name to 2 methods: [0]: Getter, [1]: Setter
 		Map<String, Method[]> properties = new HashMap<>();
 		for (Method method : clazz.getMethods()) {
 			if (method.getAnnotation(JsonIgnore.class) != null || !Modifier.isPublic(method.getModifiers())) {

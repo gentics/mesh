@@ -1478,12 +1478,12 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 
 	@Override
 	public MeshRequest<LocalConfigModel> loadLocalConfig() {
-		return prepareRequest(GET, "/admin/localConfig", LocalConfigModel.class);
+		return prepareRequest(GET, "/admin/config", LocalConfigModel.class);
 	}
 
 	@Override
 	public MeshRequest<LocalConfigModel> updateLocalConfig(LocalConfigModel localConfigModel) {
-		return prepareRequest(POST, "/admin/localConfig", LocalConfigModel.class, localConfigModel);
+		return prepareRequest(POST, "/admin/config", LocalConfigModel.class, localConfigModel);
 	}
 
 	@Override

@@ -52,6 +52,8 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 
 	private static final Logger log = LoggerFactory.getLogger(InternalEndpointRoute.class);
 
+	private static final Set<HttpMethod> mutatingMethods = ImmutableSet.of(POST, PUT, DELETE);
+
 	private Route route;
 
 	private String displayName;
@@ -90,7 +92,6 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 	private Map<String, QueryParameter> parameters = new HashMap<>();
 
 	private Boolean mutating;
-	private static final Set<HttpMethod> mutatingMethods = ImmutableSet.of(POST, PUT, DELETE);
 
 	/**
 	 * Create a new endpoint wrapper using the provided router to create the wrapped route instance.

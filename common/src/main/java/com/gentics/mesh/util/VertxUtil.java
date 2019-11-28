@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.common.RestModel;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.SingleObserver;
 import io.reactivex.disposables.Disposable;
 
@@ -24,6 +25,19 @@ public final class VertxUtil {
 	 * @return
 	 */
 	public static SingleObserver<RestModel> restModelSender(InternalActionContext rc) {
+		return restModelSender(rc, OK);
+	}
+
+	/**
+	 * Sends a {@link RestModel} to the client. Propagates any error to the failure handler.
+	 *
+	 * Usage: <code>.subscribe(restModelSender(ac, OK))</code>
+	 *
+	 * @param rc
+	 * @param statusCode
+	 * @return
+	 */
+	public static SingleObserver<RestModel> restModelSender(InternalActionContext rc, HttpResponseStatus statusCode) {
 		return new SingleObserver<RestModel>() {
 			@Override
 			public void onSubscribe(Disposable d) {
@@ -31,7 +45,7 @@ public final class VertxUtil {
 
 			@Override
 			public void onSuccess(RestModel restModel) {
-				rc.send(restModel, OK);
+				rc.send(restModel, statusCode);
 			}
 
 			@Override

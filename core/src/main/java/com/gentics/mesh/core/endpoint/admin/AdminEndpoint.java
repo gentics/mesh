@@ -342,7 +342,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 
 	private void addRuntimeConfigHandler() {
 		InternalEndpointRoute getRoute = createRoute();
-		getRoute.path("/localConfig");
+		getRoute.path("/config");
 		getRoute.method(GET);
 		getRoute.produces(APPLICATION_JSON);
 		getRoute.description("Retrieves the currently active local configuration of this instance.");
@@ -350,7 +350,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		getRoute.handler(rc -> localConfigHandler.handleGetActiveConfig(wrap(rc)));
 
 		InternalEndpointRoute postRoute = createRoute();
-		postRoute.path("/localConfig");
+		postRoute.path("/config");
 		postRoute.method(POST);
 		postRoute.setMutating(false);
 		postRoute.produces(APPLICATION_JSON);
