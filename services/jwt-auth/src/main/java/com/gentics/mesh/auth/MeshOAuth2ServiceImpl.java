@@ -1,8 +1,9 @@
 package com.gentics.mesh.auth;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 
 import java.util.HashSet;
 import java.util.List;
@@ -25,6 +26,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
@@ -41,6 +43,8 @@ import com.gentics.mesh.plugin.auth.RoleFilter;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
+import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -70,16 +74,19 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	private final Provider<EventQueueBatch> batchProvider;
 
 	private final AuthHandlerContainer authHandlerContainer;
+	private final LocalConfigApi localConfigApi;
 
 	@Inject
 	public MeshOAuth2ServiceImpl(Database db, BootstrapInitializer boot, MeshOptions meshOptions,
-		Provider<EventQueueBatch> batchProvider, AuthServicePluginRegistry authPluginRegistry, AuthHandlerContainer authHandlerContainer) {
+								 Provider<EventQueueBatch> batchProvider, AuthServicePluginRegistry authPluginRegistry,
+								 AuthHandlerContainer authHandlerContainer, LocalConfigApi localConfigApi) {
 		this.db = db;
 		this.boot = boot;
 		this.batchProvider = batchProvider;
 		this.authPluginRegistry = authPluginRegistry;
 		this.authOptions = meshOptions.getAuthenticationOptions();
 		this.authHandlerContainer = authHandlerContainer;
+		this.localConfigApi = localConfigApi;
 	}
 
 	private JWTAuthHandler createJWTHandler() {
@@ -155,13 +162,14 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						return;
 					}
 				}
-				rc.setUser(syncUser(rc, token.principal()));
-
+				syncUser(rc, token.principal()).subscribe(syncedUser -> {
+					rc.setUser(syncedUser);
+					rc.next();
+				});
 			} else {
 				rc.fail(401);
 				return;
 			}
-			rc.next();
 		});
 	}
 
@@ -172,7 +180,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	 * @param token
 	 * @return
 	 */
-	protected MeshAuthUser syncUser(RoutingContext rc, JsonObject token) {
+	protected Single<MeshAuthUser> syncUser(RoutingContext rc, JsonObject token) {
 		Optional<String> usernameOpt = extractUsername(token);
 		if (!usernameOpt.isPresent()) {
 			throw new RuntimeException(
@@ -192,36 +200,46 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		String cachingId = currentTokenId;
 
 		EventQueueBatch batch = batchProvider.get();
-		MeshAuthUser authUser = db.tx(() -> {
-			UserRoot root = boot.userRoot();
-			MeshAuthUser user = root.findMeshAuthUserByUsername(username);
-			// Create the user if it can't be found.
-			if (user == null) {
-				com.gentics.mesh.core.data.User admin = root.findByUsername("admin");
-				com.gentics.mesh.core.data.User createdUser = root.create(username, admin);
-				admin.inheritRolePermissions(root, createdUser);
-
-				user = root.findMeshAuthUserByUsername(username);
-				String uuid = user.getUuid();
-				// Not setting uuid since the user has not yet been committed.
-				runPlugins(rc, batch, admin, user, null, token);
-				TOKEN_ID_LOG.put(uuid, cachingId);
-			} else {
-				// Compare the stored and current token id to see whether the current token is different.
-				// In that case a sync must be invoked.
-				String uuid = user.getUuid();
-				String lastSeenTokenId = TOKEN_ID_LOG.getIfPresent(user.getUuid());
-				if (lastSeenTokenId == null || !lastSeenTokenId.equals(cachingId)) {
-					com.gentics.mesh.core.data.User admin = root.findByUsername("admin");
+		return db.maybeTx(tx -> boot.userRoot().findMeshAuthUserByUsername(username))
+		.flatMapSingleElement(user -> db.singleTx(user::getUuid).flatMap(uuid -> {
+			// Compare the stored and current token id to see whether the current token is different.
+			// In that case a sync must be invoked.
+			String lastSeenTokenId = TOKEN_ID_LOG.getIfPresent(user.getUuid());
+			if (lastSeenTokenId == null || !lastSeenTokenId.equals(cachingId)) {
+				return assertReadOnlyDeactivated().andThen(db.asyncTx(() -> {
+					com.gentics.mesh.core.data.User admin = boot.userRoot().findByUsername("admin");
 					runPlugins(rc, batch, admin, user, uuid, token);
 					TOKEN_ID_LOG.put(uuid, cachingId);
-				}
+				})).andThen(Single.just(user));
 			}
-			return user;
-		});
-		batch.dispatch();
-		return authUser;
+			return Single.just(user);
+		}))
+		// Create the user if it can't be found.
+		.switchIfEmpty(assertReadOnlyDeactivated().andThen(db.singleTx(() -> {
+			UserRoot root = boot.userRoot();
+			com.gentics.mesh.core.data.User admin = root.findByUsername("admin");
+			com.gentics.mesh.core.data.User createdUser = root.create(username, admin);
+			admin.inheritRolePermissions(root, createdUser);
 
+			MeshAuthUser user = root.findMeshAuthUserByUsername(username);
+			String uuid = user.getUuid();
+			// Not setting uuid since the user has not yet been committed.
+			runPlugins(rc, batch, admin, user, null, token);
+			TOKEN_ID_LOG.put(uuid, cachingId);
+			return user;
+		})))
+		.doOnSuccess(ignore -> batch.dispatch());
+	}
+
+	private Completable assertReadOnlyDeactivated() {
+		return localConfigApi.getActiveConfig()
+			.flatMapCompletable(config -> {
+				if (config.isReadOnly()) {
+					return Completable.error(error(METHOD_NOT_ALLOWED, "error_readonly_mode"));
+				} else {
+					return Completable.complete();
+				}
+			});
 	}
 
 	private Optional<String> extractUsername(JsonObject token) {
