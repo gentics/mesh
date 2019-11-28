@@ -167,9 +167,9 @@ public interface Database extends TxFactory {
 	 * @return
 	 */
 	default <T> Maybe<T> maybeTx(Function<Tx, T> handler) {
-		return new io.vertx.reactivex.core.Vertx(vertx()).<T>rxExecuteBlocking(promise -> {
-			try (Tx tx = tx()) {
-				promise.complete(handler.apply(tx));
+		return new io.vertx.reactivex.core.Vertx(vertx()).rxExecuteBlocking(promise -> {
+			try {
+				promise.complete(tx(handler::apply));
 			} catch (Throwable e) {
 				promise.fail(e);
 			}

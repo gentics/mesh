@@ -165,7 +165,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				syncUser(rc, token.principal()).subscribe(syncedUser -> {
 					rc.setUser(syncedUser);
 					rc.next();
-				});
+				}, rc::fail);
 			} else {
 				rc.fail(401);
 				return;
@@ -235,7 +235,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		return localConfigApi.getActiveConfig()
 			.flatMapCompletable(config -> {
 				if (config.isReadOnly()) {
-					return Completable.error(error(METHOD_NOT_ALLOWED, "error_readonly_mode"));
+					return Completable.error(error(METHOD_NOT_ALLOWED, "error_readonly_mode_oauth"));
 				} else {
 					return Completable.complete();
 				}
