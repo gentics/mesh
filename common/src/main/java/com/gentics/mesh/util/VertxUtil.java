@@ -9,7 +9,7 @@ import io.reactivex.SingleObserver;
 import io.reactivex.disposables.Disposable;
 
 /**
- * Various utility functions regarding Vertx.
+ * Various utility functions regarding Vert.x
  */
 public final class VertxUtil {
 	private VertxUtil() {
