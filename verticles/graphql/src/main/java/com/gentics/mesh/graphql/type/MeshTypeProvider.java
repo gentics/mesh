@@ -85,7 +85,7 @@ public class MeshTypeProvider {
 
 		root.field(newFieldDefinition().name("config").description("The local configuration of this instance")
 			.type(new GraphQLObjectType.Builder()
-				.name("LocalConfiguration")
+				.name("Configuration")
 				.description("The local configuration of this instance")
 				.field(new GraphQLFieldDefinition.Builder()
 					.name("readOnly")
