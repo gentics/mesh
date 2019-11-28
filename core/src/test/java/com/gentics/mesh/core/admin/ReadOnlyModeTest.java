@@ -32,7 +32,7 @@ public class ReadOnlyModeTest extends AbstractMeshTest {
 	@Test
 	public void testReadGraphQL() {
 		Single<Boolean> request = client().graphqlQuery(PROJECT_NAME, "{ mesh { config { readOnly } } }")
-			.toSingle().map(response -> (Boolean)JsonPointer.from("/mesh/localConfig/readOnly").queryJson(response.getData()));
+			.toSingle().map(response -> (Boolean)JsonPointer.from("/mesh/config/readOnly").queryJson(response.getData()));
 
 		assertFalse(request.blockingGet());
 		setReadOnly(true);
