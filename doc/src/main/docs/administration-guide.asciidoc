@@ -411,7 +411,7 @@ A dump of all threads including all stack traces.
 [[readonly]]
 == Read Only Mode
 
-Gentics Mesh can be put into read only mode. In this mode, all requests that would change data (create, update, delete) are not allowed and return a `205´ status code instead.
+Gentics Mesh can be put into read only mode. In this mode, all requests that would change data (create, update, delete) are not allowed and return a `405´ status code instead.
 
 This is useful in cluster situations when having instances as replicas or when performing rolling updates.
 
