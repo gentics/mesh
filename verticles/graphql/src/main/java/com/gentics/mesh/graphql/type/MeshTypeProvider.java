@@ -83,7 +83,7 @@ public class MeshTypeProvider {
 			return VersionCommand.getVersion();
 		}));
 
-		root.field(newFieldDefinition().name("localConfig").description("The local configuration of this instance")
+		root.field(newFieldDefinition().name("config").description("The local configuration of this instance")
 			.type(new GraphQLObjectType.Builder()
 				.name("LocalConfiguration")
 				.description("The local configuration of this instance")
