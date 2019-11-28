@@ -30,7 +30,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.vertx.core.http.HttpHeaders.HOST;
 import static io.vertx.core.http.HttpHeaders.LOCATION;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -264,7 +263,10 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testAPIToken() {
 		String uuid = tx(() -> user().getUuid());
-		UserAPITokenResponse response = call(() -> client().issueAPIToken(uuid));
+		MeshResponse<UserAPITokenResponse> completeResponse = client().issueAPIToken(uuid).getResponse().blockingGet();
+		assertThat(completeResponse.getHeader("Cache-Control")).hasValue("private");
+
+		UserAPITokenResponse response = completeResponse.getBody();
 		assertNull("The key was previously not issued.", response.getPreviousIssueDate());
 		assertThat(response.getToken()).isNotEmpty();
 

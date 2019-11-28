@@ -239,14 +239,7 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 
 			@Override
 			public T getBody() {
-				return getHeader("Content-Length")
-					.map(len -> {
-						if (Long.parseLong(len) > 0) {
-							return body.get();
-						} else {
-							return null;
-						}
-					}).orElse(null);
+				return body.get();
 			}
 		});
 	}

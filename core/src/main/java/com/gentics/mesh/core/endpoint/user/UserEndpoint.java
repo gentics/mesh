@@ -25,6 +25,8 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
+import io.vertx.core.http.HttpHeaders;
+
 public class UserEndpoint extends AbstractInternalEndpoint {
 
 	private UserCrudHandler crudHandler;
@@ -73,6 +75,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("userUuid");
+			rc.response().headers().set(HttpHeaders.CACHE_CONTROL, "private");
 			crudHandler.handleIssueAPIToken(ac, uuid);
 		});
 
