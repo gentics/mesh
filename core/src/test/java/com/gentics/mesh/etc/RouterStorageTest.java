@@ -20,6 +20,7 @@ import io.vertx.ext.web.ParsedHeaderValues;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.impl.RouteImpl;
+import io.vertx.ext.web.impl.RoutingContextImplBase;
 
 public class RouterStorageTest {
 
@@ -31,7 +32,7 @@ public class RouterStorageTest {
 			return Mockito.mock(Database.class);
 		}, null, routerStorageRegistry);
 
-		RoutingContext rc = mock(RoutingContext.class);
+		RoutingContext rc = mock(RoutingContextImplBase.class);
 		Route currentRoute = mock(RouteImpl.class);
 		when(currentRoute.getPath()).thenReturn("/blub");
 		when(rc.currentRoute()).thenReturn(currentRoute);
