@@ -31,6 +31,8 @@ icon:plus[] Core: The amount of the deployed REST API verticles can now be link:
 
 icon:check[] REST: The `/health/live` and `/health/ready` endpoints have been added to the REST API. These endpoints are also available on the monitoring server, but adding them to the REST server makes it possible for load balancers to monitor the server on the same port that used to proxy the requests.
 
+icon:plus[] Core: The core Vert.x library was updated to version `3.8.4`.
+
 [[v1.2.1]]
 == 1.2.1 (22.11.2019)
 
