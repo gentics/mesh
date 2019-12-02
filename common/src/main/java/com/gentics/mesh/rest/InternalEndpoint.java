@@ -3,14 +3,15 @@ package com.gentics.mesh.rest;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.example.AdminExamples;
+import com.gentics.mesh.example.BranchExamples;
 import com.gentics.mesh.example.GraphQLExamples;
 import com.gentics.mesh.example.GroupExamples;
 import com.gentics.mesh.example.JobExamples;
+import com.gentics.mesh.example.LocalConfigExamples;
 import com.gentics.mesh.example.MicroschemaExamples;
 import com.gentics.mesh.example.MiscExamples;
 import com.gentics.mesh.example.NodeExamples;
 import com.gentics.mesh.example.ProjectExamples;
-import com.gentics.mesh.example.BranchExamples;
 import com.gentics.mesh.example.RoleExamples;
 import com.gentics.mesh.example.SchemaExamples;
 import com.gentics.mesh.example.TagExamples;
@@ -42,6 +43,7 @@ public interface InternalEndpoint {
 	JobExamples jobExamples = new JobExamples();
 	BranchExamples branchExamples = new BranchExamples();
 	UtilityExamples utilityExamples = new UtilityExamples();
+	LocalConfigExamples localConfig = new LocalConfigExamples();
 
 	/**
 	 * Create a new endpoint. Internally a new route will be wrapped.

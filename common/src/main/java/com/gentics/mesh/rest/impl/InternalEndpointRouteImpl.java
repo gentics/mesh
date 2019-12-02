@@ -1,7 +1,11 @@
 package com.gentics.mesh.rest.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
+import static io.vertx.core.http.HttpMethod.DELETE;
+import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.core.http.HttpMethod.PUT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.ArrayList;
@@ -11,6 +15,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,11 +28,13 @@ import org.raml.model.parameter.Header;
 import org.raml.model.parameter.QueryParameter;
 import org.raml.model.parameter.UriParameter;
 
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.google.common.collect.ImmutableSet;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
@@ -44,6 +51,8 @@ import io.vertx.ext.web.RoutingContext;
 public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 
 	private static final Logger log = LoggerFactory.getLogger(InternalEndpointRoute.class);
+
+	private static final Set<HttpMethod> mutatingMethods = ImmutableSet.of(POST, PUT, DELETE);
 
 	private Route route;
 
@@ -82,13 +91,29 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 
 	private Map<String, QueryParameter> parameters = new HashMap<>();
 
+	private Boolean mutating;
+
 	/**
 	 * Create a new endpoint wrapper using the provided router to create the wrapped route instance.
-	 * 
+	 *
 	 * @param router
+	 * @param localConfigApi
 	 */
-	public InternalEndpointRouteImpl(Router router) {
+	public InternalEndpointRouteImpl(Router router, LocalConfigApi localConfigApi) {
 		this.route = router.route();
+		route.handler(rc -> {
+			if (!isMutating()) {
+				rc.next();
+			} else {
+				localConfigApi.getActiveConfig().subscribe(config -> {
+					if (config.isReadOnly()) {
+						rc.fail(error(HttpResponseStatus.METHOD_NOT_ALLOWED, "error_readonly_mode"));
+					} else {
+						rc.next();
+					}
+				});
+			}
+		});
 	}
 
 	@Override
@@ -471,4 +496,17 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 		return events;
 	}
 
+	@Override
+	public boolean isMutating() {
+		return Optional.ofNullable(mutating)
+			.orElse(Optional.ofNullable(getMethod())
+				.map(mutatingMethods::contains)
+				.orElse(false));
+	}
+
+	@Override
+	public InternalEndpointRouteImpl setMutating(Boolean mutating) {
+		this.mutating = mutating;
+		return this;
+	}
 }

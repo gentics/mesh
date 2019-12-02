@@ -63,6 +63,7 @@ public class AuthenticationEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute loginEndpoint = createRoute();
 		loginEndpoint.path("/login");
 		loginEndpoint.method(POST);
+		loginEndpoint.setMutating(false);
 		loginEndpoint.consumes(APPLICATION_JSON);
 		loginEndpoint.produces(APPLICATION_JSON);
 		loginEndpoint.description("Login via this dedicated login endpoint.");

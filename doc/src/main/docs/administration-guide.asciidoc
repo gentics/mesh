@@ -408,6 +408,21 @@ Query name: `threadDump`
 
 A dump of all threads including all stack traces.
 
+[[readonly]]
+== Read Only Mode
+
+Gentics Mesh can be put into read only mode. In this mode, all requests that would change data (create, update, delete) are not allowed and return a `405´ status code instead.
+
+This is useful in cluster situations when having instances as replicas or when performing rolling updates.
+
+=== Activating Read Only Mode
+
+Read only mode can be activated in one of the following ways:
+
+* Setting the entry `startInReadOnly` to `true` in the link:#conf[configuration file] before starting will start Gentics Mesh in read only mode.
+* Setting the environment variable `MESH_START_IN_READ_ONLY` to `true` before starting will start Gentics Mesh in read only mode.
+* Using the link:https://getmesh.io/docs/api/#admin_localConfig_post[REST API]. Changing read only mode in this way will take immediate effect.
+
 == link:{{< relref "changelog.asciidoc" >}}[Changelog]
 
 == Update handling

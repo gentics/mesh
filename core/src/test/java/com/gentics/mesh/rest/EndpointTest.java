@@ -19,7 +19,7 @@ public class EndpointTest {
 		Router router = mock(Router.class);
 		Route route = mock(Route.class);
 		when(router.route()).thenReturn(route);
-		InternalEndpointRoute e = new InternalEndpointRouteImpl(router);
+		InternalEndpointRoute e = new InternalEndpointRouteImpl(router, null);
 
 		when(route.getPath()).thenReturn("/:bla/:blub/:blar");
 		assertEquals("/{bla}/{blub}/{blar}", e.getRamlPath());

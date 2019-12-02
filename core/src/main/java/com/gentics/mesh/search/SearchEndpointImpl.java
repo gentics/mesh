@@ -200,6 +200,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);
+		endpoint.setMutating(false);
 		endpoint.description("Invoke a search query for " + typeName + " and return a paged list response.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);

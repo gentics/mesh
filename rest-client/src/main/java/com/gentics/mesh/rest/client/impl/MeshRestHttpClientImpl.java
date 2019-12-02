@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
+import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchListResponse;
@@ -1473,6 +1474,16 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	@Override
 	public MeshRequest<EmptyResponse> live() {
 		return prepareRequest(GET, "/health/live", EmptyResponse.class);
+	}
+
+	@Override
+	public MeshRequest<LocalConfigModel> loadLocalConfig() {
+		return prepareRequest(GET, "/admin/config", LocalConfigModel.class);
+	}
+
+	@Override
+	public MeshRequest<LocalConfigModel> updateLocalConfig(LocalConfigModel localConfigModel) {
+		return prepareRequest(POST, "/admin/config", LocalConfigModel.class, localConfigModel);
 	}
 
 	@Override

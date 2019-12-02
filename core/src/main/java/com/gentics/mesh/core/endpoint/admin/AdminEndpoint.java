@@ -48,14 +48,17 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 
 	private DebugInfoHandler debugInfoHandler;
 
+	private LocalConfigHandler localConfigHandler;
+
 	@Inject
-	public AdminEndpoint(MeshAuthChain chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler, PluginHandler pluginHandler, DebugInfoHandler debugInfoHandler) {
+	public AdminEndpoint(MeshAuthChain chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler, PluginHandler pluginHandler, DebugInfoHandler debugInfoHandler, LocalConfigHandler localConfigHandler) {
 		super("admin", chain);
 		this.adminHandler = adminHandler;
 		this.jobHandler = jobHandler;
 		this.consistencyHandler = consistencyHandler;
 		this.pluginHandler = pluginHandler;
 		this.debugInfoHandler = debugInfoHandler;
+		this.localConfigHandler = localConfigHandler;
 	}
 
 	public AdminEndpoint() {
@@ -85,6 +88,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		addJobHandler();
 		addPluginHandler();
 		addDebugInfoHandler();
+		addRuntimeConfigHandler();
 	}
 
 	private void addPluginHandler() {
@@ -184,6 +188,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/graphdb/export");
 		endpoint.method(POST);
+		endpoint.setMutating(false);
 		endpoint.description("Invoke a orientdb graph database export.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Export process was invoked.");
@@ -225,6 +230,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/graphdb/backup");
 		endpoint.method(POST);
+		endpoint.setMutating(false);
 		endpoint.description(
 			"Invoke a graph database backup and dump the data to the configured backup location. Note that this operation will block all current operation.");
 		endpoint.produces(APPLICATION_JSON);
@@ -332,5 +338,24 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		route.method(GET);
 		route.description("Downloads a zip file of various debug information files.");
 		route.handler(rc -> debugInfoHandler.handle(rc));
+	}
+
+	private void addRuntimeConfigHandler() {
+		InternalEndpointRoute getRoute = createRoute();
+		getRoute.path("/config");
+		getRoute.method(GET);
+		getRoute.produces(APPLICATION_JSON);
+		getRoute.description("Retrieves the currently active local configuration of this instance.");
+		getRoute.exampleResponse(OK, localConfig.createExample(), "The currently active local configuration");
+		getRoute.handler(rc -> localConfigHandler.handleGetActiveConfig(wrap(rc)));
+
+		InternalEndpointRoute postRoute = createRoute();
+		postRoute.path("/config");
+		postRoute.method(POST);
+		postRoute.setMutating(false);
+		postRoute.produces(APPLICATION_JSON);
+		postRoute.description("Sets the currently active local configuration of this instance.");
+		postRoute.exampleResponse(OK, localConfig.createExample(), "The currently active local configuration");
+		postRoute.handler(rc -> localConfigHandler.handleSetActiveConfig(wrap(rc)));
 	}
 }

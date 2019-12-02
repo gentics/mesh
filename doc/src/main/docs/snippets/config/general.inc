@@ -6,4 +6,5 @@
 | ```verticles```          | List   | -        | List of Vert.x java verticle classes which will be loaded during startup.
 | ```tempDirectory```      | Path   | data/tmp | Path to the main temporary filesystem directory.
 | ```languagesFilePath```  | Path   | -        | Optional path to a JSON file containing additional languages.
+| ```startInReadOnly```    | Flag   | false    | If true, Gentics Mesh will be started in read only mode.
 |======

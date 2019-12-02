@@ -7,6 +7,7 @@ import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.ConfigProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.ConsistencyCheckProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.DatabaseDumpProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.EntitiesProvider;
+import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.LocalConfigProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.LogProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.MigrationStatusProvider;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.providers.PluginsProvider;
@@ -56,4 +57,7 @@ public abstract class DebugInfoProviderModule {
 
 	@Binds @IntoSet
 	public abstract DebugInfoProvider databaseDumpProvider(DatabaseDumpProvider provider);
+
+	@Binds @IntoSet
+	public abstract DebugInfoProvider localConfigProvider(LocalConfigProvider provider);
 }

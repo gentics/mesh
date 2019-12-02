@@ -2,6 +2,7 @@ package com.gentics.mesh.auth;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -15,6 +16,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.auth.util.KeycloakUtils;
+import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -256,4 +258,24 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 
 	}
 
+	@Test
+	public void testReadOnlyMode() throws Exception {
+		setClientTokenFromKeycloak();
+		call(() -> client().me());
+		setReadOnly(true);
+		// No changes to token
+		call(() -> client().me());
+
+		setClientTokenFromKeycloak();
+		call(() -> client().me(), METHOD_NOT_ALLOWED, "error_readonly_mode_oauth");
+		setReadOnly(false);
+		call(() -> client().me());
+	}
+
+	private void setReadOnly(boolean readOnly) {
+		String key = client().getAPIKey();
+		setAdminToken();
+		call(() -> client().updateLocalConfig(new LocalConfigModel().setReadOnly(readOnly)));
+		client().setAPIKey(key);
+	}
 }

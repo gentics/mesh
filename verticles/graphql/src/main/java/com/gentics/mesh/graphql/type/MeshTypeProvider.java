@@ -1,7 +1,9 @@
 package com.gentics.mesh.graphql.type;
 
+import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLNonNull.nonNull;
 import static graphql.schema.GraphQLObjectType.newObject;
 
 import javax.inject.Inject;
@@ -9,6 +11,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 
@@ -29,11 +32,14 @@ public class MeshTypeProvider {
 
 	private final BootstrapInitializer boot;
 
+	private final LocalConfigApi localConfigApi;
+
 	@Inject
-	public MeshTypeProvider(BootstrapInitializer boot, Database db, SearchProvider searchProvider) {
+	public MeshTypeProvider(BootstrapInitializer boot, Database db, SearchProvider searchProvider, LocalConfigApi localConfigApi) {
 		this.boot = boot;
 		this.db = db;
 		this.searchProvider = searchProvider;
+		this.localConfigApi = localConfigApi;
 	}
 
 	public GraphQLObjectType createType() {
@@ -76,6 +82,19 @@ public class MeshTypeProvider {
 		root.field(newFieldDefinition().name("vertxVersion").description("Vert.x version").type(GraphQLString).dataFetcher((env) -> {
 			return VersionCommand.getVersion();
 		}));
+
+		root.field(newFieldDefinition().name("config").description("The local configuration of this instance")
+			.type(new GraphQLObjectType.Builder()
+				.name("Configuration")
+				.description("The local configuration of this instance")
+				.field(new GraphQLFieldDefinition.Builder()
+					.name("readOnly")
+					.description("If true, Gentics Mesh currently runs in read only mode.")
+					.type(nonNull(GraphQLBoolean))
+				)
+			)
+			.dataFetcher(env -> localConfigApi.getActiveConfig().blockingGet()));
+
 		return root.build();
 	}
 

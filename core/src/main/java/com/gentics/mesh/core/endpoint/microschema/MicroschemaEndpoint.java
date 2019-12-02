@@ -64,6 +64,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 		endpoint.path("/:microschemaUuid/diff");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", MICROSCHEMA_UUID);
 		endpoint.method(POST);
+		endpoint.setMutating(false);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaCreateRequest());
