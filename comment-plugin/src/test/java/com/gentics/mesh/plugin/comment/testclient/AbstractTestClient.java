@@ -177,11 +177,6 @@ public class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<MeshBinaryResponse> debugInfo(String... strings) {
-		return null;
-	}
-
-	@Override
 	public MeshRequest<MeshServerInfoModel> getApiInfo() {
 		throw new NotImplementedException();
 	}
@@ -1141,6 +1136,11 @@ public class AbstractTestClient implements MeshRestClient {
 
 	@Override
 	public <R > MeshRequest<R> delete(String path, Class<R> responseClass) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<MeshBinaryResponse> debugInfo(String... include) {
 		throw new NotImplementedException();
 	}
 }

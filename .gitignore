@@ -8,3 +8,4 @@ mesh.lock
 .factorypath
 dependency-reduced-pom.xml
 debuginfo
+*.orig

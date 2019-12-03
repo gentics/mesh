@@ -2,3 +2,4 @@
 JobContext.set(this)
 
 javaPipeline sonarHost: "https://sonarqube.apa.at", sonarTokenKey: "SONARCUBE_TOKEN", sonarProjectKey: "mesh-commercial-plugins", sonarOrg: null
+
