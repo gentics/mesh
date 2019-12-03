@@ -37,6 +37,8 @@ icon:plus[] Core: The core Vert.x library was updated to version `3.8.4`.
 
 icon:plus[] Core: The core plugin framework library was updated to version `2.1.0`.
 
+icon:check[] REST: The schema and microschema update requests now respond with the updated schema.
+
 [[v1.2.1]]
 == 1.2.1 (22.11.2019)
 
