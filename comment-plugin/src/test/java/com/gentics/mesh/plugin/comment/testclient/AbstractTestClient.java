@@ -1138,4 +1138,9 @@ public class AbstractTestClient implements MeshRestClient {
 	public <R extends RestModel> MeshRequest<R> delete(String path, Class<R> responseClass) {
 		throw new NotImplementedException();
 	}
+
+	@Override
+	public MeshRequest<MeshBinaryResponse> debugInfo(String... include) {
+		throw new NotImplementedException();
+	}
 }
