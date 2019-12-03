@@ -35,6 +35,8 @@ icon:check[] REST: The `/health/live` and `/health/ready` endpoints have been ad
 
 icon:plus[] Core: The core Vert.x library was updated to version `3.8.4`.
 
+icon:plus[] Core: The core plugin framework library was updated to version `2.1.0`.
+
 [[v1.2.1]]
 == 1.2.1 (22.11.2019)
 
