@@ -31,6 +31,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -416,11 +417,43 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	protected GraphQLFieldDefinition newElementField(String name, String description, Function<GraphQLContext, RootVertex<?>> rootProvider,
-		String elementType) {
-		return newFieldDefinition().name(name).description(description).argument(createUuidArg("Uuid of the " + name + ".")).argument(createNameArg(
-			"Name of the " + name + ".")).type(new GraphQLTypeReference(elementType)).dataFetcher(env -> {
+													 String elementType) {
+		return newElementField(name, description, rootProvider, elementType, false);
+	}
+
+	/**
+	 * Create a new elements field which automatically allows to resolve the element using it's name or uuid.
+	 * 
+	 * @param name
+	 *            Name of the field
+	 * @param description
+	 *            Description of the field
+	 * @param rootProvider
+	 *            Function which will return the root vertex which is used to load the element
+	 * @param elementType
+	 *            Type name of the element which can be loaded
+	 * @param hidePermissionsErrors
+	 * 			  Does not show errors if the permission is missing. Useful for sensitive data (ex. fetching users by name)
+	 * @return
+	 */
+	protected GraphQLFieldDefinition newElementField(String name, String description, Function<GraphQLContext, RootVertex<?>> rootProvider,
+		String elementType, boolean hidePermissionsErrors) {
+		return newFieldDefinition()
+			.name(name)
+			.description(description)
+			.argument(createUuidArg("Uuid of the " + name + "."))
+			.argument(createNameArg("Name of the " + name + "."))
+			.type(new GraphQLTypeReference(elementType)).dataFetcher(env -> {
 				GraphQLContext gc = env.getContext();
-				return handleUuidNameArgs(env, rootProvider.apply(gc));
+				if (hidePermissionsErrors) {
+					try {
+						return handleUuidNameArgs(env, rootProvider.apply(gc));
+					} catch (PermissionException e) {
+						return null;
+					}
+				} else {
+					return handleUuidNameArgs(env, rootProvider.apply(gc));
+				}
 			}).build();
 	}
 

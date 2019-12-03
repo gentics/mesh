@@ -1,9 +1,10 @@
 package com.gentics.mesh.assertj.impl;
 
-import com.gentics.mesh.rest.client.MeshRestClientMessageException;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+
 import org.assertj.core.api.AbstractAssert;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 
 public class MeshRestClientMessageExceptionAssert extends AbstractAssert<MeshRestClientMessageExceptionAssert, MeshRestClientMessageException> {
 
@@ -16,7 +17,8 @@ public class MeshRestClientMessageExceptionAssert extends AbstractAssert<MeshRes
 		return this;
 	}
 
-	public MeshRestClientMessageExceptionAssert hasMessageKey(String key) {
+	public MeshRestClientMessageExceptionAssert hasMessage(String message) {
+		assertThat(actual.getResponseMessage().getMessage()).isEqualTo(message);
 		return this;
 	}
 }
