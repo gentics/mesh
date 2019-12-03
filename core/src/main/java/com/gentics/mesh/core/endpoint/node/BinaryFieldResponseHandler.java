@@ -101,7 +101,7 @@ public class BinaryFieldResponseHandler {
 
 		response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
 
-		addContentDispositionHeader(response, fileName, "attachment");
+		addContentDispositionHeader(response, fileName);
 
 		// Set to IDENTITY to avoid gzip compression
 		response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
@@ -141,19 +141,19 @@ public class BinaryFieldResponseHandler {
 				// Set to IDENTITY to avoid gzip compression
 				response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
 
-				addContentDispositionHeader(response, fileName, "inline");
+				addContentDispositionHeader(response, fileName);
 
 				response.sendFile(cachedFilePath);
 			}))
 			.subscribe(ignore -> {}, rc::fail);
 	}
 
-	private void addContentDispositionHeader(HttpServerResponse response, String fileName, String type) {
+	private void addContentDispositionHeader(HttpServerResponse response, String fileName) {
 		String encodedFileNameUTF8 = EncodeUtil.encodeForRFC5597(fileName);
 		String encodedFileNameISO = EncodeUtil.toISO88591(fileName);
 
 		StringBuilder value = new StringBuilder();
-		value.append(type + ";");
+		value.append("attachment;");
 		value.append(" filename=\"" + encodedFileNameISO + "\";");
 		value.append(" filename*=" + encodedFileNameUTF8);
 		response.putHeader("content-disposition", value.toString());

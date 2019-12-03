@@ -15,13 +15,13 @@ public final class HttpConstants {
 
 	public static final String IF_NONE_MATCH = HttpHeaders.IF_NONE_MATCH.toString();
 
-	public static final String APPLICATION_JSON = "application/json";
+	public static final String APPLICATION_JSON = "application/json; charset=utf-8";
 
-	public static final String APPLICATION_JSON_UTF8 = APPLICATION_JSON + "; charset=utf-8";
+	public static final String APPLICATION_JSON_UTF8 = APPLICATION_JSON;
 
-	public static final String APPLICATION_YAML = "application/x-yaml";
+	public static final String APPLICATION_YAML = "application/x-yaml; charset=utf-8";
 
-	public static final String APPLICATION_YAML_UTF8 = APPLICATION_YAML + "; charset=utf-8";
+	public static final String APPLICATION_YAML_UTF8 = APPLICATION_YAML;
 
 	public static final String APPLICATION_XML = "application/xml";
 
