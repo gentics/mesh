@@ -147,13 +147,15 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 			return JsonUtil.readValue(response.body().string(), resultClass);
 		} else if (resultClass.isAssignableFrom(String.class)) {
 			return (T) response.body().string();
+		} else if (response.code() == 304) {
+			return null;
 		} else {
 			throw new RuntimeException("Request can't be handled by this handler since the content type was {" + contentType + "}");
 		}
 	}
 
 	private void throwOnError(Response response) throws IOException, MeshRestClientMessageException {
-		if (!response.isSuccessful()) {
+		if (!response.isSuccessful() && response.code() != 304) {
 			String body = response.body().string();
 			MeshRestClientMessageException err;
 			try {
