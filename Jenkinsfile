@@ -1,4 +1,4 @@
 @Library('jenkins-pipeline-library') import com.gentics.*
 JobContext.set(this)
 
-javaPipeline()
+javaPipeline sonarHost: "https://sonarqube.apa.at", sonarTokenKey: "SONARCUBE_TOKEN", sonarProjectKey: "mesh-commercial-plugins", sonarOrg: null
