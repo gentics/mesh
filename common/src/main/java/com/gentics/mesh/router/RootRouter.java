@@ -6,6 +6,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.router.route.DefaultNotFoundHandler;
 import com.gentics.mesh.router.route.FailureHandler;
 import com.gentics.mesh.router.route.PoweredByHandler;
+import com.gentics.mesh.router.route.SecurityLoggingHandler;
 
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
@@ -40,6 +41,7 @@ public class RootRouter {
 		router.route().last().handler(DefaultNotFoundHandler.create());
 		router.route().failureHandler(FailureHandler.create());
 		router.route().handler(PoweredByHandler.create());
+		router.route().handler(SecurityLoggingHandler.create());
 		router.route(API_MOUNTPOINT).handler(storage.versionHandler);
 
 		this.apiRouter = new APIRouter(vertx, this, options);

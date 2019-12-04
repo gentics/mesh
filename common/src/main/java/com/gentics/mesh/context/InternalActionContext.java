@@ -1,5 +1,7 @@
 package com.gentics.mesh.context;
 
+import java.util.Set;
+
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -7,14 +9,15 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.parameter.ParameterProviderContext;
+import com.gentics.mesh.router.route.SecurityLoggingHandler;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
+import io.vertx.core.spi.logging.LogDelegate;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
-
-import java.util.Set;
 
 /**
  * A internal action context exposes various internal method which an API action context would normally not dare to expose.
@@ -166,5 +169,13 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	 */
 	default int getApiVersion() {
 		return get(VersionHandler.API_VERSION_CONTEXT_KEY);
+	}
+
+	/**
+	 * A logger which also logs additional user information. Should be used for logging security related messages.
+	 * @return
+	 */
+	default LogDelegate getSecurityLogger() {
+		return get(SecurityLoggingHandler.SECURITY_LOGGER_CONTEXT_KEY);
 	}
 }
