@@ -861,8 +861,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// TODO figure out a way to avoid the encode call during test execution. This will otherwise slow down tests big time.
 				String hash = passwordEncoder.encode(pw);
 				adminUser.setPasswordHash(hash);
-				// TODO forcing pw change for demo is not ideal. We need a way to avoid this.
-				adminUser.setForcedPasswordChange(true);
+				if (config.isForceInitialAdminPasswordReset()) {
+					adminUser.setForcedPasswordChange(true);
+				}
 				log.debug("Created admin user {" + adminUser.getUuid() + "}");
 			}
 

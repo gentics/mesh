@@ -34,6 +34,7 @@ public class MeshOptions implements Option {
 	public static final String MESH_LOCK_PATH_ENV = "MESH_LOCK_PATH";
 	public static final String MESH_START_IN_READ_ONLY_ENV = "MESH_START_IN_READ_ONLY";
 	public static final String MESH_INITIAL_ADMIN_PASSWORD_ENV = "MESH_INITIAL_ADMIN_PASSWORD";
+	public static final String MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV = "MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET";
 
 	// TODO remove this setting. There should not be a default max depth. This is no longer needed once we remove the expand all parameter
 	private int defaultMaxDepth = DEFAULT_MAX_DEPTH;
@@ -136,8 +137,12 @@ public class MeshOptions implements Option {
 	private String lockPath = "mesh.lock";
 
 	@JsonIgnore
-	@EnvironmentVariable(name = MESH_INITIAL_ADMIN_PASSWORD_ENV, description = "Password which will be used during initial database setup.")
+	@EnvironmentVariable(name = MESH_INITIAL_ADMIN_PASSWORD_ENV, description = "Password which will be used during initial admin user creation.")
 	private String initialAdminPassword = PasswordUtil.humanPassword();
+
+	@JsonIgnore
+	@EnvironmentVariable(name = MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV, description = "Control whether a forced password reset should be triggered when creating the initial admin user. Default: true")
+	private boolean forceInitialAdminPasswordReset = true;
 
 	@JsonIgnore
 	private String adminPassword;
@@ -377,6 +382,17 @@ public class MeshOptions implements Option {
 	@JsonIgnore
 	public MeshOptions setInitialAdminPassword(String initialAdminPassword) {
 		this.initialAdminPassword = initialAdminPassword;
+		return this;
+	}
+
+	@JsonIgnore
+	public boolean isForceInitialAdminPasswordReset() {
+		return forceInitialAdminPasswordReset;
+	}
+
+	@JsonIgnore
+	public MeshOptions setForceInitialAdminPasswordReset(boolean forceInitialAdminPasswordReset) {
+		this.forceInitialAdminPasswordReset = forceInitialAdminPasswordReset;
 		return this;
 	}
 
