@@ -48,6 +48,13 @@
 
 	<profiles>
 		<profile>
+			<id>gentics.gpg</id>
+			<properties>
+				<gpg.keyname>${env.gpgKeyName}</gpg.keyname>
+				<gpg.passphrase>${env.gpgKeyPass}</gpg.passphrase>
+			</properties>
+		</profile>
+		<profile>
 			<id>misc</id>
 			<properties>
 				<JAVA_1_8_HOME>/usr/lib/jvm/java-8-oracle</JAVA_1_8_HOME>
@@ -56,5 +63,6 @@
 	</profiles>
 	<activeProfiles>
 		<activeProfile>misc</activeProfile>
+		<activeProfile>gentics.gpg</activeProfile>
 	</activeProfiles>
 </settings>

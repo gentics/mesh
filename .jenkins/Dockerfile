@@ -4,13 +4,19 @@ MAINTAINER Johannes Schüth <j.schueth@gentics.com>
 USER root
 
 # APT
-RUN echo 'deb http://debian.apa.at/debian stretch main contrib non-free' > /etc/apt/sources.list
-RUN echo 'deb http://debian.apa.at/debian stretch-backports main' >> /etc/apt/sources.list
-RUN echo 'deb http://security.debian.org/ stretch/updates main contrib' >> /etc/apt/sources.list
-
-RUN apt-get update && apt-get -y upgrade && apt-get install -y git-core gawk sed wget curl sudo \
-  less vim curl tar wget sed psmisc file pwgen locales zip unzip software-properties-common devscripts \
-  bzip2 rsync
+RUN echo 'deb http://debian.apa.at/debian buster main contrib non-free' > /etc/apt/sources.list && \
+   echo 'deb http://debian.apa.at/debian buster-backports main' >> /etc/apt/sources.list && \
+   echo 'deb http://security.debian.org/ buster/updates main contrib' >> /etc/apt/sources.list && \
+   echo 'deb http://security.debian.org/debian-security buster/updates main contrib' >> /etc/apt/sources.list && \
+   apt-get update  && \
+   apt-get -y upgrade && \
+   apt-get install -y git-core gawk sed wget curl sudo \
+                      less vim curl tar wget sed psmisc \
+                      file pwgen locales zip unzip \
+                      software-properties-common devscripts \
+                      bzip2 rsync gpg && \
+   apt-get clean && \
+   rm -Rf /var/lib/apt/lists/*
 
 # Maven
 RUN cd /opt && wget -nv -O maven.tar.gz "http://mirror.klaus-uwe.me/apache/maven/maven-3/3.6.1/binaries/apache-maven-3.6.1-bin.tar.gz" && \
@@ -86,10 +92,6 @@ RUN chown jenkins: /opt -R
 RUN groupadd -g 117 docker && usermod -aG docker jenkins
 
 ENV LANG en_US.UTF-8
-
-# Add credentials
-#RUN sudo -u jenkins gpg --import /home/jenkins/credentials/gpg/gentics/gpg-key.asc
-#RUN sudo -u jenkins gpg --import /home/jenkins/credentials/gpg/gentics/gpg-secret-key.asc
 
 USER jenkins
 
