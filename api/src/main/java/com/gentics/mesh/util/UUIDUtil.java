@@ -3,15 +3,10 @@ package com.gentics.mesh.util;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import com.fasterxml.uuid.Generators;
-import com.fasterxml.uuid.impl.RandomBasedGenerator;
-
 /**
  * Main source for UUIDs. The UUIDs are shorted in order to better utilize the database indices.
  */
 public final class UUIDUtil {
-
-	public static final RandomBasedGenerator UUID_GENERATOR = Generators.randomBasedGenerator();
 
 	private static Pattern p = Pattern.compile("^[A-Fa-f0-9]+$");
 
@@ -45,7 +40,7 @@ public final class UUIDUtil {
 	 * @return
 	 */
 	public static String randomUUID() {
-		final UUID uuid = UUID_GENERATOR.generate();
+		final UUID uuid = UUID.randomUUID();
 		return (digits(uuid.getMostSignificantBits() >> 32, 8) + digits(uuid.getMostSignificantBits() >> 16, 4)
 			+ digits(uuid.getMostSignificantBits(), 4) + digits(uuid.getLeastSignificantBits() >> 48, 4)
 			+ digits(uuid.getLeastSignificantBits(), 12));
