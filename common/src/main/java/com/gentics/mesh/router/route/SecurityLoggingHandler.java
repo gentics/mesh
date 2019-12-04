@@ -8,7 +8,7 @@ import io.vertx.ext.web.RoutingContext;
 public class SecurityLoggingHandler implements Handler<RoutingContext> {
 
 	public static final String SECURITY_LOGGER_CONTEXT_KEY = "securityLogger";
-	public static final String SECURITY_LOGGER_NAME = "securityLogger";
+	public static final String SECURITY_LOGGER_NAME = "SecurityLogger";
 	private static final Logger securityLogger = LoggerFactory.getLogger(SECURITY_LOGGER_NAME);
 
 	private SecurityLoggingHandler() {

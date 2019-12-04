@@ -31,7 +31,7 @@ public class SecurityLogger implements LogDelegate {
 	}
 
 	private Optional<String> forwardedForAddress(RoutingContext context) {
-		return Optional.of(context.request().getHeader(X_FORWARDED_FOR))
+		return Optional.ofNullable(context.request().getHeader(X_FORWARDED_FOR))
 			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
 			.map(addresses -> addresses.split(",")[0].trim());
 	}

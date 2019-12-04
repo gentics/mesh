@@ -124,10 +124,8 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			if (element == null) {
 				throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 			}
-
+			RolePermissionRequest requestModel = ac.fromJson(RolePermissionRequest.class);
 			String name = utils.eventAction(batch -> {
-				RolePermissionRequest requestModel = ac.fromJson(RolePermissionRequest.class);
-
 				// Prepare the sets for revoke and grant actions
 				Set<GraphPermission> permissionsToGrant = new HashSet<>();
 				Set<GraphPermission> permissionsToRevoke = new HashSet<>();
@@ -154,6 +152,10 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 				element.applyPermissions(batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
 				return role.getName();
 			});
+			if (ac.getSecurityLogger().isInfoEnabled()) {
+				ac.getSecurityLogger().info(String.format("Permission for role {%s} (%s) to {%s} set to %s",
+					role.getName(), roleUuid, pathToElement, requestModel.toJson()));
+			}
 			return message(ac, "role_updated_permission", name);
 		}, model -> ac.send(model, OK));
 	}

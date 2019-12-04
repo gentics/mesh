@@ -1,7 +1,9 @@
 package com.gentics.mesh.context;
 
 import java.util.Set;
+import java.util.function.BiConsumer;
 
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -18,6 +20,7 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.spi.logging.LogDelegate;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
+import io.vertx.ext.web.RoutingContext;
 
 /**
  * A internal action context exposes various internal method which an API action context would normally not dare to expose.
@@ -177,5 +180,9 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	 */
 	default LogDelegate getSecurityLogger() {
 		return get(SecurityLoggingHandler.SECURITY_LOGGER_CONTEXT_KEY);
+	}
+
+	static Handler<RoutingContext> internalHandler(BiConsumer<RoutingContext, InternalActionContext> handler) {
+		return ctx -> handler.accept(ctx, new InternalRoutingActionContextImpl(ctx));
 	}
 }
