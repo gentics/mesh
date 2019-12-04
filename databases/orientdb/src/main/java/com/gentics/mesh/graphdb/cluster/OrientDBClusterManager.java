@@ -53,7 +53,7 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	private static final String ORIENTDB_PLUGIN_FOLDERNAME = "orientdb-plugins";
 
-	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.0.23.zip";
+	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.0.25.zip";
 
 	private static final String ORIENTDB_DISTRIBUTED_CONFIG = "default-distributed-db-config.json";
 
