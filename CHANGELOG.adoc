@@ -37,6 +37,8 @@ icon:plus[] Core: The core Vert.x library was updated to version `3.8.4`.
 
 icon:plus[] Core: The core plugin framework library was updated to version `2.1.0`.
 
+icon:plus[] Security: Build artifacts for Gentics Mesh will now be cryptographically signed using GPG.
+
 [[v1.2.1]]
 == 1.2.1 (22.11.2019)
 
