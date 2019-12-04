@@ -56,9 +56,14 @@ stage("Setup Build Environment") {
 						extraFlags = "-Djacoco.skip=false"
 					}
 					// Install is needed to provide deps for the test plugin build
-					sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.test-plugins=false -Dskip.cluster.tests=true -DskipTests ${extraFlags} clean install"
+					echo "Setup of GPG"
+					sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
+					sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
+					usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass') {
+						sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.test-plugins=false -Dskip.cluster.tests=true -DskipTests ${extraFlags} clean verify"
+					}
 				} else {
-				    echo "Omitted since we don't execute tests"
+					echo "Omitted since we don't execute tests"
 				}
 			}
 
@@ -123,8 +128,13 @@ stage("Setup Build Environment") {
 				if (Boolean.valueOf(params.runMavenBuild)) {
 					sshagent(["git"]) {
 						if (Boolean.valueOf(params.runDeploy)) {
-							withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
-								sh "mvn -U -B -DskipTests clean deploy"
+							echo "Setup of GPG"
+							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
+							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
+							usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass') {
+								withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+									sh "mvn -U -B -DskipTests clean deploy"
+								}
 							}
 						} else {
 							sh "mvn -B -DskipTests clean package"
