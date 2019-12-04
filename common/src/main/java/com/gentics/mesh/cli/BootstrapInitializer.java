@@ -19,7 +19,6 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 
@@ -136,12 +135,10 @@ public interface BootstrapInitializer {
 	/**
 	 * Setup various mandatory data. This includes mandatory root nodes and the admin user, group.
 	 * 
-	 * @throws IOException
-	 * @throws JsonMappingException
-	 * @throws JsonParseException
-	 * @throws MeshSchemaException
+	 * @param config
+	 * @throws Exception
 	 */
-	void initMandatoryData() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException;
+	void initMandatoryData(MeshOptions config) throws Exception;
 
 	/**
 	 * Clear all caches.
