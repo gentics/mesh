@@ -137,7 +137,9 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 		throwOnError(response);
 
 		String contentType = response.header("Content-Type");
-		if (resultClass.isAssignableFrom(EmptyResponse.class)) {
+		if (!response.isSuccessful()) {
+			return null;
+		} else if  (resultClass.isAssignableFrom(EmptyResponse.class)) {
 			return (T) EmptyResponse.getInstance();
 		} else if (resultClass.isAssignableFrom(MeshBinaryResponse.class)) {
 			return (T) new OkHttpBinaryResponse(response);
@@ -147,8 +149,6 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 			return JsonUtil.readValue(response.body().string(), resultClass);
 		} else if (resultClass.isAssignableFrom(String.class)) {
 			return (T) response.body().string();
-		} else if (response.code() == 304) {
-			return null;
 		} else {
 			throw new RuntimeException("Request can't be handled by this handler since the content type was {" + contentType + "}");
 		}
