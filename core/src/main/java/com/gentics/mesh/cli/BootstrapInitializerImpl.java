@@ -855,17 +855,20 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 				String pw = config.getInitialAdminPassword();
 				if (pw != null) {
-					System.out.println("------------------------------");
-					System.out.println("Admin Password: " + pw);
-
+					System.out.println("-----------------------");
+					System.out.println("- Admin Login");
+					System.out.println("-----------------------");
+					System.out.println("- Username: admin");
+					System.out.println("- Password: " + pw);
+					System.out.println("-----------------------");
 					// TODO figure out a way to avoid the encode call during test execution. This will otherwise slow down tests big time.
 					String hash = passwordEncoder.encode(pw);
 					adminUser.setPasswordHash(hash);
 					if (config.isForceInitialAdminPasswordReset()) {
-						System.out.println("Password reset forced on initial login.");
+						System.out.println("- Password reset forced on initial login.");
 						adminUser.setForcedPasswordChange(true);
 					}
-					System.out.println("------------------------------");
+					System.out.println("-----------------------");
 				} else {
 					log.warn("No initial password specified. Creating admin user without password!");
 				}

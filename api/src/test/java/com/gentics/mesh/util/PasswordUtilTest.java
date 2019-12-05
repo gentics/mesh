@@ -22,12 +22,12 @@ public class PasswordUtilTest {
 
 	@Test
 	public void testExcludedChars() {
-		List<Character> disallowedChars = Arrays.asList('0', 'O', 'o', '1', 'i', 'I', '5', 'S', 's');
+		List<Character> disallowedChars = Arrays.asList('Q', '8', 'B', 'Z', '0', 'O', 'o', '1', 'i', 'I', '5', 'S', 's');
 		for (int i = 0; i < 10000; i++) {
 			String pw = PasswordUtil.humanPassword(20);
 			for (int e = 0; e < pw.length(); e++) {
 				char pwChar = pw.charAt(e);
-				assertFalse("Found disallowed character in pw {" + pw + "} - {" +  pwChar+ "}", disallowedChars.contains(pwChar));
+				assertFalse("Found disallowed character in pw {" + pw + "} - {" + pwChar + "}", disallowedChars.contains(pwChar));
 			}
 		}
 	}

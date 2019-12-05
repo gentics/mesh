@@ -39,6 +39,8 @@ public class DemoDumpGenerator {
 		MeshOptions options = new MeshOptions();
 		options.getSearchOptions().setUrl(null);
 		options.getSearchOptions().setStartEmbedded(false);
+		options.setInitialAdminPassword("admin");
+		options.setForceInitialAdminPasswordReset(false);
 
 		// Prefix all default directories in order to place them into the dump directory
 		String uploads = "target/dump/" + options.getUploadOptions().getDirectory();
