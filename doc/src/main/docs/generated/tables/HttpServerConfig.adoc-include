@@ -47,4 +47,9 @@
 | boolean
 | Flag which indicates whether SSL support be enabled.
 
+| verticleAmount
+| false
+| integer
+| Amount of rest API verticles to be deployed. Default is 2 * CPU Cores
+
 |======

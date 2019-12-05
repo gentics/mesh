@@ -1,0 +1,10 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:localconfig:LocalConfigModel",
+  "properties" : {
+    "readOnly" : {
+      "type" : "boolean",
+      "description" : "If true, mutating requests to this instance are not allowed."
+    }
+  }
+}

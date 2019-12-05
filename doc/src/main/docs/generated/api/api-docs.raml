@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "1.2.1"
+version: "1.3.0"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -3207,6 +3207,37 @@ mediaType: application/json
                                     "role" : "REPLICA"
                                   } ]
                                 }
+    /config: 
+        get: 
+            description: Retrieves the currently active local configuration of this instance.
+            responses: 
+                "200": 
+                    description: The currently active local configuration
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | readOnly | false | boolean | If true, mutating requests to this instance are not allowed. |
+                            example: |
+                                {
+                                  "readOnly" : false
+                                }
+        post: 
+            description: Sets the currently active local configuration of this instance.
+            responses: 
+                "200": 
+                    description: The currently active local configuration
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | readOnly | false | boolean | If true, mutating requests to this instance are not allowed. |
+                            example: |
+                                {
+                                  "readOnly" : false
+                                }
     /consistency/check: 
         get: 
             description: Invokes a consistency check of the graph database without attempting to repairing the found issues. A list of found issues will be returned.
@@ -3655,6 +3686,15 @@ mediaType: application/json
                                 {
                                   "status" : "READY"
                                 }
+/health: 
+    displayName: /health
+    description: Endpoints for Mesh health checks
+    /live: 
+        get: 
+            description: Returns an empty response with status code 200 if Gentics Mesh is alive.
+    /ready: 
+        get: 
+            description: Returns an empty response with status code 200 if Gentics Mesh is ready. Responds with 503 otherwise.
 /search: 
     displayName: /search
     description: Provides search endpoints which can be used to invoke global searches
@@ -5784,13 +5824,13 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "1.2.1",
+                                  "meshVersion" : "1.3.0",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
                                   "searchVendor" : "elasticsearch",
                                   "searchVersion" : "2.4.3",
-                                  "vertxVersion" : "3.8.0"
+                                  "vertxVersion" : "3.8.4"
                                 }
     /raml: 
         get: 

@@ -62,6 +62,11 @@
 | string
 | Path to the SSL private key. Default: config/key.pem
 
+| httpServerOptions.verticleAmount
+| false
+| int
+| Amount of rest API verticles to be deployed. Default is 2 * CPU Cores
+
 | monitoringOptions.enabled
 | false
 | boolean
@@ -386,5 +391,10 @@
 | false
 | string
 | Name of the cluster node instance. If not specified a name will be generated.
+
+| startInReadOnly
+| false
+| boolean
+| If true, Gentics Mesh will be started in read only mode.
 
 |======

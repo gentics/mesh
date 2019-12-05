@@ -17,6 +17,9 @@
 | *MESH_GRAPH_TX_RETRY_LIMIT*
 | Override the transaction retry limit. Default: 10
 
+| *MESH_HTTP_VERTICLE_AMOUNT*
+| Override the http verticle amount.
+
 | *MESH_PLUGIN_TIMEOUT*
 | Override the configured plugin timeout.
 
@@ -73,6 +76,9 @@
 
 | *MESH_HTTP_CORS_ALLOW_CREDENTIALS*
 | Override the configured CORS allowed credentials flag.
+
+| *MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET*
+| Control whether a forced password reset should be triggered when creating the initial admin user. Default: true
 
 | *MESH_ELASTICSEARCH_STARTUP_TIMEOUT*
 | Override the configured elasticsearch server timeout.
@@ -223,6 +229,12 @@
 
 | *MESH_IMAGE_JPEG_QUALITY*
 | Override the JPEG quality for image resize operations.
+
+| *MESH_START_IN_READ_ONLY*
+| Override the read only mode flag.
+
+| *MESH_INITIAL_ADMIN_PASSWORD*
+| Password which will be used during initial admin user creation.
 
 | *MESH_CLUSTER_ENABLED*
 | Override cluster enabled flag.

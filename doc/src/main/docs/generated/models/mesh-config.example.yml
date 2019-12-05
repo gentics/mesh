@@ -10,6 +10,7 @@ tempDirectory: "/opt/mesh/data/tmp"
 pluginDirectory: "plugins"
 pluginTimeout: 15
 nodeName: null
+startInReadOnly: false
 httpServer:
   port: 8080
   host: "0.0.0.0"
@@ -19,6 +20,7 @@ httpServer:
   ssl: false
   certPath: "config/cert.pem"
   keyPath: "config/key.pem"
+  verticleAmount: 16
 monitoring:
   enabled: true
   port: 8081
