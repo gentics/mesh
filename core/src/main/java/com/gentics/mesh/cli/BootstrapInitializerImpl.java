@@ -854,15 +854,20 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				adminUser.setLastEditedTimestamp();
 
 				String pw = config.getInitialAdminPassword();
-				log.info("------------------------------");
-				log.info("Admin Password: " + pw);
-				log.info("------------------------------");
+				if (pw != null) {
+					System.out.println("------------------------------");
+					System.out.println("Admin Password: " + pw);
 
-				// TODO figure out a way to avoid the encode call during test execution. This will otherwise slow down tests big time.
-				String hash = passwordEncoder.encode(pw);
-				adminUser.setPasswordHash(hash);
-				if (config.isForceInitialAdminPasswordReset()) {
-					adminUser.setForcedPasswordChange(true);
+					// TODO figure out a way to avoid the encode call during test execution. This will otherwise slow down tests big time.
+					String hash = passwordEncoder.encode(pw);
+					adminUser.setPasswordHash(hash);
+					if (config.isForceInitialAdminPasswordReset()) {
+						System.out.println("Password reset forced on initial login.");
+						adminUser.setForcedPasswordChange(true);
+					}
+					System.out.println("------------------------------");
+				} else {
+					log.warn("No initial password specified. Creating admin user without password!");
 				}
 				log.debug("Created admin user {" + adminUser.getUuid() + "}");
 			}

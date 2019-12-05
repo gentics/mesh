@@ -142,7 +142,8 @@ public class MeshTestContext extends TestWatcher {
 			DatabaseHelper.init(meshDagger.database());
 		}
 		initFolders(mesh.getOptions());
-		setupData();
+		boolean setAdminPassword =  settings.optionChanger() != MeshOptionChanger.INITIAL_ADMIN_PASSWORD; 
+		setupData(mesh.getOptions(), setAdminPassword);
 		listenToSearchIdleEvent();
 		switch (settings.elasticsearch()) {
 		case CONTAINER_ES6:
@@ -351,12 +352,14 @@ public class MeshTestContext extends TestWatcher {
 
 	/**
 	 * Setup the test data.
+	 * @param meshOptions 
+	 * @param setAdminPassword 
 	 *
 	 * @throws Exception
 	 */
-	private void setupData() throws Exception {
+	private void setupData(MeshOptions meshOptions, boolean setAdminPassword) throws Exception {
 		meshDagger.database().setMassInsertIntent();
-		dataProvider.setup();
+		dataProvider.setup(meshOptions, setAdminPassword);
 		meshDagger.database().resetIntent();
 	}
 
@@ -617,6 +620,10 @@ public class MeshTestContext extends TestWatcher {
 		try {
 			mesh = Mesh.create(options);
 			mesh.setMeshInternal(meshDagger);
+			// We omit creating the initial admin password since hashing the password would slow down tests
+			if (!meshOptions.getInitialAdminPassword().startsWith("debug")) {
+				meshOptions.setInitialAdminPassword(null);
+			}
 			meshDagger.boot().init(mesh, false, options, null);
 			vertx = meshDagger.boot().vertx();
 		} catch (Exception e) {
