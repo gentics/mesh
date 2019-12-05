@@ -45,6 +45,8 @@ icon:plus[] Security: Build artifacts for Gentics Mesh will now be cryptographic
 
 icon:check[] Core: Some no longer needed dependencies were removed.
 
+icon:plus[] Security: The initial admin password that is created during setup will now be randomized and it is required to enter a new password on the first login. The `MESH_INITIAL_ADMIN_PASSWORD` environment variable can be used to set a custom initial password. The password reset rule can be disabled via the `MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET` environment variable.
+
 [[v1.2.1]]
 == 1.2.1 (22.11.2019)
 

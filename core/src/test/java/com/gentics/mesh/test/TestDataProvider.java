@@ -51,6 +51,7 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.MeshJsonException;
@@ -119,7 +120,8 @@ public class TestDataProvider {
 		instance = this;
 	}
 
-	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
+	public void setup(MeshOptions meshOptions, boolean setAdminPassword)
+		throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
 		long start = System.currentTimeMillis();
 		if (getSize() == EMPTY) {
 			return;
@@ -127,7 +129,14 @@ public class TestDataProvider {
 
 		try (Tx tx = db.tx()) {
 			boot.globalCacheClear();
-			boot.initMandatoryData();
+			if (meshOptions.getInitialAdminPassword() != null && !meshOptions.getInitialAdminPassword().startsWith("debug")) {
+				// We omit creating the initial admin password since hashing the password would slow down tests
+				meshOptions.setInitialAdminPassword(null);
+			}
+			boot.initMandatoryData(meshOptions);
+			if (setAdminPassword) {
+				setAdminPassword();
+			}
 			boot.initOptionalData(true);
 			tx.getGraph().commit();
 			schemaContainers.clear();
@@ -181,10 +190,17 @@ public class TestDataProvider {
 			addPermissions(boot.schemaContainerRoot());
 			log.debug("Added BasicPermissions to nodes took {" + (System.currentTimeMillis() - startPerm) + "} ms.");
 			tx.getGraph().commit();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 
 		long duration = System.currentTimeMillis() - start;
 		log.debug("Setup took: {" + duration + "}");
+	}
+
+	private void setAdminPassword() {
+		String hash = "$2a$10$X7NA0kiqrFlyX0NUhPdW1e7jevHyoaoB4OyoxV1pdA7B3SLVSkx22";
+		boot.userRoot().findByUsername("admin").setPasswordHash(hash);
 	}
 
 	private void addPermissions(MeshVertex vertex) {

@@ -10,6 +10,7 @@ import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
+import com.gentics.mesh.util.PasswordUtil;
 
 /**
  * Main mesh configuration POJO.
@@ -32,6 +33,8 @@ public class MeshOptions implements Option {
 	public static final String MESH_CLUSTER_INIT_ENV = "MESH_CLUSTER_INIT";
 	public static final String MESH_LOCK_PATH_ENV = "MESH_LOCK_PATH";
 	public static final String MESH_START_IN_READ_ONLY_ENV = "MESH_START_IN_READ_ONLY";
+	public static final String MESH_INITIAL_ADMIN_PASSWORD_ENV = "MESH_INITIAL_ADMIN_PASSWORD";
+	public static final String MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV = "MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET";
 
 	// TODO remove this setting. There should not be a default max depth. This is no longer needed once we remove the expand all parameter
 	private int defaultMaxDepth = DEFAULT_MAX_DEPTH;
@@ -132,6 +135,14 @@ public class MeshOptions implements Option {
 	@JsonIgnore
 	@EnvironmentVariable(name = MESH_LOCK_PATH_ENV, description = "Path to the mesh lock file.")
 	private String lockPath = "mesh.lock";
+
+	@JsonIgnore
+	@EnvironmentVariable(name = MESH_INITIAL_ADMIN_PASSWORD_ENV, description = "Password which will be used during initial admin user creation.")
+	private String initialAdminPassword = PasswordUtil.humanPassword();
+
+	@JsonIgnore
+	@EnvironmentVariable(name = MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV, description = "Control whether a forced password reset should be triggered when creating the initial admin user. Default: true")
+	private boolean forceInitialAdminPasswordReset = true;
 
 	@JsonIgnore
 	private String adminPassword;
@@ -360,6 +371,28 @@ public class MeshOptions implements Option {
 	@JsonIgnore
 	public MeshOptions setAdminPassword(String adminPassword) {
 		this.adminPassword = adminPassword;
+		return this;
+	}
+
+	@JsonIgnore
+	public String getInitialAdminPassword() {
+		return initialAdminPassword;
+	}
+
+	@JsonIgnore
+	public MeshOptions setInitialAdminPassword(String initialAdminPassword) {
+		this.initialAdminPassword = initialAdminPassword;
+		return this;
+	}
+
+	@JsonIgnore
+	public boolean isForceInitialAdminPasswordReset() {
+		return forceInitialAdminPasswordReset;
+	}
+
+	@JsonIgnore
+	public MeshOptions setForceInitialAdminPasswordReset(boolean forceInitialAdminPasswordReset) {
+		this.forceInitialAdminPasswordReset = forceInitialAdminPasswordReset;
 		return this;
 	}
 

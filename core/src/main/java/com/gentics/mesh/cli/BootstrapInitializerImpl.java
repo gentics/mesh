@@ -77,7 +77,6 @@ import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.distributed.DistributedEventManager;
-import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
@@ -169,6 +168,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Inject
 	public LocalConfigApi localConfigApi;
 
+	@Inject
+	public BCryptPasswordEncoder passwordEncoder;
+
 	private MeshRoot meshRoot;
 
 	// TODO: Changing the role name or deleting the role would cause code that utilizes this field to break.
@@ -226,7 +228,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			// Update graph indices and vertex types (This may take some time)
 			DatabaseHelper.init(db);
 			// Setup mandatory data (e.g.: mesh root, project root, user root etc., admin user/role/group)
-			initMandatoryData();
+			initMandatoryData(configuration);
 			initOptionalLanguages(configuration);
 			initOptionalData(isEmptyInstallation);
 			initPermissions();
@@ -821,7 +823,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public void initMandatoryData() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
+	public void initMandatoryData(MeshOptions config) throws Exception {
 		Role adminRole;
 		MeshRoot meshRoot;
 
@@ -851,14 +853,25 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				adminUser.setEditor(adminUser);
 				adminUser.setLastEditedTimestamp();
 
-				log.debug("Enter admin password:");
-				// Scanner scanIn = new Scanner(System.in);
-				// String pw = scanIn.nextLine();
-				// TODO remove later on
-				// Default hash for pw = "admin";
-				// TODO Autogenerate new passwords
-				String hash = "$2a$10$X7NA0kiqrFlyX0NUhPdW1e7jevHyoaoB4OyoxV1pdA7B3SLVSkx22";
-				adminUser.setPasswordHash(hash);
+				String pw = config.getInitialAdminPassword();
+				if (pw != null) {
+					System.out.println("-----------------------");
+					System.out.println("- Admin Login");
+					System.out.println("-----------------------");
+					System.out.println("- Username: admin");
+					System.out.println("- Password: " + pw);
+					System.out.println("-----------------------");
+					// TODO figure out a way to avoid the encode call during test execution. This will otherwise slow down tests big time.
+					String hash = passwordEncoder.encode(pw);
+					adminUser.setPasswordHash(hash);
+					if (config.isForceInitialAdminPasswordReset()) {
+						System.out.println("- Password reset forced on initial login.");
+						adminUser.setForcedPasswordChange(true);
+					}
+					System.out.println("-----------------------");
+				} else {
+					log.warn("No initial password specified. Creating admin user without password!");
+				}
 				log.debug("Created admin user {" + adminUser.getUuid() + "}");
 			}
 

@@ -16,6 +16,8 @@ public enum MeshOptionChanger {
 		options.getUploadOptions().setParser(false);
 	}), EXCLUDE_BINARY_SEARCH(options -> {
 		options.getSearchOptions().setIncludeBinaryFields(false);
+	}), INITIAL_ADMIN_PASSWORD(options -> {
+		options.setInitialAdminPassword("debug99");
 	}), ES_STRICT_MODE(options -> {
 		options.getSearchOptions().setMappingMode(MappingMode.STRICT);
 	}), RANDOM_ES_PORT(options -> {
