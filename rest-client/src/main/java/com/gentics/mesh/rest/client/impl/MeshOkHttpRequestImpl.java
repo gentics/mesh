@@ -137,7 +137,9 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 		throwOnError(response);
 
 		String contentType = response.header("Content-Type");
-		if (resultClass.isAssignableFrom(EmptyResponse.class)) {
+		if (!response.isSuccessful()) {
+			return null;
+		} else if  (resultClass.isAssignableFrom(EmptyResponse.class)) {
 			return (T) EmptyResponse.getInstance();
 		} else if (resultClass.isAssignableFrom(MeshBinaryResponse.class)) {
 			return (T) new OkHttpBinaryResponse(response);
@@ -153,7 +155,7 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	}
 
 	private void throwOnError(Response response) throws IOException, MeshRestClientMessageException {
-		if (!response.isSuccessful()) {
+		if (!response.isSuccessful() && response.code() != 304) {
 			String body = response.body().string();
 			MeshRestClientMessageException err;
 			try {
@@ -239,14 +241,7 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 
 			@Override
 			public T getBody() {
-				return getHeader("Content-Length")
-					.map(len -> {
-						if (Long.parseLong(len) > 0) {
-							return body.get();
-						} else {
-							return null;
-						}
-					}).orElse(null);
+				return body.get();
 			}
 		});
 	}

@@ -33,6 +33,10 @@ icon:plus[] Core: It is now possible to use Gentics Mesh in read only mode. Take
 
 icon:check[] REST: The `/health/live` and `/health/ready` endpoints have been added to the REST API. These endpoints are also available on the monitoring server, but adding them to the REST server makes it possible for load balancers to monitor the server on the same port that used to proxy the requests.
 
+icon:check[] REST: The link:https://getmesh.io/docs/api/#users__userUuid__token_post[`/user/:uuid/token`] endpoint now has the Cache-Control header set to private.
+
+icon:check[] Java Rest Client: Fixed a bug that caused `MeshOkHttpRequestImpl#getResponse` to always return null.
+
 icon:plus[] Core: The core Vert.x library was updated to version `3.8.4`.
 
 icon:plus[] Core: The core plugin framework library was updated to version `2.1.0`.
