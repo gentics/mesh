@@ -42,6 +42,8 @@ icon:plus[] Core: The core Vert.x library was updated to version `3.8.4`.
 
 icon:plus[] Core: The core plugin framework library was updated to version `2.1.0`.
 
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.0.25`
+
 icon:plus[] Security: Build artifacts for Gentics Mesh will now be cryptographically signed using GPG.
 
 icon:check[] Core: Some no longer needed dependencies were removed.
