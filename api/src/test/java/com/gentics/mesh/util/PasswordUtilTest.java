@@ -26,7 +26,7 @@ public class PasswordUtilTest {
 			String pw = PasswordUtil.humanPassword(20);
 			for (int e = 0; e < pw.length(); e++) {
 				char pwChar = pw.charAt(e);
-				assertFalse("Found disallowed character in pw {" + pw + "} - {" +  pwChar+ "}", disallowedChars.contains(pwChar));
+				assertFalse("Found disallowed character in pw {" + pw + "} - {" + pwChar + "}", disallowedChars.contains(pwChar));
 			}
 		}
 	}
