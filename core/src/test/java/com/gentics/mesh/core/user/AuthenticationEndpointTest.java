@@ -3,9 +3,17 @@ package com.gentics.mesh.core.user;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
+import static org.apache.http.HttpHeaders.AUTHORIZATION;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -19,6 +27,13 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.reactivex.Single;
+import io.vertx.core.json.JsonObject;
+import okhttp3.Cookie;
+import okhttp3.CookieJar;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class AuthenticationEndpointTest extends AbstractMeshTest {
@@ -104,8 +119,48 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			String meshTokenCookie2 = client.me().getResponse().blockingGet().getHeader("Set-Cookie").orElse(null);
 
 			assertNotEquals("Both cookies should be different. Otherwise the token was not regenerated and the exp. date was not bumped.",
-					meshTokenCookie1, meshTokenCookie2);
+				meshTokenCookie1, meshTokenCookie2);
 		}
 	}
 
+	@Test
+	public void testBasicAuth() throws IOException {
+		OkHttpClient client = httpClient().newBuilder().cookieJar(new TestCookieJar()).build();
+		Response response = client.newCall(new Request.Builder()
+			.get()
+			.url(String.format("http://%s:%s/api/v2/auth/login", "localhost", port()))
+			.header(AUTHORIZATION, "Basic " + base64("admin:admin"))
+			.build()).execute();
+
+		assertThat(response.code()).isEqualTo(200);
+
+		response = client.newCall(new Request.Builder()
+			.get()
+			.url(String.format("http://%s:%s/api/v2/auth/me", "localhost", port()))
+			.build()).execute();
+		JsonObject responseBody = new JsonObject(response.body().string());
+		assertThat(responseBody.getString("username")).isEqualTo("admin");
+	}
+
+	private String base64(String input) {
+		return Base64.getEncoder().encodeToString(input.getBytes(StandardCharsets.UTF_8));
+	}
+
+	public static class TestCookieJar implements CookieJar {
+
+		private List<Cookie> cookies;
+
+		@Override
+		public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
+			this.cookies =  cookies;
+		}
+
+		@Override
+		public List<Cookie> loadForRequest(HttpUrl url) {
+			if (cookies != null)
+				return cookies;
+			return new ArrayList<Cookie>();
+
+		}
+	}
 }
