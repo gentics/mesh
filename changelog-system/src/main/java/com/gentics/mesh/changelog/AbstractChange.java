@@ -5,8 +5,6 @@ import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
-import com.fasterxml.uuid.Generators;
-import com.fasterxml.uuid.impl.RandomBasedGenerator;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
@@ -153,15 +151,13 @@ public abstract class AbstractChange implements Change {
 		return graph;
 	}
 
-	public static final RandomBasedGenerator UUID_GENERATOR = Generators.randomBasedGenerator();
-
 	/**
 	 * Create a random UUID string which does not include dashes.
 	 * 
 	 * @return
 	 */
 	public String randomUUID() {
-		final UUID uuid = UUID_GENERATOR.generate();
+		final UUID uuid = UUID.randomUUID();
 		String randomUuid = (digits(uuid.getMostSignificantBits() >> 32, 8) + digits(uuid.getMostSignificantBits() >> 16, 4) + digits(uuid
 			.getMostSignificantBits(), 4) + digits(uuid.getLeastSignificantBits() >> 48, 4) + digits(uuid.getLeastSignificantBits(), 12));
 		return randomUuid;
