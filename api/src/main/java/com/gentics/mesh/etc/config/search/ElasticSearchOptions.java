@@ -174,7 +174,7 @@ public class ElasticSearchOptions implements Option {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("This setting controls the mapping mode of fields for Elasticsearch. When set to STRICT only fields which have a custom mapping will be added to Elasticsearch. Mode DYNAMIC will automatically use the Gentics Mesh default mappings which can be supplemented with custom mappings. Default: DYNAMIC")
-	@EnvironmentVariable(name = MESH_ELASTICSEARCH_MAPPING_MODE_ENV, description = "Override the search mapping mode.")
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_MAPPING_MODE_ENV, description = "Override the search mapping mode. ")
 	private MappingMode mappingMode = DEFAULT_MAPPING_MODE;
 
 	@JsonProperty(required = false)

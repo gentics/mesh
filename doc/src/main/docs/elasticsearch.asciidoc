@@ -56,39 +56,30 @@ The Elasticsearch connection can be configured within the `mesh.yml` configurati
 search:
   url: "http://localhost:9200"
   timeout: 8000
-  startEmbedded: false
-  embeddedArguments: "-Xms1g -Xmx1g -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75\
-    \ -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -client -Xss1m -Djava.awt.headless=true\
-    \ -Dfile.encoding=UTF-8 -Djna.nosys=true -XX:-OmitStackTraceInFastThrow -Dio.netty.noUnsafe=true\
-    \ -Dio.netty.noKeySetOptimization=true -Dio.netty.recycler.maxCapacityPerThread=0\
-    \ -Dlog4j.shutdownHookEnabled=false -Dlog4j2.disable.jmx=true -XX:+HeapDumpOnOutOfMemoryError"
 ----
 
 include::content/docs/snippets/config/search.inc[]
 
-=== Dedicated Elasticsearch
-
-It is recommended to use a dedicated Elasticsearch server. You can disable the embedded Elasticsearch server via by setting `search.startEmbedded` to false. Your `search.url` parameter must point to the Elasticsearch installation that you want to use.
+The `search.url` parameter must point to the Elasticsearch installation that you want to use.
 
 TIP: You can also use link:{{< relref "administration-guide.asciidoc" >}}#_environment_variables[environment variables] to configure Gentics Mesh and change these settings.
 
-=== Embedded Elasticsearch
-
-Gentics Mesh will setup and start the Elasticsearch server if the `search.startEmbedded` property is set to true.
-The server installation will be placed in the current working directory and started.
-A watchdog will continuously check the process and restart it when a crash has been detected.
-
-WARNING: Support for embedded Elasticsearch will be dropped in the future.
-
 === Disabling search
 
-It is also possible to completely turn off the search support by setting the `search.startEmbedded` property to false and the `search.url` property to null.
+It is also possible to completely turn off the search support by setting the `search.url` property to null.
 
-NOTE: The Gentics Mesh UI currently requires the Elasticsearch support to function correctly. 
+TIP: You can add Elasticsearch support at any point and invoke ```POST {apiLatest}/search/sync``` via the REST API to populate the search indices.
 
 == Compatibility
 
-We currently run and test against Elasticsearch version 6.8.0. Other versions have not yet been tested.
+We currently run and test against Elasticsearch version 6.8.1 and 7.4.0. Other versions have not yet been tested.
+
+The `search.complianceMode` setting or `MESH_ELASTICSEARCH_COMPLIANCE_MODE` environment variable can be used to control the compliance levels that influence Elasticsearch compatibility.
+
+Levels:
+
+* `ES_7` - Support Elasticsearch 7.x
+* `PRE_ES_7` - Support Elasticsearch 6.x (*Default*)
 
 == Security
 
@@ -109,7 +100,6 @@ search:
   certPath: "certs/elastic-certificates.crt.pem"
   caPath: "certs/elastic-stack-ca.crt.pem"
   hostnameVerification: true
-  startEmbedded: false
 ```
 
 NOTE: The `certPath` and `caPath` setting only accept certificate files in `PEM` format.

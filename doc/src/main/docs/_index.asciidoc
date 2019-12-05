@@ -228,7 +228,7 @@ ul.doc-toc h2 {
                                 <a href="features#_content_branches">Content Branches</a>
                             </li>
                             <li>
-                                <a href="elasticsearch">Search</a>
+                                <a href="elasticsearch">Elasticsearch</a>
                             </li>
                             <li>
                                 <a href="features#_preview_handling">Preview Handling</a>
