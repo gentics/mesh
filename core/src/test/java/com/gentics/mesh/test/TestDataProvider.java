@@ -129,7 +129,7 @@ public class TestDataProvider {
 
 		try (Tx tx = db.tx()) {
 			boot.globalCacheClear();
-			if (!meshOptions.getInitialAdminPassword().startsWith("debug")) {
+			if (meshOptions.getInitialAdminPassword() != null && !meshOptions.getInitialAdminPassword().startsWith("debug")) {
 				// We omit creating the initial admin password since hashing the password would slow down tests
 				meshOptions.setInitialAdminPassword(null);
 			}
