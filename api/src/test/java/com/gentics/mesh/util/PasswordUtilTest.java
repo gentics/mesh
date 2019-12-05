@@ -15,7 +15,6 @@ public class PasswordUtilTest {
 	public void testHumanPassword() {
 		String pw = PasswordUtil.humanPassword(10);
 		assertEquals(pw.length(), 10);
-		System.out.println(pw);
 		assertNotEquals(pw, PasswordUtil.humanPassword(10));
 		assertEquals("", PasswordUtil.humanPassword(0));
 	}
