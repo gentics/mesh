@@ -25,7 +25,8 @@ include::content/docs/variables.adoc-include[]
 
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
-[[Unreleased]]
+[[v1.3.0]]
+== 1.3.0 (05.12.2019)
 
 icon:plus[] Core: The amount of the deployed REST API verticles can now be link:{{< relref "administration-guide.asciidoc" >}}#_httpsssl[configured] and its default has been changed from 5 to 2 * CPU Cores.
 
