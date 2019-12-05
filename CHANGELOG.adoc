@@ -39,6 +39,8 @@ icon:plus[] Core: The core plugin framework library was updated to version `2.1.
 
 icon:plus[] Security: Build artifacts for Gentics Mesh will now be cryptographically signed using GPG.
 
+icon:check[] Core: Removed some unused dependencies.
+
 [[v1.2.1]]
 == 1.2.1 (22.11.2019)
 
