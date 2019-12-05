@@ -7,8 +7,8 @@ import java.security.SecureRandom;
  */
 public final class PasswordUtil {
 
-	private static final String ALPHA_NUMERIC_READABLE_CHAR = "ACEFGHJKLMNPRTUVWXY"
-		+ "234679"
+	private static final String ALPHA_NUMERIC_READABLE_CHAR = "ACEFHJKLMNPRTUVWXY"
+		+ "23479"
 		+ "abcdefghjkmnprtuvxy";
 
 	private static final int DEFAULT_PW_LEN = 10;
