@@ -2,7 +2,6 @@ package com.gentics.mesh.plugin;
 
 import static io.vertx.core.http.HttpHeaders.AUTHORIZATION;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,8 +33,6 @@ import io.vertx.ext.web.ParsedHeaderValues;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
-import okhttp3.Dispatcher;
-import okhttp3.OkHttpClient;
 
 /**
  * Wrapper for the regular Vert.x routing context.
@@ -47,8 +44,6 @@ public class PluginContext implements RoutingContext {
 	private final RoutingContext rc;
 
 	private final PluginEnvironment env;
-
-	private static OkHttpClient userClient;
 
 	/**
 	 * Create a new plugin context which will wrap the {@link RoutingContext} of the handled request.
@@ -77,30 +72,13 @@ public class PluginContext implements RoutingContext {
 		.setSsl(false)
 		.build();
 
-		MeshRestClient client = MeshRestClient.create(clientConfig, userClient());
+		MeshRestClient client = MeshRestClient.create(clientConfig);
 		// The authentication token / header may be missing if the inbound request was anonymous.
 		String token = parseHeader(rc);
 		if (token != null) {
 			client.setAPIKey(token);
 		}
 		return client;
-	}
-
-	private static OkHttpClient userClient() {
-		if (userClient == null) {
-			Dispatcher dispatcher = new Dispatcher();
-			dispatcher.setMaxRequestsPerHost(64);
-
-			userClient = new OkHttpClient.Builder()
-				.callTimeout(Duration.ofMinutes(1))
-				.connectTimeout(Duration.ofMinutes(1))
-				.writeTimeout(Duration.ofMinutes(1))
-				.readTimeout(Duration.ofMinutes(1))
-				.dispatcher(dispatcher)
-				.build();
-
-		}
-		return userClient;
 	}
 
 	/**
