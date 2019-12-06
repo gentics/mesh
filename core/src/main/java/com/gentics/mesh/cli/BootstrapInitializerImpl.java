@@ -187,6 +187,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	private Vertx vertx;
 
+	private String initialPasswordInfo;
+
 	private final ReindexAction SYNC_INDEX_ACTION = (() -> {
 
 		// Init the classes / indices
@@ -348,6 +350,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			vertx.eventBus().publish(STARTUP.address, true);
 		}, log::error);
 
+		if (initialPasswordInfo != null) {
+			System.out.println(initialPasswordInfo);
+		}
 	}
 
 	/**
@@ -855,20 +860,22 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 				String pw = config.getInitialAdminPassword();
 				if (pw != null) {
-					System.out.println("-----------------------");
-					System.out.println("- Admin Login");
-					System.out.println("-----------------------");
-					System.out.println("- Username: admin");
-					System.out.println("- Password: " + pw);
-					System.out.println("-----------------------");
-					// TODO figure out a way to avoid the encode call during test execution. This will otherwise slow down tests big time.
+					StringBuffer sb = new StringBuffer();
 					String hash = passwordEncoder.encode(pw);
+					sb.append("-----------------------\n");
+					sb.append("- Admin Login\n");
+					sb.append("-----------------------\n");
+					sb.append("- Username: admin\n");
+					sb.append("- Password: " + pw +"\n");
+					sb.append("-----------------------\n");
+					// TODO figure out a way to avoid the encode call during test execution. This will otherwise slow down tests big time.
 					adminUser.setPasswordHash(hash);
 					if (config.isForceInitialAdminPasswordReset()) {
-						System.out.println("- Password reset forced on initial login.");
+						sb.append("- Password reset forced on initial login.\n");
 						adminUser.setForcedPasswordChange(true);
 					}
-					System.out.println("-----------------------");
+					sb.append("-----------------------\n");
+					initialPasswordInfo = sb.toString();
 				} else {
 					log.warn("No initial password specified. Creating admin user without password!");
 				}
