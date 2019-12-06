@@ -65,14 +65,7 @@ public class PluginContext implements RoutingContext {
 		MeshOptions options = env.options();
 		int port = options.getHttpServerOptions().getPort();
 		String host = options.getHttpServerOptions().getHost();
-
-		MeshRestClientConfig clientConfig = MeshRestClientConfig.newConfig()
-		.setHost(host)
-		.setPort(port)
-		.setSsl(false)
-		.build();
-
-		MeshRestClient client = MeshRestClient.create(clientConfig);
+		MeshRestClient client = MeshRestClient.create(host, port, false);
 		// The authentication token / header may be missing if the inbound request was anonymous.
 		String token = parseHeader(rc);
 		if (token != null) {
