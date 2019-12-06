@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
+import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchListResponse;
@@ -338,7 +339,7 @@ public class AbstractTestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
-															   ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -366,7 +367,7 @@ public class AbstractTestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<NodeResponse> upsertNode(String projectName, String uuid, NodeUpsertRequest nodeUpsertRequest,
-			ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -455,7 +456,8 @@ public class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<EmptyResponse> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag, ParameterProvider... parameters) {
+	public MeshRequest<EmptyResponse> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag,
+		ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -1037,25 +1039,25 @@ public class AbstractTestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<NodeResponse> webrootUpdate(String projectName, String path, NodeUpdateRequest nodeUpdateRequest,
-			ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
 	@Override
 	public MeshRequest<NodeResponse> webrootUpdate(String projectName, String[] pathSegments, NodeUpdateRequest nodeUpdateRequest,
-			ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
 	@Override
 	public MeshRequest<NodeResponse> webrootCreate(String projectName, String path, NodeCreateRequest nodeCreateRequest,
-			ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
 	@Override
 	public MeshRequest<NodeResponse> webrootCreate(String projectName, String[] pathSegments, NodeCreateRequest nodeCreateRequest,
-			ParameterProvider... parameters) {
+		ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -1065,12 +1067,14 @@ public class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String nodeVersion, String fieldKey, InputStream fileData, long fileSize, String fileName, String contentType, ParameterProvider... parameters) {
+	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String nodeVersion,
+		String fieldKey, InputStream fileData, long fileSize, String fileName, String contentType, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey, long from, long to, ParameterProvider... parameters) {
+	public MeshRequest<MeshBinaryResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey, long from,
+		long to, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -1115,7 +1119,7 @@ public class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public <R > MeshRequest<R> put(String path, Class<R> responseClass) {
+	public <R> MeshRequest<R> put(String path, Class<R> responseClass) {
 		throw new NotImplementedException();
 	}
 
@@ -1135,12 +1139,32 @@ public class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public <R > MeshRequest<R> delete(String path, Class<R> responseClass) {
+	public <R> MeshRequest<R> delete(String path, Class<R> responseClass) {
 		throw new NotImplementedException();
 	}
 
 	@Override
 	public MeshRequest<MeshBinaryResponse> debugInfo(String... include) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<EmptyResponse> live() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<EmptyResponse> ready() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<LocalConfigModel> loadLocalConfig() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<LocalConfigModel> updateLocalConfig(LocalConfigModel arg0) {
 		throw new NotImplementedException();
 	}
 }
