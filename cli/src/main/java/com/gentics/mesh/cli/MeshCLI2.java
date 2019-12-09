@@ -11,7 +11,8 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0", description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
+@Command(name = "mesh-cli", mixinStandardHelpOptions = true, subcommands = {
+	SubCmd.class }, version = "checksum 4.0", description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
 public class MeshCLI2 implements Callable<Integer> {
 
 	@Parameters(index = "0", description = "The file whose checksum to calculate.")
