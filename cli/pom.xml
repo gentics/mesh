@@ -16,8 +16,9 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<mainClass>com.gentics.mesh.cli.MeshCLI</mainClass>
-		<graal.version>19.3.0</graal.version>
+		<mainClass>com.gentics.mesh.cli.MeshCLI2</mainClass>
+		<native-image.version>19.3.0</native-image.version>
+		<pico.version>4.1.2</pico.version>
 	</properties>
 
 	<dependencyManagement>
@@ -43,7 +44,7 @@
 		<dependency>
 			<groupId>info.picocli</groupId>
 			<artifactId>picocli</artifactId>
-			<version>4.1.2</version>
+			<version>${pico.version}</version>
 		</dependency>
 
 		<!-- Test dependencies -->
@@ -59,10 +60,10 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.1.1</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -79,10 +80,24 @@
 					</execution>
 				</executions>
 			</plugin>
+
 			<plugin>
-				<groupId>com.oracle.substratevm</groupId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>info.picocli</groupId>
+							<artifactId>picocli-codegen</artifactId>
+							<version>${pico.version}</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.graalvm.nativeimage</groupId>
 				<artifactId>native-image-maven-plugin</artifactId>
-				<version>${graal.version}</version>
+				<version>${native-image.version}</version>
 				<executions>
 					<execution>
 						<goals>
@@ -94,19 +109,7 @@
 				<configuration>
 					<imageName>mesh-cli</imageName>
 					<mainClass>${mainClass}</mainClass>
-					<buildArgs>--enable-all-security-services
-						-H:+ReportUnsupportedElementsAtRuntime
-						-H:+ReportExceptionStackTraces
-						--no-fallback
-						-Duser.country=GB
-						-Duser.language=en
-						-H:ResourceConfigurationFiles=${basedir}/svm/resources.json
-						-Dlog4j2.jmx.disable=true
-						-Dfile.encoding=UTF-8
-						-H:+AddAllCharsets
-						--enable-https
-						--enable-http
-						--allow-incomplete-classpath</buildArgs>
+					<buildArgs>-H:+ReportUnsupportedElementsAtRuntime --allow-incomplete-classpath --enable-all-security-services</buildArgs>
 				</configuration>
 			</plugin>
 		</plugins>
