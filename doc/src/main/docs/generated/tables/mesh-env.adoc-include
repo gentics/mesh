@@ -57,7 +57,7 @@
 | Override the max height for image resize operations.
 
 | *MESH_ELASTICSEARCH_MAPPING_MODE*
-| Override the search mapping mode.
+| Override the search mapping mode. 
 
 | *MESH_ELASTICSEARCH_WAIT_FOR_IDLE*
 | Override the search idle wait flag.
