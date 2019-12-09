@@ -84,39 +84,32 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	}
 
 	public void authenticateJWT(JsonObject authInfo, Handler<AsyncResult<AuthenticationResult>> resultHandler) {
-		if (authInfo.getString("jwt") != null) {
-			// Decode and validate the JWT. A JWTUser will be returned which contains the decoded token.
-			// We will use this information to load the Mesh User from the graph.
-			jwtProvider.authenticate(authInfo, rh -> {
-				if (rh.failed()) {
-					if (log.isDebugEnabled()) {
-						log.debug("Could not authenticate token.", rh.cause());
-					} else {
-						log.warn("Could not authenticate token.");
-					}
-					resultHandler.handle(Future.failedFuture("Invalid Token"));
+		// Decode and validate the JWT. A JWTUser will be returned which contains the decoded token.
+		// We will use this information to load the Mesh User from the graph.
+		jwtProvider.authenticate(authInfo, rh -> {
+			if (rh.failed()) {
+				if (log.isDebugEnabled()) {
+					log.debug("Could not authenticate token.", rh.cause());
 				} else {
-					JsonObject decodedJwt = rh.result().principal();
-					try {
-						User user = loadUserByJWT(decodedJwt);
-						AuthenticationResult result = new AuthenticationResult(user);
-
-						// Check whether an api key was used to authenticate the user.
-						if (decodedJwt.containsKey(API_KEY_TOKEN_CODE_FIELD_NAME)) {
-							result.setUsingAPIKey(true);
-						}
-						resultHandler.handle(Future.succeededFuture(result));
-					} catch (Exception e) {
-						resultHandler.handle(Future.failedFuture(e));
-					}
+					log.warn("Could not authenticate token.");
 				}
-			});
-		} else {
-			String username = authInfo.getString("username");
-			String password = authInfo.getString("password");
-			String newPassword = authInfo.getString("newPassword");
-			authenticate(username, password, newPassword, resultHandler);
-		}
+				resultHandler.handle(Future.failedFuture("Invalid Token"));
+			} else {
+				JsonObject decodedJwt = rh.result().principal();
+				try {
+					User user = loadUserByJWT(decodedJwt);
+					AuthenticationResult result = new AuthenticationResult(user);
+
+					// Check whether an api key was used to authenticate the user.
+					if (decodedJwt.containsKey(API_KEY_TOKEN_CODE_FIELD_NAME)) {
+						result.setUsingAPIKey(true);
+					}
+					resultHandler.handle(Future.succeededFuture(result));
+				} catch (Exception e) {
+					resultHandler.handle(Future.failedFuture(e));
+				}
+			}
+		});
 	}
 
 	@Override
