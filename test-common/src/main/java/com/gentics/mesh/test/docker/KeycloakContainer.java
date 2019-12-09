@@ -33,9 +33,13 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
 
 	private boolean withConfig = false;
 
-	public KeycloakContainer(String classPathToConfig) {
-		super(prepareDockerImage(loadConfig(classPathToConfig)));
+	public KeycloakContainer(String classPathToConfig, String keycloakVersion) {
+		super(prepareDockerImage(loadConfig(classPathToConfig), keycloakVersion));
 		this.withConfig = true;
+	}
+
+	public KeycloakContainer(String classPathToConfig) {
+		this(classPathToConfig, VERSION);
 	}
 
 	@Override
@@ -60,10 +64,10 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
 		withCommand(args.stream().toArray(String[]::new));
 	}
 
-	public static ImageFromDockerfile prepareDockerImage(JsonObject realmConfig) {
+	public static ImageFromDockerfile prepareDockerImage(JsonObject realmConfig, String version) {
 		ImageFromDockerfile dockerImage = new ImageFromDockerfile("keycloak-mesh", true);
 		StringBuilder dockerFile = new StringBuilder();
-		dockerFile.append("FROM jboss/keycloak:" + VERSION + "\n");
+		dockerFile.append("FROM jboss/keycloak:" + version + "\n");
 
 		if (realmConfig != null) {
 			dockerFile.append("ADD /realm.json " + REALM_CONFIG_PATH + "\n");
