@@ -19,7 +19,9 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.pointer.JsonPointer;
 
 @MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = TestSize.FULL, startServer = true)
 public class GraphQLSearchPermissionTest extends AbstractMeshTest {
@@ -65,6 +67,7 @@ public class GraphQLSearchPermissionTest extends AbstractMeshTest {
 		JsonObject json = new JsonObject(response.toJson());
 		System.out.println(json.encodePrettily());
 		assertThat(json).compliesToAssertions(queryName);
+		assertThat(((JsonArray)JsonPointer.from("/data/result/elements").queryJson(json)).size()).isEqualTo(expectedResults);
 	}
 
 }
