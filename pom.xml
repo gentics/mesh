@@ -89,6 +89,7 @@
 		<module>madl</module>
 		<module>rest-model</module>
 		<module>api</module>
+		<module>cli</module>
 		<module>plugin-api</module>
 		<module>plugin-bom</module>
 		<module>plugin-dep</module>

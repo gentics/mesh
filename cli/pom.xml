@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>mesh-cli</artifactId>
+	<packaging>jar</packaging>
+	<name>Mesh - CLI</name>
+	<description>The Gentics Mesh CLI</description>
+
+	<parent>
+		<groupId>com.gentics.mesh</groupId>
+		<artifactId>mesh</artifactId>
+		<version>1.3.1-SNAPSHOT</version>
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<mainClass>com.gentics.mesh.cli.MeshCLI</mainClass>
+		<graal.version>19.3.0</graal.version>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-bom</artifactId>
+				<type>pom</type>
+				<scope>import</scope>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<!-- Mesh -->
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-rest-client</artifactId>
+		</dependency>
+
+		<!-- CLI -->
+		<dependency>
+			<groupId>info.picocli</groupId>
+			<artifactId>picocli</artifactId>
+			<version>4.1.2</version>
+		</dependency>
+
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-test-common</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.1.1</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<transformers>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>${mainClass}</mainClass>
+								</transformer>
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.oracle.substratevm</groupId>
+				<artifactId>native-image-maven-plugin</artifactId>
+				<version>${graal.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>native-image</goal>
+						</goals>
+						<phase>package</phase>
+					</execution>
+				</executions>
+				<configuration>
+					<imageName>mesh-cli</imageName>
+					<mainClass>${mainClass}</mainClass>
+					<buildArgs>--enable-all-security-services
+						-H:+ReportUnsupportedElementsAtRuntime
+						-H:+ReportExceptionStackTraces
+						--no-fallback
+						-Duser.country=GB
+						-Duser.language=en
+						-H:ResourceConfigurationFiles=${basedir}/svm/resources.json
+						-Dlog4j2.jmx.disable=true
+						-Dfile.encoding=UTF-8
+						-H:+AddAllCharsets
+						--enable-https
+						--enable-http
+						--allow-incomplete-classpath</buildArgs>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
