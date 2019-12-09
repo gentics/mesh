@@ -60,7 +60,7 @@ stage("Setup Build Environment") {
 					sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
 					sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
 					withCredentials([usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
-						sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.test-plugins=false -Dskip.cluster.tests=true -DskipTests ${extraFlags} clean verify"
+						sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.test-plugins=false -Dskip.cluster.tests=true -DskipTests ${extraFlags} clean install"
 					}
 				} else {
 					echo "Omitted since we don't execute tests"
