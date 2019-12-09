@@ -4,19 +4,19 @@
 
 	<groupId>com.gentics.mesh.plugin.commercial</groupId>
 	<artifactId>mesh-commercial-plugins</artifactId>
-	<version>1.3.0-SNAPSHOT</version>
+	<version>1.3.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<parent>
 		<artifactId>mesh-plugin-parent</artifactId>
 		<groupId>com.gentics.mesh</groupId>
-		<version>1.3.0</version>
+		<version>1.3.1</version>
 	</parent>
 
 	<properties>
 		<plugin.license>Commercial</plugin.license>
 		<plugin.author>Gentics</plugin.author>
-		<mesh.version>1.3.0</mesh.version>
+		<mesh.version>1.3.1</mesh.version>
 	</properties>
 
 	<modules>
