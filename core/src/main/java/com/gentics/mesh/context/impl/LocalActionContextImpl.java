@@ -20,12 +20,14 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
+import com.gentics.mesh.router.route.SecurityLoggingHandler;
 import com.gentics.mesh.util.HttpQueryUtils;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
+import io.vertx.core.spi.logging.LogDelegate;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
 
@@ -48,6 +50,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	private Promise<T> promise = Promise.promise();
 	private Class<? extends T> classOfResponse;
 	private Set<FileUpload> fileUploads = new HashSet<>();
+	private LogDelegate securityLogger = new DummyLogger();
 
 	/**
 	 * Create a new local action context.
@@ -64,6 +67,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 		this.query = getQuery(requestParameters);
 		this.user = user;
 		this.classOfResponse = classOfResponse;
+		data.put(SecurityLoggingHandler.SECURITY_LOGGER_CONTEXT_KEY, securityLogger);
 
 		for (ParameterProvider requestParameter : requestParameters) {
 			Map<String, String> paramMap = HttpQueryUtils.splitQuery(requestParameter.getQueryParameters());
