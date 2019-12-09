@@ -11,6 +11,7 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.client.MeshWebsocket;
 
+import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 
 /**
@@ -38,12 +39,17 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 	 */
 	private static OkHttpClient defaultClient() {
 		if (defaultClient == null) {
+			Dispatcher dispatcher = new Dispatcher();
+			dispatcher.setMaxRequestsPerHost(64);
+
 			defaultClient = new OkHttpClient.Builder()
 				.callTimeout(Duration.ofMinutes(1))
 				.connectTimeout(Duration.ofMinutes(1))
 				.writeTimeout(Duration.ofMinutes(1))
 				.readTimeout(Duration.ofMinutes(1))
+				.dispatcher(dispatcher)
 				.build();
+
 		}
 		return defaultClient;
 	}

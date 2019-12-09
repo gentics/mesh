@@ -98,6 +98,8 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 		meshOptions.getAuthenticationOptions().setKeystorePath(basePath + "/keystore.jkms");
 		meshOptions.getMonitoringOptions().setEnabled(false);
 		meshOptions.getSearchOptions().setStartEmbedded(startEmbeddedES);
+		meshOptions.setInitialAdminPassword("admin");
+		meshOptions.setForceInitialAdminPasswordReset(false);
 		if (!startEmbeddedES) {
 			meshOptions.getSearchOptions().setUrl(null);
 		}

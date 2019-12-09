@@ -12,6 +12,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.rest.client.MeshRestClientConfig;
 
 import io.reactivex.annotations.Nullable;
 import io.vertx.core.Handler;

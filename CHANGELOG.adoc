@@ -25,6 +25,13 @@ include::content/docs/variables.adoc-include[]
 
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
+[[v1.3.1]]
+== 1.3.1 (06.12.2019)
+
+icon:check[] Tests: The `MeshDockerServer` and `MeshLocalServer` testcontainer classes will now set the initial admin password and not use a random generated password.
+
+icon:check[] Java Rest Client: The client will now set the default max requests per host limit to `64` instead of `5` to improve concurrent request handling.
+
 [[v1.3.0]]
 == 1.3.0 (05.12.2019)
 
