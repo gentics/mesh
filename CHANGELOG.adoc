@@ -60,7 +60,7 @@ icon:plus[] Security: The initial admin password that is created during setup wi
 [[v1.2.1]]
 == 1.2.1 (22.11.2019)
 
-icon:check[] Core: Mesh now uses a different parser for processing `*.docx` and `*.pptx` files. Parsing these files will now require far less memory.
+icon:check[] Core: Mesh now uses a different parser for processing `.docx` and `.pptx` files. Parsing these files will now require far less memory.
 
 icon:check[] GraphQL: Fixed fetching node references from users. link:https://github.com/gentics/mesh/issues/393[#393] link:https://github.com/gentics/mesh/issues/934[#934]
 
