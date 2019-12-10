@@ -16,7 +16,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<mainClass>com.gentics.mesh.cli.MeshCLI2</mainClass>
+		<mainClass>com.gentics.mesh.cli.CLI</mainClass>
 		<native-image.version>19.3.0</native-image.version>
 		<pico.version>4.1.2</pico.version>
 	</properties>
@@ -109,7 +109,14 @@
 				<configuration>
 					<imageName>mesh-cli</imageName>
 					<mainClass>${mainClass}</mainClass>
-					<buildArgs>-H:+ReportUnsupportedElementsAtRuntime --allow-incomplete-classpath --enable-all-security-services</buildArgs>
+					<buildArgs>-H:+ReportUnsupportedElementsAtRuntime 
+					-Dfile.encoding=UTF-8
+					--allow-incomplete-classpath
+					-H:+AddAllCharsets
+					-Dlog4j2.jmx.disable=true
+					--enable-https
+					--enable-http
+					--enable-all-security-services</buildArgs>
 				</configuration>
 			</plugin>
 		</plugins>

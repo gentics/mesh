@@ -1,0 +1,11 @@
+[
+     {
+      "name":"com.gentics.mesh.core.rest.admin.status.MeshStatusResponse",
+      "allDeclaredMethods":true,
+      "allDeclaredConstructors":true,
+      "methods": [
+        { "name": "<init>", "parameterTypes": [] }
+      ]
+    }
+]
+    
