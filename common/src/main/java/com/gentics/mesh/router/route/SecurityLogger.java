@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.spi.logging.LogDelegate;
+import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 
 public class SecurityLogger implements LogDelegate {
@@ -22,7 +23,10 @@ public class SecurityLogger implements LogDelegate {
 	}
 
 	private String userName(RoutingContext context) {
-		return context.user().principal().getString("username");
+		return Optional.ofNullable(context.user())
+			.map(User::principal)
+			.map(principal -> principal.getString("username"))
+			.orElse("<no user>");
 	}
 
 	private String remoteAddress(RoutingContext context) {
