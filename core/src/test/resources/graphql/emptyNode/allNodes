@@ -1,0 +1,14 @@
+query nodeByUuid {
+  nodes {
+    elements {
+      uuid
+      language
+      ... on folder {
+        fields {
+          name
+        }
+      }
+    }
+  }
+}
+# [$.errors=<is-undefined>]

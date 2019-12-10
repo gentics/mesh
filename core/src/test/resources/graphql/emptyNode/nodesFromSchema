@@ -1,0 +1,16 @@
+query nodesFromSchema {
+  schema(name: "folder") {
+    nodes {
+      elements {
+        uuid
+        language
+        ... on folder {
+          fields {
+            name
+          }
+        }
+      }
+    }
+  }
+}
+# [$.errors=<is-undefined>]

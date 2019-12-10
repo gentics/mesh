@@ -1,0 +1,15 @@
+query nodeByUuid($uuid:[String]) {
+  nodes(uuids: $uuid) {
+    elements {
+      # [$.data.nodes.elements[0].language=<is-null>]
+      language
+      ... on folder {
+        # [$.data.nodes.elements[0].fields=<is-null>]
+        fields {
+          name
+        }
+      }
+    }
+  }
+}
+# [$.errors=<is-undefined>]
