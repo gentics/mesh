@@ -89,8 +89,12 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	@Override
 	public TraversalResult<? extends Node> findAll() {
-		ProjectImpl project = in(HAS_NODE_ROOT, ProjectImpl.class).next();
+		ProjectImpl project = getProject();
 		return project.findNodes();
+	}
+
+	private ProjectImpl getProject() {
+		return in(HAS_NODE_ROOT, ProjectImpl.class).next();
 	}
 
 	@Override
@@ -156,12 +160,12 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	@Override
 	public Node findByUuid(String uuid) {
-		return db().getVerticesTraversal(NodeImpl.class, "uuid", uuid).nextOrNull();
+		return getProject().findNode(uuid);
 	}
 
 	@Override
 	public Node loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
-		Node element = ac.getProject().findNode(uuid);
+		Node element = findByUuid(uuid);
 		if (element == null) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
 		}
