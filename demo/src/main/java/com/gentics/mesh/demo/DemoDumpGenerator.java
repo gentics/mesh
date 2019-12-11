@@ -23,10 +23,15 @@ public class DemoDumpGenerator {
 
 	public static void main(String[] args) throws Exception {
 		DemoDumpGenerator generator = new DemoDumpGenerator();
-		generator.cleanup();
-		generator.init();
-		generator.dump();
-		generator.shutdown();
+		try {
+			generator.cleanup();
+			generator.init();
+			generator.dump();
+			generator.shutdown();
+		} catch	(Throwable e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 
 	private MeshComponent meshInternal;

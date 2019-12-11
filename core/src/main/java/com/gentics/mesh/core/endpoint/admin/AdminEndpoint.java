@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.endpoint.admin;
 
+import static com.gentics.mesh.context.InternalActionContext.internalHandler;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_START;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_FINISHED;
@@ -77,6 +78,8 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 
 		secureAll();
 
+		addSecurityLogger();
+
 		addBackupHandler();
 		addRestoreHandler();
 		addClusterStatusHandler();
@@ -89,6 +92,13 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		addPluginHandler();
 		addDebugInfoHandler();
 		addRuntimeConfigHandler();
+	}
+
+	private void addSecurityLogger() {
+		getRouter().route().handler(internalHandler((rc, ac) -> {
+			ac.getSecurityLogger().info("Accessed path " + rc.request().path());
+			rc.next();
+		}));
 	}
 
 	private void addPluginHandler() {

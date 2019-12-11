@@ -58,6 +58,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 
 	@Override
 	public void handle(RoutingContext rc) {
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		if (isSilentError(rc)) {
 			log.trace("Silenced error: ", rc.failure());
 			return;
@@ -90,8 +91,8 @@ public class FailureHandler implements Handler<RoutingContext> {
 			if (log.isDebugEnabled()) {
 				log.debug("Got failure with 401 code.");
 			}
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String msg = I18NUtil.get(ac, "error_not_authorized");
+			ac.getSecurityLogger().info("Access to resource denied.");
 			rc.response().setStatusCode(401).end(new GenericMessageResponse(msg).toJson());
 			return;
 		} else {
@@ -126,6 +127,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 				log.error("Could not find resource for path {" + toPath(rc) + "}");
 				break;
 			case 403:
+				ac.getSecurityLogger().info("Non-authorized access for path " + toPath(rc));
 				log.error("Request for request in path: " + toPath(rc) + " is not authorized.");
 				break;
 			case 400:
@@ -146,7 +148,6 @@ public class FailureHandler implements Handler<RoutingContext> {
 			rc.response().putHeader("Content-Type", APPLICATION_JSON_UTF8);
 			if (failure != null && ((failure.getCause() instanceof MeshJsonException) || failure instanceof MeshSchemaException)) {
 				rc.response().setStatusCode(400);
-				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 				String msg = I18NUtil.get(ac, "error_parse_request_json_error");
 				rc.response().end(new GenericMessageResponse(msg, failure.getMessage()).toJson());
 			}
@@ -158,7 +159,6 @@ public class FailureHandler implements Handler<RoutingContext> {
 			} else {
 				// We don't want to output too much information when an unexpected error occurs.
 				// That's why we don't reuse the error message here.
-				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 				String msg = I18NUtil.get(ac, "error_internal");
 				rc.response().setStatusCode(500);
 				rc.response().end(JsonUtil.toJson(new GenericMessageResponse(msg)));
