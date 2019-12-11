@@ -174,6 +174,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			.withField(PROJECT_KEY_PROPERTY, STRING));
 
 		index.createIndex(vertexIndex(NodeImpl.class)
+			.withPostfix("uuid")
+			.withField("uuid", STRING));
+
+		index.createIndex(vertexIndex(NodeImpl.class)
+			.withPostfix("uuid_project")
+			.withField("uuid", STRING)
+			.withField(PROJECT_KEY_PROPERTY, STRING));
+
+		index.createIndex(vertexIndex(NodeImpl.class)
 			.withPostfix("schema")
 			.withField(SCHEMA_CONTAINER_KEY_PROPERTY, STRING));
 

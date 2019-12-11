@@ -198,4 +198,11 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * @return
 	 */
 	TraversalResult<? extends Node> findNodes();
+
+	/**
+	 * Find a node in this project. Null if the node could not be found.
+	 * @param uuid
+	 * @return
+	 */
+	Node findNode(String uuid);
 }

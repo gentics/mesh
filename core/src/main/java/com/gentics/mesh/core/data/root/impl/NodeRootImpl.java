@@ -156,12 +156,12 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	@Override
 	public Node findByUuid(String uuid) {
-		return db().index().findByUuid(NodeImpl.class, uuid);
+		return db().getVerticesTraversal(NodeImpl.class, "uuid", uuid).nextOrNull();
 	}
 
 	@Override
 	public Node loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
-		Node element = findByUuid(uuid);
+		Node element = ac.getProject().findNode(uuid);
 		if (element == null) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
 		}
