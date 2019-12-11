@@ -89,11 +89,11 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	@Override
 	public TraversalResult<? extends Node> findAll() {
-		ProjectImpl project = getProject();
+		Project project = getProject();
 		return project.findNodes();
 	}
 
-	private ProjectImpl getProject() {
+	private Project getProject() {
 		return in(HAS_NODE_ROOT, ProjectImpl.class).next();
 	}
 
