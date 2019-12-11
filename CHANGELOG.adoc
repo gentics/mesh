@@ -16,7 +16,7 @@ include::content/docs/variables.adoc-include[]
 
 [[Unreleased]]
 
-icon:check[] Fixed a bug in the `{projectX}/nodes/{nodeUUIDY}` that allowed nodes to be found even if `nodeUUIDY` is not part of `projectX`.
+icon:check[] Fixed a bug in the `{project}/nodes/{node}` endpoint that allowed nodes to be found even if the requested node is not part of the project.
 
 icon:check[] Fixed a bug that caused errors if an entity was requested by UUID and that UUID was from an entity of another type.
 
