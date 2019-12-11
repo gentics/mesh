@@ -1600,16 +1600,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(node).hasUuid(uuid);
 	}
 
-	@Test
-	public void testReadNodeWithUuidFromOtherProject() {
-		createProject("testProject");
-		call(() -> client().findNodeByUuid("testProject", folderUuid()), NOT_FOUND, "object_not_found_for_uuid");
-	}
-
-	@Test
-	public void testReadNodeWithUuidOfOtherEntity() {
-		call(() -> client().findNodeByUuid(PROJECT_NAME, projectUuid()), NOT_FOUND, "object_not_found_for_uuid");
-	}
 
 	@Test
 	@Override

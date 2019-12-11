@@ -404,9 +404,6 @@ public class OrientDBIndexHandler implements IndexHandler {
 			OIndex<?> index = vertexType.getClassIndex(type);
 			if (index != null) {
 				Object recordId = index.get(uuid);
-				if (!graph.getVertex(recordId).getProperty("ferma_type").equals(foundImpl.getSimpleName())) {
-					return null;
-				}
 				if (recordId != null) {
 					return (T) graph.getFramedVertexExplicit(classOfT, recordId);
 				}
