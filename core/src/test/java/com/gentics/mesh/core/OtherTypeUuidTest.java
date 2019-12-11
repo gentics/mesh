@@ -5,14 +5,21 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
+import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+
+import io.vertx.core.json.JsonObject;
 
 /**
  * Tests that the findByUuid methods return 404 if a UUID of an entity of another type is provided.
@@ -88,6 +95,26 @@ public class OtherTypeUuidTest extends AbstractMeshTest {
 	@Test
 	public void testRole() {
 		expect404(client().findRoleByUuid(folderUuid()));
+	}
+
+	@Test
+	public void testLinkRendering() {
+		String resolvedLink = client().resolveLinks("{{mesh.link('" + projectUuid() + "')}}",
+			new NodeParametersImpl().setResolveLinks(LinkType.SHORT)).blockingGet();
+		assertThat(resolvedLink).isEqualTo("/error/404");
+	}
+
+	@Test
+	public void testGraphQL() {
+		GraphQLRequest request = new GraphQLRequest()
+			.setQuery("query nodeByUuid($uuid:String) {\n" +
+				"  node(uuid: $uuid) {\n" +
+				"    uuid\n" +
+				"  }\n" +
+				"}")
+			.setVariables(new JsonObject().put("uuid", projectUuid()));
+		GraphQLResponse graphQLResponse = client().graphql(PROJECT_NAME, request).blockingGet();
+		assertThat(graphQLResponse.getData().getJsonObject("node")).isNull();
 	}
 
 	private void expect404(MeshRequest<?> request) {

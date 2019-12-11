@@ -377,7 +377,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
 	@Override
 	public Node findNodeByUuid(String uuid) {
-		return db().index().findByUuid(NodeImpl.class, uuid);
+		return db().getVerticesTraversal(NodeImpl.class, "uuid", uuid).nextOrNull();
 	}
 
 }
