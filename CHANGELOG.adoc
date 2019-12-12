@@ -14,12 +14,6 @@ include::content/docs/variables.adoc-include[]
 
 = Gentics Mesh Changelog
 
-[[Unreleased]]
-
-icon:check[] Fixed a bug in the `{project}/nodes/{node}` endpoint that allowed nodes to be found even if the requested node is not part of the project.
-
-icon:check[] Fixed a bug that caused errors if an entity was requested by UUID and that UUID was from an entity of another type.
-
 [[expected]]
 == Planned Future Changes
 
@@ -31,7 +25,12 @@ icon:check[] Fixed a bug that caused errors if an entity was requested by UUID a
 
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
-[[Unreleased]]
+[[v1.3.2]]
+== 1.3.2 (12.12.2019)
+
+icon:check[] Fixed a bug in the `{project}/nodes/{node}` endpoint that allowed nodes to be found even if the requested node is not part of the project.
+
+icon:check[] Fixed a bug that caused errors if an entity was requested by UUID and that UUID was from an entity of another type.
 
 icon:plus[] Security: A dedicated logger for security related actions has been added. This logger always adds the IP address and username of the client. You can configure the logger in the `logback.xml` using the name `SecurityLogger`.
 
