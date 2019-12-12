@@ -109,10 +109,10 @@ stage("Setup Build Environment") {
 					sshagent(["git"]) {
 						if (Boolean.valueOf(params.runDeploy)) {
 							withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
-								sh "mvn -U -B -DskipTests clean deploy"
+								sh "mvn -U -B -Dgpg.skip=false -DskipTests clean deploy"
 							}
 						} else {
-							sh "mvn -B -DskipTests clean package"
+							sh "mvn -B -Dgpg.skip=false -DskipTests clean verify"
 						}
 					}
 				} else {
