@@ -14,7 +14,6 @@ public class MeshMeshIntegrationTest {
 	public void testMeshMesh() throws Exception {
 		MeshOptions optionA = new MeshOptions().setNodeName("A");
 		optionA.getAuthenticationOptions().setKeystorePassword("ABC");
-		optionA.getSearchOptions().setStartEmbedded(false);
 		optionA.getSearchOptions().setUrl(null);
 		optionA.getStorageOptions().setDirectory(null);
 		optionA.getHttpServerOptions().setPort(8081);
@@ -24,7 +23,6 @@ public class MeshMeshIntegrationTest {
 
 		MeshOptions optionB = new MeshOptions().setNodeName("B");
 		optionB.getAuthenticationOptions().setKeystorePassword("ABC");
-		optionB.getSearchOptions().setStartEmbedded(false);
 		optionB.getSearchOptions().setUrl(null);
 		optionB.getStorageOptions().setDirectory(null);
 		optionB.getHttpServerOptions().setPort(8083);

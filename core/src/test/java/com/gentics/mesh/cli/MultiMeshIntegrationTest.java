@@ -22,7 +22,6 @@ public class MultiMeshIntegrationTest {
 		for (int i = 0; i <= INSTANCE_COUNT; i++) {
 			MeshOptions option = new MeshOptions().setNodeName("M" + i);
 			option.getAuthenticationOptions().setKeystorePassword("ABC");
-			option.getSearchOptions().setStartEmbedded(false);
 			option.getSearchOptions().setUrl(null);
 			option.getStorageOptions().setDirectory("data/m" + i);
 			option.getHttpServerOptions().setPort(8000 + i);

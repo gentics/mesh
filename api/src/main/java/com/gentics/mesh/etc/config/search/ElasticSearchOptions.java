@@ -107,7 +107,7 @@ public class ElasticSearchOptions implements Option {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether to deploy and start the included Elasticsearch server.")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_START_EMBEDDED_ENV, description = "Override the start embedded elasticsearch server flag.")
-	private boolean startEmbedded = true;
+	private boolean startEmbedded = false;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("String of arguments which will be used for starting the Elasticsearch server instance")

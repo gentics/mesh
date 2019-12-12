@@ -30,8 +30,6 @@ public class MeshImplTest {
 	}
 
 	public MeshOptions options() {
-		MeshOptions opts = new MeshOptions();
-		opts.getSearchOptions().setStartEmbedded(false);
-		return opts;
+		return new MeshOptions();
 	}
 }

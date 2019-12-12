@@ -503,7 +503,6 @@ public class MeshTestContext extends TestWatcher {
 			}
 			elasticsearch.waitingFor(Wait.forHttp("/"));
 
-			searchOptions.setStartEmbedded(false);
 			if (settings.elasticsearch() == UNREACHABLE) {
 				searchOptions.setUrl("http://localhost:1");
 			} else {
@@ -526,7 +525,6 @@ public class MeshTestContext extends TestWatcher {
 			if (!elasticsearch.isRunning()) {
 				elasticsearch.start();
 			}
-			searchOptions.setStartEmbedded(false);
 			searchOptions.setUrl("http://" + ipAddressViaToxiproxy + ":" + portViaToxiproxy);
 			break;
 		case EMBEDDED:
@@ -535,11 +533,9 @@ public class MeshTestContext extends TestWatcher {
 			break;
 		case NONE:
 			searchOptions.setUrl(null);
-			searchOptions.setStartEmbedded(false);
 			break;
 		case TRACKING:
 			System.setProperty(TrackingSearchProvider.TEST_PROPERTY_KEY, "true");
-			searchOptions.setStartEmbedded(false);
 			break;
 		default:
 			break;

@@ -26,7 +26,6 @@ public class DevRunner {
 	public static void main(String[] args) throws Exception {
 		LoggingConfigurator.init();
 		MeshOptions defaultOption = new MeshOptions();
-		defaultOption.getSearchOptions().setStartEmbedded(false);
 		defaultOption.getSearchOptions().setUrl(null);
 		MeshOptions options = OptionsLoader.createOrloadOptions(defaultOption, args);
 
