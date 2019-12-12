@@ -89,8 +89,12 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	@Override
 	public TraversalResult<? extends Node> findAll() {
-		ProjectImpl project = in(HAS_NODE_ROOT, ProjectImpl.class).next();
+		Project project = getProject();
 		return project.findNodes();
+	}
+
+	private Project getProject() {
+		return in(HAS_NODE_ROOT, ProjectImpl.class).next();
 	}
 
 	@Override
@@ -156,7 +160,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	@Override
 	public Node findByUuid(String uuid) {
-		return db().index().findByUuid(NodeImpl.class, uuid);
+		return getProject().findNode(uuid);
 	}
 
 	@Override

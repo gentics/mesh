@@ -372,6 +372,13 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
+	public Node findNode(String uuid) {
+		return db().getVerticesTraversal(NodeImpl.class,
+			new String[] { PROJECT_KEY_PROPERTY, "uuid" },
+			new Object[] { getUuid(), uuid }).nextOrNull();
+	}
+
+	@Override
 	public Branch findBranch(String branchNameOrUuid) {
 		return findBranchOpt(branchNameOrUuid)
 			.orElseThrow(() -> error(BAD_REQUEST, "branch_error_not_found", branchNameOrUuid));

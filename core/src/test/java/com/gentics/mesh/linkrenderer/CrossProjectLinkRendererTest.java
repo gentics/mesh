@@ -1,6 +1,9 @@
 package com.gentics.mesh.linkrenderer;
 
+import static com.gentics.mesh.FieldUtil.createStringField;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 
@@ -8,16 +11,18 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.madl.tx.Tx;
-import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -49,9 +54,9 @@ public class CrossProjectLinkRendererTest extends AbstractMeshTest {
 		// Create the node which we link to
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setLanguage("en");
-		nodeCreateRequest.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
-		nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
-		nodeCreateRequest.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		nodeCreateRequest.getFields().put("teaser", createStringField("some teaser"));
+		nodeCreateRequest.getFields().put("slug", createStringField("new-page.html"));
+		nodeCreateRequest.getFields().put("content", createStringField("Blessed mealtime again!"));
 		nodeCreateRequest.setSchemaName("content");
 		nodeCreateRequest.setParentNodeUuid(projectResponse.getRootNode().getUuid());
 		nodeResponse = call(() -> client().createNode(OTHER_PROJECT_NAME, nodeCreateRequest));
@@ -68,10 +73,16 @@ public class CrossProjectLinkRendererTest extends AbstractMeshTest {
 			String linkToNode = replacer.resolve(ac, initialBranchUuid(), ContainerType.DRAFT, nodeResponse.getUuid(), LinkType.SHORT, "en");
 			assertEquals("Check rendered content", "https://dummy.io/new-page.html", linkToNode);
 
-			linkToNode = replacer.resolve(ac, initialBranchUuid(), ContainerType.DRAFT, project().getNodeRoot().findByUuid(nodeResponse.getUuid()),
-					LinkType.SHORT, "en");
+			Node node = meshRoot().getProjectRoot().findByName(OTHER_PROJECT_NAME).findNode(nodeResponse.getUuid());
+			linkToNode = replacer.resolve(ac, initialBranchUuid(), ContainerType.DRAFT, node, LinkType.SHORT, "en");
 			assertEquals("Check rendered content", "https://dummy.io/new-page.html", linkToNode);
 		}
 	}
 
+	@Test
+	public void testNodeContentRendering() {
+		NodeResponse createResponse = createNode("name", StringField.of("{{mesh.link('" + nodeResponse.getUuid() + "')}}"));
+		NodeResponse nodeResponse = client().findNodeByUuid(PROJECT_NAME, createResponse.getUuid(), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)).blockingGet();
+		assertThat(nodeResponse).hasStringField("name", "https://dummy.io/new-page.html");
+	}
 }

@@ -14,6 +14,12 @@ include::content/docs/variables.adoc-include[]
 
 = Gentics Mesh Changelog
 
+[[Unreleased]]
+
+icon:check[] Fixed a bug in the `{project}/nodes/{node}` endpoint that allowed nodes to be found even if the requested node is not part of the project.
+
+icon:check[] Fixed a bug that caused errors if an entity was requested by UUID and that UUID was from an entity of another type.
+
 [[expected]]
 == Planned Future Changes
 
