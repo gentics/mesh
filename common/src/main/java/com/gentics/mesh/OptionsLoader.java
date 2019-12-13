@@ -51,10 +51,18 @@ public final class OptionsLoader {
 	 */
 	public static MeshOptions createOrloadOptions(MeshOptions defaultOption, String... args) {
 		MeshOptions options = loadMeshOptions(defaultOption);
+		applyNonYamlProperties(defaultOption, options);
 		applyEnvironmentVariables(options);
 		applyCommandLineArgs(options, args);
 		options.validate();
 		return options;
+	}
+
+	private static void applyNonYamlProperties(MeshOptions defaultOption, MeshOptions options) {
+		if (defaultOption != null) {
+			options.setInitialAdminPassword(defaultOption.getInitialAdminPassword());
+			options.setForceInitialAdminPasswordReset(defaultOption.isForceInitialAdminPasswordReset());
+		}
 	}
 
 	/**

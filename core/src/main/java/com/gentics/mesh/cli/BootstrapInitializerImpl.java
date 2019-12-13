@@ -873,8 +873,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 					if (config.isForceInitialAdminPasswordReset()) {
 						sb.append("- Password reset forced on initial login.\n");
 						adminUser.setForcedPasswordChange(true);
+						sb.append("-----------------------\n");
 					}
-					sb.append("-----------------------\n");
 					initialPasswordInfo = sb.toString();
 				} else {
 					log.warn("No initial password specified. Creating admin user without password!");

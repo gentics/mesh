@@ -28,6 +28,9 @@ public class DevRunner {
 		MeshOptions defaultOption = new MeshOptions();
 		defaultOption.getSearchOptions().setStartEmbedded(false);
 		defaultOption.getSearchOptions().setUrl(null);
+		defaultOption.setInitialAdminPassword("admin");
+		defaultOption.setForceInitialAdminPasswordReset(false);
+		defaultOption.getDebugInfoOptions().setLogEnabled(false);
 		MeshOptions options = OptionsLoader.createOrloadOptions(defaultOption, args);
 
 		// options.setAdminPassword("admin");
