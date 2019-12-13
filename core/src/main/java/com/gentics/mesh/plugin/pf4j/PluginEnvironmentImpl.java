@@ -1,5 +1,7 @@
 package com.gentics.mesh.plugin.pf4j;
 
+import java.util.Objects;
+
 import javax.inject.Inject;
 
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
@@ -8,7 +10,9 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
+import com.gentics.mesh.RestAPIVersion;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.rest.client.MeshRestClientConfig;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
@@ -54,9 +58,20 @@ public class PluginEnvironmentImpl implements PluginEnvironment {
 
 	@Override
 	public MeshRestClient createAdminClient() {
+		return createAdminClient(RestAPIVersion.V1);
+	}
+
+	@Override
+	public MeshRestClient createAdminClient(RestAPIVersion version) {
+		Objects.requireNonNull(version);
 		int port = options.getHttpServerOptions().getPort();
 		String host = determineHostString(options);
-		MeshRestClient client = MeshRestClient.create(host, port, false);
+		MeshRestClient client = MeshRestClient.create(MeshRestClientConfig.newConfig()
+			.setPort(port)
+			.setHost(host)
+			.setBasePath(version.getBasePath())
+			.build()
+		);
 		client.setAPIKey(adminToken());
 		return client;
 	}
