@@ -1,11 +1,12 @@
 package com.gentics.mesh.graphql.filter;
 
-import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.graphqlfilter.filter.Filter;
-import com.gentics.graphqlfilter.filter.MappedFilter;
-
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
+
+import com.gentics.graphqlfilter.filter.Filter;
+import com.gentics.graphqlfilter.filter.MappedFilter;
+import com.gentics.mesh.core.data.GraphFieldContainer;
 
 /**
  * Same as {@link MappedFilter}, but additionally tests if the input node is of the provided schema.
@@ -23,9 +24,11 @@ public class FieldMappedFilter<T, Q> extends MappedFilter<GraphFieldContainer, T
 
 	@Override
 	public Predicate<GraphFieldContainer> createPredicate(Q query) {
+		// Leave the node in the end result if there is no content.
+		Predicate<GraphFieldContainer> isNull = Objects::isNull;
 		// Return always true if the node is not of the provided schema.
 		Predicate<GraphFieldContainer> schemaCheck = node -> !node.getSchemaContainerVersion().getName().equals(schemaName);
 		Predicate<GraphFieldContainer> predicate = super.createPredicate(query);
-		return schemaCheck.or(predicate);
+		return isNull.or(schemaCheck).or(predicate);
 	}
 }

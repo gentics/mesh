@@ -1,16 +1,16 @@
 package com.gentics.mesh.assertj.impl;
 
-import com.gentics.mesh.util.DateUtils;
-import com.gentics.mesh.util.UUIDUtil;
-import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.PathNotFoundException;
-import io.vertx.core.json.JsonObject;
-import org.assertj.core.api.AbstractAssert;
-import org.jetbrains.annotations.NotNull;
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
@@ -19,12 +19,17 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.assertj.core.api.AbstractAssert;
+import org.jetbrains.annotations.NotNull;
+
+import com.gentics.mesh.util.DateUtils;
+import com.gentics.mesh.util.MapUtil;
+import com.gentics.mesh.util.UUIDUtil;
+import com.google.common.collect.ImmutableMap;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
+
+import io.vertx.core.json.JsonObject;
 
 public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObject> {
 	/**
@@ -114,11 +119,16 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		if (ins == null) {
 			fail("Could not find query file {" + name + "}");
 		}
-		return compliesToAssertions(ins);
+		return compliesToAssertions(ins, ImmutableMap.of("USED_API_BASE_PATH", "/api/" + version));
 	}
 
 	@NotNull
 	private JsonObjectAssert compliesToAssertions(InputStream ins) {
+		return compliesToAssertions(ins, Collections.emptyMap());
+	}
+
+	@NotNull
+	private JsonObjectAssert compliesToAssertions(InputStream ins, Map<String, String> additionalVariables) {
 		Scanner scanner = new Scanner(ins);
 		try {
 			int lineNr = 1;
@@ -130,7 +140,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 					int start = line.indexOf("# [") + 3;
 					int end = line.lastIndexOf("]");
 					String assertion = line.substring(start, end);
-					evaluteAssertion(assertion, lineNr);
+					evaluateAssertion(assertion, lineNr, additionalVariables);
 				}
 				lineNr++;
 			}
@@ -141,7 +151,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		return this;
 	}
 
-	private void evaluteAssertion(String assertion, int lineNr) {
+	private void evaluateAssertion(String assertion, int lineNr, Map<String, String> additionalVariables) {
 		String[] parts = assertion.split("=", 2);
 		if (parts.length <= 1) {
 			fail("Assertion on line {" + lineNr + "} is not complete {" + assertion + "}");
@@ -161,16 +171,17 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		} else if ("<is-undefined>".equals(value)) {
 			pathIsUndefined(path, msg);
 		} else {
-			has(path, replaceVariables(value), msg);
+			has(path, replaceVariables(value, additionalVariables), msg);
 		}
 	}
 
-	private String replaceVariables(String value) {
-		Pattern pattern = Pattern.compile("%(.*)%");
+	private String replaceVariables(String value, Map<String, String> additionalVariables) {
+		Pattern pattern = Pattern.compile("%([^%]*)%");
 		Matcher matcher = pattern.matcher(value);
+		Map<String, String> variables = MapUtil.merge(staticVariables, additionalVariables);
 		while (matcher.find()) {
 			String varname = matcher.group(1);
-			value = matcher.replaceFirst(staticVariables.get(varname));
+			value = matcher.replaceFirst(variables.get(varname));
 			matcher = pattern.matcher(value);
 		}
 		return value;

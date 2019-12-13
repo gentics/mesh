@@ -84,7 +84,6 @@ public class GraphQLEmptyNodeTest extends AbstractMeshTest {
 			.setVariables(variables);
 		GraphQLResponse graphQLResponse = client().graphql(PROJECT_NAME, request).blockingGet();
 		JsonObject json = new JsonObject(graphQLResponse.toJson());
-		System.out.println(json);
 		assertThat(json).compliesToAssertions(queryName);
 
 		return graphQLResponse;

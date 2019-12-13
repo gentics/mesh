@@ -5,19 +5,19 @@
 				# [$.data.node.fields.html=some html]
 				html(linkType: FULL)
 	
-				# [$.data.node.fields.htmlLink=Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
+				# [$.data.node.fields.htmlLink=Link: %USED_API_BASE_PATH%/dummy/webroot/News/News%20Overview.en.html]
 				htmlLink(linkType: FULL)
 	
 				# [$.data.node.fields.string=some string]
 				string(linkType: FULL)
 	
-				# [$.data.node.fields.stringLink=Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
+				# [$.data.node.fields.stringLink=Link: %USED_API_BASE_PATH%/dummy/webroot/News/News%20Overview.en.html]
 				stringLink(linkType: FULL)
 
-				# [$.data.node.fields.stringList[3]=D Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
+				# [$.data.node.fields.stringList[3]=D Link: %USED_API_BASE_PATH%/dummy/webroot/News/News%20Overview.en.html]
 				stringList(linkType: FULL)
 
-				# [$.data.node.fields.htmlList[3]=D Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
+				# [$.data.node.fields.htmlList[3]=D Link: %USED_API_BASE_PATH%/dummy/webroot/News/News%20Overview.en.html]
 				htmlList(linkType: FULL)
 			}
 		}

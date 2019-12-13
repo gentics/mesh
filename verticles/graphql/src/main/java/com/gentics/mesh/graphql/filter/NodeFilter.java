@@ -1,20 +1,21 @@
 package com.gentics.mesh.graphql.filter;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 import com.gentics.graphqlfilter.filter.DateFilter;
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.StartMainFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
+import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.graphql.context.GraphQLContext;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /**
  * Filters nodes.
@@ -45,9 +46,9 @@ public class NodeFilter extends StartMainFilter<NodeContent> {
 		filters.add(new MappedFilter<>("creator", "Filters by creator", UserFilter.filter(),
 			content -> content.getNode().getCreator()));
 		filters.add(new MappedFilter<>("edited", "Filters by node update timestamp", DateFilter.filter(),
-			content -> content.getContainer().getLastEditedTimestamp()));
+			content -> content.getContainer().map(EditorTrackingVertex::getLastEditedTimestamp).orElse(null)));
 		filters.add(new MappedFilter<>("editor", "Filters by editor", UserFilter.filter(),
-			content -> content.getContainer().getEditor()));
+			content -> content.getContainer().map(EditorTrackingVertex::getEditor).orElse(null)));
 		filters.add(new MappedFilter<>("fields", "Filters by fields", createAllFieldFilters(), Function.identity()));
 
 		return filters;
@@ -64,6 +65,6 @@ public class NodeFilter extends StartMainFilter<NodeContent> {
 	private FilterField<NodeContent, ?> createFieldFilter(SchemaContainer schema) {
 		return new MappedFilter<>(schema.getName(), "Filters by fields of the " + schema.getName() + " schema",
 			FieldFilter.filter(context, schema.getLatestVersion().getSchema()),
-			NodeContent::getContainer);
+			content -> content.getContainer().orElse(null));
 	}
 }

@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -36,6 +37,7 @@ import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.NodeFilter;
+import com.gentics.mesh.handler.Versioned;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -55,6 +57,10 @@ public abstract class AbstractTypeProvider {
 	public static final String LINK_TYPE_NAME = "LinkType";
 
 	private final MeshOptions options;
+	public static final Versioned<Predicate<NodeContent>> nodeContentFilter = Versioned.<Predicate<NodeContent>>
+		since(1, content -> content.getContainer().isPresent())
+		.since(3, content -> true)
+		.build();
 
 	public AbstractTypeProvider(MeshOptions options) {
 		this.options = options;
@@ -494,7 +500,7 @@ public abstract class AbstractTypeProvider {
 			// Now lets try to load the containers for those found nodes - apply the language fallback
 			.map(node -> new NodeContent(node, node.findVersion(gc, languageTags), languageTags))
 			// Filter nodes without a container
-			.filter(content -> content.getContainer() != null);
+			.filter(nodeContentFilter.forVersion(gc));
 
 		return applyNodeFilter(env, contents);
 	}

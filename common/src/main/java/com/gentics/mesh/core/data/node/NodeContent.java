@@ -1,17 +1,18 @@
 package com.gentics.mesh.core.data.node;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-
 import java.util.List;
+import java.util.Optional;
+
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 
 /**
  * Container object for handling nodes in combination with a specific known container.
  */
 public class NodeContent {
 
-	Node node;
-	NodeGraphFieldContainer container;
-	List<String> languageFallback;
+	private Node node;
+	private NodeGraphFieldContainer container;
+	private List<String> languageFallback;
 
 	/**
 	 * Create a new node content.
@@ -34,8 +35,8 @@ public class NodeContent {
 		return node;
 	}
 
-	public NodeGraphFieldContainer getContainer() {
-		return container;
+	public Optional<NodeGraphFieldContainer> getContainer() {
+		return Optional.ofNullable(container);
 	}
 
 	public List<String> getLanguageFallback() {

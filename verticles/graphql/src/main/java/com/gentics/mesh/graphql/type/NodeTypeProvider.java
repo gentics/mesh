@@ -32,10 +32,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.BasicFieldContainer;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
@@ -300,7 +301,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 				Stream<NodeContent> nodes = content.getNode().getChildrenStream(gc)
 					.map(item -> new NodeContent(item, item.findVersion(gc, languageTags), languageTags))
-					.filter(item -> item.getContainer() != null);
+					.filter(nodeContentFilter.forVersion(gc));
 
 				return applyNodeFilter(env, nodes);
 			}, NODE_PAGE_TYPE_NAME)
@@ -377,24 +378,20 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				if (content == null) {
 					return null;
 				}
-				NodeGraphFieldContainer container = content.getContainer();
-				if (container == null) {
-					return null;
-				}
-				ContainerType containerType = ContainerType.forVersion(gc.getVersioningParameters().getVersion());
-				String branchUuid = gc.getBranch().getUuid();
-				String languageTag = container.getLanguageTag();
-				return container.getParentNode().getPath(gc, branchUuid, containerType, languageTag);
+				return content.getContainer().map(container -> {
+					ContainerType containerType = ContainerType.forVersion(gc.getVersioningParameters().getVersion());
+					String branchUuid = gc.getBranch().getUuid();
+					String languageTag = container.getLanguageTag();
+					return container.getParentNode().getPath(gc, branchUuid, containerType, languageTag);
+				}).orElse(null);
 			}).build(),
 
 			// .edited
 			newFieldDefinition().name("edited").description("ISO8601 formatted edit timestamp.").type(GraphQLString).dataFetcher(env -> {
 				NodeContent content = env.getSource();
-				NodeGraphFieldContainer container = content.getContainer();
-				if (container == null) {
-					return null;
-				}
-				return container.getLastEditedDate();
+				return content.getContainer()
+					.map(EditorTrackingVertex::getLastEditedDate)
+					.orElse(null);
 			}).build(),
 
 			// .editor
@@ -408,11 +405,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					if (content == null) {
 						return null;
 					}
-					NodeGraphFieldContainer container = content.getContainer();
-					if (container == null) {
-						return null;
-					}
-					return container.getSchemaContainerVersion();
+					return content.getContainer()
+						.map(NodeGraphFieldContainer::getSchemaContainerVersion)
+						.orElse(null);
 				}).build(),
 
 			// .isPublished
@@ -423,11 +418,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					if (content == null) {
 						return null;
 					}
-					NodeGraphFieldContainer container = content.getContainer();
-					if (container == null) {
-						return null;
-					}
-					return container.isPublished(gc.getBranch().getUuid());
+					return content.getContainer()
+						.map(container -> container.isPublished(gc.getBranch().getUuid()))
+						.orElse(null);
 				}).build(),
 
 			// .isDraft
@@ -435,21 +428,17 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				env -> {
 					GraphQLContext gc = env.getContext();
 					NodeContent content = env.getSource();
-					NodeGraphFieldContainer container = content.getContainer();
-					if (container == null) {
-						return null;
-					}
-					return container.isDraft(gc.getBranch().getUuid());
+					return content.getContainer()
+						.map(container -> container.isDraft(gc.getBranch().getUuid()))
+						.orElse(null);
 				}).build(),
 
 			// .version
 			newFieldDefinition().name("version").description("Version of the content.").type(GraphQLString).dataFetcher(env -> {
 				NodeContent content = env.getSource();
-				NodeGraphFieldContainer container = content.getContainer();
-				if (container == null) {
-					return null;
-				}
-				return container.getVersion().getFullVersion();
+				return content.getContainer()
+					.map(container -> container.getVersion().getFullVersion())
+					.orElse(null);
 			}).build(),
 
 			// .versions
@@ -472,21 +461,17 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			// .language
 			newFieldDefinition().name("language").description("The language of this content.").type(GraphQLString).dataFetcher(env -> {
 				NodeContent content = env.getSource();
-				NodeGraphFieldContainer container = content.getContainer();
-				if (container == null) {
-					return null;
-				}
-				return container.getLanguageTag();
+				return content.getContainer()
+					.map(BasicFieldContainer::getLanguageTag)
+					.orElse(null);
 			}).build(),
 
 			// .displayName
 			newFieldDefinition().name("displayName").description("The value of the display field.").type(GraphQLString).dataFetcher(env -> {
 				NodeContent content = env.getSource();
-				NodeGraphFieldContainer container = content.getContainer();
-				if (container == null) {
-					return null;
-				}
-				return container.getDisplayFieldValue();
+				return content.getContainer()
+					.map(NodeGraphFieldContainer::getDisplayFieldValue)
+					.orElse(null);
 			}).build()
 		);
 
@@ -501,7 +486,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.dataFetcher(env -> {
 				// The fields can be accessed via the container so we can directly pass it along.
 				NodeContent content = env.getSource();
-				return content.getContainer();
+				return content.getContainer().orElse(null);
 			}).build());
 
 			return withNodeFields;
@@ -574,8 +559,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		if (content == null) {
 			return null;
 		}
-		User user = content.getContainer().getEditor();
-		return gc.requiresPerm(user, READ_PERM);
+		return content.getContainer()
+			.map(container -> gc.requiresPerm(container.getEditor(), READ_PERM))
+			.orElse(null);
 	}
 
 	/**
@@ -714,7 +700,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			fieldsType.name(nodeTypeName(schema.getName()));
 			fieldsField.dataFetcher(env -> {
 				NodeContent content = env.getSource();
-				return content.getContainer();
+				return content.getContainer().orElse(null);
 			});
 
 			// TODO add link resolving argument / code

@@ -2,20 +2,20 @@
 	deNode: node(path:"/new-page-de") {
         ... on folder {
 		    fields {
-				# [$.data.deNode.fields.stringList[0]=A Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
-				# [$.data.deNode.fields.stringList[1]=B Link: /api/v2/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
-				# [$.data.deNode.fields.stringList[2]=C Link: /api/v2/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+				# [$.data.deNode.fields.stringList[0]=A Link: %USED_API_BASE_PATH%/dummy/webroot/News/News%20Overview.en.html]
+				# [$.data.deNode.fields.stringList[1]=B Link: %USED_API_BASE_PATH%/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+				# [$.data.deNode.fields.stringList[2]=C Link: %USED_API_BASE_PATH%/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
 				stringList(linkType: FULL)
 
-				# [$.data.deNode.fields.htmlList[0]=A Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
-				# [$.data.deNode.fields.htmlList[1]=B Link: /api/v2/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
-				# [$.data.deNode.fields.htmlList[2]=C Link: /api/v2/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+				# [$.data.deNode.fields.htmlList[0]=A Link: %USED_API_BASE_PATH%/dummy/webroot/News/News%20Overview.en.html]
+				# [$.data.deNode.fields.htmlList[1]=B Link: %USED_API_BASE_PATH%/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+				# [$.data.deNode.fields.htmlList[2]=C Link: %USED_API_BASE_PATH%/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
 				htmlList(linkType: FULL)
 
-				# [$.data.deNode.fields.string=String Link: /api/v2/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+				# [$.data.deNode.fields.string=String Link: %USED_API_BASE_PATH%/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
 				string(linkType: FULL)
 
-				# [$.data.deNode.fields.html=HTML Link: /api/v2/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+				# [$.data.deNode.fields.html=HTML Link: %USED_API_BASE_PATH%/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
 				html(linkType: FULL)
 
 				slug
@@ -26,14 +26,14 @@
 	enNode: node(path:"/new-page-en") {
         ... on folder {
 		    fields {
-				# [$.data.enNode.fields.stringList[0]=A Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
-				# [$.data.enNode.fields.stringList[1]=B Link: /api/v2/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
-				# [$.data.enNode.fields.stringList[2]=C Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
+				# [$.data.enNode.fields.stringList[0]=A Link: %USED_API_BASE_PATH%/dummy/webroot/News/News%20Overview.en.html]
+				# [$.data.enNode.fields.stringList[1]=B Link: %USED_API_BASE_PATH%/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+				# [$.data.enNode.fields.stringList[2]=C Link: %USED_API_BASE_PATH%/dummy/webroot/News/News%20Overview.en.html]
 				stringList(linkType: FULL)
 
-				# [$.data.enNode.fields.htmlList[0]=A Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
-				# [$.data.enNode.fields.htmlList[1]=B Link: /api/v2/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
-				# [$.data.enNode.fields.htmlList[2]=C Link: /api/v2/dummy/webroot/News/News%20Overview.en.html]
+				# [$.data.enNode.fields.htmlList[0]=A Link: %USED_API_BASE_PATH%/dummy/webroot/News/News%20Overview.en.html]
+				# [$.data.enNode.fields.htmlList[1]=B Link: %USED_API_BASE_PATH%/dummy/webroot/Neuigkeiten/News%20Overview.de.html]
+				# [$.data.enNode.fields.htmlList[2]=C Link: %USED_API_BASE_PATH%/dummy/webroot/News/News%20Overview.en.html]
 				htmlList(linkType: FULL)
 
 				html(linkType: FULL)

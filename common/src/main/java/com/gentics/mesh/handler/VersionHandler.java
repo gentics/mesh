@@ -20,7 +20,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
  */
 @Singleton
 public class VersionHandler implements Handler<RoutingContext> {
-	public static final int CURRENT_API_VERSION = 2;
+	public static final int CURRENT_API_VERSION = 3;
 	public static final String CURRENT_API_BASE_PATH = "/api/v" + CURRENT_API_VERSION;
 	public static final String API_VERSION_CONTEXT_KEY = "apiversion";
 	public static final String API_MOUNTPOINT = "/api/:apiversion/*";
