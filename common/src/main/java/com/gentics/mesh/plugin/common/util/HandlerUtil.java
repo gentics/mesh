@@ -58,7 +58,7 @@ public class HandlerUtil {
 	 * @param rc The current routing context
 	 * @return An event handler that will handle any errors, or send the response as JSON
 	 */
-	public static BiConsumer<? extends RestModel, ? super Throwable> jsonHandler(RoutingContext rc) {
+	public static BiConsumer<? super RestModel, ? super Throwable> jsonHandler(RoutingContext rc) {
 		return (delegate, error) -> {
 			if (delegate != null) {
 				rc.response()
