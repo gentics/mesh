@@ -118,7 +118,8 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 		if (shouldUpdate(requestModel.getName(), getName())) {
 			// Check for conflicting project name
-			Branch conflictingBranch = db.index().checkIndexUniqueness(UNIQUENAME_INDEX_NAME, this, getRoot().getUniqueNameKey(requestModel.getName()));
+			Branch conflictingBranch = db.index().checkIndexUniqueness(UNIQUENAME_INDEX_NAME, this,
+				getRoot().getUniqueNameKey(requestModel.getName()));
 			if (conflictingBranch != null) {
 				throw conflict(conflictingBranch.getUuid(), conflictingBranch.getName(), "branch_conflicting_name", requestModel.getName());
 			}
@@ -323,20 +324,28 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public SchemaContainerVersion findLatestSchemaVersion(SchemaContainer schemaContainer) {
-		return out(HAS_SCHEMA_VERSION).mark().in(HAS_PARENT_CONTAINER).retain(schemaContainer).back().order((o1, o2) -> {
-			String v1 = o1.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
-			String v2 = o2.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
-			return VersionUtil.compareVersions(v2, v1);
-		}).nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
+		return out(HAS_SCHEMA_VERSION, SchemaContainerVersionImpl.class)
+			.stream()
+			.filter(version -> {
+				return schemaContainer.getUuid().equals(version.getSchemaContainer().getUuid());
+			}).sorted((o1, o2) -> {
+				String v1 = o1.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
+				String v2 = o2.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
+				return VersionUtil.compareVersions(v2, v1);
+			}).findFirst().orElse(null);
 	}
 
 	@Override
 	public MicroschemaContainerVersion findLatestMicroschemaVersion(MicroschemaContainer schemaContainer) {
-		return out(HAS_MICROSCHEMA_VERSION).mark().in(HAS_PARENT_CONTAINER).retain(schemaContainer).back().order((o1, o2) -> {
-			String v1 = o1.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
-			String v2 = o2.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
-			return VersionUtil.compareVersions(v2, v1);
-		}).nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
+		return out(HAS_MICROSCHEMA_VERSION, MicroschemaContainerVersionImpl.class)
+			.stream()
+			.filter(version -> {
+				return schemaContainer.getUuid().equals(version.getSchemaContainer().getUuid());
+			}).sorted((o1, o2) -> {
+				String v1 = o1.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
+				String v2 = o2.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
+				return VersionUtil.compareVersions(v2, v1);
+			}).findFirst().orElse(null);
 	}
 
 	@Override
@@ -369,8 +378,10 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public TraversalResult<? extends BranchMicroschemaEdge> findAllLatestMicroschemaVersionEdges() {
 		// Locate one version (latest) of all versions per schema
-		Iterable<BranchMicroschemaEdgeImpl> it2 = Observable.fromIterable(outE(HAS_MICROSCHEMA_VERSION).frameExplicit(BranchMicroschemaEdgeImpl.class)).groupBy(it -> it
-			.getMicroschemaContainerVersion().getSchemaContainer().getUuid()).flatMapMaybe(it -> it.reduce(
+		Iterable<BranchMicroschemaEdgeImpl> it2 = Observable
+			.fromIterable(outE(HAS_MICROSCHEMA_VERSION).frameExplicit(BranchMicroschemaEdgeImpl.class)).groupBy(it -> it
+				.getMicroschemaContainerVersion().getSchemaContainer().getUuid())
+			.flatMapMaybe(it -> it.reduce(
 				(a, b) -> a
 					.getMicroschemaContainerVersion().compareTo(b.getMicroschemaContainerVersion()) > 0 ? a : b))
 			.blockingIterable();
