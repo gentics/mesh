@@ -334,11 +334,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public <N> Traversal<? extends N, ?, ?, M> transform(final TraversalFunction<VertexFrame, N> function) {
-		return this.simpleDelegate().transform(function);
-	}
-
-	@Override
 	public <N> Traversal<N, ?, ?, M> property(final String key) {
 		return this.simpleDelegate().property(key);
 	}

@@ -198,12 +198,6 @@ abstract class AbstractTraversal<T, C, S, M> implements Traversal<T, C, S, M> {
 	}
 
 	@Override
-	public <N> Traversal<? extends N, ?, ?, M> transform(final TraversalFunction<T, N> function) {
-		getPipeline().transform(new FramingTraversalFunction(function, graph()));
-		return castToTraversal();
-	}
-
-	@Override
 	public List<? extends T> toList() {
 
 		return Lists.transform(getPipeline().toList(), new Function() {

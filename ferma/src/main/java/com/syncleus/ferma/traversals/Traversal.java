@@ -132,17 +132,6 @@ public interface Traversal<T, C, S, M> extends Iterator<T>, Iterable<T> {
 	Traversal<T, C, S, ? extends Traversal<T, C, S, M>> mark();
 
 	/**
-	 * Given an input, the provided function is computed on the input and the output of that function is emitted.
-	 *
-	 * @param <N>
-	 *            The type to transform into.
-	 * @param function
-	 *            the transformation function of the pipe
-	 * @return the extended Pipeline
-	 */
-	<N> Traversal<? extends N, ?, ?, M> transform(TraversalFunction<T, N> function);
-
-	/**
 	 * Emit the respective property of the incoming element.
 	 *
 	 * @param <N>
