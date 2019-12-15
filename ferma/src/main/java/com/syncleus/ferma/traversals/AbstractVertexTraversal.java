@@ -24,7 +24,6 @@
 package com.syncleus.ferma.traversals;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 
 import com.google.common.base.Function;
@@ -37,7 +36,6 @@ import com.syncleus.ferma.pipes.FermaGremlinPipeline;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Predicate;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.pipes.transform.TransformPipe.Order;
 
 /**
  * Vertex specific traversal. This class is abstract and as such is never instantiated directly.
@@ -74,21 +72,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	@Override
 	public VertexTraversal<?, ?, M> filter(final TraversalFunction<VertexFrame, Boolean> filterFunction) {
 		return (VertexTraversal<?, ?, M>) super.filter(filterFunction);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> order() {
-		return (VertexTraversal<?, ?, M>) super.order();
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> order(final Order order) {
-		return (VertexTraversal<?, ?, M>) super.order(order);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> order(final Comparator<? super VertexFrame> compareFunction) {
-		return (VertexTraversal<?, ?, M>) super.order(compareFunction);
 	}
 
 	@Override

@@ -25,7 +25,6 @@ package com.syncleus.ferma.traversals;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -46,8 +45,6 @@ import com.tinkerpop.blueprints.Predicate;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.gremlin.Tokens;
 import com.tinkerpop.gremlin.java.GremlinPipeline;
-import com.tinkerpop.pipes.transform.TransformPipe.Order;
-import com.tinkerpop.pipes.util.structures.Pair;
 
 /**
  * The root traversal class. Wraps a Tinkerpop {@link GremlinPipeline}
@@ -164,31 +161,6 @@ abstract class AbstractTraversal<T, C, S, M> implements Traversal<T, C, S, M> {
 	@Override
 	public <N> Traversal<? extends N, ?, ?, M> id(final Class<N> c) {
 		return (Traversal<? extends N, ?, ?, M>) this.id();
-	}
-
-	@Override
-	public Traversal<T, ?, ?, M> order() {
-		getPipeline().order();
-		return this;
-	}
-
-	@Override
-	public Traversal<T, ?, ?, M> order(final Order order) {
-		getPipeline().order(order);
-		return this;
-	}
-
-	@Override
-	public Traversal<T, ?, ?, M> order(final Comparator<? super T> compareFunction) {
-		final FramingComparator framingComparator = new FramingComparator(compareFunction, graph());
-		getPipeline().order(new TraversalFunction<Pair<Object, Object>, Integer>() {
-
-			@Override
-			public Integer compute(final Pair<Object, Object> argument) {
-				return framingComparator.compare(argument.getA(), argument.getB());
-			}
-		});
-		return this;
 	}
 
 	@Override

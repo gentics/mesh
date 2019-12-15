@@ -23,13 +23,11 @@
  */
 package com.syncleus.ferma.traversals;
 
-import java.util.Comparator;
 import java.util.List;
 
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.VertexFrame;
 import com.tinkerpop.gremlin.Tokens;
-import com.tinkerpop.pipes.transform.TransformPipe;
 
 /**
  * Vertex specific traversal.
@@ -251,15 +249,6 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 
 	@Override
 	VertexTraversal<?, ?, M> retain(Iterable<?> collection);
-
-	@Override
-	VertexTraversal<?, ?, M> order();
-
-	@Override
-	VertexTraversal<?, ?, M> order(Comparator<? super VertexFrame> compareFunction);
-
-	@Override
-	VertexTraversal<?, ?, M> order(TransformPipe.Order order);
 
 	@Override
 	VertexTraversal<C, S, ? extends VertexTraversal<C, S, M>> mark();

@@ -23,12 +23,10 @@
  */
 package com.syncleus.ferma.traversals;
 
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
 import com.tinkerpop.gremlin.java.GremlinPipeline;
-import com.tinkerpop.pipes.transform.TransformPipe;
 
 /**
  * The root traversal class. Wraps a Tinkerpop {@link GremlinPipeline}
@@ -81,31 +79,6 @@ public interface Traversal<T, C, S, M> extends Iterator<T>, Iterable<T> {
 	 * @return the extended Pipeline
 	 */
 	Traversal<T, ?, ?, M> retain(Iterable<?> collection);
-
-	/**
-	 * This step will sort the objects in the stream in a default Comparable order.
-	 *
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, ?, ?, M> order();
-
-	/**
-	 * This step will sort the objects in the stream in a default Comparable order.
-	 *
-	 * @param order
-	 *            if the stream is composed of comparable objects, then increment or decrement can be specified
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, ?, ?, M> order(TransformPipe.Order order);
-
-	/**
-	 * This step will sort the objects in the stream according to a comparator defined in the provided function.
-	 *
-	 * @param compareFunction
-	 *            a comparator function of two objects of type e
-	 * @return the extended Pipeline
-	 */
-	Traversal<T, ?, ?, M> order(Comparator<? super T> compareFunction);
 
 	/**
 	 * The object that was seen at the topmost marked step is emitted. The mark step is removed from the stack.
