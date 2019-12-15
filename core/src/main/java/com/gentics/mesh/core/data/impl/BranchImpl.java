@@ -314,9 +314,11 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public boolean contains(SchemaContainerVersion schemaContainerVersion) {
-		SchemaContainerVersion foundSchemaContainerVersion = out(HAS_SCHEMA_VERSION).retain(schemaContainerVersion).nextOrDefaultExplicit(
-			SchemaContainerVersionImpl.class, null);
-		return foundSchemaContainerVersion != null;
+		return out(HAS_SCHEMA_VERSION, SchemaContainerVersionImpl.class)
+			.stream()
+			.filter(version -> {
+				return schemaContainerVersion.getUuid().equals(version.getUuid());
+			}).findAny().isPresent();
 	}
 
 	@Override
