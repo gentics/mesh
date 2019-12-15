@@ -242,19 +242,4 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 		getPipeline().removeAll();
 	}
 
-	@Override
-	public <N> SplitTraversal<? extends Traversal<N, ?, ?, M>> copySplit(
-		final TraversalFunction<VertexFrame, ? extends Traversal<N, ?, ?, ?>>... traversals) {
-		final Collection<Pipe> extractedPipes = Collections2.transform(Arrays.asList(traversals),
-			new Function<TraversalFunction, Pipe>() {
-
-				@Override
-				public Pipe apply(final TraversalFunction input) {
-					return ((AbstractTraversal) input.compute(new TVertex())).getPipeline();
-				}
-			});
-		getPipeline().copySplit(extractedPipes.toArray(new Pipe[extractedPipes.size()]));
-		return castToSplit();
-	}
-
 }

@@ -319,12 +319,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public <N> SplitTraversal<? extends Traversal<N, ?, ?, M>> copySplit(
-		final TraversalFunction<VertexFrame, ? extends Traversal<N, ?, ?, ?>>... traversals) {
-		return this.simpleDelegate().copySplit(traversals);
-	}
-
-	@Override
 	public VertexTraversal<?, ?, M> v() {
 		return this;
 	}

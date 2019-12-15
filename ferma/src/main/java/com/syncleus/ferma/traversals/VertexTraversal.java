@@ -281,15 +281,4 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	 */
 	void removeAll();
 
-	/**
-	 * The incoming objects are copied to the provided pipes. This "split-pipe" is used in conjunction with some type of "merge-pipe."
-	 *
-	 * @param <N>
-	 *            The type of the objects through the traversal.
-	 * @param traversals
-	 *            the internal pipes of the CopySplitPipe
-	 * @return the extended Pipeline
-	 */
-	<N> SplitTraversal<? extends Traversal<N, ?, ?, M>> copySplit(TraversalFunction<VertexFrame, ? extends Traversal<N, ?, ?, ?>>... traversals);
-
 }
