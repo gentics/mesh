@@ -77,11 +77,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	}
 
 	@Override
-	public VertexTraversal<?, ?, M> dedup(final TraversalFunction<VertexFrame, ?> dedupFunction) {
-		return (VertexTraversal) super.dedup(dedupFunction);
-	}
-
-	@Override
 	public VertexTraversal<?, ?, M> order() {
 		return (VertexTraversal<?, ?, M>) super.order();
 	}

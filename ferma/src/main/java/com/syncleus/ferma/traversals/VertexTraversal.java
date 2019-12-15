@@ -238,9 +238,6 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkIn(String label, VertexFrame other);
 
 	@Override
-	VertexTraversal<?, ?, M> dedup(TraversalFunction<VertexFrame, ?> dedupFunction);
-
-	@Override
 	VertexTraversal<?, ?, M> filter(TraversalFunction<VertexFrame, Boolean> filterFunction);
 
 	/**

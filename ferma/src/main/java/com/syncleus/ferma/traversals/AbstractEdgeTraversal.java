@@ -193,11 +193,6 @@ abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFram
 	}
 
 	@Override
-	public EdgeTraversal<?, ?, M> dedup(final TraversalFunction<EdgeFrame, ?> dedupFunction) {
-		return (EdgeTraversal<?, ?, M>) super.dedup(dedupFunction);
-	}
-
-	@Override
 	public java.util.Iterator<EdgeFrame> iterator() {
 		return Iterators.transform(getPipeline(), new Function() {
 

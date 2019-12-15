@@ -269,11 +269,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public VertexTraversal<?, ?, M> dedup(final TraversalFunction<VertexFrame, ?> dedupFunction) {
-		return this.simpleDelegate().dedup(dedupFunction);
-	}
-
-	@Override
 	public VertexTraversal<?, ?, M> filter(final TraversalFunction<VertexFrame, Boolean> filterFunction) {
 		return this.simpleDelegate().filter(filterFunction);
 	}

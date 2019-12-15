@@ -144,12 +144,6 @@ abstract class AbstractTraversal<T, C, S, M> implements Traversal<T, C, S, M> {
 	}
 
 	@Override
-	public Traversal<T, ?, ?, M> dedup(final TraversalFunction<T, ?> dedupFunction) {
-		getPipeline().dedup(dedupFunction);
-		return this;
-	}
-
-	@Override
 	public Traversal<T, ?, ?, M> filter(final TraversalFunction<T, Boolean> filterFunction) {
 		getPipeline().filter(new FramingTraversalFunction(filterFunction, graph()));
 		return this;
