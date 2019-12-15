@@ -55,7 +55,6 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchReference;
@@ -306,9 +305,11 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public boolean contains(SchemaContainer schemaContainer) {
-		SchemaContainer foundSchemaContainer = out(HAS_SCHEMA_VERSION).in(HAS_PARENT_CONTAINER).has("uuid", schemaContainer.getUuid())
-			.nextOrDefaultExplicit(SchemaContainerImpl.class, null);
-		return foundSchemaContainer != null;
+		return out(HAS_SCHEMA_VERSION, SchemaContainerVersionImpl.class)
+			.stream()
+			.filter(version -> {
+				return schemaContainer.getUuid().equals(version.getSchemaContainer().getUuid());
+			}).findAny().isPresent();
 	}
 
 	@Override
