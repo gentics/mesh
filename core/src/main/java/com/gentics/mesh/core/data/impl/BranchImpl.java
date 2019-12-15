@@ -7,7 +7,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRA
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_BRANCH;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_TAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UNTAGGED;
@@ -40,7 +39,6 @@ import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.branch.BranchVersionEdge;
 import com.gentics.mesh.core.data.branch.impl.BranchMicroschemaEdgeImpl;
 import com.gentics.mesh.core.data.branch.impl.BranchSchemaEdgeImpl;
-import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -490,17 +488,21 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public boolean contains(MicroschemaContainer microschema) {
-		MicroschemaContainer foundMicroschemaContainer = out(HAS_MICROSCHEMA_VERSION).in(HAS_PARENT_CONTAINER).has("uuid", microschema.getUuid())
-			.nextOrDefaultExplicit(MicroschemaContainerImpl.class, null);
-		return foundMicroschemaContainer != null;
+	public boolean contains(MicroschemaContainer microschemaContainer) {
+		return out(HAS_MICROSCHEMA_VERSION, MicroschemaContainerVersionImpl.class)
+			.stream()
+			.filter(version -> {
+				return microschemaContainer.getUuid().equals(version.getSchemaContainer().getUuid());
+			}).findAny().isPresent();
 	}
 
 	@Override
 	public boolean contains(MicroschemaContainerVersion microschemaContainerVersion) {
-		MicroschemaContainerVersion foundMicroschemaContainerVersion = out(HAS_MICROSCHEMA_VERSION).has("uuid", microschemaContainerVersion.getUuid())
-			.nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
-		return foundMicroschemaContainerVersion != null;
+		return out(HAS_MICROSCHEMA_VERSION, MicroschemaContainerVersionImpl.class)
+			.stream()
+			.filter(version -> {
+				return microschemaContainerVersion.getUuid().equals(version.getUuid());
+			}).findAny().isPresent();
 	}
 
 	@Override
