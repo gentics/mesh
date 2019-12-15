@@ -304,11 +304,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public VertexTraversal<?, ?, M> and(final TraversalFunction<VertexFrame, Traversal<?, ?, ?, ?>>... traversals) {
-		return this.simpleDelegate().and(traversals);
-	}
-
-	@Override
 	public VertexTraversal<C, S, ? extends VertexTraversal<C, S, M>> mark() {
 		return this.simpleDelegate().mark();
 	}

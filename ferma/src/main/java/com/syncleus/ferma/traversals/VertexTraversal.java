@@ -264,15 +264,6 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	@Override
 	VertexTraversal<?, ?, M> order(TransformPipe.Order order);
 
-	/**
-	 * If the internal pipes all yield objects, then the object is not filtered. The provided pipes are provided the object as their starts.
-	 *
-	 * @param traversals
-	 *            the internal pipes of the AndFilterPipe
-	 * @return the extended Pipeline
-	 */
-	VertexTraversal<?, ?, M> and(TraversalFunction<VertexFrame, Traversal<?, ?, ?, ?>>... traversals);
-
 	@Override
 	VertexTraversal<C, S, ? extends VertexTraversal<C, S, M>> mark();
 
