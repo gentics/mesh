@@ -5,6 +5,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.madl.field.FieldType.STRING;
+import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Iterator;
@@ -50,6 +52,10 @@ public class SchemaContainerImpl extends
 
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(SchemaContainerImpl.class, MeshVertexImpl.class);
+
+		index.createIndex(vertexIndex(SchemaContainerImpl.class)
+			.withPostfix("uuid")
+			.withField("uuid", STRING));
 	}
 
 	@Override

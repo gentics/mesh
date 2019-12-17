@@ -35,6 +35,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
 import io.vertx.core.logging.Logger;
@@ -57,6 +58,11 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	@Override
 	public Class<? extends SchemaContainer> getPersistanceClass() {
 		return SchemaContainerImpl.class;
+	}
+
+	@Override
+	public TraversalResult<? extends SchemaContainer> findAll() {
+		return mesh().boot().meshRoot().findSchemas();
 	}
 
 	@Override
@@ -211,6 +217,6 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	 */
 	@Override
 	public Project getProject() {
-		return in(HAS_SCHEMA_ROOT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
+		return in(HAS_SCHEMA_ROOT, ProjectImpl.class).next();
 	}
 }

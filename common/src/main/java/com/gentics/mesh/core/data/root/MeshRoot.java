@@ -5,6 +5,8 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 
 /**
  * The mesh root is the primary graph element. All other aggregation nodes for users, roles, groups, projects connect to this element.
@@ -132,4 +134,17 @@ public interface MeshRoot extends MeshVertex {
 
 	Node findNodeByUuid(String uuid);
 
+		/**
+	 * Find all schemas.
+	 * 
+	 * @return
+	 */
+	TraversalResult<? extends SchemaContainer> findSchemas();
+
+	/**
+	 * Find a schema with given uuid. Null if the schema could not be found.
+	 * @param uuid
+	 * @return
+	 */
+	SchemaContainer findSchema(String uuid);
 }

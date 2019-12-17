@@ -11,6 +11,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_KEY_PROPERTY;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -43,6 +44,9 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -378,6 +382,18 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	@Override
 	public Node findNodeByUuid(String uuid) {
 		return db().getVerticesTraversal(NodeImpl.class, "uuid", uuid).nextOrNull();
+	}
+
+	@Override
+	public TraversalResult<? extends SchemaContainer> findSchemas() {
+		return new TraversalResult<>(db().getVerticesForType(SchemaContainerImpl.class));
+	}
+
+	@Override
+	public SchemaContainer findSchema(String uuid) {
+		return db().getVerticesTraversal(SchemaContainerImpl.class,
+			new String[] { SCHEMA_CONTAINER_KEY_PROPERTY, "uuid" },
+			new Object[] { getUuid(), uuid }).nextOrNull();
 	}
 
 }
