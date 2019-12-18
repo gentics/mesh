@@ -42,9 +42,15 @@ import com.gentics.mesh.test.local.MeshLocalServer;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import okhttp3.Response;
 
 public abstract class AbstractLocalIntegrationTest {
+
+	static {
+		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
+	}
 
 	@ClassRule
 	public static final MeshLocalServer server = new MeshLocalServer()

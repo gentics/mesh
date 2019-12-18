@@ -16,6 +16,7 @@ public class NestedCommentSection implements CommentChildren, JsonSerializable {
 
 	public static NestedCommentSection fromGraphQl(JsonObject json, UserPermissionResponse permissions) {
 		trimChildren(json);
+		nestNodeReference(json);
 		return JsonUtil.readValue(json.encode(), NestedCommentSection.class).setPermissions(permissions);
 	}
 
@@ -31,6 +32,16 @@ public class NestedCommentSection implements CommentChildren, JsonSerializable {
 				.map(obj -> (JsonObject) obj)
 				.forEach(NestedCommentSection::trimChildren);
 		}
+	}
+
+	/**
+	 * Nests the node uuid into objects to keep the original behaviour.
+	 * This change was necessary for https://jira.gentics.com/browse/SUP-8987
+	 * @param json
+	 */
+	private static void nestNodeReference(JsonObject json) {
+		JsonObject fields = json.getJsonObject("fields");
+		fields.put("node", new JsonObject().put("uuid", fields.getString("node")));
 	}
 
 	public String getUuid() {

@@ -1,12 +1,13 @@
 package com.gentics.mesh.plugin.comment.model;
 
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.NodeField;
-import com.gentics.mesh.plugin.comment.model.delegate.NodeResponseDelegate;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.plugin.comment.model.delegate.NodeResponseDelegate;
 
 public class EffectiveCommentSection extends NodeResponseDelegate {
 
@@ -41,8 +42,8 @@ public class EffectiveCommentSection extends NodeResponseDelegate {
 		return this;
 	}
 
-	public EffectiveCommentSection setNode(NodeField node) {
-		getFields().put("node", node);
+	public EffectiveCommentSection setNode(String nodeUuid) {
+		setString("node", nodeUuid);
 		return this;
 	}
 
@@ -61,8 +62,8 @@ public class EffectiveCommentSection extends NodeResponseDelegate {
 
 	// TODO optional getters
 
-	public NodeField getNode() {
-		return getFields().getNodeField("node");
+	public String getNode() {
+		return getFields().getStringField("node").getString();
 	}
 
 	public List<String> getModeratorEmails() {

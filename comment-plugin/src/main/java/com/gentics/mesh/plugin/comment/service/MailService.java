@@ -58,7 +58,7 @@ public class MailService {
 		context.put("comment", new JsonObject(comment.getDelegate().toJson()));
 		return adminClient.findNodeByUuid(
 			projectName,
-			section.getNode().getUuid(),
+			section.getNode(),
 			new NodeParametersImpl().setResolveLinks(this.config.getMailResolveLinks())
 		).toSingle().flatMapCompletable(referencedNode -> {
 			context.put("reference", new JsonObject(referencedNode.toJson()));

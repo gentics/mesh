@@ -1,5 +1,15 @@
 package com.gentics.mesh.plugin.common.service;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -17,6 +27,7 @@ import com.gentics.mesh.plugin.common.model.SchemaCreateOrUpdateResponse;
 import com.gentics.mesh.plugin.common.util.MiscUtil;
 import com.gentics.mesh.plugin.common.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
+
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
@@ -28,14 +39,6 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.eventbus.Message;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
 
 /**
  * This utility service provides methods commonly used by Mesh plugins,
@@ -189,13 +192,13 @@ public class MeshPluginService {
 	 * @return A function that will make sure the schemas exist and are assigned
 	 * 		to the project
 	 */
-	public Function<String, Completable> ensureSchemas(String ...schemaNames) {
+	public Function<String, Completable> ensureSchemas(String prefix, List<String> schemaNames) {
 		Observable<Message<JsonObject>> events = registerEvent(MeshEvent.SCHEMA_MIGRATION_FINISHED);
 
 		return project -> adminClient.findSchemas().toSingle()
 			.doOnSubscribe(ignored -> log.info("Checking schemas for project {}", project))
-			.flatMapObservable(existing -> Observable.fromArray(schemaNames)
-				.flatMapSingle(schema -> ensureSchemaExists(project, existing, schema)))
+			.flatMapObservable(existing -> Observable.fromIterable(schemaNames)
+				.flatMapSingle(schema -> ensureSchemaExists(project, existing, prefix, schema)))
 			.filter(SchemaCreateOrUpdateResponse::isUpdated)
 			.map(s -> s.getSchema().getUuid())
 			.toList()
@@ -219,6 +222,19 @@ public class MeshPluginService {
 					.take(migratedSchemas.size())
 					.ignoreElements();
 			});
+	}
+
+	/**
+	 * Returns a function that will make sure the specified schemas exist and
+	 * are assigned to the project.
+	 *
+	 * @param schemaNames Names of the schemas to check for existence and
+	 * 		assignment
+	 * @return A function that will make sure the schemas exist and are assigned
+	 * 		to the project
+	 */
+	public Function<String, Completable> ensureSchemas(String ...schemaNames) {
+		return ensureSchemas("", Arrays.asList(schemaNames));
 	}
 
 	/**
@@ -346,7 +362,7 @@ public class MeshPluginService {
 	 * @return An <code>Single</code> with the updated or created schema
 	 * 		response
 	 */
-	private Single<SchemaCreateOrUpdateResponse> ensureSchemaExists(String project, SchemaListResponse existing, String schemaName) {
+	private Single<SchemaCreateOrUpdateResponse> ensureSchemaExists(String project, SchemaListResponse existing, String prefix, String schemaName) {
 		List<SchemaResponse> schemas = existing.getData();
 
 		if (schemas == null) {
@@ -354,10 +370,10 @@ public class MeshPluginService {
 		}
 
 		return schemas.stream()
-			.filter(schema -> schema.getName().equals(schemaName))
+			.filter(schema -> schema.getName().equals(prefix + schemaName))
 			.findAny()
-			.map(this::updateSchema)
-			.orElseGet(() -> createSchema(schemaName))
+			.map(response -> updateSchema(schemaName, response))
+			.orElseGet(() -> createSchema(prefix, schemaName))
 			.flatMap(schema -> {
 				if (log.isInfoEnabled()) {
 					log.info("Assigning schema \"{}\" to \"{}\"", schema.getSchema().getName(), project);
@@ -402,10 +418,9 @@ public class MeshPluginService {
 	 * @param schema The schema to update
 	 * @return An <code>Single</code> with the schema (before the update)
 	 */
-	private Single<SchemaCreateOrUpdateResponse> updateSchema(SchemaResponse schema) {
-		String name = schema.getName();
+	private Single<SchemaCreateOrUpdateResponse> updateSchema(String schemaName, SchemaResponse schema) {
 		SchemaUpdateRequest request = JsonUtil.readValue(
-			MiscUtil.loadResource(schemaBaseDir + name + ".json"),
+			MiscUtil.loadResource(schemaBaseDir + schemaName + ".json"),
 			SchemaUpdateRequest.class);
 
 		if (request.getContainer() == null) {
@@ -413,6 +428,8 @@ public class MeshPluginService {
 			// files are used for creating and updating schemas.
 			request.setContainer(false);
 		}
+		// Make sure to not change the name
+		request.setName(schema.getName());
 
 		return adminClient.updateSchema(schema.getUuid(), request).toSingle()
 			.map(response -> {
@@ -442,14 +459,12 @@ public class MeshPluginService {
 	 * @param schemaName The schema to create
 	 * @return An <code>Single</code> with the created schema
 	 */
-	private Single<SchemaCreateOrUpdateResponse> createSchema(String schemaName) {
+	private Single<SchemaCreateOrUpdateResponse> createSchema(String prefix, String schemaName) {
 		SchemaCreateRequest request = JsonUtil.readValue(
 			MiscUtil.loadResource(schemaBaseDir + schemaName + ".json"),
 			SchemaCreateRequest.class);
 
-		if (request.getName() == null) {
-			request.setName(schemaName);
-		}
+		request.setName(prefix + schemaName);
 
 		return adminClient.createSchema(request).toSingle()
 			.doOnError(e -> {

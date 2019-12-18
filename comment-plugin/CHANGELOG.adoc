@@ -10,8 +10,8 @@
 
 = Mesh Comment Plugin
 
-[[Unreleased]]
-== Unreleased
+[[Released]]
+== Released
 
 icon:plus[] Mesh links in referenced nodes will now be resolved for email notifications. The type of link resolving can be chosen in the configuration. link:https://jira.gentics.com/browse/SUP-8611[SUP-8611]
 
@@ -22,6 +22,8 @@ icon:plus[] Comments and comment sections now contain permission information lin
 icon:check[] Compiling template to JS will not be done in an event loop thread anymore. link:https://jira.gentics.com/browse/SUP-8403[SUP-8403]
 
 icon:check[] Fixed a bug that caused an exception when loading a comment section with deeply nested comments. link:https://jira.gentics.com/browse/SUP-8449[SUP-8449]
+
+icon:check[] Fixed a bug that caused some endpoints to fail if a commented node was deleted and created again with the same UUID. link:https://jira.gentics.com/browse/SUP-8987[SUP-8987]
 
 [[v5.0.0]]
 == 5.0.0 (2019-08-26)

@@ -19,8 +19,8 @@ public class CommentSection extends NodeResponseDelegate {
 
 	// TODO setters
 
-	public NodeField getNode() {
-		return getFields().getNodeField("node");
+	public String getNode() {
+		return getFields().getStringField("node").getString();
 	}
 
 	public Optional<Boolean> isAllowAnonymous() {

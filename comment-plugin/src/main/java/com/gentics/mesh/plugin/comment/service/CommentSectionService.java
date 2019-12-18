@@ -1,13 +1,21 @@
 package com.gentics.mesh.plugin.comment.service;
 
+import static com.gentics.mesh.plugin.comment.model.CommentStatus.APPROVED;
+import static com.gentics.mesh.plugin.comment.model.CommentStatus.DELETED;
+import static com.gentics.mesh.plugin.comment.util.RxUtil.defaultSingle;
+
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.inject.Inject;
+
 import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.json.JsonUtil;
@@ -24,19 +32,11 @@ import com.gentics.mesh.plugin.comment.model.NestedCommentSection;
 import com.gentics.mesh.plugin.comment.model.Order;
 import com.gentics.mesh.plugin.comment.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
+
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
-
-import javax.inject.Inject;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-
-import static com.gentics.mesh.plugin.comment.model.CommentStatus.APPROVED;
-import static com.gentics.mesh.plugin.comment.model.CommentStatus.DELETED;
-import static com.gentics.mesh.plugin.comment.util.RxUtil.defaultSingle;
 
 public class CommentSectionService {
 
@@ -63,16 +63,6 @@ public class CommentSectionService {
 	}
 
 	/**
-	 * Makes sure that a comment section exists for the given node and returns it
-	 */
-	public Single<CommentSection> ensureCommentSection(String nodeUuid, String language) {
-		return checkExistence(nodeUuid, language)
-			.andThen(findCommentSection(nodeUuid, language))
-			.to(defaultSingle(createDefault(nodeUuid, language)))
-			.flatMap(this::transferConfiguration);
-	}
-
-	/**
 	 * Checks if there is a node in a specific language.
 	 * Returns an error Completable if the node was not found
 	 *
@@ -89,6 +79,16 @@ public class CommentSectionService {
 		return getNodePath(nodeUuid, language)
 			.flatMapMaybe(meshService::webrootMaybe)
 			.map(CommentSection::new);
+	}
+
+	/**
+	 * Makes sure that a comment section exists for the given node and returns it
+	 */
+	public Single<CommentSection> ensureCommentSection(String nodeUuid, String language) {
+		return checkExistence(nodeUuid, language)
+			.andThen(findCommentSection(nodeUuid, language))
+			.to(defaultSingle(createDefault(nodeUuid, language)))
+			.flatMap(this::transferConfiguration);
 	}
 
 	/**
@@ -113,7 +113,7 @@ public class CommentSectionService {
 
 	private FieldMap createDefaultFields(String nodeUuid, String language) {
 		FieldMap fieldMap = new FieldMapImpl();
-		fieldMap.put("node", new NodeFieldImpl().setUuid(nodeUuid));
+		fieldMap.put("node", new StringFieldImpl().setString(nodeUuid));
 		fieldMap.put("language", new StringFieldImpl().setString(language));
 		return fieldMap;
 	}
@@ -151,7 +151,7 @@ public class CommentSectionService {
 		}
 		String fieldName = section.getNodeConfigField().get();
 
-		return adminClient.findNodeByUuid(projectName, section.getNode().getUuid()).toSingle()
+		return adminClient.findNodeByUuid(projectName, section.getNode()).toSingle()
 			.flatMap(node -> {
 				String updateJson = node.getFields().getStringField(fieldName).getString();
 				FieldMap fields = JsonUtil.readValue(updateJson, FieldMap.class);
@@ -194,7 +194,7 @@ public class CommentSectionService {
 	 */
 	public Single<UserPermissionResponse> requirePermission(CommentSection section, Permission permission) {
 		// TODO this is called multiple times for the same section. It should be cached per request
-		return meshService.getUserPermissions(section.getNode().getUuid())
+		return meshService.getUserPermissions(section.getNode())
 			.doOnSuccess(userPermissions -> meshService.requirePermission(userPermissions, permission));
 	}
 

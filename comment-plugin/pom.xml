@@ -44,6 +44,11 @@
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-mail-client</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh.plugin.commercial</groupId>
+			<artifactId>mesh-commercial-plugins-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>

@@ -6,9 +6,9 @@
   "fields": [
     {
       "name": "node",
-      "type": "node",
+      "type": "string",
       "required": true,
-      "label": "The node to which the comments are attached"
+      "label": "The node uuid to which the comments are attached"
     },
     {
       "name": "language",

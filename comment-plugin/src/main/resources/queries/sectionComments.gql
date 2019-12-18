@@ -23,9 +23,7 @@ fragment section on Node {
 	uuid
 	fields {
 		... on comment_section {
-			node {
-				uuid
-			}
+			node
 			language
 			allowAnonymous
 			requiresApproval

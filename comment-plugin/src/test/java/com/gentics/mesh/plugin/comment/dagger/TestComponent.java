@@ -3,7 +3,6 @@ package com.gentics.mesh.plugin.comment.dagger;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.plugin.comment.SchemaInitializer;
 import com.gentics.mesh.plugin.comment.config.Configuration;
 import com.gentics.mesh.plugin.comment.service.CommentService;
 import com.gentics.mesh.plugin.comment.testclient.TestClient;
@@ -23,8 +22,6 @@ public interface TestComponent {
 	TestClient userClient();
 
 	Configuration configuration();
-
-	SchemaInitializer schemaInitializer();
 
 	CommentService commentService();
 

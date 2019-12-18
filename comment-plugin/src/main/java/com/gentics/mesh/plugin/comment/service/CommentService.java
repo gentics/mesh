@@ -144,7 +144,7 @@ public class CommentService {
 	public Single<Comment> fetchComment(String uuid, boolean checkPermission) {
 		// Reject found nodes which do not match the schema of a comment
 		return fetchCommentSection(uuid)
-			.flatMap(section -> meshService.getUserPermissions(section.getNode().getUuid()))
+			.flatMap(section -> meshService.getUserPermissions(section.getNode()))
 			.doOnSuccess(permissions -> {
 				if (checkPermission) {
 					meshService.requirePermission(permissions, Permission.READ);
@@ -205,7 +205,7 @@ public class CommentService {
 		return validateCommentRequest(request, effectiveSection)
 			.andThen(meshService.getCurrentUser())
 			.flatMap(currentUser -> adminClient.createNode(projectName, toRequest(request, effectiveSection, currentUser)).toSingle())
-			.flatMap(response -> meshService.getUserPermissions(section.getNode().getUuid())
+			.flatMap(response -> meshService.getUserPermissions(section.getNode())
 			.map(permissions -> new Comment(response, permissions)));
 	}
 
@@ -221,7 +221,7 @@ public class CommentService {
 		EffectiveCommentSection effectiveSection = effectiveCommentSectionService.fromSection(section);
 		return validateCommentUpdateRequest(request, effectiveSection)
 			.andThen(adminClient.updateNode(projectName, comment.getUuid(), toRequest(comment, request)).toSingle())
-			.flatMap(response -> meshService.getUserPermissions(section.getNode().getUuid())
+			.flatMap(response -> meshService.getUserPermissions(section.getNode())
 			.map(permissions -> new Comment(response, permissions)));
 	}
 
@@ -361,7 +361,7 @@ public class CommentService {
 	 * Returns an error Completable if the user has no permissions.
 	 */
 	private Completable requirePermission(EffectiveCommentSection section, Permission permission) {
-		return meshService.requirePermission(section.getNode().getUuid(), permission);
+		return meshService.requirePermission(section.getNode(), permission);
 	}
 
 	/**
@@ -369,7 +369,7 @@ public class CommentService {
 	 * Returns an error Completable if the user has no permissions.
 	 */
 	private Completable requirePermission(CommentSection section, Permission permission) {
-		return meshService.requirePermission(section.getNode().getUuid(), permission);
+		return meshService.requirePermission(section.getNode(), permission);
 	}
 
 	/**

@@ -6,6 +6,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.function.Function;
 
 import org.pf4j.PluginWrapper;
@@ -21,6 +22,7 @@ import com.gentics.mesh.plugin.comment.dagger.DaggerInitializationComponent;
 import com.gentics.mesh.plugin.comment.dagger.InitializationComponent;
 import com.gentics.mesh.plugin.comment.handler.AbstractCommentHandler;
 import com.gentics.mesh.plugin.comment.service.TemplateService;
+import com.gentics.mesh.plugin.common.service.MeshPluginService;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
@@ -141,9 +143,11 @@ public class CommentPlugin extends AbstractPlugin implements RestPlugin {
 				.build();
 
 			this.templateService = component.templateService();
-
+			MeshPluginService pluginService = component.meshPluginService();
 			return Completable.mergeArray(
-				component.schemaInitializer().initialize(),
+				pluginService.prepareProjects(configuration.getProjectNames(),
+					pluginService.ensureSchemas(configuration.getSchemaPrefix(), Arrays.asList("comment", "section", "folder"))
+				),
 				templateService.initialize());
 		} catch (Exception e) {
 			return Completable.error(e);
