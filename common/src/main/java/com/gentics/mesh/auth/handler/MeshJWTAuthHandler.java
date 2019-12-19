@@ -1,5 +1,6 @@
 package com.gentics.mesh.auth.handler;
 
+import static com.gentics.mesh.util.RxUtil.executeBlocking;
 import static io.vertx.core.http.HttpHeaders.AUTHORIZATION;
 
 import java.util.List;
@@ -25,6 +26,7 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.JWTAuthHandler;
 import io.vertx.ext.web.handler.impl.AuthHandlerImpl;
 import io.vertx.ext.web.handler.impl.JWTAuthHandlerImpl;
+import io.vertx.reactivex.core.Vertx;
 
 /**
  * This class extends the Vert.x AuthHandler, so that it also works when the token is set as a cookie.
@@ -42,13 +44,16 @@ public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandle
 
 	private final JsonObject options;
 
+	private final Vertx vertx;
+
 	private final MeshJWTAuthProvider authProvider;
 
 	private final MeshOptions meshOptions;
 
 	@Inject
-	public MeshJWTAuthHandler(MeshJWTAuthProvider authProvider, MeshOptions meshOptions) {
+	public MeshJWTAuthHandler(Vertx vertx, MeshJWTAuthProvider authProvider, MeshOptions meshOptions) {
 		super(authProvider);
+		this.vertx = vertx;
 		this.authProvider = authProvider;
 		this.meshOptions = meshOptions;
 
@@ -149,7 +154,7 @@ public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandle
 
 		// 4. Authenticate the found token using JWT
 		JsonObject authInfo = new JsonObject().put("jwt", token).put("options", options);
-		authProvider.authenticateJWT(authInfo, res -> {
+		authProvider.authenticateJWT(authInfo, res -> executeBlocking(vertx, () -> {
 
 			// Authentication was successful.
 			if (res.succeeded()) {
@@ -176,7 +181,7 @@ public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandle
 					return;
 				}
 			}
-		});
+		}).subscribe(() -> {}, context::fail));
 	}
 
 }

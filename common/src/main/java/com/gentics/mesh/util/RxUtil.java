@@ -103,6 +103,17 @@ public final class RxUtil {
 		}, false);
 	}
 
+	public static Completable executeBlocking(Vertx vertx, Runnable runnable) {
+		return vertx.rxExecuteBlocking(promise -> {
+			try {
+				runnable.run();
+				promise.complete();
+			} catch (Throwable e) {
+				promise.fail(e);
+			}
+		}, false).ignoreElement();
+	}
+
 	public static <T> Maybe<T> fromNullable(T item) {
 		if (item == null) {
 			return Maybe.empty();

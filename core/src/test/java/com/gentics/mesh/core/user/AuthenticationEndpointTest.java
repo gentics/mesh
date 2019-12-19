@@ -22,6 +22,7 @@ import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -112,11 +113,13 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			assertNotNull(loginResponse);
 			assertEquals("OK", loginResponse.getMessage());
 
-			String meshTokenCookie1 = client.me().getResponse().blockingGet().getHeader("Set-Cookie").orElse(null);
+			MeshResponse<UserResponse> response1 = client.me().getResponse().blockingGet();
+			String meshTokenCookie1 = response1.getHeader("Set-Cookie").orElse(null);
 
 			Thread.sleep(2000);
 
-			String meshTokenCookie2 = client.me().getResponse().blockingGet().getHeader("Set-Cookie").orElse(null);
+			MeshResponse<UserResponse> response2 = client.me().getResponse().blockingGet();
+			String meshTokenCookie2 = response2.getHeader("Set-Cookie").orElse(null);
 
 			assertNotEquals("Both cookies should be different. Otherwise the token was not regenerated and the exp. date was not bumped.",
 				meshTokenCookie1, meshTokenCookie2);

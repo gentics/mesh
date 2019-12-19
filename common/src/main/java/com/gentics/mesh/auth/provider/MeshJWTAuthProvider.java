@@ -59,10 +59,12 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 
 	private BootstrapInitializer boot;
 
+	private final Vertx vertx;
 	private final MeshOptions meshOptions;
 
 	@Inject
 	public MeshJWTAuthProvider(Vertx vertx, MeshOptions meshOptions, BCryptPasswordEncoder passwordEncoder, Database database, BootstrapInitializer boot) {
+		this.vertx = vertx;
 		this.meshOptions = meshOptions;
 		this.passwordEncoder = passwordEncoder;
 		this.db = database;
@@ -135,21 +137,23 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	 */
 	public void generateToken(String username, String password, String newPassword, Handler<AsyncResult<String>> resultHandler) {
 		authenticate(username, password, newPassword, rh -> {
-			if (rh.failed()) {
-				resultHandler.handle(Future.failedFuture(rh.cause()));
-			} else {
-				User user = rh.result().getUser();
-				String uuid;
-				if (user instanceof MeshAuthUser) {
-					uuid = db.tx(((MeshAuthUser) user)::getUuid);
+			vertx.executeBlocking(blockingHandler -> {
+				if (rh.failed()) {
+					blockingHandler.handle(Future.failedFuture(rh.cause()));
 				} else {
-					uuid = user.principal().getString("uuid");
+					User user = rh.result().getUser();
+					String uuid;
+					if (user instanceof MeshAuthUser) {
+						uuid = db.tx(((MeshAuthUser) user)::getUuid);
+					} else {
+						uuid = user.principal().getString("uuid");
+					}
+					JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, uuid);
+					blockingHandler.handle(Future.succeededFuture(jwtProvider.generateToken(tokenData,
+						new JWTOptions()
+							.setExpiresInSeconds(meshOptions.getAuthenticationOptions().getTokenExpirationTime()))));
 				}
-				JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, uuid);
-				resultHandler.handle(Future.succeededFuture(jwtProvider.generateToken(tokenData,
-					new JWTOptions()
-						.setExpiresInSeconds(meshOptions.getAuthenticationOptions().getTokenExpirationTime()))));
-			}
+			}, false, resultHandler);
 		});
 	}
 
@@ -164,50 +168,52 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	 *            Handler which will be invoked which will return the authenticated user or fail if the credentials do not match or the user could not be found
 	 */
 	private void authenticate(String username, String password, String newPassword, Handler<AsyncResult<AuthenticationResult>> resultHandler) {
-		MeshAuthUser user = db.tx(() -> boot.userRoot().findMeshAuthUserByUsername(username));
-		if (user != null) {
-			String accountPasswordHash = db.tx(user::getPasswordHash);
-			// TODO check if user is enabled
-			boolean hashMatches = false;
-			if (StringUtils.isEmpty(accountPasswordHash) && password != null) {
-				if (log.isDebugEnabled()) {
-					log.debug("The account password hash or token password string are invalid.");
-				}
-				resultHandler.handle(Future.failedFuture(error(UNAUTHORIZED, "auth_login_failed")));
-				return;
-			} else {
-				if (log.isDebugEnabled()) {
-					log.debug("Validating password using the bcrypt password encoder");
-				}
-				hashMatches = passwordEncoder.matches(password, accountPasswordHash);
-			}
-			if (hashMatches) {
-				boolean forcedPasswordChange = db.tx(user::isForcedPasswordChange);
-				if (forcedPasswordChange && newPassword == null) {
-					resultHandler.handle(Future.failedFuture(error(BAD_REQUEST, "auth_login_password_change_required")));
-					return;
-				} else if (!forcedPasswordChange && newPassword != null) {
-					resultHandler.handle(Future.failedFuture(error(BAD_REQUEST, "auth_login_newpassword_failed")));
+		vertx.executeBlocking(blockingHandler -> {
+			MeshAuthUser user = db.tx(() -> boot.userRoot().findMeshAuthUserByUsername(username));
+			if (user != null) {
+				String accountPasswordHash = db.tx(user::getPasswordHash);
+				// TODO check if user is enabled
+				boolean hashMatches = false;
+				if (StringUtils.isEmpty(accountPasswordHash) && password != null) {
+					if (log.isDebugEnabled()) {
+						log.debug("The account password hash or token password string are invalid.");
+					}
+					blockingHandler.handle(Future.failedFuture(error(UNAUTHORIZED, "auth_login_failed")));
 					return;
 				} else {
-					if (forcedPasswordChange) {
-						db.tx(() -> user.setPassword(newPassword));
+					if (log.isDebugEnabled()) {
+						log.debug("Validating password using the bcrypt password encoder");
 					}
-					resultHandler.handle(Future.succeededFuture(new AuthenticationResult(user)));
+					hashMatches = passwordEncoder.matches(password, accountPasswordHash);
+				}
+				if (hashMatches) {
+					boolean forcedPasswordChange = db.tx(user::isForcedPasswordChange);
+					if (forcedPasswordChange && newPassword == null) {
+						blockingHandler.handle(Future.failedFuture(error(BAD_REQUEST, "auth_login_password_change_required")));
+						return;
+					} else if (!forcedPasswordChange && newPassword != null) {
+						blockingHandler.handle(Future.failedFuture(error(BAD_REQUEST, "auth_login_newpassword_failed")));
+						return;
+					} else {
+						if (forcedPasswordChange) {
+							db.tx(() -> user.setPassword(newPassword));
+						}
+						blockingHandler.handle(Future.succeededFuture(new AuthenticationResult(user)));
+						return;
+					}
+				} else {
+					blockingHandler.handle(Future.failedFuture(error(UNAUTHORIZED, "auth_login_failed")));
 					return;
 				}
 			} else {
-				resultHandler.handle(Future.failedFuture(error(UNAUTHORIZED, "auth_login_failed")));
+				if (log.isDebugEnabled()) {
+					log.debug("Could not load user with username {" + username + "}.");
+				}
+				// TODO Don't let the user know that we know that he did not exist?
+				blockingHandler.handle(Future.failedFuture(error(UNAUTHORIZED, "auth_login_failed")));
 				return;
 			}
-		} else {
-			if (log.isDebugEnabled()) {
-				log.debug("Could not load user with username {" + username + "}.");
-			}
-			// TODO Don't let the user know that we know that he did not exist?
-			resultHandler.handle(Future.failedFuture(error(UNAUTHORIZED, "auth_login_failed")));
-			return;
-		}
+		}, false, resultHandler);
 	}
 
 	/**
