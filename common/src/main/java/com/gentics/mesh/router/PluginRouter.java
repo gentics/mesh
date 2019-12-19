@@ -43,7 +43,7 @@ public class PluginRouter {
 		// Ensure that all plugin requests are authenticated
 		chain.secure(router.route());
 
-		router.route().handler(rc -> {
+		router.route().blockingHandler(rc -> {
 			Project project = (Project) rc.data().get(ProjectsRouter.PROJECT_CONTEXT_KEY);
 			if (project != null) {
 				db.tx(() -> {

@@ -3,6 +3,7 @@ package com.gentics.mesh.search.index;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapError;
 import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapToMeshError;
+import static com.gentics.mesh.util.RxUtil.executeBlocking;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -57,6 +58,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.Vertx;
 
 /**
  * Abstract implementation for a mesh search handler.
@@ -75,6 +77,9 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 	@Inject
 	public SearchWaitUtil waitUtil;
+
+	@Inject
+	public Vertx vertx;
 
 	public static final long DEFAULT_SEARCH_PER_PAGE = 10;
 
@@ -212,7 +217,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 		RL listResponse = classOfRL.newInstance();
 
-		waitUtil.awaitSync(ac).andThen(Single.defer(() -> {
+		waitUtil.awaitSync(ac).andThen(executeBlocking(vertx, () -> {
 			ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 			String searchQuery = ac.getBodyAsString();
 			if (log.isDebugEnabled()) {
@@ -237,9 +242,10 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			queryOption.put("search_type", "dfs_query_then_fetch");
 			log.debug("Using options {" + queryOption.encodePrettily() + "}");
 
-			RequestBuilder<JsonObject> requestBuilder = client.multiSearch(queryOption, request);
-			return requestBuilder.async();
-		})).flatMapObservable(response -> {
+			return client.multiSearch(queryOption, request);
+		}).toSingle())
+		.flatMap(RequestBuilder::async)
+		.flatMapObservable(response -> {
 			JsonArray responses = response.getJsonArray("responses");
 			JsonObject firstResponse = responses.getJsonObject(0);
 
