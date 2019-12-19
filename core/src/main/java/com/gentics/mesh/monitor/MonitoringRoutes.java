@@ -86,7 +86,7 @@ public class MonitoringRoutes {
 		apiRouter.route("/cluster/status")
 			.method(GET)
 			.produces(APPLICATION_JSON)
-			.handler(rc -> {
+			.blockingHandler(rc -> {
 				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 				adminHandler.handleClusterStatus(ac);
 			});
