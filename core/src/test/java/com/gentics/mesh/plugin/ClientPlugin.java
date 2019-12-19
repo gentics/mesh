@@ -38,7 +38,7 @@ public class ClientPlugin extends AbstractPlugin implements RestPlugin {
 			}, rc::fail);
 		});
 
-		router.route("/user").handler(rc -> {
+		router.route("/user").blockingHandler(rc -> {
 			rc.response().end(rc.user().principal().encodePrettily());
 		});
 

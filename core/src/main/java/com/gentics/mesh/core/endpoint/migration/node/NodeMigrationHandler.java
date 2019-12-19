@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
 import static com.gentics.mesh.metric.SimpleMetric.NODE_MIGRATION_PENDING;
+import static com.gentics.mesh.util.RxUtil.executeBlocking;
 
 import java.util.HashSet;
 import java.util.List;
@@ -38,6 +39,7 @@ import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.Vertx;
 
 /**
  * Handler for node migrations after schema updates.
@@ -49,12 +51,14 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 
 	private final AtomicLong migrationGauge;
 	private final HandlerUtilities handlerUtilities;
+	private final Vertx vertx;
 
 	@Inject
-	public NodeMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, HandlerUtilities handlerUtilities) {
+	public NodeMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, HandlerUtilities handlerUtilities, Vertx vertx) {
 		super(db, nodeFieldAPIHandler, metrics, batchProvider);
 		migrationGauge = metrics.longGauge(NODE_MIGRATION_PENDING);
 		this.handlerUtilities = handlerUtilities;
+		this.vertx = vertx;
 	}
 
 	/**
@@ -87,7 +91,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
 				// versions. We'll work on drafts. The migration code will later on also handle publish versions.
 				.andThen(db.singleTx(() -> Lists.newArrayList(fromVersion.getDraftFieldContainers(branch.getUuid()))))
-				.flatMapCompletable(containers -> {
+				.flatMapCompletable(containers -> executeBlocking(vertx, () -> {
 
 					if (metrics.isEnabled()) {
 						migrationGauge.set(containers.size());
@@ -96,12 +100,11 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 					// No field containers, migration is done
 					if (containers.isEmpty()) {
 						if (status != null) {
-							return db.completableTx(tx -> {
-								status.setStatus(COMPLETED);
-								status.commit();
-							});
+							status.setStatus(COMPLETED);
+							status.commit();
+							return;
 						}
-						return Completable.complete();
+						return;
 					}
 
 					List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, container, errors) -> {
@@ -117,17 +120,15 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 					});
 
 					// TODO prepare errors. They should be easy to understand and to grasp
-					Completable result = Completable.complete();
 					if (!errorsDetected.isEmpty()) {
 						if (log.isDebugEnabled()) {
 							for (Exception error : errorsDetected) {
 								log.error("Encountered migration error.", error);
 							}
 						}
-						result = Completable.error(new CompositeException(errorsDetected));
+						throw new CompositeException(errorsDetected);
 					}
-					return result;
-				}));});
+				})));});
 	}
 
 	/**

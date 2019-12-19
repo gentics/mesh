@@ -18,7 +18,7 @@ public class InitializeTimeoutPlugin extends AbstractPlugin {
 	@Override
 	public Completable initialize() {
 		return Completable.create(sub -> {
-			Thread.sleep(2000);
+			Thread.sleep(4000);
 			sub.onComplete();
 		});
 	}
