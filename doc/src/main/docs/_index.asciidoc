@@ -278,21 +278,6 @@ ul.doc-toc h2 {
                     </li>
 
                     <li class="section">
-                        <h2><a href="cli">CLI</a></h2>
-                        <ul>
-                            <li>
-                                <a href="cli#_installation">Installation</a>
-                            </li>
-                            <li>
-                                <a href="cli#_usage">Usage</a>
-                            </li>
-                            <li>
-                                <a href="cli#_configuration">Configuration</a>
-                            </li>
-                        </ul>
-                    </li>
-
-                    <li class="section">
                         <h2><a href="platforms">Platforms</a></h2>
                         <ul>
                             <li>
