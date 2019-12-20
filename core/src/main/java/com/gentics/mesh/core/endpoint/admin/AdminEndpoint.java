@@ -347,7 +347,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		route.path("/debuginfo");
 		route.method(GET);
 		route.description("Downloads a zip file of various debug information files.");
-		route.handler(rc -> debugInfoHandler.handle(rc));
+		route.blockingHandler(rc -> debugInfoHandler.handle(rc));
 	}
 
 	private void addRuntimeConfigHandler() {
