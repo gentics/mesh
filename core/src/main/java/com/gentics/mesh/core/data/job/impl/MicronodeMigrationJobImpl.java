@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 import static com.gentics.mesh.core.rest.job.JobStatus.STARTING;
+import static com.gentics.mesh.util.RxUtil.executeBlocking;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.madl.index.IndexHandler;
@@ -28,6 +29,8 @@ import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
+import com.gentics.mesh.util.RxUtil;
+
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -118,24 +121,20 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 	}
 
 	protected Completable processTask() {
-		return Completable.defer(() -> {
+		return executeBlocking(rxVertx(), () -> {
 			MicronodeMigrationContext context = prepareContext();
 			MicronodeMigrationHandler handler = mesh().micronodeMigrationHandler();
 			return handler.migrateMicronodes(context)
-				.doOnComplete(() -> {
-					db().tx(() -> {
-						JobWarningList warnings = new JobWarningList();
-						setWarnings(warnings);
-						finializeMigration(context);
-						context.getStatus().done();
-					});
-				}).doOnError(err -> {
-					db().tx(() -> {
-						context.getStatus().error(err, "Error in micronode migration.");
-						createBatch().add(createEvent(BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
-					});
-				});
-		});
+				.andThen(db().completableTx(tx -> {
+					JobWarningList warnings = new JobWarningList();
+					setWarnings(warnings);
+					finializeMigration(context);
+					context.getStatus().done();
+				})).onErrorResumeNext(err -> db().completableTx(tx -> {
+					context.getStatus().error(err, "Error in micronode migration.");
+					createBatch().add(createEvent(BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
+				}).andThen(Completable.error(err)));
+		}).flatMapCompletable(RxUtil.identity());
 	}
 
 	private void finializeMigration(MicronodeMigrationContext context) {

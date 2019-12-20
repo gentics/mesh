@@ -24,6 +24,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
+import com.gentics.mesh.util.RxUtil;
 
 import io.reactivex.Flowable;
 
@@ -53,7 +54,7 @@ public class TagFamilyEventHandler implements EventHandler {
 			String projectUuid = Util.requireType(ProjectEvent.class, messageEvent.message).getProject().getUuid();
 
 			if (event == TAG_FAMILY_CREATED || event == TAG_FAMILY_UPDATED) {
-				return helper.getDb().tx(() -> {
+				return helper.getDb().singleTxImmediate(() -> {
 					// We also need to update all tags of this family
 					Optional<TagFamily> tagFamily = entities.tagFamily.getElement(model);
 
@@ -67,7 +68,7 @@ public class TagFamilyEventHandler implements EventHandler {
 					Stream<SearchRequest> nodeUpdates = toStream(tagFamily).flatMap(tf -> createNodeUpdates(model, tf));
 
 					return Util.concat(tagFamilyUpdate, tagUpdates, nodeUpdates).collect(Util.toFlowable());
-				});
+				}).flatMapPublisher(RxUtil.identity());
 			} else if (event == TAG_FAMILY_DELETED) {
 				// We can omit the update of related elements for project deletion causes. The project handler will take care of removing the index
 				if (EventCauseHelper.isProjectDeleteCause(messageEvent.message)) {

@@ -150,7 +150,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			return;
 		}
 
-		waitUtil.awaitSync(ac).andThen(Single.defer(() -> {
+		waitUtil.awaitSync(ac).andThen(db.singleTx(() -> {
 			ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 			String searchQuery = ac.getBodyAsString();
 			if (log.isDebugEnabled()) {
@@ -170,9 +170,9 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			queryOption.put("search_type", "dfs_query_then_fetch");
 			log.debug("Using options {" + queryOption.encodePrettily() + "}");
 
-			RequestBuilder<JsonObject> requestBuilder = client.multiSearch(queryOption, request);
-			return requestBuilder.async();
-		})).subscribe(response -> {
+			return client.multiSearch(queryOption, request);
+		})).flatMap(RequestBuilder::async)
+		.subscribe(response -> {
 			// JsonObject firstResponse = response.getJsonArray("responses").getJsonObject(0);
 			// Directly relay the response to the requester without converting it.
 			ac.send(response.toString(), OK);

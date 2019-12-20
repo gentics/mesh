@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
+import static com.gentics.mesh.util.RxUtil.executeBlocking;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -39,6 +40,7 @@ import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.Vertx;
 
 @Singleton
 public class MicronodeMigrationHandler extends AbstractMigrationHandler {
@@ -46,6 +48,9 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	private static final Logger log = LoggerFactory.getLogger(MicronodeMigrationHandler.class);
 
 	private final HandlerUtilities handlerUtilities;
+
+	@Inject
+	public Vertx vertx;
 
 	@Inject
 	public MicronodeMigrationHandler(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, HandlerUtilities handlerUtilities) {
@@ -61,7 +66,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	 */
 	public Completable migrateMicronodes(MicronodeMigrationContext context) {
 		context.validate();
-		return Completable.defer(() -> {
+		return executeBlocking(vertx, () -> {
 			Branch branch = context.getBranch();
 			MicroschemaContainerVersion fromVersion = context.getFromVersion();
 			MicroschemaContainerVersion toVersion = context.getToVersion();
@@ -72,21 +77,17 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 			NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
 			Set<String> touchedFields = new HashSet<>();
-			try {
-				db.tx(() -> {
-					prepareMigration(fromVersion, touchedFields);
+			db.tx(() -> {
+				prepareMigration(fromVersion, touchedFields);
 
-					ac.setProject(branch.getProject());
-					ac.setBranch(branch);
+				ac.setProject(branch.getProject());
+				ac.setBranch(branch);
 
-					if (status != null) {
-						status.setStatus(RUNNING);
-						status.commit();
-					}
-				});
-			} catch (Exception e) {
-				return Completable.error(e);
-			}
+				if (status != null) {
+					status.setStatus(RUNNING);
+					status.commit();
+				}
+			});
 
 			// Get the containers, that need to be transformed
 			List<? extends NodeGraphFieldContainer> fieldContainersResult = db.tx(() -> {
@@ -101,7 +102,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 						status.commit();
 					});
 				}
-				return Completable.complete();
+				return;
 			}
 
 			List<Exception> errorsDetected = migrateLoop(fieldContainersResult, cause, status,
@@ -114,16 +115,14 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 					}
 				});
 
-			Completable result = Completable.complete();
 			if (!errorsDetected.isEmpty()) {
 				if (log.isDebugEnabled()) {
 					for (Exception error : errorsDetected) {
 						log.error("Encountered migration error.", error);
 					}
 				}
-				result = Completable.error(new CompositeException(errorsDetected));
+				throw new CompositeException(errorsDetected);
 			}
-			return result;
 		});
 	}
 

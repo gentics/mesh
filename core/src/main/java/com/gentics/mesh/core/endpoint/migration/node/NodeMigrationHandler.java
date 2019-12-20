@@ -100,8 +100,10 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 					// No field containers, migration is done
 					if (containers.isEmpty()) {
 						if (status != null) {
-							status.setStatus(COMPLETED);
-							status.commit();
+							db.tx(() -> {
+								status.setStatus(COMPLETED);
+								status.commit();
+							});
 							return;
 						}
 						return;

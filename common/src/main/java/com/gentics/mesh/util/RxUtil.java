@@ -121,4 +121,8 @@ public final class RxUtil {
 			return Maybe.just(item);
 		}
 	}
+
+	public static <T> io.reactivex.functions.Function<T, T> identity() {
+		return x -> x;
+	}
 }
