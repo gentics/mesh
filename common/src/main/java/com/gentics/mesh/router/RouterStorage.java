@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
 import com.gentics.madl.tx.Tx;
@@ -16,6 +15,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.VersionHandler;
+import com.gentics.mesh.router.route.SecurityLoggingHandler;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
@@ -70,8 +70,8 @@ public class RouterStorage {
 
 	@Inject
 	public RouterStorage(Vertx vertx, MeshOptions options, MeshAuthChain authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler,
-		Lazy<BootstrapInitializer> boot,
-		Lazy<Database> db, VersionHandler versionHandler, RouterStorageRegistry routerStorageRegistry) {
+						 Lazy<BootstrapInitializer> boot,
+						 Lazy<Database> db, VersionHandler versionHandler, RouterStorageRegistry routerStorageRegistry, SecurityLoggingHandler securityLoggingHandler) {
 		this.vertx = vertx;
 		this.options = options;
 		this.boot = boot;
@@ -83,7 +83,7 @@ public class RouterStorage {
 		this.routerStorageRegistry = routerStorageRegistry;
 
 		// Initialize the router chain. The root router will create additional routers which will be mounted.
-		rootRouter = new RootRouter(vertx, this, options);
+		rootRouter = new RootRouter(vertx, this, options, securityLoggingHandler);
 
 		// TODO move this to the place where the routerstorage is created
 		routerStorageRegistry.getInstances().add(this);

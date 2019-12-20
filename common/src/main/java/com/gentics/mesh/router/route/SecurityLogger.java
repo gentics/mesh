@@ -1,47 +1,61 @@
 package com.gentics.mesh.router.route;
 
-import static com.gentics.mesh.util.StreamUtil.lazy;
+import static com.gentics.mesh.util.RxUtil.executeBlocking;
+import static com.gentics.mesh.util.RxUtil.fromNullable;
 import static com.google.common.net.HttpHeaders.X_FORWARDED_FOR;
 
 import java.util.Optional;
-import java.util.function.Supplier;
 
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.spi.logging.LogDelegate;
-import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.reactivex.core.Vertx;
 
 public class SecurityLogger implements LogDelegate {
 	private final Logger delegate;
-	private final Supplier<String> remoteAddress;
-	private final Supplier<String> userName;
+	private final String remoteAddress;
+	private final String userName;
 
-	public SecurityLogger(Logger delegate, RoutingContext context) {
+	private SecurityLogger(Logger delegate, String remoteAddress, String userName) {
 		this.delegate = delegate;
-		remoteAddress = lazy(() -> remoteAddress(context));
-		userName = lazy(() -> userName(context));
+		this.remoteAddress = remoteAddress;
+		this.userName = userName;
 	}
 
-	private String userName(RoutingContext context) {
-		return Optional.ofNullable(context.user())
-			.map(User::principal)
+	/**
+	 * Creates a security logger which adds the IP address and the user name to log messages.
+	 * A single is returned because a transaction is required to get the user name.
+	 * @param vertx
+	 * @param delegate
+	 * @param context
+	 * @return
+	 */
+	public static Single<SecurityLogger> forCurrentUser(Vertx vertx, Logger delegate, RoutingContext context) {
+		return userName(vertx, context)
+			.map(username -> new SecurityLogger(delegate, remoteAddress(context), username));
+	}
+
+	private static Single<String> userName(Vertx vertx, RoutingContext context) {
+		return fromNullable(context.user())
+			.flatMap(user -> executeBlocking(vertx, user::principal))
 			.map(principal -> principal.getString("username"))
-			.orElse("<no user>");
+			.toSingle("<no user>");
 	}
 
-	private String remoteAddress(RoutingContext context) {
+	private static String remoteAddress(RoutingContext context) {
 		return forwardedForAddress(context)
 			.orElse(context.request().remoteAddress().host());
 	}
 
-	private Optional<String> forwardedForAddress(RoutingContext context) {
+	private static Optional<String> forwardedForAddress(RoutingContext context) {
 		return Optional.ofNullable(context.request().getHeader(X_FORWARDED_FOR))
 			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
 			.map(addresses -> addresses.split(",")[0].trim());
 	}
 
 	private String withUserInfo(Object message) {
-		return remoteAddress.get() + ", " + userName.get() + " - " + message;
+		return remoteAddress + ", " + userName + " - " + message;
 	}
 
 	@Override

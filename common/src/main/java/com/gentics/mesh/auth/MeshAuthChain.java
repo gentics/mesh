@@ -6,6 +6,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.auth.handler.MeshAnonymousAuthHandler;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.router.route.SecurityLoggingHandler;
 
 import io.vertx.ext.web.Route;
 
@@ -21,12 +22,15 @@ public class MeshAuthChain {
 
 	private final MeshAnonymousAuthHandler anonHandler;
 
+	private final SecurityLoggingHandler loggingHandler;
+
 	@Inject
 	public MeshAuthChain(MeshOAuthService oauthService, MeshJWTAuthHandler jwtAuthHandler,
-		MeshAnonymousAuthHandler anonHandler, MeshOptions options) {
+						 MeshAnonymousAuthHandler anonHandler, MeshOptions options, SecurityLoggingHandler loggingHandler) {
 		this.oauthService = oauthService;
 		this.jwtAuthHandler = jwtAuthHandler;
 		this.anonHandler = anonHandler;
+		this.loggingHandler = loggingHandler;
 	}
 
 	/**
@@ -47,6 +51,8 @@ public class MeshAuthChain {
 		route.handler(rc -> {
 			anonHandler.handle(rc);
 		});
+
+		route.handler(loggingHandler);
 	}
 
 }
