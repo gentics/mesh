@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.schema.field;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.lang.annotation.ElementType;
@@ -529,6 +528,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		context.setToVersion(versionB);
 		context.setStatus(DummyMigrationStatus.get());
 
+		Tx.get().commit();
 		nodeMigrationHandler.migrateNodes(context).blockingAwait();
 		// old container must not be changed
 		assertThat(englishContainer).isOf(versionA).hasVersion("0.1");
@@ -611,6 +611,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		context.setFromVersion(versionA);
 		context.setToVersion(versionB);
 		context.setStatus(DummyMigrationStatus.get());
+		Tx.get().commit();
 		micronodeMigrationHandler.migrateMicronodes(context).blockingAwait(10,
 			TimeUnit.SECONDS);
 
