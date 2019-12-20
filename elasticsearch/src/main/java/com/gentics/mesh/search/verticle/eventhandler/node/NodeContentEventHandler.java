@@ -7,11 +7,9 @@ import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNPUBLISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.core.rest.event.EventCauseAction.SCHEMA_MIGRATION;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.toFlowable;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -35,8 +33,11 @@ import com.gentics.mesh.search.verticle.entity.MeshEntities;
 import com.gentics.mesh.search.verticle.eventhandler.EventCauseHelper;
 import com.gentics.mesh.search.verticle.eventhandler.EventHandler;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
+import com.gentics.mesh.search.verticle.eventhandler.Util;
 
 import io.reactivex.Flowable;
+import io.reactivex.Maybe;
+import io.reactivex.Single;
 
 @Singleton
 public class NodeContentEventHandler implements EventHandler {
@@ -72,14 +73,16 @@ public class NodeContentEventHandler implements EventHandler {
 					if (cause != null && cause.getAction() == SCHEMA_MIGRATION) {
 						return migrationUpdate(message);
 					} else {
-						return toFlowable(upsertNodes(message));
+						return upsertNodes(message).toFlowable();
 					}
 				case NODE_CONTENT_DELETED:
 				case NODE_UNPUBLISHED:
 					if (EventCauseHelper.isProjectDeleteCause(message)) {
 						return Flowable.empty();
 					} else {
-						return Flowable.just(deleteNodes(message, getSchemaVersionUuid(message)));
+						return getSchemaVersionUuid(message)
+							.map(uuid -> deleteNodes(message, uuid))
+							.toFlowable();
 					}
 				default:
 					throw new RuntimeException("Unexpected event " + event.address);
@@ -90,20 +93,25 @@ public class NodeContentEventHandler implements EventHandler {
 
 	private Flowable<SearchRequest> migrationUpdate(NodeMeshEventModel message) {
 		SchemaMigrationMeshEventModel cause = (SchemaMigrationMeshEventModel) message.getCause();
-		DeleteDocumentRequest delete = deleteNodes(message, getSchemaVersionUuid(cause.getFromVersion()));
-		SearchRequest request = upsertNodes(message)
-			// The requests are bulked together to make sure that these request are in the same bulk
-			.<SearchRequest>map(req -> new BulkRequest(req, delete))
-			.orElse(delete);
-		return Flowable.just(request);
+		return getSchemaVersionUuid(cause.getFromVersion())
+			.map(uuid -> deleteNodes(message, uuid))
+			.flatMap(delete -> upsertNodes(message)
+				// The requests are bulked together to make sure that these request are in the same bulk
+				.<SearchRequest>map(req -> new BulkRequest(req, delete))
+				.toSingle(delete))
+			.toFlowable();
 	}
 
-	private Optional<CreateDocumentRequest> upsertNodes(NodeMeshEventModel message) {
-		return helper.getDb().tx(() -> entities.nodeContent.getDocument(message))
-			.map(doc -> helper.createDocumentRequest(
-				getIndexName(message, getSchemaVersionUuid(message)),
+	private Maybe<CreateDocumentRequest> upsertNodes(NodeMeshEventModel message) {
+		return Maybe.zip(
+			helper.getDb().singleTxImmediate(() -> entities.nodeContent.getDocument(message))
+				.to(Util::toMaybe),
+			getSchemaVersionUuid(message).toMaybe(),
+			(doc, schemaVersionUuid) -> helper.createDocumentRequest(
+				getIndexName(message, schemaVersionUuid),
 				NodeGraphFieldContainer.composeDocumentId(message.getUuid(), message.getLanguageTag()),
-				doc, complianceMode));
+				doc, complianceMode)
+		);
 	}
 
 	private DeleteDocumentRequest deleteNodes(NodeMeshEventModel message, String schemaVersionUuid) {
@@ -120,8 +128,8 @@ public class NodeContentEventHandler implements EventHandler {
 			message.getType());
 	}
 
-	private String getSchemaVersionUuid(NodeMeshEventModel message) {
-		return helper.getDb().tx(() -> {
+	private Single<String> getSchemaVersionUuid(NodeMeshEventModel message) {
+		return helper.getDb().singleTxImmediate(() -> {
 			SchemaContainer schema = boot.schemaContainerRoot().findByUuid(message.getSchema().getUuid());
 			return boot.projectRoot().findByUuid(message.getProject().getUuid())
 				.getBranchRoot().findByUuid(message.getBranchUuid())
@@ -130,8 +138,8 @@ public class NodeContentEventHandler implements EventHandler {
 		});
 	}
 
-	private String getSchemaVersionUuid(SchemaReference reference) {
-		return helper.getDb().tx(() -> boot.schemaContainerRoot()
+	private Single<String> getSchemaVersionUuid(SchemaReference reference) {
+		return helper.getDb().singleTxImmediate(() -> boot.schemaContainerRoot()
 			.findByUuid(reference.getUuid())
 			.findVersionByRev(reference.getVersion())
 			.getUuid());

@@ -51,6 +51,7 @@ public interface EventHelper extends BaseHelper {
 	 * @throws TimeoutException
 	 */
 	default void waitForEvent(String address, Action code) {
+		CountDownLatch completionLatch = new CountDownLatch(1);
 		CountDownLatch latch = new CountDownLatch(1);
 		MessageConsumer<Object> consumer = vertx().eventBus().consumer(address);
 		consumer.handler(msg -> latch.countDown());
@@ -59,15 +60,13 @@ public interface EventHelper extends BaseHelper {
 			if (res.failed()) {
 				throw new RuntimeException("Could not listen to event", res.cause());
 			}
-			try {
-				code.run();
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
+			completionLatch.countDown();
 		});
 		try {
+			completionLatch.countDown();
+			code.run();
 			latch.await(10, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 		consumer.unregister();

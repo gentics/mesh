@@ -68,7 +68,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 	 * @return
 	 */
 	private Flowable<SearchRequest> updateNodes(MeshElementEventModelImpl model) {
-		return Flowable.defer(() -> helper.getDb().transactional(tx -> toStream(entities.project.getElement(model))
+		return helper.getDb().transactional(tx -> toStream(entities.project.getElement(model))
 				.flatMap(project -> {
 					List<Branch> branches = (List<Branch>) project.getBranchRoot().findAll().list();
 					return project.findNodes().stream()
@@ -91,8 +91,8 @@ public class ProjectUpdateEventHandler implements EventHandler {
 				))
 			)));})
 			.collect(toFlowable()))
-			.runInNewTx()
-		);
+			.runInAsyncTx()
+			.flatMapPublisher(x -> x);
 	}
 
 	/**
@@ -101,7 +101,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 	 * @return
 	 */
 	private Flowable<SearchRequest> updateTags(MeshElementEventModelImpl model) {
-		return Flowable.defer(() -> helper.getDb().transactional(tx -> toStream(entities.project.getElement(model))
+		return helper.getDb().transactional(tx -> toStream(entities.project.getElement(model))
 				.flatMap(project -> project.getTagFamilyRoot().findAll().stream()
 				.flatMap(family -> Stream.concat(
 					Stream.of(createTagFamilyRequest(project, family)),
@@ -109,8 +109,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 				)
 			))
 			.collect(toFlowable()))
-			.runInNewTx()
-		);
+			.runInAsyncTx().flatMapPublisher(x -> x);
 	}
 
 	private Stream<CreateDocumentRequest> createTagRequests(TagFamily family, Project project) {

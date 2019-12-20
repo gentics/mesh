@@ -1,11 +1,21 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_ASSIGN;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_UNASSIGN;
+import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_FINISHED;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
+
+import java.util.Arrays;
+import java.util.Collection;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.DropIndexRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -16,21 +26,10 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.spi.Transactional;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.verticle.MessageEvent;
+
 import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
-
-import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_ASSIGN;
-import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_UNASSIGN;
-import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_FINISHED;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.toRequests;
 
 @Singleton
 public class SchemaMigrationEventHandler implements EventHandler {
@@ -83,14 +82,13 @@ public class SchemaMigrationEventHandler implements EventHandler {
 	}
 
 	public Flowable<SearchRequest> migrationStart(BranchSchemaAssignEventModel model) {
-		Map<String, IndexInfo> map = helper.getDb().transactional(tx -> {
+		return helper.getDb().transactional(tx -> {
 			Project project = helper.getBoot().projectRoot().findByUuid(model.getProject().getUuid());
 			Branch branch = project.getBranchRoot().findByUuid(model.getBranch().getUuid());
 			SchemaContainerVersion schema = getNewSchemaVersion(model).runInExistingTx(tx);
 			return nodeIndexHandler.getIndices(project, branch, schema).runInExistingTx(tx);
-		}).runInNewTx();
-
-		return toRequests(map);
+		}).runInAsyncTxImmediately()
+		.flatMapPublisher(Util::toRequests);
 	}
 
 	private Transactional<SchemaContainerVersion> getNewSchemaVersion(BranchSchemaAssignEventModel model) {

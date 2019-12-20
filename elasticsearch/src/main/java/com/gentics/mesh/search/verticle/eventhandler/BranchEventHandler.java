@@ -4,18 +4,15 @@ import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.toRequests;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
@@ -47,13 +44,12 @@ public class BranchEventHandler implements EventHandler {
 				//TODO Implement the drop of the node indices. We need to drop all indices of the branch.
 				return Flowable.empty();
 			} else {
-				Map<String, IndexInfo> map = helper.getDb().transactional(tx -> {
+				return helper.getDb().transactional(tx -> {
 					Project project = helper.getBoot().projectRoot().findByUuid(model.getProject().getUuid());
 					Branch branch = project.getBranchRoot().findByUuid(model.getUuid());
 					return nodeIndexHandler.getIndices(project, branch).runInExistingTx(tx);
-				}).runInNewTx();
-
-				return toRequests(map);
+				}).runInAsyncTxImmediately()
+				.flatMapPublisher(Util::toRequests);
 			}
 		});
 	}

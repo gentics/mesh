@@ -1,13 +1,5 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
-import com.gentics.mesh.core.data.search.index.IndexInfo;
-import com.gentics.mesh.core.data.search.request.CreateIndexRequest;
-import com.gentics.mesh.core.data.search.request.SearchRequest;
-import com.gentics.mesh.core.rest.common.ContainerType;
-import io.reactivex.Flowable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,6 +12,17 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.CreateIndexRequest;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.rest.common.ContainerType;
+
+import io.reactivex.Flowable;
+import io.reactivex.Maybe;
+import io.reactivex.Single;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Various static utility functions
@@ -119,6 +122,28 @@ public final class Util {
 	 */
 	public static <T> Flowable<T> toFlowable(Optional<T> opt) {
 		return opt.map(Flowable::just).orElse(Flowable.empty());
+	}
+
+	/**
+	 * If a value is present, returns a {@link Flowable#just(Object)} containing only that value,
+	 * otherwise returns a {@link Flowable#empty()}
+	 * @param single
+	 * @param <T>
+	 * @return
+	 */
+	public static <T> Flowable<T> toFlowable(Single<Optional<T>> single) {
+		return single.flatMapPublisher(opt -> opt.map(Flowable::just).orElseGet(Flowable::empty));
+	}
+
+	/**
+	 * If a value is present, returns a {@link Maybe#just(Object)} containing only that value,
+	 * otherwise returns a {@link Maybe#empty()}
+	 * @param single
+	 * @param <T>
+	 * @return
+	 */
+	public static <T> Maybe<T> toMaybe(Single<Optional<T>> single) {
+		return single.flatMapMaybe(opt -> opt.map(Maybe::just).orElseGet(Maybe::empty));
 	}
 
 	/**

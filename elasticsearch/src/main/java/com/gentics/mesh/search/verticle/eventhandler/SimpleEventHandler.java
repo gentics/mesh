@@ -1,5 +1,12 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
+import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.toFlowable;
+
+import java.util.Collection;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -8,15 +15,10 @@ import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntity;
+
 import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.Collection;
-
-import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.toFlowable;
 
 /**
  * An event handler that uses the events from {@link MeshEntity#allEvents()} and creates/updates/deletes documents
@@ -51,11 +53,11 @@ public class SimpleEventHandler<T extends MeshCoreVertex<? extends RestModel, T>
 			MeshElementEventModel model = requireType(MeshElementEventModel.class, eventModel.message);
 
 			if (event == entity.getCreateEvent() || event == entity.getUpdateEvent()) {
-				return toFlowable(helper.getDb().tx(() -> entity.getDocument(model))
+				return toFlowable(helper.getDb().singleTxImmediate(() -> entity.getDocument(model)))
 					.map(document -> helper.createDocumentRequest(
 						indexName, model.getUuid(),
 						document, complianceMode
-					)));
+					));
 			} else if (event == entity.getDeleteEvent()) {
 				return Flowable.just(helper.deleteDocumentRequest(
 					indexName, model.getUuid(), complianceMode

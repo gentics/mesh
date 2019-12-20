@@ -178,6 +178,18 @@ public interface Database extends TxFactory {
 	}
 
 	/**
+	 * Same as {@link #maybeTxImmediate(Function)} )}, but runs the handler immediately, not when subscribed.
+	 * @param handler
+	 * @param <T>
+	 * @return
+	 */
+	default <T> Maybe<T> maybeTxImmediate(Function<Tx, T> handler) {
+		Maybe<T> cache = maybeTx(handler).cache();
+		cache.subscribe(ignore -> {}, err -> {});
+		return cache;
+	}
+
+	/**
 	 * Executes a consumer in a transaction within the worker thread pool.
 	 * @param handler
 	 * @return
@@ -198,6 +210,30 @@ public interface Database extends TxFactory {
 	 */
 	default <T> Single<T> singleTx(Supplier<T> handler) {
 		return maybeTx(tx -> handler.get()).toSingle();
+	}
+
+	/**
+	 * Same as {@link #singleTx(Supplier)}, but runs the handler immediately, not when subscribed.
+	 * @param handler
+	 * @param <T>
+	 * @return
+	 */
+	default <T> Single<T> singleTxImmediate(Supplier<T> handler) {
+		Single<T> cache = singleTx(handler).cache();
+		cache.subscribe(ignore -> {}, err -> {});
+		return cache;
+	}
+
+	/**
+	 * Same as {@link #singleTx(Function)} )}, but runs the handler immediately, not when subscribed.
+	 * @param handler
+	 * @param <T>
+	 * @return
+	 */
+	default <T> Single<T> singleTxImmediate(Function<Tx, T> handler) {
+		Single<T> cache = singleTx(handler).cache();
+		cache.subscribe(ignore -> {}, err -> {});
+		return cache;
 	}
 
 	/**
@@ -480,6 +516,16 @@ public interface Database extends TxFactory {
 			@Override
 			public Maybe<T> runInNullableAsyncTx() {
 				return maybeTx(txFunction);
+			}
+
+			@Override
+			public Single<T> runInAsyncTxImmediately() {
+				return singleTxImmediate(txFunction);
+			}
+
+			@Override
+			public Maybe<T> runInNullableAsyncTxImmediately() {
+				return maybeTxImmediate(txFunction);
 			}
 		};
 	}
