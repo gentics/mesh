@@ -31,6 +31,7 @@ import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
 import com.gentics.mesh.search.verticle.eventhandler.EventHandler;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
+import com.gentics.mesh.util.RxUtil;
 
 import io.reactivex.Flowable;
 
@@ -92,7 +93,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 			)));})
 			.collect(toFlowable()))
 			.runInAsyncTx()
-			.flatMapPublisher(x -> x);
+			.flatMapPublisher(RxUtil.identity());
 	}
 
 	/**
@@ -109,7 +110,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 				)
 			))
 			.collect(toFlowable()))
-			.runInAsyncTx().flatMapPublisher(x -> x);
+			.runInAsyncTx().flatMapPublisher(RxUtil.identity());
 	}
 
 	private Stream<CreateDocumentRequest> createTagRequests(TagFamily family, Project project) {

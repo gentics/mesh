@@ -31,6 +31,7 @@ import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
+import com.gentics.mesh.util.RxUtil;
 
 import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
@@ -77,7 +78,7 @@ public class PermissionChangedEventHandler implements EventHandler {
 
 	private Flowable<UpdateDocumentRequest> handleNodePermissionsChange(PermissionChangedProjectElementEventModel model) {
 		NodeContainerTransformer tf = (NodeContainerTransformer) meshEntities.nodeContent.getTransformer();
-		return meshHelper.getDb().tx(() -> ofNullable(meshHelper.getBoot().projectRoot().findByUuid(model.getProject().getUuid()))
+		return meshHelper.getDb().singleTxImmediate(() -> ofNullable(meshHelper.getBoot().projectRoot().findByUuid(model.getProject().getUuid()))
 			.flatMap(project -> ofNullable(project.getNodeRoot().findByUuid(model.getUuid()))
 				.flatMap(node -> project.getBranchRoot().findAll().stream().map(MeshElement::getUuid)
 					.flatMap(branchUuid -> Util.latestVersionTypes()
@@ -90,7 +91,7 @@ public class PermissionChangedEventHandler implements EventHandler {
 									type),
 								NodeGraphFieldContainer.composeDocumentId(model.getUuid(), container.getLanguageTag()),
 								tf.toPermissionPartial(node, type), complianceMode))))))
-			.collect(toFlowable()));
+			.collect(toFlowable())).flatMapPublisher(RxUtil.identity());
 	}
 
 	private Flowable<UpdateDocumentRequest> simplePermissionChange(PermissionChangedEventModelImpl model) {

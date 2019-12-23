@@ -1,5 +1,21 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
+import static com.gentics.mesh.search.verticle.entity.MeshEntities.findElementByUuidStream;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.concat;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
+import static com.gentics.mesh.util.StreamUtil.toStream;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
@@ -10,21 +26,9 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
-import io.reactivex.Flowable;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.stream.Stream;
+import com.gentics.mesh.util.RxUtil;
 
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
-import static com.gentics.mesh.search.verticle.entity.MeshEntities.findElementByUuidStream;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.concat;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
-import static com.gentics.mesh.util.StreamUtil.toStream;
+import io.reactivex.Flowable;
 
 @Singleton
 public class TagEventHandler implements EventHandler {
@@ -47,7 +51,7 @@ public class TagEventHandler implements EventHandler {
 
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
-		return Flowable.defer(() -> {
+		return helper.getDb().<Flowable<SearchRequest>>singleTx(() -> {
 			MeshEvent event = messageEvent.event;
 			MeshProjectElementEventModel model = requireType(MeshProjectElementEventModel.class, messageEvent.message);
 			String projectUuid = model.getProject().getUuid();
@@ -77,7 +81,7 @@ public class TagEventHandler implements EventHandler {
 			} else {
 				throw new RuntimeException("Unexpected event " + event.address);
 			}
-		});
+		}).flatMapPublisher(RxUtil.identity());
 	}
 
 	private Stream<CreateDocumentRequest> taggedNodes(MeshProjectElementEventModel model, Tag tag) {
