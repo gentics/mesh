@@ -10,6 +10,7 @@ import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -28,6 +29,7 @@ import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
+import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
 import com.gentics.mesh.search.verticle.eventhandler.EventCauseHelper;
@@ -37,7 +39,6 @@ import com.gentics.mesh.search.verticle.eventhandler.Util;
 
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
-import io.reactivex.Single;
 
 @Singleton
 public class NodeContentEventHandler implements EventHandler {
@@ -95,7 +96,7 @@ public class NodeContentEventHandler implements EventHandler {
 		SchemaMigrationMeshEventModel cause = (SchemaMigrationMeshEventModel) message.getCause();
 		return getSchemaVersionUuid(cause.getFromVersion())
 			.map(uuid -> deleteNodes(message, uuid))
-			.flatMap(delete -> upsertNodes(message)
+			.flatMapSingleElement(delete -> upsertNodes(message)
 				// The requests are bulked together to make sure that these request are in the same bulk
 				.<SearchRequest>map(req -> new BulkRequest(req, delete))
 				.toSingle(delete))
@@ -106,7 +107,7 @@ public class NodeContentEventHandler implements EventHandler {
 		return Maybe.zip(
 			helper.getDb().singleTxImmediate(() -> entities.nodeContent.getDocument(message))
 				.to(Util::toMaybe),
-			getSchemaVersionUuid(message).toMaybe(),
+			getSchemaVersionUuid(message),
 			(doc, schemaVersionUuid) -> helper.createDocumentRequest(
 				getIndexName(message, schemaVersionUuid),
 				NodeGraphFieldContainer.composeDocumentId(message.getUuid(), message.getLanguageTag()),
@@ -128,20 +129,22 @@ public class NodeContentEventHandler implements EventHandler {
 			message.getType());
 	}
 
-	private Single<String> getSchemaVersionUuid(NodeMeshEventModel message) {
-		return helper.getDb().singleTxImmediate(() -> {
+	private Maybe<String> getSchemaVersionUuid(NodeMeshEventModel message) {
+		return helper.getDb().maybeTxImmediate(tx -> {
 			SchemaContainer schema = boot.schemaContainerRoot().findByUuid(message.getSchema().getUuid());
-			return boot.projectRoot().findByUuid(message.getProject().getUuid())
+			return Optional.ofNullable(boot.projectRoot().findByUuid(message.getProject().getUuid())
 				.getBranchRoot().findByUuid(message.getBranchUuid())
-				.findLatestSchemaVersion(schema)
-				.getUuid();
+				.findLatestSchemaVersion(schema))
+				.map(MeshElement::getUuid)
+				.orElse(null);
 		});
 	}
 
-	private Single<String> getSchemaVersionUuid(SchemaReference reference) {
-		return helper.getDb().singleTxImmediate(() -> boot.schemaContainerRoot()
-			.findByUuid(reference.getUuid())
-			.findVersionByRev(reference.getVersion())
-			.getUuid());
+	private Maybe<String> getSchemaVersionUuid(SchemaReference reference) {
+		return helper.getDb().maybeTxImmediate(tx -> Optional.ofNullable(boot.schemaContainerRoot()
+			.findByUuid(reference.getUuid()))
+			.map(schema -> schema.findVersionByRev(reference.getVersion()))
+			.map(MeshElement::getUuid)
+			.orElse(null));
 	}
 }
