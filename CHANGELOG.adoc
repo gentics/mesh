@@ -25,6 +25,10 @@ include::content/docs/variables.adoc-include[]
 
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
+[[Unreleased]]
+
+icon:check[] Core: Fixed a bug in the link renderer that caused the language parameter to be ignored if the branch parameter was passed.
+
 [[v1.3.2]]
 == 1.3.2 (12.12.2019)
 
