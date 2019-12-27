@@ -114,7 +114,7 @@ public class WebRootLinkReplacer {
 				// Branch in link argument always comes first
 				branch = linkArguments[2].trim();
 			}
-			if (linkArguments.length == 2) {
+			if (linkArguments.length >= 2) {
 				segments.add(resolve(ac, branch, edgeType, linkArguments[0], type, projectName, linkArguments[1].trim()));
 			} else if (languageTags != null) {
 				segments.add(resolve(ac, branch, edgeType, linkArguments[0], type, projectName,

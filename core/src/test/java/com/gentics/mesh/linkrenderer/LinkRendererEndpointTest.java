@@ -1,5 +1,14 @@
 package com.gentics.mesh.linkrenderer;
 
+import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static org.junit.Assert.assertEquals;
+
+import java.util.Arrays;
+
+import org.junit.Test;
+
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.parameter.LinkType;
@@ -9,14 +18,6 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.json.JsonObject;
-import org.junit.Test;
-
-import java.util.Arrays;
-
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Test cases for link rendering using the Utility Verticle
@@ -100,6 +101,13 @@ public class LinkRendererEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			testRenderContent("{{mesh.link('" + UUIDUtil.randomUUID() + "')}}", LinkType.FULL, CURRENT_API_BASE_PATH + "/project/webroot/error/404");
 		}
+	}
+
+	@Test
+	public void testRenderLanguagesWithBranch() {
+		String uuid = tx(() -> folder("news").getUuid());
+		testRenderContent(String.format("{{mesh.link(%s, %s, %s)}}", uuid, "en", "demo"), LinkType.SHORT, "/News");
+		testRenderContent(String.format("{{mesh.link(%s, %s, %s)}}", uuid, "de", "demo"), LinkType.SHORT, "/Neuigkeiten");
 	}
 
 	/**
