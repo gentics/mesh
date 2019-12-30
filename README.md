@@ -1,8 +1,8 @@
-<p align="center">
+<h1 align="center">
   <a href="https://getmesh.io">
-    <img src="https://getmesh.io/assets/gentics-mesh-logo.png" height="84" width="420" alt="Gentics Mesh" />
+    <img src="https://getmesh.io/assets/gentics-mesh-logo.png" width="420" alt="Gentics Mesh" />
   </a>
-</p>
+</h1>
 
 <h3 align="center">Gentics Mesh is your friendly, enterprise-grade, open-source headless CMS.</h3>
 
@@ -79,6 +79,8 @@ Check out our [Getting Started Guide](https://getmesh.io/docs/getting-started/)
 for an explanation of the basic concepts of Gentics Mesh.
 
 # Table of Contents
+
+<!-- re-generate with https://github.com/ekalinin/github-markdown-toc -->
 
    * [Quick Start](#quick-start)
    * [Table of Contents](#table-of-contents)
@@ -168,19 +170,19 @@ The Gentics Mesh core team consists of:
   <tr>
    <td align="center">
     <a href="https://github.com/Jotschi">
-     <img src="https://avatars.githubusercontent.com/Jotschi?size=150" width="150" height="150" /><br />
+     <img src="https://avatars.githubusercontent.com/Jotschi?size=150" width="150" /><br />
      Johannes Schüth<br /><i>lead developer</i>
     </a>
    </td>
    <td align="center">
     <a href="https://github.com/philippguertler">
-     <img src="https://avatars.githubusercontent.com/philippguertler?size=150" width="150" height="150" /><br />
+     <img src="https://avatars.githubusercontent.com/philippguertler?size=150" width="150" /><br />
      Philipp Gürtler<br /><i>full-stack developer</i>
     </a>
    </td>
    <td align="center">
     <a href="https://github.com/pschulzk">
-     <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" height="150" /><br />
+     <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br />
      Philip Viktor Schulz-Klingauf<br /><i>UI/UX developer</i>
     </a>
    </td>
@@ -188,19 +190,19 @@ The Gentics Mesh core team consists of:
   <tr>
    <td align="center">
     <a href="https://github.com/npomaroli">
-     <img src="https://avatars.githubusercontent.com/npomaroli?size=150" width="150" height="150" /><br />
+     <img src="https://avatars.githubusercontent.com/npomaroli?size=150" width="150" /><br />
      Norbert Pomaroli<br /><i>software architect</i>
     </a>
    </td>
    <td align="center">
     <a href="https://github.com/aschauerhuber">
-     <img src="https://avatars.githubusercontent.com/aschauerhuber?size=150" width="150" height="150" /><br />
+     <img src="https://avatars.githubusercontent.com/aschauerhuber?size=150" width="150" /><br />
      Andrea Schauerhuber<br /><i>general manager</i>
     </a>
    </td>
    <td align="center">
     <a href="https://github.com/mephinet">
-     <img src="https://avatars.githubusercontent.com/mephinet?size=150" width="150" height="150" /><br />
+     <img src="https://avatars.githubusercontent.com/mephinet?size=150" width="150" /><br />
      Philipp Gortan<br /><i>head of product development</i>
     </a>
    </td>
